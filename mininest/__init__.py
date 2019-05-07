@@ -1,9 +1,7 @@
 """
-.. module:: nested
-   :synopsis: Nested sampler
-.. moduleauthor:: Adam Moss <adam.moss@nottingham.ac.uk>
 Performs nested sampling to calculate the Bayesian evidence and posterior samples
 Some parts are from the Nestle library by Kyle Barbary (https://github.com/kbarbary/nestle)
+Some parts are from the nnest library by Adam Moss (https://github.com/adammoss/nnest)
 """
 
 from __future__ import print_function
@@ -15,6 +13,7 @@ import json
 
 from utils import create_logger, make_run_dir
 from utils import acceptance_rate, effective_sample_size, mean_jump_distance
+from mlfriends import MLFriends
 
 import numpy as np
 
@@ -78,18 +77,14 @@ class NestedSampler(object):
             self.mpi_size = 1
             self.mpi_rank = 0
 
-        self.log = not self.use_mpi or (self.use_mpi and self.mpi_rank == 0)
-
-        args = locals()
-        args.update(vars(self))
+        self.log = self.mpi_rank == 0
 
         if self.log:
             self.logs = make_run_dir(log_dir, run_num, append_run_num= append_run_num)
             log_dir = self.logs['run_dir']
-            self._save_params(args)
         else:
             log_dir = None
-                
+        
         self.logger = create_logger(__name__)
 
         if self.log:
@@ -213,8 +208,10 @@ class NestedSampler(object):
         logvol = np.log(1.0 - np.exp(-1.0 / self.num_live_points))
         fraction_remain = 1.0
         ncall = self.num_live_points  # number of calls we already made
-        first_time = True
-        nb = self.mpi_size * mcmc_batch_size
+        #first_time = True
+        #nb = self.mpi_size * mcmc_batch_size
+        direct_draw_efficient = True
+        mlfriends_efficient = True
         ib = 0
         samples = []
 
@@ -238,54 +235,79 @@ class NestedSampler(object):
 
             # The new likelihood constraint is that of the worst object.
             loglstar = active_logl[worst]
+            
+            if it % update_interval == 0:
+                region = MLFriends(active_u)
+                r = region.compute_maxradiussq(nbootstraps=30 // self.mpi_size)
+                #print("MLFriends built. r=%f" % r**0.5)
+                if self.use_mpi:
+                    recv_minradii = self.comm.gather(r, root=0)
+                    recv_minradii = self.comm.bcast(recv_minradii, root=0)
+                    r = np.max(recv_minradii)
+                region.maxradiussq = r
+            
+            while True:
+                while ib >= len(samples):
+                    # get new samples
+                    ib = 0
+                    
+                    nc = 0
+                    # Simple rejection sampling over prior
+                    if direct_draw_efficient:
+                        u = np.random.uniform(size=(4000, self.x_dim))
+                        mask = region.inside(u)
+                        u = u[mask,:]
+                        if mask.mean() < 0.05:
+                            direct_draw_efficient = False
+                    else:
+                        u = region.sample(nsamples=4000)
 
-            if ib >= len(samples):
-                # get new samples
-                ib = 0
-                
-                nc = 0
-                # Simple rejection sampling over prior
-                while True:
-                    u = 2 * (np.random.uniform(size=(1, self.x_dim)) - 0.5)
                     v = self.transform(u)
                     logl = self.loglike(v)
-                    nc += 1
-                    if logl > loglstar:
-                        break
-                
-                if self.use_mpi:
-                    recv_samples = self.comm.gather(u, root=0)
-                    recv_likes = self.comm.gather(logl, root=0)
-                    recv_nc = self.comm.gather(nc, root=0)
-                    recv_samples = self.comm.bcast(recv_samples, root=0)
-                    recv_likes = self.comm.bcast(recv_likes, root=0)
-                    recv_nc = self.comm.bcast(recv_nc, root=0)
-                    samples = np.concatenate(recv_samples, axis=0)
-                    likes = np.concatenate(recv_likes, axis=0)
-                    ncall += sum(recv_nc)
-                else:
-                    samples = np.array(u)
-                    likes = np.array(logl)
-                    ncall += nc
-            
-            # every mpi node finds a new point, but 
-            # here only the last one is used to overwrite the
-            # worst point?
-            active_u[worst] = samples[ib, :]
-            active_v[worst] = self.transform(active_u[worst])
-            active_logl[worst] = likes[ib]
-            ib = ib + 1
+                    nc += len(logl)
+                    accepted = logl > loglstar
+                    u = u[accepted,:]
+                    logl = logl[accepted]
+                    #print("accepted: %d" % accepted.sum(), direct_draw_efficient)
 
-            if it % log_interval == 0 and self.log:
-                self.logger.info(
-                    'Step [%d] loglstar [%5.4f] max logl [%5.4f] logz [%5.4f] vol [%6.5f] ncalls [%d]]' %
-                    (it, loglstar, np.max(active_logl), logz, expected_vol, ncall))
+                    if self.use_mpi:
+                        recv_samples = self.comm.gather(u, root=0)
+                        recv_likes = self.comm.gather(logl, root=0)
+                        recv_nc = self.comm.gather(nc, root=0)
+                        recv_samples = self.comm.bcast(recv_samples, root=0)
+                        recv_likes = self.comm.bcast(recv_likes, root=0)
+                        #if self.log: print('Likes:', recv_likes)
+                        recv_nc = self.comm.bcast(recv_nc, root=0)
+                        samples = np.concatenate(recv_samples, axis=0)
+                        likes = np.concatenate(recv_likes, axis=0)
+                        ncall += sum(recv_nc)
+                    else:
+                        samples = np.array(u)
+                        likes = np.array(logl)
+                        ncall += nc
+                
+                if likes[ib] > active_logl[worst]:
+                    active_u[worst] = samples[ib, :]
+                    active_v[worst] = self.transform(active_u[worst])
+                    active_logl[worst] = likes[ib]
+                    ib = ib + 1
+                    break
+                else:
+                    ib = ib + 1
+                
+
 
             # Shrink interval
             logvol -= 1.0 / self.num_live_points
             logz_remain = np.max(active_logl) - it / self.num_live_points
             fraction_remain = np.logaddexp(logz, logz_remain) - logz
 
+            if it % log_interval == 0 and self.log:
+				nicelogger(active_u, active_v, active_logl, it, ncall, logz, logz_remain)
+                #self.logger.info(
+                #    '[it=%d,nevals=%d,eff=%f] Like=%5.1f..%5.1f lnZ=%5.1f' %
+                #    (it, ncall, it * 100. / ncall, loglstar, np.max(active_logl), logz))
+            
             # Stopping criterion
             if fraction_remain < dlogz:
                 break
