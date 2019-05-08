@@ -55,17 +55,102 @@ def compute_maxradiussq(np.ndarray[np.float_t, ndim=2] apts, np.ndarray[np.float
 
     return maxd
 
+class TransformationLayer(object):
+    def __init__(self):
+        self.mean = 0
+        self.std = 1
+        self.nclusters = 1
+    
+    def fast_update(self, points):
+        self.mean = points.mean(axis=0)
+        self.std = points.std(axis=0)
+        self.clusterids = np.ones(len(self.mean), dtype=int)
+    
+    def update(self, upoints, maxradiussq):
+        # find clusters
+        
+        # perform clustering in transformed space
+        points = self.transform(upoints)
+        clusteridxs = np.zeros(len(points))
+        currentclusterid = 1
+        i = np.where(self.clusterids == currentclusterid)[0][0]
+        clusteridxs[i] = currentclusterid
+        while True:
+            # compare known members to unassociated
+            nonmembermask = clusteridxs == 0
+            if not nonmembermask.any():
+                # everyone has been assigned -> done!
+                break
+            
+            nonmembers = points[nonmembermask,:]
+            nnearby = np.zeros(len(nonmembers), dtype=int)
+            members = points[clusteridxs == currentclusterid,:]
+            count_nearby(members, nonmembers, maxradiussq, nnearby)
+            #print('merging into cluster', currentclusterid, maxradiussq**0.5, len(members), members, len(nonmembers), nonmembers)
+            
+            if (nnearby > 0).any():
+                # place into cluster
+                newmembers = nonmembermask
+                newmembers[nonmembermask] = nnearby > 0
+                #print('adding', newmembers.sum())
+                clusteridxs[newmembers] = currentclusterid
+            else:
+                # start a new cluster
+                currentclusterid += 1
+                i = np.where(nonmembermask)[0][0]
+                
+                # sticky label from last round, if possible
+                newmembers = nonmembermask
+                newmembers[nonmembermask] = self.clusterids[nonmembermask] == currentclusterid
+                if newmembers.any():
+                    i = np.where(newmembers)[0][0]
+                
+                clusteridxs[i] = currentclusterid
+        
+        nclusters = np.max(clusteridxs)
+        self.nclusters = nclusters
+        if nclusters == 1:
+            self.fast_update(upoints)
+        else:
+            i = 0
+            overlapped_points = np.empty_like(points)
+            for idx in np.unique(clusteridxs):
+                group_points = upoints[clusteridxs == idx,:]
+                group_mean = group_points.mean(axis=0).reshape((1,-1))
+                j = i + len(group_points)
+                overlapped_points[i:j,:] = group_points - group_mean
+                i = j
+            self.fast_update(overlapped_points)
+        
+        self.clusterids = clusteridxs
+        
+    def transform(self, u):
+        return (u - self.mean.reshape((1,-1))) / self.std.reshape((1,-1))
+    
+    def untransform(self, uu):
+        return uu * self.std.reshape((1,-1)) + self.mean.reshape((1,-1))
+
 class MLFriends(object):
     def __init__(self, u):
         self.u = u
-        self.mean = u.mean(axis=0)
-        self.std = u.std(axis=0)
-        #self.mean *= 0
-        #self.std = self.std * 0 + 1
-        self.unormed = (u - self.mean) / self.std
+        self.transformLayer = TransformationLayer()
+        self.transformLayer.fast_update(self.u)
+        self.unormed = self.transformLayer.transform(self.u)
         self.maxradiussq = 1e300
-
-    def compute_maxradiussq(self, nbootstraps=1):
+    
+    def update_transform(self):
+        """ 
+        Update transformation layer
+        Invalidates maxradius
+        """
+        self.transformLayer.update(self.u, self.maxradiussq)
+        self.unormed = self.transformLayer.transform(self.u)
+        self.maxradiussq = 1e300
+    
+    def compute_maxradiussq(self, nbootstraps=50):
+        """
+        Return MLFriends radius after nbootstraps bootstrapping rounds
+        """
         N, ndim = self.u.shape
         idx = np.arange(N)
         maxd = 0
@@ -76,25 +161,31 @@ class MLFriends(object):
             b = self.unormed[~selected,:]
             # compute distances from a to b
             maxd = max(maxd, compute_maxradiussq(a, b))
+            #print('maxd:', maxd)
         return maxd
     
     def sample(self, nsamples=100):
+        """
+        Draw uniformly sampled points from MLFriends region
+        """
         N, ndim = self.u.shape
+        # generate points near random existing points
         idx = np.random.randint(N, size=nsamples)
         v = np.random.normal(size=(nsamples, ndim))
-        v /= np.linalg.norm(v, axis=0)
-        v = self.unormed[idx,:] + v
+        v *= (np.random.uniform(size=nsamples)**(1./ndim) / np.linalg.norm(v, axis=1)).reshape((-1, 1))
+        v = self.unormed[idx,:] + v * self.maxradiussq**0.5
+        w = self.transformLayer.untransform(v)
+        umask = np.logical_and(w > 0, w < 1).all(axis=1)
         
         # count how many are around
         nnearby = np.empty(nsamples, dtype=int)
         count_nearby(self.unormed, v, self.maxradiussq, nnearby)
-        mask = np.random.uniform(high=nnearby) < 1
+        mask = np.logical_and(umask, np.random.uniform(high=nnearby) < 1)
         
-        w = v[mask,:] * self.std.reshape((1,-1)) + self.mean.reshape((1,-1))
-        return w
+        return w[mask,:], idx[mask]
     
     def inside(self, pts):
-        bpts = (pts - self.mean.reshape((1,-1))) / self.std.reshape((1,-1))
+        bpts = self.transformLayer.transform(pts)
         nnearby = np.empty(len(pts), dtype=int)
         count_nearby(self.unormed, bpts, self.maxradiussq, nnearby)
         return nnearby > 0

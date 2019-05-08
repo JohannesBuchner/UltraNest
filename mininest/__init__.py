@@ -8,19 +8,70 @@ from __future__ import print_function
 from __future__ import division
 
 import os
+import sys
 import csv
 import json
 
-from utils import create_logger, make_run_dir
-from utils import acceptance_rate, effective_sample_size, mean_jump_distance
-from mlfriends import MLFriends
+from .utils import create_logger, make_run_dir
+from .utils import acceptance_rate, effective_sample_size, mean_jump_distance
+from .mlfriends import MLFriends
 
 import numpy as np
+from numpy import log10
+
+
+def nicelogger(paramname, u, p, logl, it, ncall, logz, logz_remain, region):
+    
+    #print()
+    #print('lnZ = %.1f, remainder = %.1f, lnLike = %.1f | Efficiency: %d/%d = %.4f%%\r' % (
+    #      logz, logz_remain, np.max(logl), ncall, it, it * 100 / ncall))
+    
+    plo = p.min(axis=0)
+    phi = p.max(axis=0)
+    expos = log10(np.abs([plo, phi]))
+    expolo = np.floor(np.min(expos, axis=0))
+    expohi = np.ceil(np.max(expos, axis=0))
+    is_negative = plo < 0
+    plo = np.where(is_negative, -10**expohi, 10**expolo)
+    phi = np.where(is_negative,  10**expohi, 10**expohi)
+    width = 60
+    indices = ((p - plo) * width / (phi - plo).reshape((1, -1))).astype(int)
+    indices[indices >= width] = width - 1
+    indices[indices < 0] = 0
+    
+    print()
+    print("Have %d modes" % region.transformLayer.nclusters)
+    for i, param in enumerate(paramname):
+        if region.transformLayer.nclusters == 1:
+            line = [' ' for i in range(width)]
+            for j in np.unique(indices[:,i]):
+                line[j] = '*'
+            linestr = ''.join(line)
+        else:
+            line = [' ' for i in range(width)]
+            for clusterid, j in zip(region.transformLayer.clusterids, indices[:,i]):
+                if line[j] == ' ' or line[j] == '%d' % clusterid:
+                    line[j] = '%d' % clusterid
+                else:
+                    line[j] = '*'
+            linestr = ''.join(line)
+        
+        fmt = '%+.1e'
+        if -1 <= expolo[i] <= 2 and -1 <= expohi[i] <= 2:
+            if not is_negative[i]:
+                plo[i] = 0
+            fmt = '%+.1f'
+        if -4 <= expolo[i] <= 0 and -4 <= expohi[i] <= 0:
+            fmt = '%%+.%df' % (-min(expolo[i], expohi[i]))
+        print('%09s|%s|%9s %s' % (fmt % plo[i], linestr, fmt % phi[i], param))
+    print()
+    
+
 
 class NestedSampler(object):
 
     def __init__(self,
-                 x_dim,
+                 paramnames,
                  loglike,
                  transform=None,
                  append_run_num=True,
@@ -36,6 +87,8 @@ class NestedSampler(object):
                  num_live_points=1000
                  ):
 
+        self.paramnames = paramnames
+        x_dim = len(self.paramnames)
         self.num_live_points = num_live_points
         self.sampler = 'nested'
         self.x_dim = x_dim
@@ -177,12 +230,12 @@ class NestedSampler(object):
         if self.use_mpi:
             self.logger.info('Using MPI with rank [%d]' % (self.mpi_rank))
             if self.mpi_rank == 0:
-                active_u = 2 * (np.random.uniform(size=(self.num_live_points, self.x_dim)) - 0.5)
+                active_u = np.random.uniform(size=(self.num_live_points, self.x_dim))
             else:
                 active_u = np.empty((self.num_live_points, self.x_dim), dtype=np.float64)
             self.comm.Bcast(active_u, root=0)
         else:
-            active_u = 2 * (np.random.uniform(size=(self.num_live_points, self.x_dim)) - 0.5)
+            active_u = np.random.uniform(size=(self.num_live_points, self.x_dim))
         active_v = self.transform(active_u)
 
         if self.use_mpi:
@@ -206,12 +259,14 @@ class NestedSampler(object):
         h = 0.0  # Information, initially 0.
         logz = -1e300  # ln(Evidence Z), initially Z=0
         logvol = np.log(1.0 - np.exp(-1.0 / self.num_live_points))
+        logz_remain = np.max(active_logl)
         fraction_remain = 1.0
         ncall = self.num_live_points  # number of calls we already made
-        #first_time = True
+        first_time = True
         #nb = self.mpi_size * mcmc_batch_size
         direct_draw_efficient = True
         mlfriends_efficient = True
+        region = MLFriends(active_u)
         ib = 0
         samples = []
 
@@ -236,8 +291,8 @@ class NestedSampler(object):
             # The new likelihood constraint is that of the worst object.
             loglstar = active_logl[worst]
             
-            if it % update_interval == 0:
-                region = MLFriends(active_u)
+            if first_time or it % update_interval == 0:
+                region.update_transform()
                 r = region.compute_maxradiussq(nbootstraps=30 // self.mpi_size)
                 #print("MLFriends built. r=%f" % r**0.5)
                 if self.use_mpi:
@@ -245,6 +300,8 @@ class NestedSampler(object):
                     recv_minradii = self.comm.bcast(recv_minradii, root=0)
                     r = np.max(recv_minradii)
                 region.maxradiussq = r
+                nicelogger(self.paramnames, active_u, active_v, active_logl, it, ncall, logz, logz_remain, region=region)
+                first_time = False
             
             while True:
                 while ib >= len(samples):
@@ -257,28 +314,35 @@ class NestedSampler(object):
                         u = np.random.uniform(size=(4000, self.x_dim))
                         mask = region.inside(u)
                         u = u[mask,:]
-                        if mask.mean() < 0.05:
+                        father = np.ones(len(u), dtype=int)
+                        if mask.mean() < 0.3 or True:
                             direct_draw_efficient = False
                     else:
-                        u = region.sample(nsamples=4000)
+                        u, father = region.sample(nsamples=4000)
 
                     v = self.transform(u)
+                    assert v.shape == u.shape
                     logl = self.loglike(v)
+                    assert logl.shape == (len(v),), (logl.shape, v.shape, u.shape)
                     nc += len(logl)
                     accepted = logl > loglstar
+                    assert logl.shape == accepted.shape, (logl.shape, accepted.shape)
                     u = u[accepted,:]
                     logl = logl[accepted]
+                    father = father[accepted]
                     #print("accepted: %d" % accepted.sum(), direct_draw_efficient)
 
                     if self.use_mpi:
+                        recv_father = self.comm.gather(father, root=0)
                         recv_samples = self.comm.gather(u, root=0)
                         recv_likes = self.comm.gather(logl, root=0)
                         recv_nc = self.comm.gather(nc, root=0)
+                        recv_father = self.comm.bcast(recv_father, root=0)
                         recv_samples = self.comm.bcast(recv_samples, root=0)
                         recv_likes = self.comm.bcast(recv_likes, root=0)
-                        #if self.log: print('Likes:', recv_likes)
                         recv_nc = self.comm.bcast(recv_nc, root=0)
                         samples = np.concatenate(recv_samples, axis=0)
+                        father = np.concatenate(recv_father, axis=0)
                         likes = np.concatenate(recv_likes, axis=0)
                         ncall += sum(recv_nc)
                     else:
@@ -290,6 +354,7 @@ class NestedSampler(object):
                     active_u[worst] = samples[ib, :]
                     active_v[worst] = self.transform(active_u[worst])
                     active_logl[worst] = likes[ib]
+                    region.transformLayer.clusterids[worst] = region.transformLayer.clusterids[father[ib]]
                     ib = ib + 1
                     break
                 else:
@@ -303,7 +368,10 @@ class NestedSampler(object):
             fraction_remain = np.logaddexp(logz, logz_remain) - logz
 
             if it % log_interval == 0 and self.log:
-				nicelogger(active_u, active_v, active_logl, it, ncall, logz, logz_remain)
+                #nicelogger(self.paramnames, active_u, active_v, active_logl, it, ncall, logz, logz_remain, region=region)
+                sys.stdout.write('lnZ = %.1f, remainder = %.1f, lnLike = %.1f | Efficiency: %d/%d = %.4f%%\r' % (
+                      logz, logz_remain, np.max(active_logl), ncall, it, it * 100 / ncall))
+                sys.stdout.flush()
                 #self.logger.info(
                 #    '[it=%d,nevals=%d,eff=%f] Like=%5.1f..%5.1f lnZ=%5.1f' %
                 #    (it, ncall, it * 100. / ncall, loglstar, np.max(active_logl), logz))
