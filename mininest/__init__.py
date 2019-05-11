@@ -40,16 +40,22 @@ def nicelogger(paramname, u, p, logl, it, ncall, logz, logz_remain, region):
     indices[indices < 0] = 0
     
     print()
-    print("Have %d modes" % region.transformLayer.nclusters)
+    print()
+    nmodes = region.transformLayer.nclusters
+    clusterids = region.transformLayer.clusterids
+    if nmodes == 0:
+        print("Mono-modal")
+    else: 
+        print("Have %d modes" % nmodes)
     for i, param in enumerate(paramname):
-        if region.transformLayer.nclusters == 1:
+        if nmodes == 1:
             line = [' ' for i in range(width)]
             for j in np.unique(indices[:,i]):
                 line[j] = '*'
             linestr = ''.join(line)
         else:
             line = [' ' for i in range(width)]
-            for clusterid, j in zip(region.transformLayer.clusterids, indices[:,i]):
+            for clusterid, j in zip(clusterids, indices[:,i]):
                 if line[j] == ' ' or line[j] == '%d' % clusterid:
                     line[j] = '%d' % clusterid
                 else:
@@ -269,6 +275,7 @@ class NestedSampler(object):
         region = MLFriends(active_u)
         ib = 0
         samples = []
+        ndraw = 4000
 
         for it in range(0, max_iters):
 
@@ -310,16 +317,19 @@ class NestedSampler(object):
                     
                     nc = 0
                     # Simple rejection sampling over prior
+                    draw_efficiency = 1.0
                     if direct_draw_efficient:
-                        u = np.random.uniform(size=(4000, self.x_dim))
+                        u = np.random.uniform(size=(ndraw, self.x_dim))
                         mask = region.inside(u)
                         u = u[mask,:]
                         father = np.ones(len(u), dtype=int)
-                        if mask.mean() < 0.3 or True:
+                        draw_efficiency = mask.mean()
+                        if draw_efficiency < 0.3 or True:
                             direct_draw_efficient = False
                     else:
-                        u, father = region.sample(nsamples=4000)
-
+                        u, father = region.sample(nsamples=ndraw)
+                        draw_efficiency = len(u) / ndraw
+                    
                     v = self.transform(u)
                     assert v.shape == u.shape
                     logl = self.loglike(v)
@@ -330,7 +340,6 @@ class NestedSampler(object):
                     u = u[accepted,:]
                     logl = logl[accepted]
                     father = father[accepted]
-                    #print("accepted: %d" % accepted.sum(), direct_draw_efficient)
 
                     if self.use_mpi:
                         recv_father = self.comm.gather(father, root=0)
@@ -369,8 +378,8 @@ class NestedSampler(object):
 
             if it % log_interval == 0 and self.log:
                 #nicelogger(self.paramnames, active_u, active_v, active_logl, it, ncall, logz, logz_remain, region=region)
-                sys.stdout.write('lnZ = %.1f, remainder = %.1f, lnLike = %.1f | Efficiency: %d/%d = %.4f%%\r' % (
-                      logz, logz_remain, np.max(active_logl), ncall, it, it * 100 / ncall))
+                sys.stdout.write('lnZ = %.1f, remainder = %.1f, lnLike = %.1f | Efficiency: %d/%d = %.4f%% (draw:%d)\r' % (
+                      logz, logz_remain, np.max(active_logl), ncall, it, it * 100 / ncall, ndraw))
                 sys.stdout.flush()
                 #self.logger.info(
                 #    '[it=%d,nevals=%d,eff=%f] Like=%5.1f..%5.1f lnZ=%5.1f' %
