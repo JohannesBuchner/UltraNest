@@ -14,14 +14,16 @@ import json
 
 from .utils import create_logger, make_run_dir
 from .utils import acceptance_rate, effective_sample_size, mean_jump_distance
-from .mlfriends import MLFriends
+from .mlfriends import MLFriends, AffineLayer
 
 import numpy as np
 from numpy import log10
+import scipy.stats
 
-
-def nicelogger(paramname, u, p, logl, it, ncall, logz, logz_remain, region):
-    
+def nicelogger(points, info, region, transformLayer):
+    #u, p, logl = points['u'], points['p'], points['logl']
+    p = points['p']
+    paramnames = info['paramnames']
     #print()
     #print('lnZ = %.1f, remainder = %.1f, lnLike = %.1f | Efficiency: %d/%d = %.4f%%\r' % (
     #      logz, logz_remain, np.max(logl), ncall, it, it * 100 / ncall))
@@ -41,13 +43,13 @@ def nicelogger(paramname, u, p, logl, it, ncall, logz, logz_remain, region):
     
     print()
     print()
-    clusterids = region.transformLayer.clusterids
-    nmodes = region.transformLayer.nclusters
+    clusterids = transformLayer.clusterids
+    nmodes = transformLayer.nclusters
     if nmodes == 1:
         print("Mono-modal")
     else: 
         print("Have %d modes" % nmodes)
-    for i, param in enumerate(paramname):
+    for i, param in enumerate(paramnames):
         if nmodes == 1:
             line = [' ' for i in range(width)]
             for j in np.unique(indices[:,i]):
@@ -71,6 +73,14 @@ def nicelogger(paramname, u, p, logl, it, ncall, logz, logz_remain, region):
             fmt = '%%+.%df' % (-min(expolo[i], expohi[i]))
         print('%09s|%s|%9s %s' % (fmt % plo[i], linestr, fmt % phi[i], param))
     print()
+    
+    for i, param in enumerate(paramnames):
+        for j, param2 in enumerate(paramnames[:i]):
+            rho, pval = scipy.stats.spearmanr(p[:,i], p[:,j])
+            if pval < 0.01:
+                print("   %s between %s and %s: rho=%.2f" % (
+                    'positive correlation' if rho > 0 else 'negative correlation',
+                    param, param2, rho))
     
 
 
@@ -271,8 +281,10 @@ class NestedSampler(object):
         first_time = True
         #nb = self.mpi_size * mcmc_batch_size
         direct_draw_efficient = True
-        mlfriends_efficient = True
-        region = MLFriends(active_u)
+        #mlfriends_efficient = True
+        transformLayer = AffineLayer()
+        region = MLFriends(active_u, transformLayer)
+        
         ib = 0
         samples = []
         ndraw = 400
@@ -307,15 +319,10 @@ class NestedSampler(object):
                     recv_minradii = self.comm.bcast(recv_minradii, root=0)
                     r = np.max(recv_minradii)
                 region.maxradiussq = r
-                s = region.compute_ellscale(nbootstraps=30 // self.mpi_size)
-                #print("MLFriends built. r=%f" % r**0.5)
-                if self.use_mpi:
-                    recv_minscale = self.comm.gather(s, root=0)
-                    recv_minscale = self.comm.bcast(recv_minscale, root=0)
-                    s = np.max(recv_minscale)
-                region.maxellscale = s
                 if self.log:
-                    nicelogger(self.paramnames, active_u, active_v, active_logl, it, ncall, logz, logz_remain, region=region)
+                    nicelogger(points=dict(u=active_u, p=active_v, logl=active_logl), 
+                        info=dict(it=it, ncall=ncall, logz=logz, logz_remain=logz_remain, paramnames=self.paramnames), 
+                        region=region, transformLayer=transformLayer)
                 first_time = False
             
             while True:
@@ -371,7 +378,7 @@ class NestedSampler(object):
                     active_u[worst] = samples[ib, :]
                     active_v[worst] = self.transform(active_u[worst])
                     active_logl[worst] = likes[ib]
-                    region.transformLayer.clusterids[worst] = region.transformLayer.clusterids[father[ib]]
+                    transformLayer.clusterids[worst] = transformLayer.clusterids[father[ib]]
                     ib = ib + 1
                     break
                 else:
