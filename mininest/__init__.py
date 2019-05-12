@@ -41,9 +41,9 @@ def nicelogger(paramname, u, p, logl, it, ncall, logz, logz_remain, region):
     
     print()
     print()
-    nmodes = region.transformLayer.nclusters
     clusterids = region.transformLayer.clusterids
-    if nmodes == 0:
+    nmodes = region.transformLayer.nclusters
+    if nmodes == 1:
         print("Mono-modal")
     else: 
         print("Have %d modes" % nmodes)
@@ -58,8 +58,8 @@ def nicelogger(paramname, u, p, logl, it, ncall, logz, logz_remain, region):
             for clusterid, j in zip(clusterids, indices[:,i]):
                 if line[j] == ' ' or line[j] == '%d' % clusterid:
                     line[j] = '%d' % clusterid
-                else:
-                    line[j] = '*'
+                #else:
+                #    line[j] = '*'
             linestr = ''.join(line)
         
         fmt = '%+.1e'
@@ -275,7 +275,7 @@ class NestedSampler(object):
         region = MLFriends(active_u)
         ib = 0
         samples = []
-        ndraw = 4000
+        ndraw = 400
 
         for it in range(0, max_iters):
 
@@ -307,7 +307,15 @@ class NestedSampler(object):
                     recv_minradii = self.comm.bcast(recv_minradii, root=0)
                     r = np.max(recv_minradii)
                 region.maxradiussq = r
-                nicelogger(self.paramnames, active_u, active_v, active_logl, it, ncall, logz, logz_remain, region=region)
+                s = region.compute_ellscale(nbootstraps=30 // self.mpi_size)
+                #print("MLFriends built. r=%f" % r**0.5)
+                if self.use_mpi:
+                    recv_minscale = self.comm.gather(s, root=0)
+                    recv_minscale = self.comm.bcast(recv_minscale, root=0)
+                    s = np.max(recv_minscale)
+                region.maxellscale = s
+                if self.log:
+                    nicelogger(self.paramnames, active_u, active_v, active_logl, it, ncall, logz, logz_remain, region=region)
                 first_time = False
             
             while True:
