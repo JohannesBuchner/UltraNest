@@ -14,7 +14,7 @@ import json
 
 from .utils import create_logger, make_run_dir
 from .utils import acceptance_rate, effective_sample_size, mean_jump_distance
-from .mlfriends import MLFriends, AffineLayer
+from .mlfriends import MLFriends, AffineLayer, ScalingLayer
 
 import numpy as np
 from numpy import log10
@@ -45,6 +45,7 @@ def nicelogger(points, info, region, transformLayer):
     print()
     clusterids = transformLayer.clusterids
     nmodes = transformLayer.nclusters
+    print("Volume:", region.estimate_volume())
     if nmodes == 1:
         print("Mono-modal")
     else: 
@@ -282,7 +283,8 @@ class NestedSampler(object):
         #nb = self.mpi_size * mcmc_batch_size
         direct_draw_efficient = True
         #mlfriends_efficient = True
-        transformLayer = AffineLayer()
+        transformLayer = ScalingLayer()
+        region_sequence = []
         region = MLFriends(active_u, transformLayer)
         
         ib = 0
@@ -311,14 +313,22 @@ class NestedSampler(object):
             loglstar = active_logl[worst]
             
             if first_time or it % update_interval == 0:
-                region.update_transform()
-                r = region.compute_maxradiussq(nbootstraps=30 // self.mpi_size)
+                if first_time:
+                    nextregion = region
+                else:
+                    nextregion = MLFriends(active_u, transformLayer=transformLayer.create_new(active_u, region.maxradiussq))
+                r = nextregion.compute_maxradiussq(nbootstraps=30 // self.mpi_size)
                 #print("MLFriends built. r=%f" % r**0.5)
                 if self.use_mpi:
                     recv_minradii = self.comm.gather(r, root=0)
                     recv_minradii = self.comm.bcast(recv_minradii, root=0)
                     r = np.max(recv_minradii)
-                region.maxradiussq = r
+                
+                nextregion.maxradiussq = r
+                if nextregion.estimate_volume() < region.estimate_volume():
+                    region = nextregion
+                    transformLayer = region.transformLayer
+                
                 if self.log:
                     nicelogger(points=dict(u=active_u, p=active_v, logl=active_logl), 
                         info=dict(it=it, ncall=ncall, logz=logz, logz_remain=logz_remain, paramnames=self.paramnames), 
@@ -378,7 +388,8 @@ class NestedSampler(object):
                     active_u[worst] = samples[ib, :]
                     active_v[worst] = self.transform(active_u[worst])
                     active_logl[worst] = likes[ib]
-                    transformLayer.clusterids[worst] = transformLayer.clusterids[father[ib]]
+                    #transformLayer.clusterids[worst] = transformLayer.clusterids[father[ib]]
+                    transformLayer.clusterids[worst] = 0
                     ib = ib + 1
                     break
                 else:
