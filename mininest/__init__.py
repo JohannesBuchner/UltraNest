@@ -88,28 +88,29 @@ def nicelogger(points, info, region, transformLayer):
 class NestedSampler(object):
 
     def __init__(self,
-                 paramnames,
+                 param_names,
                  loglike,
                  transform=None,
                  append_run_num=True,
+                 wrapped_params=None,
+                 derived_param_names=[],
                  run_num=None,
-                 hidden_dim=128,
-                 num_slow=0,
-                 num_derived=0,
-                 batch_size=100,
-                 flow='nvp',
-                 num_blocks=5,
-                 num_layers=2,
                  log_dir='logs/test',
                  num_live_points=1000
                  ):
 
-        self.paramnames = paramnames
+        self.paramnames = param_names
         x_dim = len(self.paramnames)
         self.num_live_points = num_live_points
         self.sampler = 'nested'
         self.x_dim = x_dim
+        self.derivedparamnames = derived_param_names
+        num_derived = len(self.derivedparamnames)
         self.num_params = x_dim + num_derived
+        if wrapped_params is None:
+            self.wrapped_axes = np.zeros(0, dtype=int)
+        else:
+            self.wrapped_axes = np.where(wrapped_params)[0]
 
         def safe_loglike(x):
             x = np.asarray(x)
@@ -203,20 +204,11 @@ class NestedSampler(object):
 
     def run(
             self,
-            mcmc_steps=0,
-            mcmc_burn_in=0,
-            mcmc_batch_size=10,
-            max_iters=1000000,
             update_interval=None,
             log_interval=None,
             dlogz=0.5,
-            train_iters=50,
-            volume_switch=0,
-            alpha=0.0,
-            noise=-1.0,
-            num_test_samples=0,
-            test_mcmc_steps=1000,
-            test_mcmc_burn_in=0):
+            max_iters=None,
+            volume_switch=0):
 
         if update_interval is None:
             update_interval = max(1, round(self.num_live_points))
@@ -232,17 +224,17 @@ class NestedSampler(object):
             if log_interval < 1:
                 raise ValueError("log_interval must be >= 1")
 
-        if mcmc_steps <= 0:
-            mcmc_steps = 5 * self.x_dim
+        #if mcmc_steps <= 0:
+        #    mcmc_steps = 5 * self.x_dim
 
-        if volume_switch <= 0:
-            volume_switch = 1 / mcmc_steps
+        #if volume_switch <= 0:
+        #    volume_switch = 1 / mcmc_steps
 
-        if alpha == 0.0:
-            alpha = 2 / self.x_dim ** 0.5
+        #if alpha == 0.0:
+        #    alpha = 2 / self.x_dim ** 0.5
 
-        if self.log:
-            self.logger.info('MCMC steps [%d] alpha [%5.4f] volume switch [%5.4f]' % (mcmc_steps, alpha, volume_switch))
+        #if self.log:
+        #    self.logger.info('MCMC steps [%d] alpha [%5.4f] volume switch [%5.4f]' % (mcmc_steps, alpha, volume_switch))
 
         if self.use_mpi:
             self.logger.info('Using MPI with rank [%d]' % (self.mpi_rank))
@@ -283,14 +275,15 @@ class NestedSampler(object):
         #nb = self.mpi_size * mcmc_batch_size
         direct_draw_efficient = True
         #mlfriends_efficient = True
-        transformLayer = AffineLayer()
+        transformLayer = ScalingLayer(wrapped_dims=self.wrapped_axes)
         region = MLFriends(active_u, transformLayer)
         
         ib = 0
         samples = []
         ndraw = 400
+        it = 0
 
-        for it in range(0, max_iters):
+        while max_iters is None or it < max_iters:
 
             # Worst object in collection and its weight (= volume * likelihood)
             worst = np.argmin(active_logl)
@@ -355,7 +348,7 @@ class NestedSampler(object):
                         draw_efficiency = len(u) / ndraw
                     
                     v = self.transform(u)
-                    assert v.shape == u.shape
+                    assert v.shape == (len(u), self.num_params)
                     logl = self.loglike(v)
                     assert logl.shape == (len(v),), (logl.shape, v.shape, u.shape)
                     nc += len(logl)
@@ -389,6 +382,8 @@ class NestedSampler(object):
                     active_logl[worst] = likes[ib]
                     #transformLayer.clusterids[worst] = transformLayer.clusterids[father[ib]]
                     transformLayer.clusterids[worst] = 0
+                    region.u[worst,:] = active_u[worst]
+                    region.unormed[worst,:] = region.transformLayer.transform(region.u[worst,:])
                     ib = ib + 1
                     break
                 else:
@@ -413,6 +408,7 @@ class NestedSampler(object):
             # Stopping criterion
             if fraction_remain < dlogz:
                 break
+            it = it + 1
 
         logvol = -len(saved_v) / self.num_live_points - np.log(self.num_live_points)
         for i in range(self.num_live_points):

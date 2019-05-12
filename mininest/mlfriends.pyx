@@ -138,16 +138,55 @@ def update_clusters(upoints, points, clusterids, maxradiussq):
     return nclusters, clusteridxs, overlapped_points
 
 class ScalingLayer(object):
-    def __init__(self, mean=0, std=1, nclusters=1):
+    def __init__(self, mean=0, std=1, nclusters=1, wrapped_dims=[]):
         self.mean = mean
         self.std = std
         self.nclusters = nclusters
+        self.wrapped_dims = wrapped_dims
+    
+    def optimize_wrap(self, points):
+        if len(self.wrapped_dims) == 0: 
+            return points
+        
+        N, ndims = points.shape
+        self.wrap_cuts = []
+        for i in self.wrapped_dims:
+            # find largest gap
+            vals = np.pad(points[:,i], 1, mode='constant', constant_values=(0,1))
+            vals.sort()
+            deltas = vals[1:] - vals[:-1]
+            j = deltas.argmax()
+            if j == 0 or j == N - 2: 
+                # wrap is at 0 or 1, no wrapping needs to be done.
+                continue
+            
+            # wrap between i, i+1
+            cut = (vals[i] + vals[i+1]) / 2.
+            self.wrap_cuts.append(cut)
+    
+    def wrap(self, points):
+        if len(self.wrapped_dims) == 0: 
+            return points
+        wpoints = np.atleast_2d(points).copy()
+        for i, cut in zip(self.wrapped_dims, self.wrap_cuts):
+            wpoints[:,i] = np.fmod(wpoints[:,i] + cut, 1)
+        return wpoints
+
+    def unwrap(self, wpoints):
+        if len(self.wrapped_dims) == 0: 
+            return wpoints
+        points = np.atleast_2d(wpoints).copy()
+        for i, cut in zip(self.wrapped_dims, self.wrap_cuts):
+            points[:,i] = np.fmod(points[:,i] + 1 - cut, 1)
+        return points
     
     def optimize(self, points, clusterids=None):
-        self.mean = points.mean(axis=0)
-        self.std = points.std(axis=0)
+        self.optimize_wrap(points)
+        wrapped_points = self.wrap(points)
+        self.mean = wrapped_points.mean(axis=0)
+        self.std = wrapped_points.std(axis=0)
         if clusterids is None:
-            clusterids = np.ones(len(points), dtype=int)
+            clusterids = np.ones(len(wrapped_points), dtype=int)
         
         self.clusterids = clusterids
         self.volscale = np.product(self.std)
@@ -156,15 +195,17 @@ class ScalingLayer(object):
         # perform clustering in transformed space
         points = self.transform(upoints)
         nclusters, clusteridxs, overlapped_points = update_clusters(points, upoints, self.clusterids, maxradiussq)
-        s = ScalingLayer(nclusters=nclusters)
+        s = ScalingLayer(nclusters=nclusters, wrapped_dims=self.wrapped_dims)
         s.optimize(overlapped_points, clusterids=clusteridxs)
         return s
         
     def transform(self, u):
-        return (u - self.mean.reshape((1,-1))) / self.std.reshape((1,-1))
+        w = self.wrap(u)
+        return ((w - self.mean.reshape((1,-1))) / self.std.reshape((1,-1))).reshape(u.shape)
     
-    def untransform(self, uu):
-        return uu * self.std.reshape((1,-1)) + self.mean.reshape((1,-1))
+    def untransform(self, ww):
+        uu = self.unwrap(ww)
+        return (ww * self.std.reshape((1,-1)) + self.mean.reshape((1,-1))).reshape(uu.shape)
 
 
 def vol_prefactor(n):
@@ -189,15 +230,18 @@ def vol_prefactor(n):
     return f
 
 class AffineLayer(ScalingLayer):
-    def __init__(self, ctr=0, T=1, invT=1, nclusters=1):
+    def __init__(self, ctr=0, T=1, invT=1, nclusters=1, wrapped_dims=[]):
         self.ctr = ctr
         self.T = T
         self.invT = invT
         self.nclusters = nclusters
+        self.wrapped_dims = wrapped_dims
     
     def optimize(self, points, clusterids=None):
-        self.ctr = np.mean(points, axis=0)
-        cov = np.cov(points, rowvar=0)
+        self.optimize_wrap(points)
+        wrapped_points = self.wrap(points)
+        self.ctr = np.mean(wrapped_points, axis=0)
+        cov = np.cov(wrapped_points, rowvar=0)
         eigval, eigvec = np.linalg.eigh(cov)
         a = np.linalg.inv(cov)
         self.volscale = np.linalg.det(a)**-0.5
@@ -208,7 +252,7 @@ class AffineLayer(ScalingLayer):
         self.invT = eigvecI
         
         if clusterids is None:
-            clusterids = np.ones(len(points), dtype=int)
+            clusterids = np.ones(len(wrapped_points), dtype=int)
         self.clusterids = clusterids
 
     def create_new(self, upoints, maxradiussq):
@@ -216,14 +260,16 @@ class AffineLayer(ScalingLayer):
         points = self.transform(upoints)
         clusteridxs = np.zeros(len(points))
         nclusters, clusteridxs, overlapped_points = update_clusters(points, upoints, self.clusterids, maxradiussq)
-        s = AffineLayer(nclusters=nclusters)
+        s = AffineLayer(nclusters=nclusters, wrapped_dims=self.wrapped_dims)
         s.optimize(overlapped_points, clusterids=clusteridxs)
         return s
     
     def transform(self, u):
-        return np.dot(u - self.ctr, self.T)
+        w = self.wrap(u)
+        return np.dot(w - self.ctr, self.T)
     
-    def untransform(self, uu):
+    def untransform(self, ww):
+        uu = self.unwrap(ww)
         return np.dot(uu, self.invT) + self.ctr
 
     def copy(self):
