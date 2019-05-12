@@ -219,7 +219,7 @@ class AffineLayer(ScalingLayer):
         s = AffineLayer(nclusters=nclusters)
         s.optimize(overlapped_points, clusterids=clusteridxs)
         return s
-        
+    
     def transform(self, u):
         return np.dot(u - self.ctr, self.T)
     
@@ -244,7 +244,7 @@ class MLFriends(object):
         r = self.maxradiussq**0.5
         N, ndim = self.u.shape
         # how large is a sphere of size r in untransformed coordinates?
-        return self.transformLayer.volscale * vol_prefactor(ndim) * r**ndim
+        return self.transformLayer.volscale * r**ndim #* vol_prefactor(ndim)
     
     def update_transform(self):
         """ 

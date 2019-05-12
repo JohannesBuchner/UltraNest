@@ -45,7 +45,7 @@ def nicelogger(points, info, region, transformLayer):
     print()
     clusterids = transformLayer.clusterids
     nmodes = transformLayer.nclusters
-    print("Volume:", region.estimate_volume())
+    #print("Volume:", region.estimate_volume())
     if nmodes == 1:
         print("Mono-modal")
     else: 
@@ -283,8 +283,7 @@ class NestedSampler(object):
         #nb = self.mpi_size * mcmc_batch_size
         direct_draw_efficient = True
         #mlfriends_efficient = True
-        transformLayer = ScalingLayer()
-        region_sequence = []
+        transformLayer = AffineLayer()
         region = MLFriends(active_u, transformLayer)
         
         ib = 0
