@@ -6,6 +6,12 @@ def count_nearby(np.ndarray[np.float_t, ndim=2] apts,
     np.float_t radiussq, 
     np.ndarray[np.int64_t, ndim=1] nnearby
 ):
+    """
+    For each point b in bpts
+    Count the number of points in a within radisu radiussq.
+    
+    The number is written to nnearby (of same length as bpts).
+    """
     cdef int na = apts.shape[0]
     cdef int nb = bpts.shape[0]
     cdef int ndim = apts.shape[1]
@@ -28,7 +34,12 @@ def count_nearby(np.ndarray[np.float_t, ndim=2] apts,
         
     return nnearby
 
+
 def compute_maxradiussq(np.ndarray[np.float_t, ndim=2] apts, np.ndarray[np.float_t, ndim=2] bpts):
+    """
+    For each point b in bpts measure shortest euclidean distance to any point in apts.
+    Returns the square of the maximum over these.
+    """
     cdef int na = apts.shape[0]
     cdef int nb = bpts.shape[0]
     cdef int ndim = apts.shape[1]
@@ -54,6 +65,7 @@ def compute_maxradiussq(np.ndarray[np.float_t, ndim=2] apts, np.ndarray[np.float
         maxd = max(maxd, mind)
 
     return maxd
+
 
 def update_clusters(points, clusterids, maxradiussq):
     """
@@ -143,6 +155,7 @@ class ScalingLayer(object):
     def untransform(self, uu):
         return uu * self.std.reshape((1,-1)) + self.mean.reshape((1,-1))
 
+
 class AffineLayer(ScalingLayer):
     def __init__(self):
         self.ctr = 0
@@ -176,6 +189,7 @@ class AffineLayer(ScalingLayer):
         #u = np.array([np.dot(self.invT, p) + self.ctr for p in uu])
         #return u
         return np.dot(uu, self.invT) + self.ctr
+
 
 class MLFriends(object):
     def __init__(self, u, transformLayer):
