@@ -45,7 +45,7 @@ def nicelogger(points, info, region, transformLayer):
     print()
     clusterids = transformLayer.clusterids
     nmodes = transformLayer.nclusters
-    #print("Volume:", region.estimate_volume())
+    print("Volume:", region.estimate_volume())
     if nmodes == 1:
         print("Mono-modal")
     else: 
@@ -204,18 +204,22 @@ class NestedSampler(object):
 
     def run(
             self,
-            update_interval=None,
+            update_interval_iter=None,
+            update_interval_ncall=None,
             log_interval=None,
             dlogz=0.5,
             max_iters=None,
             volume_switch=0):
 
-        if update_interval is None:
-            update_interval = max(1, round(self.num_live_points))
-        else:
-            update_interval = round(update_interval)
-            if update_interval < 1:
-                raise ValueError("update_interval must be >= 1")
+        if update_interval_ncall is None:
+            update_interval_ncall = max(1, round(self.num_live_points))
+        
+        if update_interval_iter is None:
+            if update_interval_ncall == 0:
+                update_interval_iter = max(1, round(self.num_live_points))
+            else:
+                update_interval_iter = 0
+        
 
         if log_interval is None:
             log_interval = max(1, round(0.2 * self.num_live_points))
@@ -273,15 +277,17 @@ class NestedSampler(object):
         ncall = self.num_live_points  # number of calls we already made
         first_time = True
         #nb = self.mpi_size * mcmc_batch_size
-        direct_draw_efficient = True
+        #direct_draw_efficient = True
         #mlfriends_efficient = True
         transformLayer = ScalingLayer(wrapped_dims=self.wrapped_axes)
         region = MLFriends(active_u, transformLayer)
         
         ib = 0
         samples = []
-        ndraw = 400
+        ndraw = 100
         it = 0
+        next_update_interval_ncall = -1
+        next_update_interval_iter = -1
 
         while max_iters is None or it < max_iters:
 
@@ -304,7 +310,7 @@ class NestedSampler(object):
             # The new likelihood constraint is that of the worst object.
             loglstar = active_logl[worst]
             
-            if first_time or it % update_interval == 0:
+            if ncall > next_update_interval_ncall and it > next_update_interval_iter:
                 if first_time:
                     nextregion = region
                 else:
@@ -317,6 +323,8 @@ class NestedSampler(object):
                     r = np.max(recv_minradii)
                 
                 nextregion.maxradiussq = r
+                print()
+                print('proposed volume:', nextregion.estimate_volume())
                 if nextregion.estimate_volume() < region.estimate_volume():
                     region = nextregion
                     transformLayer = region.transformLayer
@@ -325,6 +333,8 @@ class NestedSampler(object):
                     nicelogger(points=dict(u=active_u, p=active_v, logl=active_logl), 
                         info=dict(it=it, ncall=ncall, logz=logz, logz_remain=logz_remain, paramnames=self.paramnames), 
                         region=region, transformLayer=transformLayer)
+                next_update_interval_ncall = ncall + update_interval_ncall
+                next_update_interval_iter = it + update_interval_iter
                 first_time = False
             
             while True:
@@ -334,26 +344,34 @@ class NestedSampler(object):
                     
                     nc = 0
                     # Simple rejection sampling over prior
+                    """
                     draw_efficiency = 1.0
                     if direct_draw_efficient:
                         u = np.random.uniform(size=(ndraw, self.x_dim))
                         mask = region.inside(u)
                         u = u[mask,:]
-                        father = np.ones(len(u), dtype=int)
+                        nu = len(u)
+                        father = np.ones(nu, dtype=int)
                         draw_efficiency = mask.mean()
-                        if draw_efficiency < 0.3 or True:
+                        if draw_efficiency < 1.0 / self.num_live_points:
+                            print()
+                            print("switching to MLFriends draw...")
                             direct_draw_efficient = False
                     else:
                         u, father = region.sample(nsamples=ndraw)
-                        draw_efficiency = len(u) / ndraw
+                        nu = len(u)
+                        draw_efficiency = nu / ndraw
+                    """
+                    u, father = region.sample(nsamples=ndraw)
+                    nu = len(u)
                     
                     v = self.transform(u)
-                    assert v.shape == (len(u), self.num_params)
+                    #assert v.shape == (nu, self.num_params)
                     logl = self.loglike(v)
-                    assert logl.shape == (len(v),), (logl.shape, v.shape, u.shape)
-                    nc += len(logl)
+                    #assert logl.shape == (nu,), (logl.shape, v.shape, u.shape)
+                    nc += nu
                     accepted = logl > loglstar
-                    assert logl.shape == accepted.shape, (logl.shape, accepted.shape)
+                    #assert logl.shape == accepted.shape, (logl.shape, accepted.shape)
                     u = u[accepted,:]
                     logl = logl[accepted]
                     father = father[accepted]
@@ -361,29 +379,41 @@ class NestedSampler(object):
                     if self.use_mpi:
                         recv_father = self.comm.gather(father, root=0)
                         recv_samples = self.comm.gather(u, root=0)
+                        recv_samplesv = self.comm.gather(v, root=0)
                         recv_likes = self.comm.gather(logl, root=0)
                         recv_nc = self.comm.gather(nc, root=0)
                         recv_father = self.comm.bcast(recv_father, root=0)
                         recv_samples = self.comm.bcast(recv_samples, root=0)
+                        recv_samplesv = self.comm.bcast(recv_samplesv, root=0)
                         recv_likes = self.comm.bcast(recv_likes, root=0)
                         recv_nc = self.comm.bcast(recv_nc, root=0)
                         samples = np.concatenate(recv_samples, axis=0)
+                        samplesv = np.concatenate(recv_samplesv, axis=0)
                         father = np.concatenate(recv_father, axis=0)
                         likes = np.concatenate(recv_likes, axis=0)
                         ncall += sum(recv_nc)
                     else:
                         samples = np.array(u)
+                        samplesv = np.array(v)
                         likes = np.array(logl)
                         ncall += nc
                 
                 if likes[ib] > active_logl[worst]:
                     active_u[worst] = samples[ib, :]
-                    active_v[worst] = self.transform(active_u[worst])
+                    active_v[worst] = samplesv[ib,:]
                     active_logl[worst] = likes[ib]
-                    #transformLayer.clusterids[worst] = transformLayer.clusterids[father[ib]]
-                    transformLayer.clusterids[worst] = 0
+                    
+                    # if we keep the region informed about the new live points
+                    # then the region follows the live points even if maxradius is not updated
                     region.u[worst,:] = active_u[worst]
                     region.unormed[worst,:] = region.transformLayer.transform(region.u[worst,:])
+                    
+                    # if we track the cluster assignment, then in the next round
+                    # the ids with the same members are likely to have the same id
+                    # this is imperfect
+                    #transformLayer.clusterids[worst] = transformLayer.clusterids[father[ib]]
+                    # so we just mark the replaced ones as "unassigned"
+                    transformLayer.clusterids[worst] = 0
                     ib = ib + 1
                     break
                 else:
@@ -398,9 +428,17 @@ class NestedSampler(object):
 
             if it % log_interval == 0 and self.log:
                 #nicelogger(self.paramnames, active_u, active_v, active_logl, it, ncall, logz, logz_remain, region=region)
-                sys.stdout.write('lnZ = %.1f, remainder = %.1f, lnLike = %.1f | Efficiency: %d/%d = %.4f%% (draw:%d)\r' % (
-                      logz, logz_remain, np.max(active_logl), ncall, it, it * 100 / ncall, ndraw))
+                sys.stdout.write('lnZ = %.1f, remainder = %.1f, lnLike = %.1f | Efficiency: %d/%d = %.4f%% (draw:%d) \r' % (
+                      logz, logz_remain, np.max(active_logl), it, ncall, it * 100 / ncall, ndraw))
                 sys.stdout.flush()
+                
+                # if low efficiency, bulk-process larger arrays
+                #if it * 100 > ncall:
+                #    ndraw = max(4000, self.num_live_points)
+                ndraw = max(32, min(16384, round((ncall+1) / (it + 1))))
+                #else:
+                #    ndraw = max(100, self.num_live_points)
+                
                 #self.logger.info(
                 #    '[it=%d,nevals=%d,eff=%f] Like=%5.1f..%5.1f lnZ=%5.1f' %
                 #    (it, ncall, it * 100. / ncall, loglstar, np.max(active_logl), logz))
