@@ -1,3 +1,5 @@
+#
+# cython: language_level=3
 import numpy as np
 cimport numpy as np
 from numpy import pi
@@ -59,13 +61,13 @@ def find_nearby(np.ndarray[np.float_t, ndim=2] apts,
     # go through the unselected points and find the worst case
     for j in range(nb):
         # find the nearest selected point
-        nnearby[j] = 0
+        nnearby[j] = -1
         for i in range(na):
             d = 0
             for k in range(ndim):
                 d += (apts[i,k] - bpts[j,k])**2
             if d < radiussq:
-                nnearby[j] += i
+                nnearby[j] = i
                 break
         
     return nnearby
@@ -106,6 +108,7 @@ def track_clusters(newclusterids, oldclusterids):
     # if all members of an old cluster are assigned to only one new cluster id
     # reuse that id
     # otherwise, give new id
+    return newclusterids
     relabel_map = {}
     c = 0
     for c in np.unique(oldclusterids):
@@ -134,7 +137,7 @@ def track_clusters(newclusterids, oldclusterids):
     return mergedclusterids
 
 
-def update_clusters(np.ndarray[np.float_t, ndim=2] upoints, np.ndarray[np.float_t, ndim=2] points, np.float_t maxradiussq):
+def update_clusters(upoints, points, maxradiussq):
     """
     clusters points, so that clusters are distinct if no member pair is within a radius of sqrt(maxradiussq)
     clusterids are the cluster indices of each point
@@ -151,18 +154,12 @@ def update_clusters(np.ndarray[np.float_t, ndim=2] upoints, np.ndarray[np.float_
     i.e., then points contains the clusters overlapped at the origin.
     
     """
-    print("clustering...")
-    cdef np.ndarray[np.int64_t, ndim=1] clusteridxs = np.zeros(len(points), dtype=np.int64)
-    cdef np.ndarray[np.int64_t, ndim=1] nnearby_space = np.empty(len(points), dtype=np.int64)
+    print("clustering with maxradiussq %f..." % maxradiussq)
+    clusteridxs = np.zeros(len(points), dtype=int)
     #currentclusterid = clusterids[clusterids > 0].min()
     #i = np.where(clusterids == currentclusterid)[0][0]
-    cdef int currentclusterid = 1
-    cdef int i = 0, j
-    
-    cdef np.ndarray[np.npy_bool, ndim=1] nonmembermask
-    cdef np.ndarray[np.npy_bool, ndim=1] nonmembers
-    cdef np.ndarray[np.float_t, ndim=2] members
-    cdef np.ndarray[np.npy_bool, ndim=1] newmembers
+    currentclusterid = 1
+    i = 0
     
     clusteridxs[i] = currentclusterid
     while True:
@@ -173,15 +170,15 @@ def update_clusters(np.ndarray[np.float_t, ndim=2] upoints, np.ndarray[np.float_
             break
         
         nonmembers = points[nonmembermask,:]
-        nnearby = nnearby_space[nonmembermask] * 0
+        nnearby = np.zeros(len(nonmembers), dtype=int)
         members = points[clusteridxs == currentclusterid,:]
         find_nearby(members, nonmembers, maxradiussq, nnearby)
-        #print('merging into cluster', currentclusterid, maxradiussq**0.5, len(members), members, len(nonmembers), nonmembers)
+        #print('merging %d into cluster %d of size %d' % (np.count_nonzero(nnearby), currentclusterid, len(members)))
         
-        if (nnearby != 0).any():
+        if (nnearby >= 0).any():
             # place into cluster
             newmembers = nonmembermask
-            newmembers[nonmembermask] = nnearby != 0
+            newmembers[nonmembermask] = nnearby >= 0
             #print('adding', newmembers.sum())
             clusteridxs[newmembers] = currentclusterid
         else:
@@ -191,20 +188,19 @@ def update_clusters(np.ndarray[np.float_t, ndim=2] upoints, np.ndarray[np.float_
             
             clusteridxs[i] = currentclusterid
     
-    cdef int nclusters = len(np.unique(clusteridxs))
-    cdef np.ndarray[np.float_t, ndim=2] overlapped_points = upoints
-    cdef np.ndarray[np.float_t, ndim=2] group_points
-    cdef np.ndarray[np.float_t, ndim=2] group_mean
-    if nclusters > 1:
+    nclusters = np.max(clusteridxs)
+    if nclusters == 1:
+        overlapped_points = upoints
+    else:
         i = 0
-        overlapped_points = np.empty_like(upoints)
+        overlapped_points = np.empty_like(points)
         for idx in np.unique(clusteridxs):
             group_points = upoints[clusteridxs == idx,:]
             group_mean = group_points.mean(axis=0).reshape((1,-1))
             j = i + len(group_points)
             overlapped_points[i:j,:] = group_points - group_mean
             i = j
-    print("clustering done.")
+    print("clustering done, %d clusters" % nclusters)
     return nclusters, clusteridxs, overlapped_points
 
 class ScalingLayer(object):
@@ -333,7 +329,8 @@ class MLFriends(object):
         self.maxradiussq = 1e300
         self.bbox_lo = self.unormed.min(axis=0)
         self.bbox_hi = self.unormed.max(axis=0)
-        self.sampling_methods = [self.sample_points, self.sample_boundingbox, self.sample_transformed_boundingbox]
+        self.current_sampling_method = self.sample_from_boundingbox
+        self.sampling_methods = [self.sample_from_points, self.sample_from_transformed_boundingbox, self.sample_from_boundingbox]
         self.sampling_statistics = np.zeros((len(self.sampling_methods), 2), dtype=int)
     
     def estimate_volume(self):
@@ -356,11 +353,15 @@ class MLFriends(object):
         Return MLFriends radius after nbootstraps bootstrapping rounds
         """
         N, ndim = self.u.shape
-        idx = np.arange(N)
+        selected = np.empty(N, dtype=bool)
+        #idx = np.arange(N)
         maxd = 0
         for i in range(nbootstraps):
-            selidx = np.unique(np.random.randint(N, size=N))
-            selected = np.in1d(idx, selidx)
+            idx = np.random.randint(N, size=N)
+            #selidx = np.unique()
+            #selected = np.in1d(idx, selidx)
+            selected[:] = True
+            selected[idx] = False
             a = self.unormed[selected,:]
             b = self.unormed[~selected,:]
             # compute distances from a to b
@@ -368,7 +369,7 @@ class MLFriends(object):
             #print('maxd:', maxd)
         return maxd
     
-    def sample_points(self, nsamples=100):
+    def sample_from_points(self, nsamples=100):
         """
         Draw uniformly sampled points from MLFriends region
         """
@@ -388,7 +389,7 @@ class MLFriends(object):
 
         return w[wmask,:], idx[vmask][wmask]
     
-    def sample_boundingbox(self, nsamples=100):
+    def sample_from_boundingbox(self, nsamples=100):
         N, ndim = self.u.shape
         # draw from unit cube in prior space
         u = np.random.uniform(size=(nsamples, ndim))
@@ -396,16 +397,16 @@ class MLFriends(object):
         v = self.transformLayer.transform(u)
         nnearby = np.empty(nsamples, dtype=int)
         find_nearby(self.unormed, v, self.maxradiussq, nnearby)
-        vmask = nnearby != 0
-        return v[vmask,:], nnearby[vmask]
+        vmask = nnearby >= 0
+        return u[vmask,:], nnearby[vmask]
     
-    def sample_transformed_boundingbox(self, nsamples=100):
+    def sample_from_transformed_boundingbox(self, nsamples=100):
         N, ndim = self.u.shape
         # draw from rectangle in transformed space
         v = np.random.uniform(self.bbox_lo - self.maxradiussq, self.bbox_hi + self.maxradiussq, size=(nsamples, ndim))
         nnearby = np.empty(nsamples, dtype=int)
         find_nearby(self.unormed, v, self.maxradiussq, nnearby)
-        vmask = nnearby != 0
+        vmask = nnearby >= 0
         # check if inside unit cube
         w = self.transformLayer.untransform(v[vmask,:])
         wmask = np.logical_and(w > 0, w < 1).all(axis=1)
@@ -413,6 +414,13 @@ class MLFriends(object):
         return w[wmask,:], nnearby[vmask][wmask]
     
     def sample(self, nsamples=100):
+        samples, idx = self.current_sampling_method(nsamples=nsamples)
+        if len(samples) == 0:
+            # no result, choose another method
+            self.current_sampling_method = self.sampling_methods[np.random.randint(len(self.sampling_methods))]
+            print("switching to %s" % self.current_sampling_method)
+        return samples, idx
+        
         frac = (self.sampling_statistics[:,0] + 1.) / (self.sampling_statistics[:,1] + 1.)
         frac /= frac.sum()
         i = np.random.choice(len(frac), p=frac)

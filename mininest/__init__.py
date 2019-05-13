@@ -16,8 +16,8 @@ from .utils import create_logger, make_run_dir
 from .utils import acceptance_rate, effective_sample_size, mean_jump_distance
 from .mlfriends import MLFriends, AffineLayer, ScalingLayer
 
-import numpy as np
 from numpy import log10
+import numpy as np
 import scipy.stats
 
 def nicelogger(points, info, region, transformLayer):
@@ -288,6 +288,8 @@ class NestedSampler(object):
         it = 0
         next_update_interval_ncall = -1
         next_update_interval_iter = -1
+        next_full_rebuild = -1
+        #direct_draw_efficient = True
 
         while max_iters is None or it < max_iters:
 
@@ -313,8 +315,17 @@ class NestedSampler(object):
             if ncall > next_update_interval_ncall and it > next_update_interval_iter:
                 if first_time:
                     nextregion = region
+                #elif it > next_full_rebuild:
                 else:
-                    nextregion = MLFriends(active_u, transformLayer=transformLayer.create_new(active_u, region.maxradiussq))
+                    # rebuild space
+                    print("rebuilding space...")
+                    nextTransformLayer = transformLayer.create_new(active_u, region.maxradiussq)
+                    nextregion = MLFriends(active_u, nextTransformLayer)
+                #else:
+                #    # redo only mlfriends bootstrapping
+                #    nextregion = MLFriends(active_u, transformLayer)
+                
+                print("computing maxradius...")
                 r = nextregion.compute_maxradiussq(nbootstraps=30 // self.mpi_size)
                 #print("MLFriends built. r=%f" % r**0.5)
                 if self.use_mpi:
@@ -327,7 +338,8 @@ class NestedSampler(object):
                 print('proposed volume:', nextregion.estimate_volume())
                 if nextregion.estimate_volume() < region.estimate_volume():
                     region = nextregion
-                    transformLayer = region.transformLayer
+                    transformLayer = nextTransformLayer
+                    next_full_rebuild = it + self.num_live_points
                 
                 if self.log:
                     nicelogger(points=dict(u=active_u, p=active_v, logl=active_logl), 
@@ -362,6 +374,7 @@ class NestedSampler(object):
                         nu = len(u)
                         draw_efficiency = nu / ndraw
                     """
+                    
                     u, father = region.sample(nsamples=ndraw)
                     nu = len(u)
                     
@@ -435,7 +448,7 @@ class NestedSampler(object):
                 # if low efficiency, bulk-process larger arrays
                 #if it * 100 > ncall:
                 #    ndraw = max(4000, self.num_live_points)
-                ndraw = max(32, min(16384, round((ncall+1) / (it + 1))))
+                ndraw = max(128, min(16384, round((ncall+1) / (it + 1))))
                 #else:
                 #    ndraw = max(100, self.num_live_points)
                 
