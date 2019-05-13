@@ -104,49 +104,6 @@ def compute_maxradiussq(np.ndarray[np.float_t, ndim=2] apts, np.ndarray[np.float
 
     return maxd
 
-def compute_maxradiussq_bootstrapped(np.ndarray[np.float_t, ndim=2] points, np.ndarray[np.int64_t, ndim=2] selected):
-    """
-    Computes bootstrapped MLFriends radius.
-    
-    selected: for each bootstrapping round 1 if selected, 0 if not selected
-       np.random.randint(npoints, (nbootstraps, npoints))
-    points: point coordinates. float, shape=(npoints, ndim)
-    
-    Returns the square of the maximum radius.
-    """
-    cdef int npoints = points.shape[0]
-    cdef int ndim = points.shape[1]
-    cdef int nbootstraps = selected.shape[0]
-    assert npoints == selected.shape[1]
-
-    cdef int i, j
-    
-    cdef np.float_t d
-    cdef np.float_t mind = 1e300
-    cdef np.float_t maxd = 0
-    
-    for l in range(nbootstraps):
-        # go through the unselected points and find the worst case
-        for j in range(npoints):
-            if selected[l,j] != 1:
-                continue
-            
-            # find the nearest selected point
-            mind = 1e300
-            for i in range(npoints):
-                if selected[l,i] != 0:
-                    continue
-                d = 0
-                for k in range(ndim):
-                    d += (points[i,k] - points[j,k])**2
-                mind = min(mind, d)
-            
-            maxd = max(maxd, mind)
-
-    return maxd
-
-
-
 def track_clusters(newclusterids, oldclusterids):
     # if all members of an old cluster are assigned to only one new cluster id
     # reuse that id
@@ -396,44 +353,18 @@ class MLFriends(object):
         Return MLFriends radius after nbootstraps bootstrapping rounds
         """
         N, ndim = self.u.shape
-        # method 1: select with unique ids
-        # idx = np.arange(N)
-        # method 2: set mask with ids
         selected = np.empty(N, dtype=bool)
-        # method 3: allocate all at once
-        # idx = np.random.randint(N, size=(nbootstraps, N))
-        # selected = np.zeros((nbootstraps, N), dtype=bool)
         maxd = 0
         for i in range(nbootstraps):
-            # method 1:
-            # selidx = np.unique(np.random.randint(N, size=N))
-            # selected = np.in1d(idx, selidx)
-            
-            # method 2:
             idx = np.random.randint(N, size=N)
             selected[:] = False
             selected[idx] = True
-            # method 1 and 2
             a = self.unormed[selected,:]
             b = self.unormed[~selected,:]
             
-            # method 3:
-            #selected[i,idx[i,:]] = True
-            #a = self.unormed[selected[i,:],:]
-            #b = self.unormed[~selected[i,:],:]
-            
             # compute distances from a to b
             maxd = max(maxd, compute_maxradiussq(a, b))
-            #print('maxd:', maxd)
         return maxd
-    
-    def compute_maxradiussq4(self, nbootstraps=50):
-        N, ndim = self.u.shape
-        idx = np.random.randint(N, size=(nbootstraps, N))
-        selected = np.zeros((nbootstraps, N), dtype=int)
-        for i in range(nbootstraps):
-            selected[i,idx[i,:]] = 1
-        return compute_maxradiussq_bootstrapped(self.unormed, selected)
     
     def sample_from_points(self, nsamples=100):
         """
