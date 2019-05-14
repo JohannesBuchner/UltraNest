@@ -13,11 +13,13 @@ def main(args):
         return np.array([-sum(100.0 * (x[1::2] - x[::2] ** 2.0) ** 2.0 + (1 - x[::2]) ** 2.0) for x in z])
 
     def loglike(z):
+        assert np.logical_and(z >= 0, z <= 1).all(), z
         a = np.array([-0.5 * sum([((xi - 0.83456 + i*0.01)/0.01)**2 for i, xi in enumerate(x)]) for x in z])
         b = np.array([-0.5 * sum([((xi - 0.43456 - i*0.01)/0.01)**2 for i, xi in enumerate(x)]) for x in z])
         return np.logaddexp(a, b)
 
     def transform(x):
+        assert np.logical_and(x >= 0, x <= 1).all(), x
         return x.copy() #10. * x - 5.
     
     import string

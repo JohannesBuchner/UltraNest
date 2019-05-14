@@ -137,11 +137,14 @@ def track_clusters(newclusterids, oldclusterids):
     return mergedclusterids
 
 
-def update_clusters(upoints, points, maxradiussq):
+def update_clusters(upoints, tpoints, maxradiussq):
     """
     clusters points, so that clusters are distinct if no member pair is within a radius of sqrt(maxradiussq)
     clusterids are the cluster indices of each point
     clusterids re-uses the existing ids to assign new cluster ids
+    
+    clustering is performed on a transformed coordinate space (tpoints).
+    Returned values are based on upoints.
     
     returns (nclusters, new_clusterids, overlapped_points)
     
@@ -155,7 +158,8 @@ def update_clusters(upoints, points, maxradiussq):
     
     """
     #print("clustering with maxradiussq %f..." % maxradiussq)
-    clusteridxs = np.zeros(len(points), dtype=int)
+    assert upoints.shape == tpoints.shape
+    clusteridxs = np.zeros(len(tpoints), dtype=int)
     #currentclusterid = clusterids[clusterids > 0].min()
     #i = np.where(clusterids == currentclusterid)[0][0]
     currentclusterid = 1
@@ -169,9 +173,9 @@ def update_clusters(upoints, points, maxradiussq):
             # everyone has been assigned -> done!
             break
         
-        nonmembers = points[nonmembermask,:]
+        nonmembers = tpoints[nonmembermask,:]
         nnearby = np.empty(len(nonmembers), dtype=int)
-        members = points[clusteridxs == currentclusterid,:]
+        members = tpoints[clusteridxs == currentclusterid,:]
         find_nearby(members, nonmembers, maxradiussq, nnearby)
         #print('merging %d into cluster %d of size %d' % (np.count_nonzero(nnearby), currentclusterid, len(members)))
         
@@ -192,21 +196,18 @@ def update_clusters(upoints, points, maxradiussq):
     nclusters = np.max(clusteridxs)
     assert (np.unique(clusteridxs) == np.arange(nclusters)+1).all(), (np.unique(clusteridxs), nclusters)
     if nclusters == 1:
-        overlapped_points = upoints
+        overlapped_upoints = upoints
     else:
-        #i = 0
-        overlapped_points = np.empty_like(points)
+        overlapped_upoints = np.empty_like(upoints)
         for idx in np.unique(clusteridxs):
-            group_points = upoints[clusteridxs == idx,:]
-            group_mean = group_points.mean(axis=0).reshape((1,-1))
-            #j = i + len(group_points)
-            overlapped_points[clusteridxs == idx,:] = group_points - group_mean
-            #i = j
+            group_upoints = upoints[clusteridxs == idx,:]
+            group_mean = group_upoints.mean(axis=0).reshape((1,-1))
+            overlapped_upoints[clusteridxs == idx,:] = group_upoints - group_mean
     #print("clustering done, %d clusters" % nclusters)
-    if nclusters > 1:
-        np.savetxt("clusters%d.txt" % nclusters, points)
-        np.savetxt("clusters%d_radius.txt" % nclusters, [maxradiussq])
-    return nclusters, clusteridxs, overlapped_points
+    #if nclusters > 1:
+    #    np.savetxt("clusters%d.txt" % nclusters, upoints)
+    #    np.savetxt("clusters%d_radius.txt" % nclusters, [maxradiussq])
+    return nclusters, clusteridxs, overlapped_upoints
 
 class ScalingLayer(object):
     def __init__(self, mean=0, std=1, nclusters=1, wrapped_dims=[], clusterids=None):
@@ -215,7 +216,6 @@ class ScalingLayer(object):
         self.nclusters = nclusters
         self.wrapped_dims = wrapped_dims
         self.has_wraps = len(wrapped_dims) > 0
-        assert not self.has_wraps
         self.clusterids = clusterids
     
     def optimize_wrap(self, points):
@@ -259,8 +259,6 @@ class ScalingLayer(object):
         wrapped_points = self.wrap(points)
         self.mean = wrapped_points.mean(axis=0)
         self.std = wrapped_points.std(axis=0)
-        
-        self.mean, self.std = np.zeros(len(self.mean)), np.ones(len(self.std))
         self.volscale = np.product(self.std)
         self.set_clusterids(clusterids=clusterids, npoints=len(points))
     
@@ -275,22 +273,11 @@ class ScalingLayer(object):
     def create_new(self, upoints, maxradiussq):
         # perform clustering in transformed space
         upoints = upoints.copy()
-        points = self.transform(upoints)
-        assert (points == upoints).all()
-        nclusters, clusteridxs, overlapped_points = update_clusters(points, upoints, maxradiussq)
-        print()
-        for cli, ui in zip(clusteridxs, upoints):
-            print(cli, ui, "  X1")
-        #clusteridxs = track_clusters(clusteridxs, self.clusterids)
-        #print()
-        #for cli, ui in zip(clusteridxs, upoints):
-        #    print(cli, ui, "  X2")
+        tpoints = self.transform(upoints)
+        nclusters, clusteridxs, overlapped_upoints = update_clusters(upoints, tpoints, maxradiussq)
+        clusteridxs = track_clusters(clusteridxs, self.clusterids)
         s = ScalingLayer(nclusters=nclusters, wrapped_dims=self.wrapped_dims, clusterids=clusteridxs)
-        s.optimize(overlapped_points)
-        print()
-        for cli, ui in zip(s.clusterids, upoints):
-            print(cli, ui, "  X3")
-        assert np.all(s.clusterids == clusteridxs)
+        s.optimize(overlapped_upoints)
         return s
         
     def transform(self, u):
@@ -326,12 +313,12 @@ class AffineLayer(ScalingLayer):
 
     def create_new(self, upoints, maxradiussq):
         # perform clustering in transformed space
-        points = self.transform(upoints)
-        clusteridxs = np.zeros(len(points), dtype=int)
-        nclusters, clusteridxs, overlapped_points = update_clusters(points, upoints, maxradiussq)
+        upoints = upoints.copy()
+        tpoints = self.transform(upoints)
+        nclusters, clusteridxs, overlapped_upoints = update_clusters(upoints, tpoints, maxradiussq)
         clusteridxs = track_clusters(clusteridxs, self.clusterids)
         s = AffineLayer(nclusters=nclusters, wrapped_dims=self.wrapped_dims, clusterids=clusteridxs)
-        s.optimize(overlapped_points)
+        s.optimize(overlapped_upoints)
         return s
     
     def transform(self, u):

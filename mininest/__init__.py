@@ -42,7 +42,6 @@ def nicelogger(points, info, region, transformLayer):
     indices[indices < 0] = 0
     
     print()
-    print()
     clusterids = transformLayer.clusterids
     nmodes = transformLayer.nclusters
     #print("Volume:", region.estimate_volume())
@@ -50,9 +49,6 @@ def nicelogger(points, info, region, transformLayer):
         print("Mono-modal")
     else: 
         print("Have %d modes" % nmodes)
-    
-    for cli, ui in zip(transformLayer.clusterids, p):
-        print(cli, ui)
     
     for i, param in enumerate(paramnames):
         if nmodes == 1:
@@ -321,28 +317,17 @@ class NestedSampler(object):
             
             if ncall > next_update_interval_ncall and it > next_update_interval_iter:
 
-                print()
-                for cli, ui in zip(transformLayer.clusterids, active_v):
-                    print(cli, ui, "  1")
-
                 if first_time:
                     nextregion = region
-                #elif it > next_full_rebuild:
                 else:
                     # rebuild space
                     #print()
                     #print("rebuilding space...")
                     nextTransformLayer = transformLayer.create_new(active_u, region.maxradiussq)
                     nextregion = MLFriends(active_u, nextTransformLayer)
-                #else:
-                #    # redo only mlfriends bootstrapping
-                #    nextregion = MLFriends(active_u, transformLayer)
                 
                 #print("computing maxradius...")
                 r = nextregion.compute_maxradiussq(nbootstraps=30 // self.mpi_size)
-                print()
-                for cli, ui in zip(transformLayer.clusterids, active_v):
-                    print(cli, ui, "  2")
                 #print("MLFriends built. r=%f" % r**0.5)
                 if self.use_mpi:
                     recv_minradii = self.comm.gather(r, root=0)
@@ -353,15 +338,10 @@ class NestedSampler(object):
                 #print()
                 #print('proposed volume:', nextregion.estimate_volume())
                 if not first_time or nextregion.estimate_volume() < region.estimate_volume():
-                    print("accepted new region")
                     region = nextregion
                     transformLayer = region.transformLayer
                     next_full_rebuild = it + self.num_live_points
                 
-                print()
-                for cli, ui in zip(transformLayer.clusterids, active_v):
-                    print(cli, ui, "  3")
-                #print(transformLayer.clusterids)
                 if self.log:
                     nicelogger(points=dict(u=active_u, p=active_v, logl=active_logl), 
                         info=dict(it=it, ncall=ncall, logz=logz, logz_remain=logz_remain, paramnames=self.paramnames), 
@@ -373,9 +353,6 @@ class NestedSampler(object):
             
             while True:
                 while ib >= len(samples):
-                    print()
-                    for cli, ui in zip(transformLayer.clusterids, active_v):
-                        print(cli, ui, "  4")
                     # get new samples
                     ib = 0
                     
@@ -383,13 +360,10 @@ class NestedSampler(object):
                     u, father = region.sample(nsamples=ndraw)
                     nu = len(u)
                     
-                    v = self.transform(u.copy())
-                    #assert v.shape == (nu, self.num_params)
-                    logl = self.loglike(v.copy())
-                    #assert logl.shape == (nu,), (logl.shape, v.shape, u.shape)
+                    v = self.transform(u)
+                    logl = self.loglike(v)
                     nc += nu
                     accepted = logl > loglstar
-                    #assert logl.shape == accepted.shape, (logl.shape, accepted.shape)
                     u = u[accepted,:]
                     v = v[accepted,:]
                     logl = logl[accepted]
@@ -418,16 +392,9 @@ class NestedSampler(object):
                         ncall += nc
                 
                 if likes[ib] > active_logl[worst]:
-                    print()
-                    for cli, ui in zip(transformLayer.clusterids, active_v):
-                        print(cli, ui, "  5")
-                    oldv = active_u[worst].copy()
-                    active_u[worst] = samples[ib, :].copy()
-                    active_v[worst] = samplesv[ib,:].copy()
-                    active_logl[worst] = likes[ib].copy()
-                    print()
-                    for cli, ui in zip(transformLayer.clusterids, active_v):
-                        print(cli, ui, "  6")
+                    active_u[worst] = samples[ib, :]
+                    active_v[worst] = samplesv[ib,:]
+                    active_logl[worst] = likes[ib]
                     
                     # if we keep the region informed about the new live points
                     # then the region follows the live points even if maxradius is not updated
@@ -437,14 +404,6 @@ class NestedSampler(object):
                     # if we track the cluster assignment, then in the next round
                     # the ids with the same members are likely to have the same id
                     # this is imperfect
-                    #if transformLayer.nclusters > 1:
-                    #    clids = np.unique(transformLayer.clusterids)
-                    #    #print("clusters:", [(clid, region.u[transformLayer.clusterids == clid,:].mean(axis=1)) for clid in clids if clid != 0])
-                    #    _, nearest_cluster_id = min([(np.abs(region.u[transformLayer.clusterids == clid,:].mean() - active_u[worst].mean()), clid) for clid in clids if clid != 0])
-                    #    #print('replacing %d: %.3f->%.3f [C=%d, nearest=%d]' % (worst, oldv.mean(), active_u[worst].mean(), transformLayer.clusterids[father[ib]], nearest_cluster_id))
-                    #    assert transformLayer.clusterids[father[ib]] in (0, nearest_cluster_id), (nearest_cluster_id, transformLayer.clusterids[father[ib]])
-                    
-                    #print(transformLayer.clusterids)
                     #transformLayer.clusterids[worst] = transformLayer.clusterids[father[ib]]
                     # so we just mark the replaced ones as "unassigned"
                     transformLayer.clusterids[worst] = 0
