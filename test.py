@@ -5,27 +5,26 @@ import numpy as np
 
 def main(args):
     from mininest import NestedSampler
+    np.random.seed(1)
 
     #def loglike(z):
     #    return np.array([-sum(100.0 * (x[1:] - x[:-1] ** 2.0) ** 2.0 + (1 - x[:-1]) ** 2.0) for x in z])
-    def loglike(z):
+    def loglike_(z):
         return np.array([-sum(100.0 * (x[1::2] - x[::2] ** 2.0) ** 2.0 + (1 - x[::2]) ** 2.0) for x in z])
 
-    def loglike_(z):
-        a = np.array([-0.5 * sum([((xi - 0.83456 + i*0.1)/0.01)**2 for i, xi in enumerate(x)]) for x in z])
-        b = np.array([-0.5 * sum([((xi - 0.43456 - i*0.1)/0.01)**2 for i, xi in enumerate(x)]) for x in z])
+    def loglike(z):
+        a = np.array([-0.5 * sum([((xi - 0.83456 + i*0.01)/0.01)**2 for i, xi in enumerate(x)]) for x in z])
+        b = np.array([-0.5 * sum([((xi - 0.43456 - i*0.01)/0.01)**2 for i, xi in enumerate(x)]) for x in z])
         return np.logaddexp(a, b)
 
     def transform(x):
-        return 10. * x - 5.
+        return x.copy() #10. * x - 5.
     
     import string
     paramnames = list(string.ascii_lowercase)[:args.x_dim]
 
-    sampler = NestedSampler(paramnames, loglike, transform=transform, log_dir=args.log_dir, num_live_points=args.num_live_points,
-                            hidden_dim=args.hidden_dim, num_layers=args.num_layers, num_blocks=args.num_blocks, num_slow=args.num_slow)
-    sampler.run(train_iters=args.train_iters, mcmc_steps=args.mcmc_steps, volume_switch=args.switch, noise=args.noise,
-                num_test_samples=args.test_samples, test_mcmc_steps=args.test_mcmc_steps, log_interval=50)
+    sampler = NestedSampler(paramnames, loglike, transform=transform, log_dir=args.log_dir, num_live_points=args.num_live_points)
+    sampler.run(log_interval=20)
 
 
 if __name__ == '__main__':

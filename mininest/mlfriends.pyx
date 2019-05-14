@@ -154,7 +154,7 @@ def update_clusters(upoints, points, maxradiussq):
     i.e., then points contains the clusters overlapped at the origin.
     
     """
-    print("clustering with maxradiussq %f..." % maxradiussq)
+    #print("clustering with maxradiussq %f..." % maxradiussq)
     clusteridxs = np.zeros(len(points), dtype=int)
     #currentclusterid = clusterids[clusterids > 0].min()
     #i = np.where(clusterids == currentclusterid)[0][0]
@@ -170,7 +170,7 @@ def update_clusters(upoints, points, maxradiussq):
             break
         
         nonmembers = points[nonmembermask,:]
-        nnearby = np.zeros(len(nonmembers), dtype=int)
+        nnearby = np.empty(len(nonmembers), dtype=int)
         members = points[clusteridxs == currentclusterid,:]
         find_nearby(members, nonmembers, maxradiussq, nnearby)
         #print('merging %d into cluster %d of size %d' % (np.count_nonzero(nnearby), currentclusterid, len(members)))
@@ -188,28 +188,35 @@ def update_clusters(upoints, points, maxradiussq):
             
             clusteridxs[i] = currentclusterid
     
+    assert (clusteridxs > 0).all()
     nclusters = np.max(clusteridxs)
+    assert (np.unique(clusteridxs) == np.arange(nclusters)+1).all(), (np.unique(clusteridxs), nclusters)
     if nclusters == 1:
         overlapped_points = upoints
     else:
-        i = 0
+        #i = 0
         overlapped_points = np.empty_like(points)
         for idx in np.unique(clusteridxs):
             group_points = upoints[clusteridxs == idx,:]
             group_mean = group_points.mean(axis=0).reshape((1,-1))
-            j = i + len(group_points)
-            overlapped_points[i:j,:] = group_points - group_mean
-            i = j
-    print("clustering done, %d clusters" % nclusters)
+            #j = i + len(group_points)
+            overlapped_points[clusteridxs == idx,:] = group_points - group_mean
+            #i = j
+    #print("clustering done, %d clusters" % nclusters)
+    if nclusters > 1:
+        np.savetxt("clusters%d.txt" % nclusters, points)
+        np.savetxt("clusters%d_radius.txt" % nclusters, [maxradiussq])
     return nclusters, clusteridxs, overlapped_points
 
 class ScalingLayer(object):
-    def __init__(self, mean=0, std=1, nclusters=1, wrapped_dims=[]):
+    def __init__(self, mean=0, std=1, nclusters=1, wrapped_dims=[], clusterids=None):
         self.mean = mean
         self.std = std
         self.nclusters = nclusters
         self.wrapped_dims = wrapped_dims
-        self.has_wraps = len(wrapped_dims) == 0
+        self.has_wraps = len(wrapped_dims) > 0
+        assert not self.has_wraps
+        self.clusterids = clusterids
     
     def optimize_wrap(self, points):
         if not self.has_wraps:
@@ -252,19 +259,38 @@ class ScalingLayer(object):
         wrapped_points = self.wrap(points)
         self.mean = wrapped_points.mean(axis=0)
         self.std = wrapped_points.std(axis=0)
-        if clusterids is None:
-            clusterids = np.ones(len(wrapped_points), dtype=int)
         
-        self.clusterids = clusterids
+        self.mean, self.std = np.zeros(len(self.mean)), np.ones(len(self.std))
         self.volscale = np.product(self.std)
+        self.set_clusterids(clusterids=clusterids, npoints=len(points))
+    
+    def set_clusterids(self, clusterids=None, npoints=None):
+        if clusterids is None and self.clusterids is None and npoints is not None:
+            # for the beginning, set cluster ids to one for all points
+            clusterids = np.ones(npoints, dtype=int)
+        if clusterids is not None:
+            # if we have a value, update
+            self.clusterids = clusterids
     
     def create_new(self, upoints, maxradiussq):
         # perform clustering in transformed space
+        upoints = upoints.copy()
         points = self.transform(upoints)
+        assert (points == upoints).all()
         nclusters, clusteridxs, overlapped_points = update_clusters(points, upoints, maxradiussq)
-        clusteridxs = track_clusters(clusteridxs, self.clusterids)
-        s = ScalingLayer(nclusters=nclusters, wrapped_dims=self.wrapped_dims)
-        s.optimize(overlapped_points, clusterids=clusteridxs)
+        print()
+        for cli, ui in zip(clusteridxs, upoints):
+            print(cli, ui, "  X1")
+        #clusteridxs = track_clusters(clusteridxs, self.clusterids)
+        #print()
+        #for cli, ui in zip(clusteridxs, upoints):
+        #    print(cli, ui, "  X2")
+        s = ScalingLayer(nclusters=nclusters, wrapped_dims=self.wrapped_dims, clusterids=clusteridxs)
+        s.optimize(overlapped_points)
+        print()
+        for cli, ui in zip(s.clusterids, upoints):
+            print(cli, ui, "  X3")
+        assert np.all(s.clusterids == clusteridxs)
         return s
         
     def transform(self, u):
@@ -276,12 +302,13 @@ class ScalingLayer(object):
         return (ww * self.std.reshape((1,-1)) + self.mean.reshape((1,-1))).reshape(uu.shape)
 
 class AffineLayer(ScalingLayer):
-    def __init__(self, ctr=0, T=1, invT=1, nclusters=1, wrapped_dims=[]):
+    def __init__(self, ctr=0, T=1, invT=1, nclusters=1, wrapped_dims=[], clusterids=None):
         self.ctr = ctr
         self.T = T
         self.invT = invT
         self.nclusters = nclusters
         self.wrapped_dims = wrapped_dims
+        self.clusterids = clusterids
     
     def optimize(self, points, clusterids=None):
         self.optimize_wrap(points)
@@ -291,15 +318,11 @@ class AffineLayer(ScalingLayer):
         eigval, eigvec = np.linalg.eigh(cov)
         a = np.linalg.inv(cov)
         self.volscale = np.linalg.det(a)**-0.5
-        Lambda = np.diag(eigval)
-        Phi = eigvec
-        self.T = eigvec
-        eigvecI = np.linalg.inv(eigvec)
-        self.invT = eigvecI
         
-        if clusterids is None:
-            clusterids = np.ones(len(wrapped_points), dtype=int)
-        self.clusterids = clusterids
+        Lambda = np.diag(eigval)
+        self.T = eigvec
+        self.invT = np.linalg.inv(self.T)
+        self.set_clusterids(clusterids=clusterids, npoints=len(points))
 
     def create_new(self, upoints, maxradiussq):
         # perform clustering in transformed space
@@ -307,8 +330,8 @@ class AffineLayer(ScalingLayer):
         clusteridxs = np.zeros(len(points), dtype=int)
         nclusters, clusteridxs, overlapped_points = update_clusters(points, upoints, maxradiussq)
         clusteridxs = track_clusters(clusteridxs, self.clusterids)
-        s = AffineLayer(nclusters=nclusters, wrapped_dims=self.wrapped_dims)
-        s.optimize(overlapped_points, clusterids=clusteridxs)
+        s = AffineLayer(nclusters=nclusters, wrapped_dims=self.wrapped_dims, clusterids=clusteridxs)
+        s.optimize(overlapped_points)
         return s
     
     def transform(self, u):
@@ -324,13 +347,12 @@ class MLFriends(object):
     def __init__(self, u, transformLayer):
         self.u = u
         self.transformLayer = transformLayer
-        self.transformLayer.optimize(self.u)
         self.unormed = self.transformLayer.transform(self.u)
         self.maxradiussq = 1e300
         self.bbox_lo = self.unormed.min(axis=0)
         self.bbox_hi = self.unormed.max(axis=0)
         self.current_sampling_method = self.sample_from_boundingbox
-        self.sampling_methods = [self.sample_from_points, self.sample_from_transformed_boundingbox, self.sample_from_boundingbox]
+        self.sampling_methods = [self.sample_from_boundingbox] #, self.sample_from_transformed_boundingbox, self.sample_from_boundingbox]
         self.sampling_statistics = np.zeros((len(self.sampling_methods), 2), dtype=int)
     
     def estimate_volume(self):
@@ -415,7 +437,7 @@ class MLFriends(object):
         if len(samples) == 0:
             # no result, choose another method
             self.current_sampling_method = self.sampling_methods[np.random.randint(len(self.sampling_methods))]
-            print("switching to %s" % self.current_sampling_method)
+            #print("switching to %s" % self.current_sampling_method)
         return samples, idx
         
         frac = (self.sampling_statistics[:,0] + 1.) / (self.sampling_statistics[:,1] + 1.)

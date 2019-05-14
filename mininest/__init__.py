@@ -13,7 +13,7 @@ import csv
 import json
 
 from .utils import create_logger, make_run_dir
-from .utils import acceptance_rate, effective_sample_size, mean_jump_distance
+from .utils import acceptance_rate, effective_sample_size, mean_jump_distance, resample_equal
 from .mlfriends import MLFriends, AffineLayer, ScalingLayer
 
 from numpy import log10
@@ -45,11 +45,15 @@ def nicelogger(points, info, region, transformLayer):
     print()
     clusterids = transformLayer.clusterids
     nmodes = transformLayer.nclusters
-    print("Volume:", region.estimate_volume())
+    #print("Volume:", region.estimate_volume())
     if nmodes == 1:
         print("Mono-modal")
     else: 
         print("Have %d modes" % nmodes)
+    
+    for cli, ui in zip(transformLayer.clusterids, p):
+        print(cli, ui)
+    
     for i, param in enumerate(paramnames):
         if nmodes == 1:
             line = [' ' for i in range(width)]
@@ -74,7 +78,7 @@ def nicelogger(points, info, region, transformLayer):
             fmt = '%%+.%df' % (-min(expolo[i], expohi[i]))
         print('%09s|%s|%9s %s' % (fmt % plo[i], linestr, fmt % phi[i], param))
     print()
-    
+    return
     for i, param in enumerate(paramnames):
         for j, param2 in enumerate(paramnames[:i]):
             rho, pval = scipy.stats.spearmanr(p[:,i], p[:,j])
@@ -108,7 +112,7 @@ class NestedSampler(object):
         num_derived = len(self.derivedparamnames)
         self.num_params = x_dim + num_derived
         if wrapped_params is None:
-            self.wrapped_axes = np.zeros(0, dtype=int)
+            self.wrapped_axes = []
         else:
             self.wrapped_axes = np.where(wrapped_params)[0]
 
@@ -218,7 +222,7 @@ class NestedSampler(object):
             if update_interval_ncall == 0:
                 update_interval_iter = max(1, round(self.num_live_points))
             else:
-                update_interval_iter = 0
+                update_interval_iter = max(1, round(0.2 * self.num_live_points))
         
 
         if log_interval is None:
@@ -266,6 +270,7 @@ class NestedSampler(object):
         else:
             active_logl = self.loglike(active_v)
 
+        saved_u = []
         saved_v = []  # Stored points for posterior results
         saved_logl = []
         saved_logwt = []
@@ -280,6 +285,7 @@ class NestedSampler(object):
         #direct_draw_efficient = True
         #mlfriends_efficient = True
         transformLayer = ScalingLayer(wrapped_dims=self.wrapped_axes)
+        transformLayer.optimize(active_u)
         region = MLFriends(active_u, transformLayer)
         
         ib = 0
@@ -303,6 +309,7 @@ class NestedSampler(object):
             logz = logz_new
 
             # Add worst object to samples.
+            saved_u.append(np.array(active_u[worst]))
             saved_v.append(np.array(active_v[worst]))
             saved_logwt.append(logwt)
             saved_logl.append(active_logl[worst])
@@ -313,20 +320,29 @@ class NestedSampler(object):
             loglstar = active_logl[worst]
             
             if ncall > next_update_interval_ncall and it > next_update_interval_iter:
+
+                print()
+                for cli, ui in zip(transformLayer.clusterids, active_v):
+                    print(cli, ui, "  1")
+
                 if first_time:
                     nextregion = region
                 #elif it > next_full_rebuild:
                 else:
                     # rebuild space
-                    print("rebuilding space...")
+                    #print()
+                    #print("rebuilding space...")
                     nextTransformLayer = transformLayer.create_new(active_u, region.maxradiussq)
                     nextregion = MLFriends(active_u, nextTransformLayer)
                 #else:
                 #    # redo only mlfriends bootstrapping
                 #    nextregion = MLFriends(active_u, transformLayer)
                 
-                print("computing maxradius...")
+                #print("computing maxradius...")
                 r = nextregion.compute_maxradiussq(nbootstraps=30 // self.mpi_size)
+                print()
+                for cli, ui in zip(transformLayer.clusterids, active_v):
+                    print(cli, ui, "  2")
                 #print("MLFriends built. r=%f" % r**0.5)
                 if self.use_mpi:
                     recv_minradii = self.comm.gather(r, root=0)
@@ -334,58 +350,48 @@ class NestedSampler(object):
                     r = np.max(recv_minradii)
                 
                 nextregion.maxradiussq = r
-                print()
-                print('proposed volume:', nextregion.estimate_volume())
-                if nextregion.estimate_volume() < region.estimate_volume():
+                #print()
+                #print('proposed volume:', nextregion.estimate_volume())
+                if not first_time or nextregion.estimate_volume() < region.estimate_volume():
+                    print("accepted new region")
                     region = nextregion
-                    transformLayer = nextTransformLayer
+                    transformLayer = region.transformLayer
                     next_full_rebuild = it + self.num_live_points
                 
+                print()
+                for cli, ui in zip(transformLayer.clusterids, active_v):
+                    print(cli, ui, "  3")
+                #print(transformLayer.clusterids)
                 if self.log:
                     nicelogger(points=dict(u=active_u, p=active_v, logl=active_logl), 
                         info=dict(it=it, ncall=ncall, logz=logz, logz_remain=logz_remain, paramnames=self.paramnames), 
                         region=region, transformLayer=transformLayer)
+                
                 next_update_interval_ncall = ncall + update_interval_ncall
                 next_update_interval_iter = it + update_interval_iter
                 first_time = False
             
             while True:
                 while ib >= len(samples):
+                    print()
+                    for cli, ui in zip(transformLayer.clusterids, active_v):
+                        print(cli, ui, "  4")
                     # get new samples
                     ib = 0
                     
                     nc = 0
-                    # Simple rejection sampling over prior
-                    """
-                    draw_efficiency = 1.0
-                    if direct_draw_efficient:
-                        u = np.random.uniform(size=(ndraw, self.x_dim))
-                        mask = region.inside(u)
-                        u = u[mask,:]
-                        nu = len(u)
-                        father = np.ones(nu, dtype=int)
-                        draw_efficiency = mask.mean()
-                        if draw_efficiency < 1.0 / self.num_live_points:
-                            print()
-                            print("switching to MLFriends draw...")
-                            direct_draw_efficient = False
-                    else:
-                        u, father = region.sample(nsamples=ndraw)
-                        nu = len(u)
-                        draw_efficiency = nu / ndraw
-                    """
-                    
                     u, father = region.sample(nsamples=ndraw)
                     nu = len(u)
                     
-                    v = self.transform(u)
+                    v = self.transform(u.copy())
                     #assert v.shape == (nu, self.num_params)
-                    logl = self.loglike(v)
+                    logl = self.loglike(v.copy())
                     #assert logl.shape == (nu,), (logl.shape, v.shape, u.shape)
                     nc += nu
                     accepted = logl > loglstar
                     #assert logl.shape == accepted.shape, (logl.shape, accepted.shape)
                     u = u[accepted,:]
+                    v = v[accepted,:]
                     logl = logl[accepted]
                     father = father[accepted]
 
@@ -412,18 +418,33 @@ class NestedSampler(object):
                         ncall += nc
                 
                 if likes[ib] > active_logl[worst]:
-                    active_u[worst] = samples[ib, :]
-                    active_v[worst] = samplesv[ib,:]
-                    active_logl[worst] = likes[ib]
+                    print()
+                    for cli, ui in zip(transformLayer.clusterids, active_v):
+                        print(cli, ui, "  5")
+                    oldv = active_u[worst].copy()
+                    active_u[worst] = samples[ib, :].copy()
+                    active_v[worst] = samplesv[ib,:].copy()
+                    active_logl[worst] = likes[ib].copy()
+                    print()
+                    for cli, ui in zip(transformLayer.clusterids, active_v):
+                        print(cli, ui, "  6")
                     
                     # if we keep the region informed about the new live points
                     # then the region follows the live points even if maxradius is not updated
-                    region.u[worst,:] = active_u[worst]
-                    region.unormed[worst,:] = region.transformLayer.transform(region.u[worst,:])
+                    #region.u[worst,:] = active_u[worst]
+                    #region.unormed[worst,:] = region.transformLayer.transform(region.u[worst,:])
                     
                     # if we track the cluster assignment, then in the next round
                     # the ids with the same members are likely to have the same id
                     # this is imperfect
+                    #if transformLayer.nclusters > 1:
+                    #    clids = np.unique(transformLayer.clusterids)
+                    #    #print("clusters:", [(clid, region.u[transformLayer.clusterids == clid,:].mean(axis=1)) for clid in clids if clid != 0])
+                    #    _, nearest_cluster_id = min([(np.abs(region.u[transformLayer.clusterids == clid,:].mean() - active_u[worst].mean()), clid) for clid in clids if clid != 0])
+                    #    #print('replacing %d: %.3f->%.3f [C=%d, nearest=%d]' % (worst, oldv.mean(), active_u[worst].mean(), transformLayer.clusterids[father[ib]], nearest_cluster_id))
+                    #    assert transformLayer.clusterids[father[ib]] in (0, nearest_cluster_id), (nearest_cluster_id, transformLayer.clusterids[father[ib]])
+                    
+                    #print(transformLayer.clusterids)
                     #transformLayer.clusterids[worst] = transformLayer.clusterids[father[ib]]
                     # so we just mark the replaced ones as "unassigned"
                     transformLayer.clusterids[worst] = 0
@@ -467,17 +488,32 @@ class NestedSampler(object):
             logz_new = np.logaddexp(logz, logwt)
             h = (np.exp(logwt - logz_new) * active_logl[i] + np.exp(logz - logz_new) * (h + logz) - logz_new)
             logz = logz_new
+            saved_u.append(np.array(active_u[i]))
             saved_v.append(np.array(active_v[i]))
             saved_logwt.append(logwt)
             saved_logl.append(active_logl[i])
+        
+        saved_u = np.array(saved_u)
+        saved_v = np.array(saved_v)
+        saved_wt = np.exp(np.array(saved_logwt) - logz)
+        saved_logl = np.array(saved_logl)
+        logzerr = np.sqrt(h / self.num_live_points)
 
         if self.log:
             with open(os.path.join(self.logs['results'], 'final.csv'), 'w') as f:
                 writer = csv.writer(f)
                 writer.writerow(['niter', 'ncall', 'logz', 'logzerr', 'h'])
-                writer.writerow([it + 1, ncall, logz, np.sqrt(h / self.num_live_points), h])
-            self._save_samples(np.array(saved_v), np.exp(np.array(saved_logwt) - logz), np.array(saved_logl))
+                writer.writerow([it + 1, ncall, logz, logzerr, h])
+            self._save_samples(saved_v, saved_wt, saved_logl)
         
         if not self.use_mpi or self.mpi_rank == 0:
+            print()
             print("niter: {:d}\n ncall: {:d}\n nsamples: {:d}\n logz: {:6.3f} +/- {:6.3f}\n h: {:6.3f}"
-                  .format(it + 1, ncall, len(np.array(saved_v)), logz, np.sqrt(h / self.num_live_points), h))
+                  .format(it + 1, ncall, len(saved_v), logz, logzerr, h))
+        
+        self.results = dict(samples=resample_equal(saved_v, saved_wt / saved_wt.sum()),
+            ncall=ncall, niter=it, logz=logz, logzerr=logzerr,
+            weighted_samples=dict(u=saved_u, v=saved_v, logw = saved_logwt, L=saved_logl),
+        )
+        
+        return self.results
