@@ -224,18 +224,18 @@ class ScalingLayer(object):
         
         N, ndims = points.shape
         self.wrap_cuts = []
+        print()
         for i in self.wrapped_dims:
             # find largest gap
             vals = np.pad(points[:,i], 1, mode='constant', constant_values=(0,1))
             vals.sort()
+            assert vals[0] == 0
+            assert vals[-1] == 1
             deltas = vals[1:] - vals[:-1]
             j = deltas.argmax()
-            if j == 0 or j == N - 2: 
-                # wrap is at 0 or 1, no wrapping needs to be done.
-                continue
             
             # wrap between i, i+1
-            cut = (vals[i] + vals[i+1]) / 2.
+            cut = (vals[j] + vals[j+1]) / 2.
             self.wrap_cuts.append(cut)
     
     def wrap(self, points):
@@ -243,7 +243,7 @@ class ScalingLayer(object):
             return points
         wpoints = np.atleast_2d(points).copy()
         for i, cut in zip(self.wrapped_dims, self.wrap_cuts):
-            wpoints[:,i] = np.fmod(wpoints[:,i] + cut, 1)
+            wpoints[:,i] = np.fmod(wpoints[:,i] + (1 - cut), 1)
         return wpoints
 
     def unwrap(self, wpoints):
@@ -251,14 +251,14 @@ class ScalingLayer(object):
             return wpoints
         points = np.atleast_2d(wpoints).copy()
         for i, cut in zip(self.wrapped_dims, self.wrap_cuts):
-            points[:,i] = np.fmod(points[:,i] + 1 - cut, 1)
+            points[:,i] = np.fmod(points[:,i] + cut, 1)
         return points
     
-    def optimize(self, points, clusterids=None):
+    def optimize(self, points, centered_points, clusterids=None):
         self.optimize_wrap(points)
         wrapped_points = self.wrap(points)
         self.mean = wrapped_points.mean(axis=0)
-        self.std = wrapped_points.std(axis=0)
+        self.std = centered_points.std(axis=0)
         self.volscale = np.product(self.std)
         self.set_clusterids(clusterids=clusterids, npoints=len(points))
     
@@ -269,15 +269,15 @@ class ScalingLayer(object):
         if clusterids is not None:
             # if we have a value, update
             self.clusterids = clusterids
-    
+
     def create_new(self, upoints, maxradiussq):
         # perform clustering in transformed space
-        upoints = upoints.copy()
+        uwpoints = self.wrap(upoints)
         tpoints = self.transform(upoints)
-        nclusters, clusteridxs, overlapped_upoints = update_clusters(upoints, tpoints, maxradiussq)
+        nclusters, clusteridxs, overlapped_uwpoints = update_clusters(uwpoints, tpoints, maxradiussq)
         clusteridxs = track_clusters(clusteridxs, self.clusterids)
         s = ScalingLayer(nclusters=nclusters, wrapped_dims=self.wrapped_dims, clusterids=clusteridxs)
-        s.optimize(overlapped_upoints)
+        s.optimize(upoints, overlapped_uwpoints)
         return s
         
     def transform(self, u):
@@ -285,8 +285,9 @@ class ScalingLayer(object):
         return ((w - self.mean.reshape((1,-1))) / self.std.reshape((1,-1))).reshape(u.shape)
     
     def untransform(self, ww):
-        uu = self.unwrap(ww)
-        return (ww * self.std.reshape((1,-1)) + self.mean.reshape((1,-1))).reshape(uu.shape)
+        w = (ww * self.std.reshape((1,-1)) + self.mean.reshape((1,-1))).reshape(ww.shape)
+        u = self.unwrap(w)
+        return u
 
 class AffineLayer(ScalingLayer):
     def __init__(self, ctr=0, T=1, invT=1, nclusters=1, wrapped_dims=[], clusterids=None):
@@ -297,11 +298,11 @@ class AffineLayer(ScalingLayer):
         self.wrapped_dims = wrapped_dims
         self.clusterids = clusterids
     
-    def optimize(self, points, clusterids=None):
+    def optimize(self, points, centered_points, clusterids=None):
         self.optimize_wrap(points)
         wrapped_points = self.wrap(points)
         self.ctr = np.mean(wrapped_points, axis=0)
-        cov = np.cov(wrapped_points, rowvar=0)
+        cov = np.cov(centered_points, rowvar=0)
         eigval, eigvec = np.linalg.eigh(cov)
         a = np.linalg.inv(cov)
         self.volscale = np.linalg.det(a)**-0.5
@@ -313,12 +314,12 @@ class AffineLayer(ScalingLayer):
 
     def create_new(self, upoints, maxradiussq):
         # perform clustering in transformed space
-        upoints = upoints.copy()
+        uwpoints = self.wrap(upoints)
         tpoints = self.transform(upoints)
-        nclusters, clusteridxs, overlapped_upoints = update_clusters(upoints, tpoints, maxradiussq)
+        nclusters, clusteridxs, overlapped_uwpoints = update_clusters(uwpoints, tpoints, maxradiussq)
         clusteridxs = track_clusters(clusteridxs, self.clusterids)
         s = AffineLayer(nclusters=nclusters, wrapped_dims=self.wrapped_dims, clusterids=clusteridxs)
-        s.optimize(overlapped_upoints)
+        s.optimize(upoints, overlapped_uwpoints)
         return s
     
     def transform(self, u):
@@ -339,7 +340,7 @@ class MLFriends(object):
         self.bbox_lo = self.unormed.min(axis=0)
         self.bbox_hi = self.unormed.max(axis=0)
         self.current_sampling_method = self.sample_from_boundingbox
-        self.sampling_methods = [self.sample_from_boundingbox] #, self.sample_from_transformed_boundingbox, self.sample_from_boundingbox]
+        self.sampling_methods = [self.sample_from_points] #, self.sample_from_transformed_boundingbox, self.sample_from_boundingbox]
         self.sampling_statistics = np.zeros((len(self.sampling_methods), 2), dtype=int)
     
     def estimate_volume(self):

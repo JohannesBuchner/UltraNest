@@ -19,6 +19,8 @@ from .mlfriends import MLFriends, AffineLayer, ScalingLayer
 from numpy import log10
 import numpy as np
 import scipy.stats
+import string
+clusteridstrings = ['%d' % i for i in range(10)] + list(string.ascii_uppercase)
 
 def nicelogger(points, info, region, transformLayer):
     #u, p, logl = points['u'], points['p'], points['logl']
@@ -36,7 +38,7 @@ def nicelogger(points, info, region, transformLayer):
     is_negative = plo < 0
     plo = np.where(is_negative, -10**expohi, 10**expolo)
     phi = np.where(is_negative,  10**expohi, 10**expohi)
-    width = 60
+    width = 80
     indices = ((p - plo) * width / (phi - plo).reshape((1, -1))).astype(int)
     indices[indices >= width] = width - 1
     indices[indices < 0] = 0
@@ -59,8 +61,8 @@ def nicelogger(points, info, region, transformLayer):
         else:
             line = [' ' for i in range(width)]
             for clusterid, j in zip(clusterids, indices[:,i]):
-                if line[j] == ' ' or line[j] == '%d' % clusterid:
-                    line[j] = '%d' % clusterid
+                if line[j] == ' ' or line[j] == clusteridstrings[clusterid]:
+                    line[j] = clusteridstrings[clusterid]
                 #else:
                 #    line[j] = '*'
             linestr = ''.join(line)
@@ -73,12 +75,12 @@ def nicelogger(points, info, region, transformLayer):
         if -4 <= expolo[i] <= 0 and -4 <= expohi[i] <= 0:
             fmt = '%%+.%df' % (-min(expolo[i], expohi[i]))
         print('%09s|%s|%9s %s' % (fmt % plo[i], linestr, fmt % phi[i], param))
+    
     print()
-    return
     for i, param in enumerate(paramnames):
         for j, param2 in enumerate(paramnames[:i]):
             rho, pval = scipy.stats.spearmanr(p[:,i], p[:,j])
-            if pval < 0.01:
+            if pval < 0.01 and abs(rho) > 0.75:
                 print("   %s between %s and %s: rho=%.2f" % (
                     'positive correlation' if rho > 0 else 'negative correlation',
                     param, param2, rho))
@@ -281,7 +283,7 @@ class NestedSampler(object):
         #direct_draw_efficient = True
         #mlfriends_efficient = True
         transformLayer = ScalingLayer(wrapped_dims=self.wrapped_axes)
-        transformLayer.optimize(active_u)
+        transformLayer.optimize(active_u, active_u)
         region = MLFriends(active_u, transformLayer)
         
         ib = 0
@@ -328,23 +330,26 @@ class NestedSampler(object):
                 
                 #print("computing maxradius...")
                 r = nextregion.compute_maxradiussq(nbootstraps=30 // self.mpi_size)
-                #print("MLFriends built. r=%f" % r**0.5)
+                print("MLFriends built. r=%f" % r**0.5)
                 if self.use_mpi:
-                    recv_minradii = self.comm.gather(r, root=0)
-                    recv_minradii = self.comm.bcast(recv_minradii, root=0)
+                    recv_maxradii = self.comm.gather(r, root=0)
+                    recv_maxradii = self.comm.bcast(recv_maxradii, root=0)
                     r = np.max(recv_minradii)
                 
                 nextregion.maxradiussq = r
-                #print()
-                #print('proposed volume:', nextregion.estimate_volume())
-                if not first_time or nextregion.estimate_volume() < region.estimate_volume():
+                print()
+                print()
+                print('proposed volume:', nextregion.estimate_volume(), "accept:", nextregion.estimate_volume() < region.estimate_volume())
+                # force shrinkage of volume
+                # this is to avoid re-connection of dying out nodes
+                if nextregion.estimate_volume() < region.estimate_volume():
                     region = nextregion
                     transformLayer = region.transformLayer
-                    next_full_rebuild = it + self.num_live_points
                 
                 if self.log:
                     nicelogger(points=dict(u=active_u, p=active_v, logl=active_logl), 
-                        info=dict(it=it, ncall=ncall, logz=logz, logz_remain=logz_remain, paramnames=self.paramnames), 
+                        info=dict(it=it, ncall=ncall, logz=logz, logz_remain=logz_remain, 
+                        paramnames=self.paramnames + self.derivedparamnames), 
                         region=region, transformLayer=transformLayer)
                 
                 next_update_interval_ncall = ncall + update_interval_ncall
@@ -404,9 +409,9 @@ class NestedSampler(object):
                     # if we track the cluster assignment, then in the next round
                     # the ids with the same members are likely to have the same id
                     # this is imperfect
-                    #transformLayer.clusterids[worst] = transformLayer.clusterids[father[ib]]
+                    transformLayer.clusterids[worst] = transformLayer.clusterids[father[ib]]
                     # so we just mark the replaced ones as "unassigned"
-                    transformLayer.clusterids[worst] = 0
+                    #transformLayer.clusterids[worst] = 0
                     ib = ib + 1
                     break
                 else:
@@ -472,7 +477,21 @@ class NestedSampler(object):
         
         self.results = dict(samples=resample_equal(saved_v, saved_wt / saved_wt.sum()),
             ncall=ncall, niter=it, logz=logz, logzerr=logzerr,
-            weighted_samples=dict(u=saved_u, v=saved_v, logw = saved_logwt, L=saved_logl),
+            weighted_samples=dict(u=saved_u, v=saved_v, w = saved_wt, logw = saved_logwt, L=saved_logl),
         )
         
         return self.results
+    
+    def plot(self):
+        import matplotlib.pyplot as plt
+        import corner
+        data = np.array(self.results['weighted_samples']['v'])
+        weights = np.array(self.results['weighted_samples']['w'])
+        weights /= weights.sum()
+
+        mask = weights > 1e-4
+
+        corner.corner(data[mask,:], weights=weights[mask], 
+                labels=self.paramnames + self.derivedparamnames, show_titles=True)
+        plt.savefig(os.path.join(self.logs['results'], 'corner.pdf'), bbox_inches='tight')
+        plt.close()
