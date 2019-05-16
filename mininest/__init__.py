@@ -14,7 +14,7 @@ import json
 
 from .utils import create_logger, make_run_dir
 from .utils import acceptance_rate, effective_sample_size, mean_jump_distance, resample_equal
-from .mlfriends import MLFriends, AffineLayer, ScalingLayer
+from mininest.mlfriends import MLFriends, AffineLayer, ScalingLayer
 
 from numpy import log10
 import numpy as np

@@ -29,4 +29,28 @@ Coming soon
 * Support resuming an interrupted run
 * Support for variable number of live points, posterior bulking
 
+Usage
+=============
+
+Install::
+
+        $ python3 setup.py install --user
+
+Run tests::
+
+        $ python3 setup.py test
+
+Run an example::
+
+        $ cd examples/
+        $ python3 testsine.py
+
+
+
+
+
+Licence
+============
+
+Closed-source at the moment, will be released as open source later.
 

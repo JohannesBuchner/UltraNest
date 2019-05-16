@@ -25,6 +25,4 @@ setup(
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
     cmdclass={'build_ext': build_ext},
-    #script_args=['build_ext'],
-    options={'build_ext':{'inplace':True, 'force':False}},
 )
