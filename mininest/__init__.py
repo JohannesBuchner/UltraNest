@@ -20,7 +20,7 @@ from numpy import log10
 import numpy as np
 import scipy.stats
 import string
-clusteridstrings = ['%d' % i for i in range(1,10)] + list(string.ascii_uppercase)
+clusteridstrings = ['%d' % i for i in range(10)] + list(string.ascii_uppercase)
 
 def nicelogger(points, info, region, transformLayer):
     #u, p, logl = points['u'], points['p'], points['logl']
@@ -62,7 +62,11 @@ def nicelogger(points, info, region, transformLayer):
         else:
             line = [' ' for i in range(width)]
             for clusterid, j in zip(clusterids, indices[:,i]):
-                if line[j] == ' ' or line[j] == clusteridstrings[clusterid]:
+                if clusterid == 0 and line[j] == ' ':
+                    # empty, so set it although we don't know the cluster id
+                    line[j] = clusteridstrings[clusterid]
+                elif clusterid > 0 and line[j] in (' ', '*'):
+                    # set it to correct cluster id
                     line[j] = clusteridstrings[clusterid]
                 #else:
                 #    line[j] = '*'
@@ -84,7 +88,7 @@ def nicelogger(points, info, region, transformLayer):
         rho, pval = scipy.stats.spearmanr(p)
         if pval < 0.01 and abs(rho) > 0.75:
             print("   %s between %s and %s: rho=%.2f" % (
-                'positive correlation' if rho > 0 else 'negative correlation',
+                'positive degeneracy' if rho > 0 else 'negative degeneracy',
                 paramnames[0], paramnames[1], rho))
     else:
         rho, pval = scipy.stats.spearmanr(p)
@@ -92,7 +96,7 @@ def nicelogger(points, info, region, transformLayer):
             for j, param2 in enumerate(paramnames[:i]):
                 if pval[i,j] < 0.01 and abs(rho[i,j]) > 0.75:
                     print("   %s between %s and %s: rho=%.2f" % (
-                        'positive correlation' if rho[i,j] > 0 else 'negative correlation',
+                        'positive degeneracy' if rho[i,j] > 0 else 'negative degeneracy',
                         param, param2, rho[i,j]))
     
 
@@ -289,9 +293,6 @@ class NestedSampler(object):
         fraction_remain = 1.0
         ncall = self.num_live_points  # number of calls we already made
         first_time = True
-        #nb = self.mpi_size * mcmc_batch_size
-        #direct_draw_efficient = True
-        #mlfriends_efficient = True
         transformLayer = ScalingLayer(wrapped_dims=self.wrapped_axes)
         transformLayer.optimize(active_u, active_u)
         region = MLFriends(active_u, transformLayer)
@@ -303,7 +304,6 @@ class NestedSampler(object):
         next_update_interval_ncall = -1
         next_update_interval_iter = -1
         next_full_rebuild = -1
-        #direct_draw_efficient = True
 
         while max_iters is None or it < max_iters:
 
@@ -344,11 +344,9 @@ class NestedSampler(object):
                 if self.use_mpi:
                     recv_maxradii = self.comm.gather(r, root=0)
                     recv_maxradii = self.comm.bcast(recv_maxradii, root=0)
-                    r = np.max(recv_minradii)
+                    r = np.max(recv_maxradii)
                 
                 nextregion.maxradiussq = r
-                #print()
-                #print('proposed volume:', nextregion.estimate_volume(), "accept:", nextregion.estimate_volume() < region.estimate_volume())
                 # force shrinkage of volume
                 # this is to avoid re-connection of dying out nodes
                 if nextregion.estimate_volume() < region.estimate_volume():
@@ -412,8 +410,8 @@ class NestedSampler(object):
                     
                     # if we keep the region informed about the new live points
                     # then the region follows the live points even if maxradius is not updated
-                    #region.u[worst,:] = active_u[worst]
-                    #region.unormed[worst,:] = region.transformLayer.transform(region.u[worst,:])
+                    region.u[worst,:] = active_u[worst]
+                    region.unormed[worst,:] = region.transformLayer.transform(region.u[worst,:])
                     
                     # if we track the cluster assignment, then in the next round
                     # the ids with the same members are likely to have the same id
@@ -439,16 +437,8 @@ class NestedSampler(object):
                       logz, logz_remain, np.max(active_logl), it, ncall, it * 100 / ncall, ndraw))
                 sys.stdout.flush()
                 
-                # if low efficiency, bulk-process larger arrays
-                #if it * 100 > ncall:
-                #    ndraw = max(4000, self.num_live_points)
-                ndraw = max(128, min(16384, round((ncall+1) / (it + 1))))
-                #else:
-                #    ndraw = max(100, self.num_live_points)
-                
-                #self.logger.info(
-                #    '[it=%d,nevals=%d,eff=%f] Like=%5.1f..%5.1f lnZ=%5.1f' %
-                #    (it, ncall, it * 100. / ncall, loglstar, np.max(active_logl), logz))
+                # if efficiency becomes low, bulk-process larger arrays
+                ndraw = max(128, min(16384, round((ncall+1) / (it + 1) / self.mpi_size)))
             
             # Stopping criterion
             if fraction_remain < dlogz:
@@ -492,15 +482,16 @@ class NestedSampler(object):
         return self.results
     
     def plot(self):
-        import matplotlib.pyplot as plt
-        import corner
-        data = np.array(self.results['weighted_samples']['v'])
-        weights = np.array(self.results['weighted_samples']['w'])
-        weights /= weights.sum()
+        if self.log:
+            import matplotlib.pyplot as plt
+            import corner
+            data = np.array(self.results['weighted_samples']['v'])
+            weights = np.array(self.results['weighted_samples']['w'])
+            weights /= weights.sum()
 
-        mask = weights > 1e-4
+            mask = weights > 1e-4
 
-        corner.corner(data[mask,:], weights=weights[mask], 
-                labels=self.paramnames + self.derivedparamnames, show_titles=True)
-        plt.savefig(os.path.join(self.logs['results'], 'corner.pdf'), bbox_inches='tight')
-        plt.close()
+            corner.corner(data[mask,:], weights=weights[mask], 
+                    labels=self.paramnames + self.derivedparamnames, show_titles=True)
+            plt.savefig(os.path.join(self.logs['results'], 'corner.pdf'), bbox_inches='tight')
+            plt.close()

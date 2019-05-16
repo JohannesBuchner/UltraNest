@@ -165,10 +165,9 @@ def update_clusters(upoints, tpoints, maxradiussq, clusterids=None):
     if clusterids is None:
         clusterids = np.zeros(len(tpoints), dtype=int)
     else:
-        existing = clusterids == 0
+        existing = clusterids == currentclusterid
         if existing.any():
-            currentclusterid = clusterids[existing].min()
-            i = np.where(clusterids == currentclusterid)[0][0]
+            i = np.where(existing)[0][0]
     
     clusteridxs[i] = currentclusterid
     while True:
@@ -190,15 +189,14 @@ def update_clusters(upoints, tpoints, maxradiussq, clusterids=None):
             newmembers[nonmembermask] = nnearby >= 0
             #print('adding', newmembers.sum())
             clusteridxs[newmembers] = currentclusterid
-            clusterids[newmembers] = 0
         else:
             # start a new cluster
-            currentclusterid = max(currentclusterid + 1, clusterids[nonmembermask].min())
-            existing = clusterids == currentclusterid
-            if existing.any():
-                i = np.where(existing)[0][0]
-            else:
-                i = np.where(nonmembermask)[0][0]
+            currentclusterid = currentclusterid + 1
+            i = np.where(nonmembermask)[0][0]
+            if clusterids is not None:
+                existing = clusterids == currentclusterid
+                if existing.any():
+                    i = np.where(existing)[0][0]
             
             clusteridxs[i] = currentclusterid
     
