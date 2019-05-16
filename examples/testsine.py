@@ -36,15 +36,6 @@ def main(args):
         assert logl.shape == jitter.shape
         return logl
     
-    def transform_(x):
-        amplitude, jitter, phase, period = x.transpose()
-        amplitude = 10**(amplitude * 4 - 2)
-        jitter = 10**(jitter * 1 - 1.5)
-        phase = 2 * pi * phase
-        period = 10**(period * 4 - 1)
-        frequency = 2 * pi / period
-        z = np.vstack((amplitude, jitter, phase, period, frequency)).transpose()
-        return z
     def transform(x):
         z = np.empty((len(x), 5))
         z[:,0] = 10**(x[:,0] * 4 - 2)
