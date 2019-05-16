@@ -11,6 +11,7 @@ Features
 * pip installable
 * MPI-support
 * Wrapped/circular parameters
+* Derived parameters
 * Tracking solution modes
 * Neat visualisations and exploration information during the run
 * Very fast implementation
