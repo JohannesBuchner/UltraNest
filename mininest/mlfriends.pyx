@@ -104,39 +104,6 @@ def compute_maxradiussq(np.ndarray[np.float_t, ndim=2] apts, np.ndarray[np.float
 
     return maxd
 
-def track_clusters(newclusterids, oldclusterids):
-    # if all members of an old cluster are assigned to only one new cluster id
-    # reuse that id
-    # otherwise, give new id
-    return newclusterids
-    relabel_map = {}
-    c = 0
-    for c in np.unique(oldclusterids):
-        if c == 0:
-            continue
-        newname = newclusterids[c == oldclusterids]
-        newcs, cts = np.unique(newname, return_counts=True)
-        assert (newcs != 0).all(), newcs
-        #mask = newcs != 0
-        #newcs = newcs[mask]
-        #cts = cts[mask]
-        
-        # reuse old ID from majority
-        relabel_map[newcs[cts.argmax()]] = c
-    
-    for newc in np.unique(newclusterids):
-        nextc = newc
-        while nextc in relabel_map.values():
-            nextc += 1
-        relabel_map[newc] = nextc
-    
-    mergedclusterids = newclusterids.copy()
-    for newc, nextc in relabel_map.items():
-        mergedclusterids[newclusterids == newc] = nextc
-    
-    return mergedclusterids
-
-
 def update_clusters(upoints, tpoints, maxradiussq, clusterids=None):
     """
     clusters points, so that clusters are distinct if no member pair is within a radius of sqrt(maxradiussq)

@@ -19,7 +19,7 @@ setup(
     url = "https://github.com/JohannesBuchner/mininest/",
     license = "GPL",
     packages = ['mininest'],
-    requires = ["matplotlib", "numpy", "scipy"],
+    requires = ["matplotlib", "numpy", "scipy", "corner"],
     ext_modules = [Extension('mininest.mlfriends', ["mininest/mlfriends.pyx"], include_dirs=['.'])],
     provides = ['mininest'],
     setup_requires=['pytest-runner'],
