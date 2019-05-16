@@ -20,7 +20,7 @@ from numpy import log10
 import numpy as np
 import scipy.stats
 import string
-clusteridstrings = ['%d' % i for i in range(10)] + list(string.ascii_uppercase)
+clusteridstrings = ['%d' % i for i in range(1,10)] + list(string.ascii_uppercase)
 
 def nicelogger(points, info, region, transformLayer):
     #u, p, logl = points['u'], points['p'], points['logl']
@@ -42,11 +42,12 @@ def nicelogger(points, info, region, transformLayer):
     indices = ((p - plo) * width / (phi - plo).reshape((1, -1))).astype(int)
     indices[indices >= width] = width - 1
     indices[indices < 0] = 0
+    ndim = len(plo)
     
     print()
     clusterids = transformLayer.clusterids
     nmodes = transformLayer.nclusters
-    #print("Volume:", region.estimate_volume())
+    print("Volume:", region.estimate_volume())
     if nmodes == 1:
         print("Mono-modal")
     else: 
@@ -77,13 +78,22 @@ def nicelogger(points, info, region, transformLayer):
         print('%09s|%s|%9s %s' % (fmt % plo[i], linestr, fmt % phi[i], param))
     
     print()
-    for i, param in enumerate(paramnames):
-        for j, param2 in enumerate(paramnames[:i]):
-            rho, pval = scipy.stats.spearmanr(p[:,i], p[:,j])
-            if pval < 0.01 and abs(rho) > 0.75:
-                print("   %s between %s and %s: rho=%.2f" % (
-                    'positive correlation' if rho > 0 else 'negative correlation',
-                    param, param2, rho))
+    if ndim == 1:
+        pass
+    elif ndim == 2:
+        rho, pval = scipy.stats.spearmanr(p)
+        if pval < 0.01 and abs(rho) > 0.75:
+            print("   %s between %s and %s: rho=%.2f" % (
+                'positive correlation' if rho > 0 else 'negative correlation',
+                paramnames[0], paramnames[1], rho))
+    else:
+        rho, pval = scipy.stats.spearmanr(p)
+        for i, param in enumerate(paramnames):
+            for j, param2 in enumerate(paramnames[:i]):
+                if pval[i,j] < 0.01 and abs(rho[i,j]) > 0.75:
+                    print("   %s between %s and %s: rho=%.2f" % (
+                        'positive correlation' if rho[i,j] > 0 else 'negative correlation',
+                        param, param2, rho[i,j]))
     
 
 
@@ -330,16 +340,15 @@ class NestedSampler(object):
                 
                 #print("computing maxradius...")
                 r = nextregion.compute_maxradiussq(nbootstraps=30 // self.mpi_size)
-                print("MLFriends built. r=%f" % r**0.5)
+                #print("MLFriends built. r=%f" % r**0.5)
                 if self.use_mpi:
                     recv_maxradii = self.comm.gather(r, root=0)
                     recv_maxradii = self.comm.bcast(recv_maxradii, root=0)
                     r = np.max(recv_minradii)
                 
                 nextregion.maxradiussq = r
-                print()
-                print()
-                print('proposed volume:', nextregion.estimate_volume(), "accept:", nextregion.estimate_volume() < region.estimate_volume())
+                #print()
+                #print('proposed volume:', nextregion.estimate_volume(), "accept:", nextregion.estimate_volume() < region.estimate_volume())
                 # force shrinkage of volume
                 # this is to avoid re-connection of dying out nodes
                 if nextregion.estimate_volume() < region.estimate_volume():
@@ -409,9 +418,9 @@ class NestedSampler(object):
                     # if we track the cluster assignment, then in the next round
                     # the ids with the same members are likely to have the same id
                     # this is imperfect
-                    transformLayer.clusterids[worst] = transformLayer.clusterids[father[ib]]
+                    #transformLayer.clusterids[worst] = transformLayer.clusterids[father[ib]]
                     # so we just mark the replaced ones as "unassigned"
-                    #transformLayer.clusterids[worst] = 0
+                    transformLayer.clusterids[worst] = 0
                     ib = ib + 1
                     break
                 else:

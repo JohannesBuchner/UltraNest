@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-#from setuptools import find_packages, setup
-from distutils.core import setup
+try:
+    from setuptools import setup
+except:
+    from distutils.core import setup
+
 from Cython.Build import cythonize
 from distutils.extension import Extension
 from Cython.Distutils import build_ext
@@ -19,7 +22,9 @@ setup(
     requires = ["matplotlib", "numpy", "scipy"],
     ext_modules = [Extension('mininest.mlfriends', ["mininest/mlfriends.pyx"], include_dirs=['.'])],
     provides = ['mininest'],
+    setup_requires=['pytest-runner'],
+    tests_require=['pytest'],
     cmdclass={'build_ext': build_ext},
-    script_args=['build_ext'],
-    options={'build_ext':{'inplace':True, 'force':False}}
+    #script_args=['build_ext'],
+    options={'build_ext':{'inplace':True, 'force':False}},
 )
