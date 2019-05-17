@@ -11,6 +11,7 @@ import os
 import sys
 import csv
 import json
+import shutil
 
 from .utils import create_logger, make_run_dir
 from .utils import acceptance_rate, effective_sample_size, mean_jump_distance, resample_equal
@@ -38,7 +39,13 @@ def nicelogger(points, info, region, transformLayer):
     is_negative = plo < 0
     plo = np.where(is_negative, -10**expohi, 10**expolo)
     phi = np.where(is_negative,  10**expohi, 10**expohi)
-    width = 80
+
+    if sys.stderr.isatty() and hasattr(shutil, 'get_terminal_size'):
+        columns, _rows = shutil.get_terminal_size(fallback=(80, 25))
+    else:
+        columns, _rows = 80, 25
+
+    width = columns - 22 - max([len(pname) for pname in paramnames])
     indices = ((p - plo) * width / (phi - plo).reshape((1, -1))).astype(int)
     indices[indices >= width] = width - 1
     indices[indices < 0] = 0

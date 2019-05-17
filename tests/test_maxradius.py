@@ -8,7 +8,7 @@ def test_maxradius():
 	for ndim in 2, 4, 8, 16, 32, 64:
 		plotpoints = []
 		np.random.seed(ndim)
-		for npts in 100, 400, 1000, 4000, 10000:
+		for npts in 100, 400, 1000, 4000:
 			points = np.random.uniform(size=(npts,ndim))
 			transformLayer = ScalingLayer()
 			region = MLFriends(points, transformLayer)
