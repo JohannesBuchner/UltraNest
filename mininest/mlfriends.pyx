@@ -215,7 +215,7 @@ class ScalingLayer(object):
     def wrap(self, points):
         if not self.has_wraps:
             return points
-        wpoints = points.copy()
+        wpoints = points.copy().reshape((-1, points.shape[-1]))
         for i, cut in zip(self.wrapped_dims, self.wrap_cuts):
             wpoints[:,i] = np.fmod(wpoints[:,i] + (1 - cut), 1)
         return wpoints
@@ -223,7 +223,7 @@ class ScalingLayer(object):
     def unwrap(self, wpoints):
         if not self.has_wraps:
             return wpoints
-        points = np.atleast_2d(wpoints).copy()
+        points = wpoints.copy().reshape((-1, wpoints.shape[-1]))
         for i, cut in zip(self.wrapped_dims, self.wrap_cuts):
             points[:,i] = np.fmod(points[:,i] + cut, 1)
         return points
