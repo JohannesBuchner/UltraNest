@@ -10,7 +10,7 @@ class NullPointStore(object):
 	"""
 	def __init__(self, ncols):
 		self.ncols = int(ncols)
-		self.stack_empty = False
+		self.stack_empty = True
 	
 	def reset(self):
 		pass

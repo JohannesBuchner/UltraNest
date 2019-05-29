@@ -16,7 +16,7 @@ import shutil
 from .utils import create_logger, make_run_dir
 from .utils import acceptance_rate, effective_sample_size, mean_jump_distance, resample_equal
 from mininest.mlfriends import MLFriends, AffineLayer, ScalingLayer
-from .store import PointStore
+from .store import PointStore, NullPointStore
 
 from numpy import log10
 import numpy as np
@@ -173,8 +173,9 @@ class NestedSampler(object):
             self.mpi_rank = 0
 
         self.log = self.mpi_rank == 0
+        self.log_to_disk = self.log and log_dir is not None
 
-        if self.log:
+        if self.log and log_dir is not None:
             self.logs = make_run_dir(log_dir, run_num, append_run_num= append_run_num)
             log_dir = self.logs['run_dir']
         else:
@@ -185,14 +186,16 @@ class NestedSampler(object):
         if self.log:
             self.logger.info('Num live points [%d]' % (self.num_live_points))
 
-        if self.log:
+        if self.log_to_disk:
             with open(os.path.join(self.logs['results'], 'results.csv'), 'w') as f:
                 writer = csv.writer(f)
                 writer.writerow(['step', 'acceptance', 'min_ess',
                                  'max_ess', 'jump_distance', 'scale', 'loglstar', 'logz', 'fraction_remain', 'ncall'])
         
-        if self.log:
+        if self.log_to_disk:
             self.pointstore = PointStore(os.path.join(self.logs['results'], 'points.tsv'), 2 + self.x_dim + self.num_params)
+        else:
+            self.pointstore = NullPointStore(2 + self.x_dim + self.num_params)
 
     def _save_params(self, my_dict):
         my_dict = {k: str(v) for k, v in my_dict.items()}
@@ -326,7 +329,7 @@ class NestedSampler(object):
             else:
                 active_logl = self.loglike(active_v)
         
-            if self.log:
+            if self.log_to_disk:
                 for i in range(num_live_points_missing):
                     self.pointstore.add([-np.inf, active_logl[i]] + active_u[i,:].tolist() + active_v[i,:].tolist())
             
@@ -430,7 +433,7 @@ class NestedSampler(object):
                     # root checks the point store
                     next_point = np.zeros((1, 2 + self.x_dim + self.num_params))
                     
-                    if self.log:
+                    if self.log_to_disk:
                         stored_point = self.pointstore.pop(loglstar)
                         if stored_point is not None:
                             next_point[0,:] = stored_point
@@ -447,7 +450,7 @@ class NestedSampler(object):
                     samples = next_point[:,2:2+self.x_dim]
                     samplesv = next_point[:,2+self.x_dim:2+self.x_dim+self.num_params]
                     # skip if we already know it is not useful
-                    ib = 0 if np.isfinite(likes[0]) else 1
+                    ib = 0 if not np.isfinite(likes[0]) else 1
                 
                 while ib >= len(samples):
                     # get new samples
@@ -550,7 +553,7 @@ class NestedSampler(object):
         saved_logl = np.array(saved_logl)
         logzerr = np.sqrt(h / self.num_live_points)
 
-        if self.log:
+        if self.log_to_disk:
             with open(os.path.join(self.logs['results'], 'final.csv'), 'w') as f:
                 writer = csv.writer(f)
                 writer.writerow(['niter', 'ncall', 'logz', 'logzerr', 'h'])
@@ -571,7 +574,7 @@ class NestedSampler(object):
         return self.results
     
     def plot(self):
-        if self.log:
+        if self.log_to_disk:
             import matplotlib.pyplot as plt
             import corner
             data = np.array(self.results['weighted_samples']['v'])

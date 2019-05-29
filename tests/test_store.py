@@ -1,7 +1,7 @@
 import numpy as np
 import tempfile
 import os
-from mininest.store import PointStore
+from mininest.store import PointStore, NullPointStore
 
 def test_store():
 	try:
@@ -71,5 +71,34 @@ def test_store():
 		
 	finally:
 		os.remove(filepath)
+
+
+def test_nullstore():
+	ptst = NullPointStore(4)
+	assert ptst.stack_empty
+	assert ptst.pop(-np.inf) is None, "new store should not return anything"
+	assert ptst.pop(100) is None, "new store should not return anything"
+	ptst.close()
+
+	ptst = NullPointStore(4)
+	assert ptst.pop(-np.inf) is None, "empty store should not return anything"
+	assert ptst.pop(100) is None, "empty store should not return anything"
+	ptst.close()
+
+	ptst = NullPointStore(4)
+	assert ptst.stack_empty
+	# no errors even if we give rubbish input
+	ptst.add([-np.inf, 123, 413, 213])
+	ptst.add([10, 123, 413, 213])
+	ptst.add([10, 123, 413, 213, 123])
+	ptst.add([99, 123, 413])
+	assert ptst.stack_empty
+	ptst.close()
+	
+	ptst = NullPointStore(4)
+	assert ptst.stack_empty
+	entry = ptst.pop(-np.inf)
+	assert entry is None
+	ptst.close()
 
 
