@@ -16,6 +16,7 @@ import shutil
 from .utils import create_logger, make_run_dir
 from .utils import acceptance_rate, effective_sample_size, mean_jump_distance, resample_equal
 from mininest.mlfriends import MLFriends, AffineLayer, ScalingLayer
+from .store import PointStore
 
 from numpy import log10
 import numpy as np
@@ -189,6 +190,9 @@ class NestedSampler(object):
                 writer = csv.writer(f)
                 writer.writerow(['step', 'acceptance', 'min_ess',
                                  'max_ess', 'jump_distance', 'scale', 'loglstar', 'logz', 'fraction_remain', 'ncall'])
+        
+        if self.log:
+            self.pointstore = PointStore(os.path.join(self.logs['results'], 'points.tsv'), 2 + self.x_dim + self.num_params)
 
     def _save_params(self, my_dict):
         my_dict = {k: str(v) for k, v in my_dict.items()}
@@ -263,31 +267,71 @@ class NestedSampler(object):
         #if self.log:
         #    self.logger.info('MCMC steps [%d] alpha [%5.4f] volume switch [%5.4f]' % (mcmc_steps, alpha, volume_switch))
 
-        if self.use_mpi:
-            self.logger.info('Using MPI with rank [%d]' % (self.mpi_rank))
-            if self.mpi_rank == 0:
-                active_u = np.random.uniform(size=(self.num_live_points, self.x_dim))
-            else:
-                active_u = np.empty((self.num_live_points, self.x_dim), dtype=np.float64)
-            self.comm.Bcast(active_u, root=0)
+        if self.log:
+            # try to resume:
+            prev_u = []
+            prev_v = []
+            prev_logl = []
+            for i in range(self.num_live_points):
+                row = self.pointstore.pop(-np.inf)
+                if row is not None:
+                    prev_logl.append(row[1])
+                    prev_u.append(row[2:2+self.x_dim])
+                    prev_v.append(row[2+self.x_dim:2+self.x_dim+self.num_params])
+            
+            prev_u = np.array(prev_u)
+            prev_v = np.array(prev_v)
+            prev_logl = np.array(prev_logl)
+            
+            num_live_points_missing = self.num_live_points - len(prev_logl)
         else:
-            active_u = np.random.uniform(size=(self.num_live_points, self.x_dim))
-        active_v = self.transform(active_u)
+            num_live_points_missing = -1
+        
+        if self.use_mpi:
+            self.comm.Bcast(num_live_points_missing, root=0)
+        
+        use_point_stack = not self.pointstore.stack_empty
+        
+        assert num_live_points_missing >= 0
+        if num_live_points_missing > 0:
+            if self.use_mpi:
+                self.logger.info('Using MPI with rank [%d]' % (self.mpi_rank))
+                if self.mpi_rank == 0:
+                    active_u = np.random.uniform(size=(num_live_points_missing, self.x_dim))
+                else:
+                    active_u = np.empty((num_live_points_missing, self.x_dim), dtype=np.float64)
+                self.comm.Bcast(active_u, root=0)
+            else:
+                active_u = np.random.uniform(size=(num_live_points_missing, self.x_dim))
+            active_v = self.transform(active_u)
 
-        if self.use_mpi:
-            if self.mpi_rank == 0:
-                chunks = [[] for _ in range(self.mpi_size)]
-                for i, chunk in enumerate(active_v):
-                    chunks[i % self.mpi_size].append(chunk)
+            if self.use_mpi:
+                if self.mpi_rank == 0:
+                    chunks = [[] for _ in range(self.mpi_size)]
+                    for i, chunk in enumerate(active_v):
+                        chunks[i % self.mpi_size].append(chunk)
+                else:
+                    chunks = None
+                data = self.comm.scatter(chunks, root=0)
+                active_logl = self.loglike(data)
+                recv_active_logl = self.comm.gather(active_logl, root=0)
+                recv_active_logl = self.comm.bcast(recv_active_logl, root=0)
+                active_logl = np.concatenate(recv_active_logl, axis=0)
             else:
-                chunks = None
-            data = self.comm.scatter(chunks, root=0)
-            active_logl = self.loglike(data)
-            recv_active_logl = self.comm.gather(active_logl, root=0)
-            recv_active_logl = self.comm.bcast(recv_active_logl, root=0)
-            active_logl = np.concatenate(recv_active_logl, axis=0)
+                active_logl = self.loglike(active_v)
+        
+            if self.log:
+                for i in range(num_live_points_missing):
+                    self.pointstore.add([-np.inf, active_logl[i]] + active_u[i,:].tolist() + active_v[i,:].tolist())
+            
+            if len(prev_u) > 0:
+                active_u = np.vstack((prev_u, active_u))
+                active_v = np.vstack((prev_v, active_v))
+                active_logl = np.vstack((prev_logl, active_logl))
         else:
-            active_logl = self.loglike(active_v)
+            active_u = prev_u
+            active_v = prev_v
+            active_logl = prev_logl
 
         saved_u = []
         saved_v = []  # Stored points for posterior results
@@ -329,7 +373,7 @@ class NestedSampler(object):
             saved_logwt.append(logwt)
             saved_logl.append(active_logl[worst])
 
-            expected_vol = np.exp(-it / self.num_live_points)
+            #expected_vol = np.exp(-it / self.num_live_points)
 
             # The new likelihood constraint is that of the worst object.
             loglstar = active_logl[worst]
@@ -365,12 +409,35 @@ class NestedSampler(object):
                         info=dict(it=it, ncall=ncall, logz=logz, logz_remain=logz_remain, 
                         paramnames=self.paramnames + self.derivedparamnames), 
                         region=region, transformLayer=transformLayer)
+                    self.pointstore.flush()
                 
                 next_update_interval_ncall = ncall + update_interval_ncall
                 next_update_interval_iter = it + update_interval_iter
                 first_time = False
             
             while True:
+                if ib >= len(samples) and use_point_stack:
+                    # root checks the point store
+                    next_point = np.zeros((1, 2 + self.x_dim + self.num_params))
+                    
+                    if self.log:
+                        stored_point = self.pointstore.pop(loglstar)
+                        if stored_point is not None:
+                            next_point[0,:] = stored_point
+                        else:
+                            next_point[0,:] = -np.inf
+                        use_point_stack = not self.pointstore.stack_empty
+                    
+                    if self.use_mpi: # and informs everyone
+                        use_point_stack = self.comm.bcast(use_point_stack, root=0)
+                        next_point = self.comm.bcast(next_point, root=0)
+                    
+                    # unpack
+                    likes = next_point[:,1]
+                    samples = next_point[:,2:2+self.x_dim]
+                    samplesv = next_point[:,2+self.x_dim:2+self.x_dim+self.num_params]
+                    ib = 0
+                
                 while ib >= len(samples):
                     # get new samples
                     ib = 0
@@ -387,6 +454,9 @@ class NestedSampler(object):
                     v = v[accepted,:]
                     logl = logl[accepted]
                     father = father[accepted]
+                    
+                    for ui, vi, logli in zip(u, v, logl):
+                        self.pointstore.add([loglstar, logli] + ui.tolist() + vi.tolist())
 
                     if self.use_mpi:
                         recv_father = self.comm.gather(father, root=0)
@@ -410,7 +480,7 @@ class NestedSampler(object):
                         likes = np.array(logl)
                         ncall += nc
                 
-                if likes[ib] > active_logl[worst]:
+                if likes[ib] > loglstar:
                     active_u[worst] = samples[ib, :]
                     active_v[worst] = samplesv[ib,:]
                     active_logl[worst] = likes[ib]
@@ -440,7 +510,7 @@ class NestedSampler(object):
 
             if it % log_interval == 0 and self.log:
                 #nicelogger(self.paramnames, active_u, active_v, active_logl, it, ncall, logz, logz_remain, region=region)
-                sys.stdout.write('lnZ = %.1f, remainder = %.1f, lnLike = %.1f | Efficiency: %d/%d = %.4f%% (draw:%d) \r' % (
+                sys.stdout.write('lnZ=%.1f, %.1f remains | lnLike=%.1f | Efficiency: %d/%d = %.4f%% (draw:%d) \r' % (
                       logz, logz_remain, np.max(active_logl), it, ncall, it * 100 / ncall, ndraw))
                 sys.stdout.flush()
                 
@@ -475,6 +545,7 @@ class NestedSampler(object):
                 writer.writerow(['niter', 'ncall', 'logz', 'logzerr', 'h'])
                 writer.writerow([it + 1, ncall, logz, logzerr, h])
             self._save_samples(saved_v, saved_wt, saved_logl)
+            self.pointstore.close()
         
         if not self.use_mpi or self.mpi_rank == 0:
             print()

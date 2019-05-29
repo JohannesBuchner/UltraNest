@@ -33,7 +33,7 @@ def test_transform():
 			
 			assert (points2 == points).all(), (points, tpoints, points2)
 
-def test_wrap():
+def test_wrap(plot=False):
 	np.random.seed(1)
 	for Npoints in 10, 100, 1000:
 		for wrapids in [[], [0], [1], [0,1]]:
@@ -52,14 +52,14 @@ def test_wrap():
 			points2 = layer.untransform(tpoints)
 			assert tpoints.shape == points2.shape, (tpoints.shape, points2.shape)
 			
-			
-			plt.subplot(1, 2, 1)
-			plt.scatter(points[:,0], points[:,1])
-			plt.scatter(points2[:,0], points2[:,1], marker='x')
-			plt.subplot(1, 2, 2)
-			plt.scatter(tpoints[:,0], tpoints[:,1])
-			plt.savefig("testtransform_%d_wrap%d.pdf" % (Npoints, len(wrapids)), bbox_inches='tight')
-			plt.close()
+			if plot:
+				plt.subplot(1, 2, 1)
+				plt.scatter(points[:,0], points[:,1])
+				plt.scatter(points2[:,0], points2[:,1], marker='x')
+				plt.subplot(1, 2, 2)
+				plt.scatter(tpoints[:,0], tpoints[:,1])
+				plt.savefig("testtransform_%d_wrap%d.pdf" % (Npoints, len(wrapids)), bbox_inches='tight')
+				plt.close()
 			
 			
 			assert np.allclose(points2, points), (points, tpoints, points2)
@@ -67,5 +67,5 @@ def test_wrap():
 
 	
 if __name__ == '__main__':
-	test_wrap()
+	test_wrap(plot=True)
 	test_transform()

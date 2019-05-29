@@ -17,7 +17,9 @@ def main(args):
     import string
     paramnames = list(string.ascii_lowercase)[:args.x_dim]
 
-    sampler = NestedSampler(paramnames, loglike, transform=transform, log_dir=args.log_dir, num_live_points=args.num_live_points)
+    sampler = NestedSampler(paramnames, loglike, transform=transform, 
+        num_live_points=args.num_live_points,
+        log_dir=args.log_dir, append_run_num=False)
     sampler.run(log_interval=20)
     sampler.plot()
 
