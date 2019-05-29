@@ -269,6 +269,7 @@ class NestedSampler(object):
 
         if self.log:
             # try to resume:
+            self.logger.info('Resuming...')
             prev_u = []
             prev_v = []
             prev_logl = []
@@ -278,6 +279,8 @@ class NestedSampler(object):
                     prev_logl.append(row[1])
                     prev_u.append(row[2:2+self.x_dim])
                     prev_v.append(row[2+self.x_dim:2+self.x_dim+self.num_params])
+                else:
+                    break
             
             prev_u = np.array(prev_u)
             prev_v = np.array(prev_v)
@@ -325,9 +328,12 @@ class NestedSampler(object):
                     self.pointstore.add([-np.inf, active_logl[i]] + active_u[i,:].tolist() + active_v[i,:].tolist())
             
             if len(prev_u) > 0:
-                active_u = np.vstack((prev_u, active_u))
-                active_v = np.vstack((prev_v, active_v))
-                active_logl = np.vstack((prev_logl, active_logl))
+                active_u = np.concatenate((prev_u, active_u))
+                active_v = np.concatenate((prev_v, active_v))
+                active_logl = np.concatenate((prev_logl, active_logl))
+            assert active_u.shape ==(self.num_live_points, self.x_dim)
+            assert active_v.shape ==(self.num_live_points, self.num_params)
+            assert active_logl.shape ==(self.num_live_points,)
         else:
             active_u = prev_u
             active_v = prev_v
@@ -436,7 +442,7 @@ class NestedSampler(object):
                     likes = next_point[:,1]
                     samples = next_point[:,2:2+self.x_dim]
                     samplesv = next_point[:,2+self.x_dim:2+self.x_dim+self.num_params]
-                    ib = 0
+                    ib = 0 if np.isfinite(likes[0]) else 1
                 
                 while ib >= len(samples):
                     # get new samples
