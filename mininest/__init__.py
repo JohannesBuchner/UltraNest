@@ -267,12 +267,12 @@ class NestedSampler(object):
         #if self.log:
         #    self.logger.info('MCMC steps [%d] alpha [%5.4f] volume switch [%5.4f]' % (mcmc_steps, alpha, volume_switch))
 
+        prev_u = []
+        prev_v = []
+        prev_logl = []
         if self.log:
             # try to resume:
             self.logger.info('Resuming...')
-            prev_u = []
-            prev_v = []
-            prev_logl = []
             for i in range(self.num_live_points):
                 row = self.pointstore.pop(-np.inf)
                 if row is not None:
@@ -291,9 +291,12 @@ class NestedSampler(object):
             num_live_points_missing = -1
         
         if self.use_mpi:
-            self.comm.Bcast(num_live_points_missing, root=0)
+            num_live_points_missing = self.comm.bcast(num_live_points_missing, root=0)
+            prev_u = self.comm.bcast(prev_u, root=0)
+            prev_v = self.comm.bcast(prev_v, root=0)
+            prev_logl = self.comm.bcast(prev_logl, root=0)
         
-        use_point_stack = not self.pointstore.stack_empty
+        use_point_stack = True
         
         assert num_live_points_missing >= 0
         if num_live_points_missing > 0:
@@ -303,7 +306,7 @@ class NestedSampler(object):
                     active_u = np.random.uniform(size=(num_live_points_missing, self.x_dim))
                 else:
                     active_u = np.empty((num_live_points_missing, self.x_dim), dtype=np.float64)
-                self.comm.Bcast(active_u, root=0)
+                active_u = self.comm.bcast(active_u, root=0)
             else:
                 active_u = np.random.uniform(size=(num_live_points_missing, self.x_dim))
             active_v = self.transform(active_u)
@@ -348,19 +351,20 @@ class NestedSampler(object):
         logvol = np.log(1.0 - np.exp(-1.0 / self.num_live_points))
         logz_remain = np.max(active_logl)
         fraction_remain = 1.0
-        ncall = self.num_live_points  # number of calls we already made
+        ncall = num_live_points_missing  # number of calls we already made
         first_time = True
         transformLayer = ScalingLayer(wrapped_dims=self.wrapped_axes)
         transformLayer.optimize(active_u, active_u)
         region = MLFriends(active_u, transformLayer)
         
+        if self.log:
+            self.logger.info('Starting sampling ...')
         ib = 0
         samples = []
         ndraw = 100
         it = 0
         next_update_interval_ncall = -1
         next_update_interval_iter = -1
-        next_full_rebuild = -1
 
         while max_iters is None or it < max_iters:
 
@@ -442,6 +446,7 @@ class NestedSampler(object):
                     likes = next_point[:,1]
                     samples = next_point[:,2:2+self.x_dim]
                     samplesv = next_point[:,2+self.x_dim:2+self.x_dim+self.num_params]
+                    # skip if we already know it is not useful
                     ib = 0 if np.isfinite(likes[0]) else 1
                 
                 while ib >= len(samples):
@@ -450,7 +455,7 @@ class NestedSampler(object):
                     
                     nc = 0
                     u, father = region.sample(nsamples=ndraw)
-                    nu = len(u)
+                    nu = u.shape[0]
                     
                     v = self.transform(u)
                     logl = self.loglike(v)
@@ -461,9 +466,6 @@ class NestedSampler(object):
                     logl = logl[accepted]
                     father = father[accepted]
                     
-                    for ui, vi, logli in zip(u, v, logl):
-                        self.pointstore.add([loglstar, logli] + ui.tolist() + vi.tolist())
-
                     if self.use_mpi:
                         recv_father = self.comm.gather(father, root=0)
                         recv_samples = self.comm.gather(u, root=0)
@@ -485,6 +487,10 @@ class NestedSampler(object):
                         samplesv = np.array(v)
                         likes = np.array(logl)
                         ncall += nc
+                    
+                    if self.log:
+                        for ui, vi, logli in zip(samples, samplesv, likes):
+                            self.pointstore.add([loglstar, logli] + ui.tolist() + vi.tolist())
                 
                 if likes[ib] > loglstar:
                     active_u[worst] = samples[ib, :]
@@ -506,7 +512,6 @@ class NestedSampler(object):
                     break
                 else:
                     ib = ib + 1
-                
 
 
             # Shrink interval
@@ -516,8 +521,8 @@ class NestedSampler(object):
 
             if it % log_interval == 0 and self.log:
                 #nicelogger(self.paramnames, active_u, active_v, active_logl, it, ncall, logz, logz_remain, region=region)
-                sys.stdout.write('lnZ=%.1f, %.1f remains | lnLike=%.1f | Efficiency: %d/%d = %.4f%% (draw:%d) \r' % (
-                      logz, logz_remain, np.max(active_logl), it, ncall, it * 100 / ncall, ndraw))
+                sys.stdout.write('Z=%.1f+%.1f | Like=%.1f..%.1f | it/evals=%d/%d = %.4f%%\r' % (
+                      logz, logz_remain, loglstar,np.max(active_logl), it, ncall, np.inf if ncall == 0 else it * 100 / ncall))
                 sys.stdout.flush()
                 
                 # if efficiency becomes low, bulk-process larger arrays
@@ -572,10 +577,11 @@ class NestedSampler(object):
             data = np.array(self.results['weighted_samples']['v'])
             weights = np.array(self.results['weighted_samples']['w'])
             weights /= weights.sum()
+            cumsumweights = np.cumsum(weights)
 
-            mask = weights > 1e-4
+            mask = cumsumweights > 1e-4
 
             corner.corner(data[mask,:], weights=weights[mask], 
                     labels=self.paramnames + self.derivedparamnames, show_titles=True)
-            plt.savefig(os.path.join(self.logs['results'], 'corner.pdf'), bbox_inches='tight')
+            plt.savefig(os.path.join(self.logs['plots'], 'corner.pdf'), bbox_inches='tight')
             plt.close()

@@ -1,6 +1,32 @@
 import numpy as np
 import operator
 import warnings
+import os
+
+
+class NullPointStore(object):
+	"""
+	No storage
+	"""
+	def __init__(self, ncols):
+		self.ncols = int(ncols)
+		self.stack_empty = False
+	
+	def reset(self):
+		pass
+
+	def close(self):
+		pass
+
+	def flush(self):
+		pass
+	
+	def add(self, row):
+		pass
+	
+	def pop(self, Lmin):
+		return None
+		
 
 class PointStore(object):
 	"""
@@ -15,7 +41,6 @@ class PointStore(object):
 		
 		self.ncols = int(ncols)
 		self.stack_empty = True
-		self.filepath = filepath
 		self._load(filepath)
 		self.fileobj = open(filepath, 'a')
 		self.fmt = '%.18e'
@@ -25,20 +50,24 @@ class PointStore(object):
 		"""
 		Load from data file
 		"""
-		self.stack = []
-		try:
-			for line in open(filepath):
-				try:
-					parts = [float(p) for p in line.split()]
-					if len(parts) != self.ncols:
-						warnings.warn("skipping lines in '%s' with different number of columns" % (self.filepath))
-						continue
-					self.stack.append(parts)
-				except ValueError as e:
-					warnings.warn("skipping unparsable line in '%s'" % (self.filepath))
-		except IOError as e:
-			pass
-		self.data = list(self.stack)
+		stack = []
+		self.data = []
+		if os.path.exists(filepath):
+			print("loading ...")
+			try:
+				for line in open(filepath):
+					try:
+						parts = [float(p) for p in line.split()]
+						if len(parts) != self.ncols:
+							warnings.warn("skipping lines in '%s' with different number of columns" % (filepath))
+							continue
+						stack.append(parts)
+					except ValueError as e:
+						warnings.warn("skipping unparsable line in '%s'" % (filepath))
+			except IOError as e:
+				pass
+			self.data = sorted(stack, key=operator.itemgetter(0))
+			print("loading done ...")
 		self.reset()
 	
 	def reset(self):
@@ -46,7 +75,7 @@ class PointStore(object):
 		Reset stack to loaded data. Useful when Lmin is not reset to a 
 		lower value
 		"""
-		self.stack = sorted(self.data, key=operator.itemgetter(0))
+		self.stack = list(self.data)
 		self.stack_empty = len(self.stack) == 0
 		assert self.stack_empty == (len(self.stack) == 0), (self.stack_empty, len(self.stack))
 		#print("PointStore: have %d items" % len(self.stack))
@@ -70,7 +99,6 @@ class PointStore(object):
 		
 		Returns the point if exists, None otherwise
 		"""
-		assert self.stack_empty == (len(self.stack) == 0), (self.stack_empty, len(self.stack))
 		while not self.stack_empty:
 			row_Lmin = self.stack[0][0]
 			if row_Lmin > Lmin:

@@ -10,8 +10,10 @@ Features
 * Robust, parameter-free MLFriends algorithm (metric learning RadFriends, Buchner (2014), Buchner (2019)
 * pip installable
 * MPI-support
+* Checkpointing and resuming
+* Resuming from a run with different number of live points
 * Wrapped/circular parameters
-* Derived parameters
+* Storing derived values
 * Tracking solution modes
 * Neat visualisations and exploration information during the run
 * Very fast implementation
@@ -20,13 +22,11 @@ Features
   * vectorized likelihood function calls
 
 
-
 Coming soon
 =============
 
 * Support for stopping a run programmatically, and receiving feedback
 * Support for high-dimensional problems (>=20d)
-* Support resuming an interrupted run
 * Support for variable number of live points, posterior bulking
 
 Usage
