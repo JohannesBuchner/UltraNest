@@ -3,25 +3,28 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def test_clustering():
-	points = np.random.uniform(size=(100,2))
-	
-	nclusters, clusteridxs, overlapped_points = update_clusters(points, points, 0.1**2)
-	
-	for i in np.unique(clusteridxs):
-		x, y = points[clusteridxs == i].transpose()
-		plt.scatter(x, y)
-	plt.savefig('testclustering_0p1.pdf', bbox_inches='tight')
-	plt.close()
-	assert 1 < nclusters < 30
+	for i in range(5):
+		np.random.seed(i*100)
+		
+		points = np.random.uniform(size=(100,2))
+		
+		nclusters, clusteridxs, overlapped_points = update_clusters(points, points, 0.1**2)
+		
+		for i in np.unique(clusteridxs):
+			x, y = points[clusteridxs == i].transpose()
+			plt.scatter(x, y)
+		plt.savefig('testclustering_0p1.pdf', bbox_inches='tight')
+		plt.close()
+		assert 1 < nclusters < 30
 
-	nclusters, clusteridxs, overlapped_points = update_clusters(points, points, 0.2**2)
-	
-	for i in np.unique(clusteridxs):
-		x, y = points[clusteridxs == i].transpose()
-		plt.scatter(x, y)
-	plt.savefig('testclustering_0p2.pdf', bbox_inches='tight')
-	plt.close()
-	assert 1 <= nclusters < 2
+		nclusters, clusteridxs, overlapped_points = update_clusters(points, points, 0.2**2)
+		
+		for i in np.unique(clusteridxs):
+			x, y = points[clusteridxs == i].transpose()
+			plt.scatter(x, y)
+		plt.savefig('testclustering_0p2.pdf', bbox_inches='tight')
+		plt.close()
+		assert 1 <= nclusters < 2
 
 def test_clusteringcase():
 	points = np.loadtxt("clusters2.txt")

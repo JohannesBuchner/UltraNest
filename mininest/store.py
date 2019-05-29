@@ -1,5 +1,6 @@
 import numpy as np
 import operator
+import warnings
 
 class PointStore(object):
 	"""
@@ -14,6 +15,7 @@ class PointStore(object):
 		
 		self.ncols = int(ncols)
 		self.stack_empty = True
+		self.filepath = filepath
 		self._load(filepath)
 		self.fileobj = open(filepath, 'a')
 		self.fmt = '%.18e'
@@ -26,14 +28,14 @@ class PointStore(object):
 		self.stack = []
 		try:
 			for line in open(filepath):
-				#try:
+				try:
 					parts = [float(p) for p in line.split()]
-					assert len(parts) == self.ncols, parts
-				#except Exception as e:
-				#	# skip unparsable lines
-				#	print(e)
-				#	continue
+					if len(parts) != self.ncols:
+						warnings.warn("skipping lines in '%s' with different number of columns" % (self.filepath))
+						continue
 					self.stack.append(parts)
+				except ValueError as e:
+					warnings.warn("skipping unparsable line in '%s'" % (self.filepath))
 		except IOError as e:
 			pass
 		self.data = list(self.stack)
