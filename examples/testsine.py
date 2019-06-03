@@ -49,7 +49,8 @@ def main(args):
     loglike(transform(0.5 * np.ones((1, len(paramnames)))))
     sampler = NestedSampler(paramnames, loglike, transform=transform, 
         log_dir=args.log_dir, num_live_points=args.num_live_points,
-        derived_param_names=derivednames, wrapped_params=wrapped_params)
+        derived_param_names=derivednames, wrapped_params=wrapped_params,
+        append_run_num=False)
     sampler.run(log_interval=100)
     #sampler.plot()
     

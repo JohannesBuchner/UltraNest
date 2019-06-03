@@ -15,8 +15,8 @@ Features
 * Wrapped/circular parameters
 * Storing derived values
 * Tracking solution modes
-* Neat visualisations and exploration information during the run
-* Very fast implementation
+* Run-time visualisations and exploration information
+* Very fast
 
   * some functions implemented in Cython
   * vectorized likelihood function calls

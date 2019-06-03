@@ -16,7 +16,7 @@ import shutil
 from .utils import create_logger, make_run_dir
 from .utils import acceptance_rate, effective_sample_size, mean_jump_distance, resample_equal
 from mininest.mlfriends import MLFriends, AffineLayer, ScalingLayer
-from .store import PointStore, NullPointStore
+from .store import TextPointStore, HDF5PointStore, NullPointStore
 
 from numpy import log10
 import numpy as np
@@ -55,7 +55,7 @@ def nicelogger(points, info, region, transformLayer):
     print()
     clusterids = transformLayer.clusterids
     nmodes = transformLayer.nclusters
-    print("Volume:", region.estimate_volume())
+    print("Volume: %.2e" % region.estimate_volume())
     if nmodes == 1:
         print("Mono-modal")
     else: 
@@ -193,7 +193,8 @@ class NestedSampler(object):
                                  'max_ess', 'jump_distance', 'scale', 'loglstar', 'logz', 'fraction_remain', 'ncall'])
         
         if self.log_to_disk:
-            self.pointstore = PointStore(os.path.join(self.logs['results'], 'points.tsv'), 2 + self.x_dim + self.num_params)
+            #self.pointstore = TextPointStore(os.path.join(self.logs['results'], 'points.tsv'), 2 + self.x_dim + self.num_params)
+            self.pointstore = HDF5PointStore(os.path.join(self.logs['results'], 'points.hdf5'), 2 + self.x_dim + self.num_params)
         else:
             self.pointstore = NullPointStore(2 + self.x_dim + self.num_params)
 
@@ -450,7 +451,7 @@ class NestedSampler(object):
                     samples = next_point[:,2:2+self.x_dim]
                     samplesv = next_point[:,2+self.x_dim:2+self.x_dim+self.num_params]
                     # skip if we already know it is not useful
-                    ib = 0 if not np.isfinite(likes[0]) else 1
+                    ib = 0 if np.isfinite(likes[0]) else 1
                 
                 while ib >= len(samples):
                     # get new samples
@@ -524,7 +525,7 @@ class NestedSampler(object):
 
             if it % log_interval == 0 and self.log:
                 #nicelogger(self.paramnames, active_u, active_v, active_logl, it, ncall, logz, logz_remain, region=region)
-                sys.stdout.write('Z=%.1f+%.1f | Like=%.1f..%.1f | it/evals=%d/%d = %.4f%%\r' % (
+                sys.stdout.write('Z=%.1f+%.1f | Like=%.1f..%.1f | it/evals=%d/%d = %.4f%%  \r' % (
                       logz, logz_remain, loglstar,np.max(active_logl), it, ncall, np.inf if ncall == 0 else it * 100 / ncall))
                 sys.stdout.flush()
                 
