@@ -156,8 +156,7 @@ class HDF5PointStore(object):
 		if 'points' not in self.fileobj:
 			print("PointStore: creating points dataset")
 			self.fileobj.create_dataset('points', shape=(0, self.ncols), 
-				maxshape=(None, self.ncols), dtype=np.float,
-				compression='gzip', shuffle=True)
+				maxshape=(None, self.ncols), dtype=np.float)
 		
 		self.nrows, ncols = self.fileobj['points'].shape
 		assert ncols == self.ncols

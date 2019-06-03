@@ -56,7 +56,7 @@ def main(args):
     
     for i, p in enumerate(paramnames + derivednames):
         v = sampler.results['samples'][:,i]
-        print(p, v.mean(), v.std())
+        print('%20s: %5.3f +- %5.3f' % (p, v.mean(), v.std()))
 
 
 if __name__ == '__main__':
