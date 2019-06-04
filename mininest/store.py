@@ -15,6 +15,7 @@ class NullPointStore(object):
 	"""
 	def __init__(self, ncols):
 		self.ncols = int(ncols)
+		self.nrows = 0
 		self.stack_empty = True
 	
 	def reset(self):
@@ -27,13 +28,63 @@ class NullPointStore(object):
 		pass
 	
 	def add(self, row):
-		pass
+		self.nrows += 1
+		return self.nrows - 1
 	
 	def pop(self, Lmin):
-		return None
+		return None, None
+
+class FilePointStore(object):
+	def reset(self):
+		"""
+		Reset stack to loaded data. Useful when Lmin is not reset to a 
+		lower value
+		"""
+		self.stack = sorted(self.stack + self.data, key=lambda e: e[1][0])
+		self.stack_empty = len(self.stack) == 0
+		self.data = []
+		assert self.stack_empty == (len(self.stack) == 0), (self.stack_empty, len(self.stack))
+		print("PointStore: have %d items" % len(self.stack))
+	
+	def close(self):
+		self.fileobj.close()
+	def flush(self):
+		self.fileobj.flush()
+	
+	def pop(self, Lmin):
+		"""
+		Request from the storage a point sampled from <= Lmin with L > Lmin
+		
+		Returns the point if exists, None otherwise
+		"""
+		while not self.stack_empty:
+			row_Lmin = self.stack[0][1][0]
+			if row_Lmin > Lmin:
+				# the stored Lmin is above the request, so we do not 
+				# have anything useful to offer at the moment
+				#print("PointStore: next point is yet to come %.3f -> %.3f, need %.3f" % (self.stack[0][0], self.stack[0][1], Lmin))
+				return None, None
+			elif row_Lmin <= Lmin:
+				# The stored arc is sampled from below
+				idx, row = self.stack.pop(0)
+				self.stack_empty = len(self.stack) == 0
+				row_L = row[1]
+				if row_L > Lmin:
+					# and goes above the required limit
+					#print("PointStore: popping & using   , %d left" % len(self.stack), row_L)
+					return idx, row
+				else:
+					# but does not go above the required limit
+					# we removed the point.
+					#print("PointStore: popping & skipping, %d left" % len(self.stack), "(%.3f -> %.3f, need %.3f)" % (row[0], row[1], Lmin))
+					self.data.append((idx, row))
+					continue
+		#print("PointStore: all points used up, none left")
+		return None, None
 
 
-class TextPointStore(object):
+
+class TextPointStore(FilePointStore):
 	"""
 	stores previously drawn points above some likelihood contour, 
 	so that they can be reused in another run.
@@ -45,6 +96,7 @@ class TextPointStore(object):
 		"""
 		
 		self.ncols = int(ncols)
+		self.nrows = 0
 		self.stack_empty = True
 		self._load(filepath)
 		self.fileobj = open(filepath, 'a')
@@ -70,25 +122,9 @@ class TextPointStore(object):
 						warnings.warn("skipping unparsable line in '%s'" % (filepath))
 			except IOError:
 				pass
-			self.data = sorted(stack, key=operator.itemgetter(0))
+			self.data = list(enumerate(stack))
 		self.stack = []
 		self.reset()
-	
-	def reset(self):
-		"""
-		Reset stack to loaded data. Useful when Lmin is not reset to a 
-		lower value
-		"""
-		self.stack = sorted(self.stack + self.data, key=operator.itemgetter(0))
-		self.stack_empty = len(self.stack) == 0
-		self.data = []
-		assert self.stack_empty == (len(self.stack) == 0), (self.stack_empty, len(self.stack))
-		print("PointStore: have %d items" % len(self.stack))
-	
-	def close(self):
-		self.fileobj.close()
-	def flush(self):
-		self.fileobj.flush()
 	
 	def add(self, row):
 		"""
@@ -97,42 +133,11 @@ class TextPointStore(object):
 		if len(row) != self.ncols:
 			raise ValueError("expected %d values, got %d in %s" % (self.ncols, len(row), row))
 		np.savetxt(self.fileobj, [row], fmt=self.fmt, delimiter=self.delimiter)
-	
-	def pop(self, Lmin):
-		"""
-		Request from the storage a point sampled from <= Lmin with L > Lmin
-		
-		Returns the point if exists, None otherwise
-		"""
-		while not self.stack_empty:
-			row_Lmin = self.stack[0][0]
-			if row_Lmin > Lmin:
-				# the stored Lmin is above the request, so we do not 
-				# have anything useful to offer at the moment
-				#print("PointStore: next point is yet to come %.3f -> %.3f, need %.3f" % (self.stack[0][0], self.stack[0][1], Lmin))
-				return None
-			elif row_Lmin <= Lmin:
-				# The stored arc is sampled from below
-				row = self.stack.pop(0)
-				self.stack_empty = len(self.stack) == 0
-				row_L = row[1]
-				if row_L > Lmin:
-					# and goes above the required limit
-					#print("PointStore: popping & using   , %d left" % len(self.stack), row_L)
-					return row
-				else:
-					# but does not go above the required limit
-					# we removed the point.
-					#print("PointStore: popping & skipping, %d left" % len(self.stack), "(%.3f -> %.3f, need %.3f)" % (row[0], row[1], Lmin))
-					self.data.append(row)
-					continue
-		#print("PointStore: all points used up, none left")
-		return None
-		
+		self.nrows += 1
+		return self.nrows - 1
 	
 
-
-class HDF5PointStore(object):
+class HDF5PointStore(FilePointStore):
 	"""
 	stores previously drawn points above some likelihood contour, 
 	so that they can be reused in another run.
@@ -162,25 +167,9 @@ class HDF5PointStore(object):
 		assert ncols == self.ncols
 		points = self.fileobj['points'][:]
 		idx = np.argsort(points[:,0])
-		self.data = list(points[idx,:])
+		self.data = list(enumerate(points[idx,:]))
 		self.stack = []
 		self.reset()
-	
-	def reset(self):
-		"""
-		Reset stack to loaded data. Useful when Lmin is not reset to a 
-		lower value
-		"""
-		self.stack = sorted(self.stack + self.data, key=operator.itemgetter(0))
-		self.stack_empty = len(self.stack) == 0
-		self.data = []
-		assert self.stack_empty == (len(self.stack) == 0), (self.stack_empty, len(self.stack))
-		print("PointStore: have %d items" % len(self.stack))
-	
-	def close(self):
-		self.fileobj.close()
-	def flush(self):
-		self.fileobj.flush()
 	
 	def add(self, row):
 		"""
@@ -194,37 +183,6 @@ class HDF5PointStore(object):
 		# insert:
 		self.fileobj['points'][self.nrows,:] = row
 		self.nrows += 1
-	
-	def pop(self, Lmin):
-		"""
-		Request from the storage a point sampled from <= Lmin with L > Lmin
-		
-		Returns the point if exists, None otherwise
-		"""
-		while not self.stack_empty:
-			row_Lmin = self.stack[0][0]
-			if row_Lmin > Lmin:
-				# the stored Lmin is above the request, so we do not 
-				# have anything useful to offer at the moment
-				print("PointStore: next point is yet to come %.3f -> %.3f, need %.3f" % (self.stack[0][0], self.stack[0][1], Lmin))
-				return None
-			elif row_Lmin <= Lmin:
-				# The stored arc is sampled from below
-				row = self.stack.pop(0)
-				self.stack_empty = len(self.stack) == 0
-				row_L = row[1]
-				if row_L > Lmin:
-					# and goes above the required limit
-					#print("PointStore: popping & using   , %d left" % len(self.stack), row_L)
-					return row
-				else:
-					# but does not go above the required limit
-					# we removed the point.
-					#print("PointStore: popping & skipping, %d left" % len(self.stack))
-					self.data.append(row)
-					continue
-		print("PointStore: all points used up, none left")
-		return None
-		
+		return self.nrows - 1
 	
 
