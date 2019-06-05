@@ -1,5 +1,6 @@
 from mininest.mlfriends import update_clusters
 import numpy as np
+import os
 import matplotlib.pyplot as plt
 
 def test_clustering():
@@ -27,8 +28,9 @@ def test_clustering():
 		assert 1 <= nclusters < 2
 
 def test_clusteringcase():
-	points = np.loadtxt("clusters2.txt")
-	maxr = np.loadtxt("clusters2_radius.txt")
+	here = os.path.dirname(__file__)
+	points = np.loadtxt(os.path.join(here, "clusters2.txt"))
+	maxr = np.loadtxt(os.path.join(here, "clusters2_radius.txt"))
 	from mininest.mlfriends import update_clusters
 	#transformLayer = ScalingLayer()
 	#transformLayer.optimize(points)
