@@ -16,7 +16,7 @@ jobs:
       - run: sudo ln -s /usr/lib/python3/dist-packages/numpy/core/include/numpy/ /usr/include/numpy
       - run: sudo pip3 install -r pip-requirements.txt
       
-      - run: coverage3 run setup.py test --junitxml=test-reports/junit.xml
+      - run: coverage3 run setup.py test 
       - run: coverage3 report --include=$PWD/* --omit=$PWD/.eggs/*
 
       - run: python3 setup.py install --user
