@@ -47,6 +47,7 @@ def nicelogger(points, info, region, transformLayer):
         columns, _rows = 80, 25
 
     width = columns - 22 - max([len(pname) for pname in paramnames])
+    width = max(10, width)
     indices = ((p - plo) * width / (phi - plo).reshape((1, -1))).astype(int)
     indices[indices >= width] = width - 1
     indices[indices < 0] = 0
