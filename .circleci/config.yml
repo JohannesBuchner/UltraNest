@@ -12,7 +12,7 @@ jobs:
       
       - checkout
       
-      - run: sudo pip install flake8 corner
+      - run: sudo pip install flake8 coveralls corner
       
       #- run: flake8 .
       - run: coverage run setup.py test
