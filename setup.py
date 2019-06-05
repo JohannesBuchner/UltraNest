@@ -31,6 +31,6 @@ setup(
         include_dirs=['.'] + extra_include_dirs)],
     provides = ['mininest'],
     setup_requires=['pytest-runner'],
-    tests_require=['pytest'],
+    tests_require=['pytest', 'pandas'],
     cmdclass={'build_ext': build_ext},
 )
