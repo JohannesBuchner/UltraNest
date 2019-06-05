@@ -26,7 +26,7 @@ setup(
     license = "GPL",
     packages = ['mininest'],
     install_requires = ['numpy', 'cython'],
-    requires = ["matplotlib", "numpy", "scipy", "corner"],
+    requires = ["matplotlib", "numpy", "scipy", "h5py", "corner"],
     ext_modules = [Extension('mininest.mlfriends', ["mininest/mlfriends.pyx"], 
         include_dirs=['.'] + extra_include_dirs)],
     provides = ['mininest'],
