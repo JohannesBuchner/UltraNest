@@ -16,8 +16,8 @@ jobs:
         #- run: sudo ln -s /usr/lib/python3/dist-packages/numpy/core/include/numpy/ /usr/include/numpy
       - run: pip3 install -r pip-requirements.txt --user
       
-      - run: coverage3 run setup.py test
-      - run: coverage3 report --include=$PWD/* --omit=$PWD/.eggs/*
+      - run: /home/circleci/.local/bin/coverage3 run setup.py test
+      - run: /home/circleci/.local/bin/coverage3 report --include=$PWD/* --omit=$PWD/.eggs/*
 
       - run: python3 setup.py install --user
 
