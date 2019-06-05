@@ -1,0 +1,23 @@
+version: 2
+
+
+jobs:
+  
+  build:
+    
+    docker:
+      - image: circleci/python:3.7.0
+    
+    steps: 
+      
+      - checkout
+      
+      - run: sudo pip install flake8 corner
+      
+      #- run: flake8 .
+      - run: coverage run setup.py test
+      - run: coverage report --include=$PWD/*
+
+      - run: python setup.py install --user
+
+
