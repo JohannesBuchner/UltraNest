@@ -25,7 +25,7 @@ setup(
     url = "https://github.com/JohannesBuchner/mininest/",
     license = "GPL",
     packages = ['mininest'],
-    install_requires = ['numpy'],
+    install_requires = ['numpy', 'cython'],
     requires = ["matplotlib", "numpy", "scipy", "corner"],
     ext_modules = [Extension('mininest.mlfriends', ["mininest/mlfriends.pyx"], 
         include_dirs=['.'] + extra_include_dirs)],
