@@ -21,7 +21,7 @@ class TreeNode(object):
 
 multitree_sort_key = operator.itemgetter(1)
 
-class BreadthFirstIterator(object):
+class __BreadthFirstIterator(object):
 	"""
 	Generator returning the tree nodes ordered by value
 	with the number of edges passing the node "in parallel"
@@ -47,7 +47,7 @@ class BreadthFirstIterator(object):
 		self.active_nodes.sort(key=multitree_sort_key)
 
 
-class BreadthFirstIterator2(object):
+class BreadthFirstIterator(object):
 	"""
 	Generator returning the tree nodes ordered by value
 	with the number of edges passing the node "in parallel"
@@ -115,7 +115,7 @@ import sys
 def print_tree(roots, title='Tree:'):
 	print()
 	print(title)
-	explorer = BreadthFirstIterator2(roots)
+	explorer = BreadthFirstIterator(roots)
 	lanes = list(roots)
 	
 	while True:
@@ -150,7 +150,7 @@ def print_tree(roots, title='Tree:'):
 		explorer.expand_children_of(rootid, node)
 
 def count_tree(roots):
-	explorer = BreadthFirstIterator2(roots)
+	explorer = BreadthFirstIterator(roots)
 	nnodes = 0
 	maxwidth = 0
 	
