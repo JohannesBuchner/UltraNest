@@ -7,7 +7,7 @@ Some parts are from the nnest library by Adam Moss (https://github.com/adammoss/
 from __future__ import print_function
 from __future__ import division
 
-from .integrator import NestedSampler
+from .integrator import NestedSampler, ReactiveNestedSampler
 
 
 

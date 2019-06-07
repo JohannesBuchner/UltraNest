@@ -50,7 +50,7 @@ class BreadthFirstIterator(object):
 		#print("consuming %.1f" % node.value, len(node.children), 'nlive:', len(self.active_nodes))
 		assert len(self.active_nodes) == len(self.active_root_ids)
 		assert len(self.active_nodes) == len(self.active_node_values)
-		return rootid, node, (self.active_nodes, self.active_root_ids, self.active_node_values)
+		return rootid, node, (self.active_nodes, self.active_root_ids, self.active_node_values, self.active_node_ids)
 	
 	def drop_next_node(self):
 		i = self.next_index
@@ -70,7 +70,7 @@ class BreadthFirstIterator(object):
 			self.active_nodes[i] = node.children[0]
 			self.active_node_values[i] = node.children[0].value
 			self.active_root_ids[i] = rootid
-			self.active_root_ids[i] = rootid
+			self.active_node_ids[i] = node.children[0].id
 		else:
 			mask = np.ones(len(self.active_nodes), dtype=bool)
 			mask[i] = False
@@ -78,14 +78,17 @@ class BreadthFirstIterator(object):
 			if len(node.children) == 0:
 				self.active_node_values = self.active_node_values[mask]
 				self.active_root_ids = self.active_root_ids[mask]
+				self.active_node_ids = self.active_node_ids[mask]
 			else:
 				self.active_nodes += node.children
 				self.active_node_values = np.concatenate((self.active_node_values[mask], [c.value for c in node.children]))
 				#print(self.active_root_ids, '+', [rootid for c in node.children], '-->')
 				self.active_root_ids = np.concatenate((self.active_root_ids[mask], [rootid for c in node.children]))
+				self.active_node_ids = np.concatenate((self.active_node_ids[mask], [c.id for c in node.children]))
 				#print(self.active_root_ids)
 			assert len(self.active_nodes) == len(self.active_root_ids)
 			assert len(self.active_nodes) == len(self.active_node_values)
+			assert len(self.active_nodes) == len(self.active_node_ids)
 
 import sys
 
@@ -100,7 +103,7 @@ def print_tree(roots, title='Tree:'):
 		if next is None:
 			break
 		
-		rootid, node, (active_nodes, active_rootids, active_values) = next
+		rootid, node, (active_nodes, active_rootids, active_values, active_nodeids) = next
 		laneid = lanes.index(node)
 		nchildren = len(node.children)
 		leftstr = ''.join([' ' if n is None else '║' for n in lanes[:laneid]])
@@ -135,7 +138,7 @@ def count_tree(roots):
 		next = explorer.next_node()
 		if next is None:
 			return nnodes, maxwidth
-		rootid, node, (active_nodes, active_rootids, active_values) = next
+		rootid, node, (active_nodes, active_rootids, active_values, active_nodeids) = next
 		maxwidth = max(maxwidth, len(active_rootids))
 		nnodes += 1
 		explorer.expand_children_of(rootid, node)
@@ -192,7 +195,7 @@ class SingleCounter(object):
 		self.logVolremaining = 0
 		self.i = 0
 		self.fraction_remaining = np.inf
-		#self.Lmax = -np.inf
+		self.Lmax = -np.inf
 	
 	def passing_node(self, node, parallel_nodes):
 		# node is being consumed
@@ -225,7 +228,7 @@ class SingleCounter(object):
 				self.logZ = logZnew
 			
 			#print(self.H)
-			#self.Lmax = max(node.value, self.Lmax)
+			self.Lmax = max(node.value, self.Lmax)
 			#self.Lmax = max((n.value for n in parallel_nodes))
 			#logZremain = parallel_nodes.max() + self.logVolremaining
 			#print("L=%.1f N=%d V=%.2e logw=%.2e logZ=%.1f logZremain=%.1f" % (Li, nlive, self.logVolremaining, wi, self.logZ, logZremain))
@@ -279,10 +282,12 @@ class MultiCounter(object):
 		self.logweights = []
 		self.logZ = -np.inf
 		self.logZerr = np.inf
+		self.logZremain = np.inf
 		self.all_H = -np.nan * np.ones(nentries)
 		self.all_logZ = -np.inf * np.ones(nentries)
 		self.all_logVolremaining = np.zeros(nentries)
 		self.logVolremaining = 0.0
+		self.Lmax = -np.inf
 	
 	def passing_node(self, rootid, node, rootids, parallel_nodes):
 		# node is being consumed
@@ -324,9 +329,9 @@ class MultiCounter(object):
 			#print(self.all_H)
 			self.logZ = self.all_logZ[0]
 			
-			#self.Lmax = max(node.value, self.Lmax)
+			self.Lmax = max(node.value, self.Lmax)
 			#self.Lmax = max((n.value for n in parallel_nodes))
-			#logZremain = parallel_nodes.max() + self.logVolremaining
+			self.logZremain = self.Lmax + self.logVolremaining
 			#print("L=%.1f N=%d V=%.2e logw=%.2e logZ=%.1f logZremain=%.1f" % (Li, nlive[0], self.logVolremaining, wi[0], self.logZ, logZremain))
 			#print("L=%.1f N=%d V=%.2e logw=%.2e logZ=%.1f logZremain=%.1f" % (Li, nlive[0], self.all_logVolremaining[0], (logwidth + Li)[0], self.all_logZ[0], logZremain))
 			#print("L=%.1f N=%d V=%.2e logw=%.2e logZ=<%.1f logZremain=%.1f" % (Li, nlive[1], self.all_logVolremaining[1], (logwidth + Li)[1], self.all_logZ[1], logZremain))
@@ -361,7 +366,7 @@ class MultiCounter(object):
 	
 	def remainder_ratio(self, remaining_nodes):
 		#logZ_remaining = max((n.L for n in remaining_nodes)) + self.logVolremaining
-		remainder_ratio = np.exp(self.logZ_remaining - self.logZ)
+		remainder_ratio = np.exp(self.logZremain - self.logZ)
 		return remainder_ratio
 	
 	def integrate_remainder(self, remaining_nodes):

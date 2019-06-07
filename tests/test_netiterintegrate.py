@@ -148,7 +148,7 @@ def multi_integrate_graph_singleblock(num_live_points, pointstore, x_dim, num_pa
 		next = explorer.next_node()
 		if next is None:
 			break
-		rootid, node, (active_nodes, active_rootids, active_values) = next
+		rootid, node, (active_nodes, active_rootids, active_values, active_nodeids) = next
 		assert not isinstance(rootid, float)
 		# this is the likelihood level we have to improve upon
 		Lmin = node.value
