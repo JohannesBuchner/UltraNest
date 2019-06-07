@@ -713,8 +713,7 @@ class ReactiveNestedSampler(object):
         Lmax = Ls.max()
         weight = main_iterator.logVolremaining
         # max remainder contribution is Lmax + weight, to be added to main_iterator.logZ
-        # the likelihood that would add an equal amount as main_iterator.logZ
-        # is:
+        # the likelihood that would add an equal amount as main_iterator.logZ is:
         Lmin = main_iterator.logZ - weight
         
         # if the remainder dominates, return that range
@@ -885,7 +884,8 @@ class ReactiveNestedSampler(object):
             
             explorer = BreadthFirstIterator(roots)
             # Integrating thing
-            main_iterator = MultiCounter(nroots=len(roots), nbootstraps=max(1, 10 // self.mpi_size), random=False)
+            main_iterator = MultiCounter(nroots=len(roots), nbootstraps=max(1, 30 // self.mpi_size), random=False)
+            main_iterator.Lmax = max(n.value for n in roots)
             
             self.transformLayer = None
             self.region = None
@@ -917,6 +917,7 @@ class ReactiveNestedSampler(object):
                     Llo, Lhi = self.adaptive_strategy_advice(node, active_values, main_iterator, [], rootid)
                     #print("L range to expand: %.1f-%.1f" % (Llo, Lhi), "have:", Lmin, "=>", Lmin <= Lhi, Llo <= Lhi)
                     strategy_stale = False
+                strategy_stale = True
                 
                 if expand_node:
                     # sample a new point above Lmin
@@ -937,9 +938,11 @@ class ReactiveNestedSampler(object):
                                 paramnames=self.paramnames + self.derivedparamnames), 
                                 region=self.region, transformLayer=self.transformLayer)
                             self.pointstore.flush()
-                        
+                    
                     u, p, L = self.create_point(it, Lmin, ndraw=100)
                     child = self.pointpile.make_node(L, u, p)
+                    
+                    main_iterator.Lmax = max(L, main_iterator.Lmax)
                     
                     # identify which point is being replaced (from when we built the region)
                     worst = np.where(self.region_nodes == node.id)[0]
@@ -959,7 +962,6 @@ class ReactiveNestedSampler(object):
                     if self.log: 
                         self.logger.debug("replacing node", Lmin, "from", rootid, "with", L)
                     node.children.append(child)
-                    strategy_stale = True
                 else:
                     #print("ending node", Lmin)
                     pass

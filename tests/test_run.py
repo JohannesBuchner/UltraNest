@@ -38,4 +38,4 @@ def test_run():
 
 if __name__ == '__main__':
     test_reactive_run()
-    #test_run()
+    test_run()

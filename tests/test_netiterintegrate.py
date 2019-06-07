@@ -1,7 +1,7 @@
 import os
 import numpy as np
 from mininest.store import TextPointStore
-from mininest.netiter import PointPile, MultiCounter, BreadthFirstIterator, TreeNode, count_tree, print_tree
+from mininest.netiter import PointPile, SingleCounter, MultiCounter, BreadthFirstIterator, TreeNode, count_tree, print_tree
 
 
 
@@ -96,26 +96,116 @@ def strategy_advice(node, parallel_values, main_iterator, counting_iterators, ro
 		assert False
 		return np.nan, np.nan
 	
-	Ls = parallel_values
-	#Ls = [node.value] + [n.value for rootid2, n in parallel_nodes]
-	Lmax = np.max(Ls)
-	weight = main_iterator.logVolremaining
-	# max remainder contribution is Lmax + weight, to be added to main_iterator.logZ
-	# the likelihood that would add an equal amount as main_iterator.logZ
-	# is:
-	Lmin = main_iterator.logZ - weight
+	Lmin = parallel_values.min()
+	Lmax = parallel_values.max()
+	logZremain = main_iterator.logZremain
+	logZremain = Lmax + main_iterator.logVolremaining
 	
 	# if the remainder dominates, return that range
-	if Lmax + weight > main_iterator.logZ:
+	if logZremain > main_iterator.logZ:
 		return Lmin, Lmax
 	
 	#print("not expanding, remainder not dominant")
 	return np.nan, np.nan
 
-class Point(object):
+class __Point(object):
 	def __init__(self, u, p):
 		self.u = u
 		self.p = p
+
+
+def integrate_graph_singleblock(num_live_points, pointstore, x_dim, num_params, dlogz=0.5):
+	pp = PointPile(x_dim, num_params)
+	def create_node(pointstore, Lmin):
+		idx, row = pointstore.pop(Lmin)
+		assert row is not None
+		L = row[1]
+		u = row[2:2+x_dim]
+		p = row[2+x_dim:2+x_dim+num_params]
+		return pp.make_node(L, u, p)
+	
+	# we create a bunch of live points from the prior volume
+	# each of which is the start of a chord (in the simplest case)
+	roots = [create_node(pointstore, -np.inf) for i in range(num_live_points)]
+	
+	iterator_roots = []
+	np.random.seed(1)
+	for i in range(10):
+		# boot-strap which roots are assigned to this iterator
+		rootids = np.unique(np.random.randint(len(roots), size=len(roots)))
+		#print(rootids)
+		iterator_roots.append((SingleCounter(random=True), rootids))
+	
+	# and we have one that operators on the entire tree
+	main_iterator = SingleCounter()
+	
+	explorer = BreadthFirstIterator(roots)
+	Llo, Lhi = -np.inf, np.inf
+	strategy_stale = True
+	
+	saved_nodeids = []
+	saved_logl = []
+	
+	# we go through each live point (regardless of root) by likelihood value
+	while True:
+		#print()
+		next = explorer.next_node()
+		if next is None:
+			break
+		rootid, node, (active_nodes, active_rootids, active_values, active_node_ids) = next
+		# this is the likelihood level we have to improve upon
+		Lmin = node.value
+		
+		saved_nodeids.append(node.id)
+		saved_logl.append(Lmin)
+		
+		expand_node = Lmin <= Lhi and Llo <= Lhi
+		# if within suggested range, expand
+		if strategy_stale or not (Lmin <= Lhi):
+			# check with advisor if we want to expand this node
+			Llo, Lhi = strategy_advice(node, active_values, main_iterator, [], rootid)
+			#print("L range to expand:", Llo, Lhi, "have:", Lmin, "=>", Lmin <= Lhi, Llo <= Lhi)
+			strategy_stale = False
+		strategy_stale = True
+		
+		if expand_node:
+			# sample a new point above Lmin
+			#print("replacing node", Lmin, "from", rootid, "with", L)
+			node.children.append(create_node(pointstore, Lmin))
+		else:
+			#print("ending node", Lmin)
+			pass
+		
+		# inform iterators (if it is their business) about the arc
+		main_iterator.passing_node(node, active_values)
+		for it, rootids in iterator_roots:
+			if rootid in rootids:
+				mask = np.isin(active_rootids, rootids, assume_unique=True)
+				#mask1 = np.array([rootid2 in rootids for rootid2 in active_rootids])
+				#assert (mask1 == mask).all(), (mask1, mask)
+				it.passing_node(node, active_values[mask])
+		#print([it.H for it,_ in iterator_roots])
+		
+		explorer.expand_children_of(rootid, node)
+		
+	# points with weights
+	#saved_u = np.array([pp[nodeid].u for nodeid in saved_nodeids])
+	saved_v = pp.getp(saved_nodeids)
+	saved_logwt = np.array(main_iterator.logweights)
+	saved_wt = np.exp(saved_logwt - main_iterator.logZ)
+	saved_logl = np.array(saved_logl)
+	print('%.4f +- %.4f (main)' % (main_iterator.logZ, main_iterator.logZerr))
+	Zest = np.array([it.logZ for it, _ in iterator_roots])
+	print('%.4f +- %.4f (bs)' % (Zest.mean(), Zest.std()))
+
+	results = dict(niter=len(saved_logwt), 
+		logz=main_iterator.logZ, logzerr=main_iterator.logZerr,
+		weighted_samples=dict(v=saved_v, w = saved_wt, logw = saved_logwt, L=saved_logl),
+		tree=TreeNode(-np.inf, children=roots),
+	)
+	
+	# return entire tree
+	return results
 
 
 def multi_integrate_graph_singleblock(num_live_points, pointstore, x_dim, num_params, dlogz=0.5):
@@ -213,6 +303,14 @@ def test_singleblock():
 		result = integrate_singleblock(num_live_points=nlive, pointstore=pointstore, num_params=2, x_dim=2)
 		print(result['logz'], '+-', result['logzerr'], '%.2fs' % (time.time() - t))
 		pointstore.close()
+		
+		print("Graph integrator")
+		pointstore = TextPointStore(testfile, 2 + 2 + 2)
+		t = time.time()
+		result2 = integrate_graph_singleblock(num_live_points=nlive, pointstore=pointstore, num_params=2, x_dim=2)
+		print(result2['logz'], '+-', result2['logzerr'], '%.2fs' % (time.time() - t))
+		pointstore.close()
+		assert np.isclose(result2['logz'], result['logz'])
 		
 		print("Vectorized graph integrator")
 		pointstore = TextPointStore(testfile, 2 + 2 + 2)

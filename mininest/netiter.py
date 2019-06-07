@@ -191,6 +191,7 @@ class SingleCounter(object):
 		self.logweights = []
 		self.H = None
 		self.logZ = -np.inf
+		self.logZremain = -np.inf
 		self.logZerr = np.inf
 		self.logVolremaining = 0
 		self.i = 0
@@ -329,7 +330,6 @@ class MultiCounter(object):
 			#print(self.all_H)
 			self.logZ = self.all_logZ[0]
 			
-			self.Lmax = max(node.value, self.Lmax)
 			#self.Lmax = max((n.value for n in parallel_nodes))
 			self.logZremain = self.Lmax + self.logVolremaining
 			#print("L=%.1f N=%d V=%.2e logw=%.2e logZ=%.1f logZremain=%.1f" % (Li, nlive[0], self.logVolremaining, wi[0], self.logZ, logZremain))
