@@ -191,12 +191,16 @@ class SingleCounter(object):
 		self.logweights = []
 		self.H = None
 		self.logZ = -np.inf
-		self.logZremain = -np.inf
 		self.logZerr = np.inf
 		self.logVolremaining = 0
 		self.i = 0
 		self.fraction_remaining = np.inf
 		self.Lmax = -np.inf
+
+	@property
+	def logZremain(self):
+		return self.Lmax + self.logVolremaining
+	
 	
 	def passing_node(self, node, parallel_nodes):
 		# node is being consumed
@@ -229,7 +233,7 @@ class SingleCounter(object):
 				self.logZ = logZnew
 			
 			#print(self.H)
-			self.Lmax = max(node.value, self.Lmax)
+			#self.Lmax = max(node.value, self.Lmax)
 			#self.Lmax = max((n.value for n in parallel_nodes))
 			#logZremain = parallel_nodes.max() + self.logVolremaining
 			#print("L=%.1f N=%d V=%.2e logw=%.2e logZ=%.1f logZremain=%.1f" % (Li, nlive, self.logVolremaining, wi, self.logZ, logZremain))
@@ -283,12 +287,15 @@ class MultiCounter(object):
 		self.logweights = []
 		self.logZ = -np.inf
 		self.logZerr = np.inf
-		self.logZremain = np.inf
 		self.all_H = -np.nan * np.ones(nentries)
 		self.all_logZ = -np.inf * np.ones(nentries)
 		self.all_logVolremaining = np.zeros(nentries)
 		self.logVolremaining = 0.0
 		self.Lmax = -np.inf
+	
+	@property
+	def logZremain(self):
+		return self.Lmax + self.logVolremaining
 	
 	def passing_node(self, rootid, node, rootids, parallel_nodes):
 		# node is being consumed
@@ -331,7 +338,6 @@ class MultiCounter(object):
 			self.logZ = self.all_logZ[0]
 			
 			#self.Lmax = max((n.value for n in parallel_nodes))
-			self.logZremain = self.Lmax + self.logVolremaining
 			#print("L=%.1f N=%d V=%.2e logw=%.2e logZ=%.1f logZremain=%.1f" % (Li, nlive[0], self.logVolremaining, wi[0], self.logZ, logZremain))
 			#print("L=%.1f N=%d V=%.2e logw=%.2e logZ=%.1f logZremain=%.1f" % (Li, nlive[0], self.all_logVolremaining[0], (logwidth + Li)[0], self.all_logZ[0], logZremain))
 			#print("L=%.1f N=%d V=%.2e logw=%.2e logZ=<%.1f logZremain=%.1f" % (Li, nlive[1], self.all_logVolremaining[1], (logwidth + Li)[1], self.all_logZ[1], logZremain))

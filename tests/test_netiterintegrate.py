@@ -98,8 +98,8 @@ def strategy_advice(node, parallel_values, main_iterator, counting_iterators, ro
 	
 	Lmin = parallel_values.min()
 	Lmax = parallel_values.max()
+	
 	logZremain = main_iterator.logZremain
-	logZremain = Lmax + main_iterator.logVolremaining
 	
 	# if the remainder dominates, return that range
 	if logZremain > main_iterator.logZ:
@@ -122,6 +122,7 @@ def integrate_graph_singleblock(num_live_points, pointstore, x_dim, num_params, 
 		L = row[1]
 		u = row[2:2+x_dim]
 		p = row[2+x_dim:2+x_dim+num_params]
+		assert np.isfinite(L)
 		return pp.make_node(L, u, p)
 	
 	# we create a bunch of live points from the prior volume
@@ -138,6 +139,8 @@ def integrate_graph_singleblock(num_live_points, pointstore, x_dim, num_params, 
 	
 	# and we have one that operators on the entire tree
 	main_iterator = SingleCounter()
+	main_iterator.Lmax = max(n.value for n in roots)
+	assert np.isfinite(main_iterator.Lmax)
 	
 	explorer = BreadthFirstIterator(roots)
 	Llo, Lhi = -np.inf, np.inf
@@ -172,6 +175,7 @@ def integrate_graph_singleblock(num_live_points, pointstore, x_dim, num_params, 
 			# sample a new point above Lmin
 			#print("replacing node", Lmin, "from", rootid, "with", L)
 			node.children.append(create_node(pointstore, Lmin))
+			main_iterator.Lmax = max(main_iterator.Lmax, node.children[0].value)
 		else:
 			#print("ending node", Lmin)
 			pass
@@ -224,6 +228,7 @@ def multi_integrate_graph_singleblock(num_live_points, pointstore, x_dim, num_pa
 	
 	# and we have one that operators on the entire tree
 	main_iterator = MultiCounter(nroots=len(roots), nbootstraps=10, random=True)
+	main_iterator.Lmax = max(n.value for n in roots)
 	
 	explorer = BreadthFirstIterator(roots)
 	Llo, Lhi = -np.inf, np.inf
@@ -258,6 +263,7 @@ def multi_integrate_graph_singleblock(num_live_points, pointstore, x_dim, num_pa
 		if expand_node:
 			# sample a new point above Lmin
 			node.children.append(create_node(pointstore, Lmin))
+			main_iterator.Lmax = max(main_iterator.Lmax, node.children[0].value)
 		else:
 			#print("ending node", Lmin)
 			pass
@@ -301,14 +307,14 @@ def test_singleblock():
 		pointstore = TextPointStore(testfile, 2 + 2 + 2)
 		t = time.time()
 		result = integrate_singleblock(num_live_points=nlive, pointstore=pointstore, num_params=2, x_dim=2)
-		print(result['logz'], '+-', result['logzerr'], '%.2fs' % (time.time() - t))
+		print('  ', result['logz'], '+-', result['logzerr'], '%.2fs' % (time.time() - t))
 		pointstore.close()
 		
 		print("Graph integrator")
 		pointstore = TextPointStore(testfile, 2 + 2 + 2)
 		t = time.time()
 		result2 = integrate_graph_singleblock(num_live_points=nlive, pointstore=pointstore, num_params=2, x_dim=2)
-		print(result2['logz'], '+-', result2['logzerr'], '%.2fs' % (time.time() - t))
+		print('  ', result2['logz'], '+-', result2['logzerr'], '%.2fs' % (time.time() - t))
 		pointstore.close()
 		assert np.isclose(result2['logz'], result['logz'])
 		
@@ -316,7 +322,7 @@ def test_singleblock():
 		pointstore = TextPointStore(testfile, 2 + 2 + 2)
 		t = time.time()
 		result3 = multi_integrate_graph_singleblock(num_live_points=nlive, pointstore=pointstore, num_params=2, x_dim=2)
-		print(result3['logz'], '+-', result3['logzerr'], '%.2fs' % (time.time() - t))
+		print('  ', result3['logz'], '+-', result3['logzerr'], '%.2fs' % (time.time() - t))
 		pointstore.close()
 		assert np.isclose(result3['logz'], result['logz'])
 
