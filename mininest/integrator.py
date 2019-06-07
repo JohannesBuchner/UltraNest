@@ -95,7 +95,7 @@ class NestedSampler(object):
         else:
             log_dir = None
         
-        self.logger = create_logger(__name__)
+        self.logger = create_logger(__name__ + '.' + type(self).__name__)
 
         if self.log:
             self.logger.info('Num live points [%d]' % (self.num_live_points))
@@ -566,7 +566,7 @@ class ReactiveNestedSampler(object):
         else:
             log_dir = None
         
-        self.logger = create_logger(__name__)
+        self.logger = create_logger(__name__ + '.' + type(self).__name__)
         self.root = TreeNode()
 
         if self.log_to_disk:
@@ -711,13 +711,13 @@ class ReactiveNestedSampler(object):
         Ls = parallel_values
         #Ls = [node.value] + [n.value for rootid2, n in parallel_nodes]
         Lmax = Ls.max()
+        Lmin = Ls.min() #main_iterator.logZ - weight
         weight = main_iterator.logVolremaining
         # max remainder contribution is Lmax + weight, to be added to main_iterator.logZ
         # the likelihood that would add an equal amount as main_iterator.logZ is:
-        Lmin = main_iterator.logZ - weight
         
         # if the remainder dominates, return that range
-        if Lmax + weight > main_iterator.logZ:
+        if main_iterator.logZremain > main_iterator.logZ:
             return Lmin, Lmax
         
         #print("not expanding, remainder not dominant")
@@ -818,11 +818,10 @@ class ReactiveNestedSampler(object):
             nextTransformLayer = self.transformLayer.create_new(active_u, self.region.maxradiussq)
             nextregion = MLFriends(active_u, nextTransformLayer)
         
-        if self.log:
-            self.logger.info("computing maxradius...")
+        #if self.log:
+        #    self.logger.info("computing maxradius...")
         #r = nextregion.compute_maxradiussq(nbootstraps=30 // self.mpi_size)
         r = 0.
-        print(bootstrap_rootids.shape, np.shape(active_rootids))
         for selected in bootstrap_rootids[:,active_rootids]:
             a = nextregion.unormed[selected,:]
             b = nextregion.unormed[~selected,:]
@@ -942,7 +941,7 @@ class ReactiveNestedSampler(object):
                     u, p, L = self.create_point(it, Lmin, ndraw=100)
                     child = self.pointpile.make_node(L, u, p)
                     
-                    main_iterator.Lmax = max(L, main_iterator.Lmax)
+                    main_iterator.Lmax = max(main_iterator.Lmax, L)
                     
                     # identify which point is being replaced (from when we built the region)
                     worst = np.where(self.region_nodes == node.id)[0]
@@ -1037,7 +1036,6 @@ class ReactiveNestedSampler(object):
         saved_logl = np.array(saved_logl)
         print('%.4f +- %.4f (main)' % (main_iterator.logZ, main_iterator.logZerr))
         print('%.4f +- %.4f (bs)' % (main_iterator.all_logZ[1:].mean(), main_iterator.all_logZ[1:].std()))
-        print(saved_logwt.shape)
 
         self.results = dict(niter=len(saved_logwt), 
             logz=main_iterator.logZ, logzerr=main_iterator.all_logZ[1:].std(),
