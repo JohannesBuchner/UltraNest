@@ -15,7 +15,7 @@ def test_reactive_run():
 
     sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, min_num_live_points=400)
     r = sampler.run(log_interval=50)
-    open('nestedsampling_reactive_results.txt', 'a').write("%.3f\n" % r['logz'])
+    #open('nestedsampling_reactive_results.txt', 'a').write("%.3f\n" % r['logz'])
     sampler.plot()
 
 def test_run():
@@ -33,7 +33,7 @@ def test_run():
 
     sampler = NestedSampler(paramnames, loglike, transform=transform, num_live_points=400)
     r = sampler.run(log_interval=50)
-    open('nestedsampling_results.txt', 'a').write("%.3f\n" % r['logz'])
+    #open('nestedsampling_results.txt', 'a').write("%.3f\n" % r['logz'])
     sampler.plot()
 
 

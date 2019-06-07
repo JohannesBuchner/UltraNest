@@ -158,7 +158,7 @@ class PointPile(object):
 	
 	def add(self, newpointu, newpointp):
 		if self.nrows >= self.us.shape[0]:
-			self.us = np.concatenate((self.ps, np.zeros((self.chunksize, self.udim))))
+			self.us = np.concatenate((self.us, np.zeros((self.chunksize, self.udim))))
 			self.ps = np.concatenate((self.ps, np.zeros((self.chunksize, self.pdim))))
 		assert len(newpointu) == self.us.shape[1], (newpointu, self.us.shape)
 		assert len(newpointp) == self.ps.shape[1], (newpointp, self.ps.shape)
