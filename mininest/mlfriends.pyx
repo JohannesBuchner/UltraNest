@@ -318,6 +318,15 @@ class MLFriends(object):
         self.sampling_statistics = np.zeros((len(self.sampling_methods), 2), dtype=int)
     
     def estimate_volume(self):
+        """
+        Estimate the order of magnitude of the volume around a single point
+        given the current transformLayer and 
+        
+        Does not account for:
+        * the number of live points
+        * their overlap
+        * the intersection with the unit cube borders
+        """
         r = self.maxradiussq**0.5
         N, ndim = self.u.shape
         # how large is a sphere of size r in untransformed coordinates?

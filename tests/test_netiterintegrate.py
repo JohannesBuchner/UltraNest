@@ -1,7 +1,7 @@
 import os
 import numpy as np
 from mininest.store import TextPointStore
-from mininest.netiter import PointPile, MultiCounter, BreadthFirstIterator, TreeNode, make_node, count_tree, print_tree
+from mininest.netiter import PointPile, MultiCounter, BreadthFirstIterator, TreeNode, count_tree, print_tree
 
 
 
@@ -119,19 +119,18 @@ class Point(object):
 
 
 def multi_integrate_graph_singleblock(num_live_points, pointstore, x_dim, num_params, dlogz=0.5):
-	pp = PointPile()
-	def create_point(pointstore, Lmin):
+	pp = PointPile(x_dim, num_params)
+	def create_node(pointstore, Lmin):
 		idx, row = pointstore.pop(Lmin)
 		assert row is not None
 		L = row[1]
-		return L, Point(
-			u = row[2:2+x_dim],
-			p = row[2+x_dim:2+x_dim+num_params],
-		)
+		u = row[2:2+x_dim]
+		p = row[2+x_dim:2+x_dim+num_params]
+		return pp.make_node(L, u, p)
 	
 	# we create a bunch of live points from the prior volume
 	# each of which is the start of a chord (in the simplest case)
-	roots = [make_node(pp, *create_point(pointstore, -np.inf)) for i in range(num_live_points)]
+	roots = [create_node(pointstore, -np.inf) for i in range(num_live_points)]
 	
 	# and we have one that operators on the entire tree
 	main_iterator = MultiCounter(nroots=len(roots), nbootstraps=10, random=True)
@@ -168,10 +167,7 @@ def multi_integrate_graph_singleblock(num_live_points, pointstore, x_dim, num_pa
 		
 		if expand_node:
 			# sample a new point above Lmin
-			L, newpoint = create_point(pointstore, Lmin)
-			child = make_node(pp, L, newpoint)
-			#print("replacing node", Lmin, "from", rootid, "with", L)
-			node.children.append(child)
+			node.children.append(create_node(pointstore, Lmin))
 		else:
 			#print("ending node", Lmin)
 			pass
@@ -186,8 +182,8 @@ def multi_integrate_graph_singleblock(num_live_points, pointstore, x_dim, num_pa
 	print('tree size:', count_tree(roots))
 		
 	# points with weights
-	#saved_u = np.array([pp[nodeid].u for nodeid in saved_nodeids])
-	saved_v = np.array([pp[nodeid].p for nodeid in saved_nodeids])
+	#saved_u = pp.getu(saved_nodeids)
+	saved_v = pp.getp(saved_nodeids)
 	saved_logwt = np.array(main_iterator.logweights)
 	saved_wt = np.exp(saved_logwt - main_iterator.logZ)
 	saved_logl = np.array(saved_logl)
@@ -228,14 +224,14 @@ def test_singleblock():
 
 def test_visualisation():
 	print("testing tree visualisation...")
-	pp = PointPile()
+	pp = PointPile(1, 1)
 	tree = TreeNode()
 	for i in range(5):
 		j = np.random.randint(1000)
-		node = make_node(pp, j, j)
+		node = pp.make_node(j, np.array([j]), np.array([j]))
 		for k in range(i):
 			j = np.random.randint(1000)
-			node2 = make_node(pp, j, j)
+			node2 = pp.make_node(j, [j], [j])
 			node.children.append(node2)
 		tree.children.append(node)
 	print(tree)

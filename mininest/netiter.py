@@ -21,32 +21,6 @@ class TreeNode(object):
 
 multitree_sort_key = operator.itemgetter(1)
 
-class __BreadthFirstIterator(object):
-	"""
-	Generator returning the tree nodes ordered by value
-	with the number of edges passing the node "in parallel"
-	"""
-	def __init__(self, roots):
-		self.roots = roots
-		self.reset()
-	
-	def reset(self):
-		self.active_nodes = sorted(enumerate(self.roots), key=multitree_sort_key)
-		#print("starting live points from %d roots" % len(self.roots), len(self.active_nodes))
-	
-	def consume_next_node(self):
-		if self.active_nodes == []:
-			return None
-		rootid, node = self.active_nodes.pop(0)
-		#print("consuming %.1f" % node.value, len(node.children), 'nlive:', len(self.active_nodes))
-		return rootid, node, self.active_nodes
-	
-	def expand_children_of(self, rootid, node):
-		#print("replacing %.1f" % node.value, len(node.children))
-		self.active_nodes += [(rootid, c) for c in node.children]
-		self.active_nodes.sort(key=multitree_sort_key)
-
-
 class BreadthFirstIterator(object):
 	"""
 	Generator returning the tree nodes ordered by value
@@ -60,6 +34,7 @@ class BreadthFirstIterator(object):
 		self.active_nodes = list(self.roots)
 		self.active_root_ids = np.arange(len(self.active_nodes))
 		self.active_node_values = np.array([n.value for n in self.active_nodes])
+		self.active_node_ids = np.array([n.id for n in self.active_nodes])
 		assert len(self.active_nodes) == len(self.active_root_ids)
 		assert len(self.active_nodes) == len(self.active_node_values)
 		#print("starting live points from %d roots" % len(self.roots), len(self.active_nodes))
@@ -84,6 +59,7 @@ class BreadthFirstIterator(object):
 		self.active_nodes.pop(i)
 		self.active_node_values = self.active_node_values[mask]
 		self.active_root_ids = self.active_root_ids[mask]
+		self.active_node_ids = self.active_node_ids[mask]
 		assert len(self.active_nodes) == len(self.active_root_ids)
 		assert len(self.active_nodes) == len(self.active_node_values)
 	
@@ -93,6 +69,7 @@ class BreadthFirstIterator(object):
 		if len(node.children) == 1:
 			self.active_nodes[i] = node.children[0]
 			self.active_node_values[i] = node.children[0].value
+			self.active_root_ids[i] = rootid
 			self.active_root_ids[i] = rootid
 		else:
 			mask = np.ones(len(self.active_nodes), dtype=bool)
@@ -164,22 +141,40 @@ def count_tree(roots):
 		explorer.expand_children_of(rootid, node)
 
 class PointPile(object):
-	def __init__(self):
-		self.points = []
+	"""
+	Point pile is a in-memory linearized storage of point coordinates.
+	(TreeNodes only store the logL value and id in the point pile)
+	"""
+	def __init__(self, udim, pdim, chunksize=1000):
+		self.nrows = 0
+		self.chunksize = 1000
+		self.us = np.zeros((self.chunksize, udim))
+		self.ps = np.zeros((self.chunksize, pdim))
+		self.udim = udim
+		self.pdim = pdim
 	
-	def __add__(self, newpoint):
-		index = len(self.points)
-		self.points.append(newpoint)
-		return index
+	def add(self, newpointu, newpointp):
+		if self.nrows >= self.us.shape[0]:
+			self.us = np.concatenate((self.ps, np.zeros((self.chunksize, self.udim))))
+			self.ps = np.concatenate((self.ps, np.zeros((self.chunksize, self.pdim))))
+		assert len(newpointu) == self.us.shape[1], (newpointu, self.us.shape)
+		assert len(newpointp) == self.ps.shape[1], (newpointp, self.ps.shape)
+		self.us[self.nrows,:] = newpointu
+		self.ps[self.nrows,:] = newpointp
+		self.nrows += 1
+		return self.nrows - 1
+
+	def getu(self, i):
+		return self.us[i]
 	
-	def __getitem__(self, i):
-		return self.points[i]
-
-def make_node(pp, value, point):
-	return TreeNode(value=value, id=pp + point)
-
-
-class MyCounter(object):
+	def getp(self, i):
+		return self.ps[i]
+	
+	def make_node(self, value, u, p):
+		index = self.add(u, p)
+		return TreeNode(value=value, id=index)
+	
+class SingleCounter(object):
 	def __init__(self, random=False):
 		"""
 		:param random: 
@@ -266,12 +261,13 @@ class MultiCounter(object):
 		"""
 		
 		allyes = np.ones(nroots, dtype=bool)
+		# which rootids are active in each bootstrap instance
+		# the first one contains everything
 		self.rootids = [allyes]
 		#np.random.seed(1)
 		for i in range(nbootstraps):
 			mask = ~allyes
 			rootids = np.unique(np.random.randint(nroots, size=nroots))
-			#print(rootids)
 			mask[rootids] = True
 			self.rootids.append(mask)
 		self.rootids = np.array(self.rootids)
@@ -295,7 +291,9 @@ class MultiCounter(object):
 		assert not isinstance(rootid, float)
 		nchildren = len(node.children)
 		Li = node.value
+		# in wich bootstraps is rootid?
 		active = self.rootids[:,rootid]
+		# how many live points does each bootstrap have?
 		nlive = self.rootids[:,rootids].sum(axis=1)
 		
 		if nchildren == 1:
@@ -383,20 +381,3 @@ class MultiCounter(object):
 	#def is_tail_dominant(self, remaining_nodes):
 	#	Lmax = max([n.value for n in remaining_nodes])
 
-
-if __name__ == '__main__':
-	print("testing tree visualisation...")
-	pp = PointPile()
-	tree = TreeNode()
-	for i in range(5):
-		j = np.random.randint(1000)
-		node = make_node(pp, j, j)
-		for k in range(i):
-			j = np.random.randint(1000)
-			node2 = make_node(pp, j, j)
-			node.children.append(node2)
-		tree.children.append(node)
-	print(tree)
-	print_tree(tree.children, title='Empty Tree')
-	
-	

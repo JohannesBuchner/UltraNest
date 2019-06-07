@@ -12,6 +12,7 @@ from Cython.Distutils import build_ext
 
 extra_include_dirs = []
 try:
+    import numpy
     extra_include_dirs = [numpy.get_include()]
 except:
     pass
