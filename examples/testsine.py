@@ -4,7 +4,6 @@ from numpy import pi, sin, log
 import matplotlib.pyplot as plt
 
 def main(args):
-    from mininest import NestedSampler
 
     np.random.seed(2)
     Ndata = args.ndata
@@ -47,11 +46,20 @@ def main(args):
 
     
     loglike(transform(0.5 * np.ones((1, len(paramnames)))))
-    sampler = NestedSampler(paramnames, loglike, transform=transform, 
-        log_dir=args.log_dir, num_live_points=args.num_live_points,
-        derived_param_names=derivednames, wrapped_params=wrapped_params,
-        append_run_num=False)
-    sampler.run(log_interval=100)
+    if args.reactive:
+        from mininest import ReactiveNestedSampler
+        sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, 
+            log_dir=args.log_dir, min_num_live_points=args.num_live_points,
+            derived_param_names=derivednames, wrapped_params=wrapped_params,
+            append_run_num=False)
+        sampler.run()
+    else:
+        from mininest import NestedSampler
+        sampler = NestedSampler(paramnames, loglike, transform=transform, 
+            log_dir=args.log_dir, num_live_points=args.num_live_points,
+            derived_param_names=derivednames, wrapped_params=wrapped_params,
+            append_run_num=False)
+        sampler.run(log_interval=100)
     #sampler.plot()
     
     for i, p in enumerate(paramnames + derivednames):
@@ -82,6 +90,7 @@ if __name__ == '__main__':
     parser.add_argument('--run_num', type=str, default='')
     parser.add_argument('--num_slow', type=int, default=0)
     parser.add_argument('--log_dir', type=str, default='logs/testsine')
+    parser.add_argument('--reactive', action='store_true', default=False)
 
     args = parser.parse_args()
     main(args)

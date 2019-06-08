@@ -97,6 +97,7 @@ def print_tree(roots, title='Tree:'):
 	print(title)
 	explorer = BreadthFirstIterator(roots)
 	lanes = list(roots)
+	lastlane = -1
 	
 	while True:
 		next = explorer.next_node()
@@ -109,7 +110,8 @@ def print_tree(roots, title='Tree:'):
 		leftstr = ''.join([' ' if n is None else '║' for n in lanes[:laneid]])
 		rightstr = ''.join([' ' if n is None else '║' for n in lanes[laneid+1:]])
 
-		sys.stdout.write(leftstr + '║' + rightstr + "\n")
+		if lastlane == laneid:
+			sys.stdout.write(leftstr + '║' + rightstr + "\n")
 		rightstr = rightstr + " \t" + str(node.value)
 		if nchildren == 0:
 			sys.stdout.write(leftstr + 'O' + rightstr + "\n")
@@ -121,13 +123,15 @@ def print_tree(roots, title='Tree:'):
 			# expand width:
 			for j, child in enumerate(node.children):
 				rightstr2 = ''.join([' ' if n is None else '\\' for n in lanes[laneid+1:]])
-				sys.stdout.write(leftstr + '║' + ' '*j + rightstr2 + "\n")
+				if len(rightstr2) != 0:
+					sys.stdout.write(leftstr + '║' + ' '*j + rightstr2 + "\n")
 			sys.stdout.write(leftstr + '╠' + '╦'*(nchildren-2) + '╗' + rightstr + "\n")
 			
 			lanes.pop(laneid)
 			for j, child in enumerate(node.children):
 				lanes.insert(laneid, child)
 		explorer.expand_children_of(rootid, node)
+		lastlane = laneid
 
 def count_tree(roots):
 	explorer = BreadthFirstIterator(roots)
@@ -370,18 +374,15 @@ class MultiCounter(object):
 				self.all_logVolremaining[active] += log1p(-1.0 / nlive[active])
 			self.logVolremaining = self.all_logVolremaining[0]
 	
-	def remainder_ratio(self, remaining_nodes):
-		#logZ_remaining = max((n.L for n in remaining_nodes)) + self.logVolremaining
-		remainder_ratio = np.exp(self.logZremain - self.logZ)
-		return remainder_ratio
+	def remainder_ratio(self):
+		return np.exp(self.logZremain - self.logZ)
 	
-	def integrate_remainder(self, remaining_nodes):
-
-		logvol = self.logVolremaining - np.log(len(remaining_nodes))
+	def integrate_remainder(self, remaining_values):
+		logvol = self.logVolremaining - np.log(len(remaining_values))
 		h = self.H
 		logz = self.logZ
-		for node in remaining_nodes:
-			logwt = logvol + node.value.L
+		for L in remaining_values:
+			logwt = logvol + L
 			logz_new = np.logaddexp(logz, logwt)
 			h = (exp(logwt - logz_new) * node.value + np.exp(logz - logz_new) * (h + logz) - logz_new)
 			logz = logz_new

@@ -620,14 +620,7 @@ class ReactiveNestedSampler(object):
                         f.write(" ".join(["%.5E" % v for v in samples[ib, i, :]]))
                         f.write("\n")
     
-    def widen_nodes_before(self, Labove, nnodes_needed):
-        """
-        Make sure that at Labove, there are nnodes_needed live points
-        (parallel arcs).
-        Sample from an appropriate region
-        """
-        if self.log:
-            self.logger.info('Widening to %d live points before L=%.1f...' % (nnodes_needed, Labove))
+    def find_nodes_before(self, Labove):
         roots = self.root.children
         parents = []
         
@@ -641,7 +634,6 @@ class ReactiveNestedSampler(object):
                 # already past (root child)
                 parents.append(self.root)
                 break
-                explorer.drop_next_node()
             elif any(n.value > Labove for n in node.children):
                 # found matching parent
                 parents.append(node)
@@ -649,12 +641,19 @@ class ReactiveNestedSampler(object):
             else:
                 # continue exploring
                 explorer.expand_children_of(rootid, node)
+        return parents
+    
+    def widen_nodes(self, parents, nnodes_needed):
+        """
+        Make sure that at Labove, there are nnodes_needed live points
+        (parallel arcs).
+        Sample from an appropriate region
+        """
         
         ndone = len(parents)
         # sort from low to high
-        parents.sort(key=lambda n: n.value)
+        Lmin = min(n.value for n in parents)
         self.region = None
-        Lmin = parents[0].value
         if np.isinf(Lmin):
             # some of the parents were born by sampling from the entire
             # prior volume. So we can efficiently apply a solution: 
@@ -664,11 +663,8 @@ class ReactiveNestedSampler(object):
         
         active_node_ids = [n.id for n in parents]
         active_u = self.pointpile.getu(active_node_ids)
-        active_nodes = parents
-        active_rootids = np.ones(ndone, dtype=int)
-        self.update_region(Lmin=Lmin, 
-            active_u=active_u, active_node_ids=active_node_ids, active_nodes=active_nodes, active_rootids=active_rootids, 
-            bootstrap_rootids=None)
+        self.update_region(Lmin=Lmin, active_nodes=parents, 
+            active_u=active_u, active_node_ids=active_node_ids)
         
         if self.log:
             self.logger.info('Sampling %d live points at L=%.1f...' % (nnodes_needed - ndone, Lmin))
@@ -676,7 +672,8 @@ class ReactiveNestedSampler(object):
         while ndone < nnodes_needed:
             # double until we reach the necessary points
             for n in parents:
-                u, p, L = self.create_point(Lmin=Lmin, ndraw=100)
+                assert n.value >= Lmin, (n.value, Lmin)
+                u, p, L = self.create_point(Lmin=n.value, ndraw=100)
                 child = self.pointpile.make_node(L, u, p)
                 n.children.append(child)
                 ndone += 1
@@ -778,7 +775,7 @@ class ReactiveNestedSampler(object):
         self.root.children += roots
 
 
-    def adaptive_strategy_advice(self, node, parallel_values, main_iterator, counting_iterators, rootid):
+    def adaptive_strategy_advice(self, parallel_values, main_iterator, frac_remain):
         Ls = parallel_values
         #Ls = [node.value] + [n.value for rootid2, n in parallel_nodes]
         Lmax = Ls.max()
@@ -791,6 +788,8 @@ class ReactiveNestedSampler(object):
         if main_iterator.logZremain > main_iterator.logZ:
             return Lmin, Lmax
         
+        if main_iterator.remainder_ratio() > frac_remain:
+            return Lmin, Lmax
         #print("not expanding, remainder not dominant")
         return np.nan, np.nan
     
@@ -879,7 +878,7 @@ class ReactiveNestedSampler(object):
                 return u, p, logl
             else:
                 self.ib = ib + 1
-        
+    
     def update_region(self, Lmin, active_u, active_nodes, active_node_ids, bootstrap_rootids=None, active_rootids=None):
         if self.region is None:
             self.transformLayer = ScalingLayer(wrapped_dims=self.wrapped_axes)
@@ -923,7 +922,8 @@ class ReactiveNestedSampler(object):
             update_interval_ncall=None,
             log_interval=None,
             dlogz=0.5,
-            dKL=0.7,
+            dKL=0.6,
+            fracremain=0.01,
             max_iters=None,
             volume_switch=0):
 
@@ -932,6 +932,7 @@ class ReactiveNestedSampler(object):
         self.widen_roots(self.min_num_live_points)
 
         Llo, Lhi = -np.inf, np.inf
+        Lmax = -np.inf
         strategy_stale = True
         
         while True:
@@ -960,14 +961,16 @@ class ReactiveNestedSampler(object):
             explorer = BreadthFirstIterator(roots)
             # Integrating thing
             main_iterator = MultiCounter(nroots=len(roots), nbootstraps=max(1, 50 // self.mpi_size), random=False)
-            main_iterator.Lmax = max(n.value for n in roots)
+            main_iterator.Lmax = max(Lmax, max(n.value for n in roots))
             
             self.transformLayer = None
             self.region = None
             self.ib = 0
             self.samples = []
             ndraw = 100
-            
+
+            self.logger.info("Exploring ...")
+            print_tree(roots[:5], title="Tree:")
             region_sequence = []
             
             saved_nodeids = []
@@ -988,15 +991,16 @@ class ReactiveNestedSampler(object):
                 saved_nodeids.append(node.id)
                 saved_logl.append(Lmin)
                 
-                expand_node = Lmin <= Lhi and Llo <= Lhi and len(node.children) == 0
                 # if within suggested range, expand
                 if strategy_stale or not (Lmin <= Lhi):
                     # check with advisor if we want to expand this node
-                    Llo, Lhi = self.adaptive_strategy_advice(node, active_values, main_iterator, [], rootid)
-                    #print("L range to expand: %.1f-%.1f" % (Llo, Lhi), "have:", Lmin, "=>", Lmin <= Lhi, Llo <= Lhi)
+                    Llo, Lhi = self.adaptive_strategy_advice(active_values, main_iterator, fracremain)
+                    #print("L range to expand: %.1f-%.1f have: %.1f logZ=%.2f logZremain=%.2f" % (
+                    #    Llo, Lhi, Lmin, main_iterator.logZ, main_iterator.logZremain))
                     strategy_stale = False
                 strategy_stale = True
                 
+                expand_node = Lmin <= Lhi and Llo <= Lhi and len(node.children) == 0
                 if expand_node:
                     # sample a new point above Lmin
                     active_u = self.pointpile.getu(active_node_ids)
@@ -1067,6 +1071,10 @@ class ReactiveNestedSampler(object):
                 it += 1
                 explorer.expand_children_of(rootid, node)
             
+            self.logger.info("Explored until L=%.1f" % node.value)
+            print_tree(roots[:5], title="Tree:")
+            Lmax = main_iterator.Lmax
+            
             if len(region_sequence) > 0:
                 Lmin, nlive, nclusters = region_sequence[-1]
                 if nlive < self.cluster_num_live_points * nclusters:
@@ -1090,9 +1098,11 @@ class ReactiveNestedSampler(object):
 
             for pi, KLi in zip(p.transpose(), KL.sum(axis=0)):
                 if KLi > dKL:
-                    samples = np.random.choice(len(ref_logw), p=pi, size=400)
-                    Llo = min(Llo, saved_logl[samples].min())
-                    Lhi = max(Lhi, saved_logl[samples].max())
+                    ci = pi.cumsum()
+                    ilo = np.where(ci > 1./400.)[0][0]
+                    ihi = np.where(ci < 1 - 1./400.)[0][-1]
+                    Llo = min(Llo, saved_logl[ilo])
+                    Lhi = max(Lhi, saved_logl[ihi])
             
             print("Ranges according to posterior contribution:", Llo, Lhi)
             
@@ -1119,16 +1129,21 @@ class ReactiveNestedSampler(object):
                 #    print_tree(roots, title="Tree before forking:")
                 #fork_roots(create_point=create_point, pp=pp, pointstore=pointstore, roots=roots, Llo=Llo, Lhi=Lhi, verbose=verbose)
                 #double_roots(create_point=create_point, pp=pp, pointstore=pointstore, roots=roots, Llo=Llo, Lhi=Lhi, verbose=verbose)
+                parents = self.find_nodes_before(Llo)
+                nnodes_needed = len(parents) * 2
+                if self.log:
+                    self.logger.info('Widening to %d live points before L=%.1f...' % (nnodes_needed, Llo))
                 
+                self.widen_nodes(parents, nnodes_needed)
                 # simply double roots
-                self.widen_roots(len(self.root.children) * 2)
+                #self.widen_roots(len(self.root.children) * 2)
                 #if self.log: 
                 #    print_tree(roots, title="Tree after forking:")
                 print('tree size:', count_tree(roots))
             else:
                 break
             
-        
+        print_tree(roots[0:5])
         print('tree size:', count_tree(roots))
         # points with weights
         #saved_u = np.array([pp[nodeid].u for nodeid in saved_nodeids])
@@ -1142,6 +1157,7 @@ class ReactiveNestedSampler(object):
         self.results = dict(niter=len(saved_logwt), 
             logz=main_iterator.logZ, logzerr=main_iterator.all_logZ[1:].std(),
             weighted_samples=dict(v=saved_v, w = saved_wt[:,0], logw = saved_logwt[:,0], bs_w = saved_wt, L=saved_logl),
+            samples=resample_equal(saved_v, saved_wt[:,0] / saved_wt[:,0].sum()),
             tree=TreeNode(-np.inf, children=roots),
         )
         return self.results
