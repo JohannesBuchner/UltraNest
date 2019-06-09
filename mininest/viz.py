@@ -12,7 +12,7 @@ from numpy import log10
 import numpy as np
 import scipy.stats
 import string
-clusteridstrings = ['%d' % i for i in range(10)] + list(string.ascii_uppercase)
+clusteridstrings = ['%d' % i for i in range(10)] + list(string.ascii_uppercase) + list(string.ascii_lowercase)
 
 def nicelogger(points, info, region, transformLayer, region_fresh=False):
     #u, p, logl = points['u'], points['p'], points['logl']

@@ -23,8 +23,17 @@ from .store import TextPointStore, HDF5PointStore, NullPointStore
 from .viz import nicelogger
 from .netiter import PointPile, MultiCounter, BreadthFirstIterator, TreeNode, print_tree, count_tree
 
-
 import numpy as np
+
+def sequentialize_width_sequence(minimal_widths, min_width):
+    Lpoints = np.unique([-np.inf] + [L for L, _, _ in minimal_widths] + [L for _, L, _ in minimal_widths] + [np.inf])
+    widths = np.ones(len(Lpoints)) * min_width
+    
+    for Llo, Lhi, width in minimal_widths:
+        # all Lpoints within that range should be maximized to width
+        mask = np.logical_and(Lpoints >= Llo, Lpoints <= Lhi)
+        widths[mask] = np.where(widths[mask] < width, width, widths[mask])
+    return list(zip(Lpoints, widths))
 
 class NestedSampler(object):
 
@@ -679,7 +688,6 @@ class ReactiveNestedSampler(object):
         # sort from low to high
         parents.sort(key=operator.attrgetter('value'))
         Lmin = parents[0].value
-        self.region = None
         if np.isinf(Lmin):
             # some of the parents were born by sampling from the entire
             # prior volume. So we can efficiently apply a solution: 
@@ -695,6 +703,8 @@ class ReactiveNestedSampler(object):
         next_update_interval_ncall = self.ncall
         # double until we reach the necessary points
         nsamples = int(np.ceil((nnodes_needed - ndone) / len(parents)))
+        
+        self.region = None
         for i, n in enumerate(parents):
             # create region if it does not exist
             # or update after some likelihood calls (unless only few nodes left)
@@ -819,7 +829,7 @@ class ReactiveNestedSampler(object):
         self.root.children += roots
 
 
-    def adaptive_strategy_advice(self, parallel_values, main_iterator, frac_remain):
+    def adaptive_strategy_advice(self, Lmin, parallel_values, main_iterator, minimal_widths, frac_remain):
         Ls = parallel_values
         #Ls = [node.value] + [n.value for rootid2, n in parallel_nodes]
         Lmax = Ls.max()
@@ -886,12 +896,6 @@ class ReactiveNestedSampler(object):
                 v = v[accepted,:]
                 logl = logl[accepted]
                 father = father[accepted]
-                #print("accepted %d/%d draw=%d" % (accepted.sum(), nu, ndraw))
-                #if nu == 0:
-                #    np.savez('region-stuck-it%d-nlive%d.npz' % (it, len(active_u)), 
-                #        u=region.u, unormed=region.unormed, maxradiussq=region.maxradiussq,
-                #        mean=transformLayer.mean, std=transformLayer.std, 
-                #        clusterids=transformLayer.clusterids)
                 
                 if self.use_mpi:
                     recv_father = self.comm.gather(father, root=0)
@@ -983,7 +987,7 @@ class ReactiveNestedSampler(object):
             log_interval=None,
             dlogz=0.5,
             dKL=0.5,
-            fracremain=0.01,
+            frac_remain=0.01,
             max_iters=None,
             volume_switch=0):
 
@@ -998,6 +1002,7 @@ class ReactiveNestedSampler(object):
         Llo, Lhi = -np.inf, np.inf
         Lmax = -np.inf
         strategy_stale = True
+        minimal_widths = []
         
         while True:
             roots = self.root.children
@@ -1031,6 +1036,8 @@ class ReactiveNestedSampler(object):
                 self.logger.info("Exploring ...")
             #print_tree(roots[:5], title="Tree:")
             region_sequence = []
+            minimal_widths_sequence = sequentialize_width_sequence(minimal_widths, self.min_num_live_points)
+            print('minimal_widths_sequence:', minimal_widths_sequence)
             
             saved_nodeids = []
             saved_logl = []
@@ -1056,14 +1063,32 @@ class ReactiveNestedSampler(object):
                 # if within suggested range, expand
                 if strategy_stale or not (Lmin <= Lhi):
                     # check with advisor if we want to expand this node
-                    Llo, Lhi = self.adaptive_strategy_advice(active_values, main_iterator, fracremain)
+                    Llo, Lhi = self.adaptive_strategy_advice(Lmin, active_values, main_iterator, minimal_widths, frac_remain)
                     #print("L range to expand: %.1f-%.1f have: %.1f logZ=%.2f logZremain=%.2f" % (
                     #    Llo, Lhi, Lmin, main_iterator.logZ, main_iterator.logZremain))
                     strategy_stale = False
-                strategy_stale = True
+                #strategy_stale = True
                 
                 nlive = len(active_node_ids)
-                expand_node = Lmin <= Lhi and Llo <= Lhi and len(node.children) == 0
+                expand_node = False
+                if Lmin <= Lhi and Llo <= Lhi:
+                    # we should continue to progress towards Lhi
+                    while Lmin > minimal_widths_sequence[0][0]:
+                        minimal_widths_sequence.pop(0)
+                    
+                    # get currently desired width
+                    if self.region is None:
+                        minimal_width_clusters = 0
+                    else:
+                        minimal_width_clusters = self.cluster_num_live_points * self.region.transformLayer.nclusters
+                    
+                    minimal_width = max(minimal_widths_sequence[0][1], minimal_width_clusters)
+                    
+                    # but if we are wider than the width required
+                    # we do not need to expand this one
+                    # if already has children, no need to expand
+                    expand_node = nlive <= minimal_width and len(node.children) == 0
+                
                 region_fresh = False
                 if expand_node:
                     # sample a new point above Lmin
@@ -1075,7 +1100,7 @@ class ReactiveNestedSampler(object):
                         
                         region_sequence.append((Lmin, nlive, self.region.transformLayer.nclusters))
                         
-                        if len(active_node_ids) < self.cluster_num_live_points * self.region.transformLayer.nclusters:
+                        if nlive < self.cluster_num_live_points * self.region.transformLayer.nclusters:
                             # make wider here
                             if self.log:
                                 self.logger.info("Found %d clusters, but only have %d live points." % (self.region.transformLayer.nclusters, len(active_node_ids)))
@@ -1119,11 +1144,11 @@ class ReactiveNestedSampler(object):
                         #    self.logger.debug("replacing node", Lmin, "from", rootid, "with", L)
                         node.children.append(child)
 
-                        if i == 0 and nlive < self.max_num_live_points_for_efficiency:
+                        if nlive < self.max_num_live_points_for_efficiency * nlive / self.max_num_live_points_for_efficiency:
                             efficiency_here = it / (self.ncall - ncall_at_run_start + 1.)
                             # first ratio: current efficiency is lower than 1/live points
                             # second ratio: more live points would mean slower progress
-                            if efficiency_here < 1. / self.max_num_live_points_for_efficiency: # * nlive / self.max_num_live_points_for_efficiency:
+                            if efficiency_here < 1. / self.max_num_live_points_for_efficiency * nlive / self.max_num_live_points_for_efficiency:
                                 # running inefficiently
                                 # more live points could make sampling more efficient
                                 if self.log:
@@ -1161,16 +1186,20 @@ class ReactiveNestedSampler(object):
             
             if len(region_sequence) > 0:
                 Lmin, nlive, nclusters = region_sequence[-1]
-                if nlive < self.cluster_num_live_points * nclusters:
+                nnodes_needed = self.cluster_num_live_points * nclusters
+                if nlive < nnodes_needed:
                     parents = self.find_nodes_before(Lmin)
                     self.pointstore.reset()
-                    self.widen_nodes(parents, self.cluster_num_live_points * nclusters, (update_interval_ncall or nlive))
+                    self.widen_nodes(parents, nnodes_needed, (update_interval_ncall or nlive))
+                    Llo = min(n.value for n in parents)
+                    Lhi = Lmin
+                    minimal_widths.append((Llo, Lhi, nnodes_needed))
                     Llo, Lhi = -np.inf, np.inf
                     continue
             
             if self.log:
-                self.logger.info('logZ = %.4f +- %.4f (main)' % (main_iterator.logZ, main_iterator.logZerr))
-                self.logger.info('logZ = %.4f +- %.4f (bs)' % (main_iterator.all_logZ[1:].mean(), main_iterator.all_logZ[1:].std()))
+                #self.logger.info('  logZ = %.4f +- %.4f (main)' % (main_iterator.logZ, main_iterator.logZerr))
+                self.logger.info('  logZ = %.4f +- %.4f' % (main_iterator.all_logZ[1:].mean(), main_iterator.all_logZ[1:].std()))
                 self.logger.info("Posterior uncertainty strategy:")
             # compute KL divergence
             saved_logl = np.array(saved_logl)
@@ -1197,8 +1226,10 @@ class ReactiveNestedSampler(object):
                     Llo = min(Llo, saved_logl[ilo])
                     Lhi = max(Lhi, saved_logl[ihi])
             
-            if self.log:
+            if self.log and Lhi > Llo:
                 self.logger.info("Posterior uncertainty strategy wants to improve: %.2f..%.2f" % (Llo, Lhi))
+            elif self.log:
+                self.logger.info("Posterior uncertainty strategy is happy")
             
             if self.log:
                 self.logger.info("Evidency uncertainty strategy:")
@@ -1214,8 +1245,10 @@ class ReactiveNestedSampler(object):
                         samples = np.random.choice(len(ref_logw), p=pi, size=400)
                         Llo = min(Llo, saved_logl[samples].min())
                         Lhi = max(Lhi, saved_logl[samples].max())
-            if self.log:
+            if self.log and Lhi > Llo:
                 self.logger.info("Evidency uncertainty strategy wants to improve: %.2f..%.2f" % (Llo, Lhi))
+            elif self.log:
+                self.logger.info("Evidency uncertainty strategy is happy")
             
             # if still inf: measure lnZ contribution when number of live points decreases
             # if more than 0.001 of total lnZ, we want to integrate that away too
@@ -1233,6 +1266,7 @@ class ReactiveNestedSampler(object):
                 
                 self.pointstore.reset()
                 self.widen_nodes(parents, nnodes_needed, update_interval_ncall)
+                minimal_widths.append((Llo, Lhi, nnodes_needed))
                 # simply double roots
                 #self.widen_roots(len(self.root.children) * 2)
                 #if self.log: 

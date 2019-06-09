@@ -32,7 +32,6 @@ def main(args):
             log_dir=args.log_dir, append_run_num=True)
         sampler.run()
         sampler.plot()
-    sampler.plot()
 
 
 if __name__ == '__main__':
