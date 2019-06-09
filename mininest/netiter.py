@@ -2,6 +2,7 @@ import numpy as np
 from numpy import log, log1p, exp, logaddexp
 import math
 import operator
+import sys
 
 class TreeNode(object):
 	def __init__(self, value=None, id=None, children=None):
@@ -89,8 +90,6 @@ class BreadthFirstIterator(object):
 			assert len(self.active_nodes) == len(self.active_root_ids)
 			assert len(self.active_nodes) == len(self.active_node_values)
 			assert len(self.active_nodes) == len(self.active_node_ids)
-
-import sys
 
 def print_tree(roots, title='Tree:'):
 	print()
@@ -377,19 +376,3 @@ class MultiCounter(object):
 	def remainder_ratio(self):
 		return np.exp(self.logZremain - self.logZ)
 	
-	def integrate_remainder(self, remaining_values):
-		logvol = self.logVolremaining - np.log(len(remaining_values))
-		h = self.H
-		logz = self.logZ
-		for L in remaining_values:
-			logwt = logvol + L
-			logz_new = np.logaddexp(logz, logwt)
-			h = (exp(logwt - logz_new) * node.value + np.exp(logz - logz_new) * (h + logz) - logz_new)
-			logz = logz_new
-		
-		logzerr = (self.H / len(remaining_nodes))**0.5
-		return logz, logzerr
-
-	#def is_tail_dominant(self, remaining_nodes):
-	#	Lmax = max([n.value for n in remaining_nodes])
-

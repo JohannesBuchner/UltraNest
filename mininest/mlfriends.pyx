@@ -307,6 +307,9 @@ class AffineLayer(ScalingLayer):
 
 class MLFriends(object):
     def __init__(self, u, transformLayer):
+        if not np.logical_and(u > 0, u < 1).all():
+            raise ValueError("not all u values are between 0 and 1: %s" % u[~np.logical_and(u > 0, u < 1).all()])
+        
         self.u = u
         self.transformLayer = transformLayer
         self.unormed = self.transformLayer.transform(self.u)

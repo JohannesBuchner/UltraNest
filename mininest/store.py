@@ -44,7 +44,7 @@ class FilePointStore(object):
 		self.stack_empty = len(self.stack) == 0
 		self.data = []
 		assert self.stack_empty == (len(self.stack) == 0), (self.stack_empty, len(self.stack))
-		print("PointStore: have %d items" % len(self.stack))
+		#print("PointStore: have %d items" % len(self.stack))
 	
 	def close(self):
 		self.fileobj.close()

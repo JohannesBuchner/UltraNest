@@ -14,7 +14,7 @@ import scipy.stats
 import string
 clusteridstrings = ['%d' % i for i in range(10)] + list(string.ascii_uppercase)
 
-def nicelogger(points, info, region, transformLayer):
+def nicelogger(points, info, region, transformLayer, region_fresh=False):
     #u, p, logl = points['u'], points['p'], points['logl']
     p = points['p']
     paramnames = info['paramnames']
@@ -36,7 +36,8 @@ def nicelogger(points, info, region, transformLayer):
     else:
         columns, _rows = 80, 25
 
-    width = columns - 22 - max([len(pname) for pname in paramnames])
+    paramwidth = max([len(pname) for pname in paramnames])
+    width = columns - 23 - paramwidth
     indices = ((p - plo_rounded) * width / (phi_rounded - plo_rounded).reshape((1, -1))).astype(int)
     indices[indices >= width] = width - 1
     indices[indices < 0] = 0
@@ -47,7 +48,7 @@ def nicelogger(points, info, region, transformLayer):
     clusterids = transformLayer.clusterids % len(clusteridstrings)
     nmodes = transformLayer.nclusters
     print("Mono-modal" if nmodes == 1 else "Have %d modes" % nmodes, 
-        "Volume: %.2e" % region.estimate_volume())
+        "Volume: %.2e" % region.estimate_volume(), '*' if region_fresh else ' ')
 
     if ndim == 1:
         pass
@@ -113,7 +114,7 @@ def nicelogger(points, info, region, transformLayer):
                 line = line[:j] + rightstr + line[j + len(rightstr):]
 
 			
-        
-        print('%09s|%s|%9s %s' % (fmt % plo_rounded[i], line, fmt % phi_rounded[i], param))
+        parampadded = ('%-%%ds' % paramwidth) % param
+        print('%s: %09s|%s|%9s' % (parampadded, fmt % plo_rounded[i], line, fmt % phi_rounded[i]))
     
     
