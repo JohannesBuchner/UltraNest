@@ -1512,7 +1512,7 @@ class ReactiveNestedSampler(object):
             weighted_samples=dict(v=saved_v, w=saved_wt0, logw=saved_logwt0, bs_w=saved_wt_bs, L=saved_logl),
             samples=resample_equal(saved_v, w),
             ess=ess,
-            tree=TreeNode(-np.inf, children=roots),
+            tree=self.root,
         )
         return self.results
     

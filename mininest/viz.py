@@ -115,7 +115,7 @@ def nicelogger(points, info, region, transformLayer, region_fresh=False):
                 line = line[:j] + rightstr + line[j + len(rightstr):]
 
 			
-        parampadded = ('%-%%ds' % paramwidth) % param
+        parampadded = ('%%-%ds' % paramwidth) % param
         print('%s: %09s|%s|%9s' % (parampadded, fmt % plo_rounded[i], line, fmt % phi_rounded[i]))
     
     print()
