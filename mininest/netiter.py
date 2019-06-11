@@ -1,3 +1,25 @@
+"""
+
+Functions and classes for treating nested sampling exploration as a tree.
+
+The root represents the prior volume, branches and sub-branches split the volume.
+The leaves of the tree are the integration tail.
+
+Nested sampling proceeds as a breadth first graph search, 
+with active nodes sorted by likelihood value. 
+The number of live points are the number of parallel edges (active nodes to do).
+
+Most functions receive the argument "roots", which are the 
+children of the tree root (main branches).
+
+The exploration is bootstrap-capable without requiring additional 
+computational effort: The roots are indexed, and the bootstrap explorer
+can ignore the rootids it does not know about.
+
+
+"""
+
+
 import numpy as np
 from numpy import log, log1p, exp, logaddexp
 import math
@@ -5,6 +27,12 @@ import operator
 import sys
 
 class TreeNode(object):
+	
+	"""
+	:param value: is used to order nodes
+	:param id: refers to the order of discovery and storage (PointPile)
+	:param children: 
+	"""
 	def __init__(self, value=None, id=None, children=None):
 		self.value = value
 		self.id = id
@@ -32,6 +60,9 @@ class BreadthFirstIterator(object):
 		self.reset()
 	
 	def reset(self):
+		"""
+		(Re)start exploration from the top.
+		"""
 		self.active_nodes = list(self.roots)
 		self.active_root_ids = np.arange(len(self.active_nodes))
 		self.active_node_values = np.array([n.value for n in self.active_nodes])
@@ -41,6 +72,13 @@ class BreadthFirstIterator(object):
 		#print("starting live points from %d roots" % len(self.roots), len(self.active_nodes))
 	
 	def next_node(self):
+		"""
+		Get next node in order. Does not remove the node.
+		
+		returns None if done.
+		returns rootid, node, (active_nodes, active_root_ids, active_node_values, active_node_ids)
+		        otherwise
+		"""
 		if self.active_nodes == []:
 			return None
 		self.next_index = np.argmin(self.active_node_values)
@@ -54,6 +92,9 @@ class BreadthFirstIterator(object):
 		return rootid, node, (self.active_nodes, self.active_root_ids, self.active_node_values, self.active_node_ids)
 	
 	def drop_next_node(self):
+		"""
+		Forget about the current node.
+		"""
 		i = self.next_index
 		mask = np.ones(len(self.active_nodes), dtype=bool)
 		mask[i] = False
@@ -65,6 +106,11 @@ class BreadthFirstIterator(object):
 		assert len(self.active_nodes) == len(self.active_node_values)
 	
 	def expand_children_of(self, rootid, node):
+		"""
+		Replace the current node with its children
+		
+		rootid and node have to come from the most recent call to next_node.
+		"""
 		#print("replacing %.1f" % node.value, len(node.children))
 		i = self.next_index
 		newnnodes = len(self.active_nodes) - 1 + len(node.children)
@@ -97,6 +143,9 @@ class BreadthFirstIterator(object):
 		assert newnnodes == len(self.active_node_ids), (len(self.active_node_ids), newnnodes, len(node.children))
 
 def print_tree(roots, title='Tree:'):
+	"""
+	Make a pretty yet compact graphic of the tree
+	"""
 	print()
 	print(title)
 	explorer = BreadthFirstIterator(roots)
@@ -138,6 +187,9 @@ def print_tree(roots, title='Tree:'):
 		lastlane = laneid
 
 def count_tree(roots):
+	"""
+	Returns the maximum number of parallel edges and the total number of nodes
+	"""
 	explorer = BreadthFirstIterator(roots)
 	nnodes = 0
 	maxwidth = 0
@@ -153,6 +205,10 @@ def count_tree(roots):
 
 
 def count_tree_between(roots, lo, hi):
+	"""
+	Returns the maximum number of parallel edges and the total number of nodes
+	in the value interval lo .. hi (inclusive).
+	"""
 	explorer = BreadthFirstIterator(roots)
 	nnodes = 0
 	maxwidth = 0
@@ -173,6 +229,34 @@ def count_tree_between(roots, lo, hi):
 			nnodes += 1
 		
 		explorer.expand_children_of(rootid, node)
+
+def find_nodes_before(root, value):
+	"""
+	Identify all nodes that have children above value.
+	
+	(If a root child is above the value, its parent (root) is the leaf.)
+	"""
+	roots = root.children
+	parents = []
+	
+	explorer = BreadthFirstIterator(roots)
+	while True:
+		next = explorer.next_node()
+		if next is None:
+			break
+		rootid, node, _ = next
+		if node.value >= value:
+			# already past (root child)
+			parents.append(root)
+			break
+		elif any(n.value >= value for n in node.children):
+			# found matching parent
+			parents.append(node)
+			explorer.drop_next_node()
+		else:
+			# continue exploring
+			explorer.expand_children_of(rootid, node)
+	return parents
 
 
 class PointPile(object):
@@ -210,6 +294,9 @@ class PointPile(object):
 		return TreeNode(value=value, id=index)
 	
 class SingleCounter(object):
+	"""
+	Evidence log(Z) and posterior weight summation for a Nested Sampling tree.
+	"""
 	def __init__(self, random=False):
 		"""
 		:param random: 
@@ -231,10 +318,20 @@ class SingleCounter(object):
 
 	@property
 	def logZremain(self):
+		"""
+		Estimate conservatively the logZ of the current tail (un-opened nodes)
+		"""
 		return self.Lmax + self.logVolremaining
 	
 	
 	def passing_node(self, node, parallel_nodes):
+		"""
+		Accumulate node to the integration
+		
+		:param node: breadth-first removed node
+		:param parallel_nodes: nodes active next to node
+		"""
+		
 		# node is being consumed
 		# we have parallel arcs to parallel_nodes
 		
@@ -295,14 +392,38 @@ class SingleCounter(object):
 				self.logVolremaining += log1p(-1.0 / nlive)
 	
 class MultiCounter(object):
+	"""
+	Like SingleCounter, but bootstrap capable.
+	
+	
+	Properties:
+	
+	- logZ, logZerr, logVolremaining: main estimator
+	  logZerr is probably not reliable, because it needs nlive 
+	  to convert H to logZerr.
+	- Lmax: highest loglikelihood currently known
+	- logZ_bs, logZerr_bs: bootstrapped logZ estimate
+	- logZremain, remainder_ratio: weight and fraction of the unexplored remainder 
+	
+	Each of the following has as many entries as number of iterations.
+	- all_H, all_logZ, all_logVolremaining, logweights: 
+	      information for all instances
+	      first entry is the main estimator, i.e., not bootstrapped
+	- istail: whether that node was a leaf.
+	
+	 
+	"""
 	def __init__(self, nroots, nbootstraps=10, random=False):
 		"""
+		:param nroots: number of children the tree root has
+		:param nbootstraps: 
 		:param random: 
 			if False, use mean estimator for volume shrinkage
 			if True, draw a random sample
 		"""
 		
 		allyes = np.ones(nroots, dtype=bool)
+		# the following is a masked array of size (nbootstraps+1, nroots)
 		# which rootids are active in each bootstrap instance
 		# the first one contains everything
 		self.rootids = [allyes]
@@ -330,17 +451,39 @@ class MultiCounter(object):
 	
 	@property
 	def logZremain(self):
+		"""
+		Estimate conservatively the logZ of the current tail (un-opened nodes)
+		"""
 		return self.Lmax + self.logVolremaining
 	
 	@property
 	def logZ_bs(self):
+		""" Estimate logZ from the bootstrap ensemble """
 		return self.all_logZ[1:].mean()
 	
 	@property
 	def logZerr_bs(self):
+		""" Estimate logZ error from the bootstrap ensemble """
 		return self.all_logZ[1:].std()
 	
+	@property
+	def remainder_ratio(self):
+		""" ratio of logZremain to logZ """
+		return np.exp(self.logZremain - self.logZ)
+	
 	def passing_node(self, rootid, node, rootids, parallel_nodes):
+		"""
+		Accumulate node to the integration
+		
+		Breadth-first removed *node* and nodes active next to node (*parallel_nodes*).
+		rootid and rootids are needed to identify which bootstrap instance
+		should accumulate.
+		
+		:param rootid: 
+		:param node: 
+		:param rootids: 
+		:param parallel_nodes: 
+		"""
 		# node is being consumed
 		# we have parallel arcs to parallel_nodes
 		
@@ -424,7 +567,4 @@ class MultiCounter(object):
 			with np.errstate(divide='ignore'):
 				self.all_logVolremaining[active] += log1p(-1.0 / nlive[active])
 			self.logVolremaining = self.all_logVolremaining[0]
-	
-	def remainder_ratio(self):
-		return np.exp(self.logZremain - self.logZ)
 	

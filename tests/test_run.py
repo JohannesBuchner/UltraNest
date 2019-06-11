@@ -124,7 +124,7 @@ def test_reactive_run_resume(dlogz, min_ess):
 
 
 if __name__ == '__main__':
-    #test_run_resume()
-    test_reactive_run_resume()
+    #test_run_resume(dlogz=0.5)
+    test_reactive_run_resume(dlogz=0.5, min_ess=1000)
     #test_reactive_run()
     #test_run()

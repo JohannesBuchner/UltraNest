@@ -1,3 +1,14 @@
+"""
+
+Storage for nested sampling points.
+
+The information stored is a table with 
+- the likelihood threshold drawn from
+- the likelihood, prior volume coordinates and physical coordinates of the point
+
+"""
+
+
 import numpy as np
 import warnings
 import os
@@ -40,11 +51,7 @@ class FilePointStore(object):
 		lower value
 		"""
 		#self.stack = sorted(self.stack + self.data, key=lambda e: (e[1][0], e[0]))
-		self.stack = self.stack + self.data
 		self.stack_empty = len(self.stack) == 0
-		self.data = []
-		print('Stack content:', self.stack[:10])
-		assert self.stack_empty == (len(self.stack) == 0), (self.stack_empty, len(self.stack))
 		#print("PointStore: have %d items" % len(self.stack))
 	
 	def close(self):
@@ -76,42 +83,13 @@ class FilePointStore(object):
 		self.stack_empty = len(self.stack) == 0
 		return None, None
 		
-		while not self.stack_empty:
-			# take next best match
-			next_row = self.stack[0][1]
-			row_Lmin = next_row[0]
-			#if not row_Lmin > Lmin:
-			if row_Lmin <= Lmin:
-				assert row_Lmin <= Lmin, (row_Lmin, Lmin)
-				# The stored arc is sampled from below
-				idx, row = self.stack.pop(0)
-				self.stack_empty = len(self.stack) == 0
-				row_L = row[1]
-				if row_L >= Lmin:
-					# and goes above the required limit
-					print("PointStore: popping & using   , %d left" % len(self.stack), row_L)
-					return idx, row
-				else:
-					# but does not go above the required limit
-					# we removed the point.
-					print("PointStore: popping & skipping, %d left" % len(self.stack), "(%.6f -> %.6f, need %.6f)" % (row[0], row[1], Lmin))
-					self.data.append((idx, row))
-					continue
-			else:
-				# the stored Lmin is above the request, so we do not 
-				# have anything useful to offer at the moment
-				print("PointStore: next point is yet to come %.6f -> %.6f, need %.6f" % (row_Lmin, next_row[1], Lmin))
-				return None, None
-		print("PointStore: all points used up, none left!")
-		#raise Exception("unexpected!")
-		return None, None
-
-
-
 class TextPointStore(FilePointStore):
 	"""
-	stores previously drawn points above some likelihood contour, 
+	Stores previously drawn points above some likelihood contour, 
 	so that they can be reused in another run.
+	
+	Format is a TST text file.
+	With fmt and delimiter the output can be altered.
 	"""
 	def __init__(self, filepath, ncols):
 		"""
@@ -132,7 +110,6 @@ class TextPointStore(FilePointStore):
 		Load from data file
 		"""
 		stack = []
-		self.data = []
 		if os.path.exists(filepath):
 			try:
 				for line in open(filepath):
@@ -146,8 +123,8 @@ class TextPointStore(FilePointStore):
 						warnings.warn("skipping unparsable line in '%s'" % (filepath))
 			except IOError:
 				pass
-			self.data = list(enumerate(stack))
-		self.stack = []
+		
+		self.stack = list(enumerate(stack))
 		self.reset()
 	
 	def add(self, row):
@@ -163,8 +140,10 @@ class TextPointStore(FilePointStore):
 
 class HDF5PointStore(FilePointStore):
 	"""
-	stores previously drawn points above some likelihood contour, 
+	Stores previously drawn points above some likelihood contour, 
 	so that they can be reused in another run.
+	
+	Format is a HDF5 file, which grows.
 	"""
 	def __init__(self, filepath, ncols):
 		"""
@@ -181,17 +160,14 @@ class HDF5PointStore(FilePointStore):
 		"""
 		Load from data file
 		"""
-		self.data = []
 		if 'points' not in self.fileobj:
-			print("PointStore: creating points dataset")
 			self.fileobj.create_dataset('points', shape=(0, self.ncols), 
 				maxshape=(None, self.ncols), dtype=np.float)
 		
 		self.nrows, ncols = self.fileobj['points'].shape
 		assert ncols == self.ncols
 		points = self.fileobj['points'][:]
-		self.data = list(enumerate(points))
-		self.stack = []
+		self.stack = list(enumerate(points))
 		self.reset()
 	
 	def add(self, row):
@@ -201,7 +177,6 @@ class HDF5PointStore(FilePointStore):
 		if len(row) != self.ncols:
 			raise ValueError("expected %d values, got %d in %s" % (self.ncols, len(row), row))
 		
-		print("storing:", row)
 		# make space:
 		self.fileobj['points'].resize(self.nrows + 1, axis=0)
 		# insert:
