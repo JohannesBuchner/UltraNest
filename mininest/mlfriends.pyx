@@ -360,6 +360,7 @@ class MLFriends(object):
             
             # compute distances from a to b
             maxd = max(maxd, compute_maxradiussq(a, b))
+        assert maxd > 0, (maxd, self.u)
         return maxd
     
     def sample_from_points(self, nsamples=100):

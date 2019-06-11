@@ -67,6 +67,7 @@ class BreadthFirstIterator(object):
 	def expand_children_of(self, rootid, node):
 		#print("replacing %.1f" % node.value, len(node.children))
 		i = self.next_index
+		newnnodes = len(self.active_nodes) - 1 + len(node.children)
 		if len(node.children) == 1:
 			self.active_nodes[i] = node.children[0]
 			self.active_node_values[i] = node.children[0].value
@@ -90,6 +91,10 @@ class BreadthFirstIterator(object):
 			assert len(self.active_nodes) == len(self.active_root_ids)
 			assert len(self.active_nodes) == len(self.active_node_values)
 			assert len(self.active_nodes) == len(self.active_node_ids)
+		assert newnnodes == len(self.active_nodes), (len(self.active_nodes), newnnodes, len(node.children))
+		assert newnnodes == len(self.active_root_ids), (len(self.active_root_ids), newnnodes, len(node.children))
+		assert newnnodes == len(self.active_node_values), (len(self.active_node_values), newnnodes, len(node.children))
+		assert newnnodes == len(self.active_node_ids), (len(self.active_node_ids), newnnodes, len(node.children))
 
 def print_tree(roots, title='Tree:'):
 	print()
@@ -145,6 +150,30 @@ def count_tree(roots):
 		maxwidth = max(maxwidth, len(active_rootids))
 		nnodes += 1
 		explorer.expand_children_of(rootid, node)
+
+
+def count_tree_between(roots, lo, hi):
+	explorer = BreadthFirstIterator(roots)
+	nnodes = 0
+	maxwidth = 0
+	
+	while True:
+		next = explorer.next_node()
+		if next is None:
+			return nnodes, maxwidth
+		
+		rootid, node, (active_nodes, active_rootids, active_values, active_nodeids) = next
+		
+		if node.value > hi:
+			# can stop already
+			return nnodes, maxwidth
+		
+		if lo <= node.value <= hi:
+			maxwidth = max(maxwidth, len(active_rootids))
+			nnodes += 1
+		
+		explorer.expand_children_of(rootid, node)
+
 
 class PointPile(object):
 	"""
@@ -213,7 +242,7 @@ class SingleCounter(object):
 		Li = node.value
 		nlive = len(parallel_nodes)
 		
-		if nchildren == 1:
+		if nchildren >= 1:
 			# one arc terminates, another is spawned
 			
 			# weight is the size of the slice off the volume
@@ -233,6 +262,7 @@ class SingleCounter(object):
 			else:
 				logZnew = logaddexp(self.logZ, wi)
 				self.H = exp(wi - logZnew) * Li + exp(self.logZ - logZnew) * (self.H + self.logZ) - logZnew
+				assert np.all(np.isfinite(self.H)), (self.H, wi, logZnew, Li, self.logZ)
 				self.logZ = logZnew
 			
 			#print(self.H)
@@ -244,6 +274,7 @@ class SingleCounter(object):
 			self.logVolremaining += logright
 			# TODO: this needs to change if nlive varies
 			self.logZerr = (self.H / nlive)**0.5
+			assert np.all(np.isfinite(self.logZerr)), (self.H, nlive)
 		else: 
 			# contracting! 
 			
@@ -283,11 +314,12 @@ class MultiCounter(object):
 			self.rootids.append(mask)
 		self.rootids = np.array(self.rootids)
 		self.random = random
-			
+		
 		self.reset(len(self.rootids))
 	
 	def reset(self, nentries):
 		self.logweights = []
+		self.istail = []
 		self.logZ = -np.inf
 		self.logZerr = np.inf
 		self.all_H = -np.nan * np.ones(nentries)
@@ -299,6 +331,14 @@ class MultiCounter(object):
 	@property
 	def logZremain(self):
 		return self.Lmax + self.logVolremaining
+	
+	@property
+	def logZ_bs(self):
+		return self.all_logZ[1:].mean()
+	
+	@property
+	def logZerr_bs(self):
+		return self.all_logZ[1:].std()
 	
 	def passing_node(self, rootid, node, rootids, parallel_nodes):
 		# node is being consumed
@@ -312,12 +352,12 @@ class MultiCounter(object):
 		# how many live points does each bootstrap have?
 		nlive = self.rootids[:,rootids].sum(axis=1)
 		
-		if nchildren == 1:
+		if nchildren >= 1:
 			# one arc terminates, another is spawned
 			
 			# weight is the size of the slice off the volume
 			if self.random:
-				randompoint = np.random.beta(1, nlive)
+				randompoint = np.random.beta(1, nlive, size=len(self.rootids))
 				logleft = log(randompoint)
 				logright = log1p(-randompoint)
 				logleft[0] = log1p(-exp(-1. / nlive[0]))
@@ -330,13 +370,22 @@ class MultiCounter(object):
 			logwidth[~active] = -np.inf
 			wi = logwidth[active] + Li
 			self.logweights.append(logwidth)
+			self.istail.append(False)
 			
+			#print("updating continuation...", Li)
+			assert active[0], (active, rootid)
 			logZ = self.all_logZ[active]
 			logZnew = logaddexp(logZ, wi)
 			H = exp(wi - logZnew) * Li + exp(logZ - logZnew) * (self.all_H[active] + logZ) - logZnew
 			first_setting = np.isinf(logZ)
 			self.all_logZ[active] = np.where(first_setting, wi, logZnew)
+			if first_setting[0]:
+				assert np.all(np.isfinite(Li - wi)), (Li, wi)
+			else:
+				assert np.isfinite(self.all_H[0]), self.all_H[0]
+				assert np.isfinite(H[0]), (first_setting[0], H[0], self.all_H[0], wi[0], logZnew[0], Li, logZ[0])
 			self.all_H[active] = np.where(first_setting, Li - wi, H)
+			#assert np.all(np.isfinite(self.all_H[active])), (H, self.all_H[active], wi, logZnew, Li, logZ)
 			#print(self.all_H)
 			self.logZ = self.all_logZ[0]
 			
@@ -347,12 +396,14 @@ class MultiCounter(object):
 
 			# TODO: this needs to change if nlive varies
 			self.logZerr = (self.all_H[0] / nlive[0])**0.5
+			assert np.all(np.isfinite(self.logZerr)), (self.logZerr, self.all_H[0], nlive)
 			
 			# volume is reduced by exp(-1/N)
 			self.all_logVolremaining[active] += logright[active]
 			self.logVolremaining = self.all_logVolremaining[0]
 		else: 
 			# contracting! 
+			#print("contracting...", Li)
 			
 			# weight is simply volume / Nlive
 			logwidth = -np.inf * np.ones(len(active))
@@ -360,6 +411,7 @@ class MultiCounter(object):
 			wi = logwidth + Li
 			
 			self.logweights.append(logwidth)
+			self.istail.append(True)
 			self.all_logZ[active] = logaddexp(self.all_logZ[active], wi[active])
 			self.logZ = self.all_logZ[0]
 			

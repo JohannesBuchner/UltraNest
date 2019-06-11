@@ -176,3 +176,65 @@ def test_nullstore():
 	ptst.close()
 
 
+def test_storemany():
+	for PointStore in TextPointStore, HDF5PointStore:
+		for N in 1, 2, 10, 100:
+			print()
+			print("======== %s N=%d ========" % (PointStore, N))
+			print()
+			try:
+				fobj, filepath = tempfile.mkstemp()
+				os.close(fobj)
+
+				print("writing...")
+				ptst = PointStore(filepath, 3)
+				for i in range(N):
+					ptst.add([-np.inf, i-0.1, i-0.1])
+				for i in range(N):
+					ptst.add([i, i+1, i+1])
+					print(i, i+1, "storing:", [i, i+0.1, i+.1])
+				for i in range(N):
+					ptst.add([-np.inf, i-0.1, i-0.1])
+				for i in range(N-1,-1,-1):
+					ptst.add([N-i, N-i+.5, N-i+.5])
+					print(N-i, N-i+1, "storing:", [N-i, N-i+.5, N-i+.5])
+				ptst.close()
+				
+				print("reading...")
+
+				ptst = PointStore(filepath, 3)
+				print('stack[0]:', ptst.stack)
+				assert len(ptst.stack) == 4 * N
+				for i in range(N):
+					idx, row = ptst.pop(-np.inf)
+					assert row is not None
+				assert len(ptst.stack) == 3 * N
+				print('stack[1]:', ptst.stack)
+				for i in range(N):
+					idx, row = ptst.pop(i)
+					print(i, i+.1, "reading:", row)
+					assert row is not None
+					assert row[0] == i
+					assert row[1] >= i+.1
+					#assert row == i+1
+				ptst.reset()
+				print('stack[2]:', ptst.stack)
+				assert len(ptst.stack) == 2 * N
+				for i in range(N):
+					idx, row = ptst.pop(-np.inf)
+					assert row is not None
+				print('stack[3]:', ptst.stack)
+				assert len(ptst.stack) == N
+				for i in range(N-1,-1,-1):
+					ptst.reset()
+					idx, row = ptst.pop(N-i)
+					print(N-i, N-i+.1, "reading:", row)
+					assert row is not None
+					assert row[0] == N-i
+					assert row[1] >= N-i+.1
+					#assert row == i+1
+				assert len(ptst.stack) == 0
+				assert ptst.stack_empty
+				ptst.close()
+			finally:
+				os.remove(filepath)

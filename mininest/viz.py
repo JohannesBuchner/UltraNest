@@ -81,12 +81,12 @@ def nicelogger(points, info, region, transformLayer, region_fresh=False):
         else:
             line = [' ' for i in range(width)]
             for clusterid, j in zip(clusterids, indices[:,i]):
-                if clusterid == 0 and line[j] == ' ':
-                    # empty, so set it although we don't know the cluster id
-                    line[j] = clusteridstrings[clusterid]
-                elif clusterid > 0 and line[j] in (' ', '*'):
+                if clusterid > 0 and line[j] in (' ', '0'):
                     # set it to correct cluster id
                     line[j] = clusteridstrings[clusterid]
+                elif clusterid == 0 and line[j] == ' ':
+                    # empty, so set it although we don't know the cluster id
+                    line[j] = '0'
                 #else:
                 #    line[j] = '*'
             linestr = ''.join(line)
@@ -117,4 +117,5 @@ def nicelogger(points, info, region, transformLayer, region_fresh=False):
         parampadded = ('%-%%ds' % paramwidth) % param
         print('%s: %09s|%s|%9s' % (parampadded, fmt % plo_rounded[i], line, fmt % phi_rounded[i]))
     
+    print()
     

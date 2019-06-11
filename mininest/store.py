@@ -1,5 +1,4 @@
 import numpy as np
-import operator
 import warnings
 import os
 
@@ -40,9 +39,11 @@ class FilePointStore(object):
 		Reset stack to loaded data. Useful when Lmin is not reset to a 
 		lower value
 		"""
-		self.stack = sorted(self.stack + self.data, key=lambda e: e[1][0])
+		#self.stack = sorted(self.stack + self.data, key=lambda e: (e[1][0], e[0]))
+		self.stack = self.stack + self.data
 		self.stack_empty = len(self.stack) == 0
 		self.data = []
+		print('Stack content:', self.stack[:10])
 		assert self.stack_empty == (len(self.stack) == 0), (self.stack_empty, len(self.stack))
 		#print("PointStore: have %d items" % len(self.stack))
 	
@@ -57,29 +58,52 @@ class FilePointStore(object):
 		
 		Returns the point if exists, None otherwise
 		"""
+		
+		if self.stack_empty: 
+			return None, None
+		
+		# look forward to see if there is an exact match
+		# if we do not use the exact matches
+		#   this causes a shift in the loglikelihoods
+		for i, (idx, next_row) in enumerate(self.stack):
+			row_Lmin = next_row[0]
+			L = next_row[1]
+			if row_Lmin <= Lmin and L > Lmin:
+				idx, row = self.stack.pop(i)
+				self.stack_empty = len(self.stack) == 0
+				return idx, row
+		
+		self.stack_empty = len(self.stack) == 0
+		return None, None
+		
 		while not self.stack_empty:
-			row_Lmin = self.stack[0][1][0]
-			if row_Lmin > Lmin:
-				# the stored Lmin is above the request, so we do not 
-				# have anything useful to offer at the moment
-				#print("PointStore: next point is yet to come %.3f -> %.3f, need %.3f" % (self.stack[0][0], self.stack[0][1], Lmin))
-				return None, None
-			elif row_Lmin <= Lmin:
+			# take next best match
+			next_row = self.stack[0][1]
+			row_Lmin = next_row[0]
+			#if not row_Lmin > Lmin:
+			if row_Lmin <= Lmin:
+				assert row_Lmin <= Lmin, (row_Lmin, Lmin)
 				# The stored arc is sampled from below
 				idx, row = self.stack.pop(0)
 				self.stack_empty = len(self.stack) == 0
 				row_L = row[1]
-				if row_L > Lmin:
+				if row_L >= Lmin:
 					# and goes above the required limit
-					#print("PointStore: popping & using   , %d left" % len(self.stack), row_L)
+					print("PointStore: popping & using   , %d left" % len(self.stack), row_L)
 					return idx, row
 				else:
 					# but does not go above the required limit
 					# we removed the point.
-					#print("PointStore: popping & skipping, %d left" % len(self.stack), "(%.3f -> %.3f, need %.3f)" % (row[0], row[1], Lmin))
+					print("PointStore: popping & skipping, %d left" % len(self.stack), "(%.6f -> %.6f, need %.6f)" % (row[0], row[1], Lmin))
 					self.data.append((idx, row))
 					continue
-		#print("PointStore: all points used up, none left")
+			else:
+				# the stored Lmin is above the request, so we do not 
+				# have anything useful to offer at the moment
+				print("PointStore: next point is yet to come %.6f -> %.6f, need %.6f" % (row_Lmin, next_row[1], Lmin))
+				return None, None
+		print("PointStore: all points used up, none left!")
+		#raise Exception("unexpected!")
 		return None, None
 
 
@@ -166,8 +190,7 @@ class HDF5PointStore(FilePointStore):
 		self.nrows, ncols = self.fileobj['points'].shape
 		assert ncols == self.ncols
 		points = self.fileobj['points'][:]
-		idx = np.argsort(points[:,0])
-		self.data = list(enumerate(points[idx,:]))
+		self.data = list(enumerate(points))
 		self.stack = []
 		self.reset()
 	
@@ -178,6 +201,7 @@ class HDF5PointStore(FilePointStore):
 		if len(row) != self.ncols:
 			raise ValueError("expected %d values, got %d in %s" % (self.ncols, len(row), row))
 		
+		print("storing:", row)
 		# make space:
 		self.fileobj['points'].resize(self.nrows + 1, axis=0)
 		# insert:

@@ -11,7 +11,7 @@ def main(args):
 
     def loglike(theta):
         sigma = 10**theta[:,0]
-        like = -0.5 * (((theta[:,1:] - data)/sigma.reshape((-1, 1)))**2).sum(axis=1) - 0.5 * log(np.pi * sigma**2) * ndim
+        like = -0.5 * (((theta[:,1:] - data)/sigma.reshape((-1, 1)))**2).sum(axis=1) - 0.5 * log(2 * np.pi * sigma**2) * ndim
         return like
 
     def transform(x):
