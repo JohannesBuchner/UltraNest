@@ -307,17 +307,30 @@ class AffineLayer(ScalingLayer):
 
 class MLFriends(object):
     def __init__(self, u, transformLayer):
+        if not np.logical_and(u > 0, u < 1).all():
+            raise ValueError("not all u values are between 0 and 1: %s" % u[~np.logical_and(u > 0, u < 1).all()])
+        
         self.u = u
         self.transformLayer = transformLayer
-        self.unormed = self.transformLayer.transform(self.u)
         self.maxradiussq = 1e300
+        self.sampling_methods = [self.sample_from_points, self.sample_from_transformed_boundingbox, self.sample_from_boundingbox]
+        
+        self.unormed = self.transformLayer.transform(self.u)
         self.bbox_lo = self.unormed.min(axis=0)
         self.bbox_hi = self.unormed.max(axis=0)
+        
         self.current_sampling_method = self.sample_from_boundingbox
-        self.sampling_methods = [self.sample_from_points, self.sample_from_transformed_boundingbox, self.sample_from_boundingbox]
-        self.sampling_statistics = np.zeros((len(self.sampling_methods), 2), dtype=int)
     
     def estimate_volume(self):
+        """
+        Estimate the order of magnitude of the volume around a single point
+        given the current transformLayer and 
+        
+        Does not account for:
+        * the number of live points
+        * their overlap
+        * the intersection with the unit cube borders
+        """
         r = self.maxradiussq**0.5
         N, ndim = self.u.shape
         # how large is a sphere of size r in untransformed coordinates?
@@ -348,6 +361,7 @@ class MLFriends(object):
             
             # compute distances from a to b
             maxd = max(maxd, compute_maxradiussq(a, b))
+        assert maxd > 0, (maxd, self.u)
         return maxd
     
     def sample_from_points(self, nsamples=100):
@@ -400,16 +414,6 @@ class MLFriends(object):
             # no result, choose another method
             self.current_sampling_method = self.sampling_methods[np.random.randint(len(self.sampling_methods))]
             #print("switching to %s" % self.current_sampling_method)
-        return samples, idx
-        
-        frac = (self.sampling_statistics[:,0] + 1.) / (self.sampling_statistics[:,1] + 1.)
-        frac /= frac.sum()
-        i = np.random.choice(len(frac), p=frac)
-        m = self.sampling_methods[i]
-        samples, idx = m(nsamples=nsamples)
-        #print("using %s" % m, frac, '%.2f' % (len(samples) * 100. / nsamples))
-        self.sampling_statistics[i,0] += len(samples)
-        self.sampling_statistics[i,1] += nsamples
         return samples, idx
         
     

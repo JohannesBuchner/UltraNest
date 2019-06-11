@@ -2,6 +2,7 @@ import numpy as np
 import tempfile
 import os
 from mininest.store import TextPointStore, HDF5PointStore, NullPointStore
+import pytest
 
 def test_text_store():
 	PointStore = TextPointStore
@@ -11,13 +12,13 @@ def test_text_store():
 		
 		ptst = PointStore(filepath, 4)
 		assert ptst.stack_empty
-		assert ptst.pop(-np.inf) is None, "new store should not return anything"
-		assert ptst.pop(100) is None, "new store should not return anything"
+		assert ptst.pop(-np.inf)[1] is None, "new store should not return anything"
+		assert ptst.pop(100)[1] is None, "new store should not return anything"
 		ptst.close()
 
 		ptst = PointStore(filepath, 4)
-		assert ptst.pop(-np.inf) is None, "empty store should not return anything"
-		assert ptst.pop(100) is None, "empty store should not return anything"
+		assert ptst.pop(-np.inf)[1] is None, "empty store should not return anything"
+		assert ptst.pop(100)[1] is None, "empty store should not return anything"
 		ptst.close()
 
 		ptst = PointStore(filepath, 4)
@@ -35,38 +36,40 @@ def test_text_store():
 		
 		ptst = PointStore(filepath, 4)
 		assert not ptst.stack_empty
-		entry = ptst.pop(-np.inf)
+		entry = ptst.pop(-np.inf)[1]
 		assert entry is not None, ("retrieving entry should succeed", entry)
 		assert entry[1] == 123,  ("retrieving entry should succeed", entry)
-		assert ptst.pop(100) is None, "other queries should return None"
+		assert ptst.pop(100)[1] is None, "other queries should return None"
 		assert ptst.stack_empty
 		ptst.add([101, 155, 413, 213])
 		assert ptst.stack_empty
 		ptst.close()
 
 		ptst = PointStore(filepath, 4)
-		assert ptst.pop(-np.inf) is not None, "retrieving entry should succeed"
-		assert ptst.pop(-np.inf) is None, "retrieving unknown entry should fail"
-		assert ptst.pop(100) is None, "retrieving unknown entry should fail"
+		assert ptst.pop(-np.inf)[1] is not None, "retrieving entry should succeed"
+		assert ptst.pop(-np.inf)[1] is None, "retrieving unknown entry should fail"
+		assert ptst.pop(100)[1] is None, "retrieving unknown entry should fail"
 		ptst.add([99, 156, 413, 213])
 		ptst.close()
 
 		ptst = PointStore(filepath, 4)
-		assert ptst.pop(-np.inf) is not None, "retrieving entry should succeed"
-		assert ptst.pop(-np.inf) is None, "retrieving unknown entry should fail"
+		assert ptst.pop(-np.inf)[1] is not None, "retrieving entry should succeed"
+		assert ptst.pop(-np.inf)[1] is None, "retrieving unknown entry should fail"
 		print(ptst.stack)
-		entry = ptst.pop(100)
+		entry = ptst.pop(100)[1]
 		assert entry is not None, ("retrieving entry should succeed", entry)
 		assert entry[1] == 156, ("retrieving entry should return correct value", entry)
 		ptst.close()
 		
-		ptst = PointStore(filepath, 3)
-		assert ptst.stack_empty
-		ptst.close()
-		
-		ptst = PointStore(filepath, 5)
-		assert ptst.stack_empty
-		ptst.close()
+		with pytest.warns(UserWarning):
+			ptst = PointStore(filepath, 3)
+			assert ptst.stack_empty
+			ptst.close()
+			
+		with pytest.warns(UserWarning):
+			ptst = PointStore(filepath, 5)
+			assert ptst.stack_empty
+			ptst.close()
 			
 
 		
@@ -81,13 +84,13 @@ def test_hdf5_store():
 		
 		ptst = PointStore(filepath, 4)
 		assert ptst.stack_empty
-		assert ptst.pop(-np.inf) is None, "new store should not return anything"
-		assert ptst.pop(100) is None, "new store should not return anything"
+		assert ptst.pop(-np.inf)[1] is None, "new store should not return anything"
+		assert ptst.pop(100)[1] is None, "new store should not return anything"
 		ptst.close()
 
 		ptst = PointStore(filepath, 4)
-		assert ptst.pop(-np.inf) is None, "empty store should not return anything"
-		assert ptst.pop(100) is None, "empty store should not return anything"
+		assert ptst.pop(-np.inf)[1] is None, "empty store should not return anything"
+		assert ptst.pop(100)[1] is None, "empty store should not return anything"
 		ptst.close()
 
 		ptst = PointStore(filepath, 4)
@@ -105,27 +108,27 @@ def test_hdf5_store():
 		
 		ptst = PointStore(filepath, 4)
 		assert not ptst.stack_empty
-		entry = ptst.pop(-np.inf)
+		entry = ptst.pop(-np.inf)[1]
 		assert entry is not None, ("retrieving entry should succeed", entry)
 		assert entry[1] == 123,  ("retrieving entry should succeed", entry)
-		assert ptst.pop(100) is None, "other queries should return None"
+		assert ptst.pop(100)[1] is None, "other queries should return None"
 		assert ptst.stack_empty
 		ptst.add([101, 155, 413, 213])
 		assert ptst.stack_empty
 		ptst.close()
 
 		ptst = PointStore(filepath, 4)
-		assert ptst.pop(-np.inf) is not None, "retrieving entry should succeed"
-		assert ptst.pop(-np.inf) is None, "retrieving unknown entry should fail"
-		assert ptst.pop(100) is None, "retrieving unknown entry should fail"
+		assert ptst.pop(-np.inf)[1] is not None, "retrieving entry should succeed"
+		assert ptst.pop(-np.inf)[1] is None, "retrieving unknown entry should fail"
+		assert ptst.pop(100)[1] is None, "retrieving unknown entry should fail"
 		ptst.add([99, 156, 413, 213])
 		ptst.close()
 
 		ptst = PointStore(filepath, 4)
-		assert ptst.pop(-np.inf) is not None, "retrieving entry should succeed"
-		assert ptst.pop(-np.inf) is None, "retrieving unknown entry should fail"
+		assert ptst.pop(-np.inf)[1] is not None, "retrieving entry should succeed"
+		assert ptst.pop(-np.inf)[1] is None, "retrieving unknown entry should fail"
 		print(ptst.stack)
-		entry = ptst.pop(100)
+		entry = ptst.pop(100)[1]
 		assert entry is not None, ("retrieving entry should succeed", entry)
 		assert entry[1] == 156, ("retrieving entry should return correct value", entry)
 		ptst.close()
@@ -147,13 +150,13 @@ def test_hdf5_store():
 def test_nullstore():
 	ptst = NullPointStore(4)
 	assert ptst.stack_empty
-	assert ptst.pop(-np.inf) is None, "new store should not return anything"
-	assert ptst.pop(100) is None, "new store should not return anything"
+	assert ptst.pop(-np.inf)[1] is None, "new store should not return anything"
+	assert ptst.pop(100)[1] is None, "new store should not return anything"
 	ptst.close()
 
 	ptst = NullPointStore(4)
-	assert ptst.pop(-np.inf) is None, "empty store should not return anything"
-	assert ptst.pop(100) is None, "empty store should not return anything"
+	assert ptst.pop(-np.inf)[1] is None, "empty store should not return anything"
+	assert ptst.pop(100)[1] is None, "empty store should not return anything"
 	ptst.close()
 
 	ptst = NullPointStore(4)
@@ -168,8 +171,70 @@ def test_nullstore():
 	
 	ptst = NullPointStore(4)
 	assert ptst.stack_empty
-	entry = ptst.pop(-np.inf)
+	entry = ptst.pop(-np.inf)[1]
 	assert entry is None
 	ptst.close()
 
 
+def test_storemany():
+	for PointStore in TextPointStore, HDF5PointStore:
+		for N in 1, 2, 10, 100:
+			print()
+			print("======== %s N=%d ========" % (PointStore, N))
+			print()
+			try:
+				fobj, filepath = tempfile.mkstemp()
+				os.close(fobj)
+
+				print("writing...")
+				ptst = PointStore(filepath, 3)
+				for i in range(N):
+					ptst.add([-np.inf, i-0.1, i-0.1])
+				for i in range(N):
+					ptst.add([i, i+1, i+1])
+					print(i, i+1, "storing:", [i, i+0.1, i+.1])
+				for i in range(N):
+					ptst.add([-np.inf, i-0.1, i-0.1])
+				for i in range(N-1,-1,-1):
+					ptst.add([N-i, N-i+.5, N-i+.5])
+					print(N-i, N-i+1, "storing:", [N-i, N-i+.5, N-i+.5])
+				ptst.close()
+				
+				print("reading...")
+
+				ptst = PointStore(filepath, 3)
+				print('stack[0]:', ptst.stack)
+				assert len(ptst.stack) == 4 * N
+				for i in range(N):
+					idx, row = ptst.pop(-np.inf)
+					assert row is not None
+				assert len(ptst.stack) == 3 * N
+				print('stack[1]:', ptst.stack)
+				for i in range(N):
+					idx, row = ptst.pop(i)
+					print(i, i+.1, "reading:", row)
+					assert row is not None
+					assert row[0] == i
+					assert row[1] >= i+.1
+					#assert row == i+1
+				ptst.reset()
+				print('stack[2]:', ptst.stack)
+				assert len(ptst.stack) == 2 * N
+				for i in range(N):
+					idx, row = ptst.pop(-np.inf)
+					assert row is not None
+				print('stack[3]:', ptst.stack)
+				assert len(ptst.stack) == N
+				for i in range(N-1,-1,-1):
+					ptst.reset()
+					idx, row = ptst.pop(N-i)
+					print(N-i, N-i+.1, "reading:", row)
+					assert row is not None
+					assert row[0] == N-i
+					assert row[1] >= N-i+.1
+					#assert row == i+1
+				assert len(ptst.stack) == 0
+				assert ptst.stack_empty
+				ptst.close()
+			finally:
+				os.remove(filepath)

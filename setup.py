@@ -12,6 +12,7 @@ from Cython.Distutils import build_ext
 
 extra_include_dirs = []
 try:
+    import numpy
     extra_include_dirs = [numpy.get_include()]
 except:
     pass
@@ -25,12 +26,11 @@ setup(
     url = "https://github.com/JohannesBuchner/mininest/",
     license = "GPL",
     packages = ['mininest'],
-    install_requires = ['numpy', 'cython'],
-    requires = ["matplotlib", "numpy", "scipy", "h5py", "corner"],
+    install_requires = ['numpy', 'cython', 'scipy', 'matplotlib', 'corner'],    
     ext_modules = [Extension('mininest.mlfriends', ["mininest/mlfriends.pyx"], 
         include_dirs=['.'] + extra_include_dirs)],
     provides = ['mininest'],
     setup_requires=['pytest-runner'],
-    tests_require=['pytest', 'pandas'],
+    tests_require=['pytest'],
     cmdclass={'build_ext': build_ext},
 )

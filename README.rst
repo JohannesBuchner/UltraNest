@@ -16,6 +16,11 @@ Features
 * Storing derived values
 * Tracking solution modes
 * Run-time visualisations and exploration information
+* strategic nested sampling
+  * vary (increase) number of live points (similar to dynamic nested sampling)
+  * to minimize parameter estimation uncertainties
+  * to minimize evidence uncertainties
+  * to sample clusters well
 * Very fast
 
   * some functions implemented in Cython
@@ -27,7 +32,6 @@ Coming soon
 
 * Support for stopping a run programmatically, and receiving feedback
 * Support for high-dimensional problems (>=20d)
-* Support for variable number of live points, posterior bulking
 
 Usage
 =============

@@ -5,7 +5,6 @@ import numpy as np
 from numpy import cos, pi
 
 def main(args):
-    from mininest import NestedSampler
 
     def loglike(z):
         chi = (cos(z / 2.)).prod(axis=1)
@@ -16,13 +15,24 @@ def main(args):
     
     import string
     paramnames = list(string.ascii_lowercase)[:args.x_dim]
+    
+    if args.reactive:
+        from mininest import ReactiveNestedSampler
+        sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, 
+            min_num_live_points=args.num_live_points,
+            log_dir=args.log_dir, append_run_num=True)
+            #log_dir=None)
+        sampler.run(log_interval=20)
+        sampler.plot()
+    else:
+        from mininest import NestedSampler
+        sampler = NestedSampler(paramnames, loglike, transform=transform, 
+            num_live_points=args.num_live_points,
+            log_dir=args.log_dir, append_run_num=True)
+            #log_dir=None)
+        sampler.run(log_interval=20)
+        sampler.plot()
 
-    sampler = NestedSampler(paramnames, loglike, transform=transform, 
-        num_live_points=args.num_live_points,
-        log_dir=args.log_dir, append_run_num=False)
-        #log_dir=None)
-    sampler.run(log_interval=20)
-    sampler.plot()
 
 
 if __name__ == '__main__':
@@ -46,6 +56,7 @@ if __name__ == '__main__':
     parser.add_argument('--run_num', type=str, default='')
     parser.add_argument('--num_slow', type=int, default=0)
     parser.add_argument('--log_dir', type=str, default='logs/eggbox')
+    parser.add_argument('--reactive', action='store_true')
 
     args = parser.parse_args()
     main(args)
