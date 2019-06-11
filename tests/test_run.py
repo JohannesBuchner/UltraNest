@@ -1,5 +1,6 @@
 import numpy as np
 import shutil
+import tempfile
 import pytest
 
 def test_run():
@@ -58,27 +59,29 @@ def test_run_resume(dlogz):
     last_results = None
     #for dlogz in 0.5, 0.1, 0.01:
     np.random.seed(int(dlogz*100))
-    shutil.rmtree('logs/test-run-gauss1d', ignore_errors=True)
-    for i in range(2):
-        sampler = NestedSampler(paramnames, loglike, transform=transform, 
-            num_live_points=400, log_dir='logs/test-run-gauss1d', 
-            append_run_num=False)
-        r = sampler.run(log_interval=50, dlogz=dlogz)
-        sampler.print_results()
-        sampler.pointstore.close()
-        if i == 1:
-            sampler.pointstore.add = myadd
-        del r['weighted_samples']
-        del r['samples']
-        if last_results is not None:
-            print("ran with dlogz:", dlogz)
-            print("first run gave:", last_results)
-            print("second run gave:", r)
-            assert last_results['logzerr'] < 1.0
-            assert r['logzerr'] < 1.0
-            assert np.isclose(last_results['logz'], r['logz'], atol=0.5)
-        last_results = r
-
+    folder = tempfile.mkdtemp()
+    try:
+        for i in range(2):
+            sampler = NestedSampler(paramnames, loglike, transform=transform, 
+                num_live_points=400, log_dir=folder, 
+                append_run_num=False)
+            r = sampler.run(log_interval=50, dlogz=dlogz)
+            sampler.print_results()
+            sampler.pointstore.close()
+            if i == 1:
+                sampler.pointstore.add = myadd
+            del r['weighted_samples']
+            del r['samples']
+            if last_results is not None:
+                print("ran with dlogz:", dlogz)
+                print("first run gave:", last_results)
+                print("second run gave:", r)
+                assert last_results['logzerr'] < 1.0
+                assert r['logzerr'] < 1.0
+                assert np.isclose(last_results['logz'], r['logz'], atol=0.5)
+            last_results = r
+    finally:
+        shutil.rmtree(folder, ignore_errors=True)
 
 @pytest.mark.parametrize("dlogz,min_ess", [(0.5, 0), (0.2, 0), (0.5, 100), (0.5, 500)])
 def test_reactive_run_resume(dlogz, min_ess):
@@ -96,31 +99,34 @@ def test_reactive_run_resume(dlogz, min_ess):
         assert False, (row, 'should not need to add more points in resume')
     
     last_results = None
-    shutil.rmtree('logs/test-run-gauss1d', ignore_errors=True)
-    for i in range(2):
-        np.random.seed(int(dlogz*100 + min_ess))
-        sampler = ReactiveNestedSampler(paramnames, loglike, 
-            min_num_live_points=100, 
-            log_dir='logs/test-run-gauss1d', 
-            cluster_num_live_points=0,
-            append_run_num=False)
-        if i == 1:
-            sampler.pointstore.add = myadd
-        r = sampler.run(log_interval=1000, 
-            max_num_improvement_loops=0,
-            dlogz=dlogz, min_ess=min_ess, dKL=1e100)
-        sampler.print_results()
-        sampler.pointstore.close()
-        del r['weighted_samples']
-        del r['samples']
-        if last_results is not None:
-            print("ran with dlogz:", dlogz)
-            print("first run gave:", last_results)
-            print("second run gave:", r)
-            assert last_results['logzerr'] < 1.0
-            assert r['logzerr'] < 1.0
-            assert np.isclose(last_results['logz'], r['logz'], atol=0.5)
-        last_results = r
+    folder = tempfile.mkdtemp()
+    try:
+        for i in range(2):
+            np.random.seed(int(dlogz*100 + min_ess))
+            sampler = ReactiveNestedSampler(paramnames, loglike, 
+                min_num_live_points=100, 
+                log_dir=folder, 
+                cluster_num_live_points=0,
+                append_run_num=False)
+            if i == 1:
+                sampler.pointstore.add = myadd
+            r = sampler.run(log_interval=1000, 
+                max_num_improvement_loops=0,
+                dlogz=dlogz, min_ess=min_ess, dKL=1e100)
+            sampler.print_results()
+            sampler.pointstore.close()
+            del r['weighted_samples']
+            del r['samples']
+            if last_results is not None:
+                print("ran with dlogz:", dlogz)
+                print("first run gave:", last_results)
+                print("second run gave:", r)
+                assert last_results['logzerr'] < 1.0
+                assert r['logzerr'] < 1.0
+                assert np.isclose(last_results['logz'], r['logz'], atol=0.5)
+            last_results = r
+    finally:
+        shutil.rmtree(folder, ignore_errors=True)
 
 
 if __name__ == '__main__':

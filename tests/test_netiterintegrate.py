@@ -298,33 +298,36 @@ def multi_integrate_graph_singleblock(num_live_points, pointstore, x_dim, num_pa
 testfile = os.path.join(os.path.dirname(__file__), 'eggboxpoints.tsv')
 
 import time
-def test_singleblock():
+import pytest
+
+
+#@pytest.mark.parametrize("nlive", [100, 400, 2000])
+def __test_singleblock(nlive):
 	assert os.path.exists(testfile), ("%s does not exist" % testfile)
-	for nlive in 100, 400, 1000:
-		print("="*80)
-		print("NLIVE=%d " % nlive)
-		print("Standard integrator")
-		pointstore = TextPointStore(testfile, 2 + 2 + 2)
-		t = time.time()
-		result = integrate_singleblock(num_live_points=nlive, pointstore=pointstore, num_params=2, x_dim=2)
-		print('  ', result['logz'], '+-', result['logzerr'], '%.2fs' % (time.time() - t))
-		pointstore.close()
-		
-		print("Graph integrator")
-		pointstore = TextPointStore(testfile, 2 + 2 + 2)
-		t = time.time()
-		result2 = integrate_graph_singleblock(num_live_points=nlive, pointstore=pointstore, num_params=2, x_dim=2)
-		print('  ', result2['logz'], '+-', result2['logzerr'], '%.2fs' % (time.time() - t))
-		pointstore.close()
-		assert np.isclose(result2['logz'], result['logz'])
-		
-		print("Vectorized graph integrator")
-		pointstore = TextPointStore(testfile, 2 + 2 + 2)
-		t = time.time()
-		result3 = multi_integrate_graph_singleblock(num_live_points=nlive, pointstore=pointstore, num_params=2, x_dim=2)
-		print('  ', result3['logz'], '+-', result3['logzerr'], '%.2fs' % (time.time() - t))
-		pointstore.close()
-		assert np.isclose(result3['logz'], result['logz'])
+	print("="*80)
+	print("NLIVE=%d " % nlive)
+	print("Standard integrator")
+	pointstore = TextPointStore(testfile, 2 + 2 + 2)
+	t = time.time()
+	result = integrate_singleblock(num_live_points=nlive, pointstore=pointstore, num_params=2, x_dim=2)
+	print('  ', result['logz'], '+-', result['logzerr'], '%.2fs' % (time.time() - t))
+	pointstore.close()
+	
+	print("Graph integrator")
+	pointstore = TextPointStore(testfile, 2 + 2 + 2)
+	t = time.time()
+	result2 = integrate_graph_singleblock(num_live_points=nlive, pointstore=pointstore, num_params=2, x_dim=2)
+	print('  ', result2['logz'], '+-', result2['logzerr'], '%.2fs' % (time.time() - t))
+	pointstore.close()
+	assert np.isclose(result2['logz'], result['logz'])
+	
+	print("Vectorized graph integrator")
+	pointstore = TextPointStore(testfile, 2 + 2 + 2)
+	t = time.time()
+	result3 = multi_integrate_graph_singleblock(num_live_points=nlive, pointstore=pointstore, num_params=2, x_dim=2)
+	print('  ', result3['logz'], '+-', result3['logzerr'], '%.2fs' % (time.time() - t))
+	pointstore.close()
+	assert np.isclose(result3['logz'], result['logz'])
 
 def test_visualisation():
 	print("testing tree visualisation...")
@@ -343,4 +346,5 @@ def test_visualisation():
 	
 
 if __name__ == '__main__':
-	test_singleblock()
+	for nlive in [100, 400, 2000]:
+		test_singleblock(nlive)
