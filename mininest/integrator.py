@@ -22,7 +22,7 @@ from .utils import acceptance_rate, effective_sample_size, mean_jump_distance, r
 from mininest.mlfriends import MLFriends, AffineLayer, ScalingLayer, compute_maxradiussq
 from .store import TextPointStore, HDF5PointStore, NullPointStore
 from .viz import nicelogger
-from .netiter import PointPile, MultiCounter, BreadthFirstIterator, TreeNode, print_tree, count_tree, count_tree_between
+from .netiter import PointPile, MultiCounter, BreadthFirstIterator, TreeNode, print_tree, count_tree, count_tree_between, find_nodes_before
 
 import numpy as np
 
@@ -721,7 +721,6 @@ class ReactiveNestedSampler(object):
         if self.log:
             self.logger.info('Sampling %d live points at L=%.1f...' % (nnodes_needed - ndone, Lmin))
         
-        
         initial_ncall = self.ncall
         next_update_interval_ncall = self.ncall
         # double until we reach the necessary points
@@ -734,7 +733,8 @@ class ReactiveNestedSampler(object):
             if self.region is None or (self.ncall > next_update_interval_ncall and len(parents) - i > 50):
                 Lmin = n.value
                 active_nodes = parents[i:]
-                #self.logger.info('Making region from %d parents at L=%.1f...' % (len(active_nodes), Lmin))
+                #if self.log:
+                #    self.logger.info('Making region from %d parents at L=%.1f...' % (len(active_nodes), Lmin))
                 active_node_ids = [n.id for n in active_nodes]
                 active_u = self.pointpile.getu(active_node_ids)
                 self.update_region(Lmin=Lmin, active_nodes=active_nodes, 
@@ -873,6 +873,105 @@ class ReactiveNestedSampler(object):
             return Lmin, Lmax
         #print("not expanding, remainder not dominant")
         return np.nan, np.nan
+    
+    def find_strategy(self, saved_logl, main_iterator, dlogz, dKL, min_ess):
+        #print_tree(self.root.children[::10])
+        saved_logl = np.asarray(saved_logl)
+        logw = np.asarray(main_iterator.logweights) + saved_logl.reshape((-1,1)) - main_iterator.all_logZ
+        ref_logw = logw[:,0].reshape((-1,1))
+        other_logw = logw[:,1:]
+
+        if self.log:
+            self.logger.info("Effective samples strategy:")
+
+        Llo_ess = np.inf
+        Lhi_ess = -np.inf
+        w = np.exp(ref_logw.flatten())
+        w /= w.sum()
+        ess = len(w) / (1.0 + ((len(w) * w - 1)**2).sum() / len(w))
+        if self.log:
+            self.logger.info('  ESS = %.1f' % (ess))
+        if ess < min_ess:
+            samples = np.random.choice(len(w), p=w, size=min_ess)
+            if self.log:
+                self.logger.info('  need to improve near %.2f..%.2f' % (
+                    saved_logl[samples].min(), saved_logl[samples].max()))
+            Llo_ess = saved_logl[samples].min()
+            Lhi_ess = saved_logl[samples].max()
+        if self.log and Lhi_ess > Llo_ess:
+            self.logger.info("Effective samples strategy wants to improve: %.2f..%.2f" % (Llo_ess, Lhi_ess))
+        elif self.log:
+            self.logger.info("Effective samples strategy is happy")
+        
+        # compute KL divergence
+        if self.log:
+            self.logger.info("Posterior uncertainty strategy:")
+        with np.errstate(invalid='ignore'):
+            KL = np.where(np.isfinite(other_logw), exp(other_logw) * (other_logw - ref_logw), 0)
+        #print(KL.cumsum(axis=0)[-1,:])
+        KLtot = KL.sum(axis=0)
+        dKLtot = np.abs(KLtot - KLtot.mean())
+        if self.log:
+            self.logger.info('  KL: %.2f +- %s (max:%.2f)' % (KLtot.mean(), np.percentile(dKLtot, [0.01, 0.1, 0.5, 0.9, 0.99]), dKLtot.max()))
+        p = np.where(KL > 0, KL, 0)
+        p /= p.sum(axis=0).reshape((1, -1))
+
+        Llo_KL = np.inf
+        Lhi_KL = -np.inf
+        for i, (pi, dKLi, logwi) in enumerate(zip(p.transpose(), dKLtot, other_logw)):
+            if dKLi > dKL:
+                ci = pi.cumsum()
+                ilo = np.where(ci > 1./400.)[0][0]
+                ihi = np.where(ci < 1 - 1./400.)[0][-1]
+                # ilo and ihi are most likely missing in this iterator
+                # --> select the one before/after in this iterator
+                ilos = np.where(np.isfinite(logwi[:ilo]))[0]
+                ihis = np.where(np.isfinite(logwi[ihi:]))[0]
+                ilo2 = ilos[-1] if len(ilos) > 0 else 0
+                ihi2 = (ihi + ihis[0]) if len(ihis) > 0 else -1
+                self.logger.info('   - KL[%d] = %.2f: need to improve near %.2f..%.2f --> %.2f..%.2f' % (i, dKLi, saved_logl[ilo], saved_logl[ihi], saved_logl[ilo2], saved_logl[ihi2]))
+                Llo_KL = min(Llo_KL, saved_logl[ilo2])
+                Lhi_KL = max(Lhi_KL, saved_logl[ihi2])
+        
+        if self.log and Lhi_KL > Llo_KL:
+            self.logger.info("Posterior uncertainty strategy wants to improve: %.2f..%.2f" % (Llo_KL, Lhi_KL))
+        elif self.log:
+            self.logger.info("Posterior uncertainty strategy is happy")
+        
+        if self.log:
+            self.logger.info("Evidency uncertainty strategy:")
+        Llo_Z = np.inf
+        Lhi_Z = -np.inf
+        # compute difference between lnZ cumsum
+        p = exp(logw)
+        p /= p.sum(axis=0).reshape((1, -1))
+        deltalogZ = np.abs(main_iterator.all_logZ[1:] - main_iterator.logZ)
+        if self.log:
+            self.logger.info('  deltalogZ: %s (max:%.2f)' % (np.percentile(deltalogZ, [0.01, 0.1, 0.5, 0.9, 0.99]), deltalogZ.max()))
+        
+        tail_fraction = w[np.asarray(main_iterator.istail)].sum() / w.sum()
+        logzerr_tail = np.logaddexp(np.log(tail_fraction) + main_iterator.logZ, main_iterator.logZ) - main_iterator.logZ
+        if self.log:
+            self.logger.info('  logZ error budget: single: %.2f bs:%.2f tail:%.2f total:%.2f required:<%.2f' % (
+                main_iterator.logZerr, main_iterator.logZerr_bs, logzerr_tail, 
+                (main_iterator.logZerr_bs**2 + logzerr_tail**2)**0.5, dlogz))
+        if (deltalogZ > dlogz).any() and (main_iterator.logZerr_bs**2 + logzerr_tail**2)**0.5 > dlogz:
+            for i, (pi, deltalogZi) in enumerate(zip(p.transpose(), deltalogZ)):
+                if deltalogZi > dlogz:
+                    # break up samples with too much weight
+                    samples = np.random.choice(len(ref_logw), p=pi, size=400)
+                    if self.log:
+                        self.logger.info('   - deltalogZi[%d] = %.2f: need to improve near %.2f..%.2f' % (
+                            i, deltalogZi, saved_logl[samples].min(), saved_logl[samples].max()))
+                    Llo_Z = min(Llo_Z, saved_logl[samples].min())
+                    Lhi_Z = max(Lhi_Z, saved_logl[samples].max())
+        
+        if self.log and Lhi_Z > Llo_Z:
+            self.logger.info("Evidency uncertainty strategy wants to improve: %.2f..%.2f" % (Llo_Z, Lhi_Z))
+        elif self.log:
+            self.logger.info("Evidency uncertainty strategy is happy")
+        return (Llo_Z, Lhi_Z), (Llo_KL, Lhi_KL), (Llo_ess, Lhi_ess)
+    
     
     def create_point(self, Lmin, ndraw):
         """
@@ -1021,7 +1120,62 @@ class ReactiveNestedSampler(object):
             updated = True
         
         return updated
+    
+    def expand_nodes_before(self, Lmin, nnodes_needed, update_interval_ncall):
+        self.pointstore.reset()
+        parents = find_nodes_before(self.root, Lmin)
+        self.widen_nodes(parents, nnodes_needed, update_interval_ncall)
+        if len(parents) == 0:
+            Llo = -np.inf
+        else:
+            Llo = min(n.value for n in parents)
+        Lhi = Lmin
+        return Llo, Lhi
+    
+    def should_node_be_expanded(self, it, Llo, Lhi, minimal_widths_sequence, node, parallel_values, max_ncalls):
+        """
+        Should we sample a new point based on this node (above its likelihood value Lmin)?
         
+        """
+        Lmin = node.value
+        nlive = len(parallel_values)
+        expand_node = False
+        if Lmin <= Lhi and Llo <= Lhi:
+            # we should continue to progress towards Lhi
+            while Lmin > minimal_widths_sequence[0][0]:
+                minimal_widths_sequence.pop(0)
+            
+            # get currently desired width
+            if self.region is None:
+                minimal_width_clusters = 0
+            else:
+                minimal_width_clusters = self.cluster_num_live_points * self.region.transformLayer.nclusters
+            
+            minimal_width = max(minimal_widths_sequence[0][1], minimal_width_clusters)
+            too_wide = nlive > minimal_width
+            
+            # exception for widening for efficiency
+            if nlive <= self.max_num_live_points_for_efficiency:
+                too_wide = False
+            
+            # if already has children, no need to expand
+            # if we are wider than the width required
+            # we do not need to expand this one
+            expand_node = len(node.children) == 0 
+            
+            # some exceptions:
+            if it > 0: 
+                # we have to expand the first iteration, 
+                # otherwise the integrator never sets H
+                
+                if too_wide:
+                    expand_node = False
+            
+                if max_ncalls is not None and self.ncall >= max_ncalls:
+                    expand_node = False
+        
+        return expand_node
+    
     def run(
             self,
             update_interval_iter_fraction=0.2,
@@ -1029,12 +1183,12 @@ class ReactiveNestedSampler(object):
             log_interval=None,
             dlogz=0.5,
             dKL=0.5,
-            frac_remain=0.01,
+            frac_remain=0.001,
             min_ess=400,
             max_iters=None,
             volume_switch=0,
             max_ncalls=None,
-            max_num_improvement_loops=0):
+            max_num_improvement_loops=-1):
 
         # frac_remain=1  means 1:1 -> dlogz=log(0.5)
         # frac_remain=0.1 means 1:10 -> dlogz=log(0.1)
@@ -1106,7 +1260,7 @@ class ReactiveNestedSampler(object):
             saved_logl = []
             it = 0
             ncall_at_run_start = self.ncall
-            next_update_interval_ncall = -1
+            #next_update_interval_ncall = -1
             next_update_interval_iter = -1
             last_status = time.time()
             
@@ -1131,49 +1285,14 @@ class ReactiveNestedSampler(object):
                         strategy_altered = np.isfinite(Llo_prev) != np.isfinite(Llo) or np.isfinite(Lhi_prev) != np.isfinite(Lhi)
                     
                     if self.log and strategy_altered:
-                        self.logger.info("strategy update: L range to expand: %.1f-%.1f have: %.1f logZ=%.2f logZremain=%.2f" % (
+                        self.logger.debug("strategy update: L range to expand: %.1f-%.1f have: %.1f logZ=%.2f logZremain=%.2f" % (
                             Llo, Lhi, Lmin, main_iterator.logZ, main_iterator.logZremain))
                     
                     # when we are going to the peak, numerical accuracy
                     # can become an issue. We should try not to get stuck there
                     strategy_stale = Lhi - Llo < 0.01
                 
-                nlive = len(active_node_ids)
-                
-                expand_node = False
-                if Lmin <= Lhi and Llo <= Lhi:
-                    # we should continue to progress towards Lhi
-                    while Lmin > minimal_widths_sequence[0][0]:
-                        minimal_widths_sequence.pop(0)
-                    
-                    # get currently desired width
-                    if self.region is None:
-                        minimal_width_clusters = 0
-                    else:
-                        minimal_width_clusters = self.cluster_num_live_points * self.region.transformLayer.nclusters
-                    
-                    minimal_width = max(minimal_widths_sequence[0][1], minimal_width_clusters)
-                    too_wide = nlive > minimal_width
-                    
-                    # exception for widening for efficiency
-                    if nlive <= self.max_num_live_points_for_efficiency:
-                        too_wide = False
-                    
-                    # if already has children, no need to expand
-                    # if we are wider than the width required
-                    # we do not need to expand this one
-                    expand_node = len(node.children) == 0 
-                    
-                    # some exceptions:
-                    if it > 0: 
-                        # we have to expand the first iteration, 
-                        # otherwise the integrator never sets H
-                        
-                        if too_wide:
-                            expand_node = False
-                    
-                        if max_ncalls is not None and self.ncall >= max_ncalls:
-                            expand_node = False
+                expand_node = self.should_node_be_expanded(it, Llo, Lhi, minimal_widths_sequence, node, active_values, max_ncalls)
                     
                 region_fresh = False
                 if expand_node:
@@ -1198,7 +1317,7 @@ class ReactiveNestedSampler(object):
                                     self.cluster_num_live_points * self.region.transformLayer.nclusters))
                             break
                         
-                        next_update_interval_ncall = self.ncall + (update_interval_ncall or nlive)
+                        #next_update_interval_ncall = self.ncall + (update_interval_ncall or nlive)
                         update_interval_iter = max(1, round(update_interval_iter_fraction * nlive))
                         next_update_interval_iter = it + update_interval_iter
                         
@@ -1242,15 +1361,10 @@ class ReactiveNestedSampler(object):
                         
                         if i == 0 and nlive < self.max_num_live_points_for_efficiency:
                             efficiency_here = (it - it_at_first_region) / (self.ncall - ncall_at_run_start + 1.)
-                            # first ratio: current efficiency is lower than 1/live points
-                            # second ratio: more live points would mean slower progress
-                            #print("efficiency:", efficiency_here, 1. / (nlive + 1), nlive, self.max_num_live_points_for_efficiency)
                             if efficiency_here < 1. / (nlive + 1):
-                                # running inefficiently
-                                # more live points could make sampling more efficient
+                                # running inefficiently; more live points could make sampling more efficient
                                 if self.log:
                                     self.logger.debug("Running inefficiently with %d live points. Sampling another." % (nlive))
-                                    #print_tree(self.root.children, "Tree:")
                                 continue
                         break
                     
@@ -1262,16 +1376,12 @@ class ReactiveNestedSampler(object):
                         sys.stdout.write('Z=%.1f+%.1f | Like=%.1f..%.1f | it/evals=%d/%d eff=%.4f%% N=%d \r' % (
                               main_iterator.logZ, main_iterator.logZremain, Lmin, main_iterator.Lmax, it, 
                                 self.ncall, np.inf if ncall_here == 0 else it_here * 100 / ncall_here, nlive))
-                        #if region_fresh:
-                        #    sys.stdout.write("\n")
                         sys.stdout.flush()
                         
                         # if efficiency becomes low, bulk-process larger arrays
                         ndraw = max(128, min(16384, round((self.ncall - ncall_at_run_start + 1) / (it + 1) / self.mpi_size)))
 
                 else:
-                    #print("ending node", Lmin)
-                    
                     # we do not want to count iterations without work
                     # otherwise efficiency becomes > 1
                     it_at_first_region += 1
@@ -1280,7 +1390,6 @@ class ReactiveNestedSampler(object):
                 saved_logl.append(Lmin)
                 
                 # inform iterators (if it is their business) about the arc
-                #print("node: %d children" % len(node.children))
                 main_iterator.passing_node(rootid, node, active_rootids, active_values)
                 it += 1
                 explorer.expand_children_of(rootid, node)
@@ -1290,12 +1399,14 @@ class ReactiveNestedSampler(object):
             #print_tree(roots[:5], title="Tree:")
 
             if max_ncalls is not None and self.ncall >= max_ncalls:
-                self.logger.info('Reached maximum number of likelihood calls (%d > %d)...' % (self.ncall, max_ncalls))
+                if self.log:
+                    self.logger.info('Reached maximum number of likelihood calls (%d > %d)...' % (self.ncall, max_ncalls))
                 break
             
             improvement_it += 1
             if max_num_improvement_loops >= 0 and improvement_it > max_num_improvement_loops:
-                self.logger.info('Reached maximum number of improvement loops.')
+                if self.log:
+                    self.logger.info('Reached maximum number of improvement loops.')
                 break
             
             Lmax = main_iterator.Lmax
@@ -1303,14 +1414,7 @@ class ReactiveNestedSampler(object):
                 Lmin, nlive, nclusters = region_sequence[-1]
                 nnodes_needed = self.cluster_num_live_points * nclusters
                 if nlive < nnodes_needed:
-                    self.pointstore.reset()
-                    parents = self.find_nodes_before(self.root, Lmin)
-                    self.widen_nodes(parents, nnodes_needed, (update_interval_ncall or nlive))
-                    if len(parents) == 0:
-                        Llo = -np.inf
-                    else:
-                        Llo = min(n.value for n in parents)
-                    Lhi = Lmin
+                    Llo, Lhi = self.expand_nodes_before(Lmin, nnodes_needed, update_interval_ncall or nlive)
                     minimal_widths.append((Llo, Lhi, nnodes_needed))
                     Llo, Lhi = -np.inf, np.inf
                     continue
@@ -1319,111 +1423,25 @@ class ReactiveNestedSampler(object):
                 #self.logger.info('  logZ = %.4f +- %.4f (main)' % (main_iterator.logZ, main_iterator.logZerr))
                 self.logger.info('  logZ = %.4f +- %.4f' % (main_iterator.logZ_bs, main_iterator.logZerr_bs))
             
-            #print_tree(self.root.children[::10])
-            saved_logl = np.array(saved_logl)
-            logw = np.asarray(main_iterator.logweights) + saved_logl.reshape((-1,1)) - main_iterator.all_logZ
-            ref_logw = logw[:,0].reshape((-1,1))
-            other_logw = logw[:,1:]
-
-            if self.log:
-                self.logger.info("Effective samples strategy:")
-
-            Llo_ess = np.inf
-            Lhi_ess = -np.inf
-            w = np.exp(ref_logw.flatten())
-            w /= w.sum()
-            ess = len(w) / (1.0 + ((len(w) * w - 1)**2).sum() / len(w))
-            self.logger.info('  ESS = %.1f' % (ess))
-            if ess < min_ess:
-                samples = np.random.choice(len(w), p=w, size=min_ess)
-                self.logger.info('  need to improve near %.2f..%.2f' % (
-                    saved_logl[samples].min(), saved_logl[samples].max()))
-                Llo_ess = saved_logl[samples].min()
-                Lhi_ess = saved_logl[samples].max()
-            if self.log and Lhi_ess > Llo_ess:
-                self.logger.info("Effective samples strategy wants to improve: %.2f..%.2f" % (Llo_ess, Lhi_ess))
-            elif self.log:
-                self.logger.info("Effective samples strategy is happy")
-            
-            # compute KL divergence
-            if self.log:
-                self.logger.info("Posterior uncertainty strategy:")
-            with np.errstate(invalid='ignore'):
-                KL = np.where(np.isfinite(other_logw), exp(other_logw) * (other_logw - ref_logw), 0)
-            #print(KL.cumsum(axis=0)[-1,:])
-            KLtot = KL.sum(axis=0)
-            dKLtot = np.abs(KLtot - KLtot.mean())
-            if self.log:
-                self.logger.info('  KL: %.2f +- %s (max:%.2f)' % (KLtot.mean(), np.percentile(dKLtot, [0.01, 0.1, 0.5, 0.9, 0.99]), dKLtot.max()))
-            p = np.where(KL > 0, KL, 0)
-            p /= p.sum(axis=0).reshape((1, -1))
-
-            Llo_KL = np.inf
-            Lhi_KL = -np.inf
-            for i, (pi, dKLi, logwi) in enumerate(zip(p.transpose(), dKLtot, other_logw)):
-                if dKLi > dKL:
-                    ci = pi.cumsum()
-                    ilo = np.where(ci > 1./400.)[0][0]
-                    ihi = np.where(ci < 1 - 1./400.)[0][-1]
-                    # ilo and ihi are most likely missing in this iterator
-                    # --> select the one before/after in this iterator
-                    ilos = np.where(np.isfinite(logwi[:ilo]))[0]
-                    ihis = np.where(np.isfinite(logwi[ihi:]))[0]
-                    ilo2 = ilos[-1] if len(ilos) > 0 else 0
-                    ihi2 = (ihi + ihis[0]) if len(ihis) > 0 else -1
-                    self.logger.info('   - KL[%d] = %.2f: need to improve near %.2f..%.2f --> %.2f..%.2f' % (i, dKLi, saved_logl[ilo], saved_logl[ihi], saved_logl[ilo2], saved_logl[ihi2]))
-                    Llo_KL = min(Llo_KL, saved_logl[ilo2])
-                    Lhi_KL = max(Lhi_KL, saved_logl[ihi2])
-            
-            if self.log and Lhi_KL > Llo_KL:
-                self.logger.info("Posterior uncertainty strategy wants to improve: %.2f..%.2f" % (Llo_KL, Lhi_KL))
-            elif self.log:
-                self.logger.info("Posterior uncertainty strategy is happy")
-            
-            if self.log:
-                self.logger.info("Evidency uncertainty strategy:")
-            Llo_Z = np.inf
-            Lhi_Z = -np.inf
-            # compute difference between lnZ cumsum
-            p = exp(logw)
-            p /= p.sum(axis=0).reshape((1, -1))
-            deltalogZ = np.abs(main_iterator.all_logZ[1:] - main_iterator.logZ)
-            if self.log:
-                self.logger.info('  deltalogZ: %s (max:%.2f)' % (np.percentile(deltalogZ, [0.01, 0.1, 0.5, 0.9, 0.99]), deltalogZ.max()))
-            
-            tail_fraction = w[np.asarray(main_iterator.istail)].sum() / w.sum()
-            logzerr_tail = np.logaddexp(np.log(tail_fraction) + main_iterator.logZ, main_iterator.logZ) - main_iterator.logZ
-            self.logger.info('   logZ error budget: single: %.2f bs:%.2f tail:%.2f total:%.2f required:<%.2f' % (
-                main_iterator.logZerr, main_iterator.logZerr_bs, logzerr_tail, 
-                (main_iterator.logZerr_bs**2 + logzerr_tail**2)**0.5, dlogz))
-            if (deltalogZ > dlogz).any() and (main_iterator.logZerr_bs**2 + logzerr_tail**2)**0.5 > dlogz:
-                for i, (pi, deltalogZi) in enumerate(zip(p.transpose(), deltalogZ)):
-                    if deltalogZi > dlogz:
-                        # break up samples with too much weight
-                        samples = np.random.choice(len(ref_logw), p=pi, size=400)
-                        self.logger.info('   - deltalogZi[%d] = %.2f: need to improve near %.2f..%.2f' % (
-                            i, deltalogZi, saved_logl[samples].min(), saved_logl[samples].max()))
-                        Llo_Z = min(Llo_Z, saved_logl[samples].min())
-                        Lhi_Z = max(Lhi_Z, saved_logl[samples].max())
-            
-            if self.log and Lhi_Z > Llo_Z:
-                self.logger.info("Evidency uncertainty strategy wants to improve: %.2f..%.2f" % (Llo_Z, Lhi_Z))
-            elif self.log:
-                self.logger.info("Evidency uncertainty strategy is happy")
-            
+            saved_logl = np.asarray(saved_logl)
+            (Llo_Z, Lhi_Z), (Llo_KL, Lhi_KL), (Llo_ess, Lhi_ess) = self.find_strategy(saved_logl, main_iterator, dlogz, dKL, min_ess)
             Llo = min(Llo_ess, Llo_KL, Llo_Z)
             Lhi = max(Lhi_ess, Lhi_KL, Lhi_Z)
             # to avoid numerical issues when all likelihood values are the same
-            Lhi = min(Lhi, saved_logl.max() - 0.01)
+            Lhi = min(Lhi, saved_logl.max() - 0.001)
             
-            # if still inf: measure lnZ contribution when number of live points decreases
-            # if more than 0.001 of total lnZ, we want to integrate that away too
+            if self.use_mpi:
+                recv_Llo = self.comm.gather(Llo, root=0)
+                recv_Llo = self.comm.bcast(recv_Llo, root=0)
+                recv_Lhi = self.comm.gather(Lhi, root=0)
+                recv_Lhi = self.comm.bcast(recv_Lhi, root=0)
+                Llo = min(recv_Llo)
+                Lhi = max(recv_Lhi)
             
             if Llo <= Lhi:
-                # fork off all roots at Llo
                 #if self.log: 
                 #    print_tree(roots, title="Tree before forking:")
-                parents = self.find_nodes_before(self.root, Llo)
+                parents = find_nodes_before(self.root, Llo)
                 _, width = count_tree_between(self.root.children, Llo, Lhi)
                 nnodes_needed = width * 2
                 if self.log:
@@ -1454,30 +1472,44 @@ class ReactiveNestedSampler(object):
             np.shape(saved_logl), 
             np.shape(main_iterator.all_logZ))
         
+        saved_logl = np.array(saved_logl)
         saved_v = self.pointpile.getp(saved_nodeids)
         saved_logwt = np.array(main_iterator.logweights)
-        saved_logl = np.array(saved_logl)
-        saved_wt = np.exp(saved_logwt + saved_logl.reshape((-1, 1)) - main_iterator.all_logZ)
+        saved_logwt0 = saved_logwt[:,0]
+        saved_logwt_bs = saved_logwt[:,1:]
+        logZ_bs = main_iterator.all_logZ[1:]
+        assert len(saved_logwt_bs) == len(saved_nodeids), (saved_logwt_bs.shape, len(saved_nodeids))
+        
+        if self.use_mpi:
+            # spread logZ_bs, saved_logwt_bs
+            recv_saved_logwt_bs = self.comm.gather(saved_logwt_bs, root=0)
+            recv_saved_logwt_bs = self.comm.bcast(recv_saved_logwt_bs, root=0)
+            saved_logwt_bs = np.concatenate(recv_saved_logwt_bs, axis=1)
+            
+            recv_logZ_bs = self.comm.gather(logZ_bs, root=0)
+            recv_logZ_bs = self.comm.bcast(recv_logZ_bs, root=0)
+            logZ_bs = np.concatenate(recv_logZ_bs)
+        
+        saved_wt_bs = np.exp(saved_logwt_bs + saved_logl.reshape((-1, 1)) - logZ_bs)
+        saved_wt0 = np.exp(saved_logwt0 + saved_logl - main_iterator.all_logZ[0])
 
         # compute fraction in tail
-        
-        w = saved_wt[:,0] / saved_wt[:,0].sum()
+        w = saved_wt0 / saved_wt0.sum()
         ess = len(w) / (1.0 + ((len(w) * w - 1)**2).sum() / len(w))
-        assert len(saved_wt) == len(saved_nodeids), (saved_wt.shape, len(saved_nodeids))
-        assert saved_wt.shape == saved_logwt.shape, (saved_wt.shape, saved_logwt.shape)
-        tail_fraction = saved_wt[np.asarray(main_iterator.istail),0].sum() / saved_wt[:,0].sum()
+        tail_fraction = w[np.asarray(main_iterator.istail)].sum()
         logzerr_tail = np.logaddexp(np.log(tail_fraction) + main_iterator.logZ, main_iterator.logZ) - main_iterator.logZ
-        logzerr_bs = (main_iterator.all_logZ[1:] - main_iterator.logZ).max()
+        
+        logzerr_bs = (logZ_bs - main_iterator.logZ).max()
         logzerr_total = (logzerr_tail**2 + logzerr_bs**2)**0.5
         
-        self.results = dict(niter=len(saved_logwt), 
+        self.results = dict(niter=len(saved_logl), 
             logz=main_iterator.logZ, logzerr=logzerr_total,
-            logz_bs=main_iterator.logZ_bs,
+            logz_bs=logZ_bs.mean(),
             logzerr_bs=logzerr_bs,
             logz_single=main_iterator.logZ,
             logzerr_tail=logzerr_tail,
             logzerr_single=(main_iterator.all_H[0] / self.min_num_live_points)**0.5,
-            weighted_samples=dict(v=saved_v, w = saved_wt[:,0], logw = saved_logwt[:,0], bs_w = saved_wt, L=saved_logl),
+            weighted_samples=dict(v=saved_v, w=saved_wt0, logw=saved_logwt0, bs_w=saved_wt_bs, L=saved_logl),
             samples=resample_equal(saved_v, w),
             ess=ess,
             tree=TreeNode(-np.inf, children=roots),

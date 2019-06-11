@@ -131,7 +131,7 @@ def main(args):
     sampler.print_results()
     results = sampler.results
     sampler.plot()
-    if results['logzerr'] < 1.0 and true_Z is not None and args.num_live_points > 50:
+    if results['logzerr_tail'] < 0.5 and results['logzerr'] < 1.0 and true_Z is not None and args.num_live_points > 50:
         assert results['logz'] - results['logzerr'] * 2 < true_Z < results['logz'] + results['logzerr'] * 2
     return results
 
@@ -154,7 +154,7 @@ if __name__ == '__main__':
         print("generating a random configuration...")
         def choose(args):
             # pick first (default) option most of the time
-            if random.random() > 0.5:
+            if random.random() < 0.25:
                 return args[0]
             else:
                 return random.choice(args)
