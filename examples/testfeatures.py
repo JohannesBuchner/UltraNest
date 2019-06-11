@@ -27,10 +27,17 @@ def main(args):
             return
         log_dir = None
     else:
-        log_dir = args.log_dir + '-%s-%dd' % (args.problem, ndim)
+        log_dir = args.log_dir + '-%s' % args.problem
+        log_dir += '-%dd' % ndim
+        if args.wrapped_dims:
+            log_dir += '-wrapped'
     
         if args.delete_dir:
             shutil.rmtree(log_dir, ignore_errors=True)
+    
+    if ndim >= 20 and args.num_live_points >= 1000:
+        print("skipping, probably too slow to run")
+        return
     
     if args.problem == 'gauss':
         sigma = 0.01

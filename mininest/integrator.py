@@ -14,6 +14,7 @@ import json
 import operator
 import time
 import logging
+import warnings
 from numpy import log, exp
 
 from .utils import create_logger, make_run_dir
@@ -570,7 +571,7 @@ class ReactiveNestedSampler(object):
         self.min_num_live_points = min_num_live_points
         self.cluster_num_live_points = cluster_num_live_points
         self.max_num_live_points_for_efficiency = max_num_live_points_for_efficiency
-        assert min_num_live_points > cluster_num_live_points, ('min_num_live_points(%d) cannot be less than cluster_num_live_points(%d)' % (min_num_live_points, cluster_num_live_points))
+        assert min_num_live_points >= cluster_num_live_points, ('min_num_live_points(%d) cannot be less than cluster_num_live_points(%d)' % (min_num_live_points, cluster_num_live_points))
         
         self.sampler = 'reactive-nested'
         self.x_dim = x_dim
@@ -912,6 +913,7 @@ class ReactiveNestedSampler(object):
                 ib = 0
                 
                 nc = 0
+                nit += 1
                 u, father = self.region.sample(nsamples=ndraw)
                 assert np.logical_and(u > 0, u < 1).all(), (u)
                 nu = u.shape[0]
@@ -920,15 +922,19 @@ class ReactiveNestedSampler(object):
                 logl = self.loglike(v)
                 nc += nu
                 accepted = logl > Lmin
+                if nit >= 1000 and nit % 1000 == 0:
+                    self.logger.warn("Seems stuck. Writing debug output file 'region-stuck-it%d.npz'..." % nit)
+                    np.savez('region-stuck-it%d.npz' % nit, u=self.region.u, unormed=self.region.unormed, maxradiussq=self.region.maxradiussq, 
+                        sample_u=u, sample_v=v, sample_logl=logl)
+                    warnings.warn("Sampling is stuck, this could be numerical issue: You are probably trying to integrate to deep into the volume where all points become equal in logL; so cannot draw a higher point. Try loosening the quality constraints (increase dlogz, dKL, decrease min_ess).")
+                    logl_region = self.loglike(self.transform(self.region.u))
+                    if not (logl_region > Lmin).any():
+                        raise ValueError("Region cannot sample a point. Perhaps you are resuming from a different problem? Delete the output files and start again.")
+                
                 u = u[accepted,:]
                 v = v[accepted,:]
                 logl = logl[accepted]
                 father = father[accepted]
-                
-                #if nit >= 100 and nit % 100:
-                #    print("seems stuck; writing debug output file...")
-                #    np.savez('region-stuck-it%d.npz' % nit, u=self.region.u, unormed=self.region.unormed, maxradiussq=self.region.maxradiussq, 
-                #        sample_u=u, sample_v=v, sample_logl=logl)
                 
                 if self.use_mpi:
                     recv_father = self.comm.gather(father, root=0)
@@ -986,6 +992,8 @@ class ReactiveNestedSampler(object):
         #print()
         #print("rebuilding space...", active_u.shape, active_u)
         nextTransformLayer = self.transformLayer.create_new(active_u, self.region.maxradiussq)
+        #nextTransformLayer = ScalingLayer(wrapped_dims=self.wrapped_axes)
+        #nextTransformLayer.optimize(active_u, active_u)
         nextregion = MLFriends(active_u, nextTransformLayer)
     
         #if self.log:
@@ -1112,9 +1120,6 @@ class ReactiveNestedSampler(object):
                 # this is the likelihood level we have to improve upon
                 Lmin = node.value
                 
-                saved_nodeids.append(node.id)
-                saved_logl.append(Lmin)
-                
                 # if within suggested range, expand
                 if strategy_stale or not (Lmin <= Lhi) or not np.isfinite(Lhi):
                     # check with advisor if we want to expand this node
@@ -1128,7 +1133,10 @@ class ReactiveNestedSampler(object):
                     if self.log and strategy_altered:
                         self.logger.info("strategy update: L range to expand: %.1f-%.1f have: %.1f logZ=%.2f logZremain=%.2f" % (
                             Llo, Lhi, Lmin, main_iterator.logZ, main_iterator.logZremain))
-                    strategy_stale = False
+                    
+                    # when we are going to the peak, numerical accuracy
+                    # can become an issue. We should try not to get stuck there
+                    strategy_stale = Lhi - Llo < 0.01
                 
                 nlive = len(active_node_ids)
                 
@@ -1167,8 +1175,6 @@ class ReactiveNestedSampler(object):
                         if max_ncalls is not None and self.ncall >= max_ncalls:
                             expand_node = False
                     
-                    
-                
                 region_fresh = False
                 if expand_node:
                     # sample a new point above Lmin
@@ -1269,6 +1275,9 @@ class ReactiveNestedSampler(object):
                     # we do not want to count iterations without work
                     # otherwise efficiency becomes > 1
                     it_at_first_region += 1
+                
+                saved_nodeids.append(node.id)
+                saved_logl.append(Lmin)
                 
                 # inform iterators (if it is their business) about the arc
                 #print("node: %d children" % len(node.children))
@@ -1440,6 +1449,11 @@ class ReactiveNestedSampler(object):
         
         # points with weights
         #saved_u = np.array([pp[nodeid].u for nodeid in saved_nodeids])
+        assert np.shape(main_iterator.logweights) == (len(saved_logl), len(main_iterator.all_logZ)), (
+            np.shape(main_iterator.logweights), 
+            np.shape(saved_logl), 
+            np.shape(main_iterator.all_logZ))
+        
         saved_v = self.pointpile.getp(saved_nodeids)
         saved_logwt = np.array(main_iterator.logweights)
         saved_logl = np.array(saved_logl)
