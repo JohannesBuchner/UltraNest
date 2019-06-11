@@ -129,6 +129,33 @@ def test_reactive_run_resume(dlogz, min_ess):
         shutil.rmtree(folder, ignore_errors=True)
 
 
+def test_run_compat():
+    from mininest.solvecompat import pymultinest_solve_compat as solve
+    
+    ndim = 2
+    sigma = 0.01
+    centers = 0.5
+    paramnames = ['a', 'b']
+
+    def loglike(theta):
+        like = -0.5 * (((theta - centers)/sigma)**2).sum() - 0.5 * np.log(2 * np.pi * sigma**2) * ndim
+        return like
+
+    def transform(x):
+        return 10 * x - 5.
+
+    result = solve(LogLikelihood=loglike, Prior=transform, 
+        n_dims=ndim, outputfiles_basename=None,
+        verbose=True, resume=True, importance_nested_sampling=False)
+    
+    print()
+    print('evidence: %(logZ).1f +- %(logZerr).1f' % result)
+    print()
+    print('parameter values:')
+    for name, col in zip(paramnames, result['samples'].transpose()):
+        print('%15s : %.3f +- %.3f' % (name, col.mean(), col.std()))
+    
+
 if __name__ == '__main__':
     #test_run_resume(dlogz=0.5)
     test_reactive_run_resume(dlogz=0.5, min_ess=1000)
