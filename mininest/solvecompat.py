@@ -37,6 +37,7 @@ def pymultinest_solve_compat(LogLikelihood, Prior, n_dims,
         log_dir=outputfiles_basename, 
         append_run_num=not resume,
         wrapped_params=wrapped_params,
+        draw_multiple=False,
     )
     sampler.run(dlogz=evidence_tolerance, max_iters=max_iter)
     sampler.print_results()

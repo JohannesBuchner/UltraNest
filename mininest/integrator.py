@@ -564,6 +564,7 @@ class ReactiveNestedSampler(object):
                  cluster_num_live_points=50,
                  max_num_live_points_for_efficiency=400,
                  num_test_samples=2,
+                 draw_multiple=True,
                  ):
 
         self.paramnames = param_names
@@ -572,6 +573,7 @@ class ReactiveNestedSampler(object):
         self.cluster_num_live_points = cluster_num_live_points
         self.max_num_live_points_for_efficiency = max_num_live_points_for_efficiency
         assert min_num_live_points >= cluster_num_live_points, ('min_num_live_points(%d) cannot be less than cluster_num_live_points(%d)' % (min_num_live_points, cluster_num_live_points))
+        self.draw_multiple = draw_multiple
         
         self.sampler = 'reactive-nested'
         self.x_dim = x_dim
@@ -1016,14 +1018,17 @@ class ReactiveNestedSampler(object):
                 u, father = self.region.sample(nsamples=ndraw)
                 assert np.logical_and(u > 0, u < 1).all(), (u)
                 nu = u.shape[0]
-                
-                v = self.transform(u)
-                logl = self.loglike(v)
+                if nu == 0:
+                    v = np.empty((0, self.num_params))
+                    logl = np.empty((0,))
+                else:
+                    v = self.transform(u)
+                    logl = self.loglike(v)
                 nc += nu
                 accepted = logl > Lmin
                 if nit >= 1000 and nit % 1000 == 0:
-                    self.logger.warn("Seems stuck. Writing debug output file 'region-stuck-it%d.npz'..." % nit)
-                    np.savez('region-stuck-it%d.npz' % nit, u=self.region.u, unormed=self.region.unormed, maxradiussq=self.region.maxradiussq, 
+                    self.logger.warn("Sampling seems stuck. Writing debug output file 'sampling-stuck-it%d.npz'..." % nit)
+                    np.savez('sampling-stuck-it%d.npz' % nit, u=self.region.u, unormed=self.region.unormed, maxradiussq=self.region.maxradiussq, 
                         sample_u=u, sample_v=v, sample_logl=logl)
                     warnings.warn("Sampling is stuck, this could be numerical issue: You are probably trying to integrate to deep into the volume where all points become equal in logL; so cannot draw a higher point. Try loosening the quality constraints (increase dlogz, dKL, decrease min_ess).")
                     logl_region = self.loglike(self.transform(self.region.u))
@@ -1239,7 +1244,10 @@ class ReactiveNestedSampler(object):
             it_at_first_region = 0
             self.ib = 0
             self.samples = []
-            ndraw = 100
+            if self.draw_multiple:
+                ndraw = 100
+            else:
+                ndraw = 1
             self.pointstore.reset()
             if self.log_to_disk:
                 self.use_point_stack = not self.pointstore.stack_empty
@@ -1379,7 +1387,8 @@ class ReactiveNestedSampler(object):
                         sys.stdout.flush()
                         
                         # if efficiency becomes low, bulk-process larger arrays
-                        ndraw = max(128, min(16384, round((self.ncall - ncall_at_run_start + 1) / (it + 1) / self.mpi_size)))
+                        if self.draw_multiple:
+                            ndraw = max(128, min(16384, round((self.ncall - ncall_at_run_start + 1) / (it + 1) / self.mpi_size)))
 
                 else:
                     # we do not want to count iterations without work
