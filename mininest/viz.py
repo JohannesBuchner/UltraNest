@@ -50,7 +50,7 @@ def nicelogger(points, info, region, transformLayer, region_fresh=False):
     nmodes = transformLayer.nclusters
     print("Mono-modal" if nmodes == 1 else "Have %d modes" % nmodes, 
         "Volume: %.2e" % region.estimate_volume(), '*' if region_fresh else ' ')
-
+    
     if ndim == 1:
         pass
     elif ndim == 2:

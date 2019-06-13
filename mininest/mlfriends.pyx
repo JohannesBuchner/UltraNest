@@ -132,6 +132,8 @@ def update_clusters(upoints, tpoints, maxradiussq, clusterids=None):
     if clusterids is None:
         clusterids = np.zeros(len(tpoints), dtype=int)
     else:
+        # avoid issues when old clusterids are from a longer array
+        clusterids = clusterids[:len(tpoints)]
         existing = clusterids == currentclusterid
         if existing.any():
             i = np.where(existing)[0][0]
@@ -176,7 +178,14 @@ def update_clusters(upoints, tpoints, maxradiussq, clusterids=None):
         overlapped_upoints = np.empty_like(upoints)
         for idx in np.unique(clusteridxs):
             group_upoints = upoints[clusteridxs == idx,:]
-            group_mean = group_upoints.mean(axis=0).reshape((1,-1))
+            if len(group_upoints) > 1:
+                # center on group mean
+                group_mean = group_upoints.mean(axis=0).reshape((1,-1))
+            else:
+                # if a single point, the differences would be zero,
+                # not giving weight to this being an outlier.
+                # so use the mean of the entire point population instead
+                group_mean = upoints.mean(axis=0).reshape((1,-1))
             overlapped_upoints[clusteridxs == idx,:] = group_upoints - group_mean
     #print("clustering done, %d clusters" % nclusters)
     #if nclusters > 1:
@@ -243,7 +252,7 @@ class ScalingLayer(object):
         if clusterids is not None:
             # if we have a value, update
             self.clusterids = clusterids
-
+    
     def create_new(self, upoints, maxradiussq):
         # perform clustering in transformed space
         uwpoints = self.wrap(upoints)
@@ -312,7 +321,7 @@ class MLFriends(object):
         
         self.u = u
         self.transformLayer = transformLayer
-        self.maxradiussq = 1e300
+        self.maxradiussq = None
         self.sampling_methods = [self.sample_from_points, self.sample_from_transformed_boundingbox, self.sample_from_boundingbox]
         
         self.unormed = self.transformLayer.transform(self.u)

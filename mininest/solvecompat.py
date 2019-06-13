@@ -29,6 +29,7 @@ def pymultinest_solve_compat(LogLikelihood, Prior, n_dims,
 
     if paramnames is None:
         paramnames = list(string.ascii_lowercase)[:n_dims]
+    assert len(paramnames) == n_dims
 
     sampler = ReactiveNestedSampler(paramnames, 
         vectorized_loglike, 
@@ -39,7 +40,8 @@ def pymultinest_solve_compat(LogLikelihood, Prior, n_dims,
         wrapped_params=wrapped_params,
         draw_multiple=False,
     )
-    sampler.run(dlogz=evidence_tolerance, max_iters=max_iter)
+    sampler.run(dlogz=evidence_tolerance, 
+        max_iters=max_iter if max_iter > 0 else None)
     sampler.print_results()
     results = sampler.results
     sampler.plot()

@@ -83,51 +83,38 @@ def test_run_resume(dlogz):
     finally:
         shutil.rmtree(folder, ignore_errors=True)
 
-@pytest.mark.parametrize("dlogz,min_ess", [(0.5, 0), (0.2, 0), (0.5, 100), (0.5, 500)])
-def test_reactive_run_resume(dlogz, min_ess):
+"""
+def test_reactive_run_resume_eggbox():
     from mininest import ReactiveNestedSampler
-    sigma = 0.01
-    ndim = 1
+    ndim = 2
 
-    def loglike(theta):
-        like = -0.5 * (((theta - 0.5)/sigma)**2).sum(axis=1) - 0.5 * np.log(2 * np.pi * sigma**2) * ndim
-        return like
+    def loglike(z):
+        chi = (np.cos(z / 2.)).prod(axis=1)
+        return (2. + chi)**5
 
-    paramnames = ['a']
-    
-    def myadd(row):
-        assert False, (row, 'should not need to add more points in resume')
+    def transform(x):
+        return x * 10 * np.pi
+
+    paramnames = ['a', 'b']
     
     last_results = None
     folder = tempfile.mkdtemp()
+    np.random.seed(1)
     try:
         for i in range(2):
-            np.random.seed(int(dlogz*100 + min_ess))
             sampler = ReactiveNestedSampler(paramnames, loglike, 
                 min_num_live_points=100, 
                 log_dir=folder, 
                 cluster_num_live_points=0,
-                append_run_num=False)
-            if i == 1:
-                sampler.pointstore.add = myadd
-            r = sampler.run(log_interval=1000, 
-                max_num_improvement_loops=0,
-                dlogz=dlogz, min_ess=min_ess, dKL=1e100)
+                append_run_num=False, 
+                )
+            r = sampler.run(log_interval=1000, max_iters=5600)
             sampler.print_results()
             sampler.pointstore.close()
-            del r['weighted_samples']
-            del r['samples']
-            if last_results is not None:
-                print("ran with dlogz:", dlogz)
-                print("first run gave:", last_results)
-                print("second run gave:", r)
-                assert last_results['logzerr'] < 1.0
-                assert r['logzerr'] < 1.0
-                assert np.isclose(last_results['logz'], r['logz'], atol=0.5)
             last_results = r
     finally:
         shutil.rmtree(folder, ignore_errors=True)
-
+"""
 
 def test_run_compat():
     from mininest.solvecompat import pymultinest_solve_compat as solve
@@ -157,7 +144,8 @@ def test_run_compat():
     
 
 if __name__ == '__main__':
+    test_run_compat()
     #test_run_resume(dlogz=0.5)
-    test_reactive_run_resume(dlogz=0.5, min_ess=1000)
+    #test_reactive_run_resume(dlogz=0.5, min_ess=1000)
     #test_reactive_run()
     #test_run()

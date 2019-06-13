@@ -19,12 +19,20 @@ from numpy import log, exp
 
 from .utils import create_logger, make_run_dir
 from .utils import acceptance_rate, effective_sample_size, mean_jump_distance, resample_equal
-from mininest.mlfriends import MLFriends, AffineLayer, ScalingLayer, compute_maxradiussq
+from mininest.mlfriends import MLFriends, AffineLayer, ScalingLayer, compute_maxradiussq, update_clusters
 from .store import TextPointStore, HDF5PointStore, NullPointStore
 from .viz import nicelogger
 from .netiter import PointPile, MultiCounter, BreadthFirstIterator, TreeNode, print_tree, count_tree, count_tree_between, find_nodes_before
 
 import numpy as np
+
+def get_cumsum_range(pi, dp):
+    ci = pi.cumsum()
+    ilo = np.where(ci > dp)[0]
+    ilo = ilo[0] if len(ilo) > 0 else 0 
+    ihi = np.where(ci < 1. - dp)[0]
+    ihi = ihi[-1] if len(ihi) > 0 else -1
+    return ilo, ihi
 
 def sequentialize_width_sequence(minimal_widths, min_width):
     Lpoints = np.unique([-np.inf] + [L for L, _, _ in minimal_widths] + [L for _, L, _ in minimal_widths] + [np.inf])
@@ -138,14 +146,8 @@ class NestedSampler(object):
             self.logger.info('Num live points [%d]' % (self.num_live_points))
 
         if self.log_to_disk:
-            with open(os.path.join(self.logs['results'], 'results.csv'), 'w') as f:
-                writer = csv.writer(f)
-                writer.writerow(['step', 'acceptance', 'min_ess',
-                                 'max_ess', 'jump_distance', 'scale', 'loglstar', 'logz', 'fraction_remain', 'ncall'])
-        
-        if self.log_to_disk:
-            self.pointstore = TextPointStore(os.path.join(self.logs['results'], 'points.tsv'), 2 + self.x_dim + self.num_params)
-            #self.pointstore = HDF5PointStore(os.path.join(self.logs['results'], 'points.hdf5'), 2 + self.x_dim + self.num_params)
+            #self.pointstore = TextPointStore(os.path.join(self.logs['results'], 'points.tsv'), 2 + self.x_dim + self.num_params)
+            self.pointstore = HDF5PointStore(os.path.join(self.logs['results'], 'points.hdf5'), 2 + self.x_dim + self.num_params)
         else:
             self.pointstore = NullPointStore(2 + self.x_dim + self.num_params)
 
@@ -189,7 +191,7 @@ class NestedSampler(object):
             update_interval_iter=None,
             update_interval_ncall=None,
             log_interval=None,
-            dlogz=0.5,
+            dlogz=0.001,
             max_iters=None,
             volume_switch=0):
 
@@ -339,7 +341,7 @@ class NestedSampler(object):
                     # rebuild space
                     #print()
                     #print("rebuilding space...", active_u.shape, active_u)
-                    nextTransformLayer = transformLayer #.create_new(active_u, region.maxradiussq)
+                    nextTransformLayer = transformLayer.create_new(active_u, region.maxradiussq)
                     nextregion = MLFriends(active_u, nextTransformLayer)
                 
                 #print("computing maxradius...")
@@ -561,7 +563,7 @@ class ReactiveNestedSampler(object):
                  run_num=None,
                  log_dir='logs/test',
                  min_num_live_points=100,
-                 cluster_num_live_points=50,
+                 cluster_num_live_points=40,
                  max_num_live_points_for_efficiency=400,
                  num_test_samples=2,
                  draw_multiple=True,
@@ -734,12 +736,14 @@ class ReactiveNestedSampler(object):
             # or update after some likelihood calls (unless only few nodes left)
             if self.region is None or (self.ncall > next_update_interval_ncall and len(parents) - i > 50):
                 Lmin = n.value
-                active_nodes = parents[i:]
+                # sort so that the last ones go away first
+                active_nodes = parents[i:][::-1]
+                
                 #if self.log:
                 #    self.logger.info('Making region from %d parents at L=%.1f...' % (len(active_nodes), Lmin))
                 active_node_ids = [n.id for n in active_nodes]
                 active_u = self.pointpile.getu(active_node_ids)
-                self.update_region(Lmin=Lmin, active_nodes=active_nodes, 
+                self.update_region(
                     active_u=active_u, active_node_ids=active_node_ids)
                 active_u = self.pointpile.getu(active_node_ids)
             
@@ -922,9 +926,7 @@ class ReactiveNestedSampler(object):
         Lhi_KL = -np.inf
         for i, (pi, dKLi, logwi) in enumerate(zip(p.transpose(), dKLtot, other_logw)):
             if dKLi > dKL:
-                ci = pi.cumsum()
-                ilo = np.where(ci > 1./400.)[0][0]
-                ihi = np.where(ci < 1 - 1./400.)[0][-1]
+                ilo, ihi = get_cumsum_range(pi, 1./400)
                 # ilo and ihi are most likely missing in this iterator
                 # --> select the one before/after in this iterator
                 ilos = np.where(np.isfinite(logwi[:ilo]))[0]
@@ -1077,19 +1079,59 @@ class ReactiveNestedSampler(object):
             else:
                 self.ib = ib + 1
     
-    def update_region(self, Lmin, active_u, active_nodes, active_node_ids, bootstrap_rootids=None, active_rootids=None):
+    def update_region(self, active_u, active_node_ids, 
+        bootstrap_rootids=None, active_rootids=None,
+        nbootstraps=30
+    ):
         updated = False
+        if self.region is not None:
+            # noticing this here and reacting is too late,
+            # because we may already have sampled from the region
+            if len(self.region.u) > len(active_u):
+                print("region is shrinking. Must increase maxradiussq!", len(self.region.u), len(active_u))
+                #self.region.maxradiussq = None
+            if len(self.region.u) < len(active_u):
+                print("region is expanding", len(self.region.u), len(active_u))
+                #self.region.maxradiussq = None
+        
         if self.region is None:
             self.transformLayer = ScalingLayer(wrapped_dims=self.wrapped_axes)
             self.transformLayer.optimize(active_u, active_u)
             self.region = MLFriends(active_u, self.transformLayer)
             self.region_nodes = active_node_ids.copy()
-            r = self.region.compute_maxradiussq(nbootstraps=30 // self.mpi_size)
+            assert self.region.maxradiussq is None
+        
+        assert self.transformLayer is not None
+        
+        if self.region.maxradiussq is None:
+            r = self.region.compute_maxradiussq(nbootstraps=nbootstraps // self.mpi_size)
             if self.use_mpi:
                 recv_maxradii = self.comm.gather(r, root=0)
                 recv_maxradii = self.comm.bcast(recv_maxradii, root=0)
                 r = np.max(recv_maxradii)
             self.region.maxradiussq = r
+            print("making first region, r=%e" % (r))
+            # should do clustering now that we have r
+            # this would forget the cluster ids (no cluster tracking)
+            
+            # track the clusters from before by matching manually
+            clusterids = np.zeros(len(active_u), dtype=int)
+            for ui, ci in zip(self.region.u, self.transformLayer.clusterids):
+                clusterids[(active_u == ui).sum(axis=1)] = ci
+            nclusters = self.transformLayer.nclusters
+            print("following clusters, nc=%d" % r, self.transformLayer.nclusters, 
+                np.unique(self.transformLayer.clusterids, return_counts=True))
+            
+            #self.transformLayer.nclusters, self.transformLayer.clusterids, _ = update_clusters(
+            #    self.region.u, self.region.unormed, self.region.maxradiussq)
+            
+            # rebuild scaling layer so it has the correct cluster information
+            self.transformLayer.clusterids = clusterids
+            #nextTransformLayer = ScalingLayer(mean=self.transformLayer.mean,
+            #    std=self.transformLayer.std, nclusters=nclusters, 
+            #    wrapped_dims=self.wrapped_axes, clusterids=clusterids)
+            
+            #print("   cluster it r=%e nc=%d" % (r, self.transformLayer.nclusters))
             updated = True
         
         # rebuild space
@@ -1098,11 +1140,33 @@ class ReactiveNestedSampler(object):
         nextTransformLayer = self.transformLayer.create_new(active_u, self.region.maxradiussq)
         #nextTransformLayer = ScalingLayer(wrapped_dims=self.wrapped_axes)
         #nextTransformLayer.optimize(active_u, active_u)
+        #smallest_cluster = min((nextTransformLayer.clusterids == i).sum() for i in np.unique(nextTransformLayer.clusterids))
+        #if smallest_cluster == 1:
+        #    print("found lonely points, not accepting updated transform layer")
+        #    nextTransformLayer = self.transformLayer
+        
         nextregion = MLFriends(active_u, nextTransformLayer)
-    
+        
+        if not nextTransformLayer.nclusters < 20:
+            filename = 'overclustered_%d.npz' % nextTransformLayer.nclusters
+            if not os.path.exists(filename):
+                print("a lot of clusters! writing debug output file '%s'" % filename)
+                np.savez(filename, 
+                    u=nextregion.u, unormed=nextregion.unormed, 
+                    maxradiussq=nextregion.maxradiussq,
+                    u0=self.region.u, unormed0=self.region.unormed, 
+                    maxradiussq0=self.region.maxradiussq)
+                np.savetxt('overclustered_u_%d.txt' % nextTransformLayer.nclusters, nextregion.u)
+            #assert nextTransformLayer.nclusters < 20, nextTransformLayer.nclusters
+        
+        #np.savez('lastregion.npz', u=nextregion.u, unormed=nextregion.unormed, 
+        #    maxradiussq=nextregion.maxradiussq)
+        #np.savetxt('lastregion.txt', nextregion.u)
+        
+        
         #if self.log:
         #    self.logger.info("computing maxradius...")
-        r = nextregion.compute_maxradiussq(nbootstraps=30 // self.mpi_size)
+        r = nextregion.compute_maxradiussq(nbootstraps=nbootstraps // self.mpi_size)
         #r = 0.
         #for selected in bootstrap_rootids[:,active_rootids]:
         #    a = nextregion.unormed[selected,:]
@@ -1115,13 +1179,15 @@ class ReactiveNestedSampler(object):
             r = np.max(recv_maxradii)
         
         nextregion.maxradiussq = r
+        #print("MLFriends computed: r=%e nc=%d" % (r, nextTransformLayer.nclusters))
         # force shrinkage of volume
         # this is to avoid re-connection of dying out nodes
+        print(nextregion.estimate_volume(), self.region.estimate_volume())
         if nextregion.estimate_volume() < self.region.estimate_volume():
             self.region = nextregion
             self.transformLayer = self.region.transformLayer
             self.region_nodes = active_node_ids.copy()
-            #print("MLFriends updated: V=%f" % self.region.estimate_volume())
+            #print("MLFriends updated: V=%e R=%e" % (self.region.estimate_volume(), r))
             updated = True
         
         return updated
@@ -1137,7 +1203,7 @@ class ReactiveNestedSampler(object):
         Lhi = Lmin
         return Llo, Lhi
     
-    def should_node_be_expanded(self, it, Llo, Lhi, minimal_widths_sequence, node, parallel_values, max_ncalls):
+    def should_node_be_expanded(self, it, Llo, Lhi, minimal_widths_sequence, node, parallel_values, max_ncalls, max_iters):
         """
         Should we sample a new point based on this node (above its likelihood value Lmin)?
         
@@ -1157,11 +1223,6 @@ class ReactiveNestedSampler(object):
                 minimal_width_clusters = self.cluster_num_live_points * self.region.transformLayer.nclusters
             
             minimal_width = max(minimal_widths_sequence[0][1], minimal_width_clusters)
-            too_wide = nlive > minimal_width
-            
-            # exception for widening for efficiency
-            if nlive <= self.max_num_live_points_for_efficiency:
-                too_wide = False
             
             # if already has children, no need to expand
             # if we are wider than the width required
@@ -1170,18 +1231,70 @@ class ReactiveNestedSampler(object):
             
             # some exceptions:
             if it > 0: 
+                too_wide = nlive > minimal_width
+                # exception for widening for efficiency
+                if nlive <= self.max_num_live_points_for_efficiency:
+                    too_wide = False
+                
                 # we have to expand the first iteration, 
                 # otherwise the integrator never sets H
                 
                 if too_wide:
+                    #print("not expanding, because we are quite wide", nlive, minimal_width, minimal_widths_sequence, self.max_num_live_points_for_efficiency)
                     expand_node = False
-            
+                
                 if max_ncalls is not None and self.ncall >= max_ncalls:
+                    #print("not expanding, because above max_ncall")
+                    expand_node = False
+                
+                if max_iters is not None and it >= max_iters:
+                    #print("not expanding, because above max_iters")
                     expand_node = False
         
         return expand_node
-    
+
     def run(
+            self,
+            update_interval_iter_fraction=0.2,
+            update_interval_ncall=None,
+            log_interval=None,
+            dlogz=0.5,
+            dKL=0.5,
+            frac_remain=0.001,
+            min_ess=400,
+            max_iters=None,
+            volume_switch=0,
+            max_ncalls=None,
+            max_num_improvement_loops=-1):
+        
+        for result in self.run_iter(
+            update_interval_iter_fraction=update_interval_iter_fraction,
+            update_interval_ncall=update_interval_ncall,
+            log_interval=log_interval,
+            dlogz=dlogz, dKL=dKL, frac_remain=frac_remain,
+            min_ess=min_ess, max_iters=max_iters, volume_switch=volume_switch,
+            max_ncalls=max_ncalls, max_num_improvement_loops=max_num_improvement_loops):
+            if self.log:
+                self.logger.info("did a run_iter pass!")
+            pass
+        if self.log:
+            self.logger.info("done running!")
+        
+        return self.results
+    
+    def get_num_clusters(self):
+        """
+        Compute number of clusters in the current region.
+        
+        The number does not include "outliers" caused by forced 
+        shrinking of the MLRegion maxradius volume.
+        """
+        return self.transformLayer.nclusters
+        clusterids, counts = np.unique(self.transformLayer.clusterids, return_counts=True)
+        print("cluster counts:", clusterids, counts, (counts > 1).sum())
+        return (np.logical_and(clusterids > 0, counts > 1)).sum()
+    
+    def run_iter(
             self,
             update_interval_iter_fraction=0.2,
             update_interval_ncall=None,
@@ -1217,6 +1330,11 @@ class ReactiveNestedSampler(object):
         strategy_stale = True
         minimal_widths = []
         improvement_it = 0
+        
+        assert max_iters is None or max_iters > 0, ("Invalid value for max_iters: %s. Set to None or positive number" % max_iters)
+        assert max_ncalls is None or max_ncalls > 0, ("Invalid value for max_ncalls: %s. Set to None or positive number" % max_ncalls)
+        
+        self.results = None
         
         while True:
             roots = self.root.children
@@ -1300,7 +1418,7 @@ class ReactiveNestedSampler(object):
                     # can become an issue. We should try not to get stuck there
                     strategy_stale = Lhi - Llo < 0.01
                 
-                expand_node = self.should_node_be_expanded(it, Llo, Lhi, minimal_widths_sequence, node, active_values, max_ncalls)
+                expand_node = self.should_node_be_expanded(it, Llo, Lhi, minimal_widths_sequence, node, active_values, max_ncalls, max_iters)
                     
                 region_fresh = False
                 if expand_node:
@@ -1311,18 +1429,20 @@ class ReactiveNestedSampler(object):
                     if it > next_update_interval_iter:
                         if self.region is None:
                             it_at_first_region = it
-                        region_fresh = self.update_region(Lmin=Lmin, 
-                            active_u=active_u, active_node_ids=active_node_ids, active_nodes=active_nodes, active_rootids=active_rootids, 
+                        region_fresh = self.update_region(
+                            active_u=active_u, active_node_ids=active_node_ids, 
+                            active_rootids=active_rootids, 
                             bootstrap_rootids=main_iterator.rootids[1:,])
                         
-                        region_sequence.append((Lmin, nlive, self.region.transformLayer.nclusters))
+                        nclusters = self.get_num_clusters()
+                        region_sequence.append((Lmin, nlive, nclusters))
                         
-                        if nlive < self.cluster_num_live_points * self.region.transformLayer.nclusters:
+                        if nlive < self.cluster_num_live_points * nclusters:
                             # make wider here
                             if self.log:
                                 self.logger.info("Found %d clusters, but only have %d live points, want %d." % (
-                                    self.region.transformLayer.nclusters, nlive, 
-                                    self.cluster_num_live_points * self.region.transformLayer.nclusters))
+                                    self.get_num_clusters(), nlive, 
+                                    self.cluster_num_live_points * nclusters))
                             break
                         
                         #next_update_interval_ncall = self.ncall + (update_interval_ncall or nlive)
@@ -1400,12 +1520,42 @@ class ReactiveNestedSampler(object):
                 
                 # inform iterators (if it is their business) about the arc
                 main_iterator.passing_node(rootid, node, active_rootids, active_values)
+                if len(node.children) == 0 and self.region is not None:
+                    # the region radius needs to increase if nlive decreases
+                    # to keep the volume similar
+                    nlive_old = len(active_values)
+                    nlive_new = len(active_values) - 1 + len(node.children) - 2
+                    
+                    ## volume goes with n*r^d. To compute r^2, we need (n^(1/d))^2
+                    #if nlive_new == 0:
+                    #    self.region.maxradiussq = 1e300
+                    #else:
+                    #    self.region.maxradiussq *= (nlive_old / nlive_new)**(2. / self.x_dim)
+                    
+                    # it is OK to increase region.maxradiussq too much
+                    # because in a few iterations, the radius will be recomputed
+                    
+                    # nevertheless, the above does not work in practice
+                    ## radius is not reliable, so set to inf
+                    self.region.maxradiussq = None
+                    ## ask for the region to be rebuilt
+                    next_update_interval_iter = -1
+                    
+                    # the above also does not work, because the clustering
+                    # of the transformLayer is not reliable (specifically
+                    # the overlapping). So we need to rebuild the region
+                    # from scratch
+                    #self.region = None
+                
                 it += 1
                 explorer.expand_children_of(rootid, node)
             
             if self.log:
                 self.logger.info("Explored until L=%.1f  " % node.value)
-            #print_tree(roots[:5], title="Tree:")
+            #print_tree(roots[::10])
+
+            self._update_results(main_iterator, saved_logl, saved_nodeids)
+            yield self.results
 
             if max_ncalls is not None and self.ncall >= max_ncalls:
                 if self.log:
@@ -1423,8 +1573,11 @@ class ReactiveNestedSampler(object):
                 Lmin, nlive, nclusters = region_sequence[-1]
                 nnodes_needed = self.cluster_num_live_points * nclusters
                 if nlive < nnodes_needed:
+                    #self.root.children = []
                     Llo, Lhi = self.expand_nodes_before(Lmin, nnodes_needed, update_interval_ncall or nlive)
-                    minimal_widths.append((Llo, Lhi, nnodes_needed))
+                    #if self.log:
+                    #    print_tree(self.root.children[::10])
+                    minimal_widths.append((Llo, Lmin, nnodes_needed))
                     Llo, Lhi = -np.inf, np.inf
                     continue
             
@@ -1469,6 +1622,7 @@ class ReactiveNestedSampler(object):
             else:
                 break
             
+    def _update_results(self, main_iterator, saved_logl, saved_nodeids):
         #print_tree(roots[0:5])
         if self.log:
             self.logger.info('nevals: %d' % self.ncall)
@@ -1510,20 +1664,43 @@ class ReactiveNestedSampler(object):
         
         logzerr_bs = (logZ_bs - main_iterator.logZ).max()
         logzerr_total = (logzerr_tail**2 + logzerr_bs**2)**0.5
+        samples = resample_equal(saved_v, w)
         
-        self.results = dict(niter=len(saved_logl), 
+        results = dict(niter=len(saved_logl), 
             logz=main_iterator.logZ, logzerr=logzerr_total,
             logz_bs=logZ_bs.mean(),
             logzerr_bs=logzerr_bs,
             logz_single=main_iterator.logZ,
             logzerr_tail=logzerr_tail,
             logzerr_single=(main_iterator.all_H[0] / self.min_num_live_points)**0.5,
-            weighted_samples=dict(v=saved_v, w=saved_wt0, logw=saved_logwt0, bs_w=saved_wt_bs, L=saved_logl),
-            samples=resample_equal(saved_v, w),
             ess=ess,
-            tree=self.root,
         )
-        return self.results
+        if self.log_to_disk:
+            if self.log:
+                self.logger.info("Writing samples and results to disk ...")
+            np.savetxt(os.path.join(self.logs['chains'], 'equal_weighted_post.txt'), 
+                samples,
+                header=' '.join(self.paramnames + self.derivedparamnames), 
+                comments='')
+            np.savetxt(os.path.join(self.logs['chains'], 'weighted_post.txt'), 
+                np.hstack((saved_wt0.reshape((-1, 1)), saved_v)), 
+                header=' '.join(self.paramnames + self.derivedparamnames), 
+                comments='')
+            with open(os.path.join(self.logs['info'], 'parameters.txt'), 'w') as f:
+                f.write('\n'.join(self.paramnames + self.derivedparamnames) + '\n')
+            with open(os.path.join(self.logs['info'], 'results.json'), 'w') as f:
+                json.dump(results, f)
+            
+            if self.log:
+                self.logger.info("Writing samples and results to disk ... done")
+        
+        results.update(
+            weighted_samples=dict(v=saved_v, w=saved_wt0, logw=saved_logwt0, bs_w=saved_wt_bs, L=saved_logl),
+            samples=samples,
+        )
+        self.results = results
+                    
+        
     
     def print_results(self, logZ=True, posterior=True):
         print()
