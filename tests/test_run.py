@@ -83,7 +83,6 @@ def test_run_resume(dlogz):
     finally:
         shutil.rmtree(folder, ignore_errors=True)
 
-"""
 def test_reactive_run_resume_eggbox():
     from mininest import ReactiveNestedSampler
 
@@ -113,7 +112,6 @@ def test_reactive_run_resume_eggbox():
             #last_results = r
     finally:
         shutil.rmtree(folder, ignore_errors=True)
-"""
 
 def test_run_compat():
     from mininest.solvecompat import pymultinest_solve_compat as solve

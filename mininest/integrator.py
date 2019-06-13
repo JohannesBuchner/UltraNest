@@ -1164,6 +1164,7 @@ class ReactiveNestedSampler(object):
         nextTransformLayer = self.transformLayer.create_new(active_u, self.region.maxradiussq)
         #nextTransformLayer = ScalingLayer(wrapped_dims=self.wrapped_axes)
         #nextTransformLayer.optimize(active_u, active_u)
+        assert not (nextTransformLayer.clusterids == 0).any()
         smallest_cluster = min((nextTransformLayer.clusterids == i).sum() for i in np.unique(nextTransformLayer.clusterids))
         if self.log and smallest_cluster == 1:
             self.logger.warn("clustering found some lonely points")
@@ -1210,9 +1211,10 @@ class ReactiveNestedSampler(object):
             self.region_nodes = active_node_ids.copy()
             #print("MLFriends updated: V=%e R=%e" % (self.region.estimate_volume(), r))
             updated = True
+            
+            assert not (self.transformLayer.clusterids == 0).any(), (self.transformLayer.clusterids, need_accept, updated)
         
         assert len(self.region.u) == len(self.transformLayer.clusterids)
-        
         return updated
     
     def expand_nodes_before(self, Lmin, nnodes_needed, update_interval_ncall):
