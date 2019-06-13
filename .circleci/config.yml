@@ -24,7 +24,7 @@ jobs:
       - run: grep -l '"x_dim". .,' testfeatures/*error.json | xargs coverage3 run --parallel-mode examples/testfeatures.py  
       - run: for i in testfeatures/runsettings-*-iterated.json; do PYTHONPATH=. mpiexec -np 2 coverage run -p examples/testfeatures.py $i & done; wait
       - run: coverage3 combine
-      - run: coverage3 report --include=$PWD/* --omit=$PWD/.eggs/*
+      - run: coverage3 report --include="$PWD/*" --omit="$PWD/.eggs/*"
       
       - store_test_results:
           path: test-reports
