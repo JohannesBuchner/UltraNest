@@ -16,10 +16,15 @@ jobs:
       - run: sudo ln -s /usr/lib/python3/dist-packages/numpy/core/include/numpy/ /usr/include/numpy
       - run: sudo pip3 install -r pip-requirements.txt
       
-      - run: coverage3 run setup.py test 
-      - run: coverage3 report --include=$PWD/* --omit=$PWD/.eggs/*
+      - run: coverage3 run --parallel-mode setup.py test
 
       - run: python3 setup.py install --user
+      
+      - run: python3 examples/testfeatures.py
+      - run: coverage3 run --parallel-mode examples/testfeatures.py $(grep -l '"x_dim": .,' testfeatures/*error.json) 
+      #- run: for i in testfeatures/runsettings-*-iterated.json; do PYTHONPATH=. mpiexec -np 2 coverage run -p examples/testfeatures.py $i & done; wait
+      - run: coverage3 combine
+      - run: coverage3 report --include=$PWD/* --omit=$PWD/.eggs/*
       
       - store_test_results:
           path: test-reports

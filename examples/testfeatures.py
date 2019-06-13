@@ -84,6 +84,7 @@ def main(args):
         
         paramnames.insert(0, 'sigma')
     elif args.problem == 'loggamma':
+        true_Z = 0.0
         if args.wrapped_dims: return
         rv1a = scipy.stats.loggamma(1, loc=2./3, scale=1./30)
         rv1b = scipy.stats.loggamma(1, loc=1./3, scale=1./30)
@@ -119,21 +120,53 @@ def main(args):
         cluster_num_live_points=args.cluster_num_live_points,
         max_num_live_points_for_efficiency=args.max_num_live_points_for_efficiency,
     )
-    sampler.run(
-        update_interval_iter_fraction=args.update_interval_iter_fraction,
-        dlogz=args.dlogz,
-        dKL=args.dKL,
-        frac_remain=args.frac_remain,
-        min_ess=args.min_ess,
-        max_iters=args.max_iters,
-        max_ncalls=int(args.max_ncalls),
-    )
-    sampler.print_results()
+    for result in sampler.run_iter(
+            update_interval_iter_fraction=args.update_interval_iter_fraction,
+            dlogz=args.dlogz,
+            dKL=args.dKL,
+            frac_remain=args.frac_remain,
+            min_ess=args.min_ess,
+            max_iters=args.max_iters,
+            max_ncalls=int(args.max_ncalls),
+        ):
+        sampler.print_results()
+        print(" (remember, we are trying to achive: %s ) " % (
+            dict(dlogz=args.dlogz,
+                dKL=args.dKL,
+                frac_remain=args.frac_remain,
+                min_ess=args.min_ess,
+            )))
+    
     results = sampler.results
     sampler.plot()
     if results['logzerr_tail'] < 0.5 and results['logzerr'] < 1.0 and true_Z is not None and args.num_live_points > 50:
         assert results['logz'] - results['logzerr'] * 2 < true_Z < results['logz'] + results['logzerr'] * 2
     return results
+
+def run_safely(runargs):
+    id = hash(frozenset(runargs.items()))
+    if os.path.exists('testfeatures/%s.done' % id):
+        return
+    
+    print("Running %s with options:" % id, runargs)
+    
+    def timeout_handler(signum, frame):
+        raise Exception("Timeout")
+    signal.signal(signal.SIGALRM, timeout_handler)
+    
+    signal.alarm(60 * (1 + runargs['x_dim'])) # give a few minutes
+    try:
+        main(AttrDict(runargs))
+    except Exception:
+        traceback.print_exc()
+        filename = 'testfeatures/runsettings-%s-error.json' % id
+        print("Storing configuration as '%s'. Options were:" % filename, runargs)
+        with open(filename, 'w') as f:
+            json.dump(runargs, f, indent=2)
+        sys.exit(1)
+    signal.alarm(0)
+    with open('testfeatures/%s.done' % id, 'w'):
+        pass
 
 class AttrDict(dict):
     def __init__(self, *args, **kwargs):
@@ -141,27 +174,46 @@ class AttrDict(dict):
         self.__dict__ = self
 
 if __name__ == '__main__':
-    if len(sys.argv) > 1:
-        for filename in sys.argv[1:]:
+    import argparse
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--random', action='store_true')
+    parser.add_argument('--timeout', action='store_true')
+    parser.add_argument('--nrounds', type=int, default=1,
+                        help="Number of random configurations to generate")
+    parser.add_argument('conf', nargs='*', help='config files')
+
+    progargs = parser.parse_args()
+    
+    if len(progargs.conf) > 0:
+        for filename in progargs.conf:
             print("loading configuration from file '%s'..." % filename)
-            args = json.load(open(filename))
-            print("Running with options:", args)
-            main(AttrDict(args))
+            runargs = json.load(open(filename))
+            print("Running with options:", runargs)
+            main(AttrDict(runargs))
+            if progargs.timeout:
+                run_safely(runargs)
         sys.exit(0)
     
-    Nrounds = int(os.environ.get('NROUNDS', '1'))
-    for i in range(Nrounds):
-        print("generating a random configuration...")
-        def choose(args):
+    if progargs.random:
+        def choose(myargs):
             # pick first (default) option most of the time
             if random.random() < 0.25:
-                return args[0]
+                return myargs[0]
             else:
-                return random.choice(args)
+                return random.choice(myargs)
+    else:
+        def choose(myargs):
+            return myargs
         
-        args = dict(
-            problem = choose(['gauss', 'slantedeggbox', 'funnel']),
-            x_dim = choose([2, 1, 6, 10, 20]),
+    Nrounds = progargs.nrounds
+    i = 0
+    while True:
+        print("generating a random configuration...")
+        
+        runargs = dict(
+            problem = choose(['gauss', 'slantedeggbox', 'funnel', 'loggamma']),
+            x_dim = choose([2, 1, 6, 20]),
             seed = choose([1, 2, 3]),
             wrapped_dims = choose([False, True]),
             log_dir = choose(['logs/features', None]),
@@ -177,29 +229,30 @@ if __name__ == '__main__':
             frac_remain = choose([0.5, 0.001]),
             min_ess = choose([0, 4000]),
             max_iters = choose([None, 10000]),
-            max_ncalls = choose([100000000., 10000., 100000.]),
+            max_ncalls = choose([10000000., 10000., 100000.]),
         )
-        id = hash(frozenset(args.items()))
-        if os.path.exists('testfeatures/%s.done' % id):
-            continue
-        print("Running %s with options:" % id, args)
-        
-        def timeout_handler(signum, frame):
-            raise Exception("Timeout")
-        signal.signal(signal.SIGALRM, timeout_handler)
-        
-        signal.alarm(60 * (1 + args['x_dim'])) # give a few minutes
-        try:
-            main(AttrDict(args))
-        except Exception as e:
-            traceback.print_exc()
-            filename = 'testfeatures/runsettings-%s-error.json' % id
-            print("Storing configuration as '%s'. Options were:" % filename, args)
+        if not progargs.random:
+            key = i 
+            nkeys = len(runargs.keys())
+            for k, v in runargs.items():
+                if 0 <= key <= len(v):
+                    j = key % len(v)
+                    runargs[k] = v[j]
+                    key -= len(v)
+                else:
+                    runargs[k] = v[0]
+                    key -= len(v)
+            id = hash(frozenset(runargs.items()))
+            filename = 'testfeatures/runsettings-%s-iterated.json' % id
+            print("Storing configuration as '%s'. Options were:" % filename, runargs)
             with open(filename, 'w') as f:
-                json.dump(args, f, indent=2)
-            sys.exit(1)
-        signal.alarm(0)
-        with open('testfeatures/%s.done' % id, 'w'):
-            pass
-            
+                json.dump(runargs, f, indent=2)
+            #run_safely(runargs)
+            if key > 0:
+                break
+        else:
+            run_safely(runargs)
+            if i + 1 >= progargs.nrounds:
+                break
+        i = i + 1
             

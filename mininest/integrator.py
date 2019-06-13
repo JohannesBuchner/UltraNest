@@ -15,11 +15,10 @@ import operator
 import time
 import logging
 import warnings
-from numpy import log, exp
+from numpy import log, exp, logaddexp
 
-from .utils import create_logger, make_run_dir
-from .utils import acceptance_rate, effective_sample_size, mean_jump_distance, resample_equal
-from mininest.mlfriends import MLFriends, AffineLayer, ScalingLayer, compute_maxradiussq, update_clusters, find_nearby
+from .utils import create_logger, make_run_dir, resample_equal
+from mininest.mlfriends import MLFriends, AffineLayer, ScalingLayer, update_clusters, find_nearby
 from .store import TextPointStore, HDF5PointStore, NullPointStore
 from .viz import nicelogger
 from .netiter import PointPile, MultiCounter, BreadthFirstIterator, TreeNode, print_tree, count_tree, count_tree_between, find_nodes_before
@@ -97,13 +96,9 @@ class NestedSampler(object):
 
         def safe_loglike(x):
             x = np.asarray(x)
-            if len(x.shape) == 1:
-                assert x.shape[0] == self.x_dim
-                x = np.expand_dims(x, 0)
             logl = loglike(x)
-            if len(logl.shape) == 0:
-                logl = np.expand_dims(logl, 0)
-            logl[np.logical_not(np.isfinite(logl))] = -1e100
+            assert np.isfinite(logl).all(), ('loglikelihood returned non-finite value:', 
+                logl[~np.isfinite(logl)], x[~np.isfinite(logl),:])
             return logl
 
         self.loglike = safe_loglike
@@ -111,13 +106,7 @@ class NestedSampler(object):
         if transform is None:
             self.transform = lambda x: x
         else:
-            def safe_transform(x):
-                x = np.asarray(x)
-                if len(x.shape) == 1:
-                    assert x.shape[0] == self.x_dim
-                    x = np.expand_dims(x, 0)
-                return transform(x)
-            self.transform = safe_transform
+            self.transform = transform
 
         self.use_mpi = False
         try:
@@ -150,41 +139,6 @@ class NestedSampler(object):
             self.pointstore = HDF5PointStore(os.path.join(self.logs['results'], 'points.hdf5'), 2 + self.x_dim + self.num_params)
         else:
             self.pointstore = NullPointStore(2 + self.x_dim + self.num_params)
-
-    def _save_params(self, my_dict):
-        my_dict = {k: str(v) for k, v in my_dict.items()}
-        with open(os.path.join(self.logs['info'], 'params.txt'), 'w') as f:
-            json.dump(my_dict, f, indent=4)
-
-    def _chain_stats(self, samples, mean=None, std=None):
-        acceptance = acceptance_rate(samples)
-        if mean is None:
-            mean = np.mean(np.reshape(samples, (-1, samples.shape[2])), axis=0)
-        if std is None:
-            std = np.std(np.reshape(samples, (-1, samples.shape[2])), axis=0)
-        ess = effective_sample_size(samples, mean, std)
-        jump_distance = mean_jump_distance(samples)
-        self.logger.info(
-            'Acceptance [%5.4f] min ESS [%5.4f] max ESS [%5.4f] jump distance [%5.4f]' %
-            (acceptance, np.min(ess), np.max(ess), jump_distance))
-        return acceptance, ess, jump_distance
-
-    def _save_samples(self, samples, weights, logl, min_weight=1e-30, outfile='chain'):
-        if len(samples.shape) == 2:
-            with open(os.path.join(self.logs['chains'], outfile + '.txt'), 'w') as f:
-                for i in range(samples.shape[0]):
-                    f.write("%.5E " % max(weights[i], min_weight))
-                    f.write("%.5E " % -logl[i])
-                    f.write(" ".join(["%.5E" % v for v in samples[i, :]]))
-                    f.write("\n")
-        elif len(samples.shape) == 3:
-            for ib in range(samples.shape[0]):
-                with open(os.path.join(self.logs['chains'], outfile + '_%s.txt' % (ib+1)), 'w') as f:
-                    for i in range(samples.shape[1]):
-                        f.write("%.5E " % max(weights[ib, i], min_weight))
-                        f.write("%.5E " % -logl[ib, i])
-                        f.write(" ".join(["%.5E" % v for v in samples[ib, i, :]]))
-                        f.write("\n")
 
     def run(
             self,
@@ -293,7 +247,7 @@ class NestedSampler(object):
         saved_logwt = []
         h = 0.0  # Information, initially 0.
         logz = -1e300  # ln(Evidence Z), initially Z=0
-        logvol = np.log(1.0 - np.exp(-1.0 / self.num_live_points))
+        logvol = log(1.0 - exp(-1.0 / self.num_live_points))
         logz_remain = np.max(active_logl)
         fraction_remain = 1.0
         ncall = num_live_points_missing  # number of calls we already made
@@ -319,7 +273,7 @@ class NestedSampler(object):
 
             # Update evidence Z and information h.
             logz_new = np.logaddexp(logz, logwt)
-            h = (np.exp(logwt - logz_new) * active_logl[worst] + np.exp(logz - logz_new) * (h + logz) - logz_new)
+            h = (exp(logwt - logz_new) * active_logl[worst] + exp(logz - logz_new) * (h + logz) - logz_new)
             logz = logz_new
 
             # Add worst object to samples.
@@ -480,11 +434,11 @@ class NestedSampler(object):
                 break
             it = it + 1
 
-        logvol = -len(saved_v) / self.num_live_points - np.log(self.num_live_points)
+        logvol = -len(saved_v) / self.num_live_points - log(self.num_live_points)
         for i in range(self.num_live_points):
             logwt = logvol + active_logl[i]
             logz_new = np.logaddexp(logz, logwt)
-            h = (np.exp(logwt - logz_new) * active_logl[i] + np.exp(logz - logz_new) * (h + logz) - logz_new)
+            h = (exp(logwt - logz_new) * active_logl[i] + exp(logz - logz_new) * (h + logz) - logz_new)
             logz = logz_new
             saved_u.append(np.array(active_u[i]))
             saved_v.append(np.array(active_v[i]))
@@ -493,7 +447,7 @@ class NestedSampler(object):
         
         saved_u = np.array(saved_u)
         saved_v = np.array(saved_v)
-        saved_wt = np.exp(np.array(saved_logwt) - logz)
+        saved_wt = exp(np.array(saved_logwt) - logz)
         saved_logl = np.array(saved_logl)
         logzerr = np.sqrt(h / self.num_live_points)
 
@@ -502,7 +456,6 @@ class NestedSampler(object):
                 writer = csv.writer(f)
                 writer.writerow(['niter', 'ncall', 'logz', 'logzerr', 'h'])
                 writer.writerow([it + 1, ncall, logz, logzerr, h])
-            self._save_samples(saved_v, saved_wt, saved_logl)
             self.pointstore.close()
         
         if not self.use_mpi or self.mpi_rank == 0:
@@ -661,41 +614,6 @@ class ReactiveNestedSampler(object):
         else:
             self.pointstore = NullPointStore(2 + self.x_dim + self.num_params)
 
-    def _save_params(self, my_dict):
-        my_dict = {k: str(v) for k, v in my_dict.items()}
-        with open(os.path.join(self.logs['info'], 'params.txt'), 'w') as f:
-            json.dump(my_dict, f, indent=4)
-
-    def _chain_stats(self, samples, mean=None, std=None):
-        acceptance = acceptance_rate(samples)
-        if mean is None:
-            mean = np.mean(np.reshape(samples, (-1, samples.shape[2])), axis=0)
-        if std is None:
-            std = np.std(np.reshape(samples, (-1, samples.shape[2])), axis=0)
-        ess = effective_sample_size(samples, mean, std)
-        jump_distance = mean_jump_distance(samples)
-        self.logger.info(
-            'Acceptance [%5.4f] min ESS [%5.4f] max ESS [%5.4f] jump distance [%5.4f]' %
-            (acceptance, np.min(ess), np.max(ess), jump_distance))
-        return acceptance, ess, jump_distance
-
-    def _save_samples(self, samples, weights, logl, min_weight=1e-30, outfile='chain'):
-        if len(samples.shape) == 2:
-            with open(os.path.join(self.logs['chains'], outfile + '.txt'), 'w') as f:
-                for i in range(samples.shape[0]):
-                    f.write("%.5E " % max(weights[i], min_weight))
-                    f.write("%.5E " % -logl[i])
-                    f.write(" ".join(["%.5E" % v for v in samples[i, :]]))
-                    f.write("\n")
-        elif len(samples.shape) == 3:
-            for ib in range(samples.shape[0]):
-                with open(os.path.join(self.logs['chains'], outfile + '_%s.txt' % (ib+1)), 'w') as f:
-                    for i in range(samples.shape[1]):
-                        f.write("%.5E " % max(weights[ib, i], min_weight))
-                        f.write("%.5E " % -logl[ib, i])
-                        f.write(" ".join(["%.5E" % v for v in samples[ib, i, :]]))
-                        f.write("\n")
-    
     def widen_nodes(self, parents, nnodes_needed, update_interval_ncall):
         """
         Make sure that at Labove, there are nnodes_needed live points
@@ -892,7 +810,7 @@ class ReactiveNestedSampler(object):
 
         Llo_ess = np.inf
         Lhi_ess = -np.inf
-        w = np.exp(ref_logw.flatten())
+        w = exp(ref_logw.flatten())
         w /= w.sum()
         ess = len(w) / (1.0 + ((len(w) * w - 1)**2).sum() / len(w))
         if self.log:
@@ -954,7 +872,7 @@ class ReactiveNestedSampler(object):
             self.logger.info('  deltalogZ: %s (max:%.2f)' % (np.percentile(deltalogZ, [0.01, 0.1, 0.5, 0.9, 0.99]), deltalogZ.max()))
         
         tail_fraction = w[np.asarray(main_iterator.istail)].sum() / w.sum()
-        logzerr_tail = np.logaddexp(np.log(tail_fraction) + main_iterator.logZ, main_iterator.logZ) - main_iterator.logZ
+        logzerr_tail = logaddexp(log(tail_fraction) + main_iterator.logZ, main_iterator.logZ) - main_iterator.logZ
         if self.log:
             self.logger.info('  logZ error budget: single: %.2f bs:%.2f tail:%.2f total:%.2f required:<%.2f' % (
                 main_iterator.logZerr, main_iterator.logZerr_bs, logzerr_tail, 
@@ -1646,14 +1564,14 @@ class ReactiveNestedSampler(object):
             recv_logZ_bs = self.comm.bcast(recv_logZ_bs, root=0)
             logZ_bs = np.concatenate(recv_logZ_bs)
         
-        saved_wt_bs = np.exp(saved_logwt_bs + saved_logl.reshape((-1, 1)) - logZ_bs)
-        saved_wt0 = np.exp(saved_logwt0 + saved_logl - main_iterator.all_logZ[0])
+        saved_wt_bs = exp(saved_logwt_bs + saved_logl.reshape((-1, 1)) - logZ_bs)
+        saved_wt0 = exp(saved_logwt0 + saved_logl - main_iterator.all_logZ[0])
 
         # compute fraction in tail
         w = saved_wt0 / saved_wt0.sum()
         ess = len(w) / (1.0 + ((len(w) * w - 1)**2).sum() / len(w))
         tail_fraction = w[np.asarray(main_iterator.istail)].sum()
-        logzerr_tail = np.logaddexp(np.log(tail_fraction) + main_iterator.logZ, main_iterator.logZ) - main_iterator.logZ
+        logzerr_tail = logaddexp(log(tail_fraction) + main_iterator.logZ, main_iterator.logZ) - main_iterator.logZ
         
         logzerr_bs = (logZ_bs - main_iterator.logZ).max()
         logzerr_total = (logzerr_tail**2 + logzerr_bs**2)**0.5
@@ -1676,7 +1594,7 @@ class ReactiveNestedSampler(object):
                 header=' '.join(self.paramnames + self.derivedparamnames), 
                 comments='')
             np.savetxt(os.path.join(self.logs['chains'], 'weighted_post.txt'), 
-                np.hstack((saved_wt0.reshape((-1, 1)), saved_v)), 
+                np.hstack((saved_wt0.reshape((-1, 1)), saved_logl.reshape((-1, 1)), saved_v)), 
                 header=' '.join(self.paramnames + self.derivedparamnames), 
                 comments='')
             with open(os.path.join(self.logs['info'], 'parameters.txt'), 'w') as f:
