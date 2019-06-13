@@ -39,6 +39,7 @@ jobs:
       
       - store_test_results:
           path: test-reports
+      - store_test_results:
           path: htmlcov
 
       - store_artifacts:
