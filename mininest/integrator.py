@@ -1084,18 +1084,8 @@ class ReactiveNestedSampler(object):
         nbootstraps=30
     ):
         updated = False
-        if self.region is not None:
-            # noticing this here and reacting is too late,
-            # because we may already have sampled from the region
-            if len(self.region.u) > len(active_u):
-                print("region is shrinking. Must increase maxradiussq!", len(self.region.u), len(active_u))
-                #self.region.maxradiussq = None
-            if len(self.region.u) < len(active_u):
-                print("region is expanding", len(self.region.u), len(active_u))
-                #self.region.maxradiussq = None
-
         if self.region is None:
-            print("building first region...")
+            #print("building first region...")
             self.transformLayer = ScalingLayer(wrapped_dims=self.wrapped_axes)
             self.transformLayer.optimize(active_u, active_u)
             self.region = MLFriends(active_u, self.transformLayer)
@@ -1107,7 +1097,7 @@ class ReactiveNestedSampler(object):
                 recv_maxradii = self.comm.bcast(recv_maxradii, root=0)
                 r = np.max(recv_maxradii)
             self.region.maxradiussq = r
-            print("building first region... r=%e" % r)
+            #print("building first region... r=%e" % r)
         
         assert self.transformLayer is not None
         need_accept = False
@@ -1115,7 +1105,6 @@ class ReactiveNestedSampler(object):
         if self.region.maxradiussq is None:
             # we have been told that radius is currently invalid
             # we need to bootstrap back to a valid state
-            print("recovering from invalid maxradius ...")
             
             # compute radius given current transformLayer
             oldu = self.region.u
@@ -1128,7 +1117,7 @@ class ReactiveNestedSampler(object):
                 r = np.max(recv_maxradii)
             self.region.maxradiussq = r
             
-            print("made first region, r=%e" % (r))
+            #print("made first region, r=%e" % (r))
             
             # now that we have r, can do clustering 
             #self.transformLayer.nclusters, self.transformLayer.clusterids, _ = update_clusters(
@@ -1152,23 +1141,18 @@ class ReactiveNestedSampler(object):
                 # if they have, set them to -1
                 clusterids[mask] = np.where(clusterids[mask] == 0, ci, -1)
         
-            print("following clusters, nc=%d" % r, self.transformLayer.nclusters, 
-                np.unique(clusterids, return_counts=True))
+            #print("following clusters, nc=%d" % r, self.transformLayer.nclusters, 
+            #    np.unique(clusterids, return_counts=True))
+            
             # clusters we are unsure about (double assignments) go unassigned
             clusterids[clusterids == -1] = 0
-            
-
-            need_accept = True
-            #(self.transformLayer.clusterids == 0).any()
             
             # tell scaling layer the correct cluster information
             self.transformLayer.clusterids = clusterids
             
-            #nextTransformLayer = ScalingLayer(mean=self.transformLayer.mean,
-            #    std=self.transformLayer.std, nclusters=nclusters, 
-            #    wrapped_dims=self.wrapped_axes, clusterids=clusterids)
+            # we want the clustering to repeat to remove remaining zeros
+            need_accept = (self.transformLayer.clusterids == 0).any()
             
-            #print("   cluster it r=%e nc=%d" % (r, self.transformLayer.nclusters))
             updated = True
             assert len(self.region.u) == len(self.transformLayer.clusterids)
 
@@ -1178,20 +1162,21 @@ class ReactiveNestedSampler(object):
         #print()
         #print("rebuilding space...", active_u.shape, active_u)
         nextTransformLayer = self.transformLayer.create_new(active_u, self.region.maxradiussq)
-        print('new clusters:', nextTransformLayer.nclusters, np.unique(nextTransformLayer.clusterids, return_counts=True))
         #nextTransformLayer = ScalingLayer(wrapped_dims=self.wrapped_axes)
         #nextTransformLayer.optimize(active_u, active_u)
-        #smallest_cluster = min((nextTransformLayer.clusterids == i).sum() for i in np.unique(nextTransformLayer.clusterids))
-        #if smallest_cluster == 1:
-        #    print("found lonely points, not accepting updated transform layer")
-        #    nextTransformLayer = self.transformLayer
+        smallest_cluster = min((nextTransformLayer.clusterids == i).sum() for i in np.unique(nextTransformLayer.clusterids))
+        if self.log and smallest_cluster == 1:
+            self.logger.warn("clustering found some lonely points")
         
         nextregion = MLFriends(active_u, nextTransformLayer)
         
         if not nextTransformLayer.nclusters < 20:
             filename = 'overclustered_%d.npz' % nextTransformLayer.nclusters
+            if self.log:
+                self.logger.warn("Found a lot of clusters: %d" % nextTransformLayer.nclusters)
+            
             if not os.path.exists(filename):
-                print("a lot of clusters! writing debug output file '%s'" % filename)
+                self.logger.info("A lot of clusters! writing debug output file '%s'" % filename)
                 np.savez(filename, 
                     u=nextregion.u, unormed=nextregion.unormed, 
                     maxradiussq=nextregion.maxradiussq,
@@ -1199,11 +1184,6 @@ class ReactiveNestedSampler(object):
                     maxradiussq0=self.region.maxradiussq)
                 np.savetxt('overclustered_u_%d.txt' % nextTransformLayer.nclusters, nextregion.u)
             #assert nextTransformLayer.nclusters < 20, nextTransformLayer.nclusters
-        
-        #np.savez('lastregion.npz', u=nextregion.u, unormed=nextregion.unormed, 
-        #    maxradiussq=nextregion.maxradiussq)
-        #np.savetxt('lastregion.txt', nextregion.u)
-        
         
         #if self.log:
         #    self.logger.info("computing maxradius...")
@@ -1324,18 +1304,6 @@ class ReactiveNestedSampler(object):
             self.logger.info("done running!")
         
         return self.results
-    
-    def get_num_clusters(self):
-        """
-        Compute number of clusters in the current region.
-        
-        The number does not include "outliers" caused by forced 
-        shrinking of the MLRegion maxradius volume.
-        """
-        return self.transformLayer.nclusters
-        clusterids, counts = np.unique(self.transformLayer.clusterids, return_counts=True)
-        print("cluster counts:", clusterids, counts, (counts > 1).sum())
-        return (np.logical_and(clusterids > 0, counts > 1)).sum()
     
     def run_iter(
             self,
@@ -1477,15 +1445,14 @@ class ReactiveNestedSampler(object):
                             active_rootids=active_rootids, 
                             bootstrap_rootids=main_iterator.rootids[1:,])
                         
-                        nclusters = self.get_num_clusters()
+                        nclusters = self.transformLayer.nclusters
                         region_sequence.append((Lmin, nlive, nclusters))
                         
                         if nlive < self.cluster_num_live_points * nclusters:
                             # make wider here
                             if self.log:
                                 self.logger.info("Found %d clusters, but only have %d live points, want %d." % (
-                                    self.get_num_clusters(), nlive, 
-                                    self.cluster_num_live_points * nclusters))
+                                    nclusters, nlive, self.cluster_num_live_points * nclusters))
                             break
                         
                         #next_update_interval_ncall = self.ncall + (update_interval_ncall or nlive)
