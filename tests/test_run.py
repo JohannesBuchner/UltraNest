@@ -100,13 +100,17 @@ def test_reactive_run_resume_eggbox():
     np.random.seed(1)
     try:
         for i in range(2):
-            sampler = ReactiveNestedSampler(paramnames, loglike, 
+            print()
+            print("====== Running Eggbox problem =====")
+            print()
+            sampler = ReactiveNestedSampler(paramnames, 
+                loglike, transform=transform,
                 min_num_live_points=100, 
                 log_dir=folder, 
                 cluster_num_live_points=0,
                 append_run_num=False, 
                 )
-            r = sampler.run(log_interval=1000, max_iters=5600)
+            r = sampler.run()
             sampler.print_results()
             sampler.pointstore.close()
             #last_results = r

@@ -1167,7 +1167,8 @@ class ReactiveNestedSampler(object):
         assert not (nextTransformLayer.clusterids == 0).any()
         smallest_cluster = min((nextTransformLayer.clusterids == i).sum() for i in np.unique(nextTransformLayer.clusterids))
         if self.log and smallest_cluster == 1:
-            self.logger.warn("clustering found some lonely points")
+            self.logger.debug("clustering found some lonely points [need_accept=%s] %s" % (
+                need_accept, np.unique(nextTransformLayer.clusterids, return_counts=True)))
         
         nextregion = MLFriends(active_u, nextTransformLayer)
         
@@ -1204,7 +1205,6 @@ class ReactiveNestedSampler(object):
         #print("MLFriends computed: r=%e nc=%d" % (r, nextTransformLayer.nclusters))
         # force shrinkage of volume
         # this is to avoid re-connection of dying out nodes
-        print(nextregion.estimate_volume(), self.region.estimate_volume())
         if need_accept or nextregion.estimate_volume() <= self.region.estimate_volume():
             self.region = nextregion
             self.transformLayer = self.region.transformLayer
