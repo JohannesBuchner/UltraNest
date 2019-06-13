@@ -35,12 +35,10 @@ jobs:
             wait
       - run: coverage3 combine
       - run: coverage3 report --include="$PWD/*" --omit="$PWD/.eggs/*"
-      - run: coverage3 html --include="$PWD/*" --omit="$PWD/.eggs/*"
+      - run: coverage3 html --include="$PWD/*" --omit="$PWD/.eggs/*" && mv htmlcov test-reports
       
       - store_test_results:
           path: test-reports
-      - store_test_results:
-          path: htmlcov
 
       - store_artifacts:
           path: test-reports    
