@@ -19,7 +19,7 @@ from numpy import log, exp
 
 from .utils import create_logger, make_run_dir
 from .utils import acceptance_rate, effective_sample_size, mean_jump_distance, resample_equal
-from mininest.mlfriends import MLFriends, AffineLayer, ScalingLayer, compute_maxradiussq, update_clusters
+from mininest.mlfriends import MLFriends, AffineLayer, ScalingLayer, compute_maxradiussq, update_clusters, find_nearby
 from .store import TextPointStore, HDF5PointStore, NullPointStore
 from .viz import nicelogger
 from .netiter import PointPile, MultiCounter, BreadthFirstIterator, TreeNode, print_tree, count_tree, count_tree_between, find_nodes_before
@@ -1093,51 +1093,92 @@ class ReactiveNestedSampler(object):
             if len(self.region.u) < len(active_u):
                 print("region is expanding", len(self.region.u), len(active_u))
                 #self.region.maxradiussq = None
-        
+
         if self.region is None:
+            print("building first region...")
             self.transformLayer = ScalingLayer(wrapped_dims=self.wrapped_axes)
             self.transformLayer.optimize(active_u, active_u)
             self.region = MLFriends(active_u, self.transformLayer)
             self.region_nodes = active_node_ids.copy()
             assert self.region.maxradiussq is None
-        
-        assert self.transformLayer is not None
-        
-        if self.region.maxradiussq is None:
             r = self.region.compute_maxradiussq(nbootstraps=nbootstraps // self.mpi_size)
             if self.use_mpi:
                 recv_maxradii = self.comm.gather(r, root=0)
                 recv_maxradii = self.comm.bcast(recv_maxradii, root=0)
                 r = np.max(recv_maxradii)
             self.region.maxradiussq = r
-            print("making first region, r=%e" % (r))
-            # should do clustering now that we have r
-            # this would forget the cluster ids (no cluster tracking)
+            print("building first region... r=%e" % r)
+        
+        assert self.transformLayer is not None
+        need_accept = False
+
+        if self.region.maxradiussq is None:
+            # we have been told that radius is currently invalid
+            # we need to bootstrap back to a valid state
+            print("recovering from invalid maxradius ...")
             
-            # track the clusters from before by matching manually
-            clusterids = np.zeros(len(active_u), dtype=int)
-            for ui, ci in zip(self.region.u, self.transformLayer.clusterids):
-                clusterids[(active_u == ui).sum(axis=1)] = ci
-            nclusters = self.transformLayer.nclusters
-            print("following clusters, nc=%d" % r, self.transformLayer.nclusters, 
-                np.unique(self.transformLayer.clusterids, return_counts=True))
+            # compute radius given current transformLayer
+            oldu = self.region.u
+            self.region.u = active_u
+            self.region.set_transformLayer(self.transformLayer)
+            r = self.region.compute_maxradiussq(nbootstraps=nbootstraps // self.mpi_size)
+            if self.use_mpi:
+                recv_maxradii = self.comm.gather(r, root=0)
+                recv_maxradii = self.comm.bcast(recv_maxradii, root=0)
+                r = np.max(recv_maxradii)
+            self.region.maxradiussq = r
             
+            print("made first region, r=%e" % (r))
+            
+            # now that we have r, can do clustering 
             #self.transformLayer.nclusters, self.transformLayer.clusterids, _ = update_clusters(
             #    self.region.u, self.region.unormed, self.region.maxradiussq)
+            # but such reclustering would forget the cluster ids
             
-            # rebuild scaling layer so it has the correct cluster information
+            # instead, track the clusters from before by matching manually
+            oldt = self.transformLayer.transform(oldu)
+            clusterids = np.zeros(len(active_u), dtype=int)
+            nnearby = np.empty(len(self.region.unormed), dtype=int)
+            for ci in np.unique(self.transformLayer.clusterids):
+                if ci == 0: continue
+                
+                # find points from that cluster
+                oldti = oldt[self.transformLayer.clusterids == ci]
+                # identify which new points are near this cluster
+                find_nearby(oldti, self.region.unormed, self.region.maxradiussq, nnearby)
+                mask = nnearby != 0
+                # assign the nearby ones to this cluster
+                # if they have not been set yet
+                # if they have, set them to -1
+                clusterids[mask] = np.where(clusterids[mask] == 0, ci, -1)
+        
+            print("following clusters, nc=%d" % r, self.transformLayer.nclusters, 
+                np.unique(clusterids, return_counts=True))
+            # clusters we are unsure about (double assignments) go unassigned
+            clusterids[clusterids == -1] = 0
+            
+
+            need_accept = True
+            #(self.transformLayer.clusterids == 0).any()
+            
+            # tell scaling layer the correct cluster information
             self.transformLayer.clusterids = clusterids
+            
             #nextTransformLayer = ScalingLayer(mean=self.transformLayer.mean,
             #    std=self.transformLayer.std, nclusters=nclusters, 
             #    wrapped_dims=self.wrapped_axes, clusterids=clusterids)
             
             #print("   cluster it r=%e nc=%d" % (r, self.transformLayer.nclusters))
             updated = True
-        
+            assert len(self.region.u) == len(self.transformLayer.clusterids)
+
+
+        assert len(self.region.u) == len(self.transformLayer.clusterids)
         # rebuild space
         #print()
         #print("rebuilding space...", active_u.shape, active_u)
         nextTransformLayer = self.transformLayer.create_new(active_u, self.region.maxradiussq)
+        print('new clusters:', nextTransformLayer.nclusters, np.unique(nextTransformLayer.clusterids, return_counts=True))
         #nextTransformLayer = ScalingLayer(wrapped_dims=self.wrapped_axes)
         #nextTransformLayer.optimize(active_u, active_u)
         #smallest_cluster = min((nextTransformLayer.clusterids == i).sum() for i in np.unique(nextTransformLayer.clusterids))
@@ -1183,12 +1224,14 @@ class ReactiveNestedSampler(object):
         # force shrinkage of volume
         # this is to avoid re-connection of dying out nodes
         print(nextregion.estimate_volume(), self.region.estimate_volume())
-        if nextregion.estimate_volume() < self.region.estimate_volume():
+        if need_accept or nextregion.estimate_volume() <= self.region.estimate_volume():
             self.region = nextregion
             self.transformLayer = self.region.transformLayer
             self.region_nodes = active_node_ids.copy()
             #print("MLFriends updated: V=%e R=%e" % (self.region.estimate_volume(), r))
             updated = True
+        
+        assert len(self.region.u) == len(self.transformLayer.clusterids)
         
         return updated
     
@@ -1522,30 +1565,11 @@ class ReactiveNestedSampler(object):
                 main_iterator.passing_node(rootid, node, active_rootids, active_values)
                 if len(node.children) == 0 and self.region is not None:
                     # the region radius needs to increase if nlive decreases
-                    # to keep the volume similar
-                    nlive_old = len(active_values)
-                    nlive_new = len(active_values) - 1 + len(node.children) - 2
-                    
-                    ## volume goes with n*r^d. To compute r^2, we need (n^(1/d))^2
-                    #if nlive_new == 0:
-                    #    self.region.maxradiussq = 1e300
-                    #else:
-                    #    self.region.maxradiussq *= (nlive_old / nlive_new)**(2. / self.x_dim)
-                    
-                    # it is OK to increase region.maxradiussq too much
-                    # because in a few iterations, the radius will be recomputed
-                    
-                    # nevertheless, the above does not work in practice
-                    ## radius is not reliable, so set to inf
+                    # radius is not reliable, so set to inf
+                    # (heuristics do not work in practice)
                     self.region.maxradiussq = None
-                    ## ask for the region to be rebuilt
+                    # ask for the region to be rebuilt
                     next_update_interval_iter = -1
-                    
-                    # the above also does not work, because the clustering
-                    # of the transformLayer is not reliable (specifically
-                    # the overlapping). So we need to rebuild the region
-                    # from scratch
-                    #self.region = None
                 
                 it += 1
                 explorer.expand_children_of(rootid, node)

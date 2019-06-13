@@ -86,7 +86,6 @@ def test_run_resume(dlogz):
 """
 def test_reactive_run_resume_eggbox():
     from mininest import ReactiveNestedSampler
-    ndim = 2
 
     def loglike(z):
         chi = (np.cos(z / 2.)).prod(axis=1)
@@ -97,7 +96,7 @@ def test_reactive_run_resume_eggbox():
 
     paramnames = ['a', 'b']
     
-    last_results = None
+    #last_results = None
     folder = tempfile.mkdtemp()
     np.random.seed(1)
     try:
@@ -111,7 +110,7 @@ def test_reactive_run_resume_eggbox():
             r = sampler.run(log_interval=1000, max_iters=5600)
             sampler.print_results()
             sampler.pointstore.close()
-            last_results = r
+            #last_results = r
     finally:
         shutil.rmtree(folder, ignore_errors=True)
 """

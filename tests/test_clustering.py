@@ -111,13 +111,29 @@ def test_overclustering_eggbox_txt():
 def test_overclustering_eggbox_update():
     from mininest import ReactiveNestedSampler
     np.random.seed(1)
-    for i in [26]:
+    for i in [27] + list(range(24, 39)):
+        print()
+        print("==== TEST CASE %d =====================" % i)
+        print()
         mock = MockIntegrator()
+        print("loading...")
         data = np.load(os.path.join(here, "overclustered_%d.npz" % i))
+        print("loading... done")
+        
+        noverlap = 0
+        for i, u1 in enumerate(data['u']):
+            assert len((u1 == data['u0']).all(axis=1)) == len(data['u0'])
+            noverlap += (u1 == data['u0']).all(axis=1).sum()
+        print("u0:%d -> u:%d : %d points are common" % (len(data['u0']), len(data['u']), noverlap))
+        
         ReactiveNestedSampler.update_region(mock, data['u0'], data['u0'])
         nclusters = mock.transformLayer.nclusters
         print("initialised with: r=%e nc=%d" % (mock.region.maxradiussq, nclusters))
-
+        smallest_cluster = min((mock.transformLayer.clusterids == i).sum() for i in np.unique(mock.transformLayer.clusterids))
+        if smallest_cluster == 1:
+            print("found lonely points")
+    
+        print(" --- intermediate tests how create_new reacts ---")
         nextTransformLayer = mock.transformLayer.create_new(data['u0'], mock.region.maxradiussq)
         print("updated to (with same data): r=%e nc=%d" % (mock.region.maxradiussq, nclusters))
         smallest_cluster = min((nextTransformLayer.clusterids == i).sum() for i in np.unique(nextTransformLayer.clusterids))
@@ -127,30 +143,43 @@ def test_overclustering_eggbox_update():
         nclusters = nextTransformLayer.nclusters
         print("updated to (with new data): r=%e nc=%d" % (mock.region.maxradiussq, nclusters))
         smallest_cluster = min((nextTransformLayer.clusterids == i).sum() for i in np.unique(nextTransformLayer.clusterids))
-        assert smallest_cluster > 1, ("found lonely points", i, nclusters, np.unique(mock.transformLayer.clusterids, return_counts=True))
+        if smallest_cluster > 1:
+            # this happens because mock.region.maxradiussq is not valid anymore
+            # when nlive changes
+            print("found lonely points", i, nclusters, np.unique(mock.transformLayer.clusterids, return_counts=True))
         
-        for xi0, yi0, xi, yi in zip(data['u0'][:,0], data['u0'][:,1], data['u'][:,0], data['u'][:,1]):
-            plt.plot([xi0, xi], [yi0, yi], 'x-', ms=2)
+        if False:
+            for xi0, yi0, xi, yi in zip(data['u0'][:,0], data['u0'][:,1], data['u'][:,0], data['u'][:,1]):
+                plt.plot([xi0, xi], [yi0, yi], 'x-', ms=2)
+            
+            plt.savefig('testoverclustering_eggbox_%d_diff.pdf' % i, bbox_inches='tight')
+            plt.close()
+        print(" --- end ---")
         
-        plt.savefig('testoverclustering_eggbox_%d_diff.pdf' % i, bbox_inches='tight')
-        plt.close()
+        if len(data['u']) < len(data['u0']) or True:
+            # maxradius has to be invalidated if live points change
+            print("setting maxradiussq to None")
+            mock.region.maxradiussq = None
 
         updated = ReactiveNestedSampler.update_region(mock, data['u'], data['u'])
         nclusters = mock.transformLayer.nclusters
         print("transitioned to : r=%e nc=%d %s" % (mock.region.maxradiussq, nclusters, updated))
-        plt.title('nclusters: %d' % nclusters)
         smallest_cluster = min((mock.transformLayer.clusterids == i).sum() for i in np.unique(mock.transformLayer.clusterids))
         if smallest_cluster == 1:
             print("found lonely points")
-        assert smallest_cluster > 1, (i, nclusters, np.unique(mock.transformLayer.clusterids, return_counts=True))
         for k in np.unique(mock.transformLayer.clusterids):
             x, y = mock.region.u[mock.transformLayer.clusterids == k].transpose()
-            plt.scatter(x, y, s=2)
             print('cluster %d/%d: %d points @ %.5f +- %.5f , %.5f +- %.5f' % (k, nclusters, len(x), x.mean(), x.std(), y.mean(), y.std()))
-        
-        plt.savefig('testoverclustering_eggbox_%d.pdf' % i, bbox_inches='tight')
-        plt.close()
+        if False:
+            plt.title('nclusters: %d' % nclusters)
+            for k in np.unique(mock.transformLayer.clusterids):
+                x, y = mock.region.u[mock.transformLayer.clusterids == k].transpose()
+                plt.scatter(x, y, s=2)
+            
+            plt.savefig('testoverclustering_eggbox_%d.pdf' % i, bbox_inches='tight')
+            plt.close()
         assert 14 < nclusters < 20, (nclusters, i)
+        assert smallest_cluster > 1, (i, nclusters, np.unique(mock.transformLayer.clusterids, return_counts=True))
         
         
 

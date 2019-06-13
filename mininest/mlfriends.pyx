@@ -32,7 +32,7 @@ def count_nearby(np.ndarray[np.float_t, ndim=2] apts,
             d = 0
             for k in range(ndim):
                 d += (apts[i,k] - bpts[j,k])**2
-            if d < radiussq:
+            if d <= radiussq:
                 nnearby[j] += 1
         
     return nnearby
@@ -45,7 +45,7 @@ def find_nearby(np.ndarray[np.float_t, ndim=2] apts,
 ):
     """
     For each point b in bpts
-    Count the number of points in a within radisu radiussq.
+    Count the number of points in a within radius radiussq.
     
     The number is written to nnearby (of same length as bpts).
     """
@@ -66,7 +66,7 @@ def find_nearby(np.ndarray[np.float_t, ndim=2] apts,
             d = 0
             for k in range(ndim):
                 d += (apts[i,k] - bpts[j,k])**2
-            if d < radiussq:
+            if d <= radiussq:
                 nnearby[j] = i
                 break
         
@@ -320,14 +320,9 @@ class MLFriends(object):
             raise ValueError("not all u values are between 0 and 1: %s" % u[~np.logical_and(u > 0, u < 1).all()])
         
         self.u = u
-        self.transformLayer = transformLayer
-        self.maxradiussq = None
+        self.set_transformLayer(transformLayer)
+        
         self.sampling_methods = [self.sample_from_points, self.sample_from_transformed_boundingbox, self.sample_from_boundingbox]
-        
-        self.unormed = self.transformLayer.transform(self.u)
-        self.bbox_lo = self.unormed.min(axis=0)
-        self.bbox_hi = self.unormed.max(axis=0)
-        
         self.current_sampling_method = self.sample_from_boundingbox
     
     def estimate_volume(self):
@@ -345,14 +340,16 @@ class MLFriends(object):
         # how large is a sphere of size r in untransformed coordinates?
         return self.transformLayer.volscale * r**ndim #* vol_prefactor(ndim)
     
-    def update_transform(self):
+    def set_transformLayer(self, transformLayer):
         """
         Update transformation layer
         Invalidates maxradius
         """
-        self.transformLayer.update(self.u, self.maxradiussq)
+        self.transformLayer = transformLayer
         self.unormed = self.transformLayer.transform(self.u)
-        self.maxradiussq = 1e300
+        self.bbox_lo = self.unormed.min(axis=0)
+        self.bbox_hi = self.unormed.max(axis=0)
+        self.maxradiussq = None
     
     def compute_maxradiussq(self, nbootstraps=50):
         """
