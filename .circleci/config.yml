@@ -14,7 +14,7 @@ jobs:
       
       - run: sudo apt-get install python3-dev python3-mpi4py python3-h5py python3-numpy python3-scipy python3-matplotlib python3-pandas
       - run: sudo ln -s /usr/lib/python3/dist-packages/numpy/core/include/numpy/ /usr/include/numpy
-      - run: sudo pip3 install -r pip-requirements.txt
+      - run: sudo pip3 install -r pip-requirements.txt pytest-html
       - run: mkdir -p test-reports
       
       - run: coverage3 run --parallel-mode setup.py test
