@@ -15,21 +15,34 @@ jobs:
       - run: sudo apt-get install python3-dev python3-mpi4py python3-h5py python3-numpy python3-scipy python3-matplotlib python3-pandas
       - run: sudo ln -s /usr/lib/python3/dist-packages/numpy/core/include/numpy/ /usr/include/numpy
       - run: sudo pip3 install -r pip-requirements.txt
+      - run: mkdir -p test-reports
       
       - run: coverage3 run --parallel-mode setup.py test
+      - run: |
+            echo "backend: Agg" > matplotlibrc
 
       - run: python3 setup.py install --user
       
       - run: python3 examples/testfeatures.py
-      - run: grep -l '"x_dim". .,' testfeatures/*error.json | xargs coverage3 run --parallel-mode examples/testfeatures.py  
-      - run: for i in testfeatures/runsettings-*-iterated.json; do PYTHONPATH=. mpiexec -np 2 coverage run -p examples/testfeatures.py $i & done; wait
+      - run: |
+            grep -l '"x_dim". .,' testfeatures/*error.json | 
+                xargs coverage3 run --parallel-mode examples/testfeatures.py  
+      - run: |
+            for i in testfeatures/runsettings-*-iterated.json; 
+            do 
+                  PYTHONPATH=. mpiexec -np 2 coverage run -p examples/testfeatures.py $i & 
+            done
+            wait
       - run: coverage3 combine
       - run: coverage3 report --include="$PWD/*" --omit="$PWD/.eggs/*"
+      - run: coverage3 html --include="$PWD/*" --omit="$PWD/.eggs/*"
       
       - store_test_results:
           path: test-reports
+          path: htmlcov
 
       - store_artifacts:
           path: test-reports    
+          path: htmlcov
 
 
