@@ -80,7 +80,10 @@ class MockIntegrator(object):
 def test_overclustering_eggbox_txt():
     from mininest.mlfriends import update_clusters, ScalingLayer, MLFriends
     np.random.seed(1)
-    for i in [26] + list(range(24, 39)):
+    for i in [20, 23, 24, 27, 49]:
+        print()
+        print("==== TEST CASE %d =====================" % i)
+        print()
         points = np.loadtxt(os.path.join(here, "overclustered_u_%d.txt" % i))
         
         for k in range(3):
@@ -90,6 +93,7 @@ def test_overclustering_eggbox_txt():
             maxr = region.compute_maxradiussq(nbootstraps=30)
             region.maxradiussq = maxr
             nclusters = transformLayer.nclusters
+            
             print("manual: r=%e nc=%d" % (region.maxradiussq, nclusters))
             #assert 1e-10 < maxr < 5e-10
             nclusters, clusteridxs, overlapped_points = update_clusters(points, points, maxr)
@@ -111,7 +115,7 @@ def test_overclustering_eggbox_txt():
 def test_overclustering_eggbox_update():
     from mininest import ReactiveNestedSampler
     np.random.seed(1)
-    for i in [27] + list(range(24, 39)):
+    for i in [20, 23, 24, 27, 42]:
         print()
         print("==== TEST CASE %d =====================" % i)
         print()
