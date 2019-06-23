@@ -448,13 +448,11 @@ class MultiCounter(object):
 		self.all_logVolremaining = np.zeros(nentries)
 		self.logVolremaining = 0.0
 		self.Lmax = -np.inf
-	
-	@property
-	def logZremain(self):
-		"""
-		Estimate conservatively the logZ of the current tail (un-opened nodes)
-		"""
-		return self.Lmax + self.logVolremaining
+
+		self.all_logZremain = np.inf * np.ones(nentries)
+		self.logZremainMax = np.inf
+		self.logZremain = np.inf
+		self.remainder_ratio = 1.0
 	
 	@property
 	def logZ_bs(self):
@@ -466,12 +464,7 @@ class MultiCounter(object):
 		""" Estimate logZ error from the bootstrap ensemble """
 		return self.all_logZ[1:].std()
 	
-	@property
-	def remainder_ratio(self):
-		""" ratio of logZremain to logZ """
-		return np.exp(self.logZremain - self.logZ)
-	
-	def passing_node(self, rootid, node, rootids, parallel_nodes):
+	def passing_node(self, rootid, node, rootids, parallel_values):
 		"""
 		Accumulate node to the integration
 		
@@ -567,4 +560,11 @@ class MultiCounter(object):
 			with np.errstate(divide='ignore'):
 				self.all_logVolremaining[active] += log1p(-1.0 / nlive[active])
 			self.logVolremaining = self.all_logVolremaining[0]
+		
+		V = self.all_logVolremaining - log(len(parallel_values))
+		Lmax = np.max(parallel_values)
+		self.all_logZremain = V + log(np.sum(exp(parallel_values - Lmax))) + Lmax
+		self.logZremainMax = self.all_logZremain.max()
+		self.logZremain = self.all_logZremain[0]
+		self.remainder_ratio = exp(self.logZremain - self.logZ)
 	

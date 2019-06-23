@@ -10,9 +10,16 @@ import shutil
 
 from numpy import log10
 import numpy as np
-import scipy.stats
 import string
 clusteridstrings = ['%d' % i for i in range(10)] + list(string.ascii_uppercase) + list(string.ascii_lowercase)
+
+spearman = None
+try:
+    import scipy.stats
+    spearman = scipy.stats.spearmanr
+except ImportError:
+    pass
+
 
 def nicelogger(points, info, region, transformLayer, region_fresh=False):
     #u, p, logl = points['u'], points['p'], points['logl']
@@ -49,18 +56,19 @@ def nicelogger(points, info, region, transformLayer, region_fresh=False):
     clusterids = transformLayer.clusterids % len(clusteridstrings)
     nmodes = transformLayer.nclusters
     print("Mono-modal" if nmodes == 1 else "Have %d modes" % nmodes, 
-        "Volume: %.2e" % region.estimate_volume(), '*' if region_fresh else ' ')
+        "Volume: ~%.2e" % region.estimate_volume(), '*' if region_fresh else ' ',
+        "Expected Volume: %.2e" % np.exp(info['logvol']))
     
     if ndim == 1:
         pass
-    elif ndim == 2:
-        rho, pval = scipy.stats.spearmanr(p)
+    elif ndim == 2 and spearman is not None:
+        rho, pval = spearman(p)
         if pval < 0.01 and abs(rho) > 0.75:
             print("   %s between %s and %s: rho=%.2f" % (
                 'positive degeneracy' if rho > 0 else 'negative degeneracy',
                 paramnames[0], paramnames[1], rho))
-    else:
-        rho, pval = scipy.stats.spearmanr(p)
+    elif spearman is not None:
+        rho, pval = spearman(p)
         for i, param in enumerate(paramnames):
             for j, param2 in enumerate(paramnames[:i]):
                 if pval[i,j] < 0.01 and abs(rho[i,j]) > 0.99:

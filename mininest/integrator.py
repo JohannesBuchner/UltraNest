@@ -129,7 +129,7 @@ class NestedSampler(object):
         else:
             log_dir = None
         
-        self.logger = create_logger(__name__ + '.' + type(self).__name__)
+        self.logger = create_logger(__name__ + '.' + type(self).__name__, log_dir=log_dir)
 
         if self.log:
             self.logger.info('Num live points [%d]' % (self.num_live_points))
@@ -316,7 +316,7 @@ class NestedSampler(object):
                 if self.log:
                     nicelogger(points=dict(u=active_u, p=active_v, logl=active_logl), 
                         info=dict(it=it, ncall=ncall, logz=logz, logz_remain=logz_remain, 
-                        paramnames=self.paramnames + self.derivedparamnames), 
+                        paramnames=self.paramnames + self.derivedparamnames, logvol=logvol), 
                         region=region, transformLayer=transformLayer)
                     self.pointstore.flush()
                 
@@ -423,7 +423,7 @@ class NestedSampler(object):
             if it % log_interval == 0 and self.log:
                 #nicelogger(self.paramnames, active_u, active_v, active_logl, it, ncall, logz, logz_remain, region=region)
                 sys.stdout.write('Z=%.1f+%.1f | Like=%.1f..%.1f | it/evals=%d/%d eff=%.4f%%  \r' % (
-                      logz, logz_remain, loglstar,np.max(active_logl), it, ncall, np.inf if ncall == 0 else it * 100 / ncall))
+                      logz, logz_remain, loglstar, np.max(active_logl), it, ncall, np.inf if ncall == 0 else it * 100 / ncall))
                 sys.stdout.flush()
                 
                 # if efficiency becomes low, bulk-process larger arrays
@@ -596,7 +596,7 @@ class ReactiveNestedSampler(object):
             log_dir = None
         
         #self.logger = create_logger(__name__ + '.' + type(self).__name__)
-        self.logger = create_logger('mininest')
+        self.logger = create_logger('mininest', log_dir=log_dir)
         self.root = TreeNode(id=-1, value=-np.inf)
 
         if self.log_to_disk:
@@ -781,20 +781,31 @@ class ReactiveNestedSampler(object):
 
 
     def adaptive_strategy_advice(self, Lmin, parallel_values, main_iterator, minimal_widths, frac_remain):
-        Ls = parallel_values
+        Ls = parallel_values.copy()
+        Ls.sort()
         #Ls = [node.value] + [n.value for rootid2, n in parallel_nodes]
-        Lmax = Ls.max()
-        Lmin = Ls.min() #main_iterator.logZ - weight
-        #weight = main_iterator.logVolremaining
+        Lmax = Ls[-1]
+        Lmin = Ls[0] 
+        
         # max remainder contribution is Lmax + weight, to be added to main_iterator.logZ
         # the likelihood that would add an equal amount as main_iterator.logZ is:
+        logZmax = main_iterator.logZremain
+        Lnext = logZmax - (main_iterator.logVolremaining + log(frac_remain))
+        L1 = Ls[1] if len(Ls) > 1 else Ls[0]
+        #if self.log:
+        #    self.logger.debug("strategy update: Lnext=%.1f Lmax=%.1f L1=%.1f" % (
+        #        Lnext, Lmax, L1))
+        # we target Lnext, the 
+        Lnext = max(min(Lnext, Lmax), L1)
         
         # if the remainder dominates, return that range
         if main_iterator.logZremain > main_iterator.logZ:
-            return Lmin, Lmax
-        #print("remainder: ", main_iterator.remainder_ratio, frac_remain)
+            return Lmin, Lnext
+        #if self.log:
+        #    self.logger.debug("strategy update: remainder: %.6f frac=%.6f" % (
+        #        main_iterator.remainder_ratio, frac_remain))
         if main_iterator.remainder_ratio > frac_remain:
-            return Lmin, Lmax
+            return Lmin, Lnext
         #print("not expanding, remainder not dominant")
         return np.nan, np.nan
     
@@ -946,11 +957,11 @@ class ReactiveNestedSampler(object):
                     logl = self.loglike(v)
                 nc += nu
                 accepted = logl > Lmin
-                if nit >= 1000 and nit % 1000 == 0:
-                    self.logger.warn("Sampling seems stuck. Writing debug output file 'sampling-stuck-it%d.npz'..." % nit)
+                if nit >= 100000 / ndraw and nit % (100000 // ndraw) == 0:
+                    #self.logger.warn("Sampling seems stuck. Writing debug output file 'sampling-stuck-it%d.npz'..." % nit)
                     np.savez('sampling-stuck-it%d.npz' % nit, u=self.region.u, unormed=self.region.unormed, maxradiussq=self.region.maxradiussq, 
                         sample_u=u, sample_v=v, sample_logl=logl)
-                    warnings.warn("Sampling is stuck, this could be numerical issue: You are probably trying to integrate to deep into the volume where all points become equal in logL; so cannot draw a higher point. Try loosening the quality constraints (increase dlogz, dKL, decrease min_ess).")
+                    warnings.warn("Sampling seems stuck, this could be numerical issue: You are probably trying to integrate to deep into the volume where all points become equal in logL; so cannot draw a higher point. Try loosening the quality constraints (increase dlogz, dKL, decrease min_ess). [%d/%d accepted, it=%d]" % (accepted.sum(), ndraw, nit))
                     logl_region = self.loglike(self.transform(self.region.u))
                     if not (logl_region > Lmin).any():
                         raise ValueError("Region cannot sample a point. Perhaps you are resuming from a different problem? Delete the output files and start again.")
@@ -1093,7 +1104,7 @@ class ReactiveNestedSampler(object):
         if not nextTransformLayer.nclusters < 20:
             filename = 'overclustered_%d.npz' % nextTransformLayer.nclusters
             if self.log:
-                self.logger.warn("Found a lot of clusters: %d" % nextTransformLayer.nclusters)
+                self.logger.info("Found a lot of clusters: %d" % nextTransformLayer.nclusters)
             
             if not os.path.exists(filename):
                 self.logger.info("A lot of clusters! writing debug output file '%s'" % filename)
@@ -1203,7 +1214,7 @@ class ReactiveNestedSampler(object):
             log_interval=None,
             dlogz=0.5,
             dKL=0.5,
-            frac_remain=0.001,
+            frac_remain=0.01,
             min_ess=400,
             max_iters=None,
             volume_switch=0,
@@ -1232,7 +1243,7 @@ class ReactiveNestedSampler(object):
             log_interval=None,
             dlogz=0.5,
             dKL=0.5,
-            frac_remain=0.001,
+            frac_remain=0.01,
             min_ess=400,
             max_iters=None,
             volume_switch=0,
@@ -1296,7 +1307,7 @@ class ReactiveNestedSampler(object):
             if self.draw_multiple:
                 ndraw = 100
             else:
-                ndraw = 1
+                ndraw = 40
             self.pointstore.reset()
             if self.log_to_disk:
                 self.use_point_stack = not self.pointstore.stack_empty
@@ -1311,7 +1322,7 @@ class ReactiveNestedSampler(object):
             region_sequence = []
             minimal_widths_sequence = sequentialize_width_sequence(minimal_widths, self.min_num_live_points)
             if self.log:
-                self.logger.debug('minimal_widths_sequence:', minimal_widths_sequence)
+                self.logger.debug('minimal_widths_sequence: %s' % minimal_widths_sequence)
             
             saved_nodeids = []
             saved_logl = []
@@ -1387,7 +1398,8 @@ class ReactiveNestedSampler(object):
                             nicelogger(points=dict(u=active_u, p=active_p, logl=active_values), 
                                 info=dict(it=it, ncall=self.ncall, 
                                 logz=main_iterator.logZ, logz_remain=main_iterator.logZremain, 
-                                paramnames=self.paramnames + self.derivedparamnames), 
+                                paramnames=self.paramnames + self.derivedparamnames,
+                                logvol=main_iterator.logVolremaining), 
                                 region=self.region, transformLayer=self.transformLayer,
                                 region_fresh=region_fresh)
                             self.pointstore.flush()

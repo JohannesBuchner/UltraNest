@@ -5,16 +5,23 @@ import numpy as np
 import errno
 
 
-def create_logger(module_name, level=logging.INFO):
+def create_logger(module_name, log_dir=None, level=logging.INFO):
     logger = logging.getLogger(module_name)
-    logger.setLevel(level)
-    if logger.handlers == []:
+    if log_dir is not None and logger.handlers == []:
+        # create file handler which logs even debug messages
+        handler = logging.FileHandler(os.path.join(log_dir, 'debug.log'))
+        formatter = logging.Formatter('[{}] [%(levelname)s] %(message)s'.format(module_name))
+        handler.setFormatter(formatter)
+        handler.setLevel(logging.DEBUG)
+        logger.addHandler(handler)
+    elif logger.handlers == [] and False:
         # if it is new, register to write to stdout
         handler = logging.StreamHandler(sys.stdout)
         handler.setLevel(level)
         formatter = logging.Formatter('[{}] [%(levelname)s] %(message)s'.format(module_name))
         handler.setFormatter(formatter)
         logger.addHandler(handler)
+    
     return logger
 
 def make_run_dir(log_dir, run_num=None, append_run_num=True):

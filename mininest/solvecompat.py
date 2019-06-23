@@ -45,7 +45,9 @@ def pymultinest_solve_compat(LogLikelihood, Prior, n_dims,
     sampler.print_results()
     results = sampler.results
     sampler.plot()
+    
     return dict(logZ=results['logz'],
         logZerr=results['logzerr'],
-        samples=results['samples'])
+        samples=results['samples'],
+        weighted_samples=results['weighted_samples'])
 	
