@@ -21,7 +21,8 @@ except ImportError:
     pass
 
 def round_parameterlimits(plo, phi, paramlimitguess=None):
-    expos = log10(np.abs([plo, phi]))
+    with np.errstate(divide='ignore'):
+        expos = log10(np.abs([plo, phi]))
     expolo = np.floor(np.min(expos, axis=0))
     expohi = np.ceil(np.max(expos, axis=0))
     is_negative = plo < 0
