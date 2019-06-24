@@ -20,6 +20,36 @@ try:
 except ImportError:
     pass
 
+def round_parameterlimits(plo, phi, paramlimitguess=None):
+    plo = np.asarray(plo)
+    phi = np.asarray(phi)
+    expos = log10(np.abs([plo, phi]))
+    expolo = np.floor(np.min(expos, axis=0))
+    expohi = np.ceil(np.max(expos, axis=0))
+    is_negative = plo < 0
+    plo_rounded = np.where(is_negative, -10**expohi, 0)
+    phi_rounded = np.where(is_negative,  10**expohi, 10**expohi)
+    
+    if paramlimitguess is not None:
+        for i, (plo_guess, phi_guess) in enumerate(paramlimitguess):
+            # if plo_guess is higher than what we thought, we can increase to match
+            if plo_guess <= plo[i] and plo_guess > plo_rounded[i] * 1.1:
+                plo_rounded[i] = plo_guess
+            if phi_guess >= phi[i] and phi_guess < phi_rounded[i] / 1.1:
+                phi_rounded[i] = phi_guess
+    
+    formats = []
+    for i in range(len(plo)):
+        fmt = '%+.1e'
+        if -1 <= expolo[i] <= 2 and -1 <= expohi[i] <= 2:
+            if not is_negative[i]:
+                plo_rounded[i] = 0
+            fmt = '%+.1f'
+        if -4 <= expolo[i] <= 0 and -4 <= expohi[i] <= 0:
+            fmt = '%%+.%df' % (-min(expolo[i], expohi[i]))
+        formats.append(fmt)
+    
+    return plo_rounded, phi_rounded, formats
 
 def nicelogger(points, info, region, transformLayer, region_fresh=False):
     #u, p, logl = points['u'], points['p'], points['logl']
@@ -31,12 +61,7 @@ def nicelogger(points, info, region, transformLayer, region_fresh=False):
     
     plo = p.min(axis=0)
     phi = p.max(axis=0)
-    expos = log10(np.abs([plo, phi]))
-    expolo = np.floor(np.min(expos, axis=0))
-    expohi = np.ceil(np.max(expos, axis=0))
-    is_negative = plo < 0
-    plo_rounded = np.where(is_negative, -10**expohi, 10**expolo)
-    phi_rounded = np.where(is_negative,  10**expohi, 10**expohi)
+    plo_rounded, phi_rounded, paramformats = round_parameterlimits(plo, phi, paramlimitguess=info.get('paramlimitguess'))
 
     if sys.stderr.isatty() and hasattr(shutil, 'get_terminal_size'):
         columns, _rows = shutil.get_terminal_size(fallback=(80, 25))
@@ -81,7 +106,7 @@ def nicelogger(points, info, region, transformLayer, region_fresh=False):
                         param, param2, rho[i,j]))
     print()
     
-    for i, param in enumerate(paramnames):
+    for i, (param, fmt) in enumerate(zip(paramnames, paramformats)):
         if nmodes == 1:
             line = [' ' for i in range(width)]
             for j in np.unique(indices[:,i]):
@@ -99,14 +124,6 @@ def nicelogger(points, info, region, transformLayer, region_fresh=False):
                 #else:
                 #    line[j] = '*'
             linestr = ''.join(line)
-        
-        fmt = '%+.1e'
-        if -1 <= expolo[i] <= 2 and -1 <= expohi[i] <= 2:
-            if not is_negative[i]:
-                plo_rounded[i] = 0
-            fmt = '%+.1f'
-        if -4 <= expolo[i] <= 0 and -4 <= expohi[i] <= 0:
-            fmt = '%%+.%df' % (-min(expolo[i], expohi[i]))
         
         line = linestr
         ilo, ihi = indices[:,i].min(), indices[:,i].max()
