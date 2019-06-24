@@ -1489,9 +1489,11 @@ class ReactiveNestedSampler(object):
                         last_status = time.time()
                         ncall_here = self.ncall - ncall_at_run_start
                         it_here = it - it_at_first_region
-                        sys.stdout.write('Z=%.1f+%.1f | Like=%.1f..%.1f | it/evals=%d/%d eff=%.4f%% N=%d \r' % (
-                              main_iterator.logZ, main_iterator.logZremain, Lmin, main_iterator.Lmax, it, 
-                                self.ncall, np.inf if ncall_here == 0 else it_here * 100 / ncall_here, nlive))
+                        sys.stdout.write('Z=%.1f(%.2f%%) | Like=%.1f..%.1f | it/evals=%d/%d eff=%.4f%% N=%d \r' % (
+                              main_iterator.logZ, 100 - 100 / (1 + exp(main_iterator.logZ - main_iterator.logZremain)), 
+                              Lmin, main_iterator.Lmax, it, self.ncall, 
+                              np.inf if ncall_here == 0 else it_here * 100 / ncall_here, 
+                              nlive))
                         sys.stdout.flush()
                         
                         # if efficiency becomes low, bulk-process larger arrays

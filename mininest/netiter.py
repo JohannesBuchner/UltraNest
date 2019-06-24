@@ -566,5 +566,6 @@ class MultiCounter(object):
 		self.all_logZremain = V + log(np.sum(exp(parallel_values - Lmax))) + Lmax
 		self.logZremainMax = self.all_logZremain.max()
 		self.logZremain = self.all_logZremain[0]
-		self.remainder_ratio = exp(self.logZremain - self.logZ)
+		with np.errstate(over='ignore'):
+			self.remainder_ratio = exp(self.logZremain - self.logZ)
 	
