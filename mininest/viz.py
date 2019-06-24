@@ -61,7 +61,7 @@ def nicelogger(points, info, region, transformLayer, region_fresh=False):
     
     plo = p.min(axis=0)
     phi = p.max(axis=0)
-    plo_rounded, phi_rounded, paramformats = round_parameterlimits(plo, phi, paramlimitguess=info.get('paramlimitguess'))
+    plo_rounded, phi_rounded, paramformats = round_parameterlimits(plo, phi, paramlimitguess=info.get('paramlims'))
 
     if sys.stderr.isatty() and hasattr(shutil, 'get_terminal_size'):
         columns, _rows = shutil.get_terminal_size(fallback=(80, 25))
