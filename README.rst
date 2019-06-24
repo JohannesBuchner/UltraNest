@@ -19,7 +19,7 @@ Features
 * Wrapped/circular parameters, derived parameters
 * Tracking solution modes
 * Run-time visualisations and exploration information
-* Corner plots
+* Corner plots, run and parameter exploration diagnostic plots
 
 * Robust exploration easily handles:
 
@@ -46,7 +46,6 @@ Features
 Coming soon
 =============
 
-* Visualise logL-logV, parameter evolution & other nested sampling checking plots
 * Support for high-dimensional problems (>=20d)
 
 Usage

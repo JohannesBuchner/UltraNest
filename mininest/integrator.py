@@ -21,7 +21,7 @@ from .utils import create_logger, make_run_dir, resample_equal
 from mininest.mlfriends import MLFriends, AffineLayer, ScalingLayer, update_clusters, find_nearby
 from .store import TextPointStore, HDF5PointStore, NullPointStore
 from .viz import nicelogger
-from .netiter import PointPile, MultiCounter, BreadthFirstIterator, TreeNode, print_tree, count_tree, count_tree_between, find_nodes_before
+from .netiter import PointPile, MultiCounter, BreadthFirstIterator, TreeNode, print_tree, count_tree, count_tree_between, find_nodes_before, logz_sequence
 
 import numpy as np
 
@@ -520,7 +520,43 @@ class ReactiveNestedSampler(object):
                  max_num_live_points_for_efficiency=400,
                  num_test_samples=2,
                  draw_multiple=True,
+                 num_bootstraps=30,
                  ):
+        """
+        
+        param_names: list of str, names of the parameters. 
+            Length gives dimensionality of the sampling problem.
+        
+        loglike: log-likelihood function
+        transform: parameter transform from unit cube to physical 
+            parameters.
+        
+        derived_param_names: list of str
+            Additional derived parameters created by transform. (empty by default)
+        
+        log_dir: where to store output files
+        append_run_num: if true, create a fresh subdirectory in log_dir
+        
+        wrapped_params: list of bools, indicating whether this parameter 
+            wraps around in a circular parameter space.
+        
+        min_num_live_points: number of live points
+        cluster_num_live_points: require at least this many live points per cluster
+        max_num_live_points_for_efficiency: 
+            Increasing the number of live points can make the region
+            more accurate, increasing performance. If efficiency is low,
+            the number of live points is allowed to grow to this value.
+        
+        num_test_samples: test transform and likelihood with this number of
+            random points for errors first. Useful to catch bugs.
+        
+        draw_multiple: draw more points if efficiency goes down. 
+            If set to False, few points are sampled at once.
+        
+        num_bootstraps: number of logZ estimators and MLFriends region 
+            bootstrap rounds.
+        
+        """
 
         self.paramnames = param_names
         x_dim = len(self.paramnames)
@@ -533,6 +569,7 @@ class ReactiveNestedSampler(object):
         self.sampler = 'reactive-nested'
         self.x_dim = x_dim
         self.derivedparamnames = derived_param_names
+        self.num_bootstraps=int(num_bootstraps)
         num_derived = len(self.derivedparamnames)
         self.num_params = x_dim + num_derived
         if wrapped_params is None:
@@ -563,7 +600,8 @@ class ReactiveNestedSampler(object):
             log_dir = None
         
         #self.logger = create_logger(__name__ + '.' + type(self).__name__)
-        self.logger = create_logger('mininest', log_dir=log_dir)
+        if self.log:
+            self.logger = create_logger('mininest', log_dir=log_dir)
         self.root = TreeNode(id=-1, value=-np.inf)
 
         if self.log_to_disk:
@@ -836,25 +874,16 @@ class ReactiveNestedSampler(object):
         logZmax = main_iterator.logZremain
         Lnext = logZmax - (main_iterator.logVolremaining + log(frac_remain))
         L1 = Ls[1] if len(Ls) > 1 else Ls[0]
-        #if self.log:
-        #    self.logger.debug("strategy update: Lnext=%.1f Lmax=%.1f L1=%.1f" % (
-        #        Lnext, Lmax, L1))
-        # we target Lnext, the 
         Lnext = max(min(Lnext, Lmax), L1)
         
         # if the remainder dominates, return that range
         if main_iterator.logZremain > main_iterator.logZ:
             return Lmin, Lnext
-        #if self.log:
-        #    self.logger.debug("strategy update: remainder: %.6f frac=%.6f" % (
-        #        main_iterator.remainder_ratio, frac_remain))
         if main_iterator.remainder_ratio > frac_remain:
             return Lmin, Lnext
-        #print("not expanding, remainder not dominant")
         return np.nan, np.nan
     
     def find_strategy(self, saved_logl, main_iterator, dlogz, dKL, min_ess):
-        #print_tree(self.root.children[::10])
         saved_logl = np.asarray(saved_logl)
         logw = np.asarray(main_iterator.logweights) + saved_logl.reshape((-1,1)) - main_iterator.all_logZ
         ref_logw = logw[:,0].reshape((-1,1))
@@ -1056,6 +1085,10 @@ class ReactiveNestedSampler(object):
         bootstrap_rootids=None, active_rootids=None,
         nbootstraps=30
     ):
+        """
+        Build a new MLFriends region from active_u
+        """
+        
         updated = False
         if self.region is None:
             #print("building first region...")
@@ -1261,16 +1294,53 @@ class ReactiveNestedSampler(object):
             frac_remain=0.01,
             min_ess=400,
             max_iters=None,
-            volume_switch=0,
             max_ncalls=None,
             max_num_improvement_loops=-1):
+        """
+        Run until target convergence criteria are fulfilled:
+        
+        update_interval_iter_fraction: 
+            Update region after (update_interval_iter_fraction*nlive) iterations.
+        update_interval_ncall: (not actually used)
+            Update region after update_interval_ncall likelihood calls.
+        log_interval:
+            Update stdout status line every log_interval iterations
+        
+        Termination criteria
+        ---------------------
+        
+        dlogz: 
+            Target evidence uncertainty. This is the std
+            between bootstrapped logz integrators.
+        
+        dKL:
+            Target posterior uncertainty. This is the 
+            Kullback-Leibler divergence in nat between bootstrapped integrators.
+        
+        frac_remain:
+            Integrate until this fraction of the integral is left in the remainder.
+            Set to a low number (1e-2 ... 1e-5) to make sure peaks are discovered.
+            Set to a higher number (0.5) if you know the posterior is simple.
+        
+        min_ess:
+            Target number of effective posterior samples. 
+        
+        max_iters: maximum number of integration iterations.
+        
+        max_ncalls: stop after this many likelihood evaluations.
+            
+        max_num_improvement_loops: int
+            run() tries to assess iteratively where more samples are needed.
+            This number limits the number of improvement loops.
+        
+        """
         
         for result in self.run_iter(
             update_interval_iter_fraction=update_interval_iter_fraction,
             update_interval_ncall=update_interval_ncall,
             log_interval=log_interval,
             dlogz=dlogz, dKL=dKL, frac_remain=frac_remain,
-            min_ess=min_ess, max_iters=max_iters, volume_switch=volume_switch,
+            min_ess=min_ess, max_iters=max_iters,
             max_ncalls=max_ncalls, max_num_improvement_loops=max_num_improvement_loops):
             if self.log:
                 self.logger.info("did a run_iter pass!")
@@ -1290,9 +1360,16 @@ class ReactiveNestedSampler(object):
             frac_remain=0.01,
             min_ess=400,
             max_iters=None,
-            volume_switch=0,
             max_ncalls=None,
             max_num_improvement_loops=-1):
+        """
+        Use as an iterator like so:
+        
+        for result in sampler.run_iter(...):
+            print('lnZ = %(logz).2f +- %(logzerr).2f' % result)
+        
+        Parameters as described in run() function.
+        """
 
         # frac_remain=1  means 1:1 -> dlogz=log(0.5)
         # frac_remain=0.1 means 1:10 -> dlogz=log(0.1)
@@ -1340,7 +1417,7 @@ class ReactiveNestedSampler(object):
             
             explorer = BreadthFirstIterator(roots)
             # Integrating thing
-            main_iterator = MultiCounter(nroots=len(roots), nbootstraps=max(1, 50 // self.mpi_size), random=True)
+            main_iterator = MultiCounter(nroots=len(roots), nbootstraps=max(1, self.num_bootstraps // self.mpi_size), random=False)
             main_iterator.Lmax = max(Lmax, max(n.value for n in roots))
             
             self.transformLayer = None
@@ -1418,7 +1495,8 @@ class ReactiveNestedSampler(object):
                         region_fresh = self.update_region(
                             active_u=active_u, active_node_ids=active_node_ids, 
                             active_rootids=active_rootids, 
-                            bootstrap_rootids=main_iterator.rootids[1:,])
+                            bootstrap_rootids=main_iterator.rootids[1:,],
+                            nbootstraps=self.num_bootstraps)
                         
                         nclusters = self.transformLayer.nclusters
                         region_sequence.append((Lmin, nlive, nclusters))
@@ -1597,7 +1675,7 @@ class ReactiveNestedSampler(object):
         #print_tree(roots[0:5])
         if self.log:
             self.logger.info('nevals: %d' % self.ncall)
-            self.logger.info('Tree size: height=%d width=%d' % count_tree(self.root.children))
+            #self.logger.info('Tree size: height=%d width=%d' % count_tree(self.root.children))
         
         # points with weights
         #saved_u = np.array([pp[nodeid].u for nodeid in saved_nodeids])
@@ -1645,6 +1723,7 @@ class ReactiveNestedSampler(object):
             logzerr_tail=logzerr_tail,
             logzerr_single=(main_iterator.all_H[0] / self.min_num_live_points)**0.5,
             ess=ess,
+            paramnames=self.paramnames + self.derivedparamnames,
         )
         if self.log_to_disk:
             if self.log:
@@ -1666,7 +1745,8 @@ class ReactiveNestedSampler(object):
                 self.logger.info("Writing samples and results to disk ... done")
         
         results.update(
-            weighted_samples=dict(v=saved_v, w=saved_wt0, logw=saved_logwt0, bs_w=saved_wt_bs, L=saved_logl),
+            weighted_samples=dict(v=saved_v, w=saved_wt0, logw=saved_logwt0, 
+                bs_w=saved_wt_bs, L=saved_logl),
             samples=samples,
         )
         self.results = results
@@ -1692,36 +1772,49 @@ class ReactiveNestedSampler(object):
             fmt = '%%.%df' % i
             fmts = '\t'.join(['    %-20s' + fmt + " +- " + fmt])
             print(fmts % (p, med, sigma))
-
+    
     def plot(self):
+        """
+        Make corner, run and trace plots
+        """
+        self.plot_corner()
+        self.plot_run()
+    
+    def plot_corner(self):
+        """
+        Write corner plot to plots/ directory.
+        """
         if self.log_to_disk:
-            self.logger.info('Plotting ...')
+            self.logger.info('Making corner plot ...')
+            from .plot import cornerplot
             import matplotlib.pyplot as plt
-            import corner
-            data = np.array(self.results['weighted_samples']['v'])
-            weights = np.array(self.results['weighted_samples']['w'])
-            weights /= weights.sum()
-            cumsumweights = np.cumsum(weights)
-
-            mask = cumsumweights > 1e-4
-            
-            if mask.sum() == 1:
-                self.logger.warning('Posterior is still concentrated in a single point:')
-                for i, p in enumerate(self.paramnames + self.derivedparamnames):
-                    v = self.results['samples'][mask,i]
-                    print('    %-20s: %s' % (p, v))
-                
-                self.logger.info('Try running longer.')
-                return
-            
-            # monkey patch to disable a useless warning
-            oldfunc = logging.warning
-            logging.warning = lambda *args, **kwargs: None
-            corner.corner(data[mask,:], weights=weights[mask], 
-                    labels=self.paramnames + self.derivedparamnames, show_titles=True)
-            logging.warning = oldfunc
-            
+            cornerplot(self.results, logger=self.logger if self.log else None)
             plt.savefig(os.path.join(self.logs['plots'], 'corner.pdf'), bbox_inches='tight')
             plt.close()
+            self.logger.info('Making corner plot ... done')
+
+    def plot_run(self):
+        """
+        Write run and parameter trace diagnostic plots to plots/ directory.
+        """
+        if self.log_to_disk:
+            self.logger.info('Making run plot ... ')
+            from .plot import runplot, traceplot
+            import matplotlib.pyplot as plt
+            # get dynesty-compatible sequences
+            self.logger.debug("computing dynesty-compatible sequences")
+            results = logz_sequence(self.root, self.pointpile)
+            self.logger.debug("computing dynesty-compatible sequences done.")
+            runplot(results = results, logplot=True)
+            plt.savefig(os.path.join(self.logs['plots'], 'run.pdf'), bbox_inches='tight')
+            plt.close()
+            self.logger.info('Making run plot ... done')
+
+            self.logger.info('Making trace plot ... ')
+            paramnames = self.paramnames + self.derivedparamnames
+            traceplot(results = results, labels=paramnames)
+            plt.savefig(os.path.join(self.logs['plots'], 'trace.pdf'), bbox_inches='tight')
+            plt.close()
+            self.logger.info('Making trace plot ... done')
             self.logger.info('Plotting done')
 

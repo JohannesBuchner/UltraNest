@@ -77,7 +77,7 @@ class FilePointStore(object):
 			L = next_row[1]
 			if row_Lmin <= Lmin and L > Lmin:
 				idx, row = self.stack.pop(i)
-				self.stack_empty = len(self.stack) == 0
+				self.stack_empty = self.stack == []
 				return idx, row
 		
 		self.stack_empty = len(self.stack) == 0
