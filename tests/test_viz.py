@@ -34,6 +34,13 @@ def test_rounding_withguess():
     assert np.allclose(plo, [-3.14, 0, 0]), plo
     assert np.allclose(phi, [3.14, 1, 100000]), phi
 
+    plo, phi, fmts = round_parameterlimits(
+        [1.4, 24.0, 0.4],
+        [2.6, 25.5, 7.99],
+        [(1, 3), (20, 26), (0.1, 8.0)])
+    assert np.allclose(plo, [1, 20, 0.1]), plo
+    assert np.allclose(phi, [3, 26, 8]), phi
+
 if __name__ == '__main__':
     test_rounding_u()
     test_rounding_pos()

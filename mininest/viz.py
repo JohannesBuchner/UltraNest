@@ -42,8 +42,8 @@ def round_parameterlimits(plo, phi, paramlimitguess=None):
     for i in range(len(plo)):
         fmt = '%+.1e'
         if -1 <= expolo[i] <= 2 and -1 <= expohi[i] <= 2:
-            if not is_negative[i]:
-                plo_rounded[i] = 0
+            #if not is_negative[i]:
+            #    plo_rounded[i] = 0
             fmt = '%+.1f'
         if -4 <= expolo[i] <= 0 and -4 <= expohi[i] <= 0:
             fmt = '%%+.%df' % (-min(expolo[i], expohi[i]))
