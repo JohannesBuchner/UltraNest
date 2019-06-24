@@ -21,8 +21,6 @@ except ImportError:
     pass
 
 def round_parameterlimits(plo, phi, paramlimitguess=None):
-    plo = np.asarray(plo)
-    phi = np.asarray(phi)
     expos = log10(np.abs([plo, phi]))
     expolo = np.floor(np.min(expos, axis=0))
     expohi = np.ceil(np.max(expos, axis=0))
@@ -42,11 +40,11 @@ def round_parameterlimits(plo, phi, paramlimitguess=None):
     for i in range(len(plo)):
         fmt = '%+.1e'
         if -1 <= expolo[i] <= 2 and -1 <= expohi[i] <= 2:
-            #if not is_negative[i]:
-            #    plo_rounded[i] = 0
             fmt = '%+.1f'
         if -4 <= expolo[i] <= 0 and -4 <= expohi[i] <= 0:
             fmt = '%%+.%df' % (-min(expolo[i], expohi[i]))
+        if fmt % plo[i] == fmt % phi[i]:
+            fmt = '%%+.%df' % (-int(np.floor(log10(phi[i] - plo[i]))))
         formats.append(fmt)
     
     return plo_rounded, phi_rounded, formats
