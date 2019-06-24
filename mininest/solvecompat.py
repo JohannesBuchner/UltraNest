@@ -30,6 +30,9 @@ def pymultinest_solve_compat(LogLikelihood, Prior, n_dims,
     if paramnames is None:
         paramnames = list(string.ascii_lowercase)[:n_dims]
     assert len(paramnames) == n_dims
+    min_ess = kwargs.pop('min_ess', 400)
+    frac_remain = kwargs.pop('frac_remain', 0.01)
+    
 
     sampler = ReactiveNestedSampler(paramnames, 
         vectorized_loglike, 
@@ -41,7 +44,8 @@ def pymultinest_solve_compat(LogLikelihood, Prior, n_dims,
         draw_multiple=False,
     )
     sampler.run(dlogz=evidence_tolerance, 
-        max_iters=max_iter if max_iter > 0 else None)
+        max_iters=max_iter if max_iter > 0 else None,
+        min_ess=min_ess, frac_remain=frac_remain)
     sampler.print_results()
     results = sampler.results
     sampler.plot()
