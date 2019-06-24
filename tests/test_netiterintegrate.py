@@ -184,7 +184,7 @@ def integrate_graph_singleblock(num_live_points, pointstore, x_dim, num_params, 
 		main_iterator.passing_node(node, active_values)
 		for it, rootids in iterator_roots:
 			if rootid in rootids:
-				mask = np.isin(active_rootids, rootids, assume_unique=True)
+				mask = np.in1d(active_rootids, rootids, assume_unique=True)
 				#mask1 = np.array([rootid2 in rootids for rootid2 in active_rootids])
 				#assert (mask1 == mask).all(), (mask1, mask)
 				it.passing_node(node, active_values[mask])

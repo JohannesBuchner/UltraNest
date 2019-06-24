@@ -101,7 +101,7 @@ def test_reactive_run_resume_eggbox():
     try:
         for i in range(2):
             print()
-            print("====== Running Eggbox problem =====")
+            print("====== Running Eggbox problem [%d] =====" % (i+1))
             print()
             sampler = ReactiveNestedSampler(paramnames, 
                 loglike, transform=transform,

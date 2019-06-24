@@ -541,39 +541,6 @@ class ReactiveNestedSampler(object):
             assert len(wrapped_params) == self.x_dim, ("wrapped_params has the number of entries:", wrapped_params, ", expected", self.x_dim)
             self.wrapped_axes = np.where(wrapped_params)[0]
         
-        if num_test_samples > 0:
-            u = np.random.uniform(size=(num_test_samples, self.x_dim))
-            p = transform(u) if transform is not None else u
-            assert p.shape == (num_test_samples, self.num_params), ("Error in transform function: returned shape is %s, expected %s" % (p.shape, (num_test_samples, self.num_params)))
-            logl = loglike(p)
-            assert np.logical_and(u > 0, u < 1).all(), ("Error in transform function: u was modified!")
-            assert logl.shape == (num_test_samples,), ("Error in loglikelihood function: returned shape is %s, expected %s" % (p.shape, (num_test_samples, self.num_params)))
-            assert np.isfinite(logl).all(), ("Error in loglikelihood function: returned non-finite number: %s for input u=%s p=%s" % (logl, u, p))
-
-        def safe_loglike(x):
-            x = np.asarray(x)
-            if len(x.shape) == 1:
-                assert x.shape[0] == self.x_dim
-                x = np.expand_dims(x, 0)
-            logl = loglike(x)
-            if len(logl.shape) == 0:
-                logl = np.expand_dims(logl, 0)
-            logl[np.logical_not(np.isfinite(logl))] = -1e100
-            return logl
-
-        self.loglike = safe_loglike
-
-        if transform is None:
-            self.transform = lambda x: x
-        else:
-            def safe_transform(x):
-                x = np.asarray(x)
-                if len(x.shape) == 1:
-                    assert x.shape[0] == self.x_dim
-                    x = np.expand_dims(x, 0)
-                return transform(x)
-            self.transform = safe_transform
-
         self.use_mpi = False
         try:
             from mpi4py import MPI
@@ -613,6 +580,83 @@ class ReactiveNestedSampler(object):
             self.ncall = len(self.pointstore.stack)
         else:
             self.pointstore = NullPointStore(2 + self.x_dim + self.num_params)
+        
+        self.set_likelihood_function(transform, loglike, num_test_samples)
+    
+    def set_likelihood_function(self, transform, loglike, num_test_samples, make_safe=True):
+        
+        # do some checks on the likelihood function 
+        # this makes debugging easier by failing early with meaningful errors
+        
+        # if we are resuming, check that last sample still gives same result 
+        num_resume_test_samples = 0
+        if num_test_samples and not self.pointstore.stack_empty:
+            num_resume_test_samples = 1
+            num_test_samples -= 1
+        
+        if num_test_samples > 0:
+            # test with num_test_samples random points
+            u = np.random.uniform(size=(num_test_samples, self.x_dim))
+            p = transform(u) if transform is not None else u
+            assert p.shape == (num_test_samples, self.num_params), ("Error in transform function: returned shape is %s, expected %s" % (p.shape, (num_test_samples, self.num_params)))
+            logl = loglike(p)
+            assert np.logical_and(u > 0, u < 1).all(), ("Error in transform function: u was modified!")
+            assert logl.shape == (num_test_samples,), ("Error in loglikelihood function: returned shape is %s, expected %s" % (p.shape, (num_test_samples, self.num_params)))
+            assert np.isfinite(logl).all(), ("Error in loglikelihood function: returned non-finite number: %s for input u=%s p=%s" % (logl, u, p))
+
+        if not self.pointstore.stack_empty and num_resume_test_samples > 0:
+            # test that last sample gives the same likelihood value
+            _, lastrow = self.pointstore.stack[-1]
+            assert len(lastrow) == 2 + self.x_dim + self.num_params, ("Cannot resume: problem has different dimensionality", len(lastrow), (2, self.x_dim, self.num_params))
+            lastL = lastrow[1]
+            lastu = lastrow[2:2+self.x_dim]
+            u = lastu.reshape((1, -1))
+            lastp = lastrow[2+self.x_dim:2+self.x_dim+self.num_params]
+            if self.log:
+                self.logger.debug("Testing resume consistency: %s: u=%s -> p=%s -> L=%s " % (lastrow, lastu, lastp, lastL))
+            p = transform(u) if transform is not None else u
+            if not np.allclose(p.flatten(), lastp) and self.log:
+                self.logger.warn("Trying to resume from previous run, but transform function gives different result: %s gave %s, now %s" % (lastu, lastp, p.flatten()))
+            assert np.allclose(p.flatten(), lastp), "Cannot resume because transform function changed. To start from scratch, delete '%s'." % (self.logs['run_dir'])
+            logl = loglike(p).flatten()[0]
+            if not np.isclose(logl, lastL) and self.log:
+                self.logger.warn("Trying to resume from previous run, but likelihood function gives different result: %s gave %s, now %s" % (lastu.flatten(), lastL, logl))
+            assert np.isclose(logl, lastL), "Cannot resume because loglikelihood function changed. To start from scratch, delete '%s'." % (self.logs['run_dir'])
+        
+        def safe_loglike(x):
+            x = np.asarray(x)
+            if len(x.shape) == 1:
+                assert x.shape[0] == self.x_dim
+                x = np.expand_dims(x, 0)
+            logl = loglike(x)
+            if len(logl.shape) == 0:
+                logl = np.expand_dims(logl, 0)
+            logl[np.logical_not(np.isfinite(logl))] = -1e100
+            return logl
+
+        if make_safe:
+            self.loglike = safe_loglike
+        else:
+            self.loglike = loglike
+
+        if transform is None:
+            self.transform = lambda x: x
+        elif make_safe:
+            def safe_transform(x):
+                x = np.asarray(x)
+                if len(x.shape) == 1:
+                    assert x.shape[0] == self.x_dim
+                    x = np.expand_dims(x, 0)
+                return transform(x)
+            self.transform = safe_transform
+        else:
+            self.transform = transform
+
+        lims = np.ones((2, self.x_dim))
+        lims[0,:] = 1e-6
+        lims[1,:] = 1 - 1e-6
+        self.transform_limits = self.transform(lims).transpose()
+        
 
     def widen_nodes(self, parents, nnodes_needed, update_interval_ncall):
         """
@@ -1398,8 +1442,10 @@ class ReactiveNestedSampler(object):
                             nicelogger(points=dict(u=active_u, p=active_p, logl=active_values), 
                                 info=dict(it=it, ncall=self.ncall, 
                                 logz=main_iterator.logZ, logz_remain=main_iterator.logZremain, 
+                                logvol=main_iterator.logVolremaining, 
                                 paramnames=self.paramnames + self.derivedparamnames,
-                                logvol=main_iterator.logVolremaining), 
+                                paramlims=self.transform_limits,
+                                ),
                                 region=self.region, transformLayer=self.transformLayer,
                                 region_fresh=region_fresh)
                             self.pointstore.flush()

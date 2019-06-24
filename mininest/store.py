@@ -101,7 +101,7 @@ class TextPointStore(FilePointStore):
 		self.nrows = 0
 		self.stack_empty = True
 		self._load(filepath)
-		self.fileobj = open(filepath, 'a')
+		self.fileobj = open(filepath, 'ab')
 		self.fmt = '%.18e'
 		self.delimiter = '\t'
 	
