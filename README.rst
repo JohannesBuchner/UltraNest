@@ -3,34 +3,50 @@ MiniNest Alpha
 
 Pre-release alpha software. Will probably be renamed later.
 
+Nested sampling for Bayesian inference on arbitrary user-defined likelihoods.
+
 Features
 =========
 
-* Nested sampling for Bayesian inference on arbitrary user-defined likelihoods
-* Robust, parameter-free MLFriends algorithm (metric learning RadFriends, Buchner (2014), Buchner (2019)
-* pip installable
-* MPI-support
-* Checkpointing and resuming
-* Resuming from a run with different number of live points
-* Wrapped/circular parameters
-* Storing derived values
+* Pythonic
+
+  * pip installable
+  * Easy to program for: Sanity checks with meaningful errors
+  * Can control the run programmatically and check status
+  * Reasonable defaults, but customizable
+
+* Checkpointing and resuming, even with different number of live points
+* Wrapped/circular parameters, derived parameters
 * Tracking solution modes
 * Run-time visualisations and exploration information
+* Corner plots
+
+* Robust exploration easily handles:
+
+  * Multiple modes 
+  * Degenerate parameter spaces such as bananas or tight correlations
+  * Uses the robust, parameter-free MLFriends algorithm (metric learning RadFriends, Buchner+14,+19)
+
 * strategic nested sampling
-  * vary (increase) number of live points (similar to dynamic nested sampling)
-  * to minimize parameter estimation uncertainties
-  * to minimize evidence uncertainties
-  * to sample clusters well
+
+  * can vary (increase) number of live points (similar to dynamic nested sampling)
+  * can sample clusters optimally (e.g., at least 50 points per cluster)
+  * can target minimizing parameter estimation uncertainties
+  * can target a desired evidence uncertainties
+  * can target a desired number of effective samples
+  * or any combination of the above
+
 * Very fast
 
   * some functions implemented in Cython
   * vectorized likelihood function calls
+  * MPI-support
 
 
 Coming soon
 =============
 
-* Support for stopping a run programmatically, and receiving feedback
+* Visualise logL-logV, parameter evolution & other nested sampling checking plots
 * Support for high-dimensional problems (>=20d)
 
 Usage
