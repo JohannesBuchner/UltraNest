@@ -295,7 +295,6 @@ def runplot(results, span=None, logplot=False, kde=True, nkde=1000,
             ax.plot(-logvol, d, color=c, **plot_kwargs)
         if i == 3 and lnz_error:
             if logplot:
-                print(logvol, logz, logzerr, d)
                 mask = logz >= ax.get_ylim()[0] - 10
                 [ax.fill_between(-logvol[mask], (logz + s*logzerr)[mask],
                                  (logz - s*logzerr)[mask], 
