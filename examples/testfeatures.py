@@ -140,7 +140,7 @@ def main(args):
     results = sampler.results
     sampler.plot()
     if results['logzerr_tail'] < 0.5 and results['logzerr'] < 1.0 and true_Z is not None and args.num_live_points > 50:
-        assert results['logz'] - results['logzerr'] * 2 < true_Z < results['logz'] + results['logzerr'] * 2
+        assert results['logz'] - results['logzerr'] * 3 < true_Z < results['logz'] + results['logzerr'] * 3
     return results
 
 def run_safely(runargs):
