@@ -135,12 +135,12 @@ def test_hdf5_store():
 		
 		try:
 			ptst = PointStore(filepath, 3)
-		except AssertionError:
+		except IOError:
 			pass
 		
 		try:
 			ptst = PointStore(filepath, 5)
-		except AssertionError:
+		except IOError:
 			pass
 		
 	finally:

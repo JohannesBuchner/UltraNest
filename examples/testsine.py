@@ -12,7 +12,8 @@ def main(args):
     period_true = 180
     amplitude_true = args.contrast / Ndata * jitter_true
     paramnames = ['amplitude', 'jitter', 'phase', 'period']
-    derivednames = ['frequency']
+    ndim = 4
+    derivednames = [] #'frequency']
     wrapped_params = [False, False, True, False]
     #wrapped_params = None
     
@@ -29,38 +30,68 @@ def main(args):
     
     
     def loglike(params):
-        amplitude, jitter, phase, period, freq = params.transpose()
+        amplitude, jitter, phase, period = params.transpose()[:4]
         predicty = amplitude * sin(x.reshape((-1,1)) / period * 2 * pi + phase)
         logl = (-0.5 * log(2 * pi * jitter**2) - 0.5 * ((predicty - y.reshape((-1,1))) / jitter)**2).sum(axis=0)
         assert logl.shape == jitter.shape
         return logl
     
     def transform(x):
-        z = np.empty((len(x), 5))
+        z = np.empty((len(x), 4))
         z[:,0] = 10**(x[:,0] * 4 - 2)
         z[:,1] = 10**(x[:,1] * 1 - 1.5)
         z[:,2] = 2 * pi * x[:,2]
         z[:,3] = 10**(x[:,3] * 4 - 1)
-        z[:,4] = 2 * pi / x[:,3]
+        #z[:,4] = 2 * pi / x[:,3]
         return z
 
+    loglike(transform(np.ones((2, ndim))*0.5))
+    if args.pymultinest:
+        from pymultinest.solve import solve
+        global Lmax
+        Lmax = -np.inf
+        
+        def flat_loglike(theta):
+            L = loglike(theta.reshape((1, -1)))[0]
+            global Lmax
+            if L > Lmax:
+                print("Like: %.2f" % L)
+                Lmax = L
+            return L
+        
+        def flat_transform(cube):
+            return transform(cube.reshape((1, -1)))[0]
+        
+        result = solve(LogLikelihood=flat_loglike, Prior=flat_transform, 
+            n_dims=ndim, outputfiles_basename=args.log_dir + 'MN-%dd' % ndim,
+            n_live_points=args.num_live_points,
+            verbose=True, resume=True, importance_nested_sampling=False)
+        
+        print()
+        print('evidence: %(logZ).1f +- %(logZerr).1f' % result)
+        print()
+        print('parameter values:')
+        for name, col in zip(paramnames, result['samples'].transpose()):
+            print('%15s : %.3f +- %.3f' % (name, col.mean(), col.std()))
+        return
     
-    loglike(transform(0.5 * np.ones((1, len(paramnames)))))
-    if args.reactive:
+    elif args.reactive:
         from mininest import ReactiveNestedSampler
         sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, 
             log_dir=args.log_dir, min_num_live_points=args.num_live_points,
             derived_param_names=derivednames, wrapped_params=wrapped_params,
             append_run_num=False)
-        sampler.run()
     else:
         from mininest import NestedSampler
         sampler = NestedSampler(paramnames, loglike, transform=transform, 
             log_dir=args.log_dir, num_live_points=args.num_live_points,
             derived_param_names=derivednames, wrapped_params=wrapped_params,
             append_run_num=False)
-        sampler.run(log_interval=100)
-    #sampler.plot()
+    
+    sampler.run()
+        
+    print()
+    sampler.plot()
     
     for i, p in enumerate(paramnames + derivednames):
         v = sampler.results['samples'][:,i]
@@ -74,23 +105,11 @@ if __name__ == '__main__':
                         help="Signal-to-Noise level")
     parser.add_argument('--ndata', type=int, default=40,
                         help="Number of simulated data points")
-    parser.add_argument('--train_iters', type=int, default=50,
-                        help="number of train iters")
-    parser.add_argument("--mcmc_steps", type=int, default=0)
     parser.add_argument("--num_live_points", type=int, default=1000)
-    parser.add_argument('--switch', type=float, default=-1)
-    parser.add_argument('--hidden_dim', type=int, default=128)
     parser.add_argument('--num_layers', type=int, default=1)
-    parser.add_argument('-use_gpu', action='store_true')
-    parser.add_argument('--flow', type=str, default='nvp')
-    parser.add_argument('--num_blocks', type=int, default=5)
-    parser.add_argument('--noise', type=float, default=-1)
-    parser.add_argument("--test_samples", type=int, default=0)
-    parser.add_argument("--test_mcmc_steps", type=int, default=1000)
-    parser.add_argument('--run_num', type=str, default='')
-    parser.add_argument('--num_slow', type=int, default=0)
     parser.add_argument('--log_dir', type=str, default='logs/testsine')
     parser.add_argument('--reactive', action='store_true', default=False)
+    parser.add_argument('--pymultinest', action='store_true')
 
     args = parser.parse_args()
     main(args)

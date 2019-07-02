@@ -165,7 +165,8 @@ class HDF5PointStore(FilePointStore):
 				maxshape=(None, self.ncols), dtype=np.float)
 		
 		self.nrows, ncols = self.fileobj['points'].shape
-		assert ncols == self.ncols
+		if ncols != self.ncols:
+			raise IOError("Tried to resume from file '%s', which has a different number of columns!" % (self.fileobj))
 		points = self.fileobj['points'][:]
 		self.stack = list(enumerate(points))
 		self.reset()

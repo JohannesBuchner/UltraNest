@@ -32,9 +32,9 @@ def round_parameterlimits(plo, phi, paramlimitguess=None):
     if paramlimitguess is not None:
         for i, (plo_guess, phi_guess) in enumerate(paramlimitguess):
             # if plo_guess is higher than what we thought, we can increase to match
-            if plo_guess <= plo[i] and plo_guess > plo_rounded[i] * 1.1:
+            if plo_guess <= plo[i] and plo_guess >= plo_rounded[i]:
                 plo_rounded[i] = plo_guess
-            if phi_guess >= phi[i] and phi_guess < phi_rounded[i] / 1.1:
+            if phi_guess >= phi[i] and phi_guess <= phi_rounded[i]:
                 phi_rounded[i] = phi_guess
     
     formats = []
@@ -83,6 +83,7 @@ def nicelogger(points, info, region, transformLayer, region_fresh=False):
         "Volume: ~%.2e" % region.estimate_volume(), '*' if region_fresh else ' ',
         "Expected Volume: %.2e" % np.exp(info['logvol']))
     
+    print()
     if ndim == 1:
         pass
     elif ndim == 2 and spearman is not None:
@@ -103,7 +104,6 @@ def nicelogger(points, info, region, transformLayer, region_fresh=False):
                     print("   %s between %s and %s: rho=%.2f" % (
                         'positive degeneracy' if rho[i,j] > 0 else 'negative degeneracy',
                         param, param2, rho[i,j]))
-    print()
     
     for i, (param, fmt) in enumerate(zip(paramnames, paramformats)):
         if nmodes == 1:

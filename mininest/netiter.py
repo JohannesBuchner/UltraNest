@@ -455,6 +455,7 @@ class MultiCounter(object):
         self.logZremainMax = np.inf
         self.logZremain = np.inf
         self.remainder_ratio = 1.0
+        self.remainder_fraction = 1.0
     
     @property
     def logZ_bs(self):
@@ -569,8 +570,9 @@ class MultiCounter(object):
         self.all_logZremain = V + log(np.sum(exp(parallel_values - Lmax))) + Lmax
         self.logZremainMax = self.all_logZremain.max()
         self.logZremain = self.all_logZremain[0]
-        with np.errstate(over='ignore'):
+        with np.errstate(over='ignore', under='ignore'):
             self.remainder_ratio = exp(self.logZremain - self.logZ)
+            self.remainder_fraction = 1.0 / (1 + exp(self.logZ - self.logZremain))
     
 def logz_sequence(root, pointpile, nbootstraps=12):
     """

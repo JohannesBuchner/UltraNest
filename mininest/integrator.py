@@ -867,20 +867,27 @@ class ReactiveNestedSampler(object):
         Ls.sort()
         #Ls = [node.value] + [n.value for rootid2, n in parallel_nodes]
         Lmax = Ls[-1]
-        Lmin = Ls[0] 
+        Lmin = Ls[0]
+        
+        # all points the same, stop
+        if Lmax - Lmin < 0.001:
+            return np.nan, np.nan
         
         # max remainder contribution is Lmax + weight, to be added to main_iterator.logZ
         # the likelihood that would add an equal amount as main_iterator.logZ is:
         logZmax = main_iterator.logZremain
-        Lnext = logZmax - (main_iterator.logVolremaining + log(frac_remain))
+        Lnext = logZmax - (main_iterator.logVolremaining + log(frac_remain)) - log(len(Ls))
         L1 = Ls[1] if len(Ls) > 1 else Ls[0]
-        Lnext = max(min(Lnext, Lmax), L1)
+        Lmax1 = Ls[-2] if len(Ls) > 1 else Ls[-1]
+        Lnext = max(min(Lnext, Lmax1), L1)
         
         # if the remainder dominates, return that range
         if main_iterator.logZremain > main_iterator.logZ:
             return Lmin, Lnext
-        if main_iterator.remainder_ratio > frac_remain:
+        
+        if main_iterator.remainder_fraction > frac_remain:
             return Lmin, Lnext
+        
         return np.nan, np.nan
     
     def find_strategy(self, saved_logl, main_iterator, dlogz, dKL, min_ess):
@@ -1034,7 +1041,7 @@ class ReactiveNestedSampler(object):
                     #self.logger.warn("Sampling seems stuck. Writing debug output file 'sampling-stuck-it%d.npz'..." % nit)
                     np.savez('sampling-stuck-it%d.npz' % nit, u=self.region.u, unormed=self.region.unormed, maxradiussq=self.region.maxradiussq, 
                         sample_u=u, sample_v=v, sample_logl=logl)
-                    warnings.warn("Sampling seems stuck, this could be numerical issue: You are probably trying to integrate to deep into the volume where all points become equal in logL; so cannot draw a higher point. Try loosening the quality constraints (increase dlogz, dKL, decrease min_ess). [%d/%d accepted, it=%d]" % (accepted.sum(), ndraw, nit))
+                    warnings.warn("Sampling seems stuck, this could be numerical issue: You are probably trying to integrate to deep into the volume where all points become equal in logL; so cannot draw a higher point. Try loosening the quality constraints (increase frac_remain, dlogz, dKL, decrease min_ess). [%d/%d accepted, it=%d]" % (accepted.sum(), ndraw, nit))
                     logl_region = self.loglike(self.transform(self.region.u))
                     if not (logl_region > Lmin).any():
                         raise ValueError("Region cannot sample a point. Perhaps you are resuming from a different problem? Delete the output files and start again.")
@@ -1474,7 +1481,7 @@ class ReactiveNestedSampler(object):
                         strategy_altered = np.isfinite(Llo_prev) != np.isfinite(Llo) or np.isfinite(Lhi_prev) != np.isfinite(Lhi)
                     
                     if self.log and strategy_altered:
-                        self.logger.debug("strategy update: L range to expand: %.1f-%.1f have: %.1f logZ=%.2f logZremain=%.2f" % (
+                        self.logger.debug("strategy update: L range to expand: %.3f-%.3f have: %.2f logZ=%.2f logZremain=%.2f" % (
                             Llo, Lhi, Lmin, main_iterator.logZ, main_iterator.logZremain))
                     
                     # when we are going to the peak, numerical accuracy
@@ -1567,8 +1574,8 @@ class ReactiveNestedSampler(object):
                         last_status = time.time()
                         ncall_here = self.ncall - ncall_at_run_start
                         it_here = it - it_at_first_region
-                        sys.stdout.write('Z=%.1f(%.2f%%) | Like=%.1f..%.1f | it/evals=%d/%d eff=%.4f%% N=%d \r' % (
-                              main_iterator.logZ, 100 - 100 / (1 + exp(main_iterator.logZ - main_iterator.logZremain)), 
+                        sys.stdout.write('Z=%.1f(%.2f%%) | Like=%.2f..%.2f | it/evals=%d/%d eff=%.4f%% N=%d \r' % (
+                              main_iterator.logZ, 100 * (1 - main_iterator.remainder_fraction), 
                               Lmin, main_iterator.Lmax, it, self.ncall, 
                               np.inf if ncall_here == 0 else it_here * 100 / ncall_here, 
                               nlive))

@@ -42,7 +42,7 @@ def main(args):
         sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, 
             min_num_live_points=args.num_live_points,
             log_dir=args.log_dir + 'RNS-%dd' % ndim, append_run_num=True)
-        sampler.run(frac_remain=0.5, min_ess=4000)
+        sampler.run(frac_remain=0.5, min_ess=400)
         sampler.print_results()
         sampler.plot()
     else:
@@ -62,7 +62,6 @@ if __name__ == '__main__':
                         help="Dimensionality")
     parser.add_argument("--num_live_points", type=int, default=1000)
     parser.add_argument('--switch', type=float, default=-1)
-    parser.add_argument('--sigma', type=float, default=0.01)
     parser.add_argument('--run_num', type=str, default='')
     parser.add_argument('--log_dir', type=str, default='logs/loggauss')
     parser.add_argument('--reactive', action='store_true')

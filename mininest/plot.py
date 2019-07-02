@@ -181,7 +181,7 @@ def runplot(results, span=None, logplot=False, kde=True, nkde=1000,
             mark_final_live = False
 
     # Determine plotting bounds for each subplot.
-    data = [nlive, np.exp(logl), np.exp(logwt), np.exp(logz)]
+    data = [nlive, np.exp(logl), np.exp(logwt), logz if logplot else np.exp(logz)]
     
     if kde:
         try:
@@ -209,8 +209,8 @@ def runplot(results, span=None, logplot=False, kde=True, nkde=1000,
             span[i] = (max(data[i]) * span[i], max(data[i]))
     if lnz_error and no_span:
         if logplot:
-            zspan = (np.exp(logz[-1] - 10.3 * 3. * logzerr[-1]),
-                     np.exp(logz[-1] + 1.3 * 3. * logzerr[-1]))
+            zspan = (logz[-1] - 10.3 * 3. * logzerr[-1],
+                     logz[-1] + 1.3 * 3. * logzerr[-1])
         else:
             zspan = (0., 1.05 * np.exp(logz[-1] + 3. * logzerr[-1]))
         span[3] = zspan
@@ -287,16 +287,24 @@ def runplot(results, span=None, logplot=False, kde=True, nkde=1000,
         ax.set_ylabel(labels[i], **label_kwargs)
         # Plot run.
         if logplot and i == 3:
-            ax.semilogy(-logvol, d, color=c, **plot_kwargs)
+            ax.plot(-logvol, d, color=c, **plot_kwargs)
             yspan = [ax.get_ylim() for _ax in axes]
         elif kde and i == 2:
             ax.plot(-logvol_new, d, color=c, **plot_kwargs)
         else:
             ax.plot(-logvol, d, color=c, **plot_kwargs)
         if i == 3 and lnz_error:
-            [ax.fill_between(-logvol, np.exp(logz + s*logzerr),
-                             np.exp(logz - s*logzerr), color=c, alpha=0.2)
-             for s in range(1, 4)]
+            if logplot:
+                print(logvol, logz, logzerr, d)
+                mask = logz >= ax.get_ylim()[0] - 10
+                [ax.fill_between(-logvol[mask], (logz + s*logzerr)[mask],
+                                 (logz - s*logzerr)[mask], 
+                                 color=c, alpha=0.2)
+                 for s in range(1, 4)]
+            else:
+                [ax.fill_between(-logvol, np.exp(logz + s*logzerr),
+                                 np.exp(logz - s*logzerr), color=c, alpha=0.2)
+                 for s in range(1, 4)]
         # Mark addition of final live points.
         if mark_final_live:
             ax.axvline(-logvol[live_idx], color=c, ls="dashed", lw=2,
@@ -306,7 +314,10 @@ def runplot(results, span=None, logplot=False, kde=True, nkde=1000,
                            **plot_kwargs)
         # Add truth value(s).
         if i == 3 and lnz_truth is not None:
-            ax.axhline(np.exp(lnz_truth), color=truth_color, **truth_kwargs)
+            if logplot:
+                ax.axhline(lnz_truth, color=truth_color, **truth_kwargs)
+            else:
+                ax.axhline(np.exp(lnz_truth), color=truth_color, **truth_kwargs)
 
     return fig, axes
 
