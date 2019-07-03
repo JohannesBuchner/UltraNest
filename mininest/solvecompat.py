@@ -18,7 +18,8 @@ def pymultinest_solve_compat(LogLikelihood, Prior, n_dims,
         paramnames=None,
         outputfiles_basename=None, resume=False, 
         n_live_points=400, evidence_tolerance=0.5, 
-        seed=-1, max_iter=0, wrapped_params=None, **kwargs
+        seed=-1, max_iter=0, wrapped_params=None, verbose=True,
+        **kwargs
     ):
 
     def vectorized_loglike(thetas):
@@ -31,7 +32,6 @@ def pymultinest_solve_compat(LogLikelihood, Prior, n_dims,
         paramnames = list(string.ascii_lowercase)[:n_dims]
     assert len(paramnames) == n_dims
     min_ess = kwargs.pop('min_ess', 400)
-    verbose = kwargs.get('verbose', True)
     frac_remain = kwargs.pop('frac_remain', 0.01)
     outputkwargs = {}
     if not verbose:
