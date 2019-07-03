@@ -521,6 +521,8 @@ class ReactiveNestedSampler(object):
                  num_test_samples=2,
                  draw_multiple=True,
                  num_bootstraps=30,
+                 viz_callback=nicelogger,
+                 show_status=True,
                  ):
         """
         
@@ -555,6 +557,13 @@ class ReactiveNestedSampler(object):
         
         num_bootstraps: number of logZ estimators and MLFriends region 
             bootstrap rounds.
+            
+        viz_callback: callback function when region was rebuilt. Allows to 
+            show current state of the live points. See nicelogger() function.
+            If no output desired, set to False.
+        
+        show_status: show integration progress as a status line. 
+            If no output desired, set to False.
         
         """
 
@@ -620,6 +629,8 @@ class ReactiveNestedSampler(object):
             self.pointstore = NullPointStore(2 + self.x_dim + self.num_params)
         
         self.set_likelihood_function(transform, loglike, num_test_samples)
+        self.viz_callback = viz_callback
+        self.show_status = show_status
     
     def set_likelihood_function(self, transform, loglike, num_test_samples, make_safe=True):
         
@@ -753,7 +764,7 @@ class ReactiveNestedSampler(object):
                 u, p, L = self.create_point(Lmin=n.value, ndraw=100)
                 child = self.pointpile.make_node(L, u, p)
                 n.children.append(child)
-                if self.log:
+                if self.log and self.show_status:
                     sys.stdout.write('%d/%d Region@%.1f Like=%.1f->%.1f | it/evals=%d/%d = %.4f%%  \r' % (
                           ndone, nnodes_needed, Lmin, n.value, L, 
                           i * nsamples + j + 1, self.ncall - initial_ncall,
@@ -1522,9 +1533,9 @@ class ReactiveNestedSampler(object):
                         # provide nice output to follow what is going on
                         # but skip if we are resuming
                         #  and (self.ncall != ncall_at_run_start and it_at_first_region == it)
-                        if self.log:
+                        if self.log and self.viz_callback:
                             active_p = self.pointpile.getp(active_node_ids)
-                            nicelogger(points=dict(u=active_u, p=active_p, logl=active_values), 
+                            self.viz_callback(points=dict(u=active_u, p=active_p, logl=active_values), 
                                 info=dict(it=it, ncall=self.ncall, 
                                 logz=main_iterator.logZ, logz_remain=main_iterator.logZremain, 
                                 logvol=main_iterator.logVolremaining, 
@@ -1574,12 +1585,13 @@ class ReactiveNestedSampler(object):
                         last_status = time.time()
                         ncall_here = self.ncall - ncall_at_run_start
                         it_here = it - it_at_first_region
-                        sys.stdout.write('Z=%.1f(%.2f%%) | Like=%.2f..%.2f | it/evals=%d/%d eff=%.4f%% N=%d \r' % (
-                              main_iterator.logZ, 100 * (1 - main_iterator.remainder_fraction), 
-                              Lmin, main_iterator.Lmax, it, self.ncall, 
-                              np.inf if ncall_here == 0 else it_here * 100 / ncall_here, 
-                              nlive))
-                        sys.stdout.flush()
+                        if self.show_status:
+                            sys.stdout.write('Z=%.1f(%.2f%%) | Like=%.2f..%.2f | it/evals=%d/%d eff=%.4f%% N=%d \r' % (
+                                  main_iterator.logZ, 100 * (1 - main_iterator.remainder_fraction), 
+                                  Lmin, main_iterator.Lmax, it, self.ncall, 
+                                  np.inf if ncall_here == 0 else it_here * 100 / ncall_here, 
+                                  nlive))
+                            sys.stdout.flush()
                         
                         # if efficiency becomes low, bulk-process larger arrays
                         if self.draw_multiple:
