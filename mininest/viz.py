@@ -107,12 +107,12 @@ def nicelogger(points, info, region, transformLayer, region_fresh=False):
     
     for i, (param, fmt) in enumerate(zip(paramnames, paramformats)):
         if nmodes == 1:
-            line = [' ' for i in range(width)]
+            line = [' ' for _ in range(width)]
             for j in np.unique(indices[:,i]):
                 line[j] = '*'
             linestr = ''.join(line)
         else:
-            line = [' ' for i in range(width)]
+            line = [' ' for _ in range(width)]
             for clusterid, j in zip(clusterids, indices[:,i]):
                 if clusterid > 0 and line[j] in (' ', '0'):
                     # set it to correct cluster id
