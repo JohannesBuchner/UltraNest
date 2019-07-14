@@ -302,19 +302,24 @@ class NestedSampler(object):
                     nextregion = MLFriends(active_u, nextTransformLayer)
                 
                 #print("computing maxradius...")
-                r = nextregion.compute_maxradiussq(nbootstraps=30 // self.mpi_size)
+                r, f = nextregion.compute_enlargement(nbootstraps=30 // self.mpi_size)
                 #print("MLFriends built. r=%f" % r**0.5)
                 if self.use_mpi:
                     recv_maxradii = self.comm.gather(r, root=0)
                     recv_maxradii = self.comm.bcast(recv_maxradii, root=0)
                     r = np.max(recv_maxradii)
+                    recv_enlarge = self.comm.gather(f, root=0)
+                    recv_enlarge = self.comm.bcast(recv_enlarge, root=0)
+                    f = np.max(recv_enlarge)
                 
                 nextregion.maxradiussq = r
+                nextregion.enlarge = f
                 # force shrinkage of volume
                 # this is to avoid re-connection of dying out nodes
                 if nextregion.estimate_volume() < region.estimate_volume():
                     region = nextregion
                     transformLayer = region.transformLayer
+                region.create_ellipsoid()
                 
                 if self.log:
                     nicelogger(points=dict(u=active_u, p=active_v, logl=active_logl), 
@@ -1118,14 +1123,21 @@ class ReactiveNestedSampler(object):
             self.region = MLFriends(active_u, self.transformLayer)
             self.region_nodes = active_node_ids.copy()
             assert self.region.maxradiussq is None
-            r = self.region.compute_maxradiussq(nbootstraps=nbootstraps // self.mpi_size)
+            r, f = self.region.compute_enlargement(nbootstraps=nbootstraps // self.mpi_size)
+            #print("MLFriends built. r=%f" % r**0.5)
             if self.use_mpi:
                 recv_maxradii = self.comm.gather(r, root=0)
                 recv_maxradii = self.comm.bcast(recv_maxradii, root=0)
                 r = np.max(recv_maxradii)
+                recv_enlarge = self.comm.gather(f, root=0)
+                recv_enlarge = self.comm.bcast(recv_enlarge, root=0)
+                f = np.max(recv_enlarge)
+            
             self.region.maxradiussq = r
+            self.region.enlarge = f
             #print("building first region... r=%e" % r)
-        
+
+
         assert self.transformLayer is not None
         need_accept = False
 
@@ -1137,12 +1149,18 @@ class ReactiveNestedSampler(object):
             oldu = self.region.u
             self.region.u = active_u
             self.region.set_transformLayer(self.transformLayer)
-            r = self.region.compute_maxradiussq(nbootstraps=nbootstraps // self.mpi_size)
+            r, f = self.region.compute_enlargement(nbootstraps=nbootstraps // self.mpi_size)
+            #print("MLFriends built. r=%f" % r**0.5)
             if self.use_mpi:
                 recv_maxradii = self.comm.gather(r, root=0)
                 recv_maxradii = self.comm.bcast(recv_maxradii, root=0)
                 r = np.max(recv_maxradii)
+                recv_enlarge = self.comm.gather(f, root=0)
+                recv_enlarge = self.comm.bcast(recv_enlarge, root=0)
+                f = np.max(recv_enlarge)
+            
             self.region.maxradiussq = r
+            self.region.enlarge = f
             
             #print("made first region, r=%e" % (r))
             
@@ -1216,19 +1234,19 @@ class ReactiveNestedSampler(object):
         
         #if self.log:
         #    self.logger.info("computing maxradius...")
-        r = nextregion.compute_maxradiussq(nbootstraps=nbootstraps // self.mpi_size)
-        #r = 0.
-        #for selected in bootstrap_rootids[:,active_rootids]:
-        #    a = nextregion.unormed[selected,:]
-        #    b = nextregion.unormed[~selected,:]
-        #    r = max(r, compute_maxradiussq(a, b))
-        
+        r, f = nextregion.compute_enlargement(nbootstraps=nbootstraps // self.mpi_size)
+        #print("MLFriends built. r=%f" % r**0.5)
         if self.use_mpi:
             recv_maxradii = self.comm.gather(r, root=0)
             recv_maxradii = self.comm.bcast(recv_maxradii, root=0)
             r = np.max(recv_maxradii)
+            recv_enlarge = self.comm.gather(f, root=0)
+            recv_enlarge = self.comm.bcast(recv_enlarge, root=0)
+            f = np.max(recv_enlarge)
         
         nextregion.maxradiussq = r
+        nextregion.enlarge = f
+        
         #print("MLFriends computed: r=%e nc=%d" % (r, nextTransformLayer.nclusters))
         # force shrinkage of volume
         # this is to avoid re-connection of dying out nodes
@@ -1241,6 +1259,7 @@ class ReactiveNestedSampler(object):
             
             assert not (self.transformLayer.clusterids == 0).any(), (self.transformLayer.clusterids, need_accept, updated)
         
+        self.region.create_ellipsoid()
         assert len(self.region.u) == len(self.transformLayer.clusterids)
         return updated
     

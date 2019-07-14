@@ -315,6 +315,23 @@ class AffineLayer(ScalingLayer):
         return np.dot(uu, self.invT) + self.ctr
 
 
+
+def make_eigvals_positive(a, targetprod):
+    """For the symmetric square matrix ``a``, increase any zero eigenvalues
+    to fulfill the given target product of eigenvalues.
+    Returns a (possibly) new matrix."""
+
+    w, v = np.linalg.eigh(a)  # Use eigh because we assume a is symmetric.
+    mask = w < 1.e-10
+    if np.any(mask):
+        nzprod = np.product(w[~mask])  # product of nonzero eigenvalues
+        nzeros = mask.sum()  # number of zero eigenvalues
+        w[mask] = (targetprod / nzprod) ** (1./nzeros)  # adjust zero eigvals
+        a = np.dot(np.dot(v, np.diag(w)), np.linalg.inv(v))  # re-form cov
+
+    return a
+
+
 class MLFriends(object):
     def __init__(self, u, transformLayer):
         if not np.logical_and(u > 0, u < 1).all():
@@ -359,6 +376,7 @@ class MLFriends(object):
         N, ndim = self.u.shape
         selected = np.empty(N, dtype=bool)
         maxd = 0
+        
         for i in range(nbootstraps):
             idx = np.random.randint(N, size=N)
             selected[:] = False
@@ -368,8 +386,45 @@ class MLFriends(object):
             
             # compute distances from a to b
             maxd = max(maxd, compute_maxradiussq(a, b))
+            
         assert maxd > 0, (maxd, self.u)
         return maxd
+
+    def compute_enlargement(self, nbootstraps=50):
+        """
+        Return MLFriends radius after nbootstraps bootstrapping rounds
+        """
+        N, ndim = self.u.shape
+        selected = np.empty(N, dtype=bool)
+        maxd = 0
+        maxf = 0
+        
+        for i in range(nbootstraps):
+            idx = np.random.randint(N, size=N)
+            selected[:] = False
+            selected[idx] = True
+            a = self.unormed[selected,:]
+            b = self.unormed[~selected,:]
+            
+            # compute distances from a to b
+            maxd = max(maxd, compute_maxradiussq(a, b))
+            
+            
+            # compute enlargement of bounding ellipsoid
+            ctr = np.mean(a, axis=0)
+            cov = np.cov(a - ctr, rowvar=0)
+            if ndim == 1:
+                cov = np.atleast_2d(cov)
+            cov *= (ndim + 2) # to account for uniform, not normal samples
+            a = np.linalg.inv(cov)  # inverse covariance
+            # compute expansion factor
+            delta = b - ctr
+            f = np.einsum('...i, ...i', np.tensordot(delta, a, axes=1), delta).max()
+            maxf = max(maxf, f)
+        
+        assert maxd > 0, (maxd, self.u, self.unormed)
+        assert maxf > 0, (maxf, self.u, self.unormed)
+        return maxd, maxf
     
     def sample_from_points(self, nsamples=100):
         """
@@ -386,6 +441,7 @@ class MLFriends(object):
         nnearby = np.empty(nsamples, dtype=int)
         count_nearby(self.unormed, v, self.maxradiussq, nnearby)
         vmask = np.random.uniform(high=nnearby) < 1
+        vmask[vmask] = self.inside_ellipsoid(v[vmask,:])
         w = self.transformLayer.untransform(v[vmask,:])
         wmask = np.logical_and(w > 0, w < 1).all(axis=1)
 
@@ -400,6 +456,7 @@ class MLFriends(object):
         nnearby = np.empty(nsamples, dtype=int)
         find_nearby(self.unormed, v, self.maxradiussq, nnearby)
         vmask = nnearby >= 0
+        vmask[vmask] = self.inside_ellipsoid(v[vmask,:])
         return u[vmask,:], nnearby[vmask]
     
     def sample_from_transformed_boundingbox(self, nsamples=100):
@@ -409,6 +466,8 @@ class MLFriends(object):
         nnearby = np.empty(nsamples, dtype=int)
         find_nearby(self.unormed, v, self.maxradiussq, nnearby)
         vmask = nnearby >= 0
+        vmask[vmask] = self.inside_ellipsoid(v[vmask,:])
+        
         # check if inside unit cube
         w = self.transformLayer.untransform(v[vmask,:])
         wmask = np.logical_and(w > 0, w < 1).all(axis=1)
@@ -428,4 +487,27 @@ class MLFriends(object):
         bpts = self.transformLayer.transform(pts)
         nnearby = np.empty(len(pts), dtype=int)
         find_nearby(self.unormed, bpts, self.maxradiussq, nnearby)
-        return nnearby != 0
+        mask = nnearby != 0
+        
+        # additionally require points to be inside bounding ellipsoid
+        mask[mask] = self.inside_ellipsoid(bpts[mask])
+        return mask
+
+    def create_ellipsoid(self):
+        assert self.enlarge is not None
+        # compute enlargement of bounding ellipsoid
+        ctr = np.mean(self.unormed, axis=0)
+        cov = np.cov(self.unormed - ctr, rowvar=0)
+        ndim = self.unormed.shape[1]
+        if ndim == 1:
+            cov = np.atleast_2d(cov)
+        cov *= (ndim + 2) # to account for uniform, not normal samples
+        self.ellipsoid_center = ctr
+        self.ellipsoid_invcov = np.linalg.inv(cov) / self.enlarge
+    
+    def inside_ellipsoid(self, bpts):
+        # to disable wrapping ellipsoid
+        return np.ones(len(bpts), dtype=bool)
+        d = (bpts - self.ellipsoid_center)
+        return np.einsum('ij,jk,ik->i', d, self.ellipsoid_invcov, d) <= 1.0
+    

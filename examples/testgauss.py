@@ -61,7 +61,7 @@ if __name__ == '__main__':
     parser.add_argument('--x_dim', type=int, default=2,
                         help="Dimensionality")
     parser.add_argument("--num_live_points", type=int, default=1000)
-    parser.add_argument('--switch', type=float, default=-1)
+    parser.add_argument('--sigma', type=float, default=0.01)
     parser.add_argument('--run_num', type=str, default='')
     parser.add_argument('--log_dir', type=str, default='logs/loggauss')
     parser.add_argument('--reactive', action='store_true')
