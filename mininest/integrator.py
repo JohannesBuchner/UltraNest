@@ -252,7 +252,10 @@ class NestedSampler(object):
         fraction_remain = 1.0
         ncall = num_live_points_missing  # number of calls we already made
         first_time = True
-        transformLayer = ScalingLayer(wrapped_dims=self.wrapped_axes)
+        if self.x_dim > 1:
+            transformLayer = AffineLayer(wrapped_dims=self.wrapped_axes)
+        else:
+            transformLayer = ScalingLayer(wrapped_dims=self.wrapped_axes)
         transformLayer.optimize(active_u, active_u)
         region = MLFriends(active_u, transformLayer)
         

@@ -279,6 +279,7 @@ class AffineLayer(ScalingLayer):
         self.invT = invT
         self.nclusters = nclusters
         self.wrapped_dims = wrapped_dims
+        self.has_wraps = len(wrapped_dims) > 0
         self.clusterids = clusterids
     
     def optimize(self, points, centered_points, clusterids=None):
