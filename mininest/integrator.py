@@ -299,7 +299,7 @@ class NestedSampler(object):
                     nextregion = MLFriends(active_u, nextTransformLayer)
                 
                 #print("computing maxradius...")
-                r = nextregion.compute_maxradiussq(nbootstraps=30 // self.mpi_size)
+                r = nextregion.compute_maxradiussq(nbootstraps=max(1, 30 // self.mpi_size))
                 #print("MLFriends built. r=%f" % r**0.5)
                 if self.use_mpi:
                     recv_maxradii = self.comm.gather(r, root=0)
@@ -1115,7 +1115,7 @@ class ReactiveNestedSampler(object):
             self.region = MLFriends(active_u, self.transformLayer)
             self.region_nodes = active_node_ids.copy()
             assert self.region.maxradiussq is None
-            r = self.region.compute_maxradiussq(nbootstraps=nbootstraps // self.mpi_size)
+            r = self.region.compute_maxradiussq(nbootstraps=max(1, nbootstraps // self.mpi_size))
             if self.use_mpi:
                 recv_maxradii = self.comm.gather(r, root=0)
                 recv_maxradii = self.comm.bcast(recv_maxradii, root=0)
@@ -1134,7 +1134,7 @@ class ReactiveNestedSampler(object):
             oldu = self.region.u
             self.region.u = active_u
             self.region.set_transformLayer(self.transformLayer)
-            r = self.region.compute_maxradiussq(nbootstraps=nbootstraps // self.mpi_size)
+            r = self.region.compute_maxradiussq(nbootstraps=max(1, nbootstraps // self.mpi_size))
             if self.use_mpi:
                 recv_maxradii = self.comm.gather(r, root=0)
                 recv_maxradii = self.comm.bcast(recv_maxradii, root=0)
@@ -1213,7 +1213,7 @@ class ReactiveNestedSampler(object):
         
         #if self.log:
         #    self.logger.info("computing maxradius...")
-        r = nextregion.compute_maxradiussq(nbootstraps=nbootstraps // self.mpi_size)
+        r = nextregion.compute_maxradiussq(nbootstraps=max(1, nbootstraps // self.mpi_size))
         #r = 0.
         #for selected in bootstrap_rootids[:,active_rootids]:
         #    a = nextregion.unormed[selected,:]
@@ -1435,7 +1435,9 @@ class ReactiveNestedSampler(object):
             
             explorer = BreadthFirstIterator(roots)
             # Integrating thing
-            main_iterator = MultiCounter(nroots=len(roots), nbootstraps=max(1, self.num_bootstraps // self.mpi_size), random=False)
+            main_iterator = MultiCounter(nroots=len(roots), 
+                nbootstraps=max(1, self.num_bootstraps // self.mpi_size), 
+                random=False)
             main_iterator.Lmax = max(Lmax, max(n.value for n in roots))
             
             self.transformLayer = None
