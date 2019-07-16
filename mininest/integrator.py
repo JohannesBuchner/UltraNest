@@ -1636,6 +1636,11 @@ class ReactiveNestedSampler(object):
                     self.logger.info('Reached maximum number of improvement loops.')
                 break
             
+            if ncall_at_run_start == self.ncall:
+                if self.log:
+                    self.logger.info('No changes made. Probably the strategy was to explore in the remainder, but it is irrelevant already; try decreasing frac_remain.')
+                break
+            
             Lmax = main_iterator.Lmax
             if len(region_sequence) > 0:
                 Lmin, nlive, nclusters = region_sequence[-1]
