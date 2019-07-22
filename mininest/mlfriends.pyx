@@ -193,6 +193,79 @@ def update_clusters(upoints, tpoints, maxradiussq, clusterids=None):
     #    np.savetxt("clusters%d_radius.txt" % nclusters, [maxradiussq])
     return nclusters, clusteridxs, overlapped_upoints
 
+
+
+def make_eigvals_positive(a, targetprod):
+    """For the symmetric square matrix ``a``, increase any zero eigenvalues
+    to fulfill the given target product of eigenvalues.
+    Returns a (possibly) new matrix."""
+
+    assert np.isfinite(a).all(), a
+    try:
+        w, v = np.linalg.eigh(a)  # Use eigh because we assume a is symmetric.
+    except np.linalg.LinAlgError as e:
+        print(a, targetprod)
+        raise e
+    mask = w < 1.e-10
+    if np.any(mask):
+        nzprod = np.product(w[~mask])  # product of nonzero eigenvalues
+        nzeros = mask.sum()  # number of zero eigenvalues
+        w[mask] = (targetprod / nzprod) ** (1./nzeros)  # adjust zero eigvals
+        a = np.dot(np.dot(v, np.diag(w)), np.linalg.inv(v))  # re-form cov
+
+    return a
+
+def bounding_ellipsoid(x, minvol=0.):
+    """Calculate bounding ellipsoid containing a set of points x.
+
+    Parameters
+    ----------
+    x : (npoints, ndim) ndarray
+        Coordinates of uniformly sampled points.
+    pointvol : float, optional
+        Used to set a minimum bound on the ellipsoid volume when
+        minvol is True.
+
+    Returns
+    -------
+    mean and covariance of points
+    """
+    # Function taken from nestle, MIT licensed, (C) kbarbary
+    
+    npoints, ndim = x.shape
+
+    # Calculate covariance of points
+    ctr = np.mean(x, axis=0)
+    delta = x - ctr
+    cov = np.cov(delta, rowvar=0)
+    assert np.isfinite(cov).all(), (cov, x)
+    if ndim == 1:
+        cov = np.atleast_2d(cov)
+    
+    # For a ball of uniformly distributed points, the covariance will be
+    # smaller than r^2 by a factor of 1/(n+2) [see, e.g.,
+    # http://mathoverflow.net/questions/35276/
+    # covariance-of-points-distributed-in-a-n-ball]. In nested sampling,
+    # we are supposing the points are uniformly distributed within
+    # an ellipse, so the same factor holds. Expand `cov`
+    # to compensate for that when defining the ellipse matrix:
+    cov *= (ndim + 2)
+
+    # Ensure that ``cov`` is nonsingular.
+    # It can be singular when the ellipsoid has zero volume, which happens
+    # when npoints <= ndim or when enough points are linear combinations
+    # of other points. (e.g., npoints = ndim+1 but one point is a linear
+    # combination of others). When this happens, we expand the ellipse
+    # in the zero dimensions to fulfill the volume expected from
+    # ``pointvol``.
+    #targetprod = (npoints * pointvol / vol_prefactor(ndim))**2
+    cov = make_eigvals_positive(cov, minvol)
+    
+    return ctr, cov
+
+
+
+
 class ScalingLayer(object):
     def __init__(self, mean=0, std=1, nclusters=1, wrapped_dims=[], clusterids=None):
         self.mean = mean
@@ -237,7 +310,7 @@ class ScalingLayer(object):
             points[:,i] = np.fmod(points[:,i] + cut, 1)
         return points
     
-    def optimize(self, points, centered_points, clusterids=None):
+    def optimize(self, points, centered_points, clusterids=None, minvol=0.):
         self.optimize_wrap(points)
         wrapped_points = self.wrap(points)
         self.mean = wrapped_points.mean(axis=0).reshape((1,-1))
@@ -253,7 +326,7 @@ class ScalingLayer(object):
             # if we have a value, update
             self.clusterids = clusterids
     
-    def create_new(self, upoints, maxradiussq):
+    def create_new(self, upoints, maxradiussq, minvol=0.):
         # perform clustering in transformed space
         uwpoints = self.wrap(upoints)
         tpoints = self.transform(upoints)
@@ -282,28 +355,37 @@ class AffineLayer(ScalingLayer):
         self.has_wraps = len(wrapped_dims) > 0
         self.clusterids = clusterids
     
-    def optimize(self, points, centered_points, clusterids=None):
+    def optimize(self, points, centered_points, clusterids=None, minvol=0.):
         self.optimize_wrap(points)
         wrapped_points = self.wrap(points)
         self.ctr = np.mean(wrapped_points, axis=0)
         cov = np.cov(centered_points, rowvar=0)
+        cov *= (len(self.ctr) + 2)
+        self.cov = cov
         eigval, eigvec = np.linalg.eigh(cov)
+        #if not (eigval > 0).all():
+        #    raise np.linalg.LinAlgError("Points on a hyperplane")
+        #assert (eigval > 0).all(), (eigval, eigvec, cov, points, centered_points)
+        #eigvalmin = np.product(eigval[eigval > 0]) / minvol
+        eigvalmin = eigval.max() * 1e-40
+        eigval[eigval < eigvalmin] = eigvalmin
         a = np.linalg.inv(cov)
         self.volscale = np.linalg.det(a)**-0.5
         
-        Lambda = np.diag(eigval)
-        self.T = eigvec
+        #Lambda = np.diag(eigval)
+        self.T = eigvec * eigval**-0.5
         self.invT = np.linalg.inv(self.T)
+        #print('transform used:', self.T, self.invT, 'cov:', cov, 'eigen:', eigval, eigvec)
         self.set_clusterids(clusterids=clusterids, npoints=len(points))
 
-    def create_new(self, upoints, maxradiussq):
+    def create_new(self, upoints, maxradiussq, minvol=0.):
         # perform clustering in transformed space
         uwpoints = self.wrap(upoints)
         tpoints = self.transform(upoints)
         nclusters, clusteridxs, overlapped_uwpoints = update_clusters(uwpoints, tpoints, maxradiussq, self.clusterids)
         #clusteridxs = track_clusters(clusteridxs, self.clusterids)
         s = AffineLayer(nclusters=nclusters, wrapped_dims=self.wrapped_dims, clusterids=clusteridxs)
-        s.optimize(upoints, overlapped_uwpoints)
+        s.optimize(upoints, overlapped_uwpoints, minvol=minvol)
         return s
     
     def transform(self, u):
@@ -311,25 +393,10 @@ class AffineLayer(ScalingLayer):
         return np.dot(w - self.ctr, self.T)
     
     def untransform(self, ww):
-        uu = self.unwrap(ww)
-        return np.dot(uu, self.invT) + self.ctr
+        w = np.dot(ww, self.invT) + self.ctr
+        u = self.unwrap(w).reshape(ww.shape)
+        return u
 
-
-
-def make_eigvals_positive(a, targetprod):
-    """For the symmetric square matrix ``a``, increase any zero eigenvalues
-    to fulfill the given target product of eigenvalues.
-    Returns a (possibly) new matrix."""
-
-    w, v = np.linalg.eigh(a)  # Use eigh because we assume a is symmetric.
-    mask = w < 1.e-10
-    if np.any(mask):
-        nzprod = np.product(w[~mask])  # product of nonzero eigenvalues
-        nzeros = mask.sum()  # number of zero eigenvalues
-        w[mask] = (targetprod / nzprod) ** (1./nzeros)  # adjust zero eigvals
-        a = np.dot(np.dot(v, np.diag(w)), np.linalg.inv(v))  # re-form cov
-
-    return a
 
 
 class MLFriends(object):
@@ -340,7 +407,12 @@ class MLFriends(object):
         self.u = u
         self.set_transformLayer(transformLayer)
         
-        self.sampling_methods = [self.sample_from_points, self.sample_from_transformed_boundingbox, self.sample_from_boundingbox]
+        self.sampling_methods = [
+            self.sample_from_transformed_boundingbox, 
+            self.sample_from_boundingbox,
+            self.sample_from_points, 
+            self.sample_from_wrapping_ellipsoid
+        ]
         self.current_sampling_method = self.sample_from_boundingbox
     
     def estimate_volume(self):
@@ -365,6 +437,7 @@ class MLFriends(object):
         """
         self.transformLayer = transformLayer
         self.unormed = self.transformLayer.transform(self.u)
+        assert np.isfinite(self.unormed).all(), (self.unormed, self.u)
         self.bbox_lo = self.unormed.min(axis=0)
         self.bbox_hi = self.unormed.max(axis=0)
         self.maxradiussq = None
@@ -390,11 +463,12 @@ class MLFriends(object):
         assert maxd > 0, (maxd, self.u)
         return maxd
 
-    def compute_enlargement(self, nbootstraps=50):
+    def compute_enlargement(self, nbootstraps=50, minvol=0.):
         """
         Return MLFriends radius after nbootstraps bootstrapping rounds
         """
         N, ndim = self.u.shape
+        assert np.isfinite(self.unormed).all(), self.unormed
         selected = np.empty(N, dtype=bool)
         maxd = 0
         maxf = 0
@@ -409,17 +483,13 @@ class MLFriends(object):
             # compute distances from a to b
             maxd = max(maxd, compute_maxradiussq(a, b))
             
-            
             # compute enlargement of bounding ellipsoid
-            ctr = np.mean(a, axis=0)
-            cov = np.cov(a - ctr, rowvar=0)
-            if ndim == 1:
-                cov = np.atleast_2d(cov)
-            cov *= (ndim + 2) # to account for uniform, not normal samples
+            ctr, cov = bounding_ellipsoid(self.unormed, minvol=minvol)
             a = np.linalg.inv(cov)  # inverse covariance
             # compute expansion factor
             delta = b - ctr
             f = np.einsum('...i, ...i', np.tensordot(delta, a, axes=1), delta).max()
+            assert np.isfinite(f), (ctr, cov, self.unormed, f, delta, a)
             maxf = max(maxf, f)
         
         assert maxd > 0, (maxd, self.u, self.unormed)
@@ -474,6 +544,26 @@ class MLFriends(object):
 
         return w[wmask,:], nnearby[vmask][wmask]
     
+    def sample_from_wrapping_ellipsoid(self, nsamples=100):
+        N, ndim = self.u.shape
+        # draw from rectangle in transformed space
+
+        z = np.random.normal(size=(nsamples, ndim))
+        u = z * (np.random.uniform(size=nsamples)**(1./ndim) / np.sqrt(np.sum(z**2, axis=1))).reshape((nsamples, 1))
+        #u = z * (np.sqrt(np.sum(z**2, axis=1))).reshape((nsamples, 1))
+        
+        v = self.ellipsoid_center + np.einsum('ij,kj->ki', self.ellipsoid_cov, u)
+        
+        nnearby = np.empty(nsamples, dtype=int)
+        find_nearby(self.unormed, v, self.maxradiussq, nnearby)
+        vmask = nnearby >= 0
+        
+        # check if inside unit cube
+        w = self.transformLayer.untransform(v[vmask,:])
+        wmask = np.logical_and(w > 0, w < 1).all(axis=1)
+
+        return w[wmask,:], nnearby[vmask][wmask]
+    
     def sample(self, nsamples=100):
         samples, idx = self.current_sampling_method(nsamples=nsamples)
         if len(samples) == 0:
@@ -481,7 +571,6 @@ class MLFriends(object):
             self.current_sampling_method = self.sampling_methods[np.random.randint(len(self.sampling_methods))]
             #print("switching to %s" % self.current_sampling_method)
         return samples, idx
-        
     
     def inside(self, pts):
         bpts = self.transformLayer.transform(pts)
@@ -493,21 +582,20 @@ class MLFriends(object):
         mask[mask] = self.inside_ellipsoid(bpts[mask])
         return mask
 
-    def create_ellipsoid(self):
+    def create_ellipsoid(self, minvol=0.0):
         assert self.enlarge is not None
         # compute enlargement of bounding ellipsoid
-        ctr = np.mean(self.unormed, axis=0)
-        cov = np.cov(self.unormed - ctr, rowvar=0)
-        ndim = self.unormed.shape[1]
-        if ndim == 1:
-            cov = np.atleast_2d(cov)
-        cov *= (ndim + 2) # to account for uniform, not normal samples
+        ctr, cov = bounding_ellipsoid(self.unormed, minvol=minvol)
+        a = np.linalg.inv(cov)
+
         self.ellipsoid_center = ctr
-        self.ellipsoid_invcov = np.linalg.inv(cov) / self.enlarge
+        self.ellipsoid_invcov = a / self.enlarge
+        self.ellipsoid_cov = cov * self.enlarge
     
     def inside_ellipsoid(self, bpts):
         # to disable wrapping ellipsoid
-        return np.ones(len(bpts), dtype=bool)
+        #return np.ones(len(bpts), dtype=bool)
+        
         d = (bpts - self.ellipsoid_center)
         return np.einsum('ij,jk,ik->i', d, self.ellipsoid_invcov, d) <= 1.0
     

@@ -99,11 +99,11 @@ def nicelogger(points, info, region, transformLayer, region_fresh=False):
                 if pval[i,j] < 0.01 and abs(rho[i,j]) > 0.99:
                     print("   perfect %s between %s and %s" % (
                         'positive relation' if rho[i,j] > 0 else 'negative relation',
-                        param, param2))
+                        param2, param))
                 elif pval[i,j] < 0.01 and abs(rho[i,j]) > 0.75:
                     print("   %s between %s and %s: rho=%.2f" % (
                         'positive degeneracy' if rho[i,j] > 0 else 'negative degeneracy',
-                        param, param2, rho[i,j]))
+                        param2, param, rho[i,j]))
     
     for i, (param, fmt) in enumerate(zip(paramnames, paramformats)):
         if nmodes == 1:

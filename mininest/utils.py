@@ -2,6 +2,7 @@ import logging
 import sys
 import os
 import numpy as np
+from numpy import pi
 import errno
 
 
@@ -169,3 +170,25 @@ def quantile(x, q, weights=None):
         cdf = np.append(0, cdf)  # ensure proper span
         quantiles = np.interp(q, cdf, x[idx]).tolist()
         return quantiles
+
+
+def vol_prefactor(n):
+    """Volume constant for an n-dimensional sphere:
+
+    for n even:      (2pi)^(n    /2) / (2 * 4 * ... * n)
+    for n odd :  2 * (2pi)^((n-1)/2) / (1 * 3 * ... * n)
+    """
+    if n % 2 == 0:
+        f = 1.
+        i = 2
+        while i <= n:
+            f *= (2. / i * pi)
+            i += 2
+    else:
+        f = 2.
+        i = 3
+        while i <= n:
+            f *= (2. / i * pi)
+            i += 2
+
+    return f

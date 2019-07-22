@@ -17,7 +17,7 @@ import logging
 import warnings
 from numpy import log, exp, logaddexp
 
-from .utils import create_logger, make_run_dir, resample_equal
+from .utils import create_logger, make_run_dir, resample_equal, vol_prefactor
 from mininest.mlfriends import MLFriends, AffineLayer, ScalingLayer, update_clusters, find_nearby
 from .store import TextPointStore, HDF5PointStore, NullPointStore
 from .viz import nicelogger
@@ -81,6 +81,7 @@ class NestedSampler(object):
         self.derivedparamnames = derived_param_names
         num_derived = len(self.derivedparamnames)
         self.num_params = x_dim + num_derived
+        self.volfactor = vol_prefactor(self.x_dim)
         if wrapped_params is None:
             self.wrapped_axes = []
         else:
@@ -316,7 +317,7 @@ class NestedSampler(object):
                 if nextregion.estimate_volume() < region.estimate_volume():
                     region = nextregion
                     transformLayer = region.transformLayer
-                region.create_ellipsoid()
+                region.create_ellipsoid(minvol=exp(-it / self.num_live_points) * self.volfactor)
                 
                 if self.log:
                     nicelogger(points=dict(u=active_u, p=active_v, logl=active_logl), 
@@ -626,6 +627,7 @@ class ReactiveNestedSampler(object):
         
         self.pointpile = PointPile(self.x_dim, self.num_params)
         self.ncall = 0
+        self.ncall_region = 0
         if self.log_to_disk:
             #self.pointstore = TextPointStore(os.path.join(self.logs['results'], 'points.tsv'), 2 + self.x_dim + self.num_params)
             self.pointstore = HDF5PointStore(os.path.join(self.logs['results'], 'points.hdf5'), 2 + self.x_dim + self.num_params)
@@ -711,6 +713,7 @@ class ReactiveNestedSampler(object):
         lims[1,:] = 1 - 1e-6
         self.transform_limits = self.transform(lims).transpose()
         
+        self.volfactor = vol_prefactor(self.x_dim)
 
     def widen_nodes(self, parents, nnodes_needed, update_interval_ncall):
         """
@@ -1011,7 +1014,6 @@ class ReactiveNestedSampler(object):
         """
         nit = 0
         while True:
-            nit += 1
             ib = self.ib
             if ib >= len(self.samples) and self.use_point_stack:
                 # root checks the point store
@@ -1088,6 +1090,7 @@ class ReactiveNestedSampler(object):
                     self.samplesv = np.array(v)
                     self.likes = np.array(logl)
                     self.ncall += nc
+                self.ncall_region += ndraw
                 
                 if self.log:
                     for ui, vi, logli in zip(self.samples, self.samplesv, self.likes):
@@ -1106,7 +1109,7 @@ class ReactiveNestedSampler(object):
     
     def update_region(self, active_u, active_node_ids, 
         bootstrap_rootids=None, active_rootids=None,
-        nbootstraps=30
+        nbootstraps=30, minvol=0.
     ):
         """
         Build a new MLFriends region from active_u
@@ -1115,12 +1118,15 @@ class ReactiveNestedSampler(object):
         updated = False
         if self.region is None:
             #print("building first region...")
-            self.transformLayer = ScalingLayer(wrapped_dims=self.wrapped_axes)
-            self.transformLayer.optimize(active_u, active_u)
+            if self.x_dim > 1:
+                self.transformLayer = AffineLayer(wrapped_dims=self.wrapped_axes)
+            else:
+                self.transformLayer = ScalingLayer(wrapped_dims=self.wrapped_axes)
+            self.transformLayer.optimize(active_u, active_u, minvol=minvol)
             self.region = MLFriends(active_u, self.transformLayer)
             self.region_nodes = active_node_ids.copy()
             assert self.region.maxradiussq is None
-            r, f = self.region.compute_enlargement(nbootstraps=max(1, nbootstraps // self.mpi_size))
+            r, f = self.region.compute_enlargement(nbootstraps=max(1, nbootstraps // self.mpi_size), minvol=minvol)
             #print("MLFriends built. r=%f" % r**0.5)
             if self.use_mpi:
                 recv_maxradii = self.comm.gather(r, root=0)
@@ -1146,7 +1152,7 @@ class ReactiveNestedSampler(object):
             oldu = self.region.u
             self.region.u = active_u
             self.region.set_transformLayer(self.transformLayer)
-            r, f = self.region.compute_enlargement(nbootstraps=max(1, nbootstraps // self.mpi_size))
+            r, f = self.region.compute_enlargement(nbootstraps=max(1, nbootstraps // self.mpi_size), minvol=minvol)
             #print("MLFriends built. r=%f" % r**0.5)
             if self.use_mpi:
                 recv_maxradii = self.comm.gather(r, root=0)
@@ -1203,7 +1209,7 @@ class ReactiveNestedSampler(object):
         # rebuild space
         #print()
         #print("rebuilding space...", active_u.shape, active_u)
-        nextTransformLayer = self.transformLayer.create_new(active_u, self.region.maxradiussq)
+        nextTransformLayer = self.transformLayer.create_new(active_u, self.region.maxradiussq, minvol=minvol)
         #nextTransformLayer = ScalingLayer(wrapped_dims=self.wrapped_axes)
         #nextTransformLayer.optimize(active_u, active_u)
         assert not (nextTransformLayer.clusterids == 0).any()
@@ -1256,7 +1262,7 @@ class ReactiveNestedSampler(object):
             
             assert not (self.transformLayer.clusterids == 0).any(), (self.transformLayer.clusterids, need_accept, updated)
         
-        self.region.create_ellipsoid()
+        self.region.create_ellipsoid(minvol=minvol)
         assert len(self.region.u) == len(self.transformLayer.clusterids)
         return updated
     
@@ -1445,7 +1451,7 @@ class ReactiveNestedSampler(object):
                 update_interval_ncall = nroots
             
             if log_interval is None:
-                log_interval = max(1, round(0.2 * nroots))
+                log_interval = max(1, round(0.1 * nroots))
             else:
                 log_interval = round(log_interval)
                 if log_interval < 1:
@@ -1488,6 +1494,7 @@ class ReactiveNestedSampler(object):
             saved_logl = []
             it = 0
             ncall_at_run_start = self.ncall
+            ncall_region_at_run_start = self.ncall_region
             #next_update_interval_ncall = -1
             next_update_interval_iter = -1
             last_status = time.time()
@@ -1521,7 +1528,7 @@ class ReactiveNestedSampler(object):
                     strategy_stale = Lhi - Llo < 0.01
                 
                 expand_node = self.should_node_be_expanded(it, Llo, Lhi, minimal_widths_sequence, node, active_values, max_ncalls, max_iters)
-                    
+                
                 region_fresh = False
                 if expand_node:
                     # sample a new point above Lmin
@@ -1535,7 +1542,8 @@ class ReactiveNestedSampler(object):
                             active_u=active_u, active_node_ids=active_node_ids, 
                             active_rootids=active_rootids, 
                             bootstrap_rootids=main_iterator.rootids[1:,],
-                            nbootstraps=self.num_bootstraps)
+                            nbootstraps=self.num_bootstraps, 
+                            minvol=exp(-it / nlive) * self.volfactor)
                         
                         nclusters = self.transformLayer.nclusters
                         region_sequence.append((Lmin, nlive, nclusters))
@@ -1607,16 +1615,21 @@ class ReactiveNestedSampler(object):
                         ncall_here = self.ncall - ncall_at_run_start
                         it_here = it - it_at_first_region
                         if self.show_status:
-                            sys.stdout.write('Z=%.1f(%.2f%%) | Like=%.2f..%.2f | it/evals=%d/%d eff=%.4f%% N=%d \r' % (
+                            sys.stdout.write('Z=%.1f(%.2f%%) | Like=%.2f..%.2f | it/evals=%d/%d eff=%.4f%% N=%d ndraw=%d[%s]\r' % (
                                   main_iterator.logZ, 100 * (1 - main_iterator.remainder_fraction), 
                                   Lmin, main_iterator.Lmax, it, self.ncall, 
                                   np.inf if ncall_here == 0 else it_here * 100 / ncall_here, 
-                                  nlive))
+                                  nlive, ndraw, self.region.current_sampling_method.__name__[len('sample_from_')]))
                             sys.stdout.flush()
                         
                         # if efficiency becomes low, bulk-process larger arrays
                         if self.draw_multiple:
-                            ndraw = max(128, min(16384, round((self.ncall - ncall_at_run_start + 1) / (it + 1) / self.mpi_size)))
+                            # inefficiency is the number of (region) proposals per successful number of iterations
+                            # but improves by parallelism (because we need only the per-process inefficiency)
+                            #sampling_inefficiency = (self.ncall - ncall_at_run_start + 1) / (it + 1) / self.mpi_size
+                            sampling_inefficiency = (self.ncall_region - ncall_region_at_run_start + 1) / (it + 1) / self.mpi_size
+                            #(self.ncall - ncall_at_run_start + 1) (self.ncall_region - self.ncall_region_at_run_start) / self.
+                            ndraw = max(128, min(16384, round(sampling_inefficiency)))
 
                 else:
                     # we do not want to count iterations without work
@@ -1799,24 +1812,25 @@ class ReactiveNestedSampler(object):
         
     
     def print_results(self, logZ=True, posterior=True):
-        print()
-        print('logZ = %(logz).3f +- %(logzerr).3f' % self.results)
-        print('  single instance: logZ = %(logz_single).3f +- %(logzerr_single).3f' % self.results)
-        print('  bootstrapped   : logZ = %(logz_bs).3f +- %(logzerr_bs).3f' % self.results)
-        print('  tail           : logZ = +- %(logzerr_tail).3f' % self.results)
-    
-        print()
-        for i, p in enumerate(self.paramnames + self.derivedparamnames):
-            v = self.results['samples'][:,i]
-            sigma = v.std()
-            med = v.mean()
-            if sigma == 0:
-                i = 3
-            else:
-                i = max(0, int(-np.floor(np.log10(sigma))) + 1)
-            fmt = '%%.%df' % i
-            fmts = '\t'.join(['    %-20s' + fmt + " +- " + fmt])
-            print(fmts % (p, med, sigma))
+        if self.log:
+            print()
+            print('logZ = %(logz).3f +- %(logzerr).3f' % self.results)
+            print('  single instance: logZ = %(logz_single).3f +- %(logzerr_single).3f' % self.results)
+            print('  bootstrapped   : logZ = %(logz_bs).3f +- %(logzerr_bs).3f' % self.results)
+            print('  tail           : logZ = +- %(logzerr_tail).3f' % self.results)
+        
+            print()
+            for i, p in enumerate(self.paramnames + self.derivedparamnames):
+                v = self.results['samples'][:,i]
+                sigma = v.std()
+                med = v.mean()
+                if sigma == 0:
+                    i = 3
+                else:
+                    i = max(0, int(-np.floor(np.log10(sigma))) + 1)
+                fmt = '%%.%df' % i
+                fmts = '\t'.join(['    %-20s' + fmt + " +- " + fmt])
+                print(fmts % (p, med, sigma))
     
     def plot(self):
         """
