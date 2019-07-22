@@ -20,6 +20,7 @@ Features
 * Tracking solution modes
 * Run-time visualisations and exploration information
 * Corner plots, run and parameter exploration diagnostic plots
+* Robust ln(Z) error bars
 
 * Robust exploration easily handles:
 
@@ -47,6 +48,7 @@ Coming soon
 =============
 
 * Support for high-dimensional problems (>=20d)
+* Resume from a different, but similar problem (data slightly different)
 
 Usage
 =============

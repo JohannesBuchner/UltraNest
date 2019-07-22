@@ -124,11 +124,12 @@ def test_overclustering_eggbox_update():
         data = np.load(os.path.join(here, "overclustered_%d.npz" % i))
         print("loading... done")
         
+        nsamples, mock.x_dim = data['u0'].shape
         noverlap = 0
         for i, u1 in enumerate(data['u']):
-            assert len((u1 == data['u0']).all(axis=1)) == len(data['u0'])
+            assert len((u1 == data['u0']).all(axis=1)) == nsamples
             noverlap += (u1 == data['u0']).all(axis=1).sum()
-        print("u0:%d -> u:%d : %d points are common" % (len(data['u0']), len(data['u']), noverlap))
+        print("u0:%d -> u:%d : %d points are common" % (nsamples, nsamples, noverlap))
         
         ReactiveNestedSampler.update_region(mock, data['u0'], data['u0'])
         nclusters = mock.transformLayer.nclusters
@@ -160,7 +161,7 @@ def test_overclustering_eggbox_update():
             plt.close()
         print(" --- end ---")
         
-        if len(data['u']) < len(data['u0']) or True:
+        if len(data['u']) < nsamples or True:
             # maxradius has to be invalidated if live points change
             print("setting maxradiussq to None")
             mock.region.maxradiussq = None
