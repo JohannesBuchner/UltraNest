@@ -11,7 +11,7 @@ def count_nearby(np.ndarray[np.float_t, ndim=2] apts,
 ):
     """
     For each point b in bpts
-    Count the number of points in a within radisu radiussq.
+    Count the number of points in a within radius radiussq.
     
     The number is written to nnearby (of same length as bpts).
     """

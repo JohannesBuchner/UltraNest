@@ -13,15 +13,15 @@ import csv
 import json
 import operator
 import time
-import logging
 import warnings
 from numpy import log, exp, logaddexp
 
 from .utils import create_logger, make_run_dir, resample_equal, vol_prefactor
-from mininest.mlfriends import MLFriends, AffineLayer, ScalingLayer, update_clusters, find_nearby
-from .store import TextPointStore, HDF5PointStore, NullPointStore
+from mininest.mlfriends import MLFriends, AffineLayer, ScalingLayer, find_nearby
+from .store import HDF5PointStore, NullPointStore
 from .viz import nicelogger
-from .netiter import PointPile, MultiCounter, BreadthFirstIterator, TreeNode, print_tree, count_tree, count_tree_between, find_nodes_before, logz_sequence
+from .netiter import PointPile, MultiCounter, BreadthFirstIterator, TreeNode, count_tree_between, find_nodes_before, logz_sequence
+#from .netiter import print_tree, count_tree
 
 import numpy as np
 
@@ -641,6 +641,7 @@ class ReactiveNestedSampler(object):
         self.set_likelihood_function(transform, loglike, num_test_samples)
         self.viz_callback = viz_callback
         self.show_status = show_status
+        self.stepsampler = None
     
     def set_likelihood_function(self, transform, loglike, num_test_samples, make_safe=True):
         
@@ -1008,6 +1009,99 @@ class ReactiveNestedSampler(object):
         return (Llo_Z, Lhi_Z), (Llo_KL, Lhi_KL), (Llo_ess, Lhi_ess)
     
     
+    def pump_region(self, Lmin, ndraw, nit):
+        # get new samples
+        self.stepsampler.advance(self.region, Lmin)
+        u, father = self.region.sample(nsamples=ndraw)
+        assert np.logical_and(u > 0, u < 1).all(), (u)
+        nu = u.shape[0]
+        if nu == 0:
+            v = np.empty((0, self.num_params))
+            logl = np.empty((0,))
+        else:
+            v = self.transform(u)
+            logl = self.loglike(v)
+        nc += nu
+        accepted = logl > Lmin
+        u = u[accepted,:]
+        v = v[accepted,:]
+        logl = logl[accepted]
+        
+        if self.use_mpi:
+            recv_samples = self.comm.gather(u, root=0)
+            recv_samplesv = self.comm.gather(v, root=0)
+            recv_likes = self.comm.gather(logl, root=0)
+            recv_nc = self.comm.gather(nc, root=0)
+            recv_samples = self.comm.bcast(recv_samples, root=0)
+            recv_samplesv = self.comm.bcast(recv_samplesv, root=0)
+            recv_likes = self.comm.bcast(recv_likes, root=0)
+            recv_nc = self.comm.bcast(recv_nc, root=0)
+            self.samples = np.concatenate(recv_samples, axis=0)
+            self.samplesv = np.concatenate(recv_samplesv, axis=0)
+            self.likes = np.concatenate(recv_likes, axis=0)
+            self.ncall += sum(recv_nc)
+        else:
+            self.samples = np.array(u)
+            self.samplesv = np.array(v)
+            self.likes = np.array(logl)
+            self.ncall += nc
+        self.ncall_region += ndraw
+        
+        if self.log:
+            for ui, vi, logli in zip(self.samples, self.samplesv, self.likes):
+                self.pointstore.add([Lmin, logli] + ui.tolist() + vi.tolist())
+    
+    def refill_samples(self, Lmin, ndraw, nit):
+        # get new samples
+        nc = 0
+        u, father = self.region.sample(nsamples=ndraw)
+        assert np.logical_and(u > 0, u < 1).all(), (u)
+        nu = u.shape[0]
+        if nu == 0:
+            v = np.empty((0, self.num_params))
+            logl = np.empty((0,))
+        else:
+            v = self.transform(u)
+            logl = self.loglike(v)
+        nc += nu
+        accepted = logl > Lmin
+        if nit >= 100000 / ndraw and nit % (100000 // ndraw) == 0:
+            #self.logger.warn("Sampling seems stuck. Writing debug output file 'sampling-stuck-it%d.npz'..." % nit)
+            np.savez('sampling-stuck-it%d.npz' % nit, u=self.region.u, unormed=self.region.unormed, maxradiussq=self.region.maxradiussq, 
+                sample_u=u, sample_v=v, sample_logl=logl)
+            warnings.warn("Sampling seems stuck, this could be numerical issue: You are probably trying to integrate to deep into the volume where all points become equal in logL; so cannot draw a higher point. Try loosening the quality constraints (increase frac_remain, dlogz, dKL, decrease min_ess). [%d/%d accepted, it=%d]" % (accepted.sum(), ndraw, nit))
+            logl_region = self.loglike(self.transform(self.region.u))
+            if not (logl_region > Lmin).any():
+                raise ValueError("Region cannot sample a point. Perhaps you are resuming from a different problem? Delete the output files and start again.")
+        
+        u = u[accepted,:]
+        v = v[accepted,:]
+        logl = logl[accepted]
+        
+        if self.use_mpi:
+            recv_samples = self.comm.gather(u, root=0)
+            recv_samplesv = self.comm.gather(v, root=0)
+            recv_likes = self.comm.gather(logl, root=0)
+            recv_nc = self.comm.gather(nc, root=0)
+            recv_samples = self.comm.bcast(recv_samples, root=0)
+            recv_samplesv = self.comm.bcast(recv_samplesv, root=0)
+            recv_likes = self.comm.bcast(recv_likes, root=0)
+            recv_nc = self.comm.bcast(recv_nc, root=0)
+            self.samples = np.concatenate(recv_samples, axis=0)
+            self.samplesv = np.concatenate(recv_samplesv, axis=0)
+            self.likes = np.concatenate(recv_likes, axis=0)
+            self.ncall += sum(recv_nc)
+        else:
+            self.samples = np.array(u)
+            self.samplesv = np.array(v)
+            self.likes = np.array(logl)
+            self.ncall += nc
+        self.ncall_region += ndraw
+        
+        if self.log:
+            for ui, vi, logli in zip(self.samples, self.samplesv, self.likes):
+                self.pointstore.add([Lmin, logli] + ui.tolist() + vi.tolist())
+    
     def create_point(self, Lmin, ndraw):
         """
         draw a new point above likelihood threshold Lmin
@@ -1041,63 +1135,16 @@ class ReactiveNestedSampler(object):
                 # skip if we already know it is not useful
                 ib = 0 if np.isfinite(self.likes[0]) else 1
             
-            while ib >= len(self.samples):
-                # get new samples
-                ib = 0
-                
-                nc = 0
-                nit += 1
-                u, father = self.region.sample(nsamples=ndraw)
-                assert np.logical_and(u > 0, u < 1).all(), (u)
-                nu = u.shape[0]
-                if nu == 0:
-                    v = np.empty((0, self.num_params))
-                    logl = np.empty((0,))
-                else:
-                    v = self.transform(u)
-                    logl = self.loglike(v)
-                nc += nu
-                accepted = logl > Lmin
-                if nit >= 100000 / ndraw and nit % (100000 // ndraw) == 0:
-                    #self.logger.warn("Sampling seems stuck. Writing debug output file 'sampling-stuck-it%d.npz'..." % nit)
-                    np.savez('sampling-stuck-it%d.npz' % nit, u=self.region.u, unormed=self.region.unormed, maxradiussq=self.region.maxradiussq, 
-                        sample_u=u, sample_v=v, sample_logl=logl)
-                    warnings.warn("Sampling seems stuck, this could be numerical issue: You are probably trying to integrate to deep into the volume where all points become equal in logL; so cannot draw a higher point. Try loosening the quality constraints (increase frac_remain, dlogz, dKL, decrease min_ess). [%d/%d accepted, it=%d]" % (accepted.sum(), ndraw, nit))
-                    logl_region = self.loglike(self.transform(self.region.u))
-                    if not (logl_region > Lmin).any():
-                        raise ValueError("Region cannot sample a point. Perhaps you are resuming from a different problem? Delete the output files and start again.")
-                
-                u = u[accepted,:]
-                v = v[accepted,:]
-                logl = logl[accepted]
-                father = father[accepted]
-                
-                if self.use_mpi:
-                    recv_father = self.comm.gather(father, root=0)
-                    recv_samples = self.comm.gather(u, root=0)
-                    recv_samplesv = self.comm.gather(v, root=0)
-                    recv_likes = self.comm.gather(logl, root=0)
-                    recv_nc = self.comm.gather(nc, root=0)
-                    recv_father = self.comm.bcast(recv_father, root=0)
-                    recv_samples = self.comm.bcast(recv_samples, root=0)
-                    recv_samplesv = self.comm.bcast(recv_samplesv, root=0)
-                    recv_likes = self.comm.bcast(recv_likes, root=0)
-                    recv_nc = self.comm.bcast(recv_nc, root=0)
-                    self.samples = np.concatenate(recv_samples, axis=0)
-                    self.samplesv = np.concatenate(recv_samplesv, axis=0)
-                    self.father = np.concatenate(recv_father, axis=0)
-                    self.likes = np.concatenate(recv_likes, axis=0)
-                    self.ncall += sum(recv_nc)
-                else:
-                    self.samples = np.array(u)
-                    self.samplesv = np.array(v)
-                    self.likes = np.array(logl)
-                    self.ncall += nc
-                self.ncall_region += ndraw
-                
-                if self.log:
-                    for ui, vi, logli in zip(self.samples, self.samplesv, self.likes):
-                        self.pointstore.add([Lmin, logli] + ui.tolist() + vi.tolist())
+            if self.stepsampler is None:
+                while ib >= len(self.samples):
+                    ib = 0
+                    self.refill_samples(Lmin, ndraw, nit)
+                    nit += 1
+            else:
+                while ib >= len(self.samples):
+                    ib = 0
+                    self.pump_region(Lmin, ndraw, nit)
+                    nit += 1
             
             if self.likes[ib] > Lmin:
                 u = self.samples[ib, :]
