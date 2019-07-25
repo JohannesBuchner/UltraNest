@@ -8,14 +8,15 @@ import errno
 
 def create_logger(module_name, log_dir=None, level=logging.INFO):
     logger = logging.getLogger(module_name)
-    if log_dir is not None and logger.handlers == []:
+    first_logger = logger.handlers == []
+    if log_dir is not None and first_logger:
         logger.setLevel(logging.DEBUG)
         # create file handler which logs even debug messages
         handler = logging.FileHandler(os.path.join(log_dir, 'debug.log'))
         formatter = logging.Formatter('[{}] [%(levelname)s] %(message)s'.format(module_name))
         handler.setFormatter(formatter)
         logger.addHandler(handler)
-    elif logger.handlers == [] and False:
+    if first_logger:
         logger.setLevel(logging.DEBUG)
         # if it is new, register to write to stdout
         handler = logging.StreamHandler(sys.stdout)
