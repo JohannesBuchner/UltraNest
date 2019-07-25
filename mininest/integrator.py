@@ -1050,6 +1050,12 @@ class ReactiveNestedSampler(object):
                 u, father = self.region.sample(nsamples=ndraw)
                 assert np.logical_and(u > 0, u < 1).all(), (u)
                 nu = u.shape[0]
+                if nu > 1 and not self.draw_multiple:
+                    # only evaluate one sample at a time
+                    u = u[:1,:]
+                    father = father[:1]
+                    nu = 1
+                
                 if nu == 0:
                     v = np.empty((0, self.num_params))
                     logl = np.empty((0,))
@@ -1770,7 +1776,10 @@ class ReactiveNestedSampler(object):
         w = saved_wt0 / saved_wt0.sum()
         ess = len(w) / (1.0 + ((len(w) * w - 1)**2).sum() / len(w))
         tail_fraction = w[np.asarray(main_iterator.istail)].sum()
-        logzerr_tail = logaddexp(log(tail_fraction) + main_iterator.logZ, main_iterator.logZ) - main_iterator.logZ
+        if tail_fraction != 0:
+            logzerr_tail = logaddexp(log(tail_fraction) + main_iterator.logZ, main_iterator.logZ) - main_iterator.logZ
+        else:
+            logzerr_tail = 0
         
         logzerr_bs = (logZ_bs - main_iterator.logZ).max()
         logzerr_total = (logzerr_tail**2 + logzerr_bs**2)**0.5
