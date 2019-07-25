@@ -19,7 +19,7 @@ except:
 
 setup(
     name = "mininest",
-    version = "0.1",
+    version = "0.2",
     author = "Johannes Buchner",
     author_email = "johannes.buchner.acad@gmx.com",
     description = "Reactive Nested Sampling",
