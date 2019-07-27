@@ -13,7 +13,8 @@ def create_logger(module_name, log_dir=None, level=logging.INFO):
         logger.setLevel(logging.DEBUG)
         # create file handler which logs even debug messages
         handler = logging.FileHandler(os.path.join(log_dir, 'debug.log'))
-        formatter = logging.Formatter('[{}] [%(levelname)s] %(message)s'.format(module_name))
+        formatter = logging.Formatter('%(asctime)s [{}] [%(levelname)s] %(message)s'.format(module_name),
+            datefmt='%H:%M:%S')
         handler.setFormatter(formatter)
         logger.addHandler(handler)
     if first_logger:
