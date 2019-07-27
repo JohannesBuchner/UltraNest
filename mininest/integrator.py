@@ -604,6 +604,7 @@ class ReactiveNestedSampler(object):
             self.mpi_rank = self.comm.Get_rank()
             if self.mpi_size > 1:
                 self.use_mpi = True
+                self.setup_distributed_seeds()
         except:
             self.mpi_size = 1
             self.mpi_rank = 0
@@ -612,6 +613,7 @@ class ReactiveNestedSampler(object):
         self.log_to_disk = self.log and log_dir is not None
 
         if self.log and log_dir is not None:
+            print('MPI:', self.use_mpi, self.mpi_size, self.mpi_rank, '... making dirs...')
             self.logs = make_run_dir(log_dir, run_num, append_run_num= append_run_num)
             log_dir = self.logs['run_dir']
         else:
@@ -641,6 +643,20 @@ class ReactiveNestedSampler(object):
         self.set_likelihood_function(transform, loglike, num_test_samples)
         self.viz_callback = viz_callback
         self.show_status = show_status
+    
+    def setup_distributed_seeds(self):
+        if not self.use_mpi:
+            return
+        seed = 0
+        if self.mpi_rank == 0:
+            seed = np.random.randint(0, 1000000)
+        
+        seed = self.comm.bcast(seed, root=0)
+        if self.mpi_rank > 0:
+            # from http://arxiv.org/abs/1005.4117
+            seed = int(abs(((seed * 181)*((self.mpi_rank - 83) * 359)) % 104729))
+            print('setting seed:', self.mpi_rank, seed)
+            np.random.seed(seed)
     
     def set_likelihood_function(self, transform, loglike, num_test_samples, make_safe=True):
         
@@ -1794,6 +1810,7 @@ class ReactiveNestedSampler(object):
             logzerr_single=(main_iterator.all_H[0] / self.min_num_live_points)**0.5,
             ess=ess,
             paramnames=self.paramnames + self.derivedparamnames,
+            ncall=self.ncall,
         )
         if self.log_to_disk:
             if self.log:
