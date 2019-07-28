@@ -604,6 +604,7 @@ class ReactiveNestedSampler(object):
             self.mpi_rank = self.comm.Get_rank()
             if self.mpi_size > 1:
                 self.use_mpi = True
+                self.setup_distributed_seeds()
         except:
             self.mpi_size = 1
             self.mpi_rank = 0
@@ -642,6 +643,20 @@ class ReactiveNestedSampler(object):
         self.viz_callback = viz_callback
         self.show_status = show_status
         self.stepsampler = None
+    
+    def setup_distributed_seeds(self):
+        if not self.use_mpi:
+            return
+        seed = 0
+        if self.mpi_rank == 0:
+            seed = np.random.randint(0, 1000000)
+        
+        seed = self.comm.bcast(seed, root=0)
+        if self.mpi_rank > 0:
+            # from http://arxiv.org/abs/1005.4117
+            seed = int(abs(((seed * 181)*((self.mpi_rank - 83) * 359)) % 104729))
+            print('setting seed:', self.mpi_rank, seed)
+            np.random.seed(seed)
     
     def set_likelihood_function(self, transform, loglike, num_test_samples, make_safe=True):
         
@@ -1028,6 +1043,8 @@ class ReactiveNestedSampler(object):
             logl = logl.reshape((1,))
         
         if self.use_mpi:
+            #if self.mpi_rank == 0:
+            #    print("syncing...")
             recv_samples = self.comm.gather(u, root=0)
             recv_samplesv = self.comm.gather(v, root=0)
             recv_likes = self.comm.gather(logl, root=0)
@@ -1040,6 +1057,8 @@ class ReactiveNestedSampler(object):
             self.samplesv = np.concatenate(recv_samplesv, axis=0)
             self.likes = np.concatenate(recv_likes, axis=0)
             self.ncall += sum(recv_nc)
+            #if self.mpi_rank == 0:
+            #    print("syncing done.")
         else:
             self.samples = u
             self.samplesv = v
@@ -1819,7 +1838,10 @@ class ReactiveNestedSampler(object):
         w = saved_wt0 / saved_wt0.sum()
         ess = len(w) / (1.0 + ((len(w) * w - 1)**2).sum() / len(w))
         tail_fraction = w[np.asarray(main_iterator.istail)].sum()
-        logzerr_tail = logaddexp(log(tail_fraction) + main_iterator.logZ, main_iterator.logZ) - main_iterator.logZ
+        if tail_fraction != 0:
+            logzerr_tail = logaddexp(log(tail_fraction) + main_iterator.logZ, main_iterator.logZ) - main_iterator.logZ
+        else:
+            logzerr_tail = 0
         
         logzerr_bs = (logZ_bs - main_iterator.logZ).max()
         logzerr_total = (logzerr_tail**2 + logzerr_bs**2)**0.5
@@ -1834,6 +1856,7 @@ class ReactiveNestedSampler(object):
             logzerr_single=(main_iterator.all_H[0] / self.min_num_live_points)**0.5,
             ess=ess,
             paramnames=self.paramnames + self.derivedparamnames,
+            ncall=self.ncall,
         )
         if self.log_to_disk:
             if self.log:

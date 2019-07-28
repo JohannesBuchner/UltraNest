@@ -7,15 +7,17 @@ import errno
 
 
 def create_logger(module_name, log_dir=None, level=logging.INFO):
-    logger = logging.getLogger(module_name)
-    if log_dir is not None and logger.handlers == []:
+    logger = logging.getLogger(str(module_name))
+    first_logger = logger.handlers == []
+    if log_dir is not None and first_logger:
         logger.setLevel(logging.DEBUG)
         # create file handler which logs even debug messages
         handler = logging.FileHandler(os.path.join(log_dir, 'debug.log'))
-        formatter = logging.Formatter('[{}] [%(levelname)s] %(message)s'.format(module_name))
+        formatter = logging.Formatter('%(asctime)s [{}] [%(levelname)s] %(message)s'.format(module_name),
+            datefmt='%H:%M:%S')
         handler.setFormatter(formatter)
         logger.addHandler(handler)
-    elif logger.handlers == [] and False:
+    if first_logger:
         logger.setLevel(logging.DEBUG)
         # if it is new, register to write to stdout
         handler = logging.StreamHandler(sys.stdout)
@@ -28,11 +30,18 @@ def create_logger(module_name, log_dir=None, level=logging.INFO):
 
 def make_run_dir(log_dir, run_num=None, append_run_num=True):
     """Generates a new numbered directory for this run to store output"""
-    try:
-        os.makedirs(log_dir)
-    except OSError as e:
-        if e.errno != errno.EEXIST:
-            raise
+    def makedirs(name):
+        # for Python2 compatibility:
+        try:
+            os.makedirs(name)
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                raise
+        # Python 3:
+        # os.makedirs(name, exist_ok=True)
+    
+    makedirs(log_dir)
+    
     if run_num is None or run_num == '':
         run_num = (sum(os.path.isdir(os.path.join(log_dir,i))
                       for i in os.listdir(log_dir)) + 1)
@@ -42,13 +51,13 @@ def make_run_dir(log_dir, run_num=None, append_run_num=True):
         run_dir = log_dir
     if not os.path.isdir(run_dir):
         print('Creating directory for new run %s' % run_dir)
-        os.makedirs(run_dir)
+        makedirs(run_dir)
     if not os.path.isdir(os.path.join(run_dir, 'info')):
-        os.makedirs(os.path.join(run_dir, 'info'))
-        os.makedirs(os.path.join(run_dir, 'results'))
-        os.makedirs(os.path.join(run_dir, 'chains'))
-        os.makedirs(os.path.join(run_dir, 'extra'))
-        os.makedirs(os.path.join(run_dir, 'plots'))
+        makedirs(os.path.join(run_dir, 'info'))
+        makedirs(os.path.join(run_dir, 'results'))
+        makedirs(os.path.join(run_dir, 'chains'))
+        makedirs(os.path.join(run_dir, 'extra'))
+        makedirs(os.path.join(run_dir, 'plots'))
 
     return {'run_dir': run_dir,
             'info': os.path.join(run_dir, 'info'),

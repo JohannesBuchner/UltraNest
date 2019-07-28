@@ -9,7 +9,9 @@ def test_run():
     def loglike(z):
         a = np.array([-0.5 * sum([((xi - 0.83456 + i*0.1)/0.5)**2 for i, xi in enumerate(x)]) for x in z])
         b = np.array([-0.5 * sum([((xi - 0.43456 - i*0.1)/0.5)**2 for i, xi in enumerate(x)]) for x in z])
+        loglike.ncalls += len(a)
         return np.logaddexp(a, b)
+    loglike.ncalls = 0
 
     def transform(x):
         return 10. * x - 5.
@@ -18,25 +20,62 @@ def test_run():
 
     sampler = NestedSampler(paramnames, loglike, transform=transform, num_live_points=400)
     r = sampler.run(log_interval=50)
+    
+    ncalls = loglike.ncalls
+    if sampler.mpi_size > 1:
+        ncalls = sampler.comm.gather(ncalls, root=0)
+        if sampler.mpi_rank == 0:
+            print("ncalls on the different MPI ranks:", ncalls)
+        ncalls = sum(sampler.comm.bcast(ncalls, root=0))
+    assert abs(r['ncall'] - ncalls) <= 2 * sampler.mpi_size, (r['ncall'], ncalls)
     open('nestedsampling_results.txt', 'a').write("%.3f\n" % r['logz'])
     sampler.plot()
 
 def test_reactive_run():
     from mininest import ReactiveNestedSampler
+    np.random.seed(1)
+    evals = set()
 
     def loglike(z):
+        #print(loglike.ncalls, z[0,0])
+        [evals.add(str(x[0])) for x in z]
         a = np.array([-0.5 * sum([((xi - 0.83456 + i*0.1)/0.5)**2 for i, xi in enumerate(x)]) for x in z])
         b = np.array([-0.5 * sum([((xi - 0.43456 - i*0.1)/0.5)**2 for i, xi in enumerate(x)]) for x in z])
+        loglike.ncalls += len(a)
         return np.logaddexp(a, b)
+    loglike.ncalls = 0
 
     def transform(x):
         return 10. * x - 5.
     
     paramnames = ['Hinz', 'Kunz']
 
-    sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, min_num_live_points=400)
+    sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, 
+        min_num_live_points=400, draw_multiple=False)
     r = sampler.run(log_interval=50)
-    open('nestedsampling_reactive_results.txt', 'a').write("%.3f\n" % r['logz'])
+    ncalls = loglike.ncalls
+    nunique = len(evals)
+    if sampler.mpi_size > 1:
+        ncalls = sampler.comm.gather(ncalls, root=0)
+        if sampler.mpi_rank == 0:
+            print("ncalls on the different MPI ranks:", ncalls)
+        ncalls = sum(sampler.comm.bcast(ncalls, root=0))
+
+        allevals = sampler.comm.gather(evals, root=0)
+        if sampler.mpi_rank == 0:
+            print("evals on the different MPI ranks:", [len(e) for e in allevals])
+            allevals = len(set.union(*allevals))
+        else:
+            allevals = None
+        nunique = sampler.comm.bcast(allevals, root=0)
+    
+    if sampler.mpi_rank == 0:
+        print('ncalls:', ncalls, 'nunique:', nunique)
+    
+    assert abs(r['ncall'] - ncalls) <= 2 * sampler.mpi_size, (r['ncall'], ncalls)
+    assert ncalls == nunique, (ncalls, nunique)
+    if sampler.mpi_rank == 0:
+        open('nestedsampling_reactive_results.txt', 'a').write("%.3f\n" % r['logz'])
     sampler.plot()
 
 @pytest.mark.parametrize("dlogz", [0.5, 0.1, 0.01])
@@ -110,7 +149,7 @@ def test_reactive_run_resume_eggbox():
                 cluster_num_live_points=0,
                 append_run_num=False, 
                 )
-            r = sampler.run()
+            sampler.run()
             sampler.print_results()
             sampler.pointstore.close()
             #last_results = r
@@ -145,8 +184,8 @@ def test_run_compat():
     
 
 if __name__ == '__main__':
-    test_run_compat()
+    #test_run_compat()
     #test_run_resume(dlogz=0.5)
     #test_reactive_run_resume(dlogz=0.5, min_ess=1000)
-    #test_reactive_run()
-    #test_run()
+    test_reactive_run()
+    test_run()
