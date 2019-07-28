@@ -523,7 +523,7 @@ class ReactiveNestedSampler(object):
                  wrapped_params=None,
                  derived_param_names=[],
                  run_num=None,
-                 log_dir='logs/test',
+                 log_dir=None,
                  min_num_live_points=100,
                  cluster_num_live_points=40,
                  max_num_live_points_for_efficiency=400,
@@ -765,6 +765,7 @@ class ReactiveNestedSampler(object):
                 #if self.log:
                 #    self.logger.info('Making region from %d parents at L=%.1f...' % (len(active_nodes), Lmin))
                 active_node_ids = [n.id for n in active_nodes]
+                active_values = [n.value for n in active_nodes]
                 active_u = self.pointpile.getu(active_node_ids)
                 self.update_region(
                     active_u=active_u, active_node_ids=active_node_ids)
@@ -773,7 +774,7 @@ class ReactiveNestedSampler(object):
                 next_update_interval_ncall = self.ncall + update_interval_ncall
             
             for j in range(nsamples):
-                u, p, L = self.create_point(Lmin=n.value, ndraw=100)
+                u, p, L = self.create_point(Lmin=n.value, ndraw=100, active_u=active_u, active_values=active_values)
                 child = self.pointpile.make_node(L, u, p)
                 n.children.append(child)
                 if self.log and self.show_status:
@@ -1009,23 +1010,22 @@ class ReactiveNestedSampler(object):
         return (Llo_Z, Lhi_Z), (Llo_KL, Lhi_KL), (Llo_ess, Lhi_ess)
     
     
-    def pump_region(self, Lmin, ndraw, nit):
+    def pump_region(self, Lmin, ndraw, nit, active_u, active_values):
         # get new samples
-        self.stepsampler.advance(self.region, Lmin)
-        u, father = self.region.sample(nsamples=ndraw)
-        assert np.logical_and(u > 0, u < 1).all(), (u)
-        nu = u.shape[0]
-        if nu == 0:
+        #tlive = self.region.transformLayer.transform(ulive)
+        u, v, logl, nc = self.stepsampler.__next__(self.region, 
+            transform=self.transform, loglike=self.loglike,
+            Lmin=Lmin, us=active_u, Ls=active_values, 
+            ndraw=min(10, ndraw))
+        if logl is None:
+            u = np.empty((0, self.x_dim))
             v = np.empty((0, self.num_params))
             logl = np.empty((0,))
         else:
-            v = self.transform(u)
-            logl = self.loglike(v)
-        nc += nu
-        accepted = logl > Lmin
-        u = u[accepted,:]
-        v = v[accepted,:]
-        logl = logl[accepted]
+            assert np.logical_and(u > 0, u < 1).all(), (u)
+            u = u.reshape((1, self.x_dim))
+            v = v.reshape((1, self.num_params))
+            logl = logl.reshape((1,))
         
         if self.use_mpi:
             recv_samples = self.comm.gather(u, root=0)
@@ -1041,9 +1041,9 @@ class ReactiveNestedSampler(object):
             self.likes = np.concatenate(recv_likes, axis=0)
             self.ncall += sum(recv_nc)
         else:
-            self.samples = np.array(u)
-            self.samplesv = np.array(v)
-            self.likes = np.array(logl)
+            self.samples = u
+            self.samplesv = v
+            self.likes = logl
             self.ncall += nc
         self.ncall_region += ndraw
         
@@ -1102,7 +1102,7 @@ class ReactiveNestedSampler(object):
             for ui, vi, logli in zip(self.samples, self.samplesv, self.likes):
                 self.pointstore.add([Lmin, logli] + ui.tolist() + vi.tolist())
     
-    def create_point(self, Lmin, ndraw):
+    def create_point(self, Lmin, ndraw, active_u, active_values):
         """
         draw a new point above likelihood threshold Lmin
         
@@ -1135,6 +1135,8 @@ class ReactiveNestedSampler(object):
                 # skip if we already know it is not useful
                 ib = 0 if np.isfinite(self.likes[0]) else 1
             
+            assert self.region.inside(active_u).any(), ("None of the live points satisfies the current region!", 
+                self.region.maxradiussq, self.region.u, self.region.unormed, active_u)
             if self.stepsampler is None:
                 while ib >= len(self.samples):
                     ib = 0
@@ -1143,7 +1145,7 @@ class ReactiveNestedSampler(object):
             else:
                 while ib >= len(self.samples):
                     ib = 0
-                    self.pump_region(Lmin, ndraw, nit)
+                    self.pump_region(Lmin, ndraw, nit, active_u=active_u, active_values=active_values)
                     nit += 1
             
             if self.likes[ib] > Lmin:
@@ -1627,7 +1629,7 @@ class ReactiveNestedSampler(object):
                     
                     for i in range(2):
                         # sample point
-                        u, p, L = self.create_point(Lmin=Lmin, ndraw=ndraw)
+                        u, p, L = self.create_point(Lmin=Lmin, ndraw=ndraw, active_u=active_u, active_values=active_values)
                         child = self.pointpile.make_node(L, u, p)
                         main_iterator.Lmax = max(main_iterator.Lmax, L)
                         
