@@ -1080,6 +1080,11 @@ class ReactiveNestedSampler(object):
             v = np.empty((0, self.num_params))
             logl = np.empty((0,))
         else:
+            if nu > 1 and not self.draw_multiple:
+                nu = 1
+                u = u[:1,:]
+                father = father[:1]
+            
             v = self.transform(u)
             logl = self.loglike(v)
         nc += nu
