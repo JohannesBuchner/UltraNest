@@ -779,7 +779,7 @@ class ReactiveNestedSampler(object):
                 
                 #if self.log:
                 #    self.logger.info('Making region from %d parents at L=%.1f...' % (len(active_nodes), Lmin))
-                active_node_ids = [n.id for n in active_nodes]
+                active_node_ids = np.asarray([n.id for n in active_nodes])
                 active_u = self.pointpile.getu(active_node_ids)
                 self.update_region(
                     active_u=active_u, active_node_ids=active_node_ids)
