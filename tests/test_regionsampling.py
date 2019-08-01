@@ -18,6 +18,8 @@ def test_region_sampling_affine(plot=False):
     region.create_ellipsoid()
     nclusters = transformLayer.nclusters
     assert nclusters == 1
+    assert np.allclose(region.unormed, region.transformLayer.transform(points)), "transform should be reproducible"
+    assert region.inside(points).all(), "live points should lie near live points"
     if plot:
         plt.plot(points[:,0], points[:,1], 'x ')
         for method in region.sampling_methods:
@@ -28,14 +30,17 @@ def test_region_sampling_affine(plot=False):
         plt.close()
 
     for method in region.sampling_methods:
-        points, nc = method(nsamples=4000)
-        lo1, lo2 = points.min(axis=0)
-        hi1, hi2 = points.max(axis=0)
-        assert 0 <= lo1 < 0.1, (method.__name__, points, lo1, hi1, lo2, hi2)
-        assert 0 <= lo2 < 0.1, (method.__name__, points, lo1, hi1, lo2, hi2)
-        assert 0.95 < hi1 <= 1, (method.__name__, points, lo1, hi1, lo2, hi2)
-        assert 0.45 <= hi2 < 0.55, (method.__name__, points, lo1, hi1, lo2, hi2)
+        newpoints, nc = method(nsamples=4000)
+        lo1, lo2 = newpoints.min(axis=0)
+        hi1, hi2 = newpoints.max(axis=0)
+        assert 0 <= lo1 < 0.1, (method.__name__, newpoints, lo1, hi1, lo2, hi2)
+        assert 0 <= lo2 < 0.1, (method.__name__, newpoints, lo1, hi1, lo2, hi2)
+        assert 0.95 < hi1 <= 1, (method.__name__, newpoints, lo1, hi1, lo2, hi2)
+        assert 0.45 <= hi2 < 0.55, (method.__name__, newpoints, lo1, hi1, lo2, hi2)
 
+    region.maxradiussq = 1e-90
+    assert np.allclose(region.unormed, region.transformLayer.transform(points)), "transform should be reproducible"
+    assert region.inside(points).all(), "live points should lie very near themselves"
 
 def test_region_sampling_scaling(plot=False):
     np.random.seed(1)
@@ -50,6 +55,8 @@ def test_region_sampling_scaling(plot=False):
     region.create_ellipsoid()
     nclusters = transformLayer.nclusters
     assert nclusters == 1
+    assert np.allclose(region.unormed, region.transformLayer.transform(points)), "transform should be reproducible"
+    assert region.inside(points).all(), "live points should lie near live points"
     if plot:
         plt.plot(points[:,0], points[:,1], 'x ')
         for method in region.sampling_methods:
@@ -60,14 +67,17 @@ def test_region_sampling_scaling(plot=False):
         plt.close()
 
     for method in region.sampling_methods:
-        points, nc = method(nsamples=4000)
-        lo1, lo2 = points.min(axis=0)
-        hi1, hi2 = points.max(axis=0)
-        assert 0.15 < lo1 < 0.25, (method.__name__, points, lo1, hi1, lo2, hi2)
-        assert 0.015 < lo2 < 0.025, (method.__name__, points, lo1, hi1, lo2, hi2)
-        assert 0.45 < hi1 < 0.55, (method.__name__, points, lo1, hi1, lo2, hi2)
-        assert 0.045 < hi2 < 0.055, (method.__name__, points, lo1, hi1, lo2, hi2)
+        newpoints, nc = method(nsamples=4000)
+        lo1, lo2 = newpoints.min(axis=0)
+        hi1, hi2 = newpoints.max(axis=0)
+        assert 0.15 < lo1 < 0.25, (method.__name__, newpoints, lo1, hi1, lo2, hi2)
+        assert 0.015 < lo2 < 0.025, (method.__name__, newpoints, lo1, hi1, lo2, hi2)
+        assert 0.45 < hi1 < 0.55, (method.__name__, newpoints, lo1, hi1, lo2, hi2)
+        assert 0.045 < hi2 < 0.055, (method.__name__, newpoints, lo1, hi1, lo2, hi2)
 
+    region.maxradiussq = 1e-90
+    assert np.allclose(region.unormed, region.transformLayer.transform(points)), "transform should be reproducible"
+    assert region.inside(points).all(), "live points should lie very near themselves"
 
 if __name__ == '__main__':
     test_region_sampling_affine(plot=True)

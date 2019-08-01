@@ -111,7 +111,7 @@ def test_overclustering_eggbox_txt():
         for j in range(3):
             nclusters, clusteridxs, overlapped_points = update_clusters(points, points, maxr)
             assert 14 < nclusters < 20, (nclusters, i)
-        
+
 def test_overclustering_eggbox_update():
     from mininest import ReactiveNestedSampler
     np.random.seed(1)

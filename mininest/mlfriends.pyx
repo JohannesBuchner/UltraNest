@@ -65,7 +65,7 @@ def find_nearby(np.ndarray[np.float_t, ndim=2] apts,
         # find the nearest selected point
         nnearby[j] = -1
         for i in range(na):
-            d = 0
+            d = 0.0
             for k in range(ndim):
                 d += (apts[i,k] - bpts[j,k])**2
             if d <= radiussq:
