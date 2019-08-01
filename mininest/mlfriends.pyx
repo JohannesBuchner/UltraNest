@@ -45,9 +45,11 @@ def find_nearby(np.ndarray[np.float_t, ndim=2] apts,
 ):
     """
     For each point b in bpts
-    Count the number of points in a within radius radiussq.
+    gets the index of a point in a within radius radiussq.
     
     The number is written to nnearby (of same length as bpts).
+    
+    If none is found, -1 is used.
     """
     cdef int na = apts.shape[0]
     cdef int nb = bpts.shape[0]
@@ -147,15 +149,15 @@ def update_clusters(upoints, tpoints, maxradiussq, clusterids=None):
             break
         
         nonmembers = tpoints[nonmembermask,:]
-        nnearby = np.empty(len(nonmembers), dtype=int)
+        idnearby = np.empty(len(nonmembers), dtype=int)
         members = tpoints[clusteridxs == currentclusterid,:]
-        find_nearby(members, nonmembers, maxradiussq, nnearby)
+        find_nearby(members, nonmembers, maxradiussq, idnearby)
         #print('merging %d into cluster %d of size %d' % (np.count_nonzero(nnearby), currentclusterid, len(members)))
         
-        if (nnearby >= 0).any():
+        if (idnearby >= 0).any():
             # place into cluster
             newmembers = nonmembermask
-            newmembers[nonmembermask] = nnearby >= 0
+            newmembers[nonmembermask] = idnearby >= 0
             #print('adding', newmembers.sum())
             clusteridxs[newmembers] = currentclusterid
         else:
@@ -470,8 +472,8 @@ class MLFriends(object):
         N, ndim = self.u.shape
         assert np.isfinite(self.unormed).all(), self.unormed
         selected = np.empty(N, dtype=bool)
-        maxd = 0
-        maxf = 0
+        maxd = 0.0
+        maxf = 0.0
         
         for i in range(nbootstraps):
             idx = np.random.randint(N, size=N)
@@ -523,26 +525,26 @@ class MLFriends(object):
         u = np.random.uniform(size=(nsamples, ndim))
         # check if inside region in transformed space
         v = self.transformLayer.transform(u)
-        nnearby = np.empty(nsamples, dtype=int)
-        find_nearby(self.unormed, v, self.maxradiussq, nnearby)
-        vmask = nnearby >= 0
+        idnearby = np.empty(nsamples, dtype=int)
+        find_nearby(self.unormed, v, self.maxradiussq, idnearby)
+        vmask = idnearby >= 0
         vmask[vmask] = self.inside_ellipsoid(v[vmask,:])
-        return u[vmask,:], nnearby[vmask]
+        return u[vmask,:], idnearby[vmask]
     
     def sample_from_transformed_boundingbox(self, nsamples=100):
         N, ndim = self.u.shape
         # draw from rectangle in transformed space
         v = np.random.uniform(self.bbox_lo - self.maxradiussq, self.bbox_hi + self.maxradiussq, size=(nsamples, ndim))
-        nnearby = np.empty(nsamples, dtype=int)
-        find_nearby(self.unormed, v, self.maxradiussq, nnearby)
-        vmask = nnearby >= 0
+        idnearby = np.empty(nsamples, dtype=int)
+        find_nearby(self.unormed, v, self.maxradiussq, idnearby)
+        vmask = idnearby >= 0
         vmask[vmask] = self.inside_ellipsoid(v[vmask,:])
         
         # check if inside unit cube
         w = self.transformLayer.untransform(v[vmask,:])
         wmask = np.logical_and(w > 0, w < 1).all(axis=1)
 
-        return w[wmask,:], nnearby[vmask][wmask]
+        return w[wmask,:], idnearby[vmask][wmask]
     
     def sample_from_wrapping_ellipsoid(self, nsamples=100):
         N, ndim = self.u.shape
@@ -554,15 +556,15 @@ class MLFriends(object):
         
         v = self.ellipsoid_center + np.einsum('ij,kj->ki', self.ellipsoid_cov, u)
         
-        nnearby = np.empty(nsamples, dtype=int)
-        find_nearby(self.unormed, v, self.maxradiussq, nnearby)
-        vmask = nnearby >= 0
+        idnearby = np.empty(nsamples, dtype=int)
+        find_nearby(self.unormed, v, self.maxradiussq, idnearby)
+        vmask = idnearby >= 0
         
         # check if inside unit cube
         w = self.transformLayer.untransform(v[vmask,:])
         wmask = np.logical_and(w > 0, w < 1).all(axis=1)
 
-        return w[wmask,:], nnearby[vmask][wmask]
+        return w[wmask,:], idnearby[vmask][wmask]
     
     def sample(self, nsamples=100):
         samples, idx = self.current_sampling_method(nsamples=nsamples)
@@ -574,9 +576,9 @@ class MLFriends(object):
     
     def inside(self, pts):
         bpts = self.transformLayer.transform(pts)
-        nnearby = np.empty(len(pts), dtype=int)
-        find_nearby(self.unormed, bpts, self.maxradiussq, nnearby)
-        mask = nnearby != 0
+        idnearby = np.empty(len(pts), dtype=int)
+        find_nearby(self.unormed, bpts, self.maxradiussq, idnearby)
+        mask = idnearby >= 0
         
         # additionally require points to be inside bounding ellipsoid
         mask[mask] = self.inside_ellipsoid(bpts[mask])
@@ -594,7 +596,7 @@ class MLFriends(object):
     
     def inside_ellipsoid(self, bpts):
         # to disable wrapping ellipsoid
-        #return np.ones(len(bpts), dtype=bool)
+        return np.ones(len(bpts), dtype=bool)
         
         d = (bpts - self.ellipsoid_center)
         return np.einsum('ij,jk,ik->i', d, self.ellipsoid_invcov, d) <= 1.0

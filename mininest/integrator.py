@@ -784,8 +784,9 @@ class ReactiveNestedSampler(object):
                 active_u = self.pointpile.getu(active_node_ids)
                 self.update_region(
                     active_u=active_u, active_node_ids=active_node_ids)
-                active_u = self.pointpile.getu(active_node_ids)
-            
+                
+                assert self.region.inside(active_u).all(), self.region.inside(active_u).mean()
+                
                 next_update_interval_ncall = self.ncall + update_interval_ncall
             
             for j in range(nsamples):
@@ -1193,7 +1194,8 @@ class ReactiveNestedSampler(object):
         assert nbootstraps > 0
         updated = False
         if self.region is None:
-            #print("building first region...")
+            #if self.log:
+            #    self.logger.debug("building first region ...")
             if self.x_dim > 1:
                 self.transformLayer = AffineLayer(wrapped_dims=self.wrapped_axes)
             else:
@@ -1214,8 +1216,12 @@ class ReactiveNestedSampler(object):
             
             self.region.maxradiussq = r
             self.region.enlarge = f
-            #print("building first region... r=%e" % r)
+            #if self.log:
+            #    self.logger.debug("building first region ... r=%e, f=%e" % (r, f))
 
+            # verify correctness:
+            #self.region.create_ellipsoid(minvol=minvol)
+            #assert self.region.inside(active_u).all(), self.region.inside(active_u).mean()
 
         assert self.transformLayer is not None
         need_accept = False
@@ -1280,6 +1286,9 @@ class ReactiveNestedSampler(object):
             updated = True
             assert len(self.region.u) == len(self.transformLayer.clusterids)
 
+            # verify correctness:
+            #self.region.create_ellipsoid(minvol=minvol)
+            #assert self.region.inside(active_u).all(), self.region.inside(active_u).mean()
 
         assert len(self.region.u) == len(self.transformLayer.clusterids)
         # rebuild space
@@ -1325,7 +1334,12 @@ class ReactiveNestedSampler(object):
         
         nextregion.maxradiussq = r
         nextregion.enlarge = f
+        # verify correctness:
+        #nextregion.create_ellipsoid(minvol=minvol)
+        #assert nextregion.inside(active_u).all(), nextregion.inside(active_u).mean()
         
+        #if self.log:
+        #    self.logger.debug("building new region ... r=%e, f=%e" % (r, f))
         #print("MLFriends computed: r=%e nc=%d" % (r, nextTransformLayer.nclusters))
         # force shrinkage of volume
         # this is to avoid re-connection of dying out nodes
@@ -1333,12 +1347,14 @@ class ReactiveNestedSampler(object):
             self.region = nextregion
             self.transformLayer = self.region.transformLayer
             self.region_nodes = active_node_ids.copy()
-            #print("MLFriends updated: V=%e R=%e" % (self.region.estimate_volume(), r))
+            #if self.log:
+            #    self.logger.debug("region updated: V=%e R=%e" % (self.region.estimate_volume(), r))
             updated = True
             
             assert not (self.transformLayer.clusterids == 0).any(), (self.transformLayer.clusterids, need_accept, updated)
         
         self.region.create_ellipsoid(minvol=minvol)
+        assert nextregion.inside(active_u).all(), ("live points should live in new region, but only %.3f%% do." % (100 * nextregion.inside(active_u).mean()), active_u)
         assert len(self.region.u) == len(self.transformLayer.clusterids)
         return updated
     
