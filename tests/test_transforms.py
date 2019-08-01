@@ -53,7 +53,7 @@ def test_affine_transform(plot=False):
 			layer = AffineLayer()
 			layer.optimize(points, points)
 			points3 = layer.untransform(genpoints_following_cov(np.diag([1,1]), size=400))
-			print('cov:', layer.cov, 'covmatrix:', covmatrix, 'ratio:', layer.cov / covmatrix)
+			#print('cov:', layer.cov, 'covmatrix:', covmatrix, 'ratio:', layer.cov / covmatrix)
 			tpoints = layer.transform(points)
 
 			assert tpoints.shape == points.shape, (tpoints.shape, points.shape)

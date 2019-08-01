@@ -78,17 +78,17 @@ def main(args):
     elif args.reactive:
         from mininest import ReactiveNestedSampler
         sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, 
-            log_dir=args.log_dir, min_num_live_points=args.num_live_points,
+            log_dir=args.log_dir,
             derived_param_names=derivednames, wrapped_params=wrapped_params,
             append_run_num=False)
     else:
         from mininest import NestedSampler
         sampler = NestedSampler(paramnames, loglike, transform=transform, 
-            log_dir=args.log_dir, num_live_points=args.num_live_points,
+            log_dir=args.log_dir,
             derived_param_names=derivednames, wrapped_params=wrapped_params,
             append_run_num=False)
     
-    sampler.run()
+    sampler.run(min_num_live_points=args.num_live_points)
         
     print()
     sampler.plot()

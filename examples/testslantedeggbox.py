@@ -20,10 +20,9 @@ def main(args):
     if args.reactive:
         from mininest import ReactiveNestedSampler
         sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, 
-            min_num_live_points=args.num_live_points,
             log_dir=args.log_dir + 'RNS-%dd' % args.x_dim, append_run_num=False)
             #log_dir=None)
-        sampler.run(log_interval=20)
+        sampler.run(log_interval=20, min_num_live_points=args.num_live_points)
         sampler.plot()
     else:
         from mininest import NestedSampler

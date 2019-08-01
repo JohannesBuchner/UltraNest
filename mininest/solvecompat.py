@@ -40,7 +40,6 @@ def pymultinest_solve_compat(LogLikelihood, Prior, n_dims,
     sampler = ReactiveNestedSampler(paramnames, 
         vectorized_loglike, 
         transform=vectorized_transform, 
-        min_num_live_points=n_live_points,
         log_dir=outputfiles_basename, 
         append_run_num=not resume,
         wrapped_params=wrapped_params,
@@ -49,6 +48,7 @@ def pymultinest_solve_compat(LogLikelihood, Prior, n_dims,
     )
     sampler.run(dlogz=evidence_tolerance, 
         max_iters=max_iter if max_iter > 0 else None,
+        min_num_live_points=n_live_points,
         min_ess=min_ess, frac_remain=frac_remain)
     if verbose:
         sampler.print_results()

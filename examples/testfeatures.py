@@ -113,12 +113,9 @@ def main(args):
     from mininest import ReactiveNestedSampler
     sampler = ReactiveNestedSampler(paramnames, loglike, 
         transform=transform if args.pass_transform else None, 
-        min_num_live_points=args.num_live_points,
         log_dir=log_dir, 
         append_run_num=not args.resume,
         wrapped_params=wrapped_params,
-        cluster_num_live_points=args.cluster_num_live_points,
-        max_num_live_points_for_efficiency=args.max_num_live_points_for_efficiency,
     )
     for result in sampler.run_iter(
             update_interval_iter_fraction=args.update_interval_iter_fraction,
@@ -127,6 +124,9 @@ def main(args):
             frac_remain=args.frac_remain,
             min_ess=args.min_ess,
             max_iters=args.max_iters,
+            cluster_num_live_points=args.cluster_num_live_points,
+            min_num_live_points=args.num_live_points,
+            max_num_live_points_for_efficiency=args.max_num_live_points_for_efficiency,
             max_ncalls=int(args.max_ncalls),
         ):
         sampler.print_results()

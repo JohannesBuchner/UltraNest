@@ -20,9 +20,9 @@ paramnames = ['param%d' % i for i in range(6)]
 
 def test_stepsampler_cubemh(plot=False):
     np.random.seed(1)
-    sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, min_num_live_points=400)
+    sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform)
     sampler.stepsampler = CubeMHSampler(nsteps=len(paramnames))
-    r = sampler.run(log_interval=50)
+    r = sampler.run(log_interval=50, min_num_live_points=400)
     sampler.print_results()
     a = (np.abs(r['samples'] - 0.7) < 0.1).all(axis=1)
     b = (np.abs(r['samples'] - 0.3) < 0.1).all(axis=1)
@@ -31,9 +31,9 @@ def test_stepsampler_cubemh(plot=False):
 
 def test_stepsampler_regionmh(plot=False):
     np.random.seed(1)
-    sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, min_num_live_points=400)
+    sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform)
     sampler.stepsampler = RegionMHSampler(nsteps=len(paramnames))
-    r = sampler.run(log_interval=50)
+    r = sampler.run(log_interval=50, min_num_live_points=400)
     sampler.print_results()
     a = (np.abs(r['samples'] - 0.7) < 0.1).all(axis=1)
     b = (np.abs(r['samples'] - 0.3) < 0.1).all(axis=1)
@@ -42,9 +42,9 @@ def test_stepsampler_regionmh(plot=False):
 
 def test_stepsampler_de(plot=False):
     np.random.seed(1)
-    sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, min_num_live_points=400)
+    sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform)
     sampler.stepsampler = DESampler(nsteps=len(paramnames))
-    r = sampler.run(log_interval=50)
+    r = sampler.run(log_interval=50, min_num_live_points=400)
     sampler.print_results()
     #sampler.plot()
     a = (np.abs(r['samples'] - 0.7) < 0.1).all(axis=1)
@@ -54,9 +54,9 @@ def test_stepsampler_de(plot=False):
 
 def test_stepsampler_cubeslice(plot=False):
     np.random.seed(1)
-    sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, min_num_live_points=400)
+    sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform)
     sampler.stepsampler = CubeSliceSampler(nsteps=len(paramnames))
-    r = sampler.run(log_interval=50)
+    r = sampler.run(log_interval=50, min_num_live_points=400)
     sampler.print_results()
     a = (np.abs(r['samples'] - 0.7) < 0.1).all(axis=1)
     b = (np.abs(r['samples'] - 0.3) < 0.1).all(axis=1)
@@ -65,9 +65,9 @@ def test_stepsampler_cubeslice(plot=False):
 
 def test_stepsampler_regionslice(plot=False):
     np.random.seed(1)
-    sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, min_num_live_points=400)
+    sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform)
     sampler.stepsampler = RegionSliceSampler(nsteps=len(paramnames))
-    r = sampler.run(log_interval=50)
+    r = sampler.run(log_interval=50, min_num_live_points=400)
     sampler.print_results()
     a = (np.abs(r['samples'] - 0.7) < 0.1).all(axis=1)
     b = (np.abs(r['samples'] - 0.3) < 0.1).all(axis=1)

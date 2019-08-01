@@ -52,8 +52,8 @@ def test_reactive_run():
     paramnames = ['Hinz', 'Kunz']
 
     sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, 
-        min_num_live_points=400, draw_multiple=False)
-    r = sampler.run(log_interval=50)
+        draw_multiple=False)
+    r = sampler.run(log_interval=50, min_num_live_points=400)
     ncalls = loglike.ncalls
     nunique = len(evals)
     if sampler.mpi_size > 1:
@@ -103,9 +103,8 @@ def test_run_resume(dlogz):
     try:
         for i in range(2):
             sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, 
-                min_num_live_points=400, log_dir=folder, 
-                append_run_num=False)
-            r = sampler.run(log_interval=50, dlogz=dlogz)
+                log_dir=folder, append_run_num=False)
+            r = sampler.run(log_interval=50, dlogz=dlogz, min_num_live_points=400)
             sampler.print_results()
             sampler.pointstore.close()
             if i == 1:
@@ -147,14 +146,13 @@ def test_reactive_run_resume_eggbox():
             print()
             sampler = ReactiveNestedSampler(paramnames, 
                 loglike, transform=transform,
-                min_num_live_points=100, 
-                log_dir=folder, 
-                cluster_num_live_points=0,
-                append_run_num=False, 
-                )
+                log_dir=folder, append_run_num=False)
             initial_ncalls = int(sampler.ncall)
             loglike.ncalls = 0
-            r = sampler.run(max_iters=200 + i*200, max_num_improvement_loops=1)
+            r = sampler.run(max_iters=200 + i*200, 
+                max_num_improvement_loops=1, 
+                min_num_live_points=100, 
+                cluster_num_live_points=0)
             sampler.print_results()
             sampler.pointstore.close()
             print(loglike.ncalls, r['ncall'], initial_ncalls)

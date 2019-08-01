@@ -524,9 +524,6 @@ class ReactiveNestedSampler(object):
                  derived_param_names=[],
                  run_num=None,
                  log_dir=None,
-                 min_num_live_points=100,
-                 cluster_num_live_points=40,
-                 max_num_live_points_for_efficiency=400,
                  num_test_samples=2,
                  draw_multiple=True,
                  num_bootstraps=30,
@@ -551,13 +548,6 @@ class ReactiveNestedSampler(object):
         wrapped_params: list of bools, indicating whether this parameter 
             wraps around in a circular parameter space.
         
-        min_num_live_points: number of live points
-        cluster_num_live_points: require at least this many live points per cluster
-        max_num_live_points_for_efficiency: 
-            Increasing the number of live points can make the region
-            more accurate, increasing performance. If efficiency is low,
-            the number of live points is allowed to grow to this value.
-        
         num_test_samples: test transform and likelihood with this number of
             random points for errors first. Useful to catch bugs.
         
@@ -578,10 +568,6 @@ class ReactiveNestedSampler(object):
 
         self.paramnames = param_names
         x_dim = len(self.paramnames)
-        self.min_num_live_points = min_num_live_points
-        self.cluster_num_live_points = cluster_num_live_points
-        self.max_num_live_points_for_efficiency = max_num_live_points_for_efficiency
-        assert min_num_live_points >= cluster_num_live_points, ('min_num_live_points(%d) cannot be less than cluster_num_live_points(%d)' % (min_num_live_points, cluster_num_live_points))
         self.draw_multiple = draw_multiple
         
         self.sampler = 'reactive-nested'
@@ -1430,7 +1416,11 @@ class ReactiveNestedSampler(object):
             min_ess=400,
             max_iters=None,
             max_ncalls=None,
-            max_num_improvement_loops=-1):
+            max_num_improvement_loops=-1,
+            min_num_live_points=100,
+            cluster_num_live_points=40,
+            max_num_live_points_for_efficiency=400,
+        ):
         """
         Run until target convergence criteria are fulfilled:
         
@@ -1460,13 +1450,26 @@ class ReactiveNestedSampler(object):
         min_ess:
             Target number of effective posterior samples. 
         
-        max_iters: maximum number of integration iterations.
+        max_iters: 
+            maximum number of integration iterations.
         
-        max_ncalls: stop after this many likelihood evaluations.
+        max_ncalls: 
+            stop after this many likelihood evaluations.
             
         max_num_improvement_loops: int
             run() tries to assess iteratively where more samples are needed.
             This number limits the number of improvement loops.
+        
+        min_num_live_points: 
+            minimum number of live points throughout the run
+        
+        cluster_num_live_points: 
+            require at least this many live points per detected cluster
+        
+        max_num_live_points_for_efficiency: 
+            Increasing the number of live points can make the region
+            more accurate, increasing performance. If efficiency is low,
+            the number of live points is allowed to grow to this value.
         
         """
         
@@ -1476,7 +1479,11 @@ class ReactiveNestedSampler(object):
             log_interval=log_interval,
             dlogz=dlogz, dKL=dKL, frac_remain=frac_remain,
             min_ess=min_ess, max_iters=max_iters,
-            max_ncalls=max_ncalls, max_num_improvement_loops=max_num_improvement_loops):
+            max_ncalls=max_ncalls, max_num_improvement_loops=max_num_improvement_loops,
+            min_num_live_points=min_num_live_points,
+            cluster_num_live_points=cluster_num_live_points,
+            max_num_live_points_for_efficiency=max_num_live_points_for_efficiency
+            ):
             if self.log:
                 self.logger.info("did a run_iter pass!")
             pass
@@ -1496,7 +1503,11 @@ class ReactiveNestedSampler(object):
             min_ess=400,
             max_iters=None,
             max_ncalls=None,
-            max_num_improvement_loops=-1):
+            max_num_improvement_loops=-1,
+            min_num_live_points=100,
+            cluster_num_live_points=40,
+            max_num_live_points_for_efficiency=400,
+        ):
         """
         Use as an iterator like so:
         
@@ -1521,7 +1532,13 @@ class ReactiveNestedSampler(object):
             self.use_point_stack = not self.pointstore.stack_empty
         else:
             self.use_point_stack = False
-        self.widen_roots(self.min_num_live_points)
+        
+        assert min_num_live_points >= cluster_num_live_points, ('min_num_live_points(%d) cannot be less than cluster_num_live_points(%d)' % (min_num_live_points, cluster_num_live_points))
+        self.min_num_live_points = min_num_live_points
+        self.cluster_num_live_points = cluster_num_live_points
+        self.max_num_live_points_for_efficiency = max_num_live_points_for_efficiency
+        
+        self.widen_roots(min_num_live_points)
 
         Llo, Lhi = -np.inf, np.inf
         Lmax = -np.inf
@@ -1640,11 +1657,11 @@ class ReactiveNestedSampler(object):
                         nclusters = self.transformLayer.nclusters
                         region_sequence.append((Lmin, nlive, nclusters))
                         
-                        if nlive < self.cluster_num_live_points * nclusters:
+                        if nlive < cluster_num_live_points * nclusters:
                             # make wider here
                             if self.log:
                                 self.logger.info("Found %d clusters, but only have %d live points, want %d." % (
-                                    nclusters, nlive, self.cluster_num_live_points * nclusters))
+                                    nclusters, nlive, cluster_num_live_points * nclusters))
                             break
                         
                         #next_update_interval_ncall = self.ncall + (update_interval_ncall or nlive)
@@ -1692,7 +1709,7 @@ class ReactiveNestedSampler(object):
                         #    self.logger.debug("replacing node", Lmin, "from", rootid, "with", L)
                         node.children.append(child)
                         
-                        if i == 0 and nlive < self.max_num_live_points_for_efficiency:
+                        if i == 0 and nlive < max_num_live_points_for_efficiency:
                             efficiency_here = (it - it_at_first_region) / (self.ncall - ncall_at_run_start + 1.)
                             if efficiency_here < 1. / (nlive + 1):
                                 # running inefficiently; more live points could make sampling more efficient
@@ -1770,7 +1787,7 @@ class ReactiveNestedSampler(object):
             Lmax = main_iterator.Lmax
             if len(region_sequence) > 0:
                 Lmin, nlive, nclusters = region_sequence[-1]
-                nnodes_needed = self.cluster_num_live_points * nclusters
+                nnodes_needed = cluster_num_live_points * nclusters
                 if nlive < nnodes_needed:
                     #self.root.children = []
                     Llo, Lhi = self.expand_nodes_before(Lmin, nnodes_needed, update_interval_ncall or nlive)

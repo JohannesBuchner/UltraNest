@@ -63,9 +63,8 @@ def main(args):
     elif args.reactive:
         from mininest import ReactiveNestedSampler
         sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, 
-            min_num_live_points=args.num_live_points,
             log_dir=args.log_dir + 'RNS-%dd' % ndim, append_run_num=True)
-        sampler.run(frac_remain=0.5, min_ess=400)
+        sampler.run(frac_remain=0.5, min_ess=400, min_num_live_points=args.num_live_points)
         sampler.print_results()
         sampler.plot()
     else:
