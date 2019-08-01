@@ -31,6 +31,7 @@ def test_run():
     open('nestedsampling_results.txt', 'a').write("%.3f\n" % r['logz'])
     sampler.plot()
 
+
 def test_reactive_run():
     from mininest import ReactiveNestedSampler
     np.random.seed(1)
@@ -78,9 +79,9 @@ def test_reactive_run():
         open('nestedsampling_reactive_results.txt', 'a').write("%.3f\n" % r['logz'])
     sampler.plot()
 
-@pytest.mark.parametrize("dlogz", [0.5, 0.1, 0.01])
+@pytest.mark.parametrize("dlogz", [2.0, 0.5, 0.1])
 def test_run_resume(dlogz):
-    from mininest import NestedSampler
+    from mininest import ReactiveNestedSampler
     sigma = 0.01
     ndim = 1
 
@@ -101,8 +102,8 @@ def test_run_resume(dlogz):
     folder = tempfile.mkdtemp()
     try:
         for i in range(2):
-            sampler = NestedSampler(paramnames, loglike, transform=transform, 
-                num_live_points=400, log_dir=folder, 
+            sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, 
+                min_num_live_points=400, log_dir=folder, 
                 append_run_num=False)
             r = sampler.run(log_interval=50, dlogz=dlogz)
             sampler.print_results()
@@ -127,8 +128,10 @@ def test_reactive_run_resume_eggbox():
 
     def loglike(z):
         chi = (np.cos(z / 2.)).prod(axis=1)
+        loglike.ncalls += len(z)
         return (2. + chi)**5
-
+    loglike.ncalls = 0
+    
     def transform(x):
         return x * 10 * np.pi
 
@@ -149,9 +152,21 @@ def test_reactive_run_resume_eggbox():
                 cluster_num_live_points=0,
                 append_run_num=False, 
                 )
-            sampler.run()
+            initial_ncalls = int(sampler.ncall)
+            loglike.ncalls = 0
+            r = sampler.run(max_iters=200 + i*200, max_num_improvement_loops=1)
             sampler.print_results()
             sampler.pointstore.close()
+            print(loglike.ncalls, r['ncall'], initial_ncalls)
+
+            ncalls = loglike.ncalls
+            if sampler.mpi_size > 1:
+                ncalls = sampler.comm.gather(ncalls, root=0)
+                if sampler.mpi_rank == 0:
+                    print("ncalls on the different MPI ranks:", ncalls)
+                ncalls = sum(sampler.comm.bcast(ncalls, root=0))
+            ncalls = ncalls + initial_ncalls
+            assert abs(r['ncall'] - ncalls) <= 2 * sampler.mpi_size, (i, r['ncall'], ncalls, r['ncall'] - ncalls)
             #last_results = r
     finally:
         shutil.rmtree(folder, ignore_errors=True)
@@ -182,7 +197,6 @@ def test_run_compat():
     for name, col in zip(paramnames, result['samples'].transpose()):
         print('%15s : %.3f +- %.3f' % (name, col.mean(), col.std()))
     
-
 if __name__ == '__main__':
     #test_run_compat()
     #test_run_resume(dlogz=0.5)
