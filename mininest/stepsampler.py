@@ -18,6 +18,9 @@ class StepSampler(object):
         self.scale = 1.0
         self.last = None, None
     
+    def __str__(self):
+        return type(self).__name__ + '(%d steps)' % self.nsteps
+    
     def move(self, ui, region, ndraw=1):
         raise NotImplementedError()
     
