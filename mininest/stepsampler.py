@@ -11,9 +11,14 @@ class StepSampler(object):
     """
     Simple step sampler, staggering around
     """
-    def __init__(self, nsteps):
+    def __init__(self, nsteps, max_rejects=-5):
         self.history = []
         self.nsteps = nsteps
+        if max_rejects < 0:
+            self.max_rejects = (-max_rejects) * self.nsteps
+        else:
+            self.max_rejects = max_rejects
+        
         self.nrejects = 0
         self.scale = 1.0
         self.last = None, None
@@ -21,7 +26,7 @@ class StepSampler(object):
     def __str__(self):
         return type(self).__name__ + '(%d steps)' % self.nsteps
     
-    def move(self, ui, region, ndraw=1):
+    def move(self, ui, region, ndraw=1, plot=False):
         raise NotImplementedError()
     
     def adjust_outside_region(self):
@@ -32,14 +37,14 @@ class StepSampler(object):
     
     def adjust_accept(self, accepted, unew, pnew, Lnew, nc):
         if accepted:
-            self.scale *= 1.01
+            self.scale *= 1.04
             self.last = unew, Lnew
             self.history.append((unew, Lnew))
         else:
-            self.scale /= 1.01
+            self.scale /= 1.04
             self.nrejects += 1
 
-    def __next__(self, region, Lmin, us, Ls, transform, loglike, ndraw=40):
+    def __next__(self, region, Lmin, us, Ls, transform, loglike, ndraw=40, plot=False):
         
         # find most recent point in history conforming to current Lmin
         ui, Li = self.last
@@ -59,7 +64,7 @@ class StepSampler(object):
                     ui, Li = uj, Lj
                     break
         
-        if self.nrejects > 5 * self.nsteps:
+        if self.max_rejects > 0 and (self.nrejects > self.max_rejects):
             # we are somehow stuck and not going anywhere
             # so reset
             ui, Li = None, None
@@ -110,7 +115,7 @@ class CubeMHSampler(StepSampler):
     """
     Simple step sampler, staggering around
     """
-    def move(self, ui, region, ndraw=1):
+    def move(self, ui, region, ndraw=1, plot=False):
         # propose in that direction
         jitter = np.random.normal(0, 1, size=(ndraw, len(ui))) * self.scale
         unew = ui.reshape((1, -1)) + jitter
@@ -120,7 +125,7 @@ class RegionMHSampler(StepSampler):
     """
     Simple step sampler, staggering around
     """
-    def move(self, ui, region, ndraw=1):
+    def move(self, ui, region, ndraw=1, plot=False):
         ti = region.transformLayer.transform(ui)
         jitter = np.random.normal(0, 1, size=(ndraw, len(ui))) * self.scale
         tnew = ti.reshape((1, -1)) + jitter
@@ -132,7 +137,7 @@ class DESampler(StepSampler):
     Simple step sampler using as directions the differences 
     between two randomly chosen live points.
     """
-    def move(self, ui, region, ndraw=1):
+    def move(self, ui, region, ndraw=1, plot=False):
         # choose direction
         # avoid drawing the two exact same points (no direction)
         # avoid drawing the starting point (to avoid linear combinations)
@@ -159,8 +164,8 @@ class CubeSliceSampler(StepSampler):
     """
     Slice sampler, respecting the region
     """
-    def __init__(self, nsteps):
-        StepSampler.__init__(self, nsteps=nsteps)
+    def __init__(self, nsteps, max_rejects=-5):
+        StepSampler.__init__(self, nsteps=nsteps, max_rejects=-5)
         self.interval = None
 
     def generate_direction(self, ui, region):
@@ -187,7 +192,7 @@ class CubeSliceSampler(StepSampler):
     def adjust_outside_region(self):
         pass
     
-    def move(self, ui, region, ndraw=1):
+    def move(self, ui, region, ndraw=1, plot=False):
         if self.interval is None:
             v = self.generate_direction(ui, region)
             
@@ -222,6 +227,12 @@ class CubeSliceSampler(StepSampler):
             u = np.random.uniform(left, right)
             xj = ui + v * u
             if region.inside(xj.reshape((1, -1))):
+                self.interval = (v, left, right, u)
+                #if plot:
+                #    plot.plot(
+                #        [ui[0] + v[0] * left, ui[0] + v[0] * right], 
+                #        [ui[1] + v[1] * left, ui[1] + v[1] * right],
+                #        '-', color='r', alpha=0.2)
                 return xj.reshape((1, -1))
             else:
                 if u < 0:

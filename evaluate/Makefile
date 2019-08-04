@@ -3,7 +3,7 @@ PYTHON := python3
 all: circgauss asymgauss pyramid multigauss shell
 
 evaluate_sampling_asymgauss_2d_N200_shrinkage.pdf:
-	${PYTHON} evaluate_sampling.py --problem=asymgauss --x_dim=2 --nsteps=10000
+	${PYTHON} evaluate_sampling.py --problem=asymgauss --x_dim=2 --nsteps=2500
 
 evaluate_sampling_asymgauss_10d_N200_shrinkage.pdf:
 	${PYTHON} evaluate_sampling.py --problem=asymgauss --x_dim=10 --nsteps=10000
@@ -11,7 +11,7 @@ evaluate_sampling_asymgauss_10d_N200_shrinkage.pdf:
 asymgauss: evaluate_sampling_asymgauss_2d_N200_shrinkage.pdf evaluate_sampling_asymgauss_10d_N200_shrinkage.pdf
 
 evaluate_sampling_circgauss_2d_N200_shrinkage.pdf:
-	${PYTHON} evaluate_sampling.py --problem=circgauss --x_dim=2 --nsteps=10000
+	${PYTHON} evaluate_sampling.py --problem=circgauss --x_dim=2 --nsteps=2500
 
 evaluate_sampling_circgauss_10d_N200_shrinkage.pdf:
 	${PYTHON} evaluate_sampling.py --problem=circgauss --x_dim=10 --nsteps=10000
@@ -19,7 +19,7 @@ evaluate_sampling_circgauss_10d_N200_shrinkage.pdf:
 circgauss: evaluate_sampling_circgauss_2d_N200_shrinkage.pdf evaluate_sampling_circgauss_10d_N200_shrinkage.pdf
 
 evaluate_sampling_pyramid_2d_N200_shrinkage.pdf:
-	${PYTHON} evaluate_sampling.py --problem=pyramid --x_dim=2 --nsteps=10000
+	${PYTHON} evaluate_sampling.py --problem=pyramid --x_dim=2 --nsteps=2500
 
 evaluate_sampling_pyramid_10d_N200_shrinkage.pdf:
 	${PYTHON} evaluate_sampling.py --problem=pyramid --x_dim=10 --nsteps=10000
@@ -27,7 +27,7 @@ evaluate_sampling_pyramid_10d_N200_shrinkage.pdf:
 pyramid: evaluate_sampling_pyramid_2d_N200_shrinkage.pdf evaluate_sampling_pyramid_10d_N200_shrinkage.pdf
 
 evaluate_sampling_multigauss_2d_N200_shrinkage.pdf:
-	${PYTHON} evaluate_sampling.py --problem=multigauss --x_dim=2 --nsteps=10000
+	${PYTHON} evaluate_sampling.py --problem=multigauss --x_dim=2 --nsteps=2500
 
 evaluate_sampling_multigauss_10d_N200_shrinkage.pdf:
 	${PYTHON} evaluate_sampling.py --problem=multigauss --x_dim=10 --nsteps=10000
