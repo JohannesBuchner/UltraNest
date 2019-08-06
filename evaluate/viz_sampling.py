@@ -94,12 +94,14 @@ def main(args):
     #region, it, Lmin, us, Ls, transform, loglike = prepare_problem(problemname, ndim, nlive, sampler)
     
     samplers = [
-        CubeMHSampler(nsteps=1, max_rejects=0),
-        RegionMHSampler(nsteps=1, max_rejects=0),
-        CubeSliceSampler(nsteps=1, max_rejects=0),
-        RegionSliceSampler(nsteps=1, max_rejects=0),
+        ('cubemh', CubeMHSampler(nsteps=1, max_rejects=0)),
+        ('regionmh', RegionMHSampler(nsteps=1, max_rejects=0)),
+        ('cubeslice', CubeSliceSampler(nsteps=1, max_rejects=0)),
+        ('regionslice', RegionSliceSampler(nsteps=1, max_rejects=0)),
     ]
-    for sampler in samplers:
+    if args.sampler != 'all':
+        samplers = [(name, sampler) for name, sampler in samplers if name == args.sampler]
+    for _, sampler in samplers:
         print("exploring with %s ..." % sampler)
         region, it, Lmin, us, Ls, transform, loglike = prepare_problem(problemname, ndim, nlive, sampler)
         
@@ -185,8 +187,11 @@ if __name__ == '__main__':
     parser.add_argument('--x_dim', type=int, default=2,
                         help="Dimensionality")
     parser.add_argument("--num_live_points", type=int, default=40)
-    parser.add_argument("--problem", type=str, default="circgauss")
+    parser.add_argument("--problem",
+        choices=['circgauss', 'asymgauss', 'pyramid', 'multigauss', 'shell'])
     parser.add_argument('--nsteps', type=int, default=20)
+    parser.add_argument('--sampler', default='all',
+        choices=['all', 'cubemh', 'regionmh', 'cubeslice', 'regionslice'])
 
     args = parser.parse_args()
     main(args)
