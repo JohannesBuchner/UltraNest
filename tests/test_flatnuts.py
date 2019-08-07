@@ -40,6 +40,19 @@ def test_corner():
     np.testing.assert_allclose(c2, [0., 0.25])
 
 
+def __test_wrap():
+    start, direction = np.array([0.1, 0.89]), np.array([0.1, 0.1])
+    wrap_none = np.array([False, False])
+    newpoint, _ = linear_steps_with_reflection(start, direction, 0, wrapped_dims=wrap_none)
+    assert_allclose(newpoint, [0.1, 0.89])
+    newpoint, _ = linear_steps_with_reflection(start, direction, 1.0, wrapped_dims=wrap_none)
+    assert_allclose(newpoint, [0.2, 0.99])
+    newpoint, _ = linear_steps_with_reflection(start, direction, 2.0, wrapped_dims=wrap_none)
+    assert_allclose(newpoint, [0.3, 0.91])
+    newpoint, _ = linear_steps_with_reflection(start, direction, 3.0, wrapped_dims=wrap_none)
+    assert_allclose(newpoint, [0.3, 0.91])
+
+
 def test_random():
     for i in range(100):
         start = np.random.uniform(size=2)
@@ -48,24 +61,40 @@ def test_random():
         
         reset = np.random.binomial(1, 0.1, size=2) == 1
         direction[reset] = -start[reset]
+        # check that the returned result is symmetric to the direction
         (c1, _, ax1), (c2, _, ax2) = box_line_intersection(start, direction)
         (b1, _, ax1), (b2, _, ax2) = box_line_intersection(start, -direction)
         np.testing.assert_allclose(c1, b2)
         np.testing.assert_allclose(b1, c2)
-    #pF, tF, iF = nearest_box_intersection_line(ray_origin, ray_direction, fwd=True)
-    
+        
+        # check that the i+j step is consistent with making i steps and then j steps
+        wrapped_dims = np.random.binomial(0.5, 1, size=2).astype(bool)
+        a, b = linear_steps_with_reflection(start, direction, 1 * 0.04, wrapped_dims=wrapped_dims)
+        c, d = linear_steps_with_reflection(a, b, 1 * 0.04, wrapped_dims=wrapped_dims)
+        e, f = linear_steps_with_reflection(start, direction, 2 * 0.04, wrapped_dims=wrapped_dims)
 
 def test_forward(plot=False):
     np.random.seed(1)
     for j in range(40):
+        if j % 2 == 0:
+            wrapped_dims = np.array([False, False])
+        else:
+            wrapped_dims = None
         start = np.random.uniform(size=2)
         direction = np.random.normal(size=2)
         direction /= (direction**2).sum()**0.5
         points = []
         for i in range(100):
-            newpoint, _ = linear_steps_with_reflection(start, direction, i * 0.04)
+            newpoint, _ = linear_steps_with_reflection(start, direction, i * 0.04, wrapped_dims=wrapped_dims)
             points.append(newpoint)
         points = np.array(points)
+        
+        a, b = linear_steps_with_reflection(start, direction, 1 * 0.04, wrapped_dims=wrapped_dims)
+        c, d = linear_steps_with_reflection(a, b, 1 * 0.04, wrapped_dims=wrapped_dims)
+        e, f = linear_steps_with_reflection(start, direction, 2 * 0.04, wrapped_dims=wrapped_dims)
+        assert_allclose(c, e)
+        assert_allclose(d, f)
+        
         np.testing.assert_allclose(points[0], start)
         if plot:
             import matplotlib.pyplot as plt

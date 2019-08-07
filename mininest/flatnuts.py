@@ -110,7 +110,7 @@ def box_line_intersection(ray_origin, ray_direction):
         assert False, "no intersection"
     return (pN, tN, iN), (pF, tF, iF)
 
-def linear_steps_with_reflection(ray_origin, ray_direction, t):
+def linear_steps_with_reflection(ray_origin, ray_direction, t, wrapped_dims=None):
     """ go t steps in direction ray_direction from ray_origin,
     but reflect off the unit cube if encountered. In any case, 
     the distance should be t * ray_direction.
@@ -122,6 +122,9 @@ def linear_steps_with_reflection(ray_origin, ray_direction, t):
     if t < 0:
         new_point, new_direction = linear_steps_with_reflection(ray_origin, -ray_direction, -t)
         return new_point, -new_direction
+    
+    if wrapped_dims is not None:
+        reflected = np.zeros(len(ray_origin), dtype=bool)
     
     tleft = 1.0 * t
     while True:
@@ -135,7 +138,24 @@ def linear_steps_with_reflection(ray_origin, ray_direction, t):
         assert np.isfinite(ray_origin).all(), ray_origin
         # reflect
         ray_direction = ray_direction.copy()
-        ray_direction[i] *= -1
+        if wrapped_dims is None:
+            ray_direction[i] *= -1
+        else:
+            # if we already once bumped into that (wrapped) axis, 
+            # do not continue but return this as end point
+            if np.logical_and(reflected[i], wrapped_dims[i]).any():
+                return ray_origin, ray_direction
+            
+            # note which axes we already flipped
+            reflected[i] = True
+            
+            # in wrapped axes, we can keep going. Otherwise, reflects
+            ray_direction[i] *= np.where(wrapped_dims[i], 1, -1)
+            
+            # in the i axes, we should wrap the coordinates
+            assert np.logical_or(np.isclose(ray_origin[i], 1), np.isclose(ray_origin[i], 0)).all(), ray_origin[i]
+            ray_origin[i] = np.where(wrapped_dims[i], 1 - ray_origin[i], ray_origin[i])
+        
         assert np.isfinite(ray_direction).all(), ray_direction
         # reduce remaining distance
         tleft -= t
