@@ -129,8 +129,9 @@ def linear_steps_with_reflection(ray_origin, ray_direction, t, wrapped_dims=None
     tleft = 1.0 * t
     while True:
         p, t, i = nearest_box_intersection_line(ray_origin, ray_direction, fwd=True)
+        #print(p, t, i, ray_origin, ray_direction)
         assert np.isfinite(p).all()
-        assert t > 0, t
+        assert t >= 0, t
         if tleft <= t: # stopping before reaching any border
             return ray_origin + tleft * ray_direction, ray_direction
         # go to reflection point
