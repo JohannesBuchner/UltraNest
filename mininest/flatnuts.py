@@ -391,42 +391,15 @@ class StepSampler(object):
     
     def reverse_with_ellipses(self, reflpoint, v, plot=False):
         """
-        How to find the gradient near reflpoint? 
-        How to use the region to get a direction?
+        reflpoint: 
+            point outside the likelihood contour, reflect there
+        v:
+            previous direction vector
+        return:
+            new direction vector (from reflpoint)
         
-        Strategy I: Intersect line with region and find last sphere.
-           The normal there gives the reflection direction.
-           Drawback: can be very far from reflpoint.
-        
-        Strategy II: Find nearest sphere (distance between reflpoint
-           and live point) in region-transformed coordinates.
-           Going away from reflpoint to the outside of the region,
-           that sphere will give the largest distance.
-           Take gradient where the line reflpoint...center intersects
-           with the sphere... that tangent is just (center - reflpoint).
-        
-        Strategy III: Gradient points towards the highest likelihood 
-           value (in the current cluster).
-           Drawbacks: may not be very stable.
-        
-        Strategy IV: Check which spheres contain reflpoint. 
-           If none, use strategy II.
-           If they do, they are wrong. 
-           Shrink the radius until reflpoint is at the sphere 
-           border. Randomly select one of those points and take the 
-           normal there. Do not use spheres where the path enters "from 
-           the back".
-           Benefits: balances locality (low-d) with sampling 
-           uncertainty (high-d).
-           Drawbacks: undersampled and stochastic whether there will be
-           a forward sampling leading back in.
-        
-        Invalid strategies:
-           when reflpoint is outside region, reflect at with ray/region 
-           intersection point before stepping outside. Reverse 
-           reflection may not place its reflpoint outside! Need to get 
-           gradient at reflpoint, and it needs to respect detailed 
-           balance.
+        Finds all spheres where the tangent plane could provide a
+        forward reflection. Choose the nearest of those.
         
         Considerations:
            - in low-d, we want to focus on nearby live point spheres
@@ -436,117 +409,52 @@ class StepSampler(object):
            - in high-d, reflpoint is contained by all live points,
              and none of them point to the center well. Because the
              sampling is poor, the "region center" position
-             will be very stochastic. Could probably select a 
-             point to go towards at random.
-           
-           - 
-        
+             will be very stochastic.
         """
         
-        if False:
-            # check which ellipses contain reflpoint
-            region = self.contourpath.region
-            bpts = region.transformLayer.transform(reflpoint).reshape((1, -1))
-            idnearby = np.empty(len(region.unormed), dtype=int)
-            find_nearby(bpts, region.unormed, region.maxradiussq, idnearby)
-            mask = idnearby >= 0
-            if not mask.any():
-                # the reflection point is not in the region.
-                # that means epsilon is too large
-                
-                # to handle this correctly, we must reverse (i.e., stop)
-                self.epsilon_too_large = True
-                return -v
-            
-            sphere_centers = region.u[mask,:]
-            tsphere_centers = region.unormed[mask,:]
-            if plot:
-                plt.plot(sphere_centers[:,0], sphere_centers[:,1], 'o ', mfc='None', mec='b', ms=10)
-            
-            # ok, we found some live points that contain the reflpoint
-            # we scale their spheres to touch reflpoint
-            # and compute the tangent there.
-            tt = get_sphere_tangents(tsphere_centers, bpts)
-            assert tt.shape == tsphere_centers.shape, (tt.shape, tsphere_centers.shape)
-            
-            # convert back to u space
-            t = region.transformLayer.untransform(tt * 1e-3 + tsphere_centers) - sphere_centers
-            if plot:
-                for si, ti in zip(sphere_centers, t):
-                    plt.plot([si[0], ti[0] * 1000 + si[0]], [si[1], ti[1] * 1000 + si[1]], color='gray')
-            assert t.shape == sphere_centers.shape, (t.shape, sphere_centers.shape)
-            
-            # compute new vector
-            print(t.shape, t.sum(axis=0).shape, t.sum(axis=1).shape)
-            normal = -t / norm(t, axis=1).reshape((-1, 1))
-            isunitlength(normal[0,:])
-            assert normal.shape == t.shape, (normal.shape, t.shape)
-            
-            angles = (normal * (v / norm(v))).sum(axis=1)
-            mask_forward = np.logical_and(angles < 0, angles > -0.707)
-            if not mask_forward.any():
-                # none of the reflections point forward.
-                # reverse.
-                return -v
+        # check which the reflections the ellipses would make
+        region = self.contourpath.region
+        bpts = region.transformLayer.transform(reflpoint).reshape((1, -1))
+        
+        sphere_centers = region.u
+        tsphere_centers = region.unormed
+        tt = get_sphere_tangents(tsphere_centers, bpts)
+        assert tt.shape == tsphere_centers.shape, (tt.shape, tsphere_centers.shape)
+        
+        # convert back to u space
+        t = region.transformLayer.untransform(tt * 1e-3 + tsphere_centers) - sphere_centers
 
-            if plot:
-                plt.plot(sphere_centers[mask_forward,0], sphere_centers[mask_forward,1], '^ ', mfc='None', mec='g', ms=10)
-            
-            # now down-select the ones that are forward reflections
-            normal = normal[mask_forward,:]
-            # chose one at random
-            j = np.random.randint(len(normal))
-            if plot:
-                plt.plot(sphere_centers[mask_forward,0][j], sphere_centers[mask_forward,1][j], '^ ', mfc='None', mec='g', ms=10, mew=3)
-            normal = normal[j,:]
-            isunitlength(normal)
-            #isunitlength(v)
-        else:
-            # check which the reflections the ellipses would make
-            region = self.contourpath.region
-            bpts = region.transformLayer.transform(reflpoint).reshape((1, -1))
-            
-            sphere_centers = region.u
-            tsphere_centers = region.unormed
-            tt = get_sphere_tangents(tsphere_centers, bpts)
-            assert tt.shape == tsphere_centers.shape, (tt.shape, tsphere_centers.shape)
-            
-            # convert back to u space
-            t = region.transformLayer.untransform(tt * 1e-3 + tsphere_centers) - sphere_centers
+        # compute new vector
+        #print(t.shape, t.sum(axis=0).shape, t.sum(axis=1).shape)
+        normal = -t / norm(t, axis=1).reshape((-1, 1))
+        isunitlength(normal[0,:])
+        assert normal.shape == t.shape, (normal.shape, t.shape)
+        
+        angles = (normal * (v / norm(v))).sum(axis=1)
+        mask_forward = np.logical_and(angles < 0, angles > -0.707)
 
-            # compute new vector
-            #print(t.shape, t.sum(axis=0).shape, t.sum(axis=1).shape)
-            normal = -t / norm(t, axis=1).reshape((-1, 1))
-            isunitlength(normal[0,:])
-            assert normal.shape == t.shape, (normal.shape, t.shape)
-            
-            angles = (normal * (v / norm(v))).sum(axis=1)
-            mask_forward = np.logical_and(angles < 0, angles > -0.707)
+        if not mask_forward.any():
+            # none of the reflections point forward.
+            # reverse.
+            return -v
+        
+        sphere_centers = sphere_centers[mask_forward,:]
+        tsphere_centers = tsphere_centers[mask_forward,:]
+        normal = normal[mask_forward,:]
+        t = t[mask_forward,:]
 
-            if not mask_forward.any():
-                # none of the reflections point forward.
-                # reverse.
-                return -v
-            
-            sphere_centers = sphere_centers[mask_forward,:]
-            tsphere_centers = tsphere_centers[mask_forward,:]
-            normal = normal[mask_forward,:]
-            t = t[mask_forward,:]
-
-            if plot:
-                plt.plot(sphere_centers[:,0], sphere_centers[:,1], 'o ', mfc='None', mec='b', ms=10, mew=3)
-                for si, ti in zip(sphere_centers, t):
-                    plt.plot([si[0], ti[0] * 1000 + si[0]], [si[1], ti[1] * 1000 + si[1]], color='gray')
-            assert t.shape == sphere_centers.shape, (t.shape, sphere_centers.shape)
-            
-            # chose nearest
-            j = np.argmin(((tsphere_centers - bpts)**2).sum(axis=1))
-            normal = normal[j,:]
-            isunitlength(normal)
-            if plot:
-                plt.plot(sphere_centers[:,0][j], sphere_centers[:,1][j], '^ ', mfc='None', mec='g', ms=10, mew=3)
-                #plt.plot([si[0], normal[0] + si[0]], [si[1], normal[1] + si[1]], color='g')
-            #isunitlength(v)
+        if plot:
+            plt.plot(sphere_centers[:,0], sphere_centers[:,1], 'o ', mfc='None', mec='b', ms=10, mew=3)
+            for si, ti in zip(sphere_centers, t):
+                plt.plot([si[0], ti[0] * 1000 + si[0]], [si[1], ti[1] * 1000 + si[1]], color='gray')
+        assert t.shape == sphere_centers.shape, (t.shape, sphere_centers.shape)
+        
+        # choose nearest
+        j = np.argmin(((tsphere_centers - bpts)**2).sum(axis=1))
+        normal = normal[j,:]
+        isunitlength(normal)
+        if plot:
+            plt.plot(sphere_centers[:,0][j], sphere_centers[:,1][j], '^ ', mfc='None', mec='g', ms=10, mew=3)
             
         vnew = v - 2 * angle(normal, v) * normal
         assert vnew.shape == v.shape, (vnew.shape, v.shape)
