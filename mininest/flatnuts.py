@@ -554,18 +554,19 @@ class BisectSampler(StepSampler):
             #print("bisect: interval %d-%d-%d (+%d)" % (left,mid,right, offseti))
             if mid == left or mid == right:
                 break
-            midx = leftx + mid * self.epsilon * leftv
+            midx = leftx + mid * leftv
+
+            accepted = self.contourpath.add_if_above_threshold(mid+offseti, midx, leftv)
             self.nevals += 1
-            if self.is_inside(midx):
+            if accepted:
                 #print("   inside.  updating interval %d-%d" % (mid, right))
-                self.path.add(mid+offseti, midx, leftv)
                 left = mid
             else:
                 #print("   outside. updating interval %d-%d" % (left, mid))
                 right = mid
         return right
-        
-    def expand_to_step(self, i, continue_after_reflection=True):
+    
+    def expand_to_step(self, i, continue_after_reflection=True, plot=False):
         """
         Run steps forward or backward to step i (can be positive or 
         negative, 0 is the starting point), if possible.
@@ -576,7 +577,7 @@ class BisectSampler(StepSampler):
         if i > 0 and self.fwd_possible:
             sign = 1
             fwd = True
-            starti, startx, startv = max(self.points)
+            starti, startx, startv, _ = max(self.points)
             if starti >= i:
                 # already done
                 return
@@ -584,7 +585,7 @@ class BisectSampler(StepSampler):
         elif self.rwd_possible:
             sign = -1
             fwd = False
-            starti, startx, startv = min(self.points)
+            starti, startx, startv, _ = min(self.points)
             if starti <= i:
                 # already done
                 return
@@ -596,76 +597,35 @@ class BisectSampler(StepSampler):
             #assert False, (i, self.fwd_possible, self.rwd_possible)
         
         #print("trying to expand to", i, " which is %d away" % deltai)
-        #xi = startx + startv * deltai * self.epsilon
-        xi = self.path.extrapolate(i)
+        xi, v = self.contourpath.samplingpath.extrapolate(i)
+        accepted = self.contourpath.add_if_above_threshold(i, xi, v)
         self.nevals += 1
-        if self.is_inside(xi):
-            # can jump there directly
-            #print("   trivial by direct jump")
-            self.path.add(i, xi, startv)
-            return
-        outsidei = self.bisect(0, startx, startv, deltai, offseti=starti)
-        self.nreflections += 1
-        #print("bisecting gave reflection point", outsidei, "(+", starti, ")")
-        xj = startx + startv * outsidei * self.epsilon
-        if self.plot: plt.plot(xj[0], xj[1], 'xr')
-        vk = self.reverse(xj, startv * sign) * sign
-        #xk = xj + vk * sign * self.epsilon
-        xk = extrapolate_ahead(sign * self.epsilon, xj, vk)
-        self.nevals += 1
-        if self.is_inside(xk):
-            self.path.add(outsidei + starti, xk, vk)
-            if continue_after_reflection or angle(vk, startv) > 0:
-                self.expand_to_step(i) # recurse
-        else:
-            #print("   could not come back inside", xk)
-            if self.plot: plt.plot(xk[0], xk[1], 's', color='r')
-            if fwd:
-                self.fwd_possible = False
+        if not accepted:
+            outsidei = self.bisect(0, startx, startv, deltai, offseti=starti)
+            self.nreflections += 1
+            #print("bisecting gave reflection point", outsidei, "(+", starti, ")")
+            #xj = startx + startv * outsidei * self.epsilon
+            xj, startv = extrapolate_ahead(outsidei, startx, startv)
+            if self.plot: plt.plot(xj[0], xj[1], 'xr')
+            vk = self.reverse_with_ellipses(xj, startv * sign, plot=plot) * sign
+            xk = extrapolate_ahead(sign * self.epsilon, xj, vk)
+            xk, vk = extrapolate_ahead(sign, xj, vk)
+            self.nreflections += 1
+            print("  trying new point,", xk)
+            self.nevals += 1
+            accepted = self.contourpath.add_if_above_threshold(outsidei, xk, vk)
+            if accepted:
+                if continue_after_reflection or angle(vk, startv) > 0:
+                    self.expand_to_step(i) # recurse
             else:
-                self.rwd_possible = False
-    
-    def interpolate_point(self, i):
-        """
-        Given our sparsely sampled track (stored in .points),
-        potentially with reflections, 
-        extract the corrdinates of the point with index i.
-        That point may not have been evaluated.
-        """
-        points_before = [(j, xj, vj) for j, xj, vj in self.points if j <= i]
-        points_after  = [(j, xj, vj) for j, xj, vj in self.points if j >= i]
-        
-        # check if the point after is really after i
-        if len(points_after) == 0 and not self.fwd_possible:
-            # the path cannot continue, and i does not exist.
-            #print("    interpolate_point %d: the path cannot continue fwd, and i does not exist." % i)
-            j, xj, vj = max(points_before)
-            return xj, vj, False
-        
-        # check if the point before is really before i
-        if len(points_before) == 0 and not self.rwd_possible:
-            # the path cannot continue, and i does not exist.
-            k, xk, vk = min(points_after)
-            #print("    interpolate_point %d: the path cannot continue rwd, and i does not exist." % i)
-            return xk, vk, False
-        
-        j, xj, vj = max(points_before)
-        k, xk, vk = min(points_after)
-        
-        #print("    interpolate_point %d between %d-%d" % (i, j, k))
-        if j == i: # we have this exact point in the chain
-            return xj, vj, True
-        assert not k == i # otherwise the above would be true too
-        
-        # expand_to_step explores each reflection in detail, so
-        # any points with change in v should have j == i
-        # therefore we can assume:
-        assert (vj == vk).all()
-        # the new point is then just a linear interpolation
-        w = (i - k) * 1. / (j - k)
-        xl = xj * w + (1 - w) * xk
-        return xl, vj, True
-    
+                print("failed to recover. Terminating side", xk)
+                if plot: plt.plot(xk[0], xk[1], 's', mfc='None', mec='r', ms=10)
+                if fwd:
+                    self.fwd_possible = False
+                else:
+                    self.rwd_possible = False
+                return False
+
 class NUTSSampler(BisectSampler):
     """
     No-U-turn sampler (NUTS) on flat surfaces.
