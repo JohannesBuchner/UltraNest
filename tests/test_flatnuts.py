@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from mininest.mlfriends import AffineLayer, MLFriends
-from mininest.flatnuts import StepSampler, SamplingPath, ContourSamplingPath
+from mininest.flatnuts import StepSampler, BisectSampler, SamplingPath, ContourSamplingPath
 from mininest.flatnuts import SamplingPath, box_line_intersection, nearest_box_intersection_line, linear_steps_with_reflection
 from numpy.testing import assert_allclose
 
@@ -267,6 +267,35 @@ def test_detailed_balance():
         print("BACKWARD SAMPLING FROM", starti, startx, startv, startL)
         samplingpath3 = SamplingPath(startx, -startv, startL)
         sampler3 = StepSampler(ContourSamplingPath(samplingpath3, region, transform, loglike, Lmin))
+        sampler3.expand_to_step(starti)
+        
+        starti3, startx3, startv3, startL3 = min(sampler3.points)
+        assert_allclose(active_u[0], startx3)
+        assert_allclose(v, -startv3)
+        print()
+
+        print()
+        print("FORWARD SAMPLING FROM", 0, active_u[0], v, active_values[0])
+        samplingpath = SamplingPath(active_u[0], v, active_values[0])
+        sampler = BisectSampler(ContourSamplingPath(samplingpath, region, transform, loglike, Lmin))
+        sampler.expand_to_step(10)
+        
+        starti, startx, startv, startL = max(sampler.points)
+        print()
+        print("BACKWARD SAMPLING FROM", starti, startx, startv, startL)
+        samplingpath2 = SamplingPath(startx, -startv, startL)
+        sampler2 = BisectSampler(ContourSamplingPath(samplingpath2, region, transform, loglike, Lmin))
+        sampler2.expand_to_step(starti)
+        
+        starti2, startx2, startv2, startL2 = max(sampler2.points)
+        assert_allclose(active_u[0], startx2)
+        assert_allclose(v, -startv2)
+        
+        starti, startx, startv, startL = min(sampler.points)
+        print()
+        print("BACKWARD SAMPLING FROM", starti, startx, startv, startL)
+        samplingpath3 = SamplingPath(startx, -startv, startL)
+        sampler3 = BisectSampler(ContourSamplingPath(samplingpath3, region, transform, loglike, Lmin))
         sampler3.expand_to_step(starti)
         
         starti3, startx3, startv3, startL3 = min(sampler3.points)

@@ -135,6 +135,8 @@ def linear_steps_with_reflection(ray_origin, ray_direction, t, wrapped_dims=None
         assert np.isfinite(p).all()
         assert t >= 0, t
         if tleft <= t: # stopping before reaching any border
+            assert np.all(ray_origin + tleft * ray_direction >= 0), (ray_origin, tleft, ray_direction)
+            assert np.all(ray_origin + tleft * ray_direction <= 1), (ray_origin, tleft, ray_direction)
             return ray_origin + tleft * ray_direction, ray_direction
         # go to reflection point
         ray_origin = p
@@ -338,11 +340,13 @@ class ContourSamplingPath(object):
         self.likelihood = likelihood
         self.Lmin = Lmin
         self.region = region
+        self.ncalls = 0
     
     def add_if_above_threshold(self, i, x, v):
         # x, v = self.samplingpath.extrapolate(i)
         p = self.transform(x)
         L = self.likelihood(p)
+        self.ncalls += 1
         if L > self.Lmin:
             print("accepted", x, "as point %d" % i)
             self.samplingpath.add(i, x, v, L)
@@ -351,8 +355,74 @@ class ContourSamplingPath(object):
             print("rejected", x)
             return False
     
+    def gradient(self, reflpoint, v, plot=False):
+        """
+        reflpoint: 
+            point outside the likelihood contour, reflect there
+        v:
+            previous direction vector
+        return:
+            gradient vector (normal of ellipsoid)
+        
+        Finds all spheres where the tangent plane could provide a
+        forward reflection. Choose the nearest of those.
+        
+        Considerations:
+           - in low-d, we want to focus on nearby live point spheres
+             The border traced out is fairly accurate, at least in the
+             normal away from the inside.
+             
+           - in high-d, reflpoint is contained by all live points,
+             and none of them point to the center well. Because the
+             sampling is poor, the "region center" position
+             will be very stochastic.
+        """
+        
+        # check which the reflections the ellipses would make
+        region = self.region
+        bpts = region.transformLayer.transform(reflpoint).reshape((1, -1))
+        
+        sphere_centers = region.u
+        tsphere_centers = region.unormed
+        tt = get_sphere_tangents(tsphere_centers, bpts)
+        assert tt.shape == tsphere_centers.shape, (tt.shape, tsphere_centers.shape)
+        
+        # convert back to u space
+        t = region.transformLayer.untransform(tt * 1e-3 + tsphere_centers) - sphere_centers
 
+        # compute new vector
+        #print(t.shape, t.sum(axis=0).shape, t.sum(axis=1).shape)
+        normal = -t / norm(t, axis=1).reshape((-1, 1))
+        isunitlength(normal[0,:])
+        assert normal.shape == t.shape, (normal.shape, t.shape)
+        
+        angles = (normal * (v / norm(v))).sum(axis=1)
+        mask_forward = np.logical_and(angles < 0, angles > -0.707)
 
+        if not mask_forward.any():
+            # none of the reflections point forward.
+            # reverse.
+            return None
+        
+        sphere_centers = sphere_centers[mask_forward,:]
+        tsphere_centers = tsphere_centers[mask_forward,:]
+        normal = normal[mask_forward,:]
+        t = t[mask_forward,:]
+
+        if plot:
+            plt.plot(sphere_centers[:,0], sphere_centers[:,1], 'o ', mfc='None', mec='b', ms=10, mew=3)
+            for si, ti in zip(sphere_centers, t):
+                plt.plot([si[0], ti[0] * 1000 + si[0]], [si[1], ti[1] * 1000 + si[1]], color='gray')
+        assert t.shape == sphere_centers.shape, (t.shape, sphere_centers.shape)
+        
+        # choose nearest
+        j = np.argmin(((tsphere_centers - bpts)**2).sum(axis=1))
+        normal = normal[j,:]
+        isunitlength(normal)
+        if plot:
+            plt.plot(sphere_centers[:,0][j], sphere_centers[:,1][j], '^ ', mfc='None', mec='g', ms=10, mew=3)
+        return normal
+        
 
 class StepSampler(object):
     """
@@ -377,85 +447,16 @@ class StepSampler(object):
         self.nreflections = 0
         self.plot = plot
     
-    def reverse(self, reflpoint, v):
+    def reverse(self, reflpoint, v, plot=False):
         """
         Reflect off the surface at reflpoint going in direction v
         
         returns the new direction.
         """
-        #isunitlength(v)
-        normal = self.contourpath.gradient(reflpoint)
-        vnew = v - 2 * angle(normal, v) * normal
-        #isunitlength(vnew)
-        return vnew
-    
-    def reverse_with_ellipses(self, reflpoint, v, plot=False):
-        """
-        reflpoint: 
-            point outside the likelihood contour, reflect there
-        v:
-            previous direction vector
-        return:
-            new direction vector (from reflpoint)
-        
-        Finds all spheres where the tangent plane could provide a
-        forward reflection. Choose the nearest of those.
-        
-        Considerations:
-           - in low-d, we want to focus on nearby live point spheres
-             The border traced out is fairly accurate, at least in the
-             normal away from the inside.
-             
-           - in high-d, reflpoint is contained by all live points,
-             and none of them point to the center well. Because the
-             sampling is poor, the "region center" position
-             will be very stochastic.
-        """
-        
-        # check which the reflections the ellipses would make
-        region = self.contourpath.region
-        bpts = region.transformLayer.transform(reflpoint).reshape((1, -1))
-        
-        sphere_centers = region.u
-        tsphere_centers = region.unormed
-        tt = get_sphere_tangents(tsphere_centers, bpts)
-        assert tt.shape == tsphere_centers.shape, (tt.shape, tsphere_centers.shape)
-        
-        # convert back to u space
-        t = region.transformLayer.untransform(tt * 1e-3 + tsphere_centers) - sphere_centers
-
-        # compute new vector
-        #print(t.shape, t.sum(axis=0).shape, t.sum(axis=1).shape)
-        normal = -t / norm(t, axis=1).reshape((-1, 1))
-        isunitlength(normal[0,:])
-        assert normal.shape == t.shape, (normal.shape, t.shape)
-        
-        angles = (normal * (v / norm(v))).sum(axis=1)
-        mask_forward = np.logical_and(angles < 0, angles > -0.707)
-
-        if not mask_forward.any():
-            # none of the reflections point forward.
-            # reverse.
+        normal = self.contourpath.gradient(reflpoint, v, plot=plot)
+        if normal is None:
             return -v
         
-        sphere_centers = sphere_centers[mask_forward,:]
-        tsphere_centers = tsphere_centers[mask_forward,:]
-        normal = normal[mask_forward,:]
-        t = t[mask_forward,:]
-
-        if plot:
-            plt.plot(sphere_centers[:,0], sphere_centers[:,1], 'o ', mfc='None', mec='b', ms=10, mew=3)
-            for si, ti in zip(sphere_centers, t):
-                plt.plot([si[0], ti[0] * 1000 + si[0]], [si[1], ti[1] * 1000 + si[1]], color='gray')
-        assert t.shape == sphere_centers.shape, (t.shape, sphere_centers.shape)
-        
-        # choose nearest
-        j = np.argmin(((tsphere_centers - bpts)**2).sum(axis=1))
-        normal = normal[j,:]
-        isunitlength(normal)
-        if plot:
-            plt.plot(sphere_centers[:,0][j], sphere_centers[:,1][j], '^ ', mfc='None', mec='g', ms=10, mew=3)
-            
         vnew = v - 2 * angle(normal, v) * normal
         assert vnew.shape == v.shape, (vnew.shape, v.shape)
         assert np.isclose(norm(vnew), norm(v)), (vnew, v, norm(vnew), norm(v))
@@ -463,7 +464,7 @@ class StepSampler(object):
         if plot:
             plt.plot([reflpoint[0], (vnew + reflpoint)[0]], [reflpoint[1], (vnew + reflpoint)[1]], '-', color='k', lw=3)
         return vnew
-            
+    
     def expand_to_step(self, i):
         """
         Run steps forward or backward to step i (can be positive or 
@@ -494,7 +495,6 @@ class StepSampler(object):
             sign = -1
         
         j = starti + 1 * sign
-        self.nevals += 1
         xj, v = self.contourpath.samplingpath.extrapolate(j)
         print('extrapolated point:', xj, v)
         #v = startv
@@ -504,12 +504,11 @@ class StepSampler(object):
             # We stepped outside, so now we need to reflect
             print("we stepped outside, need to reflect", xj)
             if plot: plt.plot(xj[0], xj[1], 'xr')
-            vk = self.reverse_with_ellipses(xj, v * sign, plot=plot) * sign
+            vk = self.reverse(xj, v * sign, plot=plot) * sign
             #print("  outside; reflecting velocity", v, vk)
             xk, vk = extrapolate_ahead(sign, xj, vk)
             self.nreflections += 1
             print("  trying new point,", xk)
-            self.nevals += 1
             accepted = self.contourpath.add_if_above_threshold(j, xk, vk)
             if not accepted:
                 print("failed to recover. Terminating side", xk)
@@ -544,7 +543,7 @@ class BisectSampler(StepSampler):
         right is the index of the point already outside
         rightx is its coordinate
         
-        offseti is an offset to the indeces to be applied before storing the point
+        offseti is an offset to the indices to be applied before storing the point
         
         """
         # left is always inside
@@ -554,9 +553,10 @@ class BisectSampler(StepSampler):
             #print("bisect: interval %d-%d-%d (+%d)" % (left,mid,right, offseti))
             if mid == left or mid == right:
                 break
-            midx = leftx + mid * leftv
+            #midx = leftx + mid * leftv
+            midx, midv = extrapolate_ahead(mid, leftx, leftv)
 
-            accepted = self.contourpath.add_if_above_threshold(mid+offseti, midx, leftv)
+            accepted = self.contourpath.add_if_above_threshold(mid+offseti, midx, midv)
             self.nevals += 1
             if accepted:
                 #print("   inside.  updating interval %d-%d" % (mid, right))
@@ -599,7 +599,6 @@ class BisectSampler(StepSampler):
         #print("trying to expand to", i, " which is %d away" % deltai)
         xi, v = self.contourpath.samplingpath.extrapolate(i)
         accepted = self.contourpath.add_if_above_threshold(i, xi, v)
-        self.nevals += 1
         if not accepted:
             outsidei = self.bisect(0, startx, startv, deltai, offseti=starti)
             self.nreflections += 1
@@ -607,12 +606,11 @@ class BisectSampler(StepSampler):
             #xj = startx + startv * outsidei * self.epsilon
             xj, startv = extrapolate_ahead(outsidei, startx, startv)
             if self.plot: plt.plot(xj[0], xj[1], 'xr')
-            vk = self.reverse_with_ellipses(xj, startv * sign, plot=plot) * sign
+            vk = self.reverse(xj, startv * sign, plot=plot) * sign
             xk = extrapolate_ahead(sign * self.epsilon, xj, vk)
             xk, vk = extrapolate_ahead(sign, xj, vk)
             self.nreflections += 1
             print("  trying new point,", xk)
-            self.nevals += 1
             accepted = self.contourpath.add_if_above_threshold(outsidei, xk, vk)
             if accepted:
                 if continue_after_reflection or angle(vk, startv) > 0:
