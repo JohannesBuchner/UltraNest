@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from mininest.mlfriends import AffineLayer, MLFriends
+from mininest.flatnuts import StepSampler, SamplingPath, ContourSamplingPath
 from mininest.flatnuts import SamplingPath, box_line_intersection, nearest_box_intersection_line, linear_steps_with_reflection
 from numpy.testing import assert_allclose
 
@@ -201,6 +203,76 @@ def test_samplingpath_cubereflect():
     L0 = 0.
     path = SamplingPath(x0, v0, L0)
     path.add(-1, x0 - v0, v0, 1.0)
+
+def test_detailed_balance():
+    def loglike(x):
+        x, y = x.transpose()
+        return -0.5 * (x**2 + ((y - 0.5)/0.2)**2)
+    def transform(u):
+        return u
+
+    Lmin = -0.5
+    for i in range(1, 20):
+        print()
+        print("---- seed=%d ----" % i)
+        print()
+        np.random.seed(i)
+        points = np.random.uniform(size=(10000, 2))
+        L = loglike(points)
+        mask = L > Lmin
+        points = points[mask,:][:400,:]
+        active_u = points
+        active_values = L[mask][:400]
+
+        transformLayer = AffineLayer(wrapped_dims=[])
+        transformLayer.optimize(points, points)
+        region = MLFriends(points, transformLayer)
+        region.maxradiussq, region.enlarge = region.compute_enlargement(nbootstraps=30)
+        region.create_ellipsoid()
+        nclusters = transformLayer.nclusters
+        assert nclusters == 1
+        assert np.allclose(region.unormed, region.transformLayer.transform(points)), "transform should be reproducible"
+        assert region.inside(points).all(), "live points should lie near live points"
+
+        v = np.random.normal(size=2)
+        v /= (v**2).sum()**0.5
+        v *= 0.04
+        
+        print()
+        print("FORWARD SAMPLING FROM", 0, active_u[0], v, active_values[0])
+        samplingpath = SamplingPath(active_u[0], v, active_values[0])
+        sampler = StepSampler(ContourSamplingPath(samplingpath, region, transform, loglike, Lmin))
+        sampler.expand_onestep(fwd=True, plot=True)
+        sampler.expand_onestep(fwd=True, plot=True)
+        sampler.expand_onestep(fwd=True, plot=True)
+        sampler.expand_onestep(fwd=True, plot=True)
+        sampler.expand_onestep(fwd=False, plot=True)
+        sampler.expand_to_step(4)
+        sampler.expand_to_step(-4)
+        
+        starti, startx, startv, startL = max(sampler.points)
+        
+        print()
+        print("BACKWARD SAMPLING FROM", starti, startx, startv, startL)
+        samplingpath2 = SamplingPath(startx, -startv, startL)
+        sampler2 = StepSampler(ContourSamplingPath(samplingpath2, region, transform, loglike, Lmin))
+        sampler2.expand_to_step(starti)
+        
+        starti2, startx2, startv2, startL2 = max(sampler2.points)
+        assert_allclose(active_u[0], startx2)
+        assert_allclose(v, -startv2)
+        
+        starti, startx, startv, startL = min(sampler.points)
+        print()
+        print("BACKWARD SAMPLING FROM", starti, startx, startv, startL)
+        samplingpath3 = SamplingPath(startx, -startv, startL)
+        sampler3 = StepSampler(ContourSamplingPath(samplingpath3, region, transform, loglike, Lmin))
+        sampler3.expand_to_step(starti)
+        
+        starti3, startx3, startv3, startL3 = min(sampler3.points)
+        assert_allclose(active_u[0], startx3)
+        assert_allclose(v, -startv3)
+        print()
     
     
 if __name__ == '__main__':
