@@ -1,8 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from mininest.mlfriends import AffineLayer, MLFriends
-from mininest.flatnuts import StepSampler, BisectSampler, SamplingPath, ContourSamplingPath
-from mininest.flatnuts import SamplingPath, box_line_intersection, nearest_box_intersection_line, linear_steps_with_reflection
+from mininest.flatnuts import StepSampler, BisectSampler, NUTSSampler
+from mininest.flatnuts import SamplingPath, ContourSamplingPath
+from mininest.flatnuts import box_line_intersection, nearest_box_intersection_line, linear_steps_with_reflection, angle, get_sphere_tangents, norm
 from numpy.testing import assert_allclose
 
 def test_horizontal():
@@ -204,6 +205,160 @@ def test_samplingpath_cubereflect():
     path = SamplingPath(x0, v0, L0)
     path.add(-1, x0 - v0, v0, 1.0)
 
+def get_reflection_angles(normal, v):
+    angles = (normal * (v / norm(v))).sum(axis=1)
+    #mask_forward1 = angles < 0
+    
+    # additionally, the reverse should work:
+    vnew = -(v.reshape((1, -1)) - 2 * angles.reshape((-1, 1)) * normal)
+    anglesnew = (normal * (vnew / norm(vnew, axis=1).reshape((-1, 1)))).sum(axis=1)
+    assert anglesnew.shape == (len(normal),), (anglesnew.shape, normal.shape)
+    mask_forward = np.logical_and(angles < 0, anglesnew < 0)
+    return mask_forward, angles, anglesnew
+
+def test_reversible_gradient(plot=False):
+    def loglike(x):
+        x, y = x.transpose()
+        return -0.5 * (x**2 + ((y - 0.5)/0.2)**2)
+    def transform(u):
+        return u
+    Lmin = -0.5
+
+    for i in [84] + list(range(1, 100)):
+        print("setting seed = %d" % i)
+        np.random.seed(i)
+        points = np.random.uniform(size=(10000, 2))
+        L = loglike(points)
+        mask = L > Lmin
+        points = points[mask,:][:100,:]
+        active_u = points
+        active_values = L[mask][:100]
+
+        transformLayer = AffineLayer(wrapped_dims=[])
+        transformLayer.optimize(points, points)
+        region = MLFriends(points, transformLayer)
+        region.maxradiussq, region.enlarge = region.compute_enlargement(nbootstraps=30)
+        region.create_ellipsoid()
+        nclusters = transformLayer.nclusters
+        assert nclusters == 1
+        assert np.allclose(region.unormed, region.transformLayer.transform(points)), "transform should be reproducible"
+        assert region.inside(points).all(), "live points should lie near live points"
+
+        if i == 84:
+            v = np.array([0.03477044, -0.01977415])
+            reflpoint = np.array([0.09304075, 0.29114574])
+        elif i == 4:
+            v = np.array([0.03949306, -0.00634806])
+            reflpoint = np.array([0.9934771, 0.55358031])
+            
+        else:
+            v = np.random.normal(size=2)
+            v /= (v**2).sum()**0.5
+            v *= 0.04
+            j = np.random.randint(len(active_u))
+            reflpoint = np.random.normal(active_u[j,:], 0.04)
+            if not (reflpoint < 1).all() and not (reflpoint > 0).all():
+                continue
+        
+        
+        bpts = region.transformLayer.transform(reflpoint).reshape((1, -1))
+        tt = get_sphere_tangents(region.unormed, bpts)
+        t = region.transformLayer.untransform(tt * 1e-3 + region.unormed) - region.u
+        # compute new vector
+        normal = t / norm(t, axis=1).reshape((-1, 1))
+        print("reflecting at  ", reflpoint, "with direction", v)
+        mask_forward1, angles, anglesnew = get_reflection_angles(normal, v)
+        if mask_forward1.any():
+            j = np.argmin(((region.unormed[mask_forward1,:] - bpts)**2).sum(axis=1))
+            k = np.arange(len(normal))[mask_forward1][j]
+            angles_used = angles[k]
+            normal_used = normal[k,:]
+            print("chose normal", normal_used, k)
+            chosen_point = region.u[k,:]
+            vnew = -(v - 2 * angles_used * normal_used)
+            assert vnew.shape == v.shape
+            
+            mask_forward2, angles2, anglesnew2 = get_reflection_angles(normal, vnew)
+            j2 = np.argmin(((region.unormed[mask_forward2,:] - bpts)**2).sum(axis=1))
+            #chosen_point2 = region.u[mask_forward2,:][0,:]
+            #assert j2 == j, (j2, j)
+            assert mask_forward2[k]
+            #assert_allclose(chosen_point, chosen_point2)
+        
+            #for m, a, b, m2, a2, b2 in zip(mask_forward1, angles, anglesnew, mask_forward2, angles2, anglesnew2):
+            #    if m != m2:
+            #        print('  ', m, a, b, m2, a2, b2)
+        
+            #print("using normal", normal)
+            #print("changed v from", v, "to", vnew)
+        
+            #angles2 = -(normal * (vnew / norm(vnew))).sum(axis=1)
+            #mask_forward2 = angles < 0
+            if plot:
+                plt.figure(figsize=(5,5))
+                plt.title('%d' % mask_forward1.sum())
+                plt.plot((reflpoint + v)[0], (reflpoint + v)[1], '^', color='orange')
+                plt.plot((reflpoint + vnew)[:,0], (reflpoint + vnew)[:,1], '^ ', color='lime')
+                plt.plot(reflpoint[0], reflpoint[1], '^ ', color='r')
+                plt.plot(region.u[:,0], region.u[:,1], 'x ', ms=2, color='k')
+                plt.plot(region.u[mask_forward1,0], region.u[mask_forward1,1], 'o ', ms=6, mfc='None', mec='b')
+                plt.plot(region.u[mask_forward2,0], region.u[mask_forward2,1], 's ', ms=8, mfc='None', mec='g')
+                plt.xlim(0, 1)
+                plt.ylim(0, 1)
+                plt.savefig('test_flatnuts_reversible_gradient_%d.png' % i, bbox_inches='tight')
+                plt.close()
+            assert mask_forward1[k] == mask_forward2[k], (mask_forward1[k], mask_forward2[k])
+                
+            print("reflecting at  ", reflpoint, "with direction", v)
+            # make that step, then try to go back
+            j = np.arange(len(normal))[mask_forward1][0]
+            normal = normal[j,:]
+            angles = (normal * (v / norm(v))).sum()
+            v2 = v - 2 * angle(normal, v) * normal
+            
+            print("reflecting with", normal, "new direction", v2)
+            
+            #newpoint = reflpoint + v2
+            angles2 = (normal * (v2 / norm(v2))).sum()
+            v3 = v2 - 2 * angle(normal, v2) * normal
+            
+            print("re-reflecting gives direction", v3)
+            assert_allclose(v3, v)
+            
+            continue
+            
+            print()
+            print("FORWARD:", v, reflpoint)
+            samplingpath = SamplingPath(reflpoint - v, v, active_values[0])
+            contourpath = ContourSamplingPath(samplingpath, region, transform, loglike, Lmin)
+            normal = contourpath.gradient(reflpoint, v)
+            assert normal.shape == v.shape, (normal.shape, v.shape)
+            
+            print("BACKWARD:", v, reflpoint)
+            v2 = -(v - 2 * angle(normal, v) * normal)
+            normal2 = contourpath.gradient(reflpoint, v2)
+            assert_allclose(normal, normal2)
+            normal2 = normal
+            v3 = -(v2 - 2 * angle(normal2, v2) * normal2)
+            assert_allclose(v3, v)
+        
+        
+    
+def gap_free_path(sampler, ilo, ihi):
+    #ilo, _, _, _ = min(sampler.points)
+    #ihi, _, _, _ = max(sampler.points)
+    for i in range(ilo, ihi):
+        xi, vi, Li, onpath = sampler.contourpath.samplingpath.interpolate(i)
+        assert onpath
+        if Li is None:
+            pi = sampler.contourpath.transform(xi)
+            Li = sampler.contourpath.likelihood(pi)
+            if not Li > sampler.contourpath.Lmin:
+                return False
+    return True
+
+
+
 def test_detailed_balance():
     def loglike(x):
         x, y = x.transpose()
@@ -212,7 +367,7 @@ def test_detailed_balance():
         return u
 
     Lmin = -0.5
-    for i in range(1, 20):
+    for i in range(1, 100):
         print()
         print("---- seed=%d ----" % i)
         print()
@@ -238,7 +393,7 @@ def test_detailed_balance():
         v /= (v**2).sum()**0.5
         v *= 0.04
         
-        print()
+        print("StepSampler ----")
         print("FORWARD SAMPLING FROM", 0, active_u[0], v, active_values[0])
         samplingpath = SamplingPath(active_u[0], v, active_values[0])
         sampler = StepSampler(ContourSamplingPath(samplingpath, region, transform, loglike, Lmin))
@@ -249,6 +404,8 @@ def test_detailed_balance():
         sampler.expand_onestep(fwd=False)
         sampler.expand_to_step(4)
         sampler.expand_to_step(-4)
+        
+        continue
         
         starti, startx, startv, startL = max(sampler.points)
         
@@ -265,16 +422,18 @@ def test_detailed_balance():
         starti, startx, startv, startL = min(sampler.points)
         print()
         print("BACKWARD SAMPLING FROM", starti, startx, startv, startL)
-        samplingpath3 = SamplingPath(startx, -startv, startL)
+        samplingpath3 = SamplingPath(startx, startv, startL)
         sampler3 = StepSampler(ContourSamplingPath(samplingpath3, region, transform, loglike, Lmin))
-        sampler3.expand_to_step(starti)
+        sampler3.expand_to_step(-starti)
         
-        starti3, startx3, startv3, startL3 = min(sampler3.points)
+        starti3, startx3, startv3, startL3 = max(sampler3.points)
         assert_allclose(active_u[0], startx3)
-        assert_allclose(v, -startv3)
+        assert_allclose(v, startv3)
         print()
+        
+        continue
 
-        print()
+        print("BisectSampler ----")
         print("FORWARD SAMPLING FROM", 0, active_u[0], v, active_values[0])
         samplingpath = SamplingPath(active_u[0], v, active_values[0])
         sampler = BisectSampler(ContourSamplingPath(samplingpath, region, transform, loglike, Lmin))
@@ -288,8 +447,9 @@ def test_detailed_balance():
         sampler2.expand_to_step(starti)
         
         starti2, startx2, startv2, startL2 = max(sampler2.points)
-        assert_allclose(active_u[0], startx2)
-        assert_allclose(v, -startv2)
+        if gap_free_path(sampler, 0, starti) and gap_free_path(sampler2, 0, starti2):
+            assert_allclose(active_u[0], startx2)
+            assert_allclose(v, -startv2)
         
         starti, startx, startv, startL = min(sampler.points)
         print()
@@ -299,8 +459,41 @@ def test_detailed_balance():
         sampler3.expand_to_step(starti)
         
         starti3, startx3, startv3, startL3 = min(sampler3.points)
-        assert_allclose(active_u[0], startx3)
-        assert_allclose(v, -startv3)
+        if gap_free_path(sampler, 0, starti) and gap_free_path(sampler3, 0, starti3):
+            assert_allclose(active_u[0], startx3)
+            assert_allclose(v, -startv3)
+        print()
+
+
+        print("NUTSSampler ----")
+        print("FORWARD SAMPLING FROM", 0, active_u[0], v, active_values[0])
+        samplingpath = SamplingPath(active_u[0], v, active_values[0])
+        sampler = NUTSSampler(ContourSamplingPath(samplingpath, region, transform, loglike, Lmin))
+        sampler.expand_to_step(10)
+        
+        starti, startx, startv, startL = max(sampler.points)
+        print()
+        print("BACKWARD SAMPLING FROM", starti, startx, startv, startL)
+        samplingpath2 = SamplingPath(startx, -startv, startL)
+        sampler2 = NUTSSampler(ContourSamplingPath(samplingpath2, region, transform, loglike, Lmin))
+        sampler2.expand_to_step(starti)
+        
+        starti2, startx2, startv2, startL2 = max(sampler2.points)
+        if gap_free_path(sampler, 0, starti) and gap_free_path(sampler2, 0, starti2):
+            assert_allclose(active_u[0], startx2)
+            assert_allclose(v, -startv2)
+        
+        starti, startx, startv, startL = min(sampler.points)
+        print()
+        print("BACKWARD SAMPLING FROM", starti, startx, startv, startL)
+        samplingpath3 = SamplingPath(startx, -startv, startL)
+        sampler3 = NUTSSampler(ContourSamplingPath(samplingpath3, region, transform, loglike, Lmin))
+        sampler3.expand_to_step(starti)
+        
+        starti3, startx3, startv3, startL3 = min(sampler3.points)
+        if gap_free_path(sampler, 0, starti) and gap_free_path(sampler3, 0, starti3):
+            assert_allclose(active_u[0], startx3)
+            assert_allclose(v, -startv3)
         print()
     
     
@@ -311,7 +504,8 @@ if __name__ == '__main__':
     test_random()
     test_samplingpath()
     test_samplingpath_cubereflect()
-    
+    test_reversible_gradient(plot=True)
+    test_detailed_balance(plot=True)
     
     import sys
     if len(sys.argv) > 1:

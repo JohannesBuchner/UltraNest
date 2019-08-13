@@ -47,8 +47,6 @@ Drawbacks:
 import numpy as np
 from numpy.linalg import norm
 import matplotlib.pyplot as plt
-#from matplotlib.patches import Ellipse
-from mininest.mlfriends import find_nearby
 
 def nearest_box_intersection_line(ray_origin, ray_direction, fwd=True):
     """
@@ -168,8 +166,11 @@ def linear_steps_with_reflection(ray_origin, ray_direction, t, wrapped_dims=None
 def get_sphere_tangents(sphere_center, edge_point):
     """ Assume a sphere centered at sphere_center with radius 
     so that edge_point is on the surface. At edge_point, in 
-    which direction does the normal vector point? """
-    arrow = edge_point - sphere_center
+    which direction does the normal vector point? 
+    
+    Returns vector pointing to the sphere center.
+    """
+    arrow = sphere_center - edge_point
     return arrow / norm(arrow)
     
 
@@ -195,22 +196,6 @@ def distances(l, o, r=1):
     # make sure we are crossing the sphere
     assert (rootterm > 0).all(), rootterm 
     return -loc + rootterm**0.5, -loc - rootterm**0.5
-
-def gen_unit_vectors(N, d):
-    """
-    Generates N random unit vectors in d dimensions
-    """
-    vec = np.random.normal(size=(N, d))
-    vecnorm = norm(vec, axis=1)
-    assert vecnorm.shape == (N,), vecnorm.shape
-    return vec / vecnorm.reshape((N, 1))
-
-def gen_unit_vector(d):
-    """
-    Generates a random unit vectors in d dimensions
-    """
-    vec = np.random.normal(size=(d))
-    return vec / norm(vec)
 
 def isunitlength(vec):
     """
@@ -249,7 +234,12 @@ class SamplingPath(object):
     
     def plot(self, **kwargs):
         x = np.array([x for i, x, v, L in sorted(self.points)])
-        plt.plot(x[:,0], x[:,1], **kwargs)
+        p, = plt.plot(x[:,0], x[:,1], 'o ', **kwargs)
+        ilo, _, _, _ = min(self.points)
+        ihi, _, _, _ = max(self.points)
+        x = np.array([self.interpolate(i)[0] for i in range(ilo, ihi+1)])
+        kwargs['color'] = p.get_color()
+        plt.plot(x[:,0], x[:,1], 'o-', ms=4, mfc='None', **kwargs)
     
     def interpolate(self, i):
         """
@@ -279,6 +269,7 @@ class SamplingPath(object):
             return xk, vk, Lk, False
         
         if len(points_before) == 0 or len(points_after) == 0:
+            #return None, None, None, False
             raise KeyError("can not extrapolate outside path")
         
         j, xj, vj, Lj = max(points_before)
@@ -293,7 +284,9 @@ class SamplingPath(object):
         # expand_to_step explores each reflection in detail, so
         # any points with change in v should have j == i
         # therefore we can assume:
-        assert (vj == vk).all()
+        # assert (vj == vk).all()
+        # this ^ is not true, because reflections on the unit cube can
+        # occur, and change v without requiring a intermediate point.
         
         # j....i....k
         xl1, vj1 = extrapolate_ahead(i - j, xj, vj)
@@ -348,11 +341,11 @@ class ContourSamplingPath(object):
         L = self.likelihood(p)
         self.ncalls += 1
         if L > self.Lmin:
-            print("accepted", x, "as point %d" % i)
+            print("    accepted", x, "as point %d" % i)
             self.samplingpath.add(i, x, v, L)
             return True
         else:
-            print("rejected", x)
+            print("    rejected", x)
             return False
     
     def gradient(self, reflpoint, v, plot=False):
@@ -381,6 +374,8 @@ class ContourSamplingPath(object):
         # check which the reflections the ellipses would make
         region = self.region
         bpts = region.transformLayer.transform(reflpoint).reshape((1, -1))
+        if plot:
+            plt.plot(reflpoint[0], reflpoint[1], '+ ', color='k')
         
         sphere_centers = region.u
         tsphere_centers = region.unormed
@@ -392,13 +387,20 @@ class ContourSamplingPath(object):
 
         # compute new vector
         #print(t.shape, t.sum(axis=0).shape, t.sum(axis=1).shape)
-        normal = -t / norm(t, axis=1).reshape((-1, 1))
+        normal = t / norm(t, axis=1).reshape((-1, 1))
         isunitlength(normal[0,:])
         assert normal.shape == t.shape, (normal.shape, t.shape)
         
         angles = (normal * (v / norm(v))).sum(axis=1)
-        mask_forward = np.logical_and(angles < 0, angles > -0.707)
-
+        # reflection should not go in the same direction, but reflect
+        #mask_forward = angles < 0.0
+        
+        # additionally, the reverse should work:
+        vnew = -(v.reshape((1, -1)) - 2 * angles.reshape((-1, 1)) * normal)
+        #print("expected directions:", v, vnew[35,:], "from normal", normal[35,:], normal[35:38,:], angles[35:38])
+        anglesnew = (normal * (vnew / norm(vnew, axis=1).reshape((-1, 1)))).sum(axis=1)
+        mask_forward = np.logical_and(angles < 0, anglesnew < 0)
+        
         if not mask_forward.any():
             # none of the reflections point forward.
             # reverse.
@@ -417,6 +419,7 @@ class ContourSamplingPath(object):
         
         # choose nearest
         j = np.argmin(((tsphere_centers - bpts)**2).sum(axis=1))
+        print("    chose %d" % j, 'normal:', normal[j,:])
         normal = normal[j,:]
         isunitlength(normal)
         if plot:
@@ -455,17 +458,20 @@ class StepSampler(object):
         """
         normal = self.contourpath.gradient(reflpoint, v, plot=plot)
         if normal is None:
+            assert False
             return -v
         
         vnew = v - 2 * angle(normal, v) * normal
+        print("    new direction:", vnew)
         assert vnew.shape == v.shape, (vnew.shape, v.shape)
         assert np.isclose(norm(vnew), norm(v)), (vnew, v, norm(vnew), norm(v))
         #isunitlength(vnew)
         if plot:
+            plt.plot([reflpoint[0], (-v + reflpoint)[0]], [reflpoint[1], (-v + reflpoint)[1]], '-', color='k', lw=2, alpha=0.5)
             plt.plot([reflpoint[0], (vnew + reflpoint)[0]], [reflpoint[1], (vnew + reflpoint)[1]], '-', color='k', lw=3)
         return vnew
     
-    def expand_to_step(self, i):
+    def expand_to_step(self, i, plot=False):
         """
         Run steps forward or backward to step i (can be positive or 
         negative, 0 is the starting point) 
@@ -473,12 +479,12 @@ class StepSampler(object):
         if i > 0 and self.fwd_possible:
             starti, startx, startv, _ = max(self.points)
             for j in range(starti, i):
-                if not self.expand_onestep():
+                if not self.expand_onestep(plot=plot):
                     break
         elif self.rwd_possible:
             starti, startx, startv, _ = min(self.points)
             for j in range(starti, i, -1):
-                if not self.expand_onestep(fwd=False):
+                if not self.expand_onestep(fwd=False, plot=plot):
                     break
     
     def expand_onestep(self, fwd=True, plot=True):
@@ -514,9 +520,9 @@ class StepSampler(object):
                 print("failed to recover. Terminating side", xk)
                 if plot: plt.plot(xk[0], xk[1], 's', mfc='None', mec='r', ms=10)
                 if fwd:
-                    self.fwd_possible = False
+                    self.contourpath.samplingpath.fwd_possible = False
                 else:
-                    self.rwd_possible = False
+                    self.contourpath.samplingpath.rwd_possible = False
                 return False
         
         return True
@@ -557,7 +563,6 @@ class BisectSampler(StepSampler):
             midx, midv = extrapolate_ahead(mid, leftx, leftv)
 
             accepted = self.contourpath.add_if_above_threshold(mid+offseti, midx, midv)
-            self.nevals += 1
             if accepted:
                 #print("   inside.  updating interval %d-%d" % (mid, right))
                 left = mid
@@ -574,54 +579,57 @@ class BisectSampler(StepSampler):
         Tries to jump ahead if possible, and bisect otherwise.
         This avoid having to make all steps in between.
         """
-        if i > 0 and self.fwd_possible:
+        if i > 0:
             sign = 1
             fwd = True
             starti, startx, startv, _ = max(self.points)
             if starti >= i:
                 # already done
                 return
-            deltai = i - starti
-        elif self.rwd_possible:
+        else:
             sign = -1
             fwd = False
             starti, startx, startv, _ = min(self.points)
             if starti <= i:
                 # already done
                 return
-            deltai = i - starti
-        else:
+
+        deltai = i - starti
+        
+        if     fwd and not self.contourpath.samplingpath.fwd_possible or \
+           not fwd and not self.contourpath.samplingpath.rwd_possible:
             # we are stuck now, and have to hope that the 
             # caller does not expect us to have filled that point
-            return 
-            #assert False, (i, self.fwd_possible, self.rwd_possible)
+            return
         
-        #print("trying to expand to", i, " which is %d away" % deltai)
+        print("  trying to expand to", i, " which is %d away" % deltai)
         xi, v = self.contourpath.samplingpath.extrapolate(i)
         accepted = self.contourpath.add_if_above_threshold(i, xi, v)
         if not accepted:
+            # left is inside, right is outside
+            print("  starting bisecting at 0(inside)..%d(outside)" % deltai, startx, startv)
             outsidei = self.bisect(0, startx, startv, deltai, offseti=starti)
             self.nreflections += 1
-            #print("bisecting gave reflection point", outsidei, "(+", starti, ")")
-            #xj = startx + startv * outsidei * self.epsilon
             xj, startv = extrapolate_ahead(outsidei, startx, startv)
+            print("  bisecting gave reflection point", outsidei, "(+", starti, ")", xj, startv)
             if self.plot: plt.plot(xj[0], xj[1], 'xr')
             vk = self.reverse(xj, startv * sign, plot=plot) * sign
-            xk = extrapolate_ahead(sign * self.epsilon, xj, vk)
+            print("  reversing there", vk)
             xk, vk = extrapolate_ahead(sign, xj, vk)
+            print("  making one step from", xj, vk, '-->', xk, vk)
             self.nreflections += 1
             print("  trying new point,", xk)
-            accepted = self.contourpath.add_if_above_threshold(outsidei, xk, vk)
+            accepted = self.contourpath.add_if_above_threshold(outsidei+starti, xk, vk)
             if accepted:
                 if continue_after_reflection or angle(vk, startv) > 0:
                     self.expand_to_step(i) # recurse
             else:
-                print("failed to recover. Terminating side", xk)
+                print("  failed to recover. Terminating side", xk)
                 if plot: plt.plot(xk[0], xk[1], 's', mfc='None', mec='r', ms=10)
                 if fwd:
-                    self.fwd_possible = False
+                    self.contourpath.samplingpath.fwd_possible = False
                 else:
-                    self.rwd_possible = False
+                    self.contourpath.samplingpath.rwd_possible = False
                 return False
 
 class NUTSSampler(BisectSampler):
@@ -631,7 +639,7 @@ class NUTSSampler(BisectSampler):
     see nuts_step function.
     """
     
-    def nuts_step(self):
+    def nuts_step(self, plot=False):
         """
         Alternatingly doubles the number of steps to forward and backward 
         direction (which may include reflections, see StepSampler and
@@ -640,14 +648,14 @@ class NUTSSampler(BisectSampler):
         terminates and returns a random point on that track.
         """
         # this is (0, x0, v0) in both cases
-        left_state = self.points[0]
-        right_state = self.points[0]
+        left_state = self.points[0][:3]
+        right_state = self.points[0][:3]
         
         # pre-explore a bit (until reflection or the number of steps)
         # this avoids doing expand_to_step with small step numbers later
-        self.expand_to_step(-10, continue_after_reflection=False)
-        self.expand_to_step(+10, continue_after_reflection=False)
-        
+        self.expand_to_step(-10, continue_after_reflection=False, plot=plot)
+        self.expand_to_step(+10, continue_after_reflection=False, plot=plot)
+        print(self.points)
         stop = False
         
         j = 0 # tree depth
@@ -657,12 +665,12 @@ class NUTSSampler(BisectSampler):
             if j > 7:
                 print("NUTS step: tree depth %d, %s" % (j, "rwd" if rwd else "fwd"))
             if rwd:
-                self.expand_to_step(left_state[0] - 2**j)
-                #print("  building rwd tree...")
+                #print("  building rwd tree... ")
+                self.expand_to_step(left_state[0] - 2**j, plot=plot)
                 left_state, _, newrange, newstop = self.build_tree(left_state, j, rwd=rwd)
             else:   
-                self.expand_to_step(right_state[0] + 2**j)
                 #print("  building fwd tree...")
+                self.expand_to_step(right_state[0] + 2**j)
                 _, right_state, newrange, newstop = self.build_tree(right_state, j, rwd=rwd)
             
             if not newstop:
@@ -689,7 +697,7 @@ class NUTSSampler(BisectSampler):
                 #   print("Stopping after %d levels" % j)
                 #   break
             
-        
+        print("sampling between", validrange)
         return self.sample_chain_point(validrange[0], validrange[1])
     
     def sample_chain_point(self, a, b):
@@ -698,16 +706,16 @@ class NUTSSampler(BisectSampler):
         """
         if self.plot: 
             for i in range(a, b+1):
-                xi, vi, onpath = self.interpolate_point(i)
+                xi, vi, Li, onpath = self.contourpath.samplingpath.interpolate(i)
                 plt.plot(xi[0], xi[1], '+', color='g')
         while True:
             i = np.random.randint(a, b+1)
-            xi, vi, onpath = self.interpolate_point(i)
+            xi, vi, Li, onpath = self.contourpath.samplingpath.interpolate(i)
             #print("NUTS sampled point:", xi, (i, a, b))
             if not onpath:
                 continue
             #if (i, xi, vi) not in self.points:
-            return xi
+            return xi, Li
     
     def build_tree(self, startstate, j, rwd):
         """
@@ -721,8 +729,8 @@ class NUTSSampler(BisectSampler):
             # base case: go forward one step
             i = startstate[0] + (-1 if rwd else +1)
             #self.expand_to_step(i)
-            #print("  build_tree@%d" % i, rwd)
-            xi, vi, onpath = self.interpolate_point(i)
+            print("  build_tree@%d" % i, rwd, self.contourpath.samplingpath.fwd_possible, self.contourpath.samplingpath.rwd_possible)
+            xi, vi, Li, onpath = self.contourpath.samplingpath.interpolate(i)
             if self.plot: plt.plot(xi[0], xi[1], 'x', color='gray')
             # this is a good state, so return it
             return (i, xi, vi), (i, xi, vi), (i,i), False
