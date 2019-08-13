@@ -405,8 +405,6 @@ def test_detailed_balance():
         sampler.expand_to_step(4)
         sampler.expand_to_step(-4)
         
-        continue
-        
         starti, startx, startv, startL = max(sampler.points)
         
         print()
@@ -430,8 +428,6 @@ def test_detailed_balance():
         assert_allclose(active_u[0], startx3)
         assert_allclose(v, startv3)
         print()
-        
-        continue
 
         print("BisectSampler ----")
         print("FORWARD SAMPLING FROM", 0, active_u[0], v, active_values[0])

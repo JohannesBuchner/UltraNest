@@ -171,8 +171,17 @@ def get_sphere_tangents(sphere_center, edge_point):
     Returns vector pointing to the sphere center.
     """
     arrow = sphere_center - edge_point
-    return arrow / norm(arrow)
+    return arrow / norm(arrow, axis=1).reshape((-1, 1))
     
+def get_sphere_tangent(sphere_center, edge_point):
+    """ Assume a sphere centered at sphere_center with radius 
+    so that edge_point is on the surface. At edge_point, in 
+    which direction does the normal vector point? 
+    
+    Returns vector pointing to the sphere center.
+    """
+    arrow = sphere_center - edge_point
+    return arrow / norm(arrow)
 
 def reflect(v, normal):
     """ reflect vector v off a normal vector, return new direction vector """
@@ -348,7 +357,7 @@ class ContourSamplingPath(object):
             print("    rejected", x)
             return False
     
-    def gradient(self, reflpoint, v, plot=False):
+    def _gradient(self, reflpoint, v, plot=False):
         """
         reflpoint: 
             point outside the likelihood contour, reflect there
@@ -425,8 +434,70 @@ class ContourSamplingPath(object):
         if plot:
             plt.plot(sphere_centers[:,0][j], sphere_centers[:,1][j], '^ ', mfc='None', mec='g', ms=10, mew=3)
         return normal
-        
 
+    def gradient(self, reflpoint, v, plot=False):
+        """
+        reflpoint: 
+            point outside the likelihood contour, reflect there
+        v:
+            previous direction vector
+        return:
+            gradient vector (normal of ellipsoid)
+        
+        Finds the nearest sphere. If it could provide a
+        forward reflection, return it.
+        
+        Considerations:
+           - in low-d, we want to focus on nearby live point spheres
+             The border traced out is fairly accurate, at least in the
+             normal away from the inside.
+             
+           - in high-d, reflpoint is contained by all live points,
+             and none of them point to the center well. Because the
+             sampling is poor, the "region center" position
+             will be very stochastic.
+        """
+        
+        # check which the reflections the ellipses would make
+        region = self.region
+        bpts = region.transformLayer.transform(reflpoint)
+        if plot:
+            plt.plot(reflpoint[0], reflpoint[1], '+ ', color='k')
+        
+        sphere_centers = region.u
+        tsphere_centers = region.unormed
+        # choose nearest
+        j = np.argmin(((tsphere_centers - bpts)**2).sum(axis=1))
+        sphere_center = region.u[j,:]
+        tsphere_center = region.unormed[j,:]
+        tt = get_sphere_tangent(tsphere_center, bpts)
+        assert tt.shape == tsphere_center.shape, (tt.shape, tsphere_center.shape)
+        
+        # convert back to u space
+        t = region.transformLayer.untransform(tt * 1e-3 + tsphere_center) - sphere_center
+
+        # compute new vector
+        #print(t.shape, t.sum(axis=0).shape, t.sum(axis=1).shape)
+        normal = t / norm(t)
+        isunitlength(normal)
+        assert normal.shape == t.shape, (normal.shape, t.shape)
+        
+        angles = (normal * (v / norm(v))).sum()
+        # additionally, the reverse should work:
+        vnew = -(v - 2 * angles * normal)
+        anglesnew = (normal * (vnew / norm(vnew))).sum()
+        mask_forward = angles < 0 and anglesnew < 0
+        
+        if not mask_forward:
+            # reflection does not point forward.
+            return None
+        
+        if plot:
+            plt.plot(sphere_center[0], sphere_center[1], 'o ', mfc='None', mec='b', ms=10, mew=3)
+            plt.plot([sphere_center[0], t[0] * 1000 + sphere_center[0]], [sphere_center[1], t[1] * 1000 + sphere_center[1]], color='gray')
+        
+        return normal
+        
 class StepSampler(object):
     """
     Find a new point with a series of small steps
@@ -458,7 +529,7 @@ class StepSampler(object):
         """
         normal = self.contourpath.gradient(reflpoint, v, plot=plot)
         if normal is None:
-            assert False
+            #assert False
             return -v
         
         vnew = v - 2 * angle(normal, v) * normal
