@@ -325,22 +325,21 @@ def test_reversible_gradient(plot=False):
             print("re-reflecting gives direction", v3)
             assert_allclose(v3, v)
             
-            continue
-            
             print()
             print("FORWARD:", v, reflpoint)
             samplingpath = SamplingPath(reflpoint - v, v, active_values[0])
             contourpath = ContourSamplingPath(samplingpath, region, transform, loglike, Lmin)
             normal = contourpath.gradient(reflpoint, v)
-            assert normal.shape == v.shape, (normal.shape, v.shape)
-            
-            print("BACKWARD:", v, reflpoint)
-            v2 = -(v - 2 * angle(normal, v) * normal)
-            normal2 = contourpath.gradient(reflpoint, v2)
-            assert_allclose(normal, normal2)
-            normal2 = normal
-            v3 = -(v2 - 2 * angle(normal2, v2) * normal2)
-            assert_allclose(v3, v)
+            if normal is not None:
+                assert normal.shape == v.shape, (normal.shape, v.shape)
+                
+                print("BACKWARD:", v, reflpoint)
+                v2 = -(v - 2 * angle(normal, v) * normal)
+                normal2 = contourpath.gradient(reflpoint, v2)
+                assert_allclose(normal, normal2)
+                normal2 = normal
+                v3 = -(v2 - 2 * angle(normal2, v2) * normal2)
+                assert_allclose(v3, v)
         
         
     
