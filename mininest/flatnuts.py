@@ -457,44 +457,46 @@ class ContourSamplingPath(object):
              sampling is poor, the "region center" position
              will be very stochastic.
         """
+        if plot:
+            plt.plot(reflpoint[0], reflpoint[1], '+ ', color='k', ms=10)
         
         # check which the reflections the ellipses would make
         region = self.region
-        bpts = region.transformLayer.transform(reflpoint)
-        if plot:
-            plt.plot(reflpoint[0], reflpoint[1], '+ ', color='k')
+        bpts = region.transformLayer.transform(reflpoint.reshape((1,-1)))
+        dist = ((bpts - region.unormed)**2).sum(axis=1)
+        nearby = dist < region.maxradiussq
+        assert nearby.shape == (len(region.unormed),), (nearby.shape, len(region.unormed))
+        if not nearby.any():
+            nearby = dist == dist.min()
+        sphere_centers = region.u[nearby,:]
+
+        tsphere_centers = region.unormed[nearby,:]
+        nlive, ndim = region.unormed.shape
+        assert tsphere_centers.shape[1] == ndim, (tsphere_centers.shape, ndim)
         
-        sphere_centers = region.u
-        tsphere_centers = region.unormed
         # choose nearest
-        j = np.argmin(((tsphere_centers - bpts)**2).sum(axis=1))
-        sphere_center = region.u[j,:]
-        tsphere_center = region.unormed[j,:]
-        tt = get_sphere_tangent(tsphere_center, bpts)
+        tsphere_center = tsphere_centers.mean(axis=0)
+        assert tsphere_center.shape == (ndim,), (tsphere_center.shape, ndim)
+        tt = get_sphere_tangent(tsphere_center, bpts.flatten())
         assert tt.shape == tsphere_center.shape, (tt.shape, tsphere_center.shape)
         
         # convert back to u space
+        sphere_center = region.transformLayer.untransform(tsphere_center)
         t = region.transformLayer.untransform(tt * 1e-3 + tsphere_center) - sphere_center
+        
+        if plot:
+            tt_all = get_sphere_tangent(tsphere_centers, bpts)
+            t_all = region.transformLayer.untransform(tt_all * 1e-3 + tsphere_centers) - sphere_centers
+            plt.plot(sphere_centers[:,0], sphere_centers[:,1], 'o ', mfc='None', mec='b', ms=10, mew=1)
+            for si, ti in zip(sphere_centers, t_all):
+                plt.plot([si[0], ti[0] * 1000 + si[0]], [si[1], ti[1] * 1000 + si[1]], color='gray', alpha=0.5)
+            plt.plot(sphere_center[0], sphere_center[1], '^ ', mfc='None', mec='g', ms=10, mew=3)
+            plt.plot([sphere_center[0], t[0] * 1000 + sphere_center[0]], [sphere_center[1], t[1] * 1000 + sphere_center[1]], color='gray')
 
         # compute new vector
-        #print(t.shape, t.sum(axis=0).shape, t.sum(axis=1).shape)
         normal = t / norm(t)
         isunitlength(normal)
         assert normal.shape == t.shape, (normal.shape, t.shape)
-        
-        angles = (normal * (v / norm(v))).sum()
-        # additionally, the reverse should work:
-        vnew = -(v - 2 * angles * normal)
-        anglesnew = (normal * (vnew / norm(vnew))).sum()
-        mask_forward = angles < 0 and anglesnew < 0
-        
-        if not mask_forward:
-            # reflection does not point forward.
-            return None
-        
-        if plot:
-            plt.plot(sphere_center[0], sphere_center[1], 'o ', mfc='None', mec='b', ms=10, mew=3)
-            plt.plot([sphere_center[0], t[0] * 1000 + sphere_center[0]], [sphere_center[1], t[1] * 1000 + sphere_center[1]], color='gray')
         
         return normal
         
