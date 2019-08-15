@@ -12,7 +12,7 @@ class StepSampler(object):
     Simple step sampler, staggering around
     Scales proposal towards a 50% acceptance rate
     """
-    def __init__(self, nsteps, max_rejects=-5):
+    def __init__(self, nsteps):
         """
         nsteps: int
             number of accepted steps until the sample is considered independent
@@ -29,11 +29,6 @@ class StepSampler(object):
         """
         self.history = []
         self.nsteps = nsteps
-        if max_rejects < 0:
-            self.max_rejects = (-max_rejects) * self.nsteps
-        else:
-            self.max_rejects = max_rejects
-        
         self.nrejects = 0
         self.scale = 1.0
         self.last = None, None
@@ -78,11 +73,6 @@ class StepSampler(object):
                 if Lj >= Lmin and region.inside(uj.reshape((1,-1))):
                     ui, Li = uj, Lj
                     break
-        
-        if self.max_rejects > 0 and (self.nrejects > self.max_rejects):
-            # we are somehow stuck and not going anywhere
-            # so reset
-            ui, Li = None, None
         
         # select starting point
         if Li is None:
@@ -179,11 +169,11 @@ class CubeSliceSampler(StepSampler):
     """
     Slice sampler, respecting the region
     """
-    def __init__(self, nsteps, max_rejects=-5):
+    def __init__(self, nsteps):
         """
         see StepSampler.__init__ documentation
         """
-        StepSampler.__init__(self, nsteps=nsteps, max_rejects=-5)
+        StepSampler.__init__(self, nsteps=nsteps)
         self.interval = None
 
     def generate_direction(self, ui, region):
