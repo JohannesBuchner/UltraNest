@@ -438,8 +438,6 @@ class StepSampler(object):
         samples, if given, helps choose the gradient -- To be removed
         plot: if set to true, make some debug plots
         """
-        self.fwd_possible = True
-        self.rwd_possible = True
         self.epsilon_too_large = False
         self.contourpath = contourpath
         self.points = self.contourpath.points
@@ -474,12 +472,12 @@ class StepSampler(object):
         Run steps forward or backward to step i (can be positive or 
         negative, 0 is the starting point) 
         """
-        if i > 0 and self.fwd_possible:
+        if i > 0 and self.contourpath.samplingpath.fwd_possible:
             starti, startx, startv, _ = max(self.points)
             for j in range(starti, i):
                 if not self.expand_onestep(plot=plot):
                     break
-        elif self.rwd_possible:
+        elif self.contourpath.samplingpath.rwd_possible:
             starti, startx, startv, _ = min(self.points)
             for j in range(starti, i, -1):
                 if not self.expand_onestep(fwd=False, plot=plot):
