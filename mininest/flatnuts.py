@@ -433,6 +433,9 @@ class ClockedStepSampler(object):
         self.nevals = 0
         self.nreflections = 0
         self.plot = plot
+        self.reset()
+    
+    def reset(self):
         self.goals = []
     
     def reverse(self, reflpoint, v, plot=False):
@@ -586,6 +589,10 @@ class ClockedStepSampler(object):
     def expand_to_step(self, nsteps, transform, loglike, Lmin):
         """ Helper interface, go to step nstep """
         self.set_nsteps(nsteps)
+        return self.get_independent_sample(transform, loglike, Lmin)
+
+    def get_independent_sample(self, transform, loglike, Lmin):
+        """ Helper interface, call next() until a independent sample is returned """
         Llast = None
         while True:
             sample, is_independent = self.next(Llast)
@@ -600,7 +607,7 @@ class ClockedStepSampler(object):
                 Llast = loglike(xnew)
                 if Llast < Lmin:
                     Llast = None
-            
+    
 class ClockedBisectSampler(ClockedStepSampler):
     """
     Step sampler that does not require each step to be evaluated
@@ -620,8 +627,7 @@ class ClockedBisectSampler(ClockedStepSampler):
             if goal[0] == 'sample-at':
                 i = goal[1]
                 assert Llast is None
-                # find point
-                # here we assume all intermediate points have been sampled
+                # check if point already sampled
                 pointi = [(j, xj, vj, Lj) for j, xj, vj, Lj in self.points if j == i]
 
                 if len(pointi) == 0:
@@ -647,8 +653,8 @@ class ClockedBisectSampler(ClockedStepSampler):
                         continue
                     elif not fwd and self.contourpath.samplingpath.fwd_possible \
                     or       fwd and self.contourpath.samplingpath.rwd_possible:
-                        print("reversing...", i, self.contourpath.samplingpath.rwd_possible,
-                            self.contourpath.samplingpath.fwd_possible)
+                        #print("reversing...", i, self.contourpath.samplingpath.rwd_possible,
+                        #    self.contourpath.samplingpath.fwd_possible)
                         # we are not done, but cannot reach the goal.
                         # reverse. Find position from where to reverse
                         if i > 0:
@@ -658,7 +664,7 @@ class ClockedBisectSampler(ClockedStepSampler):
                         print("reversing at %d..." % starti)
                         # how many steps are missing?
                         deltai = i - starti
-                        print("   %d steps to do at %d -> targeting %d." % (deltai, starti, starti - deltai))
+                        #print("   %d steps to do at %d -> targeting %d." % (deltai, starti, starti - deltai))
                         # make this many steps in the other direction
                         #print("reversing...", i, starti, deltai, starti - deltai)
                         self.goals.append(('sample-at', starti - deltai))
@@ -678,7 +684,7 @@ class ClockedBisectSampler(ClockedStepSampler):
                 # check if we already tried 
                 
                 if j > 0 and self.contourpath.samplingpath.fwd_possible:
-                    print("going forward...", j)
+                    #print("going forward...", j)
                     starti, startx, startv, _ = max(self.points)
                     if j > starti:
                         xj, v = self.contourpath.samplingpath.extrapolate(j)
@@ -687,10 +693,10 @@ class ClockedBisectSampler(ClockedStepSampler):
                         return xj, False
                     else:
                         # we are already done
-                        print("done 1", j, starti)
+                        print("done going to", j, starti)
                         pass
                 elif j < 0 and self.contourpath.samplingpath.rwd_possible:
-                    print("going backward...", j)
+                    #print("going backward...", j)
                     starti, startx, startv, _ = min(self.points)
                     if j < starti:
                         xj, v = self.contourpath.samplingpath.extrapolate(j)
@@ -699,7 +705,7 @@ class ClockedBisectSampler(ClockedStepSampler):
                         return xj, False
                     else:
                         # we are already done
-                        print("done 2", j)
+                        print("done going to", j)
                         pass
                 else:
                     # we are trying to go somewhere we cannot.
@@ -731,12 +737,12 @@ class ClockedBisectSampler(ClockedStepSampler):
                 else:
                     # shrink interval based on previous evaluation point
                     if Llast is not None:
-                        print("   inside.  updating interval %d-%d" % (midi, righti))
+                        #print("   inside.  updating interval %d-%d" % (midi, righti))
                         lefti, leftx, leftv = midi, midx, midv
                         self.contourpath.add(midi, midx, midv, Llast)
                         Llast = None
                     else:
-                        print("   outside. updating interval %d-%d" % (lefti, midi))
+                        #print("   outside. updating interval %d-%d" % (lefti, midi))
                         righti, rightx, rightv = midi, midx, midv
                 
                 # we need to bisect. righti was outside
@@ -769,12 +775,12 @@ class ClockedBisectSampler(ClockedStepSampler):
                 
                 if Llast is not None:
                     # we can go about our merry way.
-                    print("  inside", j)
+                    #print("  inside", j)
                     self.contourpath.add(j, xk, vk, Llast)
                     Llast = None
                     continue
                 else:
-                    print("  reflection failed", j, xk, vk)
+                    #print("  reflection failed", j, xk, vk)
                     # we are stuck and have to give up this direction
                     if self.plot: plt.plot(xk[0], xk[1], 's', mfc='None', mec='r', ms=10)
                     if sign == 1:
@@ -792,101 +798,20 @@ class ClockedNUTSSampler(ClockedBisectSampler):
     """
     No-U-turn sampler (NUTS) on flat surfaces.
     
-    see nuts_step function.
     """
-
+    
+    def reset(self):
+        self.goals = []
+        self.left_state = self.points[0][:3]
+        self.right_state = self.points[0][:3]
+        self.left_warmed_up = False
+        self.right_warmed_up = False
+        self.tree_built = False
+        self.validrange = (0, 0)
+        self.tree_depth = 0
+        self.current_direction = np.random.randint(2) == 1
     
     def next(self, Llast=None):
-        """
-        Run steps forward or backward to step i (can be positive or 
-        negative, 0 is the starting point) 
-        """
-        while self.goals:
-            goal = self.goals.pop(0)
-            if goal[0] == 'expand-to':
-                j = goal[1]
-                if j > 0 and self.contourpath.samplingpath.fwd_possible:
-                    starti, startx, startv, _ = max(self.points)
-                    if j < starti:
-                        xj, v = self.contourpath.samplingpath.extrapolate(j)
-                        self.goals.insert(0, ('bisect', starti, startx, startv, None, None, None, j, xj, v, +1))
-                        self.goals.append(goal)
-                        return xj, False
-                    else:
-                        # we are already done
-                        pass
-                elif self.contourpath.samplingpath.rwd_possible:
-                    starti, startx, startv, _ = min(self.points)
-                    if j > starti:
-                        xj, v = self.contourpath.samplingpath.extrapolate(j)
-                        self.goals.insert(0, ('bisect', starti, startx, startv, None, None, None, j, xj, v, -1))
-                        self.goals.append(goal)
-                        return xj, False
-                    else:
-                        # we are already done
-                        pass
-                else:
-                    # we are trying to go somewhere we cannot.
-                    # skip to other goals
-                    pass
-
-            elif goal[0] == 'bisect':
-                # Bisect to find first point outside
-                
-                # left is inside (i: index, x: coordinate, v: direction)
-                # mid is the middle just evaluated (if not None)
-                # right is outside
-                _, lefti, leftx, leftv, midi, midx, midv, righti, rightx, rightv, sign = goal
-                
-                if midi is not None:
-                    # shrink interval based on previous evaluation point
-                    if Llast is not None:
-                        #print("   inside.  updating interval %d-%d" % (mid, right))
-                        lefti = midi
-                    else:
-                        #print("   outside. updating interval %d-%d" % (left, mid))
-                        righti = midi
-
-                # we need to bisect. righti was outside
-                midi = (righti + lefti) // 2
-                if midi == lefti or midi == righti:
-                    # we are done bisecting. right is the first point outside
-                    #print("  bisecting gave reflection point", righti, rightx, rightv)
-                    if self.plot: plt.plot(rightx[0], rightx[1], 'xr')
-                    vk = self.reverse(rightx, rightv * sign, plot=self.plot) * sign
-                    #print("  reversing there", rightv)
-                    xk, vk = extrapolate_ahead(sign, rightx, rightv)
-                    #print("  making one step from", rightx, rightv, '-->', xk, vk)
-                    self.nreflections += 1
-                    #print("  trying new point,", xk)
-                    self.goals.insert(0, ('reflect-at', righti, xk, vk, sign))
-                    return xk, False
-                else:
-                    # we should evaluate the middle point
-                    midx, midv = extrapolate_ahead(midi, leftx, leftv)
-                    # continue bisecting
-                    self.goals.insert(0, ('bisect', lefti, leftx, leftv, midi, midx, midv, righti, rightx, rightv, sign))
-                    return midx, False
-            
-            elif goal[0] == 'reflect-at':
-                _, j, xk, vk, sign = goal
-                
-                if Llast is not None:
-                    # we can go about our merry way.
-                    self.contourpath.add(j, xk, vk, Llast)
-                    continue
-                else:
-                    # we are stuck and have to give up this direction
-                    if self.plot: plt.plot(xk[0], xk[1], 's', mfc='None', mec='r', ms=10)
-                    if sign == 1:
-                        self.contourpath.samplingpath.fwd_possible = False
-                    else:
-                        self.contourpath.samplingpath.rwd_possible = False
-                    continue
-            
-        return None
-    
-    def __next(self, plot=False):
         """
         Alternatingly doubles the number of steps to forward and backward 
         direction (which may include reflections, see StepSampler and
@@ -894,75 +819,115 @@ class ClockedNUTSSampler(ClockedBisectSampler):
         When track returns (start and end of tree point toward each other),
         terminates and returns a random point on that track.
         """
-        # this is (0, x0, v0) in both cases
-        left_state = self.points[0][:3]
-        right_state = self.points[0][:3]
+        """
+        if not self.left_warmed_up:
+            print("warming up left.")
+            goal = ('expand-to', -10)
+            if goal not in self.goals:
+                self.goals.append(goal)
+            while self.goals:
+                if self.goals[0][0] == 'reflect-at':
+                    break
+                sample, is_independent = ClockedBisectSampler.next(self, Llast=Llast)
+                Llast = None
+                if sample is not None:
+                    return sample, is_independent
+            print("left warmed up.")
+            self.left_warmed_up = True
+            self.goals = []
         
-        # pre-explore a bit (until reflection or the number of steps)
-        # this avoids doing expand_to_step with small step numbers later
-        self.expand_to_step(-10, continue_after_reflection=False, plot=plot)
-        self.expand_to_step(+10, continue_after_reflection=False, plot=plot)
-        print(self.points)
-        stop = False
+        if not self.right_warmed_up:
+            print("warming up right.")
+            goal = ('expand-to', 10)
+            if goal not in self.goals:
+                self.goals.append(goal)
+            while self.goals:
+                if self.goals[0][0] == 'reflect-at':
+                    break
+                sample, is_independent = ClockedBisectSampler.next(self, Llast=Llast)
+                Llast = None
+                if sample is not None:
+                    return sample, is_independent
+            print("right warmed up.")
+            self.right_warmed_up = True
+            self.goals = []
+        """
         
-        j = 0 # tree depth
-        validrange = (0, 0)
-        while not stop:
-            rwd = np.random.randint(2) == 1
-            if j > 7:
-                print("NUTS step: tree depth %d, %s" % (j, "rwd" if rwd else "fwd"))
+        while not self.tree_built:
+            print("continue building tree")
+            rwd = self.current_direction
+            
+            if True or self.tree_depth > 7:
+                print("NUTS step: tree depth %d, %s" % (self.tree_depth, "rwd" if rwd else "fwd"))
+            
+            
+            # make sure the path is prepared for the desired tree
             if rwd:
-                #print("  building rwd tree... ")
-                self.expand_to_step(left_state[0] - 2**j, plot=plot)
-                left_state, _, newrange, newstop = self.build_tree(left_state, j, rwd=rwd)
+                goal = ('expand-to', self.left_state[0] - 2**self.tree_depth)
             else:   
-                #print("  building fwd tree...")
-                self.expand_to_step(right_state[0] + 2**j)
-                _, right_state, newrange, newstop = self.build_tree(right_state, j, rwd=rwd)
+                goal = ('expand-to', self.right_state[0] + 2**self.tree_depth)
+            
+            if goal not in self.goals:
+                self.goals.append(goal)
+            
+            # work down any open tasks
+            while self.goals:
+                sample, is_independent = ClockedBisectSampler.next(self, Llast=Llast)
+                Llast = None
+                if sample is not None:
+                    return sample, is_independent
+            
+            # now check if terminating
+            if rwd:
+                self.left_state, _, newrange, newstop = self.build_tree(self.left_state, self.tree_depth, rwd=rwd)
+            else:   
+                _, self.right_state, newrange, newstop = self.build_tree(self.right_state, self.tree_depth, rwd=rwd)
             
             if not newstop:
-                validrange = (min(validrange[0], newrange[0]), max(validrange[1], newrange[1]))
-                #print("  new range: %d..%d" % (validrange[0], validrange[1]))
+                self.validrange = (min(self.validrange[0], newrange[0]), max(self.validrange[1], newrange[1]))
+                print("  new NUTS range: %d..%d" % (self.validrange[0], self.validrange[1]))
             
-            ileft, xleft, vleft = left_state
-            iright, xright, vright = right_state
-            if self.plot: plt.plot([xleft[0], xright[0]], [xleft[1] + (j+1)*0.02, xright[1] + (j+1)*0.02], '--')
+            ileft, xleft, vleft = self.left_state
+            iright, xright, vright = self.right_state
+            if self.plot: plt.plot([xleft[0], xright[0]], [xleft[1] + (self.tree_depth+1)*0.02, xright[1] + (self.tree_depth+1)*0.02], '--')
             #if j > 5:
             #   print("  first-to-last arrow", ileft, iright, xleft, xright, xright-xleft, " velocities:", vright, vleft)
             #   print("  stopping criteria: ", newstop, angle(xright-xleft, vleft), angle(xright-xleft, vright))
-            stop = newstop or angle(xright-xleft, vleft) <= 0 or angle(xright-xleft, vright) <= 0
             
-            j = j + 1
-            if j > 3:
-                # check whether both ends of the tree are at the end of the path
-                if validrange[0] < min(self.points)[0] and validrange[1] > max(self.points)[0]:
-                    print("Stopping stuck NUTS")
-                    print("starting point was: ", self.points[0])
-                    break
-                #if j > 7:
-                #   print("starting point was: ", self.points[0])
-                #   print("Stopping after %d levels" % j)
-                #   break
+            # avoid U-turns:
+            stop = newstop or angle(xright - xleft, vleft) <= 0 or angle(xright - xleft, vright) <= 0
             
-        print("sampling between", validrange)
-        return self.sample_chain_point(validrange[0], validrange[1])
+            # stop when we cannot continue in any direction
+            stop = stop and (self.contourpath.samplingpath.fwd_possible or self.contourpath.samplingpath.rwd_possible)
+            
+            if stop:
+                self.tree_built = True
+            else:
+                self.tree_depth = self.tree_depth + 1
+                self.current_direction = np.random.randint(2) == 1
+        
+        # Tree was built, we only need to sample from it
+        print("sampling between", self.validrange)
+        return self.sample_chain_point(self.validrange[0], self.validrange[1])
     
     def sample_chain_point(self, a, b):
         """
         Gets a point on the track between a and b (inclusive)
+        returns tuple ((point coordinates, likelihood), is_independent)
+            where is_independent is always True
+        
         """
         if self.plot: 
             for i in range(a, b+1):
                 xi, vi, Li, onpath = self.contourpath.samplingpath.interpolate(i)
-                plt.plot(xi[0], xi[1], '+', color='g')
+                plt.plot(xi[0], xi[1], '_ ', color='b', ms=10, mew=2)
+        
         while True:
             i = np.random.randint(a, b+1)
             xi, vi, Li, onpath = self.contourpath.samplingpath.interpolate(i)
-            #print("NUTS sampled point:", xi, (i, a, b))
-            if not onpath:
+            if not onpath: 
                 continue
-            #if (i, xi, vi) not in self.points:
-            return xi, Li
+            return (xi, Li), True
     
     def build_tree(self, startstate, j, rwd):
         """
@@ -977,7 +942,7 @@ class ClockedNUTSSampler(ClockedBisectSampler):
             i = startstate[0] + (-1 if rwd else +1)
             #self.expand_to_step(i)
             #print("  build_tree@%d" % i, rwd, self.contourpath.samplingpath.fwd_possible, self.contourpath.samplingpath.rwd_possible)
-            xi, vi, Li, onpath = self.contourpath.samplingpath.interpolate(i)
+            xi, vi, _, _ = self.contourpath.samplingpath.interpolate(i)
             if self.plot: plt.plot(xi[0], xi[1], 'x', color='gray')
             # this is a good state, so return it
             return (i, xi, vi), (i, xi, vi), (i,i), False
