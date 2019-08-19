@@ -226,6 +226,7 @@ def extrapolate_ahead(di, xj, vj):
     Make di steps of size vj from xj.
     Reflect off unit cube if necessary.
     """
+    assert di == int(di)
     return linear_steps_with_reflection(xj, vj, di)
 
 class SamplingPath(object):
@@ -233,6 +234,7 @@ class SamplingPath(object):
         self.reset(x0, v0, L0)
     
     def add(self, i, x0, v0, L0):
+        assert L0 is not None
         self.points.append((i, x0, v0, L0))
     
     def reset(self, x0, v0, L0):
@@ -335,27 +337,13 @@ class SamplingPath(object):
 
 
 class ContourSamplingPath(object):
-    def __init__(self, samplingpath, region, transform, likelihood, Lmin):
+    def __init__(self, samplingpath, region):
         self.samplingpath = samplingpath
         self.points = self.samplingpath.points
-        self.transform = transform
-        self.likelihood = likelihood
-        self.Lmin = Lmin
         self.region = region
-        self.ncalls = 0
     
-    def add_if_above_threshold(self, i, x, v):
-        # x, v = self.samplingpath.extrapolate(i)
-        p = self.transform(x)
-        L = self.likelihood(p)
-        self.ncalls += 1
-        if L > self.Lmin:
-            print("    accepted", x, "as point %d" % i)
-            self.samplingpath.add(i, x, v, L)
-            return True
-        else:
-            print("    rejected", x)
-            return False
+    def add(self, i, x, v, L):
+        self.samplingpath.add(i, x, v, L)
     
     def gradient(self, reflpoint, v, plot=False):
         """
@@ -425,7 +413,7 @@ class ContourSamplingPath(object):
         
         return normal
         
-class StepSampler(object):
+class ClockedStepSampler(object):
     """
     Find a new point with a series of small steps
     """
@@ -445,6 +433,7 @@ class StepSampler(object):
         self.nevals = 0
         self.nreflections = 0
         self.plot = plot
+        self.goals = []
     
     def reverse(self, reflpoint, v, plot=False):
         """
@@ -467,173 +456,437 @@ class StepSampler(object):
             plt.plot([reflpoint[0], (vnew + reflpoint)[0]], [reflpoint[1], (vnew + reflpoint)[1]], '-', color='k', lw=3)
         return vnew
     
-    def expand_to_step(self, i, plot=False):
+    def set_nsteps(self, i):
+        self.goals.insert(0, ('sample-at', i))
+    
+    def next(self, Llast=None):
         """
         Run steps forward or backward to step i (can be positive or 
         negative, 0 is the starting point) 
         """
-        if i > 0 and self.contourpath.samplingpath.fwd_possible:
-            starti, startx, startv, _ = max(self.points)
-            for j in range(starti, i):
-                if not self.expand_onestep(plot=plot):
-                    break
-        elif self.contourpath.samplingpath.rwd_possible:
-            starti, startx, startv, _ = min(self.points)
-            for j in range(starti, i, -1):
-                if not self.expand_onestep(fwd=False, plot=plot):
-                    break
-    
-    def expand_onestep(self, fwd=True, plot=True):
-        """
-        Make a single step forward (if fwd=True) or backwards)
-        from the current state (stored in self.points)
-        """
-        
-        if fwd:
-            starti, startx, startv, _ = max(self.points)
-            sign = 1
-        else:
-            starti, startx, startv, _ = min(self.points)
-            sign = -1
-        
-        j = starti + 1 * sign
-        xj, v = self.contourpath.samplingpath.extrapolate(j)
-        #print('extrapolated point:', xj, v)
-        accepted = self.contourpath.add_if_above_threshold(j, xj, v)
-        
-        if not accepted:
-            # We stepped outside, so now we need to reflect
-            #print("we stepped outside, need to reflect", xj)
-            if plot: plt.plot(xj[0], xj[1], 'xr')
-            vk = self.reverse(xj, v * sign, plot=plot) * sign
-            #print("  outside; reflecting velocity", v, vk)
-            xk, vk = extrapolate_ahead(sign, xj, vk)
-            self.nreflections += 1
-            #print("  trying new point,", xk)
-            accepted = self.contourpath.add_if_above_threshold(j, xk, vk)
-            if not accepted:
-                #print("failed to recover. Terminating side", xk)
-                if plot: plt.plot(xk[0], xk[1], 's', mfc='None', mec='r', ms=10)
-                if fwd:
-                    self.contourpath.samplingpath.fwd_possible = False
+        print("next() call", Llast)
+        while self.goals:
+            print("goals: ", self.goals)
+            goal = self.goals.pop(0)
+            if goal[0] == 'sample-at':
+                i = goal[1]
+                assert Llast is None
+                # find point
+                # here we assume all intermediate points have been sampled
+                pointi = [(j, xj, vj, Lj) for j, xj, vj, Lj in self.points if j == i]
+                if len(pointi) == 0:
+                    if i > 0 and self.contourpath.samplingpath.fwd_possible \
+                    or i < 0 and self.contourpath.samplingpath.rwd_possible:
+                        # we are not done:
+                        self.goals.insert(0, ('expand-to', i))
+                        self.goals.append(goal)
+                        continue
+                    else:
+                        # we are not done, but cannot reach the goal.
+                        # reverse. Find position from where to reverse
+                        if i > 0:
+                            starti, _, _, _ = max(self.points)
+                        else:
+                            starti, _, _, _ = min(self.points)
+                        print("reversing at %d..." % starti)
+                        # how many steps are missing?
+                        deltai = i - starti
+                        print("   %d steps to do at %d -> targeting %d." % (deltai, starti, starti - deltai))
+                        # make this many steps in the other direction
+                        self.goals.append(('sample-at', starti - deltai))
+                        continue
                 else:
-                    self.contourpath.samplingpath.rwd_possible = False
-                return False
+                    # return the previously sampled point
+                    _, xj, _, Lj = pointi[0]
+                    return (xj, Lj), True
+            
+            elif goal[0] == 'expand-to':
+                i = goal[1]
+                if i > 0 and self.contourpath.samplingpath.fwd_possible:
+                    starti, startx, startv, _ = max(self.points)
+                    if i > starti:
+                        print("going forward...", i, starti)
+                        j = starti + 1
+                        xj, v = self.contourpath.samplingpath.extrapolate(j)
+                        if j != i: # ultimate goal not reached yet
+                            self.goals.insert(0, goal)
+                        self.goals.insert(0, ('eval-at', j, xj, v, +1))
+                        return xj, False
+                    else:
+                        print("already done...", i, starti)
+                        # we are already done
+                        pass
+                elif i < 0 and self.contourpath.samplingpath.rwd_possible:
+                    starti, startx, startv, _ = min(self.points)
+                    if i < starti:
+                        print("going backwards...", i, starti)
+                        j = starti - 1
+                        xj, v = self.contourpath.samplingpath.extrapolate(j)
+                        if j != i: # ultimate goal not reached yet
+                            self.goals.insert(0, goal)
+                        self.goals.insert(0, ('eval-at', j, xj, v, -1))
+                        return xj, False
+                    else:
+                        print("already done...", i, starti)
+                        # we are already done
+                        pass
+                else:
+                    # we are trying to go somewhere we cannot.
+                    # skip to other goals
+                    pass
+            
+            elif goal[0] == 'eval-at':
+                _, j, xj, v, sign = goal
+                if Llast is not None:
+                    # we can go about our merry way.
+                    self.contourpath.add(j, xj, v, Llast)
+                    Llast = None
+                    continue
+                else:
+                    # We stepped outside, so now we need to reflect
+                    if self.plot: plt.plot(xj[0], xj[1], 'xr')
+                    print("reflecting:", xj, v)
+                    vk = self.reverse(xj, v * sign, plot=self.plot) * sign
+                    print("new direction:", vk)
+                    xk, vk = extrapolate_ahead(sign, xj, vk)
+                    print("reflection point:", xk)
+                    self.goals.insert(0, ('reflect-at', j, xk, vk, sign))
+                    return xk, False
+            
+            elif goal[0] == 'reflect-at':
+                _, j, xk, vk, sign = goal
+                if Llast is not None:
+                    # we can go about our merry way.
+                    self.contourpath.add(j, xk, vk, Llast)
+                    Llast = None
+                    continue
+                else:
+                    # we are stuck and have to give up this direction
+                    if self.plot: plt.plot(xk[0], xk[1], 's', mfc='None', mec='r', ms=10)
+                    if sign == 1:
+                        self.contourpath.samplingpath.fwd_possible = False
+                    else:
+                        self.contourpath.samplingpath.rwd_possible = False
+                    continue
+            else:
+                assert False, goal
         
-        return True
-    
-    def path_plot(self, color='blue'):
-        self.points.sort()
-        x0 = [x[0] for i, x, v in self.points]
-        x1 = [x[1] for i, x, v in self.points]
-        plt.plot(x0, x1, 'o-', color=color, mfc='None', ms=8)
-        x0 = [x[0] for i, x, v in self.points if i == 0]
-        x1 = [x[1] for i, x, v in self.points if i == 0]
-        plt.plot(x0, x1, 's', mec='k', mfc='None', ms=10)
+        return None, False
 
-class BisectSampler(StepSampler):
+    def expand_onestep(self, fwd, transform, loglike, Lmin):
+        """ Helper interface, make one step (forward fwd=True or backward fwd=False) """
+        if fwd:
+            starti, _, _, _ = max(self.points)
+            i = starti + 1
+        else:
+            starti, _, _, _ = min(self.points)
+            i = starti - 1
+        return self.expand_to_step(i, transform, loglike, Lmin)
+
+    def expand_to_step(self, nsteps, transform, loglike, Lmin):
+        """ Helper interface, go to step nstep """
+        self.set_nsteps(nsteps)
+        Llast = None
+        while True:
+            sample, is_independent = self.next(Llast)
+            if sample is None:
+                return None, None
+            if is_independent:
+                unew, Lnew = sample
+                return unew, Lnew
+            else:
+                unew = sample
+                xnew = transform(unew)
+                Llast = loglike(xnew)
+                if Llast < Lmin:
+                    Llast = None
+            
+class ClockedBisectSampler(ClockedStepSampler):
     """
     Step sampler that does not require each step to be evaluated
     """
-    def bisect(self, left, leftx, leftv, right, offseti):
-        """
-        Bisect to find first point outside
-        left is the index of the point still inside
-        leftx is its coordinate
-        
-        right is the index of the point already outside
-        rightx is its coordinate
-        
-        offseti is an offset to the indices to be applied before storing the point
-        
-        """
-        # left is always inside
-        # right is always outside
-        while True:
-            mid = (right + left) // 2
-            #print("bisect: interval %d-%d-%d (+%d)" % (left,mid,right, offseti))
-            if mid == left or mid == right:
-                break
-            midx, midv = extrapolate_ahead(mid, leftx, leftv)
-
-            accepted = self.contourpath.add_if_above_threshold(mid+offseti, midx, midv)
-            if accepted:
-                #print("   inside.  updating interval %d-%d" % (mid, right))
-                left = mid
-            else:
-                #print("   outside. updating interval %d-%d" % (left, mid))
-                right = mid
-        return right
     
-    def expand_to_step(self, i, continue_after_reflection=True, plot=False):
+    def next(self, Llast=None):
         """
         Run steps forward or backward to step i (can be positive or 
-        negative, 0 is the starting point), if possible.
-        
-        Tries to jump ahead if possible, and bisect otherwise.
-        This avoid having to make all steps in between.
+        negative, 0 is the starting point) 
         """
-        if i > 0:
-            sign = 1
-            fwd = True
-            starti, startx, startv, _ = max(self.points)
-            if starti >= i:
-                # already done
-                return
-        else:
-            sign = -1
-            fwd = False
-            starti, startx, startv, _ = min(self.points)
-            if starti <= i:
-                # already done
-                return
+        print()
+        print("next() call", Llast)
+        while self.goals:
+            print("goals: ", self.goals)
+            goal = self.goals.pop(0)
 
-        deltai = i - starti
-        
-        if     fwd and not self.contourpath.samplingpath.fwd_possible or \
-           not fwd and not self.contourpath.samplingpath.rwd_possible:
-            # we are stuck now, and have to hope that the 
-            # caller does not expect us to have filled that point
-            return
-        
-        #print("  trying to expand to", i, " which is %d away" % deltai)
-        xi, v = self.contourpath.samplingpath.extrapolate(i)
-        accepted = self.contourpath.add_if_above_threshold(i, xi, v)
-        if not accepted:
-            # left is inside, right is outside
-            #print("  starting bisecting at 0(inside)..%d(outside)" % deltai, startx, startv)
-            outsidei = self.bisect(0, startx, startv, deltai, offseti=starti)
-            self.nreflections += 1
-            xj, startv = extrapolate_ahead(outsidei, startx, startv)
-            #print("  bisecting gave reflection point", outsidei, "(+", starti, ")", xj, startv)
-            if self.plot: plt.plot(xj[0], xj[1], 'xr')
-            vk = self.reverse(xj, startv * sign, plot=plot) * sign
-            #print("  reversing there", vk)
-            xk, vk = extrapolate_ahead(sign, xj, vk)
-            #print("  making one step from", xj, vk, '-->', xk, vk)
-            self.nreflections += 1
-            #print("  trying new point,", xk)
-            accepted = self.contourpath.add_if_above_threshold(outsidei+starti, xk, vk)
-            if accepted:
-                if continue_after_reflection or angle(vk, startv) > 0:
-                    self.expand_to_step(i) # recurse
-            else:
-                #print("  failed to recover. Terminating side", xk)
-                if plot: plt.plot(xk[0], xk[1], 's', mfc='None', mec='r', ms=10)
-                if fwd:
-                    self.contourpath.samplingpath.fwd_possible = False
+            if goal[0] == 'sample-at':
+                i = goal[1]
+                assert Llast is None
+                # find point
+                # here we assume all intermediate points have been sampled
+                pointi = [(j, xj, vj, Lj) for j, xj, vj, Lj in self.points if j == i]
+
+                if len(pointi) == 0:
+                    if i > 0:
+                        starti, _, _, _ = max(self.points)
+                        fwd = True
+                        inside = i < starti
+                        more_possible = self.contourpath.samplingpath.fwd_possible
+                    else:
+                        starti, _, _, _ = min(self.points)
+                        fwd = False
+                        inside = starti < i
+                        more_possible = self.contourpath.samplingpath.rwd_possible
+                    
+                    if inside:
+                        # interpolate point on track
+                        xj, vj, Lj, onpath = self.contourpath.samplingpath.interpolate(i)
+                        return (xj, Lj), True
+                    elif more_possible:
+                        # we are not done:
+                        self.goals.insert(0, ('expand-to', i))
+                        self.goals.append(goal)
+                        continue
+                    elif not fwd and self.contourpath.samplingpath.fwd_possible \
+                    or       fwd and self.contourpath.samplingpath.rwd_possible:
+                        print("reversing...", i, self.contourpath.samplingpath.rwd_possible,
+                            self.contourpath.samplingpath.fwd_possible)
+                        # we are not done, but cannot reach the goal.
+                        # reverse. Find position from where to reverse
+                        if i > 0:
+                            starti, _, _, _ = max(self.points)
+                        else:
+                            starti, _, _, _ = min(self.points)
+                        print("reversing at %d..." % starti)
+                        # how many steps are missing?
+                        deltai = i - starti
+                        print("   %d steps to do at %d -> targeting %d." % (deltai, starti, starti - deltai))
+                        # make this many steps in the other direction
+                        #print("reversing...", i, starti, deltai, starti - deltai)
+                        self.goals.append(('sample-at', starti - deltai))
+                        continue
+                    else:
+                        # we are not done, but cannot reach the goal.
+                        # move on to next goal (if any)
+                        continue
+                        
                 else:
-                    self.contourpath.samplingpath.rwd_possible = False
-                return False
+                    # return the previously sampled point
+                    _, xj, _, Lj = pointi[0]
+                    return (xj, Lj), True
+            
+            elif goal[0] == 'expand-to':
+                j = goal[1]
+                # check if we already tried 
+                
+                if j > 0 and self.contourpath.samplingpath.fwd_possible:
+                    print("going forward...", j)
+                    starti, startx, startv, _ = max(self.points)
+                    if j > starti:
+                        xj, v = self.contourpath.samplingpath.extrapolate(j)
+                        self.goals.insert(0, ('bisect', starti, startx, startv, None, None, None, j, xj, v, +1))
+                        #self.goals.append(goal)
+                        return xj, False
+                    else:
+                        # we are already done
+                        print("done 1", j, starti)
+                        pass
+                elif j < 0 and self.contourpath.samplingpath.rwd_possible:
+                    print("going backward...", j)
+                    starti, startx, startv, _ = min(self.points)
+                    if j < starti:
+                        xj, v = self.contourpath.samplingpath.extrapolate(j)
+                        self.goals.insert(0, ('bisect', starti, startx, startv, None, None, None, j, xj, v, -1))
+                        #self.goals.append(goal)
+                        return xj, False
+                    else:
+                        # we are already done
+                        print("done 2", j)
+                        pass
+                else:
+                    # we are trying to go somewhere we cannot.
+                    # skip to other goals
+                    print("cannot go there", j)
+                    pass
 
-class NUTSSampler(BisectSampler):
+            elif goal[0] == 'bisect':
+                # Bisect to find first point outside
+                
+                # left is inside (i: index, x: coordinate, v: direction)
+                # mid is the middle just evaluated (if not None)
+                # right is outside
+                _, lefti, leftx, leftv, midi, midx, midv, righti, rightx, rightv, sign = goal
+                print("bisecting ...", lefti, midi, righti)
+                
+                if midi is None:
+                    # check if right is actually outside
+                    if Llast is None:
+                        # yes it is. continue below
+                        pass
+                    else:
+                        # right is actually inside
+                        # so we successfully jumped all the way successfully
+                        print("successfully went all the way in one jump!")
+                        self.contourpath.add(righti, rightx, rightv, Llast)
+                        Llast = None
+                        continue
+                else:
+                    # shrink interval based on previous evaluation point
+                    if Llast is not None:
+                        print("   inside.  updating interval %d-%d" % (midi, righti))
+                        lefti, leftx, leftv = midi, midx, midv
+                        self.contourpath.add(midi, midx, midv, Llast)
+                        Llast = None
+                    else:
+                        print("   outside. updating interval %d-%d" % (lefti, midi))
+                        righti, rightx, rightv = midi, midx, midv
+                
+                # we need to bisect. righti was outside
+                midi = (righti + lefti) // 2
+                if midi == lefti or midi == righti:
+                    # we are done bisecting. right is the first point outside
+                    print("  bisecting gave reflection point", righti, rightx, rightv)
+                    if self.plot: plt.plot(rightx[0], rightx[1], 'xr')
+                    # compute reflected direction
+                    vk = self.reverse(rightx, rightv * sign, plot=self.plot) * sign
+                    print("  reversing there", rightv)
+                    # go from reflection point one step in that direction
+                    # that is our new point
+                    xk, vk = extrapolate_ahead(sign, rightx, vk)
+                    print("  making one step from", rightx, rightv, '-->', xk, vk)
+                    self.nreflections += 1
+                    print("  trying new point,", xk)
+                    self.goals.insert(0, ('reflect-at', righti, xk, vk, sign))
+                    return xk, False
+                else:
+                    print("  continue bisect at", midi)
+                    # we should evaluate the middle point
+                    midx, midv = extrapolate_ahead(midi - lefti, leftx, leftv)
+                    # continue bisecting
+                    self.goals.insert(0, ('bisect', lefti, leftx, leftv, midi, midx, midv, righti, rightx, rightv, sign))
+                    return midx, False
+            
+            elif goal[0] == 'reflect-at':
+                _, j, xk, vk, sign = goal
+                
+                if Llast is not None:
+                    # we can go about our merry way.
+                    print("  inside", j)
+                    self.contourpath.add(j, xk, vk, Llast)
+                    Llast = None
+                    continue
+                else:
+                    print("  reflection failed", j, xk, vk)
+                    # we are stuck and have to give up this direction
+                    if self.plot: plt.plot(xk[0], xk[1], 's', mfc='None', mec='r', ms=10)
+                    if sign == 1:
+                        self.contourpath.samplingpath.fwd_possible = False
+                    else:
+                        self.contourpath.samplingpath.rwd_possible = False
+                    Llast = None
+                    continue
+            else:
+                assert False, goal
+            
+        return None, False
+
+class ClockedNUTSSampler(ClockedBisectSampler):
     """
     No-U-turn sampler (NUTS) on flat surfaces.
     
     see nuts_step function.
     """
+
     
-    def nuts_step(self, plot=False):
+    def next(self, Llast=None):
+        """
+        Run steps forward or backward to step i (can be positive or 
+        negative, 0 is the starting point) 
+        """
+        while self.goals:
+            goal = self.goals.pop(0)
+            if goal[0] == 'expand-to':
+                j = goal[1]
+                if j > 0 and self.contourpath.samplingpath.fwd_possible:
+                    starti, startx, startv, _ = max(self.points)
+                    if j < starti:
+                        xj, v = self.contourpath.samplingpath.extrapolate(j)
+                        self.goals.insert(0, ('bisect', starti, startx, startv, None, None, None, j, xj, v, +1))
+                        self.goals.append(goal)
+                        return xj, False
+                    else:
+                        # we are already done
+                        pass
+                elif self.contourpath.samplingpath.rwd_possible:
+                    starti, startx, startv, _ = min(self.points)
+                    if j > starti:
+                        xj, v = self.contourpath.samplingpath.extrapolate(j)
+                        self.goals.insert(0, ('bisect', starti, startx, startv, None, None, None, j, xj, v, -1))
+                        self.goals.append(goal)
+                        return xj, False
+                    else:
+                        # we are already done
+                        pass
+                else:
+                    # we are trying to go somewhere we cannot.
+                    # skip to other goals
+                    pass
+
+            elif goal[0] == 'bisect':
+                # Bisect to find first point outside
+                
+                # left is inside (i: index, x: coordinate, v: direction)
+                # mid is the middle just evaluated (if not None)
+                # right is outside
+                _, lefti, leftx, leftv, midi, midx, midv, righti, rightx, rightv, sign = goal
+                
+                if midi is not None:
+                    # shrink interval based on previous evaluation point
+                    if Llast is not None:
+                        #print("   inside.  updating interval %d-%d" % (mid, right))
+                        lefti = midi
+                    else:
+                        #print("   outside. updating interval %d-%d" % (left, mid))
+                        righti = midi
+
+                # we need to bisect. righti was outside
+                midi = (righti + lefti) // 2
+                if midi == lefti or midi == righti:
+                    # we are done bisecting. right is the first point outside
+                    #print("  bisecting gave reflection point", righti, rightx, rightv)
+                    if self.plot: plt.plot(rightx[0], rightx[1], 'xr')
+                    vk = self.reverse(rightx, rightv * sign, plot=self.plot) * sign
+                    #print("  reversing there", rightv)
+                    xk, vk = extrapolate_ahead(sign, rightx, rightv)
+                    #print("  making one step from", rightx, rightv, '-->', xk, vk)
+                    self.nreflections += 1
+                    #print("  trying new point,", xk)
+                    self.goals.insert(0, ('reflect-at', righti, xk, vk, sign))
+                    return xk, False
+                else:
+                    # we should evaluate the middle point
+                    midx, midv = extrapolate_ahead(midi, leftx, leftv)
+                    # continue bisecting
+                    self.goals.insert(0, ('bisect', lefti, leftx, leftv, midi, midx, midv, righti, rightx, rightv, sign))
+                    return midx, False
+            
+            elif goal[0] == 'reflect-at':
+                _, j, xk, vk, sign = goal
+                
+                if Llast is not None:
+                    # we can go about our merry way.
+                    self.contourpath.add(j, xk, vk, Llast)
+                    continue
+                else:
+                    # we are stuck and have to give up this direction
+                    if self.plot: plt.plot(xk[0], xk[1], 's', mfc='None', mec='r', ms=10)
+                    if sign == 1:
+                        self.contourpath.samplingpath.fwd_possible = False
+                    else:
+                        self.contourpath.samplingpath.rwd_possible = False
+                    continue
+            
+        return None
+    
+    def __next(self, plot=False):
         """
         Alternatingly doubles the number of steps to forward and backward 
         direction (which may include reflections, see StepSampler and

@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from mininest.mlfriends import AffineLayer, MLFriends
-from mininest.flatnuts import StepSampler, BisectSampler, NUTSSampler
+from mininest.flatnuts import ClockedStepSampler, ClockedBisectSampler #, NUTSSampler
 from mininest.flatnuts import SamplingPath, ContourSamplingPath
 from mininest.flatnuts import box_line_intersection, nearest_box_intersection_line, linear_steps_with_reflection, angle, get_sphere_tangents, norm
 from numpy.testing import assert_allclose
@@ -274,12 +274,12 @@ def test_reversible_gradient(plot=False):
             angles_used = angles[k]
             normal_used = normal[k,:]
             print("chose normal", normal_used, k)
-            chosen_point = region.u[k,:]
+            #chosen_point = region.u[k,:]
             vnew = -(v - 2 * angles_used * normal_used)
             assert vnew.shape == v.shape
             
             mask_forward2, angles2, anglesnew2 = get_reflection_angles(normal, vnew)
-            j2 = np.argmin(((region.unormed[mask_forward2,:] - bpts)**2).sum(axis=1))
+            #j2 = np.argmin(((region.unormed[mask_forward2,:] - bpts)**2).sum(axis=1))
             #chosen_point2 = region.u[mask_forward2,:][0,:]
             #assert j2 == j, (j2, j)
             assert mask_forward2[k]
@@ -319,7 +319,7 @@ def test_reversible_gradient(plot=False):
             print("reflecting with", normal, "new direction", v2)
             
             #newpoint = reflpoint + v2
-            angles2 = (normal * (v2 / norm(v2))).sum()
+            #angles2 = (normal * (v2 / norm(v2))).sum()
             v3 = v2 - 2 * angle(normal, v2) * normal
             
             print("re-reflecting gives direction", v3)
@@ -328,7 +328,7 @@ def test_reversible_gradient(plot=False):
             print()
             print("FORWARD:", v, reflpoint)
             samplingpath = SamplingPath(reflpoint - v, v, active_values[0])
-            contourpath = ContourSamplingPath(samplingpath, region, transform, loglike, Lmin)
+            contourpath = ContourSamplingPath(samplingpath, region)
             normal = contourpath.gradient(reflpoint, v)
             if normal is not None:
                 assert normal.shape == v.shape, (normal.shape, v.shape)
@@ -343,16 +343,16 @@ def test_reversible_gradient(plot=False):
         
         
     
-def gap_free_path(sampler, ilo, ihi):
+def gap_free_path(sampler, ilo, ihi, transform, loglike, Lmin):
     #ilo, _, _, _ = min(sampler.points)
     #ihi, _, _, _ = max(sampler.points)
     for i in range(ilo, ihi):
         xi, vi, Li, onpath = sampler.contourpath.samplingpath.interpolate(i)
         assert onpath
         if Li is None:
-            pi = sampler.contourpath.transform(xi)
-            Li = sampler.contourpath.likelihood(pi)
-            if not Li > sampler.contourpath.Lmin:
+            pi = transform(xi)
+            Li = loglike(pi)
+            if not Li > Lmin:
                 return False
     return True
 
@@ -395,22 +395,23 @@ def test_detailed_balance():
         print("StepSampler ----")
         print("FORWARD SAMPLING FROM", 0, active_u[0], v, active_values[0])
         samplingpath = SamplingPath(active_u[0], v, active_values[0])
-        sampler = StepSampler(ContourSamplingPath(samplingpath, region, transform, loglike, Lmin))
-        sampler.expand_onestep(fwd=True)
-        sampler.expand_onestep(fwd=True)
-        sampler.expand_onestep(fwd=True)
-        sampler.expand_onestep(fwd=True)
-        sampler.expand_onestep(fwd=False)
-        sampler.expand_to_step(4)
-        sampler.expand_to_step(-4)
+        problem = dict(loglike=loglike, transform=transform, Lmin=Lmin)
+        sampler = ClockedStepSampler(ContourSamplingPath(samplingpath, region))
+        sampler.expand_onestep(fwd=True, **problem)
+        sampler.expand_onestep(fwd=True, **problem)
+        sampler.expand_onestep(fwd=True, **problem)
+        sampler.expand_onestep(fwd=True, **problem)
+        sampler.expand_onestep(fwd=False, **problem)
+        sampler.expand_to_step(4, **problem)
+        sampler.expand_to_step(-4, **problem)
         
         starti, startx, startv, startL = max(sampler.points)
         
         print()
         print("BACKWARD SAMPLING FROM", starti, startx, startv, startL)
         samplingpath2 = SamplingPath(startx, -startv, startL)
-        sampler2 = StepSampler(ContourSamplingPath(samplingpath2, region, transform, loglike, Lmin))
-        sampler2.expand_to_step(starti)
+        sampler2 = ClockedStepSampler(ContourSamplingPath(samplingpath2, region))
+        sampler2.expand_to_step(starti, **problem)
         
         starti2, startx2, startv2, startL2 = max(sampler2.points)
         assert_allclose(active_u[0], startx2)
@@ -420,29 +421,29 @@ def test_detailed_balance():
         print()
         print("BACKWARD SAMPLING FROM", starti, startx, startv, startL)
         samplingpath3 = SamplingPath(startx, startv, startL)
-        sampler3 = StepSampler(ContourSamplingPath(samplingpath3, region, transform, loglike, Lmin))
-        sampler3.expand_to_step(-starti)
+        sampler3 = ClockedStepSampler(ContourSamplingPath(samplingpath3, region))
+        sampler3.expand_to_step(-starti, **problem)
         
         starti3, startx3, startv3, startL3 = max(sampler3.points)
         assert_allclose(active_u[0], startx3)
         assert_allclose(v, startv3)
         print()
-
+        
         print("BisectSampler ----")
         print("FORWARD SAMPLING FROM", 0, active_u[0], v, active_values[0])
         samplingpath = SamplingPath(active_u[0], v, active_values[0])
-        sampler = BisectSampler(ContourSamplingPath(samplingpath, region, transform, loglike, Lmin))
-        sampler.expand_to_step(10)
+        sampler = ClockedBisectSampler(ContourSamplingPath(samplingpath, region))
+        sampler.expand_to_step(10, **problem)
         
         starti, startx, startv, startL = max(sampler.points)
         print()
         print("BACKWARD SAMPLING FROM", starti, startx, startv, startL)
         samplingpath2 = SamplingPath(startx, -startv, startL)
-        sampler2 = BisectSampler(ContourSamplingPath(samplingpath2, region, transform, loglike, Lmin))
-        sampler2.expand_to_step(starti)
+        sampler2 = ClockedBisectSampler(ContourSamplingPath(samplingpath2, region))
+        sampler2.expand_to_step(starti, **problem)
         
         starti2, startx2, startv2, startL2 = max(sampler2.points)
-        if gap_free_path(sampler, 0, starti) and gap_free_path(sampler2, 0, starti2):
+        if gap_free_path(sampler, 0, starti, **problem) and gap_free_path(sampler2, 0, starti2, **problem):
             assert_allclose(active_u[0], startx2)
             assert_allclose(v, -startv2)
         
@@ -450,16 +451,17 @@ def test_detailed_balance():
         print()
         print("BACKWARD SAMPLING FROM", starti, startx, startv, startL)
         samplingpath3 = SamplingPath(startx, -startv, startL)
-        sampler3 = BisectSampler(ContourSamplingPath(samplingpath3, region, transform, loglike, Lmin))
-        sampler3.expand_to_step(starti)
+        sampler3 = ClockedBisectSampler(ContourSamplingPath(samplingpath3, region))
+        sampler3.expand_to_step(starti, **problem)
         
         starti3, startx3, startv3, startL3 = min(sampler3.points)
-        if gap_free_path(sampler, 0, starti) and gap_free_path(sampler3, 0, starti3):
+        if gap_free_path(sampler, 0, starti, **problem) and gap_free_path(sampler3, 0, starti3, **problem):
             assert_allclose(active_u[0], startx3)
             assert_allclose(v, -startv3)
         print()
 
 
+        """
         print("NUTSSampler ----")
         print("FORWARD SAMPLING FROM", 0, active_u[0], v, active_values[0])
         samplingpath = SamplingPath(active_u[0], v, active_values[0])
@@ -490,6 +492,7 @@ def test_detailed_balance():
             assert_allclose(active_u[0], startx3)
             assert_allclose(v, -startv3)
         print()
+        """
     
     
 if __name__ == '__main__':
