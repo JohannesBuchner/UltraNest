@@ -356,7 +356,19 @@ def gap_free_path(sampler, ilo, ihi, transform, loglike, Lmin):
                 return False
     return True
 
-
+def check_starting_point(sampler, startx, startL, transform, loglike, Lmin):
+    assert sampler.goals == [], sampler.goals
+    sampler.set_nsteps(0)
+    Llast = None
+    sample, is_independent = sampler.next(Llast)
+    assert is_independent, (sample, is_independent)
+    unew, Lnew = sample
+    assert_allclose(startx, unew)
+    assert_allclose(startL, Lnew)
+    
+    assert sampler.goals == [], sampler.goals
+    sample, is_independent = sampler.next(Llast)
+    assert sample is None and not is_independent, (sample, is_independent)
 
 def test_detailed_balance():
     def loglike(x):
@@ -397,6 +409,7 @@ def test_detailed_balance():
         samplingpath = SamplingPath(active_u[0], v, active_values[0])
         problem = dict(loglike=loglike, transform=transform, Lmin=Lmin)
         sampler = ClockedStepSampler(ContourSamplingPath(samplingpath, region))
+        check_starting_point(sampler, active_u[0], active_values[0], **problem)
         sampler.expand_onestep(fwd=True, **problem)
         sampler.expand_onestep(fwd=True, **problem)
         sampler.expand_onestep(fwd=True, **problem)
@@ -404,6 +417,7 @@ def test_detailed_balance():
         sampler.expand_onestep(fwd=False, **problem)
         sampler.expand_to_step(4, **problem)
         sampler.expand_to_step(-4, **problem)
+        check_starting_point(sampler, active_u[0], active_values[0], **problem)
         
         starti, startx, startv, startL = max(sampler.points)
         
@@ -411,7 +425,9 @@ def test_detailed_balance():
         print("BACKWARD SAMPLING FROM", starti, startx, startv, startL)
         samplingpath2 = SamplingPath(startx, -startv, startL)
         sampler2 = ClockedStepSampler(ContourSamplingPath(samplingpath2, region))
+        check_starting_point(sampler2, startx, startL, **problem)
         sampler2.expand_to_step(starti, **problem)
+        check_starting_point(sampler2, startx, startL, **problem)
         
         starti2, startx2, startv2, startL2 = max(sampler2.points)
         assert_allclose(active_u[0], startx2)
@@ -422,7 +438,9 @@ def test_detailed_balance():
         print("BACKWARD SAMPLING FROM", starti, startx, startv, startL)
         samplingpath3 = SamplingPath(startx, startv, startL)
         sampler3 = ClockedStepSampler(ContourSamplingPath(samplingpath3, region))
+        check_starting_point(sampler3, startx, startL, **problem)
         sampler3.expand_to_step(-starti, **problem)
+        check_starting_point(sampler3, startx, startL, **problem)
         
         starti3, startx3, startv3, startL3 = max(sampler3.points)
         assert_allclose(active_u[0], startx3)
@@ -433,14 +451,18 @@ def test_detailed_balance():
         print("FORWARD SAMPLING FROM", 0, active_u[0], v, active_values[0])
         samplingpath = SamplingPath(active_u[0], v, active_values[0])
         sampler = ClockedBisectSampler(ContourSamplingPath(samplingpath, region))
+        check_starting_point(sampler, active_u[0], active_values[0], **problem)
         sampler.expand_to_step(10, **problem)
+        check_starting_point(sampler, active_u[0], active_values[0], **problem)
         
         starti, startx, startv, startL = max(sampler.points)
         print()
         print("BACKWARD SAMPLING FROM", starti, startx, startv, startL)
         samplingpath2 = SamplingPath(startx, -startv, startL)
         sampler2 = ClockedBisectSampler(ContourSamplingPath(samplingpath2, region))
+        check_starting_point(sampler2, startx, startL, **problem)
         sampler2.expand_to_step(starti, **problem)
+        check_starting_point(sampler2, startx, startL, **problem)
         
         starti2, startx2, startv2, startL2 = max(sampler2.points)
         if gap_free_path(sampler, 0, starti, **problem) and gap_free_path(sampler2, 0, starti2, **problem):
@@ -452,7 +474,9 @@ def test_detailed_balance():
         print("BACKWARD SAMPLING FROM", starti, startx, startv, startL)
         samplingpath3 = SamplingPath(startx, -startv, startL)
         sampler3 = ClockedBisectSampler(ContourSamplingPath(samplingpath3, region))
+        check_starting_point(sampler3, startx, startL, **problem)
         sampler3.expand_to_step(starti, **problem)
+        check_starting_point(sampler3, startx, startL, **problem)
         
         starti3, startx3, startv3, startL3 = min(sampler3.points)
         if gap_free_path(sampler, 0, starti, **problem) and gap_free_path(sampler3, 0, starti3, **problem):
