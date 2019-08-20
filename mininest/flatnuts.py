@@ -67,8 +67,8 @@ class ClockedStepSampler(object):
         self.contourpath = contourpath
         self.points = self.contourpath.points
         self.epsilon = epsilon
-        self.nevals = 0
         self.nreflections = 0
+        self.nreverses = 0
         self.plot = plot
         self.log = False
         self.reset()
@@ -122,8 +122,13 @@ class ClockedStepSampler(object):
                         self.goals.insert(0, ('expand-to', i))
                         self.goals.append(goal)
                         continue
+                    elif not self.contourpath.samplingpath.fwd_possible and not self.contourpath.samplingpath.rwd_possible:
+                        # we are trying to go somewhere we cannot.
+                        # skip to other goals
+                        continue
                     else:
                         # we are not done, but cannot reach the goal.
+                        continue
                         # reverse. Find position from where to reverse
                         if i > 0:
                             starti, _, _, _ = max(self.points)
@@ -131,6 +136,7 @@ class ClockedStepSampler(object):
                             starti, _, _, _ = min(self.points)
                         if self.log: print("reversing at %d..." % starti)
                         # how many steps are missing?
+                        self.nreverses += 1
                         deltai = i - starti
                         if self.log: print("   %d steps to do at %d -> targeting %d." % (deltai, starti, starti - deltai))
                         # make this many steps in the other direction
@@ -185,8 +191,9 @@ class ClockedStepSampler(object):
                     continue
                 else:
                     # We stepped outside, so now we need to reflect
-                    if self.plot: plt.plot(xj[0], xj[1], 'xr')
+                    self.nreflections += 1
                     if self.log: print("reflecting:", xj, v)
+                    if self.plot: plt.plot(xj[0], xj[1], 'xr')
                     vk = self.reverse(xj, v * sign, plot=self.plot) * sign
                     if self.log: print("new direction:", vk)
                     xk, vk = extrapolate_ahead(sign, xj, vk, contourpath=self.contourpath)
@@ -300,6 +307,7 @@ class ClockedBisectSampler(ClockedStepSampler):
                         else:
                             starti, _, _, _ = min(self.points)
                         if self.log: print("reversing at %d..." % starti)
+                        self.nreverses += 1
                         # how many steps are missing?
                         deltai = i - starti
                         #print("   %d steps to do at %d -> targeting %d." % (deltai, starti, starti - deltai))
@@ -410,6 +418,7 @@ class ClockedBisectSampler(ClockedStepSampler):
             
             elif goal[0] == 'reflect-at':
                 _, j, xk, vk, sign = goal
+                self.nreflections += 1
                 
                 if Llast is not None:
                     # we can go about our merry way.

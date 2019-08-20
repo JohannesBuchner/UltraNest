@@ -4,6 +4,7 @@ from mininest.mlfriends import ScalingLayer, AffineLayer, MLFriends
 from mininest.stepsampler import RegionMHSampler, CubeMHSampler
 from mininest.stepsampler import CubeSliceSampler, RegionSliceSampler
 #from mininest.stepsampler import DESampler
+from mininest.stepsampler import OtherSamplerProxy
 import tqdm
 import joblib
 from problems import transform, get_problem
@@ -104,13 +105,14 @@ def main(args):
         MLFriendsSampler(),
         CubeMHSampler(nsteps=16), CubeMHSampler(nsteps=4), CubeMHSampler(nsteps=1),
         RegionMHSampler(nsteps=16), RegionMHSampler(nsteps=4), RegionMHSampler(nsteps=1),
-        #DESampler(nsteps=16), DESampler(nsteps=4), #DESampler(nsteps=1),
+        ##DESampler(nsteps=16), DESampler(nsteps=4), #DESampler(nsteps=1),
         CubeSliceSampler(nsteps=16), CubeSliceSampler(nsteps=4), CubeSliceSampler(nsteps=1),
         RegionSliceSampler(nsteps=16), RegionSliceSampler(nsteps=4), RegionSliceSampler(nsteps=1),
+        OtherSamplerProxy(nsteps=16, sampler='steps'),
     ]
     colors = {}
-    linestyles = {1:':', 4:'--', 16:'-', -1:'-'}
-    markers = {1:'x', 4:'^', 16:'o', -1:'o'}
+    linestyles = {1:':', 4:'--', 16:'-', 32:'-', -1:'-'}
+    markers = {1:'x', 4:'^', 16:'o', 32:'s', -1:'o'}
     Lsequence_ref = None
     label_ref = None
     axL = plt.figure('Lseq').gca()

@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mininest.mlfriends import ScalingLayer, AffineLayer, MLFriends
 from mininest.stepsampler import RegionMHSampler, CubeMHSampler
-from mininest.stepsampler import CubeSliceSampler, RegionSliceSampler
+from mininest.stepsampler import CubeSliceSampler, RegionSliceSampler, OtherSamplerProxy
 #from mininest.stepsampler import DESampler
 import joblib
 import tqdm
@@ -49,6 +49,8 @@ def prepare_problem(problemname, ndim, nlive, sampler):
                 break
 
         us[j,:] = u
+        region.u[j,:] = u
+        region.unormed[j,:] = region.transformLayer.transform(u)
         Ls[j] = logl
         i = i + 1
         #print(i, Lmin, volume(Lmin, ndim))
@@ -87,21 +89,22 @@ def main(args):
     ndim = args.x_dim
     nsteps = args.nsteps
     problemname = args.problem
-    num_warmup_steps = nlive * 10
+    #num_warmup_steps = nlive * 10
     
     np.random.seed(1)
     #sampler = MLFriendsSampler()
     #region, it, Lmin, us, Ls, transform, loglike = prepare_problem(problemname, ndim, nlive, sampler)
     
     samplers = [
-        ('cubemh', CubeMHSampler(nsteps=1, max_rejects=0)),
-        ('regionmh', RegionMHSampler(nsteps=1, max_rejects=0)),
-        ('cubeslice', CubeSliceSampler(nsteps=1, max_rejects=0)),
-        ('regionslice', RegionSliceSampler(nsteps=1, max_rejects=0)),
+        #('cubemh', CubeMHSampler(nsteps=1)),
+        #('regionmh', RegionMHSampler(nsteps=1)),
+        #('cubeslice', CubeSliceSampler(nsteps=1)),
+        #('regionslice', RegionSliceSampler(nsteps=1)),
+        ('stepsampler', OtherSamplerProxy(nsteps=10, sampler='steps')),
     ]
     if args.sampler != 'all':
         samplers = [(name, sampler) for name, sampler in samplers if name == args.sampler]
-    for _, sampler in samplers:
+    for samplername, sampler in samplers:
         print("exploring with %s ..." % sampler)
         region, it, Lmin, us, Ls, transform, loglike = prepare_problem(problemname, ndim, nlive, sampler)
         
@@ -134,7 +137,7 @@ def main(args):
         # take 20 steps
         for i in tqdm.trange(nsteps):
             ax = plt.figure().gca()
-            filename = 'viz_%s_sampler_%s_step%02d.png' % (problemname, type(sampler).__name__, i+1)
+            filename = 'viz_%s_sampler_%s_step%02d.png' % (problemname, samplername, i+1)
             # replace lowest likelihood point
             plt.plot(us[:,0], us[:,1], 'x', ms=2, color='k')
             plt.plot(startu[0], startu[1], 'x', ms=6, color='k')
@@ -173,6 +176,7 @@ def main(args):
             ylo, yhi = plt.ylim()
             lo = min(xlo, ylo)
             hi = max(xhi, yhi)
+            lo, hi = 0, 1
             plt.xlim(lo, hi)
             plt.ylim(lo, hi)
             plt.xlabel('x')

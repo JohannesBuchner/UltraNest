@@ -326,6 +326,9 @@ class SamplingPath(object):
         """ Add point xi, direction (vi) and 
         loglikelihood value (Li) with index i to the path. """
         assert Li is not None
+        assert len(xi.shape) == 1, (xi, xi.shape)
+        assert len(vi.shape) == 1, (vi, vi.shape)
+        assert len(np.shape(Li)) == 0, (Li, Li.shape)
         self.points.append((i, xi, vi, Li))
     
     def reset(self, x0, v0, L0):
@@ -439,6 +442,7 @@ class ContourSamplingPath(object):
         region = self.region
         bpts = region.transformLayer.transform(reflpoint.reshape((1,-1)))
         dist = ((bpts - region.unormed)**2).sum(axis=1)
+        assert dist.shape == (len(region.unormed),), (dist.shape, len(region.unormed))
         nearby = dist < region.maxradiussq
         assert nearby.shape == (len(region.unormed),), (nearby.shape, len(region.unormed))
         if not nearby.any():
@@ -462,9 +466,27 @@ class ContourSamplingPath(object):
         if plot:
             tt_all = get_sphere_tangent(tsphere_centers, bpts)
             t_all = region.transformLayer.untransform(tt_all * 1e-3 + tsphere_centers) - sphere_centers
+            
+            """
+            # plot in transformed space too:
+            origax = plt.gca()
+            ax = plt.axes([0.7, 0.7, 0.27, 0.27])
+            plt.plot(bpts[:,0], bpts[:,1], '+ ', color='k', ms=10)
+            plt.plot(region.unormed[:,0], region.unormed[:,1], 'x ', color='k', ms=4)
+            plt.plot(tsphere_centers[:,0], tsphere_centers[:,1], 'o ', mfc='None', mec='b', ms=10, mew=1)
+            for si, ti in zip(tsphere_centers, tt_all):
+                plt.plot([si[0], ti[0] + si[0]], [si[1], ti[1] + si[1]], '--', lw=2, color='gray', alpha=0.5)
+            plt.plot(tsphere_center[0], tsphere_center[1], '^ ', mfc='None', mec='g', ms=10, mew=3)
+            plt.plot([tsphere_center[0], tt[0] + tsphere_center[0]], 
+                [tsphere_center[1], tt[1] + tsphere_center[1]], lw=1, color='gray')
+            plt.sca(origax)
+            """
+            
             plt.plot(sphere_centers[:,0], sphere_centers[:,1], 'o ', mfc='None', mec='b', ms=10, mew=1)
+            if not (dist < region.maxradiussq).any():
+                plt.plot(sphere_centers[:,0], sphere_centers[:,1], 's ', mfc='None', mec='b', ms=10, mew=1)
             for si, ti in zip(sphere_centers, t_all):
-                plt.plot([si[0], ti[0] * 1000 + si[0]], [si[1], ti[1] * 1000 + si[1]], color='gray', alpha=0.5)
+                plt.plot([si[0], ti[0] * 1000 + si[0]], [si[1], ti[1] * 1000 + si[1]], '--', lw=2, color='gray', alpha=0.5)
             plt.plot(sphere_center[0], sphere_center[1], '^ ', mfc='None', mec='g', ms=10, mew=3)
             plt.plot([sphere_center[0], t[0] * 1000 + sphere_center[0]], [sphere_center[1], t[1] * 1000 + sphere_center[1]], color='gray')
 
