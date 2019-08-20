@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mininest.mlfriends import ScalingLayer, AffineLayer, MLFriends
 from mininest.stepsampler import RegionMHSampler, CubeMHSampler
-from mininest.stepsampler import CubeSliceSampler, RegionSliceSampler, OtherSamplerProxy
+from mininest.stepsampler import CubeSliceSampler, RegionSliceSampler, SamplingPathSliceSampler, OtherSamplerProxy
 #from mininest.stepsampler import DESampler
 import joblib
 import tqdm
@@ -100,7 +100,8 @@ def main(args):
         #('regionmh', RegionMHSampler(nsteps=1)),
         #('cubeslice', CubeSliceSampler(nsteps=1)),
         #('regionslice', RegionSliceSampler(nsteps=1)),
-        ('stepsampler', OtherSamplerProxy(nsteps=10, sampler='steps')),
+        ('pathslice', SamplingPathSliceSampler(nsteps=1)),
+        #('stepsampler', OtherSamplerProxy(nsteps=10, sampler='steps')),
     ]
     if args.sampler != 'all':
         samplers = [(name, sampler) for name, sampler in samplers if name == args.sampler]

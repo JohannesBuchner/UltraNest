@@ -261,7 +261,119 @@ class RegionSliceSampler(CubeSliceSampler):
 
 
 from mininest.samplingpath import SamplingPath, ContourSamplingPath
-from mininest.flatnuts import ClockedStepSampler #, ClockedBisectSampler, ClockedNUTSSampler
+
+
+class SamplingPathSliceSampler(StepSampler):
+    """
+    Slice sampler, respecting the region, on the sampling path
+    """
+    def __init__(self, nsteps):
+        """
+        see StepSampler.__init__ documentation
+        """
+        StepSampler.__init__(self, nsteps=nsteps)
+        self.interval = None
+        self.path = None
+        self.scale = 0.1
+
+    def generate_direction(self, ui, region):
+        ndim = len(ui)
+        ti = region.transformLayer.transform(ui)
+        
+        # choose axis in transformed space:
+        j = np.random.randint(ndim)
+        tv = np.zeros(ndim)
+        tv[j] = 1.0
+        # convert back to unit cube space:
+        uj = region.transformLayer.untransform(ti + tv * 1e-3)
+        v = uj - ui
+        v /= (v**2).sum()**0.5
+        return v
+
+    def adjust_accept(self, accepted, unew, pnew, Lnew, nc):
+        if accepted:
+            # start with a new interval next time
+            self.interval = None
+            
+            self.last = unew, Lnew
+            self.history.append((unew, Lnew))
+        else:
+            self.nrejects += 1
+            # continue on current interval
+            pass
+
+    def adjust_outside_region(self):
+        pass
+    
+    def move(self, ui, region, ndraw=1, plot=False):
+        if self.interval is None:
+            v = self.generate_direction(ui, region) * self.scale
+            self.path = ContourSamplingPath(SamplingPath(ui, v, 0.0), 
+                region)
+            
+            if not (ui > 0).all() or not (ui < 1).all() or not region.inside(ui.reshape((1, -1))):
+                assert False, ui
+            
+            # unit hypercube diagonal gives a reasonable maximum path length
+            maxlength = len(ui)**0.5
+            
+            # expand direction until it is surely outside
+            left = -1
+            right = +1
+            while abs(left*self.scale) < maxlength:
+                xj, vj = self.path.extrapolate(left)
+                if not (xj > 0).all() or not (xj < 1).all() or not region.inside(xj.reshape((1, -1))):
+                    break
+                #self.path.add(left, xj, vj, 0.0)
+                left *= 2
+            
+            while abs(right * self.scale) < maxlength:
+                xj, _ = self.path.extrapolate(right)
+                if not (xj > 0).all() or not (xj < 1).all() or not region.inside(xj.reshape((1, -1))):
+                    break
+                #self.path.add(right, xj, vj, 0.0)
+                right *= 2
+            
+            scale = max(-left, right)
+            #print("scale %f gave %d %d " % (self.scale, left, right))
+            if scale < 5:
+                self.scale /= 1.1
+            #if scale > 100:
+            #    self.scale *= 1.1
+            
+            assert self.scale > 1e-10, self.scale
+            self.interval = (left, right, None)
+        else:
+            left, right, mid = self.interval
+            # we rejected mid, and shrink corresponding side
+            if mid < 0:
+                left = mid
+            elif mid > 0:
+                right = mid
+        
+        # shrink direction if outside
+        while True:
+            mid = np.random.randint(left, right + 1)
+            #print("interpolating %d - %d - %d" % (left, mid, right), 
+            #    self.path.points)
+            if mid == 0:
+                _, xj, _, _ = self.path.points[0]
+            else:
+                xj, _ = self.path.extrapolate(mid)
+            
+            if region.inside(xj.reshape((1, -1))):
+                self.interval = (left, right, mid)
+                return xj.reshape((1, -1))
+            else:
+                if mid < 0:
+                    left = mid
+                else:
+                    right = mid
+                self.interval = (left, right, mid)
+
+
+
+from mininest.flatnuts import ClockedStepSampler, ClockedBisectSampler #, ClockedNUTSSampler
 
 
 class OtherSamplerProxy(object):
@@ -307,8 +419,12 @@ class OtherSamplerProxy(object):
         #    self.epsilon /= 2.0
         
         # or straight path with no reflections
-        #if self.nrestarts > 2:
-        #    self.epsilon /= 1.1
+        if self.nrestarts > 10:
+            self.epsilon /= 1.5
+        if self.nrestarts > 2:
+            self.epsilon /= 1.01
+        if self.nrestarts < 2:
+            self.epsilon *= 1.01
         
         #if irange <= 2:
         #    # path too long, shorten a bit
@@ -343,6 +459,7 @@ class OtherSamplerProxy(object):
         ui, Li = self.last
         # choose random direction
         tt = np.random.normal(region.transformLayer.transform(ui), 1)
+        tt /= (tt**2).sum()**0.5
         v = region.transformLayer.untransform(tt) - ui
         v = v * self.epsilon # / (v**2).sum()**0.5
         self.nrestarts += 1
@@ -351,6 +468,11 @@ class OtherSamplerProxy(object):
             if self.samplername == 'steps':
                 samplingpath = SamplingPath(ui, v, Li)
                 self.sampler = ClockedStepSampler(ContourSamplingPath(samplingpath, region))
+                self.sampler.set_nsteps(self.nsteps)
+                self.sampler.log = False
+            elif self.samplername == 'bisect':
+                samplingpath = SamplingPath(ui, v, Li)
+                self.sampler = ClockedBisectSampler(ContourSamplingPath(samplingpath, region))
                 self.sampler.set_nsteps(self.nsteps)
                 self.sampler.log = False
             else:

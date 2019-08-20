@@ -40,6 +40,7 @@ def nearest_box_intersection_line(ray_origin, ray_direction, fwd=True):
     
     assert (ray_origin >= 0).all(), ray_origin
     assert (ray_origin <= 1).all(), ray_origin
+    assert ((ray_direction**2).sum()**0.5 > 1e-200).all(), ray_direction
     
     # step size
     with np.errstate(divide='ignore', invalid='ignore'):
@@ -59,8 +60,8 @@ def nearest_box_intersection_line(ray_origin, ray_direction, fwd=True):
     
     pF = ray_origin + ray_direction * tF
     eps = 1e-6
-    assert (pF >= -eps).all(), pF
-    assert (pF <= 1 + eps).all(), pF
+    assert (pF >= -eps).all(), (pF, ray_origin, ray_direction)
+    assert (pF <= 1 + eps).all(), (pF, ray_origin, ray_direction)
     pF[pF < 0] = 0
     pF[pF > 1] = 1
     return pF, tF, iF
@@ -194,6 +195,8 @@ def extrapolate_ahead(dj, xj, vj, contourpath=None):
     # optimistically try to go there directly
     
     xk, vk = linear_steps_with_reflection(xj, vj, dj)
+    
+    return xk, vk # deactivate feature below
     
     if contourpath is None:
         return xk, vk
