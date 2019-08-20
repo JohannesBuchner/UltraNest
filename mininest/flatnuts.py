@@ -122,13 +122,15 @@ class ClockedStepSampler(object):
                         self.goals.insert(0, ('expand-to', i))
                         self.goals.append(goal)
                         continue
-                    elif not self.contourpath.samplingpath.fwd_possible and not self.contourpath.samplingpath.rwd_possible:
-                        # we are trying to go somewhere we cannot.
-                        # skip to other goals
-                        continue
+                    elif not self.contourpath.samplingpath.fwd_possible \
+                    and  not self.contourpath.samplingpath.rwd_possible \
+                    and len(self.points) == 1:
+                        # we are stuck and cannot move.
+                        # return the starting point as our best effort
+                        starti, startx, startv, startL = self.points[0]
+                        return (startx, startL), True
                     else:
                         # we are not done, but cannot reach the goal.
-                        continue
                         # reverse. Find position from where to reverse
                         if i > 0:
                             starti, _, _, _ = max(self.points)

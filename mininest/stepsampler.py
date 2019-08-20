@@ -380,7 +380,7 @@ class OtherSamplerProxy(object):
     """
     Proxy for ClockedSamplers
     """
-    def __init__(self, nsteps, epsilon=0.1, sampler='steps'):
+    def __init__(self, nnewdirections, nsteps, epsilon=0.1, sampler='steps'):
         """
         nsteps: int
             number of accepted steps until the sample is considered independent
@@ -392,39 +392,45 @@ class OtherSamplerProxy(object):
         self.last = None, None
         self.Llast = None
         self.ncalls = 0
+        self.nnewdirections = nnewdirections
+        self.nreflections = 0
+        self.nreverses = 0
+        self.nsteps_done = 0
     
     def __str__(self):
-        return 'Proxy[%s](%d steps)' % (self.samplername, self.nsteps)
+        return 'Proxy[%s](%dx%d steps)' % (self.samplername, self.nnewdirections, self.nsteps)
     
     def adjust_accept(self, accepted, unew, pnew, Lnew, nc):
-        nreflections = self.sampler.nreflections
-        nreverses = self.sampler.nreverses
-        points = self.sampler.points
-        # range
-        ilo, _, _, _ = min(points)
-        ihi, _, _, _ = max(points)
-        irange = ihi - ilo
-        assert irange >= 0, (ihi, ilo)
+        if self.sampler is not None:
+            self.nreflections += self.sampler.nreflections
+            self.nreverses += self.sampler.nreverses
+            points = self.sampler.points
+            # range
+            ilo, _, _, _ = min(points)
+            ihi, _, _, _ = max(points)
+            self.nsteps_done += ihi - ilo
         
-        if self.nsteps <= 1:
-            return
+        #if self.nsteps <= 1:
+        #    return
         
         # what is good? lots of reflections or reverses, large range
         
         # what is bad?
         # very narrow range
         print("point range: %d    %d reverses, %d reflections, %d nsteps, %d restarts   epsilon=%f" % (
-            irange, nreverses, nreflections, self.nsteps, self.nrestarts, self.epsilon))
+            self.nsteps_done, self.nreverses, self.nreflections, self.nsteps_done, self.nrestarts, self.epsilon))
         #if irange <= 2:
         #    self.epsilon /= 2.0
         
         # or straight path with no reflections
-        if self.nrestarts > 10:
-            self.epsilon /= 1.5
-        if self.nrestarts > 2:
-            self.epsilon /= 1.01
-        if self.nrestarts < 2:
-            self.epsilon *= 1.01
+        #if self.nrestarts > 10:
+        #    self.epsilon /= 1.5
+        #if self.nrestarts > 2:
+        #    self.epsilon /= 1.01
+        #if self.nrestarts < 2:
+        #    self.epsilon *= 1.01
+        
+        assert self.epsilon > 0, self.epsilon
         
         #if irange <= 2:
         #    # path too long, shorten a bit
@@ -432,9 +438,11 @@ class OtherSamplerProxy(object):
         #if nreflections < len(unew):
         #    # path too short, lengthen a bit
         #    self.epsilon *= 1.1
-        #else:
-        #    # path too long, shorten a bit
-        #    self.epsilon /= 1.1
+        if self.nreflections > 2 * self.nnewdirections:
+            # path too long, shorten a bit
+            self.epsilon /= 1.1
+        else:
+            self.epsilon *= 1.0001
     
     def adjust_outside_region(self, *args, **kwargs):
         pass
@@ -454,15 +462,26 @@ class OtherSamplerProxy(object):
         self.Llast = None
         self.ncalls = 0
         self.nrestarts = 0
+
+        self.nreflections = 0
+        self.nreverses = 0
+        self.nsteps_done = 0
     
     def start_direction(self, region):
         ui, Li = self.last
         # choose random direction
-        tt = np.random.normal(region.transformLayer.transform(ui), 1)
-        tt /= (tt**2).sum()**0.5
+        tt = np.random.normal(region.transformLayer.transform(ui), self.epsilon)
         v = region.transformLayer.untransform(tt) - ui
-        v = v * self.epsilon # / (v**2).sum()**0.5
         self.nrestarts += 1
+        
+        if self.sampler is not None:
+            self.nreflections += self.sampler.nreflections
+            self.nreverses += self.sampler.nreverses
+            points = self.sampler.points
+            # range
+            ilo, _, _, _ = min(points)
+            ihi, _, _, _ = max(points)
+            self.nsteps_done += ihi - ilo
         
         if self.sampler is None or True:
             if self.samplername == 'steps':
@@ -497,19 +516,26 @@ class OtherSamplerProxy(object):
 
         sample, is_independent = self.sampler.next(self.Llast)
         if sample is None: # nothing to do
-            #print("ran out of things to do.")
+            print("ran out of things to do.")
+            assert False, (sample, is_independent)
             self.start_direction(region)
             return None, None, None, 0
         
         if is_independent:
             unew, Lnew = sample
-            xnew = transform(unew)
             # done, reset:
-            #print("done. resetting.")
-            self.adjust_accept(True, unew, xnew, Lnew, self.ncalls)
-            self.sampler = None
-            self.last = None, None
-            return unew, xnew, Lnew, 0
+            #print("got a sample:", unew)
+            if self.nrestarts >= self.nnewdirections:
+                xnew = transform(unew)
+                self.adjust_accept(True, unew, xnew, Lnew, self.ncalls)
+                self.sampler = None
+                self.last = None, None
+                return unew, xnew, Lnew, 0
+            else:
+                self.last = unew, Lnew
+                self.start_direction(region)
+                self.Llast = None
+                return None, None, None, 0
         else:
             unew = sample
             xnew = transform(unew)

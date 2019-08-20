@@ -109,7 +109,8 @@ def main(args):
         #CubeSliceSampler(nsteps=16), CubeSliceSampler(nsteps=4), CubeSliceSampler(nsteps=1),
         RegionSliceSampler(nsteps=16), RegionSliceSampler(nsteps=4), RegionSliceSampler(nsteps=1),
         SamplingPathSliceSampler(nsteps=16), SamplingPathSliceSampler(nsteps=4), SamplingPathSliceSampler(nsteps=1),
-        #OtherSamplerProxy(nsteps=16, sampler='steps'),
+        OtherSamplerProxy(nnewdirections=4, nsteps=16, sampler='steps'),
+        OtherSamplerProxy(nnewdirections=16, nsteps=1, sampler='steps'),
         #OtherSamplerProxy(nsteps=16, sampler='bisect'),
     ]
     colors = {}
