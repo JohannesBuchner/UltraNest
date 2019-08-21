@@ -204,6 +204,19 @@ def test_samplingpath_cubereflect():
     path = SamplingPath(x0, v0, L0)
     path.add(-1, x0 - v0, v0, 1.0)
 
+def test_samplingpath_oddcase():
+    x0 = np.array([0.19833663, 0.49931288, 0.62744967, 0.47308545, 0.48858042, 0.49025685,
+ 0.48481497, 0.49068977, 0.49562456, 0.51102634] )
+    v0 = np.array([-0.00053468, -0.00106889,  0.0012165,   0.00737494,  0.00152363, -0.00164736,
+  0.00371493,  0.02057758, -0.00260349,  0.01266826])
+    L0 = 0.
+    path = SamplingPath(x0, v0, L0)
+    for i in range(-10, 11):
+        if i != 0:
+            path.extrapolate(i)
+    
+
+
 def get_reflection_angles(normal, v):
     angles = (normal * (v / norm(v))).sum(axis=1)
     #mask_forward1 = angles < 0

@@ -50,11 +50,11 @@ import matplotlib.pyplot as plt
 from .samplingpath import angle, extrapolate_ahead
 
 
-class ClockedStepSampler(object):
+class ClockedSimpleStepSampler(object):
     """
     Find a new point with a series of small steps
     """
-    def __init__(self, contourpath, epsilon=0.1, plot=False):
+    def __init__(self, contourpath, plot=False):
         """
         Starts a sampling track from x in direction v.
         is_inside is a function that returns true when a given point is inside the volume
@@ -63,10 +63,8 @@ class ClockedStepSampler(object):
         samples, if given, helps choose the gradient -- To be removed
         plot: if set to true, make some debug plots
         """
-        self.epsilon_too_large = False
         self.contourpath = contourpath
         self.points = self.contourpath.points
-        self.epsilon = epsilon
         self.nreflections = 0
         self.nreverses = 0
         self.plot = plot
@@ -100,6 +98,133 @@ class ClockedStepSampler(object):
     def set_nsteps(self, i):
         self.goals.insert(0, ('sample-at', i))
     
+    def next(self, Llast=None):
+        """
+        Run steps forward or backward to step i (can be positive or 
+        negative, 0 is the starting point) 
+        """
+        if self.log: print("next() call", Llast)
+        while self.goals:
+            if self.log: print("goals: ", self.goals)
+            goal = self.goals.pop(0)
+            if goal[0] == 'sample-at':
+                i = goal[1]
+                assert Llast is None
+                # find point
+                # here we assume all intermediate points have been sampled
+                pointi = [(j, xj, vj, Lj) for j, xj, vj, Lj in self.points if j == i]
+                if len(pointi) == 0:
+                    if i > 0 and self.contourpath.samplingpath.fwd_possible \
+                    or i < 0 and self.contourpath.samplingpath.rwd_possible:
+                        # we are not done:
+                        self.goals.insert(0, ('expand-to', i))
+                        self.goals.append(goal)
+                        continue
+                    else:
+                        # we are not done, but cannot reach the goal.
+                        # reverse. Find position from where to reverse
+                        self.nreverses += 1
+                        if i > 0:
+                            starti, startx, startv, startL = max(self.points)
+                        else:
+                            starti, startx, startv, startL = min(self.points)
+                        return (startx, startL), True
+                else:
+                    # return the previously sampled point
+                    _, xj, _, Lj = pointi[0]
+                    return (xj, Lj), True
+            
+            elif goal[0] == 'expand-to':
+                i = goal[1]
+                if i > 0 and self.contourpath.samplingpath.fwd_possible:
+                    starti, startx, startv, _ = max(self.points)
+                    if i > starti:
+                        if self.log: print("going forward...", i, starti)
+                        j = starti + 1
+                        xj, v = self.contourpath.extrapolate(j)
+                        if j != i: # ultimate goal not reached yet
+                            self.goals.insert(0, goal)
+                        self.goals.insert(0, ('eval-at', j, xj, v, +1))
+                        return xj, False
+                    else:
+                        if self.log: print("already done...", i, starti)
+                        # we are already done
+                        pass
+                elif i < 0 and self.contourpath.samplingpath.rwd_possible:
+                    starti, startx, startv, _ = min(self.points)
+                    if i < starti:
+                        if self.log: print("going backwards...", i, starti)
+                        j = starti - 1
+                        xj, v = self.contourpath.extrapolate(j)
+                        if j != i: # ultimate goal not reached yet
+                            self.goals.insert(0, goal)
+                        self.goals.insert(0, ('eval-at', j, xj, v, -1))
+                        return xj, False
+                    else:
+                        if self.log: print("already done...", i, starti)
+                        # we are already done
+                        pass
+                else:
+                    # we are trying to go somewhere we cannot.
+                    # skip to other goals
+                    pass
+            
+            elif goal[0] == 'eval-at':
+                _, j, xj, v, sign = goal
+                if Llast is not None:
+                    # we can go about our merry way.
+                    self.contourpath.add(j, xj, v, Llast)
+                    Llast = None
+                    continue
+                else:
+                    # cannot go this way
+                    self.nreflections += 1
+                    if sign == 1:
+                        self.contourpath.samplingpath.fwd_possible = False
+                    else:
+                        self.contourpath.samplingpath.rwd_possible = False
+                    continue
+            else:
+                assert False, goal
+        
+        return None, False
+
+    def expand_onestep(self, fwd, transform, loglike, Lmin):
+        """ Helper interface, make one step (forward fwd=True or backward fwd=False) """
+        if fwd:
+            starti, _, _, _ = max(self.points)
+            i = starti + 1
+        else:
+            starti, _, _, _ = min(self.points)
+            i = starti - 1
+        return self.expand_to_step(i, transform, loglike, Lmin)
+
+    def expand_to_step(self, nsteps, transform, loglike, Lmin):
+        """ Helper interface, go to step nstep """
+        self.set_nsteps(nsteps)
+        return self.get_independent_sample(transform, loglike, Lmin)
+
+    def get_independent_sample(self, transform, loglike, Lmin):
+        """ Helper interface, call next() until a independent sample is returned """
+        Llast = None
+        while True:
+            sample, is_independent = self.next(Llast)
+            if sample is None:
+                return None, None
+            if is_independent:
+                unew, Lnew = sample
+                return unew, Lnew
+            else:
+                unew = sample
+                xnew = transform(unew)
+                Llast = loglike(xnew)
+                if Llast < Lmin:
+                    Llast = None
+    
+class ClockedStepSampler(ClockedSimpleStepSampler):
+    """
+    Find a new point with a series of small steps
+    """
     def next(self, Llast=None):
         """
         Run steps forward or backward to step i (can be positive or 
@@ -223,38 +348,6 @@ class ClockedStepSampler(object):
         
         return None, False
 
-    def expand_onestep(self, fwd, transform, loglike, Lmin):
-        """ Helper interface, make one step (forward fwd=True or backward fwd=False) """
-        if fwd:
-            starti, _, _, _ = max(self.points)
-            i = starti + 1
-        else:
-            starti, _, _, _ = min(self.points)
-            i = starti - 1
-        return self.expand_to_step(i, transform, loglike, Lmin)
-
-    def expand_to_step(self, nsteps, transform, loglike, Lmin):
-        """ Helper interface, go to step nstep """
-        self.set_nsteps(nsteps)
-        return self.get_independent_sample(transform, loglike, Lmin)
-
-    def get_independent_sample(self, transform, loglike, Lmin):
-        """ Helper interface, call next() until a independent sample is returned """
-        Llast = None
-        while True:
-            sample, is_independent = self.next(Llast)
-            if sample is None:
-                return None, None
-            if is_independent:
-                unew, Lnew = sample
-                return unew, Lnew
-            else:
-                unew = sample
-                xnew = transform(unew)
-                Llast = loglike(xnew)
-                if Llast < Lmin:
-                    Llast = None
-    
 class ClockedBisectSampler(ClockedStepSampler):
     """
     Step sampler that does not require each step to be evaluated

@@ -4,7 +4,7 @@ from mininest.mlfriends import ScalingLayer, AffineLayer, MLFriends
 from mininest.stepsampler import RegionMHSampler, CubeMHSampler
 from mininest.stepsampler import CubeSliceSampler, RegionSliceSampler
 #from mininest.stepsampler import DESampler
-from mininest.stepsampler import OtherSamplerProxy, SamplingPathSliceSampler
+from mininest.stepsampler import OtherSamplerProxy, SamplingPathSliceSampler, SamplingPathStepSampler
 import tqdm
 import joblib
 from problems import transform, get_problem
@@ -103,19 +103,25 @@ def main(args):
     
     samplers = [
         MLFriendsSampler(),
-        #CubeMHSampler(nsteps=16), CubeMHSampler(nsteps=4), CubeMHSampler(nsteps=1),
-        #RegionMHSampler(nsteps=16), RegionMHSampler(nsteps=4), RegionMHSampler(nsteps=1),
+        CubeMHSampler(nsteps=16), #CubeMHSampler(nsteps=4), CubeMHSampler(nsteps=1),
+        RegionMHSampler(nsteps=16), #RegionMHSampler(nsteps=4), RegionMHSampler(nsteps=1),
         ##DESampler(nsteps=16), DESampler(nsteps=4), #DESampler(nsteps=1),
         #CubeSliceSampler(nsteps=16), CubeSliceSampler(nsteps=4), CubeSliceSampler(nsteps=1),
-        RegionSliceSampler(nsteps=16), RegionSliceSampler(nsteps=4), RegionSliceSampler(nsteps=1),
-        SamplingPathSliceSampler(nsteps=16), SamplingPathSliceSampler(nsteps=4), SamplingPathSliceSampler(nsteps=1),
-        OtherSamplerProxy(nnewdirections=4, nsteps=16, sampler='steps'),
-        OtherSamplerProxy(nnewdirections=16, nsteps=1, sampler='steps'),
+        RegionSliceSampler(nsteps=16), #RegionSliceSampler(nsteps=4), RegionSliceSampler(nsteps=1),
+        #SamplingPathSliceSampler(nsteps=16), SamplingPathSliceSampler(nsteps=4), SamplingPathSliceSampler(nsteps=1),
+        SamplingPathStepSampler(nresets=16, nsteps=64),
+        #SamplingPathStepSampler(nresets=16, nsteps=16), 
+        #SamplingPathStepSampler(nresets=4, nsteps=16), 
+        #SamplingPathStepSampler(nresets=4, nsteps=4), 
+        #SamplingPathStepSampler(nresets=4, nsteps=1),
+        #OtherSamplerProxy(nnewdirections=8, nsteps=64, sampler='simple'),
+        #OtherSamplerProxy(nnewdirections=4, nsteps=16, sampler='simple'),
+        #OtherSamplerProxy(nnewdirections=16, nsteps=1, sampler='simple'),
         #OtherSamplerProxy(nsteps=16, sampler='bisect'),
     ]
     colors = {}
-    linestyles = {1:':', 4:'--', 16:'-', 32:'-', -1:'-'}
-    markers = {1:'x', 4:'^', 16:'o', 32:'s', -1:'o'}
+    linestyles = {1:':', 4:'--', 16:'-', 32:'-', 64:'-', -1:'-'}
+    markers = {1:'x', 4:'^', 16:'o', 32:'s', 64:'s', -1:'o'}
     Lsequence_ref = None
     label_ref = None
     axL = plt.figure('Lseq').gca()
@@ -132,7 +138,7 @@ def main(args):
         loglike, volume = get_problem(problemname, ndim=ndim)
         assert np.isfinite(Lsequence).all(), Lsequence
         vol = np.asarray([volume(Li, ndim) for Li in Lsequence])
-        assert np.isfinite(vol).any(), (vol, Lsequence)
+        assert np.isfinite(vol).any(), ("Sampler has not reached interesting likelihoods", vol, Lsequence)
         shrinkage = 1 - (vol[np.isfinite(vol)][1:] / vol[np.isfinite(vol)][:-1])**(1. / ndim)
         
         fullsamplername = str(sampler)

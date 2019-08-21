@@ -7,6 +7,42 @@ MCMC-like step sampling within a region
 
 import numpy as np
 
+def generate_cube_oriented_direction(ui, region):
+    ndim = len(ui)
+    # choose axis
+    j = np.random.randint(ndim)
+    # use doubling procedure to identify left and right maxima borders
+    v = np.zeros(ndim)
+    v[j] = 1.0
+    return v
+
+
+def generate_region_oriented_direction(ui, region, scale=1):
+    ndim = len(ui)
+    ti = region.transformLayer.transform(ui)
+    
+    # choose axis in transformed space:
+    j = np.random.randint(ndim)
+    tv = np.zeros(ndim)
+    tv[j] = 1.0
+    # convert back to unit cube space:
+    uj = region.transformLayer.untransform(ti + tv * 1e-3)
+    v = uj - ui
+    v *= scale / (v**2).sum()**0.5
+    return v
+
+def generate_region_random_direction(ui, region, scale=1):
+    ndim = len(ui)
+    ti = region.transformLayer.transform(ui)
+    
+    # choose axis in transformed space:
+    ti = np.random.normal(ti, scale)
+    # convert back to unit cube space:
+    uj = region.transformLayer.untransform(ti)
+    v = uj - ui
+    return v
+
+
 class StepSampler(object):
     """
     Simple step sampler, staggering around
@@ -43,6 +79,9 @@ class StepSampler(object):
         else:
             self.scale /= 1.04
             self.nrejects += 1
+    
+    def reset(self):
+        self.nrejects = 0
 
     def __next__(self, region, Lmin, us, Ls, transform, loglike, ndraw=40, plot=False):
         
@@ -76,7 +115,7 @@ class StepSampler(object):
             #print("starting at", ui[0])
             assert np.logical_and(ui > 0, ui < 1).all(), ui
             Li = Ls[mask][i]
-            self.nrejects = 0
+            self.reset()
             self.history.append((ui, Li))
         
         unew = self.move(ui, region, ndraw=ndraw)
@@ -167,13 +206,7 @@ class CubeSliceSampler(StepSampler):
         self.interval = None
 
     def generate_direction(self, ui, region):
-        ndim = len(ui)
-        # choose axis
-        j = np.random.randint(ndim)
-        # use doubling procedure to identify left and right maxima borders
-        v = np.zeros(ndim)
-        v[j] = 1.0
-        return v
+        return generate_cube_oriented_direction(ui, region)
 
     def adjust_accept(self, accepted, unew, pnew, Lnew, nc):
         if accepted:
@@ -245,19 +278,7 @@ class RegionSliceSampler(CubeSliceSampler):
     Slice sampler, in region axes
     """
     def generate_direction(self, ui, region):
-        ndim = len(ui)
-        ti = region.transformLayer.transform(ui)
-        
-        # choose axis in transformed space:
-        j = np.random.randint(ndim)
-        tv = np.zeros(ndim)
-        tv[j] = 1.0
-        # convert back to unit cube space:
-        uj = region.transformLayer.untransform(ti + tv * 1e-3)
-        v = uj - ui
-        return v
-
-
+        return generate_region_oriented_direction(ui, region)
 
 
 from mininest.samplingpath import SamplingPath, ContourSamplingPath
@@ -274,21 +295,9 @@ class SamplingPathSliceSampler(StepSampler):
         StepSampler.__init__(self, nsteps=nsteps)
         self.interval = None
         self.path = None
-        self.scale = 0.1
 
-    def generate_direction(self, ui, region):
-        ndim = len(ui)
-        ti = region.transformLayer.transform(ui)
-        
-        # choose axis in transformed space:
-        j = np.random.randint(ndim)
-        tv = np.zeros(ndim)
-        tv[j] = 1.0
-        # convert back to unit cube space:
-        uj = region.transformLayer.untransform(ti + tv * 1e-3)
-        v = uj - ui
-        v /= (v**2).sum()**0.5
-        return v
+    def generate_direction(self, ui, region, scale=1):
+        return generate_region_oriented_direction(ui, region, scale=scale)
 
     def adjust_accept(self, accepted, unew, pnew, Lnew, nc):
         if accepted:
@@ -307,7 +316,7 @@ class SamplingPathSliceSampler(StepSampler):
     
     def move(self, ui, region, ndraw=1, plot=False):
         if self.interval is None:
-            v = self.generate_direction(ui, region) * self.scale
+            v = self.generate_direction(ui, region, scale=self.scale)
             self.path = ContourSamplingPath(SamplingPath(ui, v, 0.0), 
                 region)
             
@@ -372,8 +381,96 @@ class SamplingPathSliceSampler(StepSampler):
                 self.interval = (left, right, mid)
 
 
+class SamplingPathStepSampler(StepSampler):
+    """
+    Step sampler on a sampling path
+    """
+    def __init__(self, nresets, nsteps):
+        """
+        nresets: int
+            after this many iterations, select a new direction
+        nsteps: int
+            how many steps to make in total
+        """
+        StepSampler.__init__(self, nsteps=nsteps)
+        #self.lasti = None
+        self.path = None
+        self.nresets = nresets
+        self.scale = 0.1
+        self.istep = 0
+        self.iresets = 0
+    
+    def __str__(self):
+        return type(self).__name__ + '(%d steps, %d resets)' % (self.nsteps, self.nresets)
 
-from mininest.flatnuts import ClockedStepSampler, ClockedBisectSampler #, ClockedNUTSSampler
+    def reset(self):
+        self.nrejects = 0
+        self.istep = 0
+
+    def generate_direction(self, ui, region, scale):
+        return generate_region_random_direction(ui, region, scale=scale)
+
+    def adjust_accept(self, accepted, unew, pnew, Lnew, nc):
+        #print("step %d, scale %f, %s" % (self.istep, self.scale, accepted))
+        if self.istep % self.nresets == 0:
+            #print("triggering re-orientation")
+            # reset path so we go in a new direction
+            self.path = None
+        
+        self.istep += 1
+        
+        if accepted:
+            # start at new point next time
+            self.lasti = self.nexti
+            self.history.append((unew, Lnew))
+            
+            # hypercube diagonal sets a sane maximum scale
+            maxlength = len(unew)**0.5
+            if self.scale < maxlength:
+                self.scale *= 1.01
+        else:
+            self.nrejects += 1
+            self.scale /= 1.1
+            assert self.scale > 0, (self.scale, self.istep, self.nrejects)
+            # continue on current point
+
+    def adjust_outside_region(self):
+        if self.istep % self.nresets == 0:
+            #print("triggering re-orientation")
+            # reset path so we go in a new direction
+            self.path = None
+        
+        self.istep += 1
+        
+        self.scale /= 1.1
+        assert self.scale > 0
+    
+    def move(self, ui, region, ndraw=1, plot=False):
+        if self.path is None:
+            v = self.generate_direction(ui, region, scale=self.scale)
+            assert (v**2).sum() > 0, (v, self.scale)
+            self.path = ContourSamplingPath(SamplingPath(ui, v, 0.0), 
+                region)
+            
+            if not (ui > 0).all() or not (ui < 1).all() or not region.inside(ui.reshape((1, -1))):
+                assert False, ui
+            
+            #print(ui, v)
+            # unit hypercube diagonal gives a reasonable maximum path length
+            self.lasti = 0
+        
+        self.nexti = self.lasti + np.random.randint(0, 2) * 2 - 1
+        
+        #print("evaluating at", self.nexti)
+        if self.nexti == 0:
+            _, x, _, _ = self.path.points[0]
+        else:
+            x, _ = self.path.extrapolate(self.nexti)
+        #print("returning", x)
+        return x.reshape((1, -1))
+
+
+from mininest.flatnuts import ClockedSimpleStepSampler, ClockedStepSampler, ClockedBisectSampler #, ClockedNUTSSampler
 
 
 class OtherSamplerProxy(object):
@@ -438,11 +535,11 @@ class OtherSamplerProxy(object):
         #if nreflections < len(unew):
         #    # path too short, lengthen a bit
         #    self.epsilon *= 1.1
-        if self.nreflections > 2 * self.nnewdirections:
+        if max(self.nreflections, self.nreverses) > self.nnewdirections * self.nsteps * 0.05:
             # path too long, shorten a bit
             self.epsilon /= 1.1
         else:
-            self.epsilon *= 1.0001
+            self.epsilon *= 1.01
     
     def adjust_outside_region(self, *args, **kwargs):
         pass
@@ -484,18 +581,20 @@ class OtherSamplerProxy(object):
             self.nsteps_done += ihi - ilo
         
         if self.sampler is None or True:
-            if self.samplername == 'steps':
-                samplingpath = SamplingPath(ui, v, Li)
-                self.sampler = ClockedStepSampler(ContourSamplingPath(samplingpath, region))
+            samplingpath = SamplingPath(ui, v, Li)
+            contourpath = ContourSamplingPath(samplingpath, region)
+            if self.samplername == 'simple':
+                self.sampler = ClockedSimpleStepSampler(contourpath)
                 self.sampler.set_nsteps(self.nsteps)
-                self.sampler.log = False
+            elif self.samplername == 'steps':
+                self.sampler = ClockedStepSampler(contourpath)
+                self.sampler.set_nsteps(self.nsteps)
             elif self.samplername == 'bisect':
-                samplingpath = SamplingPath(ui, v, Li)
-                self.sampler = ClockedBisectSampler(ContourSamplingPath(samplingpath, region))
+                self.sampler = ClockedBisectSampler(contourpath)
                 self.sampler.set_nsteps(self.nsteps)
-                self.sampler.log = False
             else:
                 assert False
+            self.sampler.log = False
     
     def __next__(self, region, Lmin, us, Ls, transform, loglike, ndraw=40, plot=False):
         
@@ -523,6 +622,8 @@ class OtherSamplerProxy(object):
         
         if is_independent:
             unew, Lnew = sample
+            assert np.isfinite(unew).all(), unew
+            assert np.isfinite(Lnew).all(), Lnew
             # done, reset:
             #print("got a sample:", unew)
             if self.nrestarts >= self.nnewdirections:
