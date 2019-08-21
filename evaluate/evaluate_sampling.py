@@ -107,11 +107,20 @@ def main(args):
         RegionMHSampler(nsteps=16), #RegionMHSampler(nsteps=4), RegionMHSampler(nsteps=1),
         ##DESampler(nsteps=16), DESampler(nsteps=4), #DESampler(nsteps=1),
         #CubeSliceSampler(nsteps=16), CubeSliceSampler(nsteps=4), CubeSliceSampler(nsteps=1),
-        RegionSliceSampler(nsteps=16), #RegionSliceSampler(nsteps=4), RegionSliceSampler(nsteps=1),
+        RegionSliceSampler(nsteps=16), RegionSliceSampler(nsteps=4), RegionSliceSampler(nsteps=1),
         #SamplingPathSliceSampler(nsteps=16), SamplingPathSliceSampler(nsteps=4), SamplingPathSliceSampler(nsteps=1),
-        SamplingPathStepSampler(nresets=16, nsteps=64),
-        #SamplingPathStepSampler(nresets=16, nsteps=16), 
-        #SamplingPathStepSampler(nresets=4, nsteps=16), 
+        SamplingPathStepSampler(nresets=ndim * 2, nsteps=ndim * 8),
+        SamplingPathStepSampler(nresets=ndim, nsteps=ndim * 4),
+        SamplingPathStepSampler(nresets=ndim // 2, nsteps=ndim * 2),
+        #SamplingPathStepSampler(nresets=32, nsteps=64),
+        #SamplingPathStepSampler(nresets=16, nsteps=64),
+        #SamplingPathStepSampler(nresets=8, nsteps=64),
+        #SamplingPathStepSampler(nresets=4, nsteps=64),
+        #SamplingPathStepSampler(nresets=16, nsteps=32),
+        #SamplingPathStepSampler(nresets=32, nsteps=32),
+        #SamplingPathStepSampler(nresets=4, nsteps=32),
+        #SamplingPathStepSampler(nresets=16, nsteps=16),
+        #SamplingPathStepSampler(nresets=4, nsteps=16),
         #SamplingPathStepSampler(nresets=4, nsteps=4), 
         #SamplingPathStepSampler(nresets=4, nsteps=1),
         #OtherSamplerProxy(nnewdirections=8, nsteps=64, sampler='simple'),
@@ -122,6 +131,11 @@ def main(args):
     colors = {}
     linestyles = {1:':', 4:'--', 16:'-', 32:'-', 64:'-', -1:'-'}
     markers = {1:'x', 4:'^', 16:'o', 32:'s', 64:'s', -1:'o'}
+    for isteps in ndim * 2, ndim * 4, ndim * 8:
+        if isteps not in markers:
+            markers[isteps] = 's'
+        if isteps not in linestyles:
+            linestyles[isteps] = '-'
     Lsequence_ref = None
     label_ref = None
     axL = plt.figure('Lseq').gca()

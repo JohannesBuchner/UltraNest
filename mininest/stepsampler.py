@@ -32,7 +32,6 @@ def generate_region_oriented_direction(ui, region, scale=1):
     return v
 
 def generate_region_random_direction(ui, region, scale=1):
-    ndim = len(ui)
     ti = region.transformLayer.transform(ui)
     
     # choose axis in transformed space:
@@ -419,9 +418,11 @@ class SamplingPathStepSampler(StepSampler):
         
         self.istep += 1
         
+        self.cache[self.nexti] = (accepted, unew, Lnew)
         if accepted:
             # start at new point next time
             self.lasti = self.nexti
+            self.last = unew, Lnew
             self.history.append((unew, Lnew))
             
             # hypercube diagonal sets a sane maximum scale
@@ -455,19 +456,82 @@ class SamplingPathStepSampler(StepSampler):
             if not (ui > 0).all() or not (ui < 1).all() or not region.inside(ui.reshape((1, -1))):
                 assert False, ui
             
-            #print(ui, v)
             # unit hypercube diagonal gives a reasonable maximum path length
             self.lasti = 0
+            self.cache = {0: (True, ui, self.last[1])}
         
         self.nexti = self.lasti + np.random.randint(0, 2) * 2 - 1
+        return self.nexti
+    
+    def __next__(self, region, Lmin, us, Ls, transform, loglike, ndraw=40, plot=False):
         
-        #print("evaluating at", self.nexti)
-        if self.nexti == 0:
-            _, x, _, _ = self.path.points[0]
+        # find most recent point in history conforming to current Lmin
+        ui, Li = self.last
+        if Li is not None and not Li >= Lmin:
+            #print("wandered out of L constraint; resetting", ui[0])
+            ui, Li = None, None
+        
+        if Li is not None and not region.inside(ui.reshape((1,-1))):
+            # region was updated and we are not inside anymore 
+            # so reset
+            ui, Li = None, None
+        
+        if Li is None and self.history:
+            # try to resume from a previous point above the current contour
+            for uj, Lj in self.history[::-1]:
+                if Lj >= Lmin and region.inside(uj.reshape((1,-1))):
+                    ui, Li = uj, Lj
+                    break
+        
+        # select starting point
+        if Li is None:
+            # choose a new random starting point
+            mask = region.inside(us)
+            assert mask.any(), ("None of the live points satisfies the current region!", 
+                region.maxradiussq, region.u, region.unormed, us)
+            i = np.random.randint(mask.sum())
+            self.starti = i
+            ui = us[mask,:][i]
+            #print("starting at", ui[0])
+            assert np.logical_and(ui > 0, ui < 1).all(), ui
+            Li = Ls[mask][i]
+            self.reset()
+            self.history.append((ui, Li))
+            self.last = (ui, Li)
+        
+        inew = self.move(ui, region, ndraw=ndraw)
+        
+        nc = 0
+        if inew not in self.cache:
+            if inew == 0:
+                _, unew, _, _ = self.path.points[0]
+            else:
+                unew, _ = self.path.extrapolate(self.nexti)
+            accept = np.logical_and(unew > 0, unew < 1).all() and region.inside(unew.reshape((1, -1)))
+            if accept:
+                pnew = transform(unew)
+                Lnew = loglike(pnew)
+                nc = 1
+            else:
+                Lnew = -np.inf
+                self.adjust_outside_region()
+                return None, None, None, nc
         else:
-            x, _ = self.path.extrapolate(self.nexti)
-        #print("returning", x)
-        return x.reshape((1, -1))
+            _, unew, Lnew = self.cache[self.nexti]
+
+        pnew = transform(unew)
+        if Lnew >= Lmin:
+            self.adjust_accept(True, unew, pnew, Lnew, nc)
+            if len(self.history) >= self.nsteps:
+                #print("made %d steps" % len(self.history))
+                self.history = []
+                self.last = None, None
+                return unew, pnew, Lnew, nc
+        else:
+            self.adjust_accept(False, unew, pnew, Lnew, nc)
+        
+        # do not have a independent sample yet
+        return None, None, None, nc
 
 
 from mininest.flatnuts import ClockedSimpleStepSampler, ClockedStepSampler, ClockedBisectSampler #, ClockedNUTSSampler
