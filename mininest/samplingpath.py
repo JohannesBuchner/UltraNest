@@ -225,7 +225,7 @@ def extrapolate_ahead(dj, xj, vj, contourpath=None):
         return xk, vk
     
     # reversing:
-    normal = contourpath.gradient(reflpoint, v * sign)
+    normal = contourpath.gradient(reflpoint) #, v * sign)
     if normal is None:
         vnew = -v
     else:
@@ -413,7 +413,7 @@ class ContourSamplingPath(object):
         newpoint = extrapolate_ahead(deltai, xj, vj, contourpath=self)
         return newpoint
 
-    def gradient(self, reflpoint, v, plot=False):
+    def gradient(self, reflpoint, plot=False):
         """
         reflpoint: 
             point outside the likelihood contour, reflect there

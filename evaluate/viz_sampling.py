@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mininest.mlfriends import ScalingLayer, AffineLayer, MLFriends
 from mininest.stepsampler import RegionMHSampler, CubeMHSampler
-from mininest.stepsampler import CubeSliceSampler, RegionSliceSampler, SamplingPathSliceSampler, OtherSamplerProxy
+from mininest.stepsampler import CubeSliceSampler, RegionSliceSampler, SamplingPathSliceSampler, SamplingPathStepSampler, OtherSamplerProxy
 #from mininest.stepsampler import DESampler
 import joblib
 import tqdm
@@ -11,7 +11,9 @@ from problems import transform, get_problem
 mem = joblib.Memory('.', verbose=False)
 
 def prepare_problem(problemname, ndim, nlive, sampler):
-    loglike, volume = get_problem(problemname, ndim=ndim)
+    loglike, grad, volume, warmup = get_problem(problemname, ndim=ndim)
+    if hasattr(sampler, 'set_gradient'):
+        sampler.set_gradient(grad)
     np.random.seed(1)
     us = np.random.uniform(size=(nlive, ndim))
     
@@ -100,7 +102,8 @@ def main(args):
         #('regionmh', RegionMHSampler(nsteps=1)),
         #('cubeslice', CubeSliceSampler(nsteps=1)),
         #('regionslice', RegionSliceSampler(nsteps=1)),
-        ('pathslice', SamplingPathSliceSampler(nsteps=1)),
+        #('pathslice', SamplingPathSliceSampler(nsteps=1)),
+        ('pathstep', SamplingPathStepSampler(nsteps=12, nresets=4)),
         #('stepsampler', OtherSamplerProxy(nsteps=10, sampler='steps')),
     ]
     if args.sampler != 'all':

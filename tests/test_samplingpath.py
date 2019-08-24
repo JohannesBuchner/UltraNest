@@ -341,13 +341,13 @@ def test_reversible_gradient(plot=False):
             print("FORWARD:", v, reflpoint)
             samplingpath = SamplingPath(reflpoint - v, v, active_values[0])
             contourpath = ContourSamplingPath(samplingpath, region)
-            normal = contourpath.gradient(reflpoint, v)
+            normal = contourpath.gradient(reflpoint)
             if normal is not None:
                 assert normal.shape == v.shape, (normal.shape, v.shape)
                 
                 print("BACKWARD:", v, reflpoint)
                 v2 = -(v - 2 * angle(normal, v) * normal)
-                normal2 = contourpath.gradient(reflpoint, v2)
+                normal2 = contourpath.gradient(reflpoint)
                 assert_allclose(normal, normal2)
                 normal2 = normal
                 v3 = -(v2 - 2 * angle(normal2, v2) * normal2)

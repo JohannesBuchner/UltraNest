@@ -202,25 +202,55 @@ class CubeSliceSampler(StepSampler):
         see StepSampler.__init__ documentation
         """
         StepSampler.__init__(self, nsteps=nsteps)
+        self.reset()
+    
+    def reset(self):
         self.interval = None
+        self.found_left = False
+        self.found_right = False
+        self.axis_index = 0
 
     def generate_direction(self, ui, region):
         return generate_cube_oriented_direction(ui, region)
 
     def adjust_accept(self, accepted, unew, pnew, Lnew, nc):
-        if accepted:
-            # start with a new interval next time
-            self.interval = None
-            
-            self.last = unew, Lnew
-            self.history.append((unew, Lnew))
+        v, left, right, u = self.interval
+        if not self.found_left: 
+            if accepted:
+                self.interval = (v, left * 2, right, u)
+            else:
+                self.found_left = True
+        elif not self.found_right:
+            if accepted:
+                self.interval = (v, left, right * 2, u)
+            else:
+                self.found_right = True
+                # adjust scale
+                if -left > self.scale or right > self.scale:
+                    self.scale *= 1.1
+                else:
+                    self.scale /= 1.1
         else:
-            self.nrejects += 1
-            # continue on current interval
-            pass
+            if accepted:
+                # start with a new interval next time
+                self.interval = None
+                
+                self.last = unew, Lnew
+                self.history.append((unew, Lnew))
+            else:
+                self.nrejects += 1
+                # shrink current interval
+                if u == 0:
+                    pass
+                elif u < 0:
+                    left = u
+                elif u > 0:
+                    right = u
+                
+                self.interval = (v, left, right, u)
 
     def adjust_outside_region(self):
-        pass
+        self.adjust_accept(False, unew=None, pnew=None, Lnew=None, nc=0)
     
     def move(self, ui, region, ndraw=1, plot=False):
         if self.interval is None:
@@ -229,40 +259,38 @@ class CubeSliceSampler(StepSampler):
             # expand direction until it is surely outside
             left = -self.scale
             right = self.scale
-            while True:
-                xj = ui + v * left
-                if not region.inside(xj.reshape((1, -1))):
-                    break
-                left *= 2
-                
-            while True:
-                xj = ui + v * right
-                if not region.inside(xj.reshape((1, -1))):
-                    break
-                right *= 2
-            self.scale = max(-left, right)
-            self.interval = (v, left, right, 0)
+            u = 0
+            
+            self.interval = (v, left, right, u)
+            
         else:
             v, left, right, u = self.interval
-            # check if we rejected last time, and shrink corresponding side
-            if u == 0:
-                pass
-            elif u < 0:
-                left = u
-            elif u > 0:
-                right = u
         
         # shrink direction if outside
         while True:
+            if not self.found_left:
+                xj = ui + v * left
+
+                if region.inside(xj.reshape((1, -1))):
+                    self.interval = (v, left, right, u)
+                    return xj.reshape((1, -1))
+                else:
+                    self.found_left = True
+
+            if not self.found_right:
+                xj = ui + v * right
+                
+                if region.inside(xj.reshape((1, -1))):
+                    self.interval = (v, left, right * 2, u)
+                    return xj.reshape((1, -1))
+                else:
+                    self.found_right = True
+            
             u = np.random.uniform(left, right)
             xj = ui + v * u
+            
             if region.inside(xj.reshape((1, -1))):
                 self.interval = (v, left, right, u)
-                #if plot:
-                #    plot.plot(
-                #        [ui[0] + v[0] * left, ui[0] + v[0] * right], 
-                #        [ui[1] + v[1] * left, ui[1] + v[1] * right],
-                #        '-', color='r', alpha=0.2)
                 return xj.reshape((1, -1))
             else:
                 if u < 0:
@@ -280,8 +308,38 @@ class RegionSliceSampler(CubeSliceSampler):
         return generate_region_oriented_direction(ui, region)
 
 
-from mininest.samplingpath import SamplingPath, ContourSamplingPath
+class RegionSequentialSliceSampler(CubeSliceSampler):
+    """
+    Slice sampler, in region axes
+    """
+    def generate_direction(self, ui, region, scale=1):
+        ndim = len(ui)
+        ti = region.transformLayer.transform(ui)
+        
+        # choose axis in transformed space:
+        j = self.axis_index % ndim
+        self.axis_index = j + 1
+        tv = np.zeros(ndim)
+        tv[j] = 1.0
+        # convert back to unit cube space:
+        uj = region.transformLayer.untransform(ti + tv * 1e-3)
+        v = uj - ui
+        v *= scale / (v**2).sum()**0.5
+        return v
 
+
+
+class RegionBallSliceSampler(CubeSliceSampler):
+    """
+    Slice sampler, in random directions according to region
+    """
+    def generate_direction(self, ui, region):
+        return generate_region_random_direction(ui, region)
+
+
+
+from mininest.samplingpath import SamplingPath, ContourSamplingPath, extrapolate_ahead
+import matplotlib.pyplot as plt
 
 class SamplingPathSliceSampler(StepSampler):
     """
@@ -395,16 +453,34 @@ class SamplingPathStepSampler(StepSampler):
         #self.lasti = None
         self.path = None
         self.nresets = nresets
-        self.scale = 0.1
-        self.istep = 0
-        self.iresets = 0
+        # initial step scale in transformed space
+        self.scale = 1.0
+        # fraction of times a reject is expected
+        self.balance = 0.2
+        # relative increase in step scale
+        self.nudge = 1.1
+        self.grad_function = None
+        self.reset()
     
     def __str__(self):
         return type(self).__name__ + '(%d steps, %d resets)' % (self.nsteps, self.nresets)
 
     def reset(self):
         self.nrejects = 0
+        self.naccepts = 0
         self.istep = 0
+        self.noutside_regions = 0
+        self.deadends = set()
+    
+    def set_gradient(self, grad_function):
+        print("set gradient function to", grad_function)
+        def plot_gradient_wrapper(x, plot=False):
+            v = grad_function(x)
+            if plot:
+                plt.plot(x[0], x[1], '+ ', color='k', ms=10)
+                plt.plot([x[0], v[0] * 1e-2 + x[0]], [x[1], v[1] * 1e-2 + x[1]], color='gray')
+            return v
+        self.grad_function = plot_gradient_wrapper
 
     def generate_direction(self, ui, region, scale):
         return generate_region_random_direction(ui, region, scale=scale)
@@ -426,13 +502,14 @@ class SamplingPathStepSampler(StepSampler):
             self.history.append((unew, Lnew))
             
             # hypercube diagonal sets a sane maximum scale
-            maxlength = len(unew)**0.5
-            if self.scale < maxlength:
-                self.scale *= 1.01
+            #maxlength = len(unew)**0.5
+            #if self.scale < maxlength:
+            #    self.scale *= self.nudge
+            self.naccepts += 1
         else:
             self.nrejects += 1
-            self.scale /= 1.1
-            assert self.scale > 0, (self.scale, self.istep, self.nrejects)
+            #self.scale /= self.nudge**(1. / self.balance)
+            assert self.scale > 1e-10, (self.scale, self.istep, self.nrejects)
             # continue on current point
 
     def adjust_outside_region(self):
@@ -443,15 +520,40 @@ class SamplingPathStepSampler(StepSampler):
         
         self.istep += 1
         
-        self.scale /= 1.1
-        assert self.scale > 0
+        self.noutside_regions += 1
+        #self.scale /= self.nudge**(1. / self.balance)
+        #print("scale:", self.scale)
+        #assert self.scale > 1e-10, (self.scale, self.istep, self.nrejects)
+        #assert self.scale > 0
     
-    def move(self, ui, region, ndraw=1, plot=False):
+    def movei(self, ui, region, ndraw=1, plot=False):
+        if self.path is not None:
+            if self.lasti - 1 in self.deadends and self.lasti + 1 in self.deadends:
+                # stuck, cannot go anywhere. Time to resize scale
+                #print("stuck", self.lasti, self.deadends)
+                self.path = None
+        
         if self.path is None:
+            maxlength = len(ui)**0.5
+            #print("new direction:", self.scale, self.noutside_regions, self.nrejects, self.naccepts)
+            if self.noutside_regions > 1:
+                self.scale /= self.nudge
+            elif self.nrejects * self.balance > self.nrejects + self.naccepts:
+                if self.scale < maxlength:
+                    self.scale /= self.nudge
+            else:
+                self.scale *= self.nudge
+            
+            self.naccepts = 0
+            self.nrejects = 0
+            self.noutside_regions = 0
+            
             v = self.generate_direction(ui, region, scale=self.scale)
             assert (v**2).sum() > 0, (v, self.scale)
-            self.path = ContourSamplingPath(SamplingPath(ui, v, 0.0), 
-                region)
+            assert region.inside(ui.reshape((1, -1))).all(), ui
+            self.path = ContourSamplingPath(SamplingPath(ui, v, 0.0), region)
+            if self.grad_function is not None:
+                self.path.gradient = self.grad_function
             
             if not (ui > 0).all() or not (ui < 1).all() or not region.inside(ui.reshape((1, -1))):
                 assert False, ui
@@ -459,9 +561,36 @@ class SamplingPathStepSampler(StepSampler):
             # unit hypercube diagonal gives a reasonable maximum path length
             self.lasti = 0
             self.cache = {0: (True, ui, self.last[1])}
+            self.deadends = set()
         
-        self.nexti = self.lasti + np.random.randint(0, 2) * 2 - 1
+        assert not (self.lasti - 1 in self.deadends and self.lasti + 1 in self.deadends), (self.deadends, self.lasti)
+        if self.lasti + 1 in self.deadends:
+            self.nexti = self.lasti + 1
+        elif self.lasti - 1 not in self.deadends:
+            self.nexti = self.lasti - 1
+        else:
+            self.nexti = self.lasti + np.random.randint(0, 2) * 2 - 1
         return self.nexti
+
+    def move(self, ui, region, ndraw=1, plot=False):
+        u, v = self.get_point(self.movei(ui, region=region, ndraw=ndraw, plot=plot))
+        return u.reshape((1, -1))
+
+    
+    def reflect(self, reflpoint, v, region, plot=False):
+        normal = self.path.gradient(reflpoint, plot=plot)
+        if normal is None:
+            return -v
+        return v - 2 * (normal * v).sum() * normal
+
+    def get_point(self, inew):
+        ipoints = [(u, v) for i, u, p, v in self.path.points if i == inew]
+        if len(ipoints) == 0:
+            #print("getting point %d" % inew, self.path.points, "->", self.path.extrapolate(self.nexti))
+            return self.path.extrapolate(self.nexti)
+        else:
+            return ipoints[0]
+    
     
     def __next__(self, region, Lmin, us, Ls, transform, loglike, ndraw=40, plot=False):
         
@@ -499,14 +628,11 @@ class SamplingPathStepSampler(StepSampler):
             self.history.append((ui, Li))
             self.last = (ui, Li)
         
-        inew = self.move(ui, region, ndraw=ndraw)
+        inew = self.movei(ui, region, ndraw=ndraw)
         
         nc = 0
         if inew not in self.cache:
-            if inew == 0:
-                _, unew, _, _ = self.path.points[0]
-            else:
-                unew, _ = self.path.extrapolate(self.nexti)
+            unew, _ = self.get_point(inew)
             accept = np.logical_and(unew > 0, unew < 1).all() and region.inside(unew.reshape((1, -1)))
             if accept:
                 pnew = transform(unew)
@@ -514,6 +640,7 @@ class SamplingPathStepSampler(StepSampler):
                 nc = 1
             else:
                 Lnew = -np.inf
+                #print("outside: ", unew, "from", ui)
                 self.adjust_outside_region()
                 return None, None, None, nc
         else:
@@ -528,6 +655,41 @@ class SamplingPathStepSampler(StepSampler):
                 self.last = None, None
                 return unew, pnew, Lnew, nc
         else:
+            if inew not in self.cache and inew not in self.deadends:
+                # first time we try to go beyond
+                # try to reflect:
+                reflpoint, v = self.get_point(inew)
+                
+                sign = -1 if inew < 0 else +1
+                vnew = self.reflect(reflpoint, v * sign, region=region) * sign
+                
+                xk, vk = extrapolate_ahead(sign, reflpoint, vnew, contourpath=self.path)
+                
+                if plot:
+                    plt.plot([reflpoint[0], (-v + reflpoint)[0]], [reflpoint[1], (-v + reflpoint)[1]], '-', color='k', lw=2, alpha=0.5)
+                    plt.plot([reflpoint[0], (vnew + reflpoint)[0]], [reflpoint[1], (vnew + reflpoint)[1]], '-', color='k', lw=3)
+                
+                accept = np.logical_and(unew > 0, unew < 1).all() and region.inside(unew.reshape((1, -1)))
+                if accept:
+                    pk = transform(xk)
+                    Lk = loglike(pk)
+                    nc += 1
+                    if Lk >= Lmin:
+                        #print("successful reflect!")
+                        self.path.add(inew, xk, vk, Lk)
+                        ## avoid triggering re-orientation now
+                        #self.istep = 0
+                        self.adjust_accept(True, xk, pk, Lk, nc)
+                        if len(self.history) >= self.nsteps:
+                            self.history = []
+                            self.last = None, None
+                            return xk, vk, Lk, nc
+                    else:
+                        self.adjust_accept(False, xk, pk, Lk, nc)
+                    # unsuccessful. mark as deadend
+                    self.deadends.add(inew)
+                
+                #print("deadends:", self.deadends)
             self.adjust_accept(False, unew, pnew, Lnew, nc)
         
         # do not have a independent sample yet

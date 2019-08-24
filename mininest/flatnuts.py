@@ -80,7 +80,7 @@ class ClockedSimpleStepSampler(object):
         
         returns the new direction.
         """
-        normal = self.contourpath.gradient(reflpoint, v, plot=plot)
+        normal = self.contourpath.gradient(reflpoint, plot=plot)
         if normal is None:
             #assert False
             return -v

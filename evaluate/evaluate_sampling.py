@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mininest.mlfriends import ScalingLayer, AffineLayer, MLFriends
 from mininest.stepsampler import RegionMHSampler, CubeMHSampler
-from mininest.stepsampler import CubeSliceSampler, RegionSliceSampler
+from mininest.stepsampler import CubeSliceSampler, RegionSliceSampler, RegionBallSliceSampler, RegionSequentialSliceSampler
 #from mininest.stepsampler import DESampler
 from mininest.stepsampler import OtherSamplerProxy, SamplingPathSliceSampler, SamplingPathStepSampler
 import tqdm
@@ -27,10 +27,15 @@ def quantify_step(a, b):
     return [stepsize, angular_step, radial_step]
 
 @mem.cache
-def evaluate_sampler(problemname, ndim, nlive, nsteps, sampler):
-    loglike, volume = get_problem(problemname, ndim=ndim)
+def evaluate_warmed_sampler(problemname, ndim, nlive, nsteps, sampler):
+    loglike, grad, volume, warmup = get_problem(problemname, ndim=ndim)
+    if hasattr(sampler, 'set_gradient'):
+        sampler.set_gradient(grad)
     np.random.seed(1)
-    us = np.random.uniform(size=(nlive, ndim))
+    us = np.array([warmup(ndim) for i in range(nlive)])
+    Ls = np.array([loglike(u) for u in us])
+    vol0 = max((volume(Li, ndim) for Li in Ls))
+    nwarmup = 3 * nlive
     
     if ndim > 1:
         transformLayer = AffineLayer()
@@ -39,15 +44,14 @@ def evaluate_sampler(problemname, ndim, nlive, nsteps, sampler):
     transformLayer.optimize(us, us)
     region = MLFriends(us, transformLayer)
     region.maxradiussq, region.enlarge = region.compute_enlargement(nbootstraps=30)
-    region.create_ellipsoid(minvol=1.0)
+    region.create_ellipsoid(minvol=vol0)
     
     Lsequence = []
     stepsequence = []
-    Ls = np.array([loglike(u) for u in us])
     ncalls = 0
-    for i in tqdm.trange(nsteps):
+    for i in tqdm.trange(nsteps + nwarmup):
         if i % int(nlive * 0.2) == 0:
-            minvol = (1 - 1./nlive)**i
+            minvol = (1 - 1./nlive)**i * vol0
             nextTransformLayer = transformLayer.create_new(us, region.maxradiussq, minvol=minvol)
             nextregion = MLFriends(us, nextTransformLayer)
             nextregion.maxradiussq, nextregion.enlarge = nextregion.compute_enlargement(nbootstraps=30)
@@ -59,13 +63,16 @@ def evaluate_sampler(problemname, ndim, nlive, nsteps, sampler):
         # replace lowest likelihood point
         j = np.argmin(Ls)
         Lmin = float(Ls[j])
-        Lsequence.append(Lmin)
         while True:
             u, v, logl, nc = sampler.__next__(region, Lmin, us, Ls, transform, loglike)
-            ncalls += nc
+            if i > nwarmup:
+                ncalls += nc
             if logl is not None:
                 break
-        stepsequence.append(quantify_step(us[sampler.starti,:], u))
+        
+        if i > nwarmup:
+            Lsequence.append(Lmin)
+            stepsequence.append(quantify_step(us[sampler.starti,:], u))
 
         us[j,:] = u
         Ls[j] = logl
@@ -102,16 +109,40 @@ def main(args):
     problemname = args.problem
     
     samplers = [
-        MLFriendsSampler(),
         CubeMHSampler(nsteps=16), #CubeMHSampler(nsteps=4), CubeMHSampler(nsteps=1),
         RegionMHSampler(nsteps=16), #RegionMHSampler(nsteps=4), RegionMHSampler(nsteps=1),
         ##DESampler(nsteps=16), DESampler(nsteps=4), #DESampler(nsteps=1),
         #CubeSliceSampler(nsteps=16), CubeSliceSampler(nsteps=4), CubeSliceSampler(nsteps=1),
-        RegionSliceSampler(nsteps=16), RegionSliceSampler(nsteps=4), RegionSliceSampler(nsteps=1),
+        RegionSliceSampler(nsteps=2*ndim), RegionSliceSampler(nsteps=ndim), RegionSliceSampler(nsteps=max(1, ndim//2)),
+        #RegionBallSliceSampler(nsteps=16), RegionBallSliceSampler(nsteps=4), RegionBallSliceSampler(nsteps=1),
+        RegionBallSliceSampler(nsteps=2*ndim), RegionBallSliceSampler(nsteps=ndim), RegionBallSliceSampler(nsteps=max(1, ndim//2)),
+        RegionSequentialSliceSampler(nsteps=2*ndim), RegionSequentialSliceSampler(nsteps=ndim), RegionSequentialSliceSampler(nsteps=max(1, ndim//2)),
+        
         #SamplingPathSliceSampler(nsteps=16), SamplingPathSliceSampler(nsteps=4), SamplingPathSliceSampler(nsteps=1),
+        #SamplingPathStepSampler(nresets=ndim * 8, nsteps=ndim * 16),
+        #SamplingPathStepSampler(nresets=ndim * 4, nsteps=ndim * 16),
+        #SamplingPathStepSampler(nresets=ndim * 2, nsteps=ndim * 16),
+        #SamplingPathStepSampler(nresets=ndim * 8, nsteps=ndim * 8),
+        #SamplingPathStepSampler(nresets=ndim * 4, nsteps=ndim * 8),
         SamplingPathStepSampler(nresets=ndim * 2, nsteps=ndim * 8),
-        SamplingPathStepSampler(nresets=ndim, nsteps=ndim * 4),
-        SamplingPathStepSampler(nresets=ndim // 2, nsteps=ndim * 2),
+        #SamplingPathStepSampler(nresets=ndim * 1, nsteps=ndim * 8),
+        #SamplingPathStepSampler(nresets=ndim // 2, nsteps=ndim * 8),
+        #SamplingPathStepSampler(nresets=ndim, nsteps=ndim * 8),
+        #SamplingPathStepSampler(nresets=ndim // 2, nsteps=ndim * 8),
+        #SamplingPathStepSampler(nresets=ndim // 4, nsteps=ndim * 8),
+        
+        #SamplingPathStepSampler(nresets=ndim * 4, nsteps=ndim * 4),
+        #SamplingPathStepSampler(nresets=ndim * 2, nsteps=ndim * 4),
+        #SamplingPathStepSampler(nresets=ndim, nsteps=ndim * 4),
+        
+        #SamplingPathStepSampler(nresets=ndim * 2, nsteps=ndim * 2),
+        
+        #SamplingPathStepSampler(nresets=ndim // 2, nsteps=ndim * 4),
+        #SamplingPathStepSampler(nresets=max(1, ndim // 2), nsteps=ndim * 2),
+        #SamplingPathStepSampler(nresets=ndim // 2, nsteps=ndim * 4),
+        #SamplingPathStepSampler(nresets=ndim // 4, nsteps=ndim * 4),
+        #SamplingPathStepSampler(nresets=ndim // 4, nsteps=ndim * 2),
+        
         #SamplingPathStepSampler(nresets=32, nsteps=64),
         #SamplingPathStepSampler(nresets=16, nsteps=64),
         #SamplingPathStepSampler(nresets=8, nsteps=64),
@@ -128,14 +159,16 @@ def main(args):
         #OtherSamplerProxy(nnewdirections=16, nsteps=1, sampler='simple'),
         #OtherSamplerProxy(nsteps=16, sampler='bisect'),
     ]
+    if ndim < 14:
+        samplers.insert(0, MLFriendsSampler())
     colors = {}
     linestyles = {1:':', 4:'--', 16:'-', 32:'-', 64:'-', -1:'-'}
     markers = {1:'x', 4:'^', 16:'o', 32:'s', 64:'s', -1:'o'}
-    for isteps in ndim * 2, ndim * 4, ndim * 8:
+    for isteps, ls, m in (max(1, ndim // 2), ':', 'x'), (ndim, '--', '^'), (ndim * 2, '-', 'o'), (ndim * 4, '-.', '^'), (ndim * 8, '-', 'v'), (ndim * 16, '-', '>'):
         if isteps not in markers:
-            markers[isteps] = 's'
+            markers[isteps] = m
         if isteps not in linestyles:
-            linestyles[isteps] = '-'
+            linestyles[isteps] = ls
     Lsequence_ref = None
     label_ref = None
     axL = plt.figure('Lseq').gca()
@@ -147,9 +180,9 @@ def main(args):
     axstep3 = plt.subplot(1, 3, 3)
     for sampler in samplers:
         print("evaluating sampler: %s" % sampler)
-        Lsequence, ncalls, steps = evaluate_sampler(problemname, ndim, nlive, nsteps, sampler)
+        Lsequence, ncalls, steps = evaluate_warmed_sampler(problemname, ndim, nlive, nsteps, sampler)
         
-        loglike, volume = get_problem(problemname, ndim=ndim)
+        loglike, grad, volume, warmup = get_problem(problemname, ndim=ndim)
         assert np.isfinite(Lsequence).all(), Lsequence
         vol = np.asarray([volume(Li, ndim) for Li in Lsequence])
         assert np.isfinite(vol).any(), ("Sampler has not reached interesting likelihoods", vol, Lsequence)
