@@ -4,11 +4,8 @@ from mininest.mlfriends import ScalingLayer, AffineLayer, MLFriends
 from mininest.stepsampler import RegionMHSampler, CubeMHSampler
 from mininest.stepsampler import CubeSliceSampler, RegionSliceSampler, SamplingPathSliceSampler, SamplingPathStepSampler, OtherSamplerProxy
 #from mininest.stepsampler import DESampler
-import joblib
 import tqdm
 from problems import transform, get_problem
-
-mem = joblib.Memory('.', verbose=False)
 
 def prepare_problem(problemname, ndim, nlive, sampler):
     loglike, grad, volume, warmup = get_problem(problemname, ndim=ndim)
@@ -59,7 +56,7 @@ def prepare_problem(problemname, ndim, nlive, sampler):
         if np.isfinite(volume(Lmin, ndim)):
             nok += 1
         
-        if nok > 2 * nlive:
+        if nok > 2 * nlive + 1000:
             break
     return region, i, Lmin, us, Ls, transform, loglike
     
@@ -103,7 +100,7 @@ def main(args):
         #('cubeslice', CubeSliceSampler(nsteps=1)),
         #('regionslice', RegionSliceSampler(nsteps=1)),
         #('pathslice', SamplingPathSliceSampler(nsteps=1)),
-        ('pathstep', SamplingPathStepSampler(nsteps=12, nresets=4)),
+        ('pathstep', SamplingPathStepSampler(nsteps=12, nresets=12, log=True)),
         #('stepsampler', OtherSamplerProxy(nsteps=10, sampler='steps')),
     ]
     if args.sampler != 'all':
@@ -112,40 +109,22 @@ def main(args):
         print("exploring with %s ..." % sampler)
         region, it, Lmin, us, Ls, transform, loglike = prepare_problem(problemname, ndim, nlive, sampler)
         
-        """
-        # warm up sampler
-        for i in range(num_warmup_steps):
-            if i % int(nlive * 0.2) == 0:
-                minvol = (1 - 1./nlive)**(i + it)
-                nextTransformLayer = region.transformLayer.create_new(us, region.maxradiussq, minvol=minvol)
-                nextregion = MLFriends(us, nextTransformLayer)
-                nextregion.maxradiussq, nextregion.enlarge = nextregion.compute_enlargement(nbootstraps=30)
-                if nextregion.estimate_volume() <= region.estimate_volume():
-                    region = nextregion
-                region.create_ellipsoid(minvol=minvol)
-            
-            # replace lowest likelihood point
-            j = np.argmin(Ls)
-            Lmin = float(Ls[j])
-            while True:
-                u, v, logl, nc = sampler.__next__(region, Lmin, us, Ls, transform, loglike)
-                if logl is not None:
-                    break
-
-            us[j,:] = u
-            Ls[j] = logl
-        """
-        nc = 0
-        starti = 0
-        startu = us[starti,:]
+        #nc = 0
+        #starti = 0
+        #startu = us[starti,:]
         # take 20 steps
-        for i in tqdm.trange(nsteps):
-            ax = plt.figure().gca()
+        print("taking %d steps..." % nsteps)
+        sampler.reset()
+        sampler.path = None
+        for i in range(nsteps):
+            ax = plt.figure(figsize=(10,10)).gca()
             filename = 'viz_%s_sampler_%s_step%02d.png' % (problemname, samplername, i+1)
             # replace lowest likelihood point
             plt.plot(us[:,0], us[:,1], 'x', ms=2, color='k')
-            plt.plot(startu[0], startu[1], 'x', ms=6, color='k')
             Lmin = Ls.min()
+            sampler.__next__(region, Lmin, us, Ls, transform, loglike, plot=True)
+            """
+            plt.plot(startu[0], startu[1], 'x', ms=6, color='k')
             
             while True:
 
@@ -176,11 +155,14 @@ def main(args):
                         sampler.adjust_accept(False, unew, pnew, Lnew, nc)
                 else:
                     sampler.adjust_outside_region()
+            """
             xlo, xhi = plt.xlim()
             ylo, yhi = plt.ylim()
             lo = min(xlo, ylo)
             hi = max(xhi, yhi)
             lo, hi = 0, 1
+            lo, hi = us.min(), us.max()
+            lo, hi = lo - (hi - lo), hi + (hi - lo)
             plt.xlim(lo, hi)
             plt.ylim(lo, hi)
             plt.xlabel('x')

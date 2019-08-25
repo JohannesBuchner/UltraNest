@@ -35,7 +35,8 @@ def generate_region_random_direction(ui, region, scale=1):
     ti = region.transformLayer.transform(ui)
     
     # choose axis in transformed space:
-    ti = np.random.normal(ti, scale)
+    ti = np.random.normal(ti, 1)
+    ti *= scale / (ti**2).sum()**0.5
     # convert back to unit cube space:
     uj = region.transformLayer.untransform(ti)
     v = uj - ui
@@ -117,7 +118,11 @@ class StepSampler(object):
             self.reset()
             self.history.append((ui, Li))
         
-        unew = self.move(ui, region, ndraw=ndraw)
+        unew = self.move(ui, region, ndraw=ndraw, plot=plot)
+        if plot:
+            plt.plot([ui[0], unew[:,0]], [ui[1], unew[:,1]], '-', color='k', lw=0.5)
+            plt.plot(ui[0], ui[1], 'd', color='r', ms=4)
+            plt.plot(unew[:,0], unew[:,1], 'x', color='r', ms=4)
         mask = np.logical_and(unew > 0, unew < 1).all(axis=1)
         unew = unew[mask,:]
         mask = region.inside(unew)
@@ -130,6 +135,8 @@ class StepSampler(object):
             Lnew = loglike(pnew)
             nc = 1
             if Lnew >= Lmin:
+                if plot:
+                    plt.plot(unew[0], unew[1], 'o', color='g', ms=4)
                 self.adjust_accept(True, unew, pnew, Lnew, nc)
                 if len(self.history) >= self.nsteps:
                     #print("made %d steps" % len(self.history))
@@ -266,6 +273,10 @@ class CubeSliceSampler(StepSampler):
         else:
             v, left, right, u = self.interval
         
+        if plot:
+            plt.plot([(ui + v * left)[0], (ui + v * right)[0]], 
+                [(ui + v * left)[1], (ui + v * right)[1]],
+                ':o', color='k', lw=2, alpha=0.3)
         # shrink direction if outside
         while True:
             if not self.found_left:
@@ -442,7 +453,7 @@ class SamplingPathStepSampler(StepSampler):
     """
     Step sampler on a sampling path
     """
-    def __init__(self, nresets, nsteps):
+    def __init__(self, nresets, nsteps, log=False):
         """
         nresets: int
             after this many iterations, select a new direction
@@ -456,24 +467,31 @@ class SamplingPathStepSampler(StepSampler):
         # initial step scale in transformed space
         self.scale = 1.0
         # fraction of times a reject is expected
-        self.balance = 0.2
+        self.balance = 0.1
         # relative increase in step scale
         self.nudge = 1.1
+        self.log = log
         self.grad_function = None
+        self.istep = 0
         self.reset()
     
     def __str__(self):
-        return type(self).__name__ + '(%d steps, %d resets)' % (self.nsteps, self.nresets)
+        return type(self).__name__ + '(%d steps, %d resets, AR=%d%%)' % (self.nsteps, self.nresets, (1-self.balance)*100)
 
     def reset(self):
+        """ terminate current path, and reset path counting variable """
+        if self.log:
+            print("reset()")
         self.nrejects = 0
         self.naccepts = 0
-        self.istep = 0
+        #self.istep = 0
         self.noutside_regions = 0
+        self.direction = +1
         self.deadends = set()
+        self.path = None
     
     def set_gradient(self, grad_function):
-        print("set gradient function to", grad_function)
+        print("set gradient function to %s" % grad_function.__name__)
         def plot_gradient_wrapper(x, plot=False):
             v = grad_function(x)
             if plot:
@@ -483,17 +501,19 @@ class SamplingPathStepSampler(StepSampler):
         self.grad_function = plot_gradient_wrapper
 
     def generate_direction(self, ui, region, scale):
-        return generate_region_random_direction(ui, region, scale=scale)
+        return generate_region_oriented_direction(ui, region, scale=scale)
 
     def adjust_accept(self, accepted, unew, pnew, Lnew, nc):
         #print("step %d, scale %f, %s" % (self.istep, self.scale, accepted))
-        if self.istep % self.nresets == 0:
-            #print("triggering re-orientation")
-            # reset path so we go in a new direction
-            self.path = None
-        
         self.istep += 1
+        if self.istep == self.nresets:
+            if self.log:
+                print("triggering re-orientation")
+                # reset path so we go in a new direction
+                self.path = None
+            self.istep = 0
         
+        newpoint = self.nexti not in self.cache
         self.cache[self.nexti] = (accepted, unew, Lnew)
         if accepted:
             # start at new point next time
@@ -505,48 +525,83 @@ class SamplingPathStepSampler(StepSampler):
             #maxlength = len(unew)**0.5
             #if self.scale < maxlength:
             #    self.scale *= self.nudge
-            self.naccepts += 1
+            if newpoint:
+                self.naccepts += 1
         else:
-            self.nrejects += 1
+            if newpoint:
+                self.nrejects += 1
             #self.scale /= self.nudge**(1. / self.balance)
             assert self.scale > 1e-10, (self.scale, self.istep, self.nrejects)
             # continue on current point
-
+    
     def adjust_outside_region(self):
-        if self.istep % self.nresets == 0:
-            #print("triggering re-orientation")
-            # reset path so we go in a new direction
-            self.path = None
-        
         self.istep += 1
+        if self.istep == self.nresets:
+            if self.log:
+                print("triggering re-orientation")
+                # reset path so we go in a new direction
+                self.path = None
+            self.istep = 0
         
         self.noutside_regions += 1
+        self.nrejects += 1
         #self.scale /= self.nudge**(1. / self.balance)
         #print("scale:", self.scale)
         #assert self.scale > 1e-10, (self.scale, self.istep, self.nrejects)
         #assert self.scale > 0
     
+    def adjust_scale(self, maxlength):
+        if -1 in self.deadends and +1 in self.deadends:
+            self.scale /= 2.0
+        if len(self.history) > 1:
+            #with open('scale.log', 'a') as fout:
+            #    fout.write("%d %d %d %f\n" % (len(self.history), self.naccepts, self.nrejects, self.scale))
+            #    print('%d %d %.2f %6f %d' % (len(self.history), 
+            #        self.nrejects + self.naccepts,
+            #        self.nrejects / (self.nrejects + self.naccepts), 
+            #        self.scale,
+            #        (self.naccepts <= 2 or self.nrejects > (self.nrejects + self.naccepts) * self.balance)))
+            
+            if self.naccepts <= 2:
+                # most time was spent bouncing back and forth,
+                # we did not go anywhere
+                if self.log:
+                    print("adjusting scale %f down: istep=%d inside=%d outside=%d region=%d" % (
+                        self.scale, len(self.history), self.naccepts, self.nrejects, self.noutside_regions))
+                self.scale /= self.nudge
+            elif self.nrejects > (self.nrejects + self.naccepts) * self.balance:
+                if self.log:
+                    print("adjusting scale %f down: istep=%d inside=%d outside=%d region=%d" % (
+                        self.scale, len(self.history), self.naccepts, self.nrejects, self.noutside_regions))
+                self.scale /= self.nudge
+            else:
+                if self.scale < maxlength:
+                    if self.log:
+                        print("adjusting scale %f up: istep=%d inside=%d outside=%d region=%d" % (
+                            self.scale, len(self.history), self.naccepts, self.nrejects, self.noutside_regions))
+                    self.scale *= self.nudge
+        elif self.nrejects + self.naccepts > 0:
+            if self.log:
+                print("adjusting scale %f ??: istep=%d inside=%d outside=%d region=%d" % (
+                    self.scale, len(self.history), self.naccepts, self.nrejects, self.noutside_regions))
+            #self.scale /= self.nudge
+        assert self.scale > 1e-5, self.scale
+    
     def movei(self, ui, region, ndraw=1, plot=False):
         if self.path is not None:
             if self.lasti - 1 in self.deadends and self.lasti + 1 in self.deadends:
                 # stuck, cannot go anywhere. Time to resize scale
-                #print("stuck", self.lasti, self.deadends)
+                if self.log:
+                    print("stuck", self.lasti, self.deadends)
                 self.path = None
         
         if self.path is None:
-            maxlength = len(ui)**0.5
             #print("new direction:", self.scale, self.noutside_regions, self.nrejects, self.naccepts)
-            if self.noutside_regions > 1:
-                self.scale /= self.nudge
-            elif self.nrejects * self.balance > self.nrejects + self.naccepts:
-                if self.scale < maxlength:
-                    self.scale /= self.nudge
-            else:
-                self.scale *= self.nudge
-            
+            self.adjust_scale(maxlength = len(ui)**0.5)
             self.naccepts = 0
             self.nrejects = 0
             self.noutside_regions = 0
+            self.direction = 1
             
             v = self.generate_direction(ui, region, scale=self.scale)
             assert (v**2).sum() > 0, (v, self.scale)
@@ -562,14 +617,17 @@ class SamplingPathStepSampler(StepSampler):
             self.lasti = 0
             self.cache = {0: (True, ui, self.last[1])}
             self.deadends = set()
+            if self.log:
+                print()
+                print("starting new direction", v, 'from', ui)
         
         assert not (self.lasti - 1 in self.deadends and self.lasti + 1 in self.deadends), (self.deadends, self.lasti)
-        if self.lasti + 1 in self.deadends:
-            self.nexti = self.lasti + 1
-        elif self.lasti - 1 not in self.deadends:
-            self.nexti = self.lasti - 1
-        else:
-            self.nexti = self.lasti + np.random.randint(0, 2) * 2 - 1
+        if self.lasti + self.direction in self.deadends:
+            self.direction *= -1
+        
+        self.nexti = self.lasti + self.direction
+        #print("movei", self.nexti)
+        # self.nexti = self.lasti + np.random.randint(0, 2) * 2 - 1
         return self.nexti
 
     def move(self, ui, region, ndraw=1, plot=False):
@@ -586,8 +644,8 @@ class SamplingPathStepSampler(StepSampler):
     def get_point(self, inew):
         ipoints = [(u, v) for i, u, p, v in self.path.points if i == inew]
         if len(ipoints) == 0:
-            #print("getting point %d" % inew, self.path.points, "->", self.path.extrapolate(self.nexti))
-            return self.path.extrapolate(self.nexti)
+            #print("getting point %d" % inew, self.path.points) #, "->", self.path.extrapolate(self.nexti))
+            return self.path.extrapolate(inew)
         else:
             return ipoints[0]
     
@@ -597,12 +655,15 @@ class SamplingPathStepSampler(StepSampler):
         # find most recent point in history conforming to current Lmin
         ui, Li = self.last
         if Li is not None and not Li >= Lmin:
-            #print("wandered out of L constraint; resetting", ui[0])
+            if self.log:
+                print("wandered out of L constraint; resetting", ui[0])
             ui, Li = None, None
         
         if Li is not None and not region.inside(ui.reshape((1,-1))):
             # region was updated and we are not inside anymore 
             # so reset
+            if self.log:
+                print("region change; resetting")
             ui, Li = None, None
         
         if Li is None and self.history:
@@ -610,7 +671,10 @@ class SamplingPathStepSampler(StepSampler):
             for uj, Lj in self.history[::-1]:
                 if Lj >= Lmin and region.inside(uj.reshape((1,-1))):
                     ui, Li = uj, Lj
+                    if self.log:
+                        print("recovered using history", ui)
                     break
+            
         
         # select starting point
         if Li is None:
@@ -621,7 +685,8 @@ class SamplingPathStepSampler(StepSampler):
             i = np.random.randint(mask.sum())
             self.starti = i
             ui = us[mask,:][i]
-            #print("starting at", ui[0])
+            if self.log:
+                print("starting at", ui)
             assert np.logical_and(ui > 0, ui < 1).all(), ui
             Li = Ls[mask][i]
             self.reset()
@@ -629,35 +694,64 @@ class SamplingPathStepSampler(StepSampler):
             self.last = (ui, Li)
         
         inew = self.movei(ui, region, ndraw=ndraw)
+        if self.log:
+            print("i: %d->%d" % (self.lasti, inew))
+        #uold, _ = self.get_point(self.lasti)
+        _, uold, _ = self.cache[self.lasti]
+        if plot:
+            plt.plot(uold[0], uold[1], 'd', color='brown', ms=4)
         
         nc = 0
         if inew not in self.cache:
             unew, _ = self.get_point(inew)
+            if plot:
+                plt.plot(unew[0], unew[1], 'x', color='k', ms=4)
             accept = np.logical_and(unew > 0, unew < 1).all() and region.inside(unew.reshape((1, -1)))
             if accept:
+                if plot:
+                    plt.plot(unew[0], unew[1], '+', color='orange', ms=4)
                 pnew = transform(unew)
                 Lnew = loglike(pnew)
                 nc = 1
             else:
                 Lnew = -np.inf
-                #print("outside: ", unew, "from", ui)
+                if self.log:
+                    print("outside region: ", unew, "from", ui)
+                self.deadends.add(inew)
                 self.adjust_outside_region()
                 return None, None, None, nc
         else:
             _, unew, Lnew = self.cache[self.nexti]
-
+            #if plot:
+            #    plt.plot(unew[0], unew[1], 's', color='r', ms=2)
+        
+        
         pnew = transform(unew)
         if Lnew >= Lmin:
+            if self.log:
+                print(" -> inside.")
+            if plot:
+                plt.plot(unew[0], unew[1], 'o', color='g', ms=4)
             self.adjust_accept(True, unew, pnew, Lnew, nc)
             if len(self.history) >= self.nsteps:
-                #print("made %d steps" % len(self.history))
+                if self.log:
+                    print("made %d steps; returning sample" % len(self.history))
+                self.adjust_scale(maxlength = len(unew)**0.5)
+                self.reset()
                 self.history = []
                 self.last = None, None
                 return unew, pnew, Lnew, nc
         else:
+            if plot:
+                plt.plot(unew[0], unew[1], '+', color='k', ms=2, alpha=0.3)
+            if self.log:
+                print(" -> outside.")
+            jump_successful = False
             if inew not in self.cache and inew not in self.deadends:
                 # first time we try to go beyond
                 # try to reflect:
+                if self.log:
+                    print("    trying to reflect")
                 reflpoint, v = self.get_point(inew)
                 
                 sign = -1 if inew < 0 else +1
@@ -666,8 +760,8 @@ class SamplingPathStepSampler(StepSampler):
                 xk, vk = extrapolate_ahead(sign, reflpoint, vnew, contourpath=self.path)
                 
                 if plot:
-                    plt.plot([reflpoint[0], (-v + reflpoint)[0]], [reflpoint[1], (-v + reflpoint)[1]], '-', color='k', lw=2, alpha=0.5)
-                    plt.plot([reflpoint[0], (vnew + reflpoint)[0]], [reflpoint[1], (vnew + reflpoint)[1]], '-', color='k', lw=3)
+                    plt.plot([reflpoint[0], (-v + reflpoint)[0]], [reflpoint[1], (-v + reflpoint)[1]], '-', color='k', lw=0.5, alpha=0.5)
+                    plt.plot([reflpoint[0], (vnew + reflpoint)[0]], [reflpoint[1], (vnew + reflpoint)[1]], '-', color='k', lw=1)
                 
                 accept = np.logical_and(unew > 0, unew < 1).all() and region.inside(unew.reshape((1, -1)))
                 if accept:
@@ -675,22 +769,36 @@ class SamplingPathStepSampler(StepSampler):
                     Lk = loglike(pk)
                     nc += 1
                     if Lk >= Lmin:
-                        #print("successful reflect!")
+                        jump_successful = True
+                        if self.log:
+                            print("successful reflect!")
                         self.path.add(inew, xk, vk, Lk)
                         ## avoid triggering re-orientation now
                         #self.istep = 0
                         self.adjust_accept(True, xk, pk, Lk, nc)
                         if len(self.history) >= self.nsteps:
+                            if self.log:
+                                print("made %d steps; returning sample" % len(self.history))
+                            self.adjust_scale(maxlength = len(xk)**0.5)
+                            self.reset()
                             self.history = []
                             self.last = None, None
                             return xk, vk, Lk, nc
                     else:
                         self.adjust_accept(False, xk, pk, Lk, nc)
+                else:
+                    self.adjust_outside_region()
+                
+                if plot:
+                    plt.plot(xk[0], xk[1], 'x', color='g' if jump_successful else 'r', ms=8)
+                
+                if not jump_successful:
                     # unsuccessful. mark as deadend
                     self.deadends.add(inew)
+                    #print("deadends:", self.deadends)
+                    #self.adjust_accept(False, unew, pnew, Lnew, nc)
                 
-                #print("deadends:", self.deadends)
-            self.adjust_accept(False, unew, pnew, Lnew, nc)
+            assert inew in self.cache or inew in self.deadends, (inew in self.cache, inew in self.deadends)
         
         # do not have a independent sample yet
         return None, None, None, nc
