@@ -466,9 +466,9 @@ class SamplingPathStepSampler(StepSampler):
         self.path = None
         self.nresets = nresets
         # initial step scale in transformed space
-        self.scale = 0.01
+        self.scale = 1.0
         # fraction of times a reject is expected
-        self.balance = 0.01
+        self.balance = 0.1
         # relative increase in step scale
         self.nudge = 1.4
         self.log = log
@@ -476,7 +476,7 @@ class SamplingPathStepSampler(StepSampler):
         self.istep = 0
         self.iresets = 0
         self.start()
-        self.reset_path()
+        self.terminate_path()
     
     def __str__(self):
         return type(self).__name__ + '(%d steps, %d resets, AR=%d%%)' % (self.nsteps, self.nresets, (1-self.balance)*100)
@@ -488,12 +488,47 @@ class SamplingPathStepSampler(StepSampler):
         self.istep = 0
         self.iresets = 0
         self.noutside_regions = 0
-        self.reset_path()
         self.last = None, None
         self.history = []
+
+        self.direction = +1
+        self.deadends = set()
+        self.path = None
+        self.iresets += 1
     
-    def reset_path(self):
+    def start_path(self, ui, region):
+        #print("new direction:", self.scale, self.noutside_regions, self.nrejects, self.naccepts)
+        #self.adjust_scale(maxlength = len(ui)**0.5)
+        #self.naccepts = 0
+        #self.nrejects = 0
+        #self.noutside_regions = 0
+        
+        v = self.generate_direction(ui, region, scale=self.scale)
+        assert (v**2).sum() > 0, (v, self.scale)
+        assert region.inside(ui.reshape((1, -1))).all(), ui
+        self.path = ContourSamplingPath(SamplingPath(ui, v, 0.0), region)
+        if self.grad_function is not None:
+            self.path.gradient = self.grad_function
+        
+        if not (ui > 0).all() or not (ui < 1).all() or not region.inside(ui.reshape((1, -1))):
+            assert False, ui
+        
+        self.direction = +1
+        self.lasti = 0
+        self.cache = {0: (True, ui, self.last[1])}
+        self.deadends = set()
+        #self.iresets += 1
+        if self.log:
+            print()
+            print("starting new direction", v, 'from', ui)
+    
+    def terminate_path(self):
         """ terminate current path, and reset path counting variable """
+        
+        if -1 in self.deadends and +1 in self.deadends:
+            self.scale /= self.nudge
+            self.nstuck += 1
+        
         #self.nrejects = 0
         #self.naccepts = 0
         #self.istep = 0
@@ -501,14 +536,9 @@ class SamplingPathStepSampler(StepSampler):
         self.direction = +1
         self.deadends = set()
         self.path = None
+        self.iresets += 1
         if self.log:
             print("reset %d" % self.iresets)
-    
-    def terminate_path(self):
-        if -1 in self.deadends and +1 in self.deadends:
-            self.scale /= self.nudge
-        self.nstuck += 1
-        self.path = None
     
     def set_gradient(self, grad_function):
         print("set gradient function to %s" % grad_function.__name__)
@@ -526,14 +556,14 @@ class SamplingPathStepSampler(StepSampler):
     def adjust_accept(self, accepted, unew, pnew, Lnew, nc):
         #print("step %d, scale %f, %s" % (self.istep, self.scale, accepted))
         self.istep += 1
-        if self.istep == self.nresets:
+        if self.istep == self.nsteps:
             if self.log:
                 print("triggering re-orientation")
                 # reset path so we go in a new direction
             self.terminate_path()
             self.istep = 0
         
-        newpoint = self.nexti not in self.cache
+        #newpoint = self.nexti not in self.cache
         self.cache[self.nexti] = (accepted, unew, Lnew)
         if accepted:
             # start at new point next time
@@ -548,7 +578,7 @@ class SamplingPathStepSampler(StepSampler):
     
     def adjust_outside_region(self):
         self.istep += 1
-        if self.istep == self.nresets:
+        if self.istep == self.nsteps:
             if self.log:
                 print("triggering re-orientation")
                 # reset path so we go in a new direction
@@ -597,30 +627,7 @@ class SamplingPathStepSampler(StepSampler):
                 self.terminate_path()
         
         if self.path is None:
-            #print("new direction:", self.scale, self.noutside_regions, self.nrejects, self.naccepts)
-            #self.adjust_scale(maxlength = len(ui)**0.5)
-            #self.naccepts = 0
-            #self.nrejects = 0
-            #self.noutside_regions = 0
-            
-            v = self.generate_direction(ui, region, scale=self.scale)
-            assert (v**2).sum() > 0, (v, self.scale)
-            assert region.inside(ui.reshape((1, -1))).all(), ui
-            self.path = ContourSamplingPath(SamplingPath(ui, v, 0.0), region)
-            if self.grad_function is not None:
-                self.path.gradient = self.grad_function
-            
-            if not (ui > 0).all() or not (ui < 1).all() or not region.inside(ui.reshape((1, -1))):
-                assert False, ui
-            
-            self.direction = 1
-            self.lasti = 0
-            self.cache = {0: (True, ui, self.last[1])}
-            self.deadends = set()
-            self.iresets += 1
-            if self.log:
-                print()
-                print("starting new direction", v, 'from', ui)
+            self.start_path(ui, region)
         
         assert not (self.lasti - 1 in self.deadends and self.lasti + 1 in self.deadends), (self.deadends, self.lasti)
         if self.lasti + self.direction in self.deadends:
@@ -726,7 +733,8 @@ class SamplingPathStepSampler(StepSampler):
             #if plot:
             #    plt.plot(unew[0], unew[1], 's', color='r', ms=2)
         
-        
+        if self.log:
+            print("   suggested point:", unew)
         pnew = transform(unew)
         if Lnew >= Lmin:
             if self.log:
@@ -734,7 +742,7 @@ class SamplingPathStepSampler(StepSampler):
             if plot:
                 plt.plot(unew[0], unew[1], 'o', color='g', ms=4)
             self.adjust_accept(True, unew, pnew, Lnew, nc)
-            if self.iresets >= self.nresets:
+            if self.iresets > self.nresets:
                 if self.log:
                     print("walked %d paths; returning sample" % self.iresets)
                 self.adjust_scale(maxlength = len(unew)**0.5)
@@ -776,7 +784,7 @@ class SamplingPathStepSampler(StepSampler):
                         ## avoid triggering re-orientation now
                         #self.istep = 0
                         self.adjust_accept(True, xk, pk, Lk, nc)
-                        if self.iresets >= self.nresets:
+                        if self.iresets > self.nresets:
                             if self.log:
                                 print("walked %d paths; returning sample" % self.iresets)
                             self.adjust_scale(maxlength = len(xk)**0.5)

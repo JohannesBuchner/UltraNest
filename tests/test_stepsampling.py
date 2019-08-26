@@ -1,9 +1,9 @@
 import numpy as np
-import os
-import matplotlib.pyplot as plt
 from mininest.mlfriends import ScalingLayer, AffineLayer, MLFriends
 from mininest import ReactiveNestedSampler
 from mininest.stepsampler import DESampler, RegionMHSampler, CubeMHSampler, CubeSliceSampler, RegionSliceSampler
+from mininest.stepsampler import SamplingPathStepSampler
+from numpy.testing import assert_allclose
 
 #here = os.path.dirname(__file__)
 
@@ -73,6 +73,63 @@ def test_stepsampler_regionslice(plot=False):
     b = (np.abs(r['samples'] - 0.3) < 0.1).all(axis=1)
     assert a.sum() > 1
     assert b.sum() > 1
+
+def make_region(ndim):
+    us = np.random.uniform(size=(1000, ndim))
+    if ndim > 1:
+        transformLayer = AffineLayer()
+    else:
+        transformLayer = ScalingLayer()
+    transformLayer.optimize(us, us)
+    region = MLFriends(us, transformLayer)
+    region.maxradiussq, region.enlarge = region.compute_enlargement(nbootstraps=30)
+    region.create_ellipsoid(minvol=1.0)
+    return region
+
+def test_pathsampler():
+    stepper = SamplingPathStepSampler(nresets=1, nsteps=4, log=True)
+    #stepper.scale = 0.01
+    origscale = stepper.scale
+    Lmin = -1.0
+    us = 0.5 + np.zeros((100, 2))
+    Ls = np.zeros(100)
+    region = make_region(2)
+    def transform(x): return x
+    def loglike(x): return 0.0
+    def gradient(x):
+        j = np.argmax(np.abs(x - 0.5))
+        v = np.zeros(len(x))
+        v[j] = -1 if x[j] > 0.5 else 1
+        return v
+    
+    def nocall(x):
+        assert False
+    
+    stepper.generate_direction = lambda ui, region, scale: np.array([0.01, 0.01])
+    stepper.set_gradient(nocall)
+    
+    x, v, L, nc = stepper.__next__(region, Lmin, us, Ls, transform, loglike)
+    assert x is None, x
+    x, v, L, nc = stepper.__next__(region, Lmin, us, Ls, transform, loglike)
+    assert x is None, x
+    x, v, L, nc = stepper.__next__(region, Lmin, us, Ls, transform, loglike)
+    assert x is None, x
+    x, v, L, nc = stepper.__next__(region, Lmin, us, Ls, transform, loglike)
+    assert_allclose(x, [0.54, 0.54])
+    assert origscale < stepper.scale, (origscale, stepper.scale)
+    origscale = stepper.scale
+
+    stepper.set_gradient(gradient)
+    def loglike(x): return 0.0 if x[0] < 0.505 else -100
+    x, v, L, nc = stepper.__next__(region, Lmin, us, Ls, transform, loglike)
+    assert x is None, x
+    x, v, L, nc = stepper.__next__(region, Lmin, us, Ls, transform, loglike)
+    assert x is None, x
+    x, v, L, nc = stepper.__next__(region, Lmin, us, Ls, transform, loglike)
+    assert x is None, x
+    x, v, L, nc = stepper.__next__(region, Lmin, us, Ls, transform, loglike)
+    assert_allclose(x, [0.47, 0.55])
+    assert origscale < stepper.scale, (origscale, stepper.scale)
 
 if __name__ == '__main__':
     #test_stepsampler_cubemh(plot=True)

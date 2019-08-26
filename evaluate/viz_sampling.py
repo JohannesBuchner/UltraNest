@@ -100,7 +100,7 @@ def main(args):
         #('cubeslice', CubeSliceSampler(nsteps=1)),
         #('regionslice', RegionSliceSampler(nsteps=1)),
         #('pathslice', SamplingPathSliceSampler(nsteps=1)),
-        ('pathstep', SamplingPathStepSampler(nsteps=12, nresets=4, log=False)),
+        ('pathstep', SamplingPathStepSampler(nsteps=12, nresets=12, log=True)),
         #('stepsampler', OtherSamplerProxy(nsteps=10, sampler='steps')),
     ]
     if args.sampler != 'all':
