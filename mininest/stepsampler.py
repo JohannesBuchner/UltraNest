@@ -468,9 +468,9 @@ class SamplingPathStepSampler(StepSampler):
         # initial step scale in transformed space
         self.scale = 1.0
         # fraction of times a reject is expected
-        self.balance = 0.1
+        self.balance = 0.01
         # relative increase in step scale
-        self.nudge = 1.4
+        self.nudge = 1.1
         self.log = log
         self.grad_function = None
         self.istep = 0

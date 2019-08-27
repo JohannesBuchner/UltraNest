@@ -109,8 +109,8 @@ def main(args):
     problemname = args.problem
     
     samplers = [
-        #CubeMHSampler(nsteps=16), #CubeMHSampler(nsteps=4), CubeMHSampler(nsteps=1),
-        #RegionMHSampler(nsteps=16), #RegionMHSampler(nsteps=4), RegionMHSampler(nsteps=1),
+        CubeMHSampler(nsteps=16), #CubeMHSampler(nsteps=4), CubeMHSampler(nsteps=1),
+        RegionMHSampler(nsteps=16), #RegionMHSampler(nsteps=4), RegionMHSampler(nsteps=1),
         ##DESampler(nsteps=16), DESampler(nsteps=4), #DESampler(nsteps=1),
         #CubeSliceSampler(nsteps=16), CubeSliceSampler(nsteps=4), CubeSliceSampler(nsteps=1),
         RegionSliceSampler(nsteps=2*ndim), RegionSliceSampler(nsteps=ndim), RegionSliceSampler(nsteps=max(1, ndim//2)),
@@ -120,9 +120,10 @@ def main(args):
         
         #SamplingPathSliceSampler(nsteps=16), SamplingPathSliceSampler(nsteps=4), SamplingPathSliceSampler(nsteps=1),
         #SamplingPathStepSampler(nresets=8, nsteps=ndim * 2),
-        SamplingPathStepSampler(nresets=16, nsteps=ndim * 8),
-        SamplingPathStepSampler(nresets=8, nsteps=ndim * 4),
-        #SamplingPathStepSampler(nresets=4, nsteps=ndim * 2),
+        #SamplingPathStepSampler(nresets=16, nsteps=ndim * 8),
+        #SamplingPathStepSampler(nresets=8, nsteps=ndim * 4),
+        SamplingPathStepSampler(nresets=4, nsteps=ndim * 2),
+        SamplingPathStepSampler(nresets=16, nsteps=ndim * 2),
         #SamplingPathStepSampler(nresets=2, nsteps=ndim),
         #SamplingPathStepSampler(nresets=3, nsteps=10),
         #SamplingPathStepSampler(nresets=4, nsteps=ndim * 8),

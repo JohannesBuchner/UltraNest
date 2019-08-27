@@ -108,14 +108,20 @@ def test_pathsampler():
     stepper.generate_direction = lambda ui, region, scale: np.array([0.01, 0.01])
     stepper.set_gradient(nocall)
     
+    assert (stepper.naccepts, stepper.nrejects) == (0, 0), (stepper.naccepts, stepper.nrejects)
     x, v, L, nc = stepper.__next__(region, Lmin, us, Ls, transform, loglike)
     assert x is None, x
+    assert (stepper.naccepts, stepper.nrejects) == (1, 0), (stepper.naccepts, stepper.nrejects)
     x, v, L, nc = stepper.__next__(region, Lmin, us, Ls, transform, loglike)
     assert x is None, x
+    assert (stepper.naccepts, stepper.nrejects) == (2, 0), (stepper.naccepts, stepper.nrejects)
     x, v, L, nc = stepper.__next__(region, Lmin, us, Ls, transform, loglike)
     assert x is None, x
+    assert (stepper.naccepts, stepper.nrejects) == (3, 0), (stepper.naccepts, stepper.nrejects)
     x, v, L, nc = stepper.__next__(region, Lmin, us, Ls, transform, loglike)
     assert_allclose(x, [0.54, 0.54])
+    # check that path was reset
+    assert (stepper.naccepts, stepper.nrejects) == (0, 0), (stepper.naccepts, stepper.nrejects)
     assert origscale < stepper.scale, (origscale, stepper.scale)
     origscale = stepper.scale
 
@@ -123,13 +129,38 @@ def test_pathsampler():
     def loglike(x): return 0.0 if x[0] < 0.505 else -100
     x, v, L, nc = stepper.__next__(region, Lmin, us, Ls, transform, loglike)
     assert x is None, x
+    assert (stepper.naccepts, stepper.nrejects) == (1, 0), (stepper.naccepts, stepper.nrejects)
     x, v, L, nc = stepper.__next__(region, Lmin, us, Ls, transform, loglike)
     assert x is None, x
+    assert (stepper.naccepts, stepper.nrejects) == (2, 0), (stepper.naccepts, stepper.nrejects)
     x, v, L, nc = stepper.__next__(region, Lmin, us, Ls, transform, loglike)
     assert x is None, x
+    assert (stepper.naccepts, stepper.nrejects) == (3, 0), (stepper.naccepts, stepper.nrejects)
     x, v, L, nc = stepper.__next__(region, Lmin, us, Ls, transform, loglike)
     assert_allclose(x, [0.47, 0.55])
     assert origscale < stepper.scale, (origscale, stepper.scale)
+    assert (stepper.naccepts, stepper.nrejects) == (0, 0), (stepper.naccepts, stepper.nrejects)
+
+    # make stuck
+    origscale = stepper.scale
+    def loglike(x): return -100
+    x, v, L, nc = stepper.__next__(region, Lmin, us, Ls, transform, loglike)
+    assert x is None, x
+    assert stepper.nstuck == 0
+    assert (stepper.naccepts, stepper.nrejects) == (0, 1), (stepper.naccepts, stepper.nrejects)
+    x, v, L, nc = stepper.__next__(region, Lmin, us, Ls, transform, loglike)
+    assert x is None, x
+    assert (stepper.naccepts, stepper.nrejects) == (0, 2), (stepper.naccepts, stepper.nrejects)
+    assert stepper.nstuck == 0
+    x, v, L, nc = stepper.__next__(region, Lmin, us, Ls, transform, loglike)
+    assert x is None, x
+    assert stepper.nstuck == 1
+    assert (stepper.naccepts, stepper.nrejects) == (0, 3), (stepper.naccepts, stepper.nrejects)
+    assert origscale > stepper.scale, (origscale, stepper.scale, "should shrink scale")
+    x, v, L, nc = stepper.__next__(region, Lmin, us, Ls, transform, loglike)
+    assert x is None, x
+    assert stepper.nstuck == 1
+    assert (stepper.naccepts, stepper.nrejects) == (0, 4), (stepper.naccepts, stepper.nrejects)
 
 if __name__ == '__main__':
     #test_stepsampler_cubemh(plot=True)
