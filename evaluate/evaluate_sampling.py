@@ -101,6 +101,8 @@ class MLFriendsSampler(object):
         
     def __str__(self):
         return 'MLFriends'
+    def plot(self, filename):
+        pass
 
 def main(args):
     nlive = args.num_live_points
@@ -122,9 +124,10 @@ def main(args):
         #SamplingPathStepSampler(nresets=8, nsteps=ndim * 2),
         #SamplingPathStepSampler(nresets=16, nsteps=ndim * 8),
         #SamplingPathStepSampler(nresets=8, nsteps=ndim * 4),
-        SamplingPathStepSampler(nresets=4, nsteps=ndim * 2),
-        SamplingPathStepSampler(nresets=16, nsteps=ndim * 2),
-        #SamplingPathStepSampler(nresets=2, nsteps=ndim),
+        #SamplingPathStepSampler(nresets=4, nsteps=ndim * 2),
+        #SamplingPathStepSampler(nresets=16, nsteps=ndim * 2),
+        SamplingPathStepSampler(nresets=16, nsteps=ndim * 2, scale=0.1, balance=0.99, nudge=1.1),
+        #SamplingPathStepSampler(nresets=64, nsteps=4),
         #SamplingPathStepSampler(nresets=3, nsteps=10),
         #SamplingPathStepSampler(nresets=4, nsteps=ndim * 8),
         #SamplingPathStepSampler(nresets=2, nsteps=ndim * 2, log=True),
@@ -205,6 +208,7 @@ def main(args):
         axstep3.hist(relradial_step, cumulative=True, density=True, 
             histtype='step', 
             label=label, color=color, ls=ls)
+        sampler.plot(filename = 'evaluate_sampling_%s_%dd_N%d_%s.png' % (args.problem, ndim, nlive, samplername))
     
     print('range:', Lsequence_ref[0], Lsequence_ref[-1])
     axL.plot([Lsequence_ref[0], Lsequence_ref[-1]], [Lsequence_ref[0], Lsequence_ref[-1]], '-', color='k', lw=1, label=label_ref)

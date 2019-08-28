@@ -7,6 +7,11 @@ MCMC-like step sampling within a region
 
 import numpy as np
 
+def generate_random_direction(ui, region, scale=1):
+    v = np.random.normal(0, 1, size=len(ui))
+    v *= scale / (v**2).sum()**0.5
+    return v
+
 def generate_cube_oriented_direction(ui, region):
     ndim = len(ui)
     # choose axis
@@ -59,9 +64,26 @@ class StepSampler(object):
         self.nrejects = 0
         self.scale = 1.0
         self.last = None, None
+        self.logstat = []
+        self.logstat_labels = ['accepted', 'scale']
     
     def __str__(self):
         return type(self).__name__ + '(%d steps)' % self.nsteps
+    
+    def plot(self, filename):
+        if len(self.logstat) == 0:
+            return
+        
+        parts = np.transpose(self.logstat)
+        plt.figure(figsize=(10, 1+3*len(parts)))
+        for i, (label, part) in enumerate(zip(self.logstat_labels, parts)):
+            plt.subplot(len(parts), 1, 1+i)
+            plt.ylabel(label)
+            plt.plot(part)
+            if np.min(part) > 0:
+                plt.yscale('log')
+        plt.savefig(filename, bbox_inches='tight')
+        plt.close()
     
     def move(self, ui, region, ndraw=1, plot=False):
         raise NotImplementedError()
@@ -71,6 +93,7 @@ class StepSampler(object):
         self.scale *= 0.1
         assert self.scale > 0
         self.last = None, None
+        self.logstat.append([False, self.scale])
     
     def adjust_accept(self, accepted, unew, pnew, Lnew, nc):
         if accepted:
@@ -80,6 +103,7 @@ class StepSampler(object):
         else:
             self.scale /= 1.04
             self.nrejects += 1
+        self.logstat.append([accepted, self.scale])
     
     def reset(self):
         self.nrejects = 0
@@ -256,6 +280,7 @@ class CubeSliceSampler(StepSampler):
                     right = u
                 
                 self.interval = (v, left, right, u)
+        self.logstat.append([accepted, self.scale])
 
     def adjust_outside_region(self):
         self.adjust_accept(False, unew=None, pnew=None, Lnew=None, nc=0)
@@ -379,9 +404,10 @@ class SamplingPathSliceSampler(StepSampler):
             self.nrejects += 1
             # continue on current interval
             pass
+        self.logstat.append([accepted, self.scale])
 
     def adjust_outside_region(self):
-        pass
+        self.logstat.append([False, self.scale])
     
     def move(self, ui, region, ndraw=1, plot=False):
         if self.interval is None:
@@ -454,36 +480,51 @@ class SamplingPathStepSampler(StepSampler):
     """
     Step sampler on a sampling path
     """
-    def __init__(self, nresets, nsteps, log=False):
+    def __init__(self, nresets, nsteps, scale=1.0, balance=0.01, nudge=1.1, log=False):
         """
         nresets: int
             after this many iterations, select a new direction
         nsteps: int
             how many steps to make in total
+        scale: float
+            initial step size
+        balance: float
+            acceptance rate to target
+            if below, scale is increased, if above, scale is decreased
+        nudge: float
+            factor for increasing scale (must be >=1)
+            nudge=1 implies no step size adaptation.
         """
         StepSampler.__init__(self, nsteps=nsteps)
         #self.lasti = None
         self.path = None
         self.nresets = nresets
         # initial step scale in transformed space
-        self.scale = 1.0
+        self.scale = scale
         # fraction of times a reject is expected
-        self.balance = 0.01
+        self.balance = balance
         # relative increase in step scale
-        self.nudge = 1.1
+        self.nudge = nudge
+        assert nudge >= 1
         self.log = log
         self.grad_function = None
         self.istep = 0
         self.iresets = 0
         self.start()
         self.terminate_path()
-    
+        self.logstat_labels = ['acceptance rate', 'reflection rate', 'scale', 'nstuck']
+
     def __str__(self):
         return type(self).__name__ + '(%d steps, %d resets, AR=%d%%)' % (self.nsteps, self.nresets, (1-self.balance)*100)
     
     def start(self):
+        if hasattr(self, 'naccepts') and self.nrejects + self.naccepts > 0:
+            self.logstat.append([self.naccepts / (self.nrejects + self.naccepts), 
+                self.nreflects / (self.nreflects + self.nrejects + self.naccepts), 
+                self.scale, self.nstuck])
         self.nrejects = 0
         self.naccepts = 0
+        self.nreflects = 0
         self.nstuck = 0
         self.istep = 0
         self.iresets = 0
@@ -494,14 +535,9 @@ class SamplingPathStepSampler(StepSampler):
         self.direction = +1
         self.deadends = set()
         self.path = None
-        self.iresets += 1
     
     def start_path(self, ui, region):
         #print("new direction:", self.scale, self.noutside_regions, self.nrejects, self.naccepts)
-        #self.adjust_scale(maxlength = len(ui)**0.5)
-        #self.naccepts = 0
-        #self.nrejects = 0
-        #self.noutside_regions = 0
         
         v = self.generate_direction(ui, region, scale=self.scale)
         assert (v**2).sum() > 0, (v, self.scale)
@@ -526,7 +562,7 @@ class SamplingPathStepSampler(StepSampler):
         """ terminate current path, and reset path counting variable """
         
         if -1 in self.deadends and +1 in self.deadends:
-            self.scale /= self.nudge
+            #self.scale /= self.nudge
             self.nstuck += 1
         
         #self.nrejects = 0
@@ -551,19 +587,10 @@ class SamplingPathStepSampler(StepSampler):
         self.grad_function = plot_gradient_wrapper
 
     def generate_direction(self, ui, region, scale):
-        return generate_region_random_direction(ui, region, scale=scale)
+        #return generate_region_random_direction(ui, region, scale=scale)
+        return generate_random_direction(ui, region, scale=scale)
 
     def adjust_accept(self, accepted, unew, pnew, Lnew, nc):
-        #print("step %d, scale %f, %s" % (self.istep, self.scale, accepted))
-        self.istep += 1
-        if self.istep == self.nsteps:
-            if self.log:
-                print("triggering re-orientation")
-                # reset path so we go in a new direction
-            self.terminate_path()
-            self.istep = 0
-        
-        #newpoint = self.nexti not in self.cache
         self.cache[self.nexti] = (accepted, unew, Lnew)
         if accepted:
             # start at new point next time
@@ -574,23 +601,12 @@ class SamplingPathStepSampler(StepSampler):
         else:
             # continue on current point, do not update self.last
             self.nrejects += 1
+            self.history.append((unew, Lnew))
             assert self.scale > 1e-10, (self.scale, self.istep, self.nrejects)
-    
+
     def adjust_outside_region(self):
-        self.istep += 1
-        if self.istep == self.nsteps:
-            if self.log:
-                print("triggering re-orientation")
-                # reset path so we go in a new direction
-            self.terminate_path()
-            self.istep = 0
-        
         self.noutside_regions += 1
         self.nrejects += 1
-        #self.scale /= self.nudge**(1. / self.balance)
-        #print("scale:", self.scale)
-        #assert self.scale > 1e-10, (self.scale, self.istep, self.nrejects)
-        #assert self.scale > 0
     
     def adjust_scale(self, maxlength):
         print("%2d | %2d | %2d | %2d %2d %2d %2d | %f"  % (self.iresets, self.istep, 
@@ -600,31 +616,25 @@ class SamplingPathStepSampler(StepSampler):
         
         assert len(self.history) > 1
         
-        #if self.nstuck > 0:
-        #    if self.log:
-        #        print("adjusting scale %f down: istep=%d inside=%d outside=%d nstuck=%d" % (
-        #            self.scale, len(self.history), self.naccepts, self.nrejects, self.nstuck))
-        #    self.scale /= 2
-        if self.nrejects > (self.nrejects + self.naccepts) * self.balance:
+        if self.naccepts < (self.nrejects + self.naccepts) * self.balance:
             if log:
-                print("adjusting scale %f down: istep=%d inside=%d outside=%d region=%d" % (
-                    self.scale, len(self.history), self.naccepts, self.nrejects, self.noutside_regions))
+                print("adjusting scale %f down: istep=%d inside=%d outside=%d region=%d nstuck=%d" % (
+                    self.scale, len(self.history), self.naccepts, self.nrejects, self.noutside_regions, self.nstuck))
             self.scale /= self.nudge
         else:
-            if self.scale < maxlength:
+            if self.scale < maxlength or True:
                 if log:
-                    print("adjusting scale %f up: istep=%d inside=%d outside=%d region=%d" % (
-                        self.scale, len(self.history), self.naccepts, self.nrejects, self.noutside_regions))
+                    print("adjusting scale %f up: istep=%d inside=%d outside=%d region=%d nstuck=%d" % (
+                        self.scale, len(self.history), self.naccepts, self.nrejects, self.noutside_regions, self.nstuck))
                 self.scale *= self.nudge
-        assert self.scale > 1e-5, self.scale
+        assert self.scale > 1e-10, self.scale
     
     def movei(self, ui, region, ndraw=1, plot=False):
         if self.path is not None:
             if self.lasti - 1 in self.deadends and self.lasti + 1 in self.deadends:
-                # stuck, cannot go anywhere. Time to resize scale
-                if self.log:
-                    print("stuck", self.lasti, self.deadends)
-                self.terminate_path()
+                # stuck, cannot go anywhere. Stay.
+                self.nexti = self.lasti
+                return self.nexti
         
         if self.path is None:
             self.start_path(ui, region)
@@ -703,109 +713,131 @@ class SamplingPathStepSampler(StepSampler):
         
         inew = self.movei(ui, region, ndraw=ndraw)
         if self.log:
-            print("i: %d->%d" % (self.lasti, inew))
+            print("i: %d->%d (step %d)" % (self.lasti, inew, self.istep))
+            
         #uold, _ = self.get_point(self.lasti)
-        _, uold, _ = self.cache[self.lasti]
+        _, uold, Lold = self.cache[self.lasti]
         if plot:
             plt.plot(uold[0], uold[1], 'd', color='brown', ms=4)
         
-        nc = 0
-        if inew not in self.cache:
-            unew, _ = self.get_point(inew)
-            if plot:
-                plt.plot(unew[0], unew[1], 'x', color='k', ms=4)
-            accept = np.logical_and(unew > 0, unew < 1).all() and region.inside(unew.reshape((1, -1)))
-            if accept:
-                if plot:
-                    plt.plot(unew[0], unew[1], '+', color='orange', ms=4)
-                pnew = transform(unew)
-                Lnew = loglike(pnew)
-                nc = 1
-            else:
-                Lnew = -np.inf
-                if self.log:
-                    print("outside region: ", unew, "from", ui)
-                self.deadends.add(inew)
-                self.adjust_outside_region()
-                return None, None, None, nc
-        else:
-            _, unew, Lnew = self.cache[self.nexti]
-            #if plot:
-            #    plt.plot(unew[0], unew[1], 's', color='r', ms=2)
+        uret, pret, Lret = uold, transform(uold), Lold
         
-        if self.log:
-            print("   suggested point:", unew)
-        pnew = transform(unew)
-        if Lnew >= Lmin:
-            if self.log:
-                print(" -> inside.")
-            if plot:
-                plt.plot(unew[0], unew[1], 'o', color='g', ms=4)
-            self.adjust_accept(True, unew, pnew, Lnew, nc)
-            if self.iresets > self.nresets:
-                if self.log:
-                    print("walked %d paths; returning sample" % self.iresets)
-                self.adjust_scale(maxlength = len(unew)**0.5)
-                self.start()
-                self.last = None, None
-                return unew, pnew, Lnew, nc
-        else:
-            if plot:
-                plt.plot(unew[0], unew[1], '+', color='k', ms=2, alpha=0.3)
-            if self.log:
-                print(" -> outside.")
-            jump_successful = False
-            if inew not in self.cache and inew not in self.deadends:
-                # first time we try to go beyond
-                # try to reflect:
-                if self.log:
-                    print("    trying to reflect")
-                reflpoint, v = self.get_point(inew)
-                
-                sign = -1 if inew < 0 else +1
-                vnew = self.reflect(reflpoint, v * sign, region=region) * sign
-                
-                xk, vk = extrapolate_ahead(sign, reflpoint, vnew, contourpath=self.path)
-                
+        nc = 0
+        if inew != self.lasti:
+            accept = False
+            if inew not in self.cache:
+                unew, _ = self.get_point(inew)
                 if plot:
-                    plt.plot([reflpoint[0], (-v + reflpoint)[0]], [reflpoint[1], (-v + reflpoint)[1]], '-', color='k', lw=0.5, alpha=0.5)
-                    plt.plot([reflpoint[0], (vnew + reflpoint)[0]], [reflpoint[1], (vnew + reflpoint)[1]], '-', color='k', lw=1)
-                
+                    plt.plot(unew[0], unew[1], 'x', color='k', ms=4)
                 accept = np.logical_and(unew > 0, unew < 1).all() and region.inside(unew.reshape((1, -1)))
                 if accept:
-                    pk = transform(xk)
-                    Lk = loglike(pk)
-                    nc += 1
-                    if Lk >= Lmin:
-                        jump_successful = True
-                        if self.log:
-                            print("successful reflect!")
-                        self.path.add(inew, xk, vk, Lk)
-                        ## avoid triggering re-orientation now
-                        #self.istep = 0
-                        self.adjust_accept(True, xk, pk, Lk, nc)
-                        if self.iresets > self.nresets:
-                            if self.log:
-                                print("walked %d paths; returning sample" % self.iresets)
-                            self.adjust_scale(maxlength = len(xk)**0.5)
-                            self.start()
-                            self.last = None, None
-                            return xk, vk, Lk, nc
-                    else:
-                        self.adjust_accept(False, xk, pk, Lk, nc)
+                    if plot:
+                        plt.plot(unew[0], unew[1], '+', color='orange', ms=4)
+                    pnew = transform(unew)
+                    Lnew = loglike(pnew)
+                    nc = 1
                 else:
-                    self.adjust_outside_region()
-                
-                if plot:
-                    plt.plot(xk[0], xk[1], 'x', color='g' if jump_successful else 'r', ms=8)
-                
-                if not jump_successful:
-                    # unsuccessful. mark as deadend
+                    Lnew = -np.inf
+                    if self.log:
+                        print("outside region: ", unew, "from", ui)
                     self.deadends.add(inew)
-                    #print("deadends:", self.deadends)
-                    #self.adjust_accept(False, unew, pnew, Lnew, nc)
+                    self.adjust_outside_region()
+            else:
+                _, unew, Lnew = self.cache[self.nexti]
+                #if plot:
+                #    plt.plot(unew[0], unew[1], 's', color='r', ms=2)
+            
+            if self.log:
+                print("   suggested point:", unew)
+            pnew = transform(unew)
+            
+            if Lnew >= Lmin:
+                if self.log:
+                    print(" -> inside.")
+                if plot:
+                    plt.plot(unew[0], unew[1], 'o', color='g', ms=4)
+                self.adjust_accept(True, unew, pnew, Lnew, nc)
+                uret, pret, Lret = unew, pnew, Lnew
+            else:
+                if plot:
+                    plt.plot(unew[0], unew[1], '+', color='k', ms=2, alpha=0.3)
+                if self.log:
+                    print(" -> outside.")
+                jump_successful = False
+                if inew not in self.cache and inew not in self.deadends:
+                    # first time we try to go beyond
+                    # try to reflect:
+                    reflpoint, v = self.get_point(inew)
+                    if self.log:
+                        print("    trying to reflect at", reflpoint)
+                    self.nreflects += 1
+                    
+                    sign = -1 if inew < 0 else +1
+                    vnew = self.reflect(reflpoint, v * sign, region=region) * sign
+                    
+                    xk, vk = extrapolate_ahead(sign, reflpoint, vnew, contourpath=self.path)
+                    
+                    if plot:
+                        plt.plot([reflpoint[0], (-v + reflpoint)[0]], [reflpoint[1], (-v + reflpoint)[1]], '-', color='k', lw=0.5, alpha=0.5)
+                        plt.plot([reflpoint[0], (vnew + reflpoint)[0]], [reflpoint[1], (vnew + reflpoint)[1]], '-', color='k', lw=1)
+                    
+                    if self.log:
+                        print("    trying", xk)
+                    accept = np.logical_and(xk > 0, xk < 1).all() and region.inside(xk.reshape((1, -1)))
+                    if accept:
+                        pk = transform(xk)
+                        Lk = loglike(pk)
+                        nc += 1
+                        if Lk >= Lmin:
+                            jump_successful = True
+                            uret, pret, Lret = xk, pk, Lk
+                            if self.log:
+                                print("successful reflect!")
+                            self.path.add(inew, xk, vk, Lk)
+                            self.adjust_accept(True, xk, pk, Lk, nc)
+                        else:
+                            if self.log:
+                                print("unsuccessful reflect")
+                            self.adjust_accept(False, xk, pk, Lk, nc)
+                    else:
+                        if self.log:
+                            print("unsuccessful reflect out of region")
+                        self.adjust_outside_region()
+                    
+                    if plot:
+                        plt.plot(xk[0], xk[1], 'x', color='g' if jump_successful else 'r', ms=8)
+                    
+                    if not jump_successful:
+                        # unsuccessful. mark as deadend
+                        self.deadends.add(inew)
+                        #print("deadends:", self.deadends)
+                else:
+                    self.adjust_accept(False, uret, pret, Lret, nc)
                 
-            assert inew in self.cache or inew in self.deadends, (inew in self.cache, inew in self.deadends)
+                #self.adjust_accept(False, unew, pnew, Lnew, nc)
+                assert inew in self.cache or inew in self.deadends, (inew in self.cache, inew in self.deadends)
+        else:
+            # stuck, proposal did not move us
+            self.nstuck += 1
+            self.adjust_accept(False, uret, pret, Lret, nc)
+        
+        # increase step count
+        self.istep += 1
+        if self.istep == self.nsteps:
+            if self.log:
+                print("triggering re-orientation")
+                # reset path so we go in a new direction
+            self.terminate_path()
+            self.istep = 0
+
+        # if had enough resets, return final point
+        if self.iresets >= self.nresets:
+            if self.log:
+                print("walked %d paths; returning sample" % self.iresets)
+            self.adjust_scale(maxlength = len(uret)**0.5)
+            self.start()
+            self.last = None, None
+            return uret, pret, Lret, nc
         
         # do not have a independent sample yet
         return None, None, None, nc
