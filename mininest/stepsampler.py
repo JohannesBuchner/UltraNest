@@ -609,11 +609,10 @@ class SamplingPathStepSampler(StepSampler):
         self.nrejects += 1
     
     def adjust_scale(self, maxlength):
-        print("%2d | %2d | %2d | %2d %2d %2d %2d | %f"  % (self.iresets, self.istep, 
-            len(self.history), self.naccepts, self.nrejects, 
-            self.noutside_regions, self.nstuck, self.scale))
-        log = self.log or True
-        
+        #print("%2d | %2d | %2d | %2d %2d %2d %2d | %f"  % (self.iresets, self.istep, 
+        #    len(self.history), self.naccepts, self.nrejects, 
+        #    self.noutside_regions, self.nstuck, self.scale))
+        log = self.log
         assert len(self.history) > 1
         
         if self.naccepts < (self.nrejects + self.naccepts) * self.balance:
@@ -940,8 +939,7 @@ class OtherSamplerProxy(object):
     def start_direction(self, region):
         ui, Li = self.last
         # choose random direction
-        tt = np.random.normal(region.transformLayer.transform(ui), self.epsilon)
-        v = region.transformLayer.untransform(tt) - ui
+        v = generate_random_direction(ui, region, scale=self.epsilon)
         self.nrestarts += 1
         
         if self.sampler is not None:
@@ -985,7 +983,7 @@ class OtherSamplerProxy(object):
         if Li is None or self.sampler is None:
             self.startup(region, us, Ls)
             self.start_direction(region)
-
+        
         sample, is_independent = self.sampler.next(self.Llast)
         if sample is None: # nothing to do
             print("ran out of things to do.")

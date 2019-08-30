@@ -50,6 +50,39 @@ import matplotlib.pyplot as plt
 from .samplingpath import angle, extrapolate_ahead
 
 
+class SingleJumper(object):
+    """ Jump on step at a time. If unsuccessful, reverse direction. """
+    def __init__(self, stepsampler, nsteps):
+        self.stepsampler = stepsampler
+        self.direction = +1
+        self.nsteps = nsteps
+        self.isteps = 0
+        self.currenti = 0
+        self.naccepts = 0
+        self.nrejects = 0
+    
+    def prepare_jump(self):
+        target = self.currenti + self.direction
+        self.stepsampler.set_nsteps(target)
+    
+    # then user runs stepsampler until it is done
+    
+    def make_jump(self):
+        target = self.currenti + self.direction
+        pointi = [(j, xj, vj, Lj) for j, xj, vj, Lj in self.stepsampler.points if j == target]
+        accept = len(pointi) > 0
+        if accept:
+            self.currenti = target
+            self.naccepts += 1
+        else:
+            pointi = [(j, xj, vj, Lj) for j, xj, vj, Lj in self.stepsampler.points if j == self.currenti]
+            # reverse
+            self.direction *= -1
+            self.nrejects += 1
+        
+        self.isteps += 1
+        return pointi[0][1], pointi[0][3]
+
 class ClockedSimpleStepSampler(object):
     """
     Find a new point with a series of small steps
@@ -98,6 +131,9 @@ class ClockedSimpleStepSampler(object):
     def set_nsteps(self, i):
         self.goals.insert(0, ('sample-at', i))
     
+    def is_done(self):
+        return self.goals == []
+    
     def next(self, Llast=None):
         """
         Run steps forward or backward to step i (can be positive or 
@@ -122,12 +158,16 @@ class ClockedSimpleStepSampler(object):
                         continue
                     else:
                         # we are not done, but cannot reach the goal.
-                        # reverse. Find position from where to reverse
+                        # reverse. Find closest position
                         self.nreverses += 1
                         if i > 0:
                             starti, startx, startv, startL = max(self.points)
                         else:
                             starti, startx, startv, startL = min(self.points)
+                        #deltai = i - starti
+                        #if self.log: print("   %d steps to do at %d -> targeting %d." % (deltai, starti, starti - deltai))
+                        ## make this many steps in the other direction
+                        #self.goals.append(('sample-at', starti - deltai))
                         return (startx, startL), True
                 else:
                     # return the previously sampled point
@@ -220,7 +260,8 @@ class ClockedSimpleStepSampler(object):
                 Llast = loglike(xnew)
                 if Llast < Lmin:
                     Llast = None
-    
+
+
 class ClockedStepSampler(ClockedSimpleStepSampler):
     """
     Find a new point with a series of small steps
