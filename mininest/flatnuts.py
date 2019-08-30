@@ -83,6 +83,41 @@ class SingleJumper(object):
         self.isteps += 1
         return pointi[0][1], pointi[0][3]
 
+class DirectJumper(object):
+    """ Jump to n steps immediately. If unsuccessful, takes rest in other direction. """
+    def __init__(self, stepsampler, nsteps):
+        self.stepsampler = stepsampler
+        self.direction = +1
+        self.nsteps = nsteps
+        self.isteps = 0
+        self.currenti = 0
+        self.naccepts = 0
+        self.nrejects = 0
+    
+    def prepare_jump(self):
+        target = self.currenti + self.nsteps
+        self.stepsampler.set_nsteps(target)
+    
+    # then user runs stepsampler until it is done
+    
+    def make_jump(self):
+        pointi = {j: (xj, Lj) for j, xj, vj, Lj in self.stepsampler.points}
+        ilo, ihi = min(pointi.keys()), max(pointi.keys())
+        
+        for self.isteps in range(self.nsteps):
+            target = self.currenti + self.direction
+            accept = ilo <= target <= ihi
+            if accept:
+                self.currenti = target
+                self.naccepts += 1
+            else:
+                # reverse
+                self.direction *= -1
+                self.nrejects += 1
+        self.isteps += 1
+        
+        return pointi[self.currenti]
+
 class ClockedSimpleStepSampler(object):
     """
     Find a new point with a series of small steps
@@ -300,15 +335,19 @@ class ClockedStepSampler(ClockedSimpleStepSampler):
                         # reverse. Find position from where to reverse
                         if i > 0:
                             starti, _, _, _ = max(self.points)
+                            reversei = starti + 1
                         else:
                             starti, _, _, _ = min(self.points)
+                            reversei = starti - 1
                         if self.log: print("reversing at %d..." % starti)
                         # how many steps are missing?
                         self.nreverses += 1
                         deltai = i - starti
-                        if self.log: print("   %d steps to do at %d -> targeting %d." % (deltai, starti, starti - deltai))
+                        # request one less because one step is spent on
+                        # the outside try
+                        if self.log: print("   %d steps to do at %d -> targeting %d." % (i - starti, starti, starti - reversei))
                         # make this many steps in the other direction
-                        self.goals.append(('sample-at', starti - deltai))
+                        self.goals.append(('sample-at', reversei - deltai))
                         continue
                 else:
                     # return the previously sampled point

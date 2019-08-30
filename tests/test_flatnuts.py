@@ -1,7 +1,7 @@
 import numpy as np
 from mininest.mlfriends import AffineLayer, ScalingLayer, MLFriends
 from mininest.flatnuts import ClockedStepSampler, ClockedBisectSampler, ClockedNUTSSampler
-from mininest.flatnuts import SingleJumper
+from mininest.flatnuts import SingleJumper, DirectJumper
 from mininest.samplingpath import SamplingPath, ContourSamplingPath
 from numpy.testing import assert_allclose
 
@@ -185,7 +185,7 @@ def make_region(ndim):
     region.create_ellipsoid(minvol=1.0)
     return region
 
-def test_pathsampler():
+def test_singlejumper():
     Lmin = -1.0
     us = 0.5 + np.zeros((100, 2))
     #Ls = np.zeros(100)
@@ -207,20 +207,25 @@ def test_pathsampler():
     path.gradient = nocall
     sampler = ClockedStepSampler(path)
     stepper = SingleJumper(sampler, 4)
-    
+
     assert (stepper.naccepts, stepper.nrejects) == (0, 0), (stepper.naccepts, stepper.nrejects)
+    assert stepper.isteps == 0, stepper.isteps
     x, L = makejump(stepper, sampler, transform, loglike, Lmin)
     assert_allclose(x, [0.51, 0.51])
     assert (stepper.naccepts, stepper.nrejects) == (1, 0), (stepper.naccepts, stepper.nrejects)
+    assert stepper.isteps == 1, stepper.isteps
     x, L = makejump(stepper, sampler, transform, loglike, Lmin)
     assert_allclose(x, [0.52, 0.52])
     assert (stepper.naccepts, stepper.nrejects) == (2, 0), (stepper.naccepts, stepper.nrejects)
+    assert stepper.isteps == 2, stepper.isteps
     x, L = makejump(stepper, sampler, transform, loglike, Lmin)
     assert_allclose(x, [0.53, 0.53])
     assert (stepper.naccepts, stepper.nrejects) == (3, 0), (stepper.naccepts, stepper.nrejects)
+    assert stepper.isteps == 3, stepper.isteps
     x, L = makejump(stepper, sampler, transform, loglike, Lmin)
     assert_allclose(x, [0.54, 0.54])
     assert (stepper.naccepts, stepper.nrejects) == (4, 0), (stepper.naccepts, stepper.nrejects)
+    assert stepper.isteps == 4, stepper.isteps
     
     print()
     print("make reflect")
@@ -231,18 +236,23 @@ def test_pathsampler():
     sampler = ClockedStepSampler(path)
     stepper = SingleJumper(sampler, 4)
     assert (stepper.naccepts, stepper.nrejects) == (0, 0), (stepper.naccepts, stepper.nrejects)
+    assert stepper.isteps == 0, stepper.isteps
     x, L = makejump(stepper, sampler, transform, loglike, Lmin)
     assert_allclose(x, [0.50, 0.52])
     assert (stepper.naccepts, stepper.nrejects) == (1, 0), (stepper.naccepts, stepper.nrejects)
+    assert stepper.isteps == 1, stepper.isteps
     x, L = makejump(stepper, sampler, transform, loglike, Lmin)
     assert_allclose(x, [0.49, 0.53])
     assert (stepper.naccepts, stepper.nrejects) == (2, 0), (stepper.naccepts, stepper.nrejects)
+    assert stepper.isteps == 2, stepper.isteps
     x, L = makejump(stepper, sampler, transform, loglike, Lmin)
     assert_allclose(x, [0.48, 0.54])
     assert (stepper.naccepts, stepper.nrejects) == (3, 0), (stepper.naccepts, stepper.nrejects)
+    assert stepper.isteps == 3, stepper.isteps
     x, L = makejump(stepper, sampler, transform, loglike, Lmin)
     assert_allclose(x, [0.47, 0.55])
     assert (stepper.naccepts, stepper.nrejects) == (4, 0), (stepper.naccepts, stepper.nrejects)
+    assert stepper.isteps == 4, stepper.isteps
     
     print()
     print("make stuck")
@@ -254,19 +264,84 @@ def test_pathsampler():
     sampler = ClockedStepSampler(path)
     stepper = SingleJumper(sampler, 4)
     assert (stepper.naccepts, stepper.nrejects) == (0, 0), (stepper.naccepts, stepper.nrejects)
+    assert stepper.isteps == 0, stepper.isteps
     x, L = makejump(stepper, sampler, transform, loglike, Lmin)
     assert_allclose(x, [0.50, 0.50])
     assert (stepper.naccepts, stepper.nrejects) == (0, 1), (stepper.naccepts, stepper.nrejects)
+    assert stepper.isteps == 1, stepper.isteps
     x, L = makejump(stepper, sampler, transform, loglike, Lmin)
     assert_allclose(x, [0.50, 0.50])
     assert (stepper.naccepts, stepper.nrejects) == (0, 2), (stepper.naccepts, stepper.nrejects)
+    assert stepper.isteps == 2, stepper.isteps
     x, L = makejump(stepper, sampler, transform, loglike, Lmin)
     assert_allclose(x, [0.50, 0.50])
     assert (stepper.naccepts, stepper.nrejects) == (0, 3), (stepper.naccepts, stepper.nrejects)
+    assert stepper.isteps == 3, stepper.isteps
     x, L = makejump(stepper, sampler, transform, loglike, Lmin)
     assert_allclose(x, [0.50, 0.50])
     assert (stepper.naccepts, stepper.nrejects) == (0, 4), (stepper.naccepts, stepper.nrejects)
-
+    assert stepper.isteps == 4, stepper.isteps
     
+def test_directjumper():
+    Lmin = -1.0
+    us = 0.5 + np.zeros((100, 2))
+    #Ls = np.zeros(100)
+    region = make_region(2)
+    def transform(x): return x
+    def loglike(x): return 0.0
+    def gradient(x, plot=False):
+        j = np.argmax(np.abs(x - 0.5))
+        v = np.zeros(len(x))
+        v[j] = -1 if x[j] > 0.5 else 1
+        return v
+    
+    def nocall(x):
+        assert False
+
+    ui = us[np.random.randint(len(us)),:]
+    v = np.array([0.01, 0.01])
+    path = ContourSamplingPath(SamplingPath(ui, v, 0.0), region)
+    path.gradient = nocall
+    sampler = ClockedBisectSampler(path)
+    stepper = DirectJumper(sampler, 4)
+    
+    assert (stepper.naccepts, stepper.nrejects) == (0, 0), (stepper.naccepts, stepper.nrejects)
+    assert stepper.isteps == 0, stepper.isteps
+    x, L = makejump(stepper, sampler, transform, loglike, Lmin)
+    assert_allclose(x, [0.54, 0.54])
+    assert (stepper.naccepts, stepper.nrejects) == (4, 0), (stepper.naccepts, stepper.nrejects)
+    assert stepper.isteps == 4, stepper.isteps
+    
+    print()
+    print("make reflect")
+    print()
+    def loglike(x): return 0.0 if x[0] < 0.505 else -100
+    path = ContourSamplingPath(SamplingPath(ui, v, 0.0), region)
+    path.gradient = gradient
+    sampler = ClockedBisectSampler(path)
+    stepper = DirectJumper(sampler, 4)
+    assert (stepper.naccepts, stepper.nrejects) == (0, 0), (stepper.naccepts, stepper.nrejects)
+    assert stepper.isteps == 0, stepper.isteps
+    x, L = makejump(stepper, sampler, transform, loglike, Lmin)
+    assert_allclose(x, [0.47, 0.55])
+    assert (stepper.naccepts, stepper.nrejects) == (4, 0), (stepper.naccepts, stepper.nrejects)
+    assert stepper.isteps == 4, stepper.isteps
+    
+    print()
+    print("make stuck")
+    print()
+    # make stuck
+    def loglike(x): return -100
+    path = ContourSamplingPath(SamplingPath(ui, v, 0.0), region)
+    path.gradient = gradient
+    sampler = ClockedBisectSampler(path)
+    stepper = DirectJumper(sampler, 4)
+    assert (stepper.naccepts, stepper.nrejects) == (0, 0), (stepper.naccepts, stepper.nrejects)
+    assert stepper.isteps == 0, stepper.isteps
+    x, L = makejump(stepper, sampler, transform, loglike, Lmin)
+    assert_allclose(x, [0.50, 0.50])
+    assert (stepper.naccepts, stepper.nrejects) == (0, 4), (stepper.naccepts, stepper.nrejects)
+    assert stepper.isteps == 4, stepper.isteps
+
 if __name__ == '__main__':
     test_detailed_balance(plot=True)
