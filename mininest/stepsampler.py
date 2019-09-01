@@ -587,8 +587,8 @@ class SamplingPathStepSampler(StepSampler):
         self.grad_function = plot_gradient_wrapper
 
     def generate_direction(self, ui, region, scale):
-        #return generate_region_random_direction(ui, region, scale=scale)
-        return generate_random_direction(ui, region, scale=scale)
+        return generate_region_random_direction(ui, region, scale=scale)
+        #return generate_random_direction(ui, region, scale=scale)
 
     def adjust_accept(self, accepted, unew, pnew, Lnew, nc):
         self.cache[self.nexti] = (accepted, unew, Lnew)
@@ -842,14 +842,16 @@ class SamplingPathStepSampler(StepSampler):
         return None, None, None, nc
 
 
-from mininest.flatnuts import ClockedSimpleStepSampler, ClockedStepSampler, ClockedBisectSampler #, ClockedNUTSSampler
+from mininest.flatnuts import ClockedStepSampler, ClockedBisectSampler, ClockedNUTSSampler
+from mininest.flatnuts import SingleJumper, DirectJumper, IntervalJumper
 
 
 class OtherSamplerProxy(object):
     """
     Proxy for ClockedSamplers
     """
-    def __init__(self, nnewdirections, nsteps, epsilon=0.1, sampler='steps'):
+    def __init__(self, nnewdirections, sampler='steps', nsteps=0, 
+            balance=0.9, scale=0.1, nudge=1.1, log=False):
         """
         nsteps: int
             number of accepted steps until the sample is considered independent
@@ -857,115 +859,107 @@ class OtherSamplerProxy(object):
         self.nsteps = nsteps
         self.samplername = sampler
         self.sampler = None
-        self.epsilon = epsilon
+        
+        self.scale = scale
+        self.nudge = nudge
+        self.balance = balance
+        self.log = log
+        
         self.last = None, None
-        self.Llast = None
         self.ncalls = 0
         self.nnewdirections = nnewdirections
         self.nreflections = 0
         self.nreverses = 0
         self.nsteps_done = 0
+        
+        self.naccepts = 0
+        self.nrejects = 0
+
+        self.logstat = []
+        self.logstat_labels = ['accepted', 'scale']
     
     def __str__(self):
-        return 'Proxy[%s](%dx%d steps)' % (self.samplername, self.nnewdirections, self.nsteps)
+        return 'Proxy[%s](%dx%d steps, AR=%d%%)' % (self.samplername, self.nnewdirections, self.nsteps, self.balance*100)
     
-    def adjust_accept(self, accepted, unew, pnew, Lnew, nc):
-        if self.sampler is not None:
-            self.nreflections += self.sampler.nreflections
-            self.nreverses += self.sampler.nreverses
-            points = self.sampler.points
-            # range
-            ilo, _, _, _ = min(points)
-            ihi, _, _, _ = max(points)
-            self.nsteps_done += ihi - ilo
+    def accumulate_statistics(self):
+        self.nreflections += self.sampler.nreflections
+        self.nreverses += self.sampler.nreverses
+        points = self.sampler.points
+        # range
+        ilo, _, _, _ = min(points)
+        ihi, _, _, _ = max(points)
+        self.nsteps_done += ihi - ilo
         
-        #if self.nsteps <= 1:
-        #    return
+        self.naccepts += self.stepper.naccepts
+        self.nrejects += self.stepper.nrejects
+        if self.log: 
+            print("%2d direction encountered %2d accepts, %2d rejects"  % (
+                self.nrestarts, self.stepper.naccepts, self.stepper.nrejects))
         
-        # what is good? lots of reflections or reverses, large range
+    def adjust_scale(self, maxlength):
+        log = self.log
+        if log: 
+            print("%2d | %2d %2d %2d | %f"  % (self.nrestarts,
+                self.naccepts, self.nrejects, self.nreflections, self.scale))
+        self.logstat.append([self.naccepts / (self.naccepts + self.nrejects), self.scale])
         
-        # what is bad?
-        # very narrow range
-        print("point range: %d    %d reverses, %d reflections, %d nsteps, %d restarts   epsilon=%f" % (
-            self.nsteps_done, self.nreverses, self.nreflections, self.nsteps_done, self.nrestarts, self.epsilon))
-        #if irange <= 2:
-        #    self.epsilon /= 2.0
-        
-        # or straight path with no reflections
-        #if self.nrestarts > 10:
-        #    self.epsilon /= 1.5
-        #if self.nrestarts > 2:
-        #    self.epsilon /= 1.01
-        #if self.nrestarts < 2:
-        #    self.epsilon *= 1.01
-        
-        assert self.epsilon > 0, self.epsilon
-        
-        #if irange <= 2:
-        #    # path too long, shorten a bit
-        #    self.epsilon /= 1.1
-        #if nreflections < len(unew):
-        #    # path too short, lengthen a bit
-        #    self.epsilon *= 1.1
-        if max(self.nreflections, self.nreverses) > self.nnewdirections * self.nsteps * 0.05:
-            # path too long, shorten a bit
-            self.epsilon /= 1.1
+        if self.naccepts < (self.nrejects + self.naccepts) * self.balance:
+            if log:
+                print("adjusting scale %f down" % self.scale)
+            self.scale /= self.nudge
         else:
-            self.epsilon *= 1.01
-    
-    def adjust_outside_region(self, *args, **kwargs):
-        pass
+            if self.scale < maxlength or True:
+                if log:
+                    print("adjusting scale %f up" % self.scale)
+                self.scale *= self.nudge
+        assert self.scale > 1e-10, self.scale
     
     def startup(self, region, us, Ls):
-        #print("starting from scratch...")
         # choose a new random starting point
+        if self.log: print("starting from scratch...")
         mask = region.inside(us)
-        assert mask.all(), ("None of the live points satisfies the current region!", 
-            region.maxradiussq, region.u, region.unormed, us)
+        assert mask.all(), ("Not all of the live points satisfy the current region!", 
+            region.maxradiussq, region.u[~mask,:], region.unormed[~mask,:], us[~mask,:])
         i = np.random.randint(mask.sum())
         self.starti = i
         ui = us[mask,:][i]
         assert np.logical_and(ui > 0, ui < 1).all(), ui
         Li = Ls[mask][i]
         self.last = ui, Li
-        self.Llast = None
         self.ncalls = 0
         self.nrestarts = 0
 
         self.nreflections = 0
         self.nreverses = 0
         self.nsteps_done = 0
+        self.naccepts = 0
+        self.nrejects = 0
+        
+        self.sampler = None
+        self.stepper = None
     
     def start_direction(self, region):
-        ui, Li = self.last
         # choose random direction
-        v = generate_random_direction(ui, region, scale=self.epsilon)
+        if self.log: print("choosing random direction")
+        ui, Li = self.last
+        #v = generate_random_direction(ui, region, scale=self.scale)
+        v = generate_region_random_direction(ui, region, scale=self.scale)
         self.nrestarts += 1
-        
-        if self.sampler is not None:
-            self.nreflections += self.sampler.nreflections
-            self.nreverses += self.sampler.nreverses
-            points = self.sampler.points
-            # range
-            ilo, _, _, _ = min(points)
-            ihi, _, _, _ = max(points)
-            self.nsteps_done += ihi - ilo
         
         if self.sampler is None or True:
             samplingpath = SamplingPath(ui, v, Li)
             contourpath = ContourSamplingPath(samplingpath, region)
-            if self.samplername == 'simple':
-                self.sampler = ClockedSimpleStepSampler(contourpath)
-                self.sampler.set_nsteps(self.nsteps)
-            elif self.samplername == 'steps':
+            if self.samplername == 'steps':
                 self.sampler = ClockedStepSampler(contourpath)
-                self.sampler.set_nsteps(self.nsteps)
+                self.stepper = DirectJumper(self.sampler, self.nsteps)
             elif self.samplername == 'bisect':
                 self.sampler = ClockedBisectSampler(contourpath)
-                self.sampler.set_nsteps(self.nsteps)
+                self.stepper = DirectJumper(self.sampler, self.nsteps)
+            elif self.samplername == 'nuts':
+                self.sampler = ClockedNUTSSampler(contourpath)
+                self.stepper = IntervalJumper(self.sampler, self.nsteps)
             else:
                 assert False
-            self.sampler.log = False
     
     def __next__(self, region, Lmin, us, Ls, transform, loglike, ndraw=40, plot=False):
         
@@ -980,72 +974,79 @@ class OtherSamplerProxy(object):
             # so reset
             ui, Li = None, None
         
-        if Li is None or self.sampler is None:
+        if Li is None:
             self.startup(region, us, Ls)
-            self.start_direction(region)
-        
-        sample, is_independent = self.sampler.next(self.Llast)
-        if sample is None: # nothing to do
-            print("ran out of things to do.")
-            assert False, (sample, is_independent)
-            self.start_direction(region)
-            return None, None, None, 0
-        
-        if is_independent:
-            unew, Lnew = sample
-            assert np.isfinite(unew).all(), unew
-            assert np.isfinite(Lnew).all(), Lnew
-            # done, reset:
-            #print("got a sample:", unew)
-            if self.nrestarts >= self.nnewdirections:
-                xnew = transform(unew)
-                self.adjust_accept(True, unew, xnew, Lnew, self.ncalls)
-                self.sampler = None
-                self.last = None, None
-                return unew, xnew, Lnew, 0
-            else:
-                self.last = unew, Lnew
-                self.start_direction(region)
-                self.Llast = None
-                return None, None, None, 0
-        else:
-            unew = sample
-            xnew = transform(unew)
-            self.Llast = loglike(xnew)
-            nc = 1
-            self.ncalls += 1
-            if self.Llast > Lmin:
-                self.last = unew, self.Llast
-            else:
-                self.Llast = None
-            return None, None, None, nc
-    
-    def move(self, startu, region, plot=None):
-        Ls = np.zeros(1)
         if self.sampler is None:
-            self.startup(region, startu.reshape((1,-1)), Ls)
             self.start_direction(region)
-            self.Llast = None
-        self.sampler.plot = True
-        self.sampler.log = True
+        
+        self.stepper.prepare_jump()
+        Llast = None
+        gaps = {}
         while True:
-            sample, is_independent = self.sampler.next(self.Llast)
-            print("sample proposed in move:", sample)
-            if sample is None:
-                #self.startup(region, startu.reshape((1,-1)), Ls)
-                self.Llast = None
-                self.start_direction(region)
+            if not self.sampler.is_done():
+                u, is_independent = self.sampler.next(Llast=Llast)
+                if not is_independent:
+                    # should evaluate point
+                    Llast = None
+                    if region.inside(u.reshape((1,-1))):
+                        p = transform(u)
+                        L = loglike(p)
+                        self.ncalls += 1
+                        if L > Lmin:
+                            Llast = L
+                    else:
+                        Llast = None
             else:
-                if is_independent:
-                    unew = sample[0].reshape((1, -1))
-                else:
-                    unew = sample.reshape((1, -1))
-                
-                if region.inside(unew):
-                    self.Llast = 0.
-                    self.last = unew[0], self.Llast
-                else:
-                    self.Llast = None
-                print("sample eval:", self.Llast, is_independent)
-                return unew
+                u, i = self.stepper.check_gaps(gaps)
+                if u is None:
+                    unew, Lnew = self.stepper.make_jump(gaps)
+                    break # done!
+                # check that u is allowed:
+                assert i not in gaps
+                gaps[i] = True
+                if region.inside(u.reshape((1,-1))):
+                    p = transform(u)
+                    L = loglike(p)
+                    self.ncalls += 1
+                    if L > Lmin:
+                        # point is OK
+                        gaps[i] = False
+                        unew, Lnew = u, L
+                        break
+        
+        #if self.log: print("after %d calls, jumped to" % self.ncalls, unew)
+        assert np.isfinite(unew).all(), unew
+        assert np.isfinite(Lnew).all(), Lnew
+        
+        self.accumulate_statistics()
+        # forget sampler
+        self.last = unew, Lnew
+        self.sampler = None
+        self.stepper = None
+        # done, reset:
+        #print("got a sample:", unew)
+        if self.nrestarts >= self.nnewdirections:
+            xnew = transform(unew)
+            self.adjust_scale(maxlength = len(unew)**0.5)
+            # forget as starting point
+            self.last = None, None
+            self.nrestarts = 0
+            return unew, xnew, Lnew, self.ncalls
+        else:
+            return None, None, None, 0
+    
+    def plot(self, filename):
+        if len(self.logstat) == 0:
+            return
+        
+        parts = np.transpose(self.logstat)
+        plt.figure(figsize=(10, 1+3*len(parts)))
+        for i, (label, part) in enumerate(zip(self.logstat_labels, parts)):
+            plt.subplot(len(parts), 1, 1+i)
+            plt.ylabel(label)
+            plt.plot(part)
+            if np.min(part) > 0:
+                plt.yscale('log')
+        plt.savefig(filename, bbox_inches='tight')
+        plt.close()
     

@@ -52,9 +52,10 @@ from .samplingpath import angle, extrapolate_ahead
 
 class SingleJumper(object):
     """ Jump on step at a time. If unsuccessful, reverse direction. """
-    def __init__(self, stepsampler, nsteps):
+    def __init__(self, stepsampler, nsteps=0):
         self.stepsampler = stepsampler
         self.direction = +1
+        assert nsteps > 0
         self.nsteps = nsteps
         self.isteps = 0
         self.currenti = 0
@@ -65,9 +66,12 @@ class SingleJumper(object):
         target = self.currenti + self.direction
         self.stepsampler.set_nsteps(target)
     
+    def check_gaps(self, gaps):
+        # gaps cannot happen, because we make each jump explicitly
+        pass
     # then user runs stepsampler until it is done
     
-    def make_jump(self):
+    def make_jump(self, gaps={}):
         target = self.currenti + self.direction
         pointi = [(j, xj, vj, Lj) for j, xj, vj, Lj in self.stepsampler.points if j == target]
         accept = len(pointi) > 0
@@ -83,11 +87,13 @@ class SingleJumper(object):
         self.isteps += 1
         return pointi[0][1], pointi[0][3]
 
+
 class DirectJumper(object):
     """ Jump to n steps immediately. If unsuccessful, takes rest in other direction. """
     def __init__(self, stepsampler, nsteps):
         self.stepsampler = stepsampler
         self.direction = +1
+        assert nsteps > 0
         self.nsteps = nsteps
         self.isteps = 0
         self.currenti = 0
@@ -99,18 +105,52 @@ class DirectJumper(object):
         self.stepsampler.set_nsteps(target)
     
     # then user runs stepsampler until it is done
+    def check_gaps(self, gaps):
+        pointi = {j: (xj, Lj) for j, xj, vj, Lj in self.stepsampler.points}
+        ilo, ihi = min(pointi.keys()), max(pointi.keys())
+        currenti = self.currenti
+        direction = self.direction
+        for isteps in range(self.nsteps):
+            target = currenti + direction
+            accept = ilo <= target <= ihi and not gaps.get(target, False)
+            if accept:
+                currenti = target
+            else:
+                # reverse
+                direction *= -1
+        
+        #print("--> %d" % currenti)
+        # double-check that final point is OK:
+        # if we already evaluated it, it is OK
+        if currenti in pointi:
+            return None, None
+        
+        if currenti in gaps:
+            assert gaps[currenti] == False, "could not have jumped into a known gap"
+            return None, None
+        
+        xj, vj, Lj, onpath = self.stepsampler.contourpath.interpolate(currenti)
+        if Lj is not None:
+            return None, None
+        
+        #print("    checking for gap ...")
+        # otherwise ask caller to verify it and call us again with
+        # gaps[i] = True if outside, gaps[i] = False if OK
+        return xj, currenti
     
-    def make_jump(self):
+    def make_jump(self, gaps={}):
         pointi = {j: (xj, Lj) for j, xj, vj, Lj in self.stepsampler.points}
         ilo, ihi = min(pointi.keys()), max(pointi.keys())
         
         for self.isteps in range(self.nsteps):
             target = self.currenti + self.direction
-            accept = ilo <= target <= ihi
+            accept = ilo <= target <= ihi and not gaps.get(target, False)
             if accept:
+                #print("accepted jump %d->%d" % (self.currenti, target), 'fwd' if self.direction == 1 else 'rwd')
                 self.currenti = target
                 self.naccepts += 1
             else:
+                #print("rejected jump %d->%d" % (self.currenti, target), 'fwd' if self.direction == 1 else 'rwd')
                 # reverse
                 self.direction *= -1
                 self.nrejects += 1
@@ -118,11 +158,45 @@ class DirectJumper(object):
         
         return pointi[self.currenti]
 
+
+class IntervalJumper(object):
+    """ Use interval to choose final point randomly """
+    def __init__(self, stepsampler, nsteps):
+        self.stepsampler = stepsampler
+        self.direction = +1
+        assert nsteps >= 0
+        self.nsteps = nsteps
+        self.isteps = 0
+        self.currenti = 0
+        self.naccepts = 0
+        self.nrejects = 0
+    
+    def prepare_jump(self):
+        target = self.currenti + self.nsteps
+        self.stepsampler.set_nsteps(target)
+        self.stepsampler.set_nsteps(-target)
+    
+    # then user runs stepsampler until it is done
+    
+    def make_jump(self):
+        pointi = {j: (xj, Lj) for j, xj, vj, Lj in self.stepsampler.points}
+        ilo, ihi = min(pointi.keys()), max(pointi.keys())
+        a, b = self.nutssampler.validrange
+        nused = b - a
+        # these were not used:
+        ntotal = ihi - ilo
+        
+        # count the number of accepts and rejects
+        self.naccepts = nused
+        self.nrejects = ntotal - nused
+        
+        return None
+
 class ClockedSimpleStepSampler(object):
     """
     Find a new point with a series of small steps
     """
-    def __init__(self, contourpath, plot=False):
+    def __init__(self, contourpath, plot=False, log=False):
         """
         Starts a sampling track from x in direction v.
         is_inside is a function that returns true when a given point is inside the volume
@@ -136,7 +210,7 @@ class ClockedSimpleStepSampler(object):
         self.nreflections = 0
         self.nreverses = 0
         self.plot = plot
-        self.log = False
+        self.log = log
         self.reset()
     
     def reset(self):
@@ -242,6 +316,7 @@ class ClockedSimpleStepSampler(object):
                 else:
                     # we are trying to go somewhere we cannot.
                     # skip to other goals
+                    if self.log: print("trying to go somewhere we cannot. skipping.", i)
                     pass
             
             elif goal[0] == 'eval-at':
@@ -329,6 +404,7 @@ class ClockedStepSampler(ClockedSimpleStepSampler):
                         # we are stuck and cannot move.
                         # return the starting point as our best effort
                         starti, startx, startv, startL = self.points[0]
+                        if self.log: print("stuck! returning start point", i)
                         return (startx, startL), True
                     else:
                         # we are not done, but cannot reach the goal.
@@ -345,13 +421,15 @@ class ClockedStepSampler(ClockedSimpleStepSampler):
                         deltai = i - starti
                         # request one less because one step is spent on
                         # the outside try
-                        if self.log: print("   %d steps to do at %d -> targeting %d." % (i - starti, starti, starti - reversei))
+                        #if self.log: print("   %d steps to do at %d -> [from %d, delta=%d] targeting %d." % (
+                        #    i - starti, starti, reversei, deltai, reversei - deltai))
                         # make this many steps in the other direction
                         self.goals.append(('sample-at', reversei - deltai))
                         continue
                 else:
                     # return the previously sampled point
                     _, xj, _, Lj = pointi[0]
+                    if self.log: print("returning point", i)
                     return (xj, Lj), True
             
             elif goal[0] == 'expand-to':
@@ -465,34 +543,40 @@ class ClockedBisectSampler(ClockedStepSampler):
                     if inside:
                         # interpolate point on track
                         xj, vj, Lj, onpath = self.contourpath.interpolate(i)
+                        if self.log: print("target is on track, returning interpolation at %d..." % i, xj, Lj)
                         return (xj, Lj), True
                     elif more_possible:
                         # we are not done:
                         self.goals.insert(0, ('expand-to', i))
+                        if self.log: print("not done yet, continue expanding to %d..." % i)
                         self.goals.append(goal)
                         continue
-                    elif not fwd and self.contourpath.samplingpath.fwd_possible \
-                    or       fwd and self.contourpath.samplingpath.rwd_possible:
-                        #print("reversing...", i, self.contourpath.samplingpath.rwd_possible,
-                        #    self.contourpath.samplingpath.fwd_possible)
+                    elif not self.contourpath.samplingpath.fwd_possible and not self.contourpath.samplingpath.rwd_possible \
+                        and len(self.points) == 1:
+                        # we are stuck and cannot move.
+                        # return the starting point as our best effort
+                        if self.log: print("stuck! returning start point.")
+                        starti, startx, startv, startL = self.points[0]
+                        return (startx, startL), True
+                    else:
                         # we are not done, but cannot reach the goal.
                         # reverse. Find position from where to reverse
                         if i > 0:
                             starti, _, _, _ = max(self.points)
+                            reversei = starti + 1
                         else:
                             starti, _, _, _ = min(self.points)
+                            reversei = starti - 1
                         if self.log: print("reversing at %d..." % starti)
-                        self.nreverses += 1
                         # how many steps are missing?
+                        self.nreverses += 1
                         deltai = i - starti
-                        #print("   %d steps to do at %d -> targeting %d." % (deltai, starti, starti - deltai))
+                        # request one less because one step is spent on
+                        # the outside try
+                        if self.log: print("   %d steps to do at %d -> [from %d, delta=%d] targeting %d." % (
+                            i - starti, starti, reversei, deltai, reversei - deltai))
                         # make this many steps in the other direction
-                        #print("reversing...", i, starti, deltai, starti - deltai)
-                        self.goals.append(('sample-at', starti - deltai))
-                        continue
-                    else:
-                        # we are not done, but cannot reach the goal.
-                        # move on to next goal (if any)
+                        self.goals.append(('sample-at', reversei - deltai))
                         continue
                         
                 else:

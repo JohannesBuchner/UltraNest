@@ -276,7 +276,7 @@ def interpolate(i, points, fwd_possible, rwd_possible, contourpath=None):
     
     if len(points_before) == 0 or len(points_after) == 0:
         #return None, None, None, False
-        raise KeyError("can not extrapolate outside path")
+        raise KeyError("cannot extrapolate outside path")
     
     j, xj, vj, Lj = max(points_before)
     k, xk, vk, Lk = min(points_after)

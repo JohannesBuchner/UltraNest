@@ -121,24 +121,18 @@ def main(args):
         #RegionSequentialSliceSampler(nsteps=2*ndim), RegionSequentialSliceSampler(nsteps=ndim), RegionSequentialSliceSampler(nsteps=max(1, ndim//2)),
         
         #SamplingPathSliceSampler(nsteps=16), SamplingPathSliceSampler(nsteps=4), SamplingPathSliceSampler(nsteps=1),
-        #SamplingPathStepSampler(nresets=8, nsteps=ndim * 2),
-        #SamplingPathStepSampler(nresets=16, nsteps=ndim * 8),
-        #SamplingPathStepSampler(nresets=8, nsteps=ndim * 4),
-        #SamplingPathStepSampler(nresets=4, nsteps=ndim * 2),
-        #SamplingPathStepSampler(nresets=16, nsteps=ndim * 2),
-        #SamplingPathStepSampler(nresets=16, nsteps=ndim * 2, scale=1, balance=0.95, nudge=1.1),
-        SamplingPathStepSampler(nresets=ndim, nsteps=ndim * 2, scale=1, balance=0.95, nudge=1.1),
-        #SamplingPathStepSampler(nresets=1, nsteps=ndim * 2, scale=1, balance=0.95, nudge=1.1),
+        
+        #SamplingPathStepSampler(nresets=ndim, nsteps=ndim * 2, scale=1, balance=0.95, nudge=1.1),
         SamplingPathStepSampler(nresets=ndim, nsteps=ndim, scale=1, balance=0.95, nudge=1.1),
-        SamplingPathStepSampler(nresets=ndim, nsteps=max(1, ndim//2), scale=1, balance=0.95, nudge=1.1),
-        #SamplingPathStepSampler(nresets=64, nsteps=4),
-        #SamplingPathStepSampler(nresets=3, nsteps=10),
-        #SamplingPathStepSampler(nresets=4, nsteps=ndim * 8),
-        #SamplingPathStepSampler(nresets=2, nsteps=ndim * 2, log=True),
-        #OtherSamplerProxy(nnewdirections=8, nsteps=64, sampler='simple'),
-        #OtherSamplerProxy(nnewdirections=4, nsteps=16, sampler='simple'),
-        #OtherSamplerProxy(nnewdirections=16, nsteps=1, sampler='simple'),
-        #OtherSamplerProxy(nsteps=16, sampler='bisect'),
+        #SamplingPathStepSampler(nresets=ndim, nsteps=max(1, ndim//2), scale=1, balance=0.95, nudge=1.1),
+
+        #OtherSamplerProxy(nnewdirections=ndim, sampler='steps', nsteps=ndim, scale=1, balance=0.9, nudge=1.1, log=False),
+        OtherSamplerProxy(nnewdirections=max(1, ndim // 2), sampler='steps', nsteps=max(1, ndim // 2), scale=1, balance=0.9, nudge=1.1, log=False),
+        #OtherSamplerProxy(nnewdirections=1, sampler='steps', nsteps=max(1, ndim // 2), scale=1, balance=0.9, nudge=1.1, log=False),
+        #OtherSamplerProxy(nnewdirections=max(1, ndim // 2), sampler='steps', nsteps=1, scale=1, balance=0.9, nudge=1.1, log=False),
+        #OtherSamplerProxy(nnewdirections=ndim, sampler='bisect', nsteps=ndim, scale=1, balance=0.9, nudge=1.1, log=False),
+        OtherSamplerProxy(nnewdirections=max(1, ndim // 2), sampler='bisect', nsteps=max(1, ndim // 2), scale=1, balance=0.9, nudge=1.1, log=False),
+        #OtherSamplerProxy(nnewdirections=ndim, sampler='steps', nsteps=ndim, scale=1, balance=0.5, nudge=1.1, log=False),
     ]
     if ndim < 14:
         samplers.insert(0, MLFriendsSampler())
@@ -233,7 +227,7 @@ def main(args):
     plt.ylabel('Cumulative Distribution')
     plt.xlim(0, 1)
     plt.plot([0,1], [0,1], '--', color='k')
-    plt.legend(loc='best', prop=dict(size=6))
+    plt.legend(loc='upper left', prop=dict(size=6))
     filename = 'evaluate_sampling_%s_%dd_N%d_shrinkage.pdf' % (args.problem, ndim, nlive)
     print("plotting to %s ..." % filename)
     plt.savefig(filename, bbox_inches='tight')
