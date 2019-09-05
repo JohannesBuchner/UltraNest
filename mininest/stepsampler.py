@@ -8,11 +8,17 @@ MCMC-like step sampling within a region
 import numpy as np
 
 def generate_random_direction(ui, region, scale=1):
+    """ draw uniform direction vector in unit cube space of length scale.
+    region is not used. """
     v = np.random.normal(0, 1, size=len(ui))
     v *= scale / (v**2).sum()**0.5
     return v
 
 def generate_cube_oriented_direction(ui, region):
+    """ 
+    draw a unit direction vector in direction of a random unit cube axes.
+    region is not used. 
+    """
     ndim = len(ui)
     # choose axis
     j = np.random.randint(ndim)
@@ -23,6 +29,10 @@ def generate_cube_oriented_direction(ui, region):
 
 
 def generate_region_oriented_direction(ui, region, scale=1):
+    """ 
+    draw a random direction vector in direction of one of the region axes.
+    The vector length is scale.
+    """
     ndim = len(ui)
     ti = region.transformLayer.transform(ui)
     
@@ -37,6 +47,10 @@ def generate_region_oriented_direction(ui, region, scale=1):
     return v
 
 def generate_region_random_direction(ui, region, scale=1):
+    """ 
+    draw a direction vector in a random direction of the region.
+    The vector length is *scale* (in unit cube space).
+    """
     ti = region.transformLayer.transform(ui)
     
     # choose axis in transformed space:
@@ -49,6 +63,34 @@ def generate_region_random_direction(ui, region, scale=1):
     return v
 
 
+def generate_mixture_random_direction(ui, region, scale=1, uniform_weight=1e-6):
+    """ 
+    mix a ball proposal with a region-shaped proposal.
+    uniform_weight sets the weight for the equal-axis ball contribution 
+    scale is the length of the vector.
+    """
+    ti = region.transformLayer.transform(ui)
+    # choose axis in transformed space:
+    ti = np.random.normal(ti, 1)
+    #ti *= scale / (ti**2).sum()**0.5
+    # convert back to unit cube space:
+    uj = region.transformLayer.untransform(ti)
+    # draw a unit vector of the same size
+    
+    v = uj - ui
+    v *= scale / (v**2).sum()**0.5
+
+    w = v
+
+
+    v1 = generate_random_direction(ui, region)
+    v1 /= (v1**2).sum()**0.5
+    v2 = generate_region_random_direction(ui, region)
+    v2 /= (v2**2).sum()**0.5
+    v = (v1 * uniform_weight + v2 * (1 - uniform_weight))
+    v *= self.scale * (v2**2).sum()**0.5
+    return v
+        
 class StepSampler(object):
     """
     Simple step sampler, staggering around
@@ -372,6 +414,145 @@ class RegionBallSliceSampler(CubeSliceSampler):
     """
     def generate_direction(self, ui, region):
         return generate_region_random_direction(ui, region)
+
+
+
+class GeodesicSliceSampler(StepSampler):
+    """
+    Geodesic slice sampler, respecting the region
+    
+    Makes a step in radius, and the remaining nsteps in angular coordinates
+    """
+    def __init__(self, nsteps, scale=1.5):
+        """
+        see StepSampler.__init__ documentation
+        """
+        StepSampler.__init__(self, nsteps=nsteps)
+        self.reset()
+        self.scale = scale
+    
+    def reset(self):
+        self.interval = None
+        self.sampled_radius = False
+        self.axis_index = 0
+
+    def generate_direction(self, ui, region):
+        return generate_cube_oriented_direction(ui, region)
+
+    def get_center(self, ui, region):
+        return region.unormed.mean(axis=0)
+
+    def adjust_accept(self, accepted, unew, pnew, Lnew, nc):
+        v, left, right, u, center, rlow, rhigh = self.interval
+        if not self.sampled_radius:
+            if accepted:
+                self.sampled_radius = True
+                
+                self.last = unew, Lnew
+                self.history.append((unew, Lnew))
+            else:
+                self.nrejects += 1
+
+                if u < 1:
+                    rlow = u
+                else:
+                    rhigh = u
+                
+                self.interval = (v, left, right, u, center, rlow, rhigh)
+
+        else:
+            if accepted:
+                # start with a new interval next time
+                self.interval = None
+                
+                self.last = unew, Lnew
+                self.history.append((unew, Lnew))
+            else:
+                self.nrejects += 1
+                # shrink current interval
+                if u == 0:
+                    pass
+                elif u < 0:
+                    left = u
+                elif u > 0:
+                    right = u
+                
+                self.interval = (v, left, right, u, center, rlow, rhigh)
+        self.logstat.append([accepted, self.scale])
+
+    def adjust_outside_region(self):
+        self.adjust_accept(False, unew=None, pnew=None, Lnew=None, nc=0)
+    
+    def move(self, ui, region, ndraw=1, plot=False):
+        ndim = len(ui)
+        if self.interval is None:
+            
+            center = self.get_center(ui, region)
+            direction = ui - center
+            r = (direction**2).sum()**0.5
+            
+            # draw a random orthogonal vector v
+            w = self.generate_direction(ui, region)
+            # project and substract projection from point coordinate ui
+            v = w - np.dot(direction, w) / np.dot(direction, direction) * direction
+            v *= r / (v**2).sum()**0.5
+            # expand direction until it is surely outside
+            left = -np.pi
+            right = np.pi
+            u = 0
+            
+            self.sampled_radius = False
+            rlow = 0
+            rhigh = self.scale
+            self.interval = (v, left, right, u, center, rlow, rhigh)
+        else:
+            v, left, right, u, center, rlow, rhigh = self.interval
+        
+        if not self.sampled_radius:
+            r0 = ((ui - center)**2).sum()**0.5
+            
+            while True:
+                # make a line from center to current point
+                # 0 is at center, 1 is at current point
+                # propose randomly from rlow to rhigh on that line
+                u = np.random.uniform(rlow**ndim, rhigh**ndim)**(1. / ndim)
+                xj = (ui - center) * u + center
+                
+                if region.inside(xj.reshape((1, -1))):
+                    self.interval = (v, left, right, u, center, rlow, rhigh)
+                    return xj.reshape((1, -1))
+                else:
+                    # left and right intervals are split at 1
+                    # shrink corresponding one
+                    if u < 1:
+                        rlow = u
+                    else:
+                        rhigh = u
+                    self.interval = (v, left, right, u, center, rlow, rhigh)
+
+        # slice sampling on angle:
+        while True:
+            u = np.random.uniform(left, right)
+            xj = ui * np.cos(u) + v * np.sin(u)
+            
+            if region.inside(xj.reshape((1, -1))):
+                self.interval = (v, left, right, u, center, rlow, rhigh)
+                return xj.reshape((1, -1))
+            else:
+                if u < 0:
+                    left = u
+                else:
+                    right = u
+                self.interval = (v, left, right, u, center, rlow, rhigh)
+
+
+class RegionGeodesicSliceSampler(GeodesicSliceSampler):
+    """
+    GeodesicSliceSampler sampler, but propose random orientiations
+    in preference of region.
+    """
+    def generate_direction(self, ui, region):
+        return generate_region_oriented_direction(ui, region)
 
 
 
@@ -942,22 +1123,24 @@ class OtherSamplerProxy(object):
         # choose random direction
         if self.log: print("choosing random direction")
         ui, Li = self.last
-        #v = generate_random_direction(ui, region, scale=self.scale)
-        v = generate_region_random_direction(ui, region, scale=self.scale)
+        v = generate_random_direction(ui, region, scale=self.scale)
+        #v = generate_region_random_direction(ui, region, scale=self.scale)
+        
+        
         self.nrestarts += 1
         
         if self.sampler is None or True:
             samplingpath = SamplingPath(ui, v, Li)
             contourpath = ContourSamplingPath(samplingpath, region)
             if self.samplername == 'steps':
-                self.sampler = ClockedStepSampler(contourpath)
-                self.stepper = DirectJumper(self.sampler, self.nsteps)
+                self.sampler = ClockedStepSampler(contourpath, log=self.log)
+                self.stepper = DirectJumper(self.sampler, self.nsteps, log=self.log)
             elif self.samplername == 'bisect':
-                self.sampler = ClockedBisectSampler(contourpath)
-                self.stepper = DirectJumper(self.sampler, self.nsteps)
+                self.sampler = ClockedBisectSampler(contourpath, log=self.log)
+                self.stepper = DirectJumper(self.sampler, self.nsteps, log=self.log)
             elif self.samplername == 'nuts':
-                self.sampler = ClockedNUTSSampler(contourpath)
-                self.stepper = IntervalJumper(self.sampler, self.nsteps)
+                self.sampler = ClockedNUTSSampler(contourpath, log=self.log)
+                self.stepper = IntervalJumper(self.sampler, self.nsteps, log=self.log)
             else:
                 assert False
     
@@ -985,7 +1168,7 @@ class OtherSamplerProxy(object):
         while True:
             if not self.sampler.is_done():
                 u, is_independent = self.sampler.next(Llast=Llast)
-                if not is_independent:
+                if not is_independent and u is not None:
                     # should evaluate point
                     Llast = None
                     if region.inside(u.reshape((1,-1))):

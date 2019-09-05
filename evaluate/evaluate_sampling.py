@@ -5,6 +5,7 @@ from mininest.stepsampler import RegionMHSampler, CubeMHSampler
 from mininest.stepsampler import CubeSliceSampler, RegionSliceSampler, RegionBallSliceSampler, RegionSequentialSliceSampler
 #from mininest.stepsampler import DESampler
 from mininest.stepsampler import OtherSamplerProxy, SamplingPathSliceSampler, SamplingPathStepSampler
+from mininest.stepsampler import GeodesicSliceSampler, RegionGeodesicSliceSampler
 import tqdm
 import joblib
 from problems import transform, get_problem
@@ -111,11 +112,12 @@ def main(args):
     problemname = args.problem
     
     samplers = [
-        CubeMHSampler(nsteps=16), #CubeMHSampler(nsteps=4), CubeMHSampler(nsteps=1),
+        #CubeMHSampler(nsteps=16), #CubeMHSampler(nsteps=4), CubeMHSampler(nsteps=1),
         RegionMHSampler(nsteps=16), #RegionMHSampler(nsteps=4), RegionMHSampler(nsteps=1),
         ##DESampler(nsteps=16), DESampler(nsteps=4), #DESampler(nsteps=1),
-        #CubeSliceSampler(nsteps=16), CubeSliceSampler(nsteps=4), CubeSliceSampler(nsteps=1),
-        RegionSliceSampler(nsteps=2*ndim), RegionSliceSampler(nsteps=ndim), RegionSliceSampler(nsteps=max(1, ndim//2)),
+        #CubeSliceSampler(nsteps=2*ndim), CubeSliceSampler(nsteps=ndim), CubeSliceSampler(nsteps=max(1, ndim//2)),
+        #RegionSliceSampler(nsteps=ndim), RegionSliceSampler(nsteps=max(1, ndim//2)),
+        RegionSliceSampler(nsteps=2), RegionSliceSampler(nsteps=4), RegionSliceSampler(nsteps=ndim), RegionSliceSampler(nsteps=2*ndim),
         #RegionBallSliceSampler(nsteps=16), RegionBallSliceSampler(nsteps=4), RegionBallSliceSampler(nsteps=1),
         #RegionBallSliceSampler(nsteps=2*ndim), RegionBallSliceSampler(nsteps=ndim), RegionBallSliceSampler(nsteps=max(1, ndim//2)),
         #RegionSequentialSliceSampler(nsteps=2*ndim), RegionSequentialSliceSampler(nsteps=ndim), RegionSequentialSliceSampler(nsteps=max(1, ndim//2)),
@@ -123,23 +125,39 @@ def main(args):
         #SamplingPathSliceSampler(nsteps=16), SamplingPathSliceSampler(nsteps=4), SamplingPathSliceSampler(nsteps=1),
         
         #SamplingPathStepSampler(nresets=ndim, nsteps=ndim * 2, scale=1, balance=0.95, nudge=1.1),
-        SamplingPathStepSampler(nresets=ndim, nsteps=ndim, scale=1, balance=0.95, nudge=1.1),
+        #SamplingPathStepSampler(nresets=ndim, nsteps=ndim, scale=1, balance=0.95, nudge=1.1),
         #SamplingPathStepSampler(nresets=ndim, nsteps=max(1, ndim//2), scale=1, balance=0.95, nudge=1.1),
+        
+        GeodesicSliceSampler(nsteps=4, scale=1.5),
+        
+        #GeodesicSliceSampler(nsteps=max(1, ndim // 2), scale=1.5),
+        GeodesicSliceSampler(nsteps=ndim, scale=1.5),
+        GeodesicSliceSampler(nsteps=ndim * 4, scale=1.5),
 
+        RegionGeodesicSliceSampler(nsteps=4, scale=1.5),
+        #RegionGeodesicSliceSampler(nsteps=max(1, ndim // 2), scale=1.5),
+        RegionGeodesicSliceSampler(nsteps=ndim, scale=1.5),
+        RegionGeodesicSliceSampler(nsteps=ndim * 4, scale=1.5),
+
+        #OtherSamplerProxy(nnewdirections=ndim * 2, sampler='steps', nsteps=ndim * 2, scale=1, balance=0.9, nudge=1.1, log=False),
+        #OtherSamplerProxy(nnewdirections=ndim * 2, sampler='steps', nsteps=ndim * 2, scale=1, balance=0.6, nudge=1.1, log=False),
         #OtherSamplerProxy(nnewdirections=ndim, sampler='steps', nsteps=ndim, scale=1, balance=0.9, nudge=1.1, log=False),
-        OtherSamplerProxy(nnewdirections=max(1, ndim // 2), sampler='steps', nsteps=max(1, ndim // 2), scale=1, balance=0.9, nudge=1.1, log=False),
+        #OtherSamplerProxy(nnewdirections=ndim * 2, sampler='steps', nsteps=ndim, scale=1, balance=0.9, nudge=1.1, log=False),
+        #OtherSamplerProxy(nnewdirections=max(1, ndim // 2), sampler='steps', nsteps=max(1, ndim // 2), scale=1, balance=0.8, nudge=1.1, log=False),
+        #OtherSamplerProxy(nnewdirections=max(1, ndim // 2), sampler='steps', nsteps=max(1, ndim // 2), scale=1, balance=0.6, nudge=1.1, log=False),
         #OtherSamplerProxy(nnewdirections=1, sampler='steps', nsteps=max(1, ndim // 2), scale=1, balance=0.9, nudge=1.1, log=False),
         #OtherSamplerProxy(nnewdirections=max(1, ndim // 2), sampler='steps', nsteps=1, scale=1, balance=0.9, nudge=1.1, log=False),
-        #OtherSamplerProxy(nnewdirections=ndim, sampler='bisect', nsteps=ndim, scale=1, balance=0.9, nudge=1.1, log=False),
-        OtherSamplerProxy(nnewdirections=max(1, ndim // 2), sampler='bisect', nsteps=max(1, ndim // 2), scale=1, balance=0.9, nudge=1.1, log=False),
+        #OtherSamplerProxy(nnewdirections=ndim, sampler='bisect', nsteps=ndim, scale=1, balance=0.6, nudge=1.1, log=False),
+        #OtherSamplerProxy(nnewdirections=ndim * 2, sampler='bisect', nsteps=ndim, scale=1, balance=0.6, nudge=1.1, log=False),
+        #OtherSamplerProxy(nnewdirections=max(1, ndim // 2), sampler='bisect', nsteps=max(1, ndim // 2), scale=1, balance=0.6, nudge=1.1, log=False),
         #OtherSamplerProxy(nnewdirections=ndim, sampler='steps', nsteps=ndim, scale=1, balance=0.5, nudge=1.1, log=False),
     ]
     if ndim < 14:
         samplers.insert(0, MLFriendsSampler())
     colors = {}
-    linestyles = {1:':', 4:'--', 16:'-', 32:'-', 64:'-', -1:'-'}
-    markers = {1:'x', 4:'^', 16:'o', 32:'s', 64:'s', -1:'o'}
-    for isteps, ls, m in (max(1, ndim // 2), ':', 'x'), (ndim, '--', '^'), (ndim * 2, '-', 'o'), (ndim * 4, '-.', '^'), (ndim * 8, '-', 'v'), (ndim * 16, '-', '>'):
+    linestyles = {1:':', 2:':', 4:'--', 16:'-', 32:'-', 64:'-', -1:'-'}
+    markers = {1:'x', 2:'x', 4:'^', 16:'o', 32:'s', 64:'s', -1:'o'}
+    for isteps, ls, m in (max(1, ndim // 2), ':', 'x'), (ndim, '--', '^'), (ndim+1, '--', '^'), (ndim * 2, '-', 'o'), (ndim * 4, '-.', '^'), (ndim * 8, '-', 'v'), (ndim * 16, '-', '>'):
         if isteps not in markers:
             markers[isteps] = m
         if isteps not in linestyles:
@@ -153,6 +171,7 @@ def main(args):
     axstep1 = plt.subplot(1, 3, 1)
     axstep2 = plt.subplot(1, 3, 2)
     axstep3 = plt.subplot(1, 3, 3)
+    lastspeed = None, None, None
     for sampler in samplers:
         print("evaluating sampler: %s" % sampler)
         Lsequence, ncalls, steps = evaluate_warmed_sampler(problemname, ndim, nlive, nsteps, sampler)
@@ -186,6 +205,9 @@ def main(args):
         )
         print("%s shrunk %.4f, from %d shrinkage samples" % (fullsamplername, cdf_expected.mean(), len(shrinkage)))
         axspeed.plot(cdf_expected.mean(), ncalls, markers[sampler.nsteps], label=label, color=color)
+        if lastspeed[0] == samplername:
+            axspeed.plot([lastspeed[1], cdf_expected.mean()], [lastspeed[2], ncalls], '-', color=color)
+        lastspeed = [samplername, cdf_expected.mean(), ncalls]
         
         stepsizesq, angular_step, radial_step = steps.transpose()
         assert len(stepsizesq) == len(Lsequence), (len(stepsizesq), len(Lsequence))
@@ -237,6 +259,12 @@ def main(args):
     plt.xlabel('Bias')
     plt.ylabel('# of function evaluations')
     plt.yscale('log')
+    lo, hi = plt.xlim()
+    hi = max(0.5 - lo, hi - 0.5, 0.04)
+    plt.xlim(0.5 - hi, 0.5 + hi)
+    lo, hi = plt.ylim()
+    plt.vlines(0.5, lo, hi)
+    plt.ylim(lo, hi)
     plt.legend(loc='best', prop=dict(size=6), fancybox=True, framealpha=0.5)
     filename = 'evaluate_sampling_%s_%dd_N%d_speed.pdf' % (args.problem, ndim, nlive)
     print("plotting to %s ..." % filename)

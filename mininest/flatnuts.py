@@ -90,7 +90,7 @@ class SingleJumper(object):
 
 class DirectJumper(object):
     """ Jump to n steps immediately. If unsuccessful, takes rest in other direction. """
-    def __init__(self, stepsampler, nsteps):
+    def __init__(self, stepsampler, nsteps, log=False):
         self.stepsampler = stepsampler
         self.direction = +1
         assert nsteps > 0
@@ -99,6 +99,7 @@ class DirectJumper(object):
         self.currenti = 0
         self.naccepts = 0
         self.nrejects = 0
+        self.log = log
     
     def prepare_jump(self):
         target = self.currenti + self.nsteps
@@ -115,11 +116,15 @@ class DirectJumper(object):
             accept = ilo <= target <= ihi and not gaps.get(target, False)
             if accept:
                 currenti = target
+                if self.log:
+                    print("accepted jump %d->%d" % (self.currenti, target), 'fwd' if self.direction == 1 else 'rwd')
             else:
                 # reverse
+                if self.log:
+                    print("rejected jump %d->%d" % (self.currenti, target), 'fwd' if self.direction == 1 else 'rwd')
                 direction *= -1
         
-        #print("--> %d" % currenti)
+        if self.log: print("--> %d" % currenti)
         # double-check that final point is OK:
         # if we already evaluated it, it is OK
         if currenti in pointi:
@@ -133,7 +138,7 @@ class DirectJumper(object):
         if Lj is not None:
             return None, None
         
-        #print("    checking for gap ...")
+        if self.log: print("    checking for gap ...")
         # otherwise ask caller to verify it and call us again with
         # gaps[i] = True if outside, gaps[i] = False if OK
         return xj, currenti
@@ -146,11 +151,13 @@ class DirectJumper(object):
             target = self.currenti + self.direction
             accept = ilo <= target <= ihi and not gaps.get(target, False)
             if accept:
-                #print("accepted jump %d->%d" % (self.currenti, target), 'fwd' if self.direction == 1 else 'rwd')
+                if self.log:
+                    print("accepted jump %d->%d" % (self.currenti, target), 'fwd' if self.direction == 1 else 'rwd')
                 self.currenti = target
                 self.naccepts += 1
             else:
-                #print("rejected jump %d->%d" % (self.currenti, target), 'fwd' if self.direction == 1 else 'rwd')
+                if self.log:
+                    print("rejected jump %d->%d" % (self.currenti, target), 'fwd' if self.direction == 1 else 'rwd')
                 # reverse
                 self.direction *= -1
                 self.nrejects += 1
@@ -243,102 +250,6 @@ class ClockedSimpleStepSampler(object):
     def is_done(self):
         return self.goals == []
     
-    def next(self, Llast=None):
-        """
-        Run steps forward or backward to step i (can be positive or 
-        negative, 0 is the starting point) 
-        """
-        if self.log: print("next() call", Llast)
-        while self.goals:
-            if self.log: print("goals: ", self.goals)
-            goal = self.goals.pop(0)
-            if goal[0] == 'sample-at':
-                i = goal[1]
-                assert Llast is None
-                # find point
-                # here we assume all intermediate points have been sampled
-                pointi = [(j, xj, vj, Lj) for j, xj, vj, Lj in self.points if j == i]
-                if len(pointi) == 0:
-                    if i > 0 and self.contourpath.samplingpath.fwd_possible \
-                    or i < 0 and self.contourpath.samplingpath.rwd_possible:
-                        # we are not done:
-                        self.goals.insert(0, ('expand-to', i))
-                        self.goals.append(goal)
-                        continue
-                    else:
-                        # we are not done, but cannot reach the goal.
-                        # reverse. Find closest position
-                        self.nreverses += 1
-                        if i > 0:
-                            starti, startx, startv, startL = max(self.points)
-                        else:
-                            starti, startx, startv, startL = min(self.points)
-                        #deltai = i - starti
-                        #if self.log: print("   %d steps to do at %d -> targeting %d." % (deltai, starti, starti - deltai))
-                        ## make this many steps in the other direction
-                        #self.goals.append(('sample-at', starti - deltai))
-                        return (startx, startL), True
-                else:
-                    # return the previously sampled point
-                    _, xj, _, Lj = pointi[0]
-                    return (xj, Lj), True
-            
-            elif goal[0] == 'expand-to':
-                i = goal[1]
-                if i > 0 and self.contourpath.samplingpath.fwd_possible:
-                    starti, startx, startv, _ = max(self.points)
-                    if i > starti:
-                        if self.log: print("going forward...", i, starti)
-                        j = starti + 1
-                        xj, v = self.contourpath.extrapolate(j)
-                        if j != i: # ultimate goal not reached yet
-                            self.goals.insert(0, goal)
-                        self.goals.insert(0, ('eval-at', j, xj, v, +1))
-                        return xj, False
-                    else:
-                        if self.log: print("already done...", i, starti)
-                        # we are already done
-                        pass
-                elif i < 0 and self.contourpath.samplingpath.rwd_possible:
-                    starti, startx, startv, _ = min(self.points)
-                    if i < starti:
-                        if self.log: print("going backwards...", i, starti)
-                        j = starti - 1
-                        xj, v = self.contourpath.extrapolate(j)
-                        if j != i: # ultimate goal not reached yet
-                            self.goals.insert(0, goal)
-                        self.goals.insert(0, ('eval-at', j, xj, v, -1))
-                        return xj, False
-                    else:
-                        if self.log: print("already done...", i, starti)
-                        # we are already done
-                        pass
-                else:
-                    # we are trying to go somewhere we cannot.
-                    # skip to other goals
-                    if self.log: print("trying to go somewhere we cannot. skipping.", i)
-                    pass
-            
-            elif goal[0] == 'eval-at':
-                _, j, xj, v, sign = goal
-                if Llast is not None:
-                    # we can go about our merry way.
-                    self.contourpath.add(j, xj, v, Llast)
-                    Llast = None
-                    continue
-                else:
-                    # cannot go this way
-                    self.nreflections += 1
-                    if sign == 1:
-                        self.contourpath.samplingpath.fwd_possible = False
-                    else:
-                        self.contourpath.samplingpath.rwd_possible = False
-                    continue
-            else:
-                assert False, goal
-        
-        return None, False
-
     def expand_onestep(self, fwd, transform, loglike, Lmin):
         """ Helper interface, make one step (forward fwd=True or backward fwd=False) """
         if fwd:
@@ -376,6 +287,97 @@ class ClockedStepSampler(ClockedSimpleStepSampler):
     """
     Find a new point with a series of small steps
     """
+
+    def continue_sampling(self, i):
+        if i > 0 and self.contourpath.samplingpath.fwd_possible \
+        or i < 0 and self.contourpath.samplingpath.rwd_possible:
+            # we are not done:
+            self.goals.insert(0, ('expand-to', i))
+            self.goals.append(('sample-at', i))
+        else:
+            # we are not done, but cannot reach the goal.
+            # reverse. Find position from where to reverse
+            if i > 0:
+                starti, _, _, _ = max(self.points)
+                reversei = starti + 1
+            else:
+                starti, _, _, _ = min(self.points)
+                reversei = starti - 1
+            if self.log: print("reversing at %d..." % starti)
+            # how many steps are missing?
+            self.nreverses += 1
+            deltai = i - starti
+            # request one less because one step is spent on
+            # the outside try
+            #if self.log: print("   %d steps to do at %d -> [from %d, delta=%d] targeting %d." % (
+            #    i - starti, starti, reversei, deltai, reversei - deltai))
+            # make this many steps in the other direction
+            self.goals.append(('sample-at', reversei - deltai))
+    
+    def expand_to(self, i):
+        if i > 0 and self.contourpath.samplingpath.fwd_possible:
+            starti, startx, startv, _ = max(self.points)
+            if i > starti:
+                if self.log: print("going forward...", i, starti)
+                j = starti + 1
+                xj, v = self.contourpath.extrapolate(j)
+                if j != i: # ultimate goal not reached yet
+                    self.goals.insert(0, ('expand-to', i))
+                self.goals.insert(0, ('eval-at', j, xj, v, +1))
+                return xj, False
+            else:
+                if self.log: print("already done...", i, starti)
+                # we are already done
+                pass
+        elif i < 0 and self.contourpath.samplingpath.rwd_possible:
+            starti, startx, startv, _ = min(self.points)
+            if i < starti:
+                if self.log: print("going backwards...", i, starti)
+                j = starti - 1
+                xj, v = self.contourpath.extrapolate(j)
+                if j != i: # ultimate goal not reached yet
+                    self.goals.insert(0, ('expand-to', i))
+                self.goals.insert(0, ('eval-at', j, xj, v, -1))
+                return xj, False
+            else:
+                if self.log: print("already done...", i, starti)
+                # we are already done
+                pass
+        else:
+            # we are trying to go somewhere we cannot.
+            # skip to other goals
+            pass
+    
+    def eval_at(self, j, xj, v, sign, Llast):
+        if Llast is not None:
+            # we can go about our merry way.
+            self.contourpath.add(j, xj, v, Llast)
+        else:
+            # We stepped outside, so now we need to reflect
+            self.nreflections += 1
+            if self.log: print("reflecting:", xj, v)
+            if self.plot: plt.plot(xj[0], xj[1], 'xr')
+            vk = self.reverse(xj, v * sign, plot=self.plot) * sign
+            if self.log: print("new direction:", vk)
+            xk, vk = extrapolate_ahead(sign, xj, vk, contourpath=self.contourpath)
+            if self.log: print("reflection point:", xk)
+            self.goals.insert(0, ('reflect-at', j, xk, vk, sign))
+            return xk, False
+    
+    def reflect_at(self, j, xk, vk, sign, Llast):
+        self.nreflections += 1
+        if Llast is not None:
+            # we can go about our merry way.
+            self.contourpath.add(j, xk, vk, Llast)
+        else:
+            # we are stuck and have to give up this direction
+            if self.plot: plt.plot(xk[0], xk[1], 's', mfc='None', mec='r', ms=10)
+            if sign == 1:
+                self.contourpath.samplingpath.fwd_possible = False
+            else:
+                self.contourpath.samplingpath.rwd_possible = False
+
+    
     def next(self, Llast=None):
         """
         Run steps forward or backward to step i (can be positive or 
@@ -388,119 +390,45 @@ class ClockedStepSampler(ClockedSimpleStepSampler):
             if goal[0] == 'sample-at':
                 i = goal[1]
                 assert Llast is None
+
+                if not self.contourpath.samplingpath.fwd_possible \
+                and  not self.contourpath.samplingpath.rwd_possible \
+                and len(self.points) == 1:
+                    # we are stuck and cannot move.
+                    # return the starting point as our best effort
+                    starti, startx, startv, startL = self.points[0]
+                    if self.log: print("stuck! returning start point", starti)
+                    return (startx, startL), True
+
                 # find point
                 # here we assume all intermediate points have been sampled
                 pointi = [(j, xj, vj, Lj) for j, xj, vj, Lj in self.points if j == i]
-                if len(pointi) == 0:
-                    if i > 0 and self.contourpath.samplingpath.fwd_possible \
-                    or i < 0 and self.contourpath.samplingpath.rwd_possible:
-                        # we are not done:
-                        self.goals.insert(0, ('expand-to', i))
-                        self.goals.append(goal)
-                        continue
-                    elif not self.contourpath.samplingpath.fwd_possible \
-                    and  not self.contourpath.samplingpath.rwd_possible \
-                    and len(self.points) == 1:
-                        # we are stuck and cannot move.
-                        # return the starting point as our best effort
-                        starti, startx, startv, startL = self.points[0]
-                        if self.log: print("stuck! returning start point", i)
-                        return (startx, startL), True
-                    else:
-                        # we are not done, but cannot reach the goal.
-                        # reverse. Find position from where to reverse
-                        if i > 0:
-                            starti, _, _, _ = max(self.points)
-                            reversei = starti + 1
-                        else:
-                            starti, _, _, _ = min(self.points)
-                            reversei = starti - 1
-                        if self.log: print("reversing at %d..." % starti)
-                        # how many steps are missing?
-                        self.nreverses += 1
-                        deltai = i - starti
-                        # request one less because one step is spent on
-                        # the outside try
-                        #if self.log: print("   %d steps to do at %d -> [from %d, delta=%d] targeting %d." % (
-                        #    i - starti, starti, reversei, deltai, reversei - deltai))
-                        # make this many steps in the other direction
-                        self.goals.append(('sample-at', reversei - deltai))
-                        continue
-                else:
+                if len(pointi) != 0:
                     # return the previously sampled point
                     _, xj, _, Lj = pointi[0]
                     if self.log: print("returning point", i)
                     return (xj, Lj), True
+                
+                self.continue_sampling(i)
             
             elif goal[0] == 'expand-to':
                 i = goal[1]
-                if i > 0 and self.contourpath.samplingpath.fwd_possible:
-                    starti, startx, startv, _ = max(self.points)
-                    if i > starti:
-                        if self.log: print("going forward...", i, starti)
-                        j = starti + 1
-                        xj, v = self.contourpath.extrapolate(j)
-                        if j != i: # ultimate goal not reached yet
-                            self.goals.insert(0, goal)
-                        self.goals.insert(0, ('eval-at', j, xj, v, +1))
-                        return xj, False
-                    else:
-                        if self.log: print("already done...", i, starti)
-                        # we are already done
-                        pass
-                elif i < 0 and self.contourpath.samplingpath.rwd_possible:
-                    starti, startx, startv, _ = min(self.points)
-                    if i < starti:
-                        if self.log: print("going backwards...", i, starti)
-                        j = starti - 1
-                        xj, v = self.contourpath.extrapolate(j)
-                        if j != i: # ultimate goal not reached yet
-                            self.goals.insert(0, goal)
-                        self.goals.insert(0, ('eval-at', j, xj, v, -1))
-                        return xj, False
-                    else:
-                        if self.log: print("already done...", i, starti)
-                        # we are already done
-                        pass
-                else:
-                    # we are trying to go somewhere we cannot.
-                    # skip to other goals
-                    pass
+                ret = self.expand_to(i)
+                if ret is not None:
+                    return ret
             
             elif goal[0] == 'eval-at':
                 _, j, xj, v, sign = goal
-                if Llast is not None:
-                    # we can go about our merry way.
-                    self.contourpath.add(j, xj, v, Llast)
-                    Llast = None
-                    continue
-                else:
-                    # We stepped outside, so now we need to reflect
-                    self.nreflections += 1
-                    if self.log: print("reflecting:", xj, v)
-                    if self.plot: plt.plot(xj[0], xj[1], 'xr')
-                    vk = self.reverse(xj, v * sign, plot=self.plot) * sign
-                    if self.log: print("new direction:", vk)
-                    xk, vk = extrapolate_ahead(sign, xj, vk, contourpath=self.contourpath)
-                    if self.log: print("reflection point:", xk)
-                    self.goals.insert(0, ('reflect-at', j, xk, vk, sign))
-                    return xk, False
+                ret = self.eval_at(j, xj, v, sign, Llast)
+                Llast = None
+                if ret is not None:
+                    return ret
             
             elif goal[0] == 'reflect-at':
                 _, j, xk, vk, sign = goal
-                if Llast is not None:
-                    # we can go about our merry way.
-                    self.contourpath.add(j, xk, vk, Llast)
-                    Llast = None
-                    continue
-                else:
-                    # we are stuck and have to give up this direction
-                    if self.plot: plt.plot(xk[0], xk[1], 's', mfc='None', mec='r', ms=10)
-                    if sign == 1:
-                        self.contourpath.samplingpath.fwd_possible = False
-                    else:
-                        self.contourpath.samplingpath.rwd_possible = False
-                    continue
+                self.reflect_at(j, xk, vk, sign, Llast)
+                Llast = None
+            
             else:
                 assert False, goal
         
@@ -510,6 +438,138 @@ class ClockedBisectSampler(ClockedStepSampler):
     """
     Step sampler that does not require each step to be evaluated
     """
+    
+    def continue_sampling(self, i):
+        if i > 0:
+            starti, _, _, _ = max(self.points)
+            #fwd = True
+            inside = i < starti
+            more_possible = self.contourpath.samplingpath.fwd_possible
+        else:
+            starti, _, _, _ = min(self.points)
+            #fwd = False
+            inside = starti < i
+            more_possible = self.contourpath.samplingpath.rwd_possible
+        
+        if inside:
+            # interpolate point on track
+            xj, vj, Lj, onpath = self.contourpath.interpolate(i)
+            if self.log: print("target is on track, returning interpolation at %d..." % i, xj, Lj)
+            return (xj, Lj), True
+        elif more_possible:
+            # we are not done:
+            self.goals.insert(0, ('expand-to', i))
+            if self.log: print("not done yet, continue expanding to %d..." % i)
+            self.goals.append(('sample-at', i))
+        else:
+            # we are not done, but cannot reach the goal.
+            # reverse. Find position from where to reverse
+            if i > 0:
+                starti, _, _, _ = max(self.points)
+                reversei = starti + 1
+            else:
+                starti, _, _, _ = min(self.points)
+                reversei = starti - 1
+            if self.log: print("reversing at %d..." % starti)
+            # how many steps are missing?
+            self.nreverses += 1
+            deltai = i - starti
+            # request one less because one step is spent on
+            # the outside try
+            if self.log: print("   %d steps to do at %d -> [from %d, delta=%d] targeting %d." % (
+                i - starti, starti, reversei, deltai, reversei - deltai))
+            # make this many steps in the other direction
+            self.goals.append(('sample-at', reversei - deltai))
+
+    def expand_to(self, j):
+        # check if we already tried 
+        
+        if j > 0 and self.contourpath.samplingpath.fwd_possible:
+            #print("going forward...", j)
+            starti, startx, startv, _ = max(self.points)
+            if j > starti:
+                xj, v = self.contourpath.extrapolate(j)
+                self.goals.insert(0, ('bisect', starti, startx, startv, None, None, None, j, xj, v, +1))
+                #self.goals.append(goal)
+                return xj, False
+            else:
+                # we are already done
+                if self.log: print("done going to", j, starti)
+                pass
+        elif j < 0 and self.contourpath.samplingpath.rwd_possible:
+            #print("going backward...", j)
+            starti, startx, startv, _ = min(self.points)
+            if j < starti:
+                xj, v = self.contourpath.extrapolate(j)
+                self.goals.insert(0, ('bisect', starti, startx, startv, None, None, None, j, xj, v, -1))
+                #self.goals.append(goal)
+                return xj, False
+            else:
+                # we are already done
+                if self.log: print("done going to", j)
+                pass
+        else:
+            # we are trying to go somewhere we cannot.
+            # skip to other goals
+            if self.log: print("cannot go there", j)
+            pass
+    
+    def bisect_at(self, lefti, leftx, leftv, midi, midx, midv, righti, rightx, rightv, sign, Llast):
+        # Bisect to find first point outside
+        
+        # left is inside (i: index, x: coordinate, v: direction)
+        # mid is the middle just evaluated (if not None)
+        # right is outside
+        if self.log: print("bisecting ...", lefti, midi, righti)
+        
+        if midi is None:
+            # check if right is actually outside
+            if Llast is None:
+                # yes it is. continue below
+                pass
+            else:
+                # right is actually inside
+                # so we successfully jumped all the way successfully
+                if self.log: print("successfully went all the way in one jump!")
+                self.contourpath.add(righti, rightx, rightv, Llast)
+                Llast = None
+                return
+        else:
+            # shrink interval based on previous evaluation point
+            if Llast is not None:
+                #print("   inside.  updating interval %d-%d" % (midi, righti))
+                lefti, leftx, leftv = midi, midx, midv
+                self.contourpath.add(midi, midx, midv, Llast)
+                Llast = None
+            else:
+                #print("   outside. updating interval %d-%d" % (lefti, midi))
+                righti, rightx, rightv = midi, midx, midv
+        
+        # we need to bisect. righti was outside
+        midi = (righti + lefti) // 2
+        if midi == lefti or midi == righti:
+            # we are done bisecting. right is the first point outside
+            if self.log: print("  bisecting gave reflection point", righti, rightx, rightv)
+            if self.plot: plt.plot(rightx[0], rightx[1], 'xr')
+            # compute reflected direction
+            vk = self.reverse(rightx, rightv * sign, plot=self.plot) * sign
+            if self.log: print("  reversing there", rightv)
+            # go from reflection point one step in that direction
+            # that is our new point
+            xk, vk = extrapolate_ahead(sign, rightx, vk, contourpath=self.contourpath)
+            if self.log: print("  making one step from", rightx, rightv, '-->', xk, vk)
+            self.nreflections += 1
+            if self.log: print("  trying new point,", xk)
+            self.goals.insert(0, ('reflect-at', righti, xk, vk, sign))
+            return xk, False
+        else:
+            if self.log: print("  continue bisect at", midi)
+            # we should evaluate the middle point
+            midx, midv = extrapolate_ahead(midi - lefti, leftx, leftv, contourpath=self.contourpath)
+            # continue bisecting
+            self.goals.insert(0, ('bisect', lefti, leftx, leftv, midi, midx, midv, righti, rightx, rightv, sign))
+            return midx, False
+    
     
     def next(self, Llast=None):
         """
@@ -525,176 +585,41 @@ class ClockedBisectSampler(ClockedStepSampler):
             if goal[0] == 'sample-at':
                 i = goal[1]
                 assert Llast is None
+
+                if not self.contourpath.samplingpath.fwd_possible and not self.contourpath.samplingpath.rwd_possible \
+                    and len(self.points) == 1:
+                    # we are stuck and cannot move.
+                    # return the starting point as our best effort
+                    if self.log: print("stuck! returning start point.")
+                    starti, startx, startv, startL = self.points[0]
+                    return (startx, startL), True
+
                 # check if point already sampled
                 pointi = [(j, xj, vj, Lj) for j, xj, vj, Lj in self.points if j == i]
 
-                if len(pointi) == 0:
-                    if i > 0:
-                        starti, _, _, _ = max(self.points)
-                        fwd = True
-                        inside = i < starti
-                        more_possible = self.contourpath.samplingpath.fwd_possible
-                    else:
-                        starti, _, _, _ = min(self.points)
-                        fwd = False
-                        inside = starti < i
-                        more_possible = self.contourpath.samplingpath.rwd_possible
-                    
-                    if inside:
-                        # interpolate point on track
-                        xj, vj, Lj, onpath = self.contourpath.interpolate(i)
-                        if self.log: print("target is on track, returning interpolation at %d..." % i, xj, Lj)
-                        return (xj, Lj), True
-                    elif more_possible:
-                        # we are not done:
-                        self.goals.insert(0, ('expand-to', i))
-                        if self.log: print("not done yet, continue expanding to %d..." % i)
-                        self.goals.append(goal)
-                        continue
-                    elif not self.contourpath.samplingpath.fwd_possible and not self.contourpath.samplingpath.rwd_possible \
-                        and len(self.points) == 1:
-                        # we are stuck and cannot move.
-                        # return the starting point as our best effort
-                        if self.log: print("stuck! returning start point.")
-                        starti, startx, startv, startL = self.points[0]
-                        return (startx, startL), True
-                    else:
-                        # we are not done, but cannot reach the goal.
-                        # reverse. Find position from where to reverse
-                        if i > 0:
-                            starti, _, _, _ = max(self.points)
-                            reversei = starti + 1
-                        else:
-                            starti, _, _, _ = min(self.points)
-                            reversei = starti - 1
-                        if self.log: print("reversing at %d..." % starti)
-                        # how many steps are missing?
-                        self.nreverses += 1
-                        deltai = i - starti
-                        # request one less because one step is spent on
-                        # the outside try
-                        if self.log: print("   %d steps to do at %d -> [from %d, delta=%d] targeting %d." % (
-                            i - starti, starti, reversei, deltai, reversei - deltai))
-                        # make this many steps in the other direction
-                        self.goals.append(('sample-at', reversei - deltai))
-                        continue
-                        
-                else:
+                if len(pointi) == 1:
                     # return the previously sampled point
                     _, xj, _, Lj = pointi[0]
                     return (xj, Lj), True
+                
+                self.continue_sampling(i)
             
             elif goal[0] == 'expand-to':
-                j = goal[1]
-                # check if we already tried 
-                
-                if j > 0 and self.contourpath.samplingpath.fwd_possible:
-                    #print("going forward...", j)
-                    starti, startx, startv, _ = max(self.points)
-                    if j > starti:
-                        xj, v = self.contourpath.extrapolate(j)
-                        self.goals.insert(0, ('bisect', starti, startx, startv, None, None, None, j, xj, v, +1))
-                        #self.goals.append(goal)
-                        return xj, False
-                    else:
-                        # we are already done
-                        if self.log: print("done going to", j, starti)
-                        pass
-                elif j < 0 and self.contourpath.samplingpath.rwd_possible:
-                    #print("going backward...", j)
-                    starti, startx, startv, _ = min(self.points)
-                    if j < starti:
-                        xj, v = self.contourpath.extrapolate(j)
-                        self.goals.insert(0, ('bisect', starti, startx, startv, None, None, None, j, xj, v, -1))
-                        #self.goals.append(goal)
-                        return xj, False
-                    else:
-                        # we are already done
-                        if self.log: print("done going to", j)
-                        pass
-                else:
-                    # we are trying to go somewhere we cannot.
-                    # skip to other goals
-                    if self.log: print("cannot go there", j)
-                    pass
+                ret = self.expand_to(goal[1])
+                if ret is not None:
+                    return ret
 
             elif goal[0] == 'bisect':
-                # Bisect to find first point outside
-                
-                # left is inside (i: index, x: coordinate, v: direction)
-                # mid is the middle just evaluated (if not None)
-                # right is outside
                 _, lefti, leftx, leftv, midi, midx, midv, righti, rightx, rightv, sign = goal
-                if self.log: print("bisecting ...", lefti, midi, righti)
-                
-                if midi is None:
-                    # check if right is actually outside
-                    if Llast is None:
-                        # yes it is. continue below
-                        pass
-                    else:
-                        # right is actually inside
-                        # so we successfully jumped all the way successfully
-                        if self.log: print("successfully went all the way in one jump!")
-                        self.contourpath.add(righti, rightx, rightv, Llast)
-                        Llast = None
-                        continue
-                else:
-                    # shrink interval based on previous evaluation point
-                    if Llast is not None:
-                        #print("   inside.  updating interval %d-%d" % (midi, righti))
-                        lefti, leftx, leftv = midi, midx, midv
-                        self.contourpath.add(midi, midx, midv, Llast)
-                        Llast = None
-                    else:
-                        #print("   outside. updating interval %d-%d" % (lefti, midi))
-                        righti, rightx, rightv = midi, midx, midv
-                
-                # we need to bisect. righti was outside
-                midi = (righti + lefti) // 2
-                if midi == lefti or midi == righti:
-                    # we are done bisecting. right is the first point outside
-                    if self.log: print("  bisecting gave reflection point", righti, rightx, rightv)
-                    if self.plot: plt.plot(rightx[0], rightx[1], 'xr')
-                    # compute reflected direction
-                    vk = self.reverse(rightx, rightv * sign, plot=self.plot) * sign
-                    if self.log: print("  reversing there", rightv)
-                    # go from reflection point one step in that direction
-                    # that is our new point
-                    xk, vk = extrapolate_ahead(sign, rightx, vk, contourpath=self.contourpath)
-                    if self.log: print("  making one step from", rightx, rightv, '-->', xk, vk)
-                    self.nreflections += 1
-                    if self.log: print("  trying new point,", xk)
-                    self.goals.insert(0, ('reflect-at', righti, xk, vk, sign))
-                    return xk, False
-                else:
-                    if self.log: print("  continue bisect at", midi)
-                    # we should evaluate the middle point
-                    midx, midv = extrapolate_ahead(midi - lefti, leftx, leftv, contourpath=self.contourpath)
-                    # continue bisecting
-                    self.goals.insert(0, ('bisect', lefti, leftx, leftv, midi, midx, midv, righti, rightx, rightv, sign))
-                    return midx, False
+                ret = self.bisect_at(lefti, leftx, leftv, midi, midx, midv, righti, rightx, rightv, sign, Llast)
+                Llast = None
+                if ret is not None:
+                    return ret
             
             elif goal[0] == 'reflect-at':
                 _, j, xk, vk, sign = goal
-                self.nreflections += 1
-                
-                if Llast is not None:
-                    # we can go about our merry way.
-                    #print("  inside", j)
-                    self.contourpath.add(j, xk, vk, Llast)
-                    Llast = None
-                    continue
-                else:
-                    #print("  reflection failed", j, xk, vk)
-                    # we are stuck and have to give up this direction
-                    if self.plot: plt.plot(xk[0], xk[1], 's', mfc='None', mec='r', ms=10)
-                    if sign == 1:
-                        self.contourpath.samplingpath.fwd_possible = False
-                    else:
-                        self.contourpath.samplingpath.rwd_possible = False
-                    Llast = None
-                    continue
+                self.reflect_at(j, xk, vk, sign, Llast)
+                Llast = None
             else:
                 assert False, goal
             
