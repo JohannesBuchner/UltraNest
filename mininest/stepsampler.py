@@ -429,8 +429,7 @@ class GeodesicSliceSampler(StepSampler):
         self.axis_index = 0
 
     def get_center(self, ui, region):
-        # center is the mean in transformed coordinates
-        return 0 * ui
+        # center is in transformed coordinates
         #return region.unormed.mean(axis=0)
         while True:
             c = np.random.randint(len(region.u))
@@ -534,7 +533,7 @@ class GeodesicSliceSampler(StepSampler):
             right = pi
             u = 0
             
-            self.sampling_radius = np.random.randint(ndim) == 0
+            #self.sampling_radius = np.random.uniform() < self.radial_fraction
             rlow = 0
             rhigh = self.scale
             self.interval = (v, left, right, u, center, rlow, rhigh)

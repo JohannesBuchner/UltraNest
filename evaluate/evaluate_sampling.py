@@ -117,7 +117,8 @@ def main(args):
         ##DESampler(nsteps=16), DESampler(nsteps=4), #DESampler(nsteps=1),
         #CubeSliceSampler(nsteps=2*ndim), CubeSliceSampler(nsteps=ndim), CubeSliceSampler(nsteps=max(1, ndim//2)),
         #RegionSliceSampler(nsteps=ndim), RegionSliceSampler(nsteps=max(1, ndim//2)),
-        RegionSliceSampler(nsteps=2), RegionSliceSampler(nsteps=4), RegionSliceSampler(nsteps=ndim), RegionSliceSampler(nsteps=2*ndim),
+        RegionSliceSampler(nsteps=2), RegionSliceSampler(nsteps=4), 
+        RegionSliceSampler(nsteps=ndim), RegionSliceSampler(nsteps=4*ndim),
         #RegionBallSliceSampler(nsteps=16), RegionBallSliceSampler(nsteps=4), RegionBallSliceSampler(nsteps=1),
         #RegionBallSliceSampler(nsteps=2*ndim), RegionBallSliceSampler(nsteps=ndim), RegionBallSliceSampler(nsteps=max(1, ndim//2)),
         #RegionSequentialSliceSampler(nsteps=2*ndim), RegionSequentialSliceSampler(nsteps=ndim), RegionSequentialSliceSampler(nsteps=max(1, ndim//2)),
@@ -134,29 +135,27 @@ def main(args):
         #GeodesicSliceSampler(nsteps=ndim, adapt=True),
         #GeodesicSliceSampler(nsteps=ndim * 4, adapt=True),
 
+        #GeodesicSliceSampler(nsteps=2, radial_fraction=1./ndim),
+        #GeodesicSliceSampler(nsteps=4, radial_fraction=1./ndim),
+        #GeodesicSliceSampler(nsteps=max(4, ndim // 2), radial_fraction=1./ndim),
+        #GeodesicSliceSampler(nsteps=ndim, radial_fraction=1./ndim),
+        #GeodesicSliceSampler(nsteps=ndim * 4, radial_fraction=1./ndim),
+
+        #GeodesicSliceSampler(nsteps=ndim * 4, radial_fraction=0.33),
+        #GeodesicSliceSampler(nsteps=ndim, radial_fraction=0.33),
+        #GeodesicSliceSampler(nsteps=max(4, ndim // 2), radial_fraction=0.33),
+        #GeodesicSliceSampler(nsteps=4, radial_fraction=0.33),
+        #GeodesicSliceSampler(nsteps=2, radial_fraction=0.33),
+
         GeodesicSliceSampler(nsteps=2),
         GeodesicSliceSampler(nsteps=4),
-        GeodesicSliceSampler(nsteps=max(4, ndim // 2)),
         GeodesicSliceSampler(nsteps=ndim),
         GeodesicSliceSampler(nsteps=ndim * 4),
 
-        GeodesicSliceSampler(nsteps=ndim * 4, scale=3),
-        GeodesicSliceSampler(nsteps=ndim, scale=3),
-        GeodesicSliceSampler(nsteps=max(4, ndim // 2), scale=3),
-        GeodesicSliceSampler(nsteps=4, scale=3),
-        GeodesicSliceSampler(nsteps=2, scale=3),
-
         RegionGeodesicSliceSampler(nsteps=2),
         RegionGeodesicSliceSampler(nsteps=4),
-        RegionGeodesicSliceSampler(nsteps=max(4, ndim // 2)),
         RegionGeodesicSliceSampler(nsteps=ndim),
         RegionGeodesicSliceSampler(nsteps=ndim * 4),
-
-        RegionGeodesicSliceSampler(nsteps=ndim * 4, scale=3),
-        RegionGeodesicSliceSampler(nsteps=ndim, scale=3),
-        RegionGeodesicSliceSampler(nsteps=max(4, ndim // 2), scale=3),
-        RegionGeodesicSliceSampler(nsteps=4, scale=3),
-        RegionGeodesicSliceSampler(nsteps=2, scale=3),
 
         #OtherSamplerProxy(nnewdirections=ndim * 2, sampler='steps', nsteps=ndim * 2, scale=1, balance=0.9, nudge=1.1, log=False),
         #OtherSamplerProxy(nnewdirections=ndim * 2, sampler='steps', nsteps=ndim * 2, scale=1, balance=0.6, nudge=1.1, log=False),
@@ -238,13 +237,13 @@ def main(args):
         assert (vol <= 1).all(), vol
         relstepsize = stepsizesq**0.5 / vol**(1. / ndim)
         relradial_step = radial_step / vol**(1. / ndim)
-        axstep1.hist(relstepsize[np.isfinite(relstepsize)], cumulative=True, density=True, 
+        axstep1.hist(relstepsize[np.isfinite(relstepsize)], bins=1000, cumulative=True, density=True, 
             histtype='step',
             label=label, color=color, ls=ls)
-        axstep2.hist(angular_step, cumulative=True, density=True, 
+        axstep2.hist(angular_step, bins=1000, cumulative=True, density=True, 
             histtype='step', 
             label=label, color=color, ls=ls)
-        axstep3.hist(relradial_step, cumulative=True, density=True, 
+        axstep3.hist(relradial_step, bins=1000, cumulative=True, density=True, 
             histtype='step', 
             label=label, color=color, ls=ls)
         sampler.plot(filename = 'evaluate_sampling_%s_%dd_N%d_%s.png' % (args.problem, ndim, nlive, samplername))
