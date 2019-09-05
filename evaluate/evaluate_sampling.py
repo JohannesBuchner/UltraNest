@@ -143,19 +143,29 @@ def main(args):
 
         #GeodesicSliceSampler(nsteps=ndim * 4, radial_fraction=0.33),
         #GeodesicSliceSampler(nsteps=ndim, radial_fraction=0.33),
-        #GeodesicSliceSampler(nsteps=max(4, ndim // 2), radial_fraction=0.33),
+        ##GeodesicSliceSampler(nsteps=max(4, ndim // 2), radial_fraction=0.33),
         #GeodesicSliceSampler(nsteps=4, radial_fraction=0.33),
         #GeodesicSliceSampler(nsteps=2, radial_fraction=0.33),
 
-        GeodesicSliceSampler(nsteps=2),
-        GeodesicSliceSampler(nsteps=4),
-        GeodesicSliceSampler(nsteps=ndim),
-        GeodesicSliceSampler(nsteps=ndim * 4),
+        #GeodesicSliceSampler(nsteps=2, radial_fraction=1),
+        #GeodesicSliceSampler(nsteps=4, radial_fraction=1),
+        #GeodesicSliceSampler(nsteps=ndim, radial_fraction=1),
+        #GeodesicSliceSampler(nsteps=ndim * 4, radial_fraction=1),
 
-        RegionGeodesicSliceSampler(nsteps=2),
-        RegionGeodesicSliceSampler(nsteps=4),
-        RegionGeodesicSliceSampler(nsteps=ndim),
-        RegionGeodesicSliceSampler(nsteps=ndim * 4),
+        RegionGeodesicSliceSampler(nsteps=2, radial_fraction=1/ndim),
+        RegionGeodesicSliceSampler(nsteps=4, radial_fraction=1/ndim),
+        RegionGeodesicSliceSampler(nsteps=ndim, radial_fraction=1/ndim),
+        RegionGeodesicSliceSampler(nsteps=ndim * 4, radial_fraction=1/ndim),
+
+        RegionGeodesicSliceSampler(nsteps=ndim * 4, radial_fraction=1),
+        RegionGeodesicSliceSampler(nsteps=ndim, radial_fraction=1),
+        RegionGeodesicSliceSampler(nsteps=4, radial_fraction=4/ndim),
+        #RegionGeodesicSliceSampler(nsteps=2, radial_fraction=2/ndim),
+
+        #RegionGeodesicSliceSampler(nsteps=ndim * 4, radial_fraction=1),
+        #RegionGeodesicSliceSampler(nsteps=ndim, radial_fraction=1),
+        #RegionGeodesicSliceSampler(nsteps=4, radial_fraction=1),
+        #RegionGeodesicSliceSampler(nsteps=2, radial_fraction=1),
 
         #OtherSamplerProxy(nnewdirections=ndim * 2, sampler='steps', nsteps=ndim * 2, scale=1, balance=0.9, nudge=1.1, log=False),
         #OtherSamplerProxy(nnewdirections=ndim * 2, sampler='steps', nsteps=ndim * 2, scale=1, balance=0.6, nudge=1.1, log=False),

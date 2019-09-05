@@ -332,26 +332,25 @@ class CubeSliceSampler(StepSampler):
             plt.plot([(ui + v * left)[0], (ui + v * right)[0]], 
                 [(ui + v * left)[1], (ui + v * right)[1]],
                 ':o', color='k', lw=2, alpha=0.3)
+        
         # shrink direction if outside
-        while True:
-            if not self.found_left:
-                xj = ui + v * left
+        if not self.found_left:
+            xj = ui + v * left
 
-                if region.inside(xj.reshape((1, -1))):
-                    self.interval = (v, left, right, u)
-                    return xj.reshape((1, -1))
-                else:
-                    self.found_left = True
+            if region.inside(xj.reshape((1, -1))):
+                return xj.reshape((1, -1))
+            else:
+                self.found_left = True
 
-            if not self.found_right:
-                xj = ui + v * right
-                
-                if region.inside(xj.reshape((1, -1))):
-                    self.interval = (v, left, right * 2, u)
-                    return xj.reshape((1, -1))
-                else:
-                    self.found_right = True
+        if not self.found_right:
+            xj = ui + v * right
             
+            if region.inside(xj.reshape((1, -1))):
+                return xj.reshape((1, -1))
+            else:
+                self.found_right = True
+        
+        while True:
             u = np.random.uniform(left, right)
             xj = ui + v * u
             
@@ -410,7 +409,7 @@ class GeodesicSliceSampler(StepSampler):
     
     Makes a step in radius, and the remaining nsteps in angular coordinates
     """
-    def __init__(self, nsteps, scale=1.5, adapt=False):
+    def __init__(self, nsteps, radial_fraction, scale=1.5, adapt=False):
         """
         see StepSampler.__init__ documentation
         """
@@ -418,6 +417,7 @@ class GeodesicSliceSampler(StepSampler):
         self.reset()
         self.scale = scale
         self.adapt = adapt
+        self.radial_fraction = radial_fraction
 
     def __str__(self):
         return type(self).__name__ + '(%d steps%s)' % (self.nsteps, 
@@ -426,7 +426,8 @@ class GeodesicSliceSampler(StepSampler):
     def reset(self):
         self.interval = None
         self.sampling_radius = True
-        self.axis_index = 0
+        self.found_left = False
+        self.found_right = False
 
     def get_center(self, ui, region):
         # center is in transformed coordinates
@@ -473,30 +474,42 @@ class GeodesicSliceSampler(StepSampler):
         return uj
 
     def adjust_accept(self, accepted, unew, pnew, Lnew, nc):
-        v, left, right, u, center, rlow, rhigh = self.interval
+        v, aleft, aright, u, center, rleft, rright = self.interval
         if self.sampling_radius:
-            if accepted:
-                self.sampling_radius = False
-                
-                self.last = unew, Lnew
-                self.history.append((unew, Lnew))
-                
-                if self.adapt:
-                    if rhigh > self.scale / 1.1:
-                        self.scale *= 1.1
-                    elif self.scale > 1.04:
-                        self.scale /= 1.01
-                
-            else:
-                self.nrejects += 1
-
-                if u < 1:
-                    rlow = u
+            if not self.found_left: 
+                if accepted:
+                    self.interval = (v, aleft, aright, u, center, rleft * 2, rright)
                 else:
-                    rhigh = u
-                
-                self.interval = (v, left, right, u, center, rlow, rhigh)
-
+                    self.nrejects += 1
+                    self.found_left = True
+            elif not self.found_right:
+                if accepted:
+                    self.interval = (v, aleft, aright, u, center, rleft, rright * 2)
+                else:
+                    self.nrejects += 1
+                    self.found_right = True
+                    # adjust scale
+                    if -rleft > self.scale or rright > self.scale:
+                        self.scale *= 1.1
+                    else:
+                        self.scale /= 1.1
+            else:
+                if accepted:
+                    # start with a angular proposal next time
+                    self.sampling_radius = False
+                    
+                    self.last = unew, Lnew
+                    self.history.append((unew, Lnew))
+                else:
+                    self.nrejects += 1
+                    # shrink current interval
+                    if u == 0:
+                        pass
+                    elif u < 0:
+                        rleft = u
+                    elif u > 0:
+                        rright = u
+                    self.interval = (v, aleft, aright, u, center, rleft, rright)
         else:
             if accepted:
                 # start with a new interval next time
@@ -510,18 +523,17 @@ class GeodesicSliceSampler(StepSampler):
                 if u == 0:
                     pass
                 elif u < 0:
-                    left = u
+                    aleft = u
                 elif u > 0:
-                    right = u
+                    aright = u
                 
-                self.interval = (v, left, right, u, center, rlow, rhigh)
+                self.interval = (v, aleft, aright, u, center, rleft, rright)
         self.logstat.append([accepted, self.scale])
 
     def adjust_outside_region(self):
         self.adjust_accept(False, unew=None, pnew=None, Lnew=None, nc=0)
     
     def move(self, ui, region, ndraw=1, plot=False):
-        ndim = len(ui)
         if self.interval is None:
             
             center = self.get_center(ui, region)
@@ -529,57 +541,70 @@ class GeodesicSliceSampler(StepSampler):
             # draw a random orthogonal vector v
             v = self.generate_direction(ui, region, center)
             # expand direction until it is surely outside
-            left = -pi
-            right = pi
+            aleft = -pi
+            aright = pi
             u = 0
             
-            #self.sampling_radius = np.random.uniform() < self.radial_fraction
-            rlow = 0
-            rhigh = self.scale
-            self.interval = (v, left, right, u, center, rlow, rhigh)
+            self.sampling_radius = np.random.uniform() < self.radial_fraction
+            self.found_left = False
+            self.found_right = False
+            rleft = -self.scale
+            rright = self.scale
+            self.interval = (v, aleft, aright, u, center, rleft, rright)
         else:
-            v, left, right, u, center, rlow, rhigh = self.interval
+            v, aleft, aright, u, center, rleft, rright = self.interval
         
         if self.sampling_radius:
-            #r0 = ((ui - center)**2).sum()**0.5
+            if plot:
+                plt.plot([(ui + v * rleft)[0], (ui + v * rright)[0]], 
+                    [(ui + v * rleft)[1], (ui + v * rright)[1]],
+                    ':o', color='k', lw=2, alpha=0.3)
             
-            while True:
-                # make a line from center to current point
-                # 0 is at center, 1 is at current point
-                # propose randomly from rlow to rhigh on that line
-                u = np.random.uniform(rlow**ndim, rhigh**ndim)**(1. / ndim)
-                xj = self.sample_central_ray(region, ui, center, u, plot=plot)
-                
+            # shrink direction if outside
+            if not self.found_left:
+                xj = ui + v * rleft
+
                 if region.inside(xj.reshape((1, -1))):
-                    self.interval = (v, left, right, u, center, rlow, rhigh)
-                    if plot:
-                        plt.plot(xj[0], xj[1], 'x', color='g')
                     return xj.reshape((1, -1))
                 else:
-                    # left and right intervals are split at 1
-                    # shrink corresponding one
-                    if u < 1:
-                        rlow = u
+                    self.found_left = True
+
+            if not self.found_right:
+                xj = ui + v * rright
+                
+                if region.inside(xj.reshape((1, -1))):
+                    return xj.reshape((1, -1))
+                else:
+                    self.found_right = True
+                
+            while True:
+                u = np.random.uniform(rleft, rright)
+                xj = ui + v * u
+                
+                if region.inside(xj.reshape((1, -1))):
+                    self.interval = (v, aleft, aright, u, center, rleft, rright)
+                    return xj.reshape((1, -1))
+                else:
+                    if u < 0:
+                        rleft = u
                     else:
-                        rhigh = u
-                    self.interval = (v, left, right, u, center, rlow, rhigh)
-                    if plot:
-                        plt.plot(xj[0], xj[1], 'x', color='r')
+                        rright = u
+                    self.interval = (v, aleft, aright, u, center, rleft, rright)
 
         # slice sampling on angle:
         while True:
-            u = np.random.uniform(left, right)
+            u = np.random.uniform(aleft, aright)
             xj = self.sample_circle(region, ui, center, v, u, plot=plot)
             
             if region.inside(xj.reshape((1, -1))):
-                self.interval = (v, left, right, u, center, rlow, rhigh)
+                self.interval = (v, aleft, aright, u, center, rleft, rright)
                 return xj.reshape((1, -1))
             else:
                 if u < 0:
-                    left = u
+                    aleft = u
                 else:
-                    right = u
-                self.interval = (v, left, right, u, center, rlow, rhigh)
+                    aright = u
+                self.interval = (v, aleft, aright, u, center, rleft, rright)
 
 
 class RegionGeodesicSliceSampler(GeodesicSliceSampler):
