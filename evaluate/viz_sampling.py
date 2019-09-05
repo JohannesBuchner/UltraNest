@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from mininest.mlfriends import ScalingLayer, AffineLayer, MLFriends
 from mininest.stepsampler import RegionMHSampler, CubeMHSampler
 from mininest.stepsampler import CubeSliceSampler, RegionSliceSampler, SamplingPathSliceSampler, SamplingPathStepSampler, OtherSamplerProxy
+from mininest.stepsampler import GeodesicSliceSampler, RegionGeodesicSliceSampler
 #from mininest.stepsampler import DESampler
 import tqdm
 from problems import transform, get_problem
@@ -100,8 +101,10 @@ def main(args):
         #('cubeslice', CubeSliceSampler(nsteps=1)),
         #('regionslice', RegionSliceSampler(nsteps=1)),
         #('pathslice', SamplingPathSliceSampler(nsteps=1)),
-        ('pathstep', SamplingPathStepSampler(nsteps=12, nresets=12, log=True)),
+        #('pathstep', SamplingPathStepSampler(nsteps=12, nresets=12, log=True)),
         #('stepsampler', OtherSamplerProxy(nsteps=10, sampler='steps')),
+        ('geodesic', GeodesicSliceSampler(nsteps=2)),
+        ('regiongeodesic', RegionGeodesicSliceSampler(nsteps=2)),
     ]
     if args.sampler != 'all':
         samplers = [(name, sampler) for name, sampler in samplers if name == args.sampler]
@@ -109,9 +112,9 @@ def main(args):
         print("exploring with %s ..." % sampler)
         region, it, Lmin, us, Ls, transform, loglike = prepare_problem(problemname, ndim, nlive, sampler)
         
-        #nc = 0
-        #starti = 0
-        #startu = us[starti,:]
+        nc = 0
+        starti = 0
+        startu = us[starti,:]
         # take 20 steps
         print("taking %d steps..." % nsteps)
         sampler.reset()
@@ -122,8 +125,7 @@ def main(args):
             # replace lowest likelihood point
             plt.plot(us[:,0], us[:,1], 'x', ms=2, color='k')
             Lmin = Ls.min()
-            sampler.__next__(region, Lmin, us, Ls, transform, loglike, plot=True)
-            """
+            #sampler.__next__(region, Lmin, us, Ls, transform, loglike, plot=True)
             plt.plot(startu[0], startu[1], 'x', ms=6, color='k')
             
             while True:
@@ -155,7 +157,7 @@ def main(args):
                         sampler.adjust_accept(False, unew, pnew, Lnew, nc)
                 else:
                     sampler.adjust_outside_region()
-            """
+            
             xlo, xhi = plt.xlim()
             ylo, yhi = plt.ylim()
             lo = min(xlo, ylo)

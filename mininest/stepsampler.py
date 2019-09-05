@@ -6,6 +6,7 @@ MCMC-like step sampling within a region
 
 
 import numpy as np
+from numpy import pi
 
 def generate_random_direction(ui, region, scale=1):
     """ draw uniform direction vector in unit cube space of length scale.
@@ -427,11 +428,49 @@ class GeodesicSliceSampler(StepSampler):
         self.sampling_radius = True
         self.axis_index = 0
 
-    def generate_direction(self, ui, region):
-        return generate_cube_oriented_direction(ui, region)
-
     def get_center(self, ui, region):
-        return region.unormed.mean(axis=0)
+        # center is the mean in transformed coordinates
+        #return region.unormed.mean(axis=0)
+        while True:
+            c = np.random.randint(len(region.u))
+            if not (ui == region.u[c,:]).all():
+                return region.unormed[c,:]
+
+    def generate_direction(self, ui, region, center):
+        # generate along some axis, return orthogonalized, normalised direction vector
+        ti = region.transformLayer.transform(ui)
+        direction = ti - center
+        r = (direction**2).sum()**0.5
+        
+        w = generate_cube_oriented_direction(ui, region)
+        tw = region.transformLayer.transform(ui + w * 1e-3) - ti
+        
+        # project and substract projection from point coordinate ui
+        v = tw - np.dot(direction, tw) / np.dot(direction, direction) * direction
+        v *= r / (v**2).sum()**0.5
+        return v
+    
+    def sample_central_ray(self, region, ui, center, u, plot=False):
+        # go u long in transformed space
+        ti = region.transformLayer.transform(ui)
+        tj = (ti - center) * u + center
+        uj = region.transformLayer.untransform(tj)
+        if plot:
+            uc = region.transformLayer.untransform(center)
+            plt.plot([ui[0], uc[0]], [ui[1], uc[1]], '-', color='g')
+        return uj
+    
+    def sample_circle(self, region, ui, center, v, u, plot=False):
+        # make a circle around center going through transformed ui and v
+        ti = region.transformLayer.transform(ui)
+        tj = (ti - center) * np.cos(u) + v * np.sin(u) + center
+        uj = region.transformLayer.untransform(tj)
+        if plot:
+            c = np.linspace(-pi, pi, 40).reshape((-1, 1))
+            tj = (ti - center) * np.cos(c) + v * np.sin(c) + center
+            uc = region.transformLayer.untransform(tj)
+            plt.plot(uc[:,0], uc[:,1], '-', color='g')
+        return uj
 
     def adjust_accept(self, accepted, unew, pnew, Lnew, nc):
         v, left, right, u, center, rlow, rhigh = self.interval
@@ -486,17 +525,12 @@ class GeodesicSliceSampler(StepSampler):
         if self.interval is None:
             
             center = self.get_center(ui, region)
-            direction = ui - center
-            r = (direction**2).sum()**0.5
             
             # draw a random orthogonal vector v
-            w = self.generate_direction(ui, region)
-            # project and substract projection from point coordinate ui
-            v = w - np.dot(direction, w) / np.dot(direction, direction) * direction
-            v *= r / (v**2).sum()**0.5
+            v = self.generate_direction(ui, region, center)
             # expand direction until it is surely outside
-            left = -np.pi
-            right = np.pi
+            left = -pi
+            right = pi
             u = 0
             
             self.sampling_radius = np.random.randint(ndim) == 0
@@ -514,10 +548,12 @@ class GeodesicSliceSampler(StepSampler):
                 # 0 is at center, 1 is at current point
                 # propose randomly from rlow to rhigh on that line
                 u = np.random.uniform(rlow**ndim, rhigh**ndim)**(1. / ndim)
-                xj = (ui - center) * u + center
+                xj = self.sample_central_ray(region, ui, center, u, plot=plot)
                 
                 if region.inside(xj.reshape((1, -1))):
                     self.interval = (v, left, right, u, center, rlow, rhigh)
+                    if plot:
+                        plt.plot(xj[0], xj[1], 'x', color='g')
                     return xj.reshape((1, -1))
                 else:
                     # left and right intervals are split at 1
@@ -527,11 +563,13 @@ class GeodesicSliceSampler(StepSampler):
                     else:
                         rhigh = u
                     self.interval = (v, left, right, u, center, rlow, rhigh)
+                    if plot:
+                        plt.plot(xj[0], xj[1], 'x', color='r')
 
         # slice sampling on angle:
         while True:
             u = np.random.uniform(left, right)
-            xj = ui * np.cos(u) + v * np.sin(u)
+            xj = self.sample_circle(region, ui, center, v, u, plot=plot)
             
             if region.inside(xj.reshape((1, -1))):
                 self.interval = (v, left, right, u, center, rlow, rhigh)
@@ -549,9 +587,25 @@ class RegionGeodesicSliceSampler(GeodesicSliceSampler):
     GeodesicSliceSampler sampler, but propose random orientiations
     in preference of region.
     """
-    def generate_direction(self, ui, region):
-        return generate_region_oriented_direction(ui, region)
+    #def get_center(self, ui, region):
+    #    # center is the mean in transformed coordinates
+    #    return region.unormed.mean(axis=0)
 
+    def generate_direction(self, ui, region, center):
+        # generate along some axis, return orthogonalized, normalised direction vector
+        ti = region.transformLayer.transform(ui)
+        direction = ti - center
+        r = (direction**2).sum()**0.5
+        
+        # choose axis in transformed space:
+        w = np.zeros_like(ti)
+        w[np.random.randint(len(ti))] = 1.0
+        
+        # project and substract projection from point coordinate ui
+        v = w - np.dot(direction, w) / np.dot(direction, direction) * direction
+        v *= r / (v**2).sum()**0.5
+        return v
+    
 
 
 from mininest.samplingpath import SamplingPath, ContourSamplingPath, extrapolate_ahead
