@@ -69,26 +69,12 @@ def generate_mixture_random_direction(ui, region, scale=1, uniform_weight=1e-6):
     uniform_weight sets the weight for the equal-axis ball contribution 
     scale is the length of the vector.
     """
-    ti = region.transformLayer.transform(ui)
-    # choose axis in transformed space:
-    ti = np.random.normal(ti, 1)
-    #ti *= scale / (ti**2).sum()**0.5
-    # convert back to unit cube space:
-    uj = region.transformLayer.untransform(ti)
-    # draw a unit vector of the same size
-    
-    v = uj - ui
-    v *= scale / (v**2).sum()**0.5
-
-    w = v
-
-
     v1 = generate_random_direction(ui, region)
     v1 /= (v1**2).sum()**0.5
     v2 = generate_region_random_direction(ui, region)
     v2 /= (v2**2).sum()**0.5
     v = (v1 * uniform_weight + v2 * (1 - uniform_weight))
-    v *= self.scale * (v2**2).sum()**0.5
+    v *= scale * (v2**2).sum()**0.5
     return v
         
 class StepSampler(object):
@@ -423,17 +409,22 @@ class GeodesicSliceSampler(StepSampler):
     
     Makes a step in radius, and the remaining nsteps in angular coordinates
     """
-    def __init__(self, nsteps, scale=1.5):
+    def __init__(self, nsteps, scale=1.5, adapt=False):
         """
         see StepSampler.__init__ documentation
         """
         StepSampler.__init__(self, nsteps=nsteps)
         self.reset()
         self.scale = scale
+        self.adapt = adapt
+
+    def __str__(self):
+        return type(self).__name__ + '(%d steps%s)' % (self.nsteps, 
+            ', adapt' if self.adapt else '')
     
     def reset(self):
         self.interval = None
-        self.sampled_radius = False
+        self.sampling_radius = True
         self.axis_index = 0
 
     def generate_direction(self, ui, region):
@@ -444,12 +435,19 @@ class GeodesicSliceSampler(StepSampler):
 
     def adjust_accept(self, accepted, unew, pnew, Lnew, nc):
         v, left, right, u, center, rlow, rhigh = self.interval
-        if not self.sampled_radius:
+        if self.sampling_radius:
             if accepted:
-                self.sampled_radius = True
+                self.sampling_radius = False
                 
                 self.last = unew, Lnew
                 self.history.append((unew, Lnew))
+                
+                if self.adapt:
+                    if rhigh > self.scale / 1.1:
+                        self.scale *= 1.1
+                    elif self.scale > 1.04:
+                        self.scale /= 1.01
+                
             else:
                 self.nrejects += 1
 
@@ -501,15 +499,15 @@ class GeodesicSliceSampler(StepSampler):
             right = np.pi
             u = 0
             
-            self.sampled_radius = False
+            self.sampling_radius = np.random.randint(ndim) == 0
             rlow = 0
             rhigh = self.scale
             self.interval = (v, left, right, u, center, rlow, rhigh)
         else:
             v, left, right, u, center, rlow, rhigh = self.interval
         
-        if not self.sampled_radius:
-            r0 = ((ui - center)**2).sum()**0.5
+        if self.sampling_radius:
+            #r0 = ((ui - center)**2).sum()**0.5
             
             while True:
                 # make a line from center to current point

@@ -128,16 +128,23 @@ def main(args):
         #SamplingPathStepSampler(nresets=ndim, nsteps=ndim, scale=1, balance=0.95, nudge=1.1),
         #SamplingPathStepSampler(nresets=ndim, nsteps=max(1, ndim//2), scale=1, balance=0.95, nudge=1.1),
         
-        GeodesicSliceSampler(nsteps=4, scale=1.5),
-        
-        #GeodesicSliceSampler(nsteps=max(1, ndim // 2), scale=1.5),
-        GeodesicSliceSampler(nsteps=ndim, scale=1.5),
-        GeodesicSliceSampler(nsteps=ndim * 4, scale=1.5),
+        #GeodesicSliceSampler(nsteps=2, adapt=True),
+        #GeodesicSliceSampler(nsteps=4, adapt=True),
+        #GeodesicSliceSampler(nsteps=max(2, ndim // 2), adapt=True),
+        #GeodesicSliceSampler(nsteps=ndim, adapt=True),
+        #GeodesicSliceSampler(nsteps=ndim * 4, adapt=True),
 
-        RegionGeodesicSliceSampler(nsteps=4, scale=1.5),
-        #RegionGeodesicSliceSampler(nsteps=max(1, ndim // 2), scale=1.5),
-        RegionGeodesicSliceSampler(nsteps=ndim, scale=1.5),
-        RegionGeodesicSliceSampler(nsteps=ndim * 4, scale=1.5),
+        GeodesicSliceSampler(nsteps=2),
+        GeodesicSliceSampler(nsteps=4),
+        GeodesicSliceSampler(nsteps=max(4, ndim // 2)),
+        GeodesicSliceSampler(nsteps=ndim),
+        GeodesicSliceSampler(nsteps=ndim * 4),
+
+        RegionGeodesicSliceSampler(nsteps=2),
+        RegionGeodesicSliceSampler(nsteps=4),
+        RegionGeodesicSliceSampler(nsteps=max(4, ndim // 2)),
+        RegionGeodesicSliceSampler(nsteps=ndim),
+        RegionGeodesicSliceSampler(nsteps=ndim * 4),
 
         #OtherSamplerProxy(nnewdirections=ndim * 2, sampler='steps', nsteps=ndim * 2, scale=1, balance=0.9, nudge=1.1, log=False),
         #OtherSamplerProxy(nnewdirections=ndim * 2, sampler='steps', nsteps=ndim * 2, scale=1, balance=0.6, nudge=1.1, log=False),
@@ -269,6 +276,7 @@ def main(args):
     filename = 'evaluate_sampling_%s_%dd_N%d_speed.pdf' % (args.problem, ndim, nlive)
     print("plotting to %s ..." % filename)
     plt.savefig(filename, bbox_inches='tight')
+    plt.savefig(filename.replace('.pdf', '.png'), bbox_inches='tight')
     plt.close()
 
     plt.figure('stepsize')
