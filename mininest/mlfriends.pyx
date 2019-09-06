@@ -1,9 +1,12 @@
-#
 # cython: language_level=3
+# mython: profile=True
 import numpy as np
 cimport numpy as np
 from numpy import pi
+cimport cython
 
+@cython.boundscheck(False)
+@cython.wraparound(False)
 def count_nearby(np.ndarray[np.float_t, ndim=2] apts, 
     np.ndarray[np.float_t, ndim=2] bpts, 
     np.float_t radiussq, 
@@ -35,9 +38,11 @@ def count_nearby(np.ndarray[np.float_t, ndim=2] apts,
             if d <= radiussq:
                 nnearby[j] += 1
         
-    return nnearby
+    #return nnearby
 
 
+@cython.boundscheck(False)
+@cython.wraparound(False)
 def find_nearby(np.ndarray[np.float_t, ndim=2] apts, 
     np.ndarray[np.float_t, ndim=2] bpts, 
     np.float_t radiussq, 
@@ -71,8 +76,42 @@ def find_nearby(np.ndarray[np.float_t, ndim=2] apts,
             if d <= radiussq:
                 nnearby[j] = i
                 break
+    
+    #return nnearby
+
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+def check_inside_ellipsoid(np.ndarray[np.float_t, ndim=2] bpts, 
+    np.ndarray[np.float_t, ndim=2] ellipsoid_invcov,
+    np.ndarray[np.int64_t, ndim=1] is_inside
+):
+    """
+    For each distance vector b in bpts from the ellipsoid center
+    
+    make vector-matrix-vector dot products and check if < 1 
+    
+    1 is written to is_inside (of same length as bpts) if true,
+    0 otherwise.
+
+    should be equivalent to 1*(np.einsum('ij,jk,ik->i', b - ellipsoid_center, self.ellipsoid_invcov, b - ellipsoid_center) <= 1.0)
+    """
+    cdef int nb = bpts.shape[0]
+    cdef int ndim = bpts.shape[1]
+
+    cdef int i, j, k
+    cdef np.float_t d
+    
+    for i in range(nb):
+        d = 0
+        for j in range(ndim):
+            for k in range(ndim):
+                d += bpts[i,j] * ellipsoid_invcov[j,k] * bpts[i,k]
         
-    return nnearby
+        if d <= 1.0:
+            is_inside[i] = 1
+        else:
+            is_inside[i] = 0
 
 
 def compute_maxradiussq(np.ndarray[np.float_t, ndim=2] apts, np.ndarray[np.float_t, ndim=2] bpts):
@@ -590,6 +629,7 @@ class MLFriends(object):
         bpts = self.transformLayer.transform(pts)
         idnearby = np.empty(len(pts), dtype=int)
         find_nearby(self.unormed, bpts, self.maxradiussq, idnearby)
+        idnearby[:] = 0
         mask = idnearby >= 0
         
         # additionally require points to be inside bounding ellipsoid
@@ -608,8 +648,17 @@ class MLFriends(object):
     
     def inside_ellipsoid(self, bpts):
         # to disable wrapping ellipsoid
-        return np.ones(len(bpts), dtype=bool)
+        #return np.ones(len(bpts), dtype=bool)
         
+        #is_inside = np.empty(len(bpts), dtype=int)
+        #is_inside[:] = 1
+        #check_inside_ellipsoid(bpts - self.ellipsoid_center, self.ellipsoid_invcov, is_inside)
+        #return is_inside == 1
+        
+        # compute distance vector to center
         d = (bpts - self.ellipsoid_center)
-        return np.einsum('ij,jk,ik->i', d, self.ellipsoid_invcov, d) <= 1.0
+        # distance in normalised coordates: vector . matrix . vector
+        # where the matrix is the ellipsoid inverse covariance
+        # (r <= 1) means inside
+        return np.einsum('ij,jk,ik->i', d, self.ellipsoid_invcov, d) <= 1.000000001
     

@@ -1321,8 +1321,8 @@ class ReactiveNestedSampler(object):
         nextregion.maxradiussq = r
         nextregion.enlarge = f
         # verify correctness:
-        #nextregion.create_ellipsoid(minvol=minvol)
-        #assert nextregion.inside(active_u).all(), nextregion.inside(active_u).mean()
+        nextregion.create_ellipsoid(minvol=minvol)
+        assert nextregion.inside(active_u).all(), ("live points should live in new region, but only %.3f%% do." % (100 * nextregion.inside(active_u).mean()), active_u)
         
         #if self.log:
         #    self.logger.debug("building new region ... r=%e, f=%e" % (r, f))
@@ -1339,8 +1339,9 @@ class ReactiveNestedSampler(object):
             
             assert not (self.transformLayer.clusterids == 0).any(), (self.transformLayer.clusterids, need_accept, updated)
         
+        
         self.region.create_ellipsoid(minvol=minvol)
-        assert nextregion.inside(active_u).all(), ("live points should live in new region, but only %.3f%% do." % (100 * nextregion.inside(active_u).mean()), active_u)
+        
         assert len(self.region.u) == len(self.transformLayer.clusterids)
         return updated
     

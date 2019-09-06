@@ -182,7 +182,7 @@ class StepSampler(object):
         if Li is None:
             # choose a new random starting point
             mask = region.inside(us)
-            assert mask.all(), ("None of the live points satisfies the current region!", 
+            assert mask.any(), ("One of the live points does not satisfies the current region!", 
                 region.maxradiussq, region.u, region.unormed, us)
             i = np.random.randint(mask.sum())
             self.starti = i
@@ -1200,7 +1200,7 @@ class OtherSamplerProxy(object):
         # choose a new random starting point
         if self.log: print("starting from scratch...")
         mask = region.inside(us)
-        assert mask.all(), ("Not all of the live points satisfy the current region!", 
+        assert mask.any(), ("Not all of the live points satisfy the current region!", 
             region.maxradiussq, region.u[~mask,:], region.unormed[~mask,:], us[~mask,:])
         i = np.random.randint(mask.sum())
         self.starti = i

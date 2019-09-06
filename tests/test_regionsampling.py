@@ -2,6 +2,7 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 from mininest.mlfriends import ScalingLayer, AffineLayer, MLFriends
+from numpy.testing import assert_allclose
 
 here = os.path.dirname(__file__)
 
@@ -41,6 +42,29 @@ def test_region_sampling_affine(plot=False):
     region.maxradiussq = 1e-90
     assert np.allclose(region.unormed, region.transformLayer.transform(points)), "transform should be reproducible"
     assert region.inside(points).all(), "live points should lie very near themselves"
+
+def test_region_ellipsoid(plot=False):
+    np.random.seed(1)
+    points = np.random.uniform(0.4, 0.6, size=(1000, 2))
+    points[:,1] *= 0.5
+    
+    transformLayer = AffineLayer(wrapped_dims=[])
+    transformLayer.optimize(points, points)
+    region = MLFriends(points, transformLayer)
+    region.maxradiussq, region.enlarge = region.compute_enlargement(nbootstraps=30)
+    print("enlargement factor:", region.enlarge, 1 / region.enlarge)
+    region.create_ellipsoid()
+    nclusters = transformLayer.nclusters
+    assert nclusters == 1
+    
+    bpts = np.random.uniform(size=(100, 2))
+    mask = region.inside_ellipsoid(bpts)
+    
+    d = (bpts - region.ellipsoid_center)
+    mask2 = np.einsum('ij,jk,ik->i', d, region.ellipsoid_invcov, d) <= 1.0
+    
+    assert_allclose(mask, mask2)
+
 
 def test_region_sampling_scaling(plot=False):
     np.random.seed(1)
