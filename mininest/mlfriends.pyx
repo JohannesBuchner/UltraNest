@@ -339,12 +339,18 @@ class ScalingLayer(object):
         return s
         
     def transform(self, u):
-        w = self.wrap(u)
+        if self.has_wraps:
+            w = self.wrap(u)
+        else:
+            w = u
         return ((w - self.mean) / self.std).reshape(u.shape)
     
     def untransform(self, ww):
         w = (ww * self.std) + self.mean
-        u = self.unwrap(w).reshape(ww.shape)
+        if self.has_wraps:
+            u = self.unwrap(w).reshape(ww.shape)
+        else:
+            u = w.reshape(ww.shape)
         return u
 
 class AffineLayer(ScalingLayer):
@@ -391,12 +397,18 @@ class AffineLayer(ScalingLayer):
         return s
     
     def transform(self, u):
-        w = self.wrap(u)
+        if self.has_wraps:
+            w = self.wrap(u)
+        else:
+            w = u
         return np.dot(w - self.ctr, self.T)
     
     def untransform(self, ww):
         w = np.dot(ww, self.invT) + self.ctr
-        u = self.unwrap(w).reshape(ww.shape)
+        if self.has_wraps:
+            u = self.unwrap(w).reshape(ww.shape)
+        else:
+            u = w.reshape(ww.shape)
         return u
 
 

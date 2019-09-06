@@ -120,8 +120,8 @@ def main(args):
         RegionSliceSampler(nsteps=2), RegionSliceSampler(nsteps=4), 
         RegionSliceSampler(nsteps=ndim), RegionSliceSampler(nsteps=4*ndim),
         #RegionBallSliceSampler(nsteps=16), RegionBallSliceSampler(nsteps=4), RegionBallSliceSampler(nsteps=1),
-        #RegionBallSliceSampler(nsteps=2*ndim), RegionBallSliceSampler(nsteps=ndim), RegionBallSliceSampler(nsteps=max(1, ndim//2)),
-        #RegionSequentialSliceSampler(nsteps=2*ndim), RegionSequentialSliceSampler(nsteps=ndim), RegionSequentialSliceSampler(nsteps=max(1, ndim//2)),
+        RegionBallSliceSampler(nsteps=2*ndim), RegionBallSliceSampler(nsteps=ndim), RegionBallSliceSampler(nsteps=max(1, ndim//2)),
+        RegionSequentialSliceSampler(nsteps=2*ndim), RegionSequentialSliceSampler(nsteps=ndim), RegionSequentialSliceSampler(nsteps=max(1, ndim//2)),
         
         #SamplingPathSliceSampler(nsteps=16), SamplingPathSliceSampler(nsteps=4), SamplingPathSliceSampler(nsteps=1),
         

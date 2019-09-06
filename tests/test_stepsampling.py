@@ -32,13 +32,13 @@ def test_stepsampler_cubemh(plot=False):
 def test_stepsampler_regionmh(plot=False):
     np.random.seed(1)
     sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform)
-    sampler.stepsampler = RegionMHSampler(nsteps=len(paramnames))
+    sampler.stepsampler = RegionMHSampler(nsteps=4 * len(paramnames))
     r = sampler.run(log_interval=50, min_num_live_points=400)
     sampler.print_results()
     a = (np.abs(r['samples'] - 0.7) < 0.1).all(axis=1)
     b = (np.abs(r['samples'] - 0.3) < 0.1).all(axis=1)
-    assert a.sum() > 1
-    assert b.sum() > 1
+    assert a.sum() > 1, a
+    assert b.sum() > 1, b
 
 def test_stepsampler_de(plot=False):
     np.random.seed(1)
@@ -169,7 +169,8 @@ def test_pathsampler():
 
 if __name__ == '__main__':
     #test_stepsampler_cubemh(plot=True)
-    #test_stepsampler_regionmh(plot=True)
-    #test_stepsampler_de(plot=True)
+    #test_stepsampler_regionmh(plot=False)
+    #test_stepsampler_de(plot=False)
     #test_stepsampler_cubeslice(plot=True)
-    test_stepsampler_regionslice(plot=True)
+    #test_stepsampler_regionslice(plot=True)
+    pass

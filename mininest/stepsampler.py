@@ -29,7 +29,7 @@ def generate_cube_oriented_direction(ui, region):
     return v
 
 
-def generate_region_oriented_direction(ui, region, scale=1):
+def generate_region_oriented_direction(ui, region, tscale=1, scale=None):
     """ 
     draw a random direction vector in direction of one of the region axes.
     The vector length is scale.
@@ -40,11 +40,12 @@ def generate_region_oriented_direction(ui, region, scale=1):
     # choose axis in transformed space:
     j = np.random.randint(ndim)
     tv = np.zeros(ndim)
-    tv[j] = 1.0
+    tv[j] = tscale
     # convert back to unit cube space:
-    uj = region.transformLayer.untransform(ti + tv * 1e-3)
+    uj = region.transformLayer.untransform(ti + tv)
     v = uj - ui
-    v *= scale / (v**2).sum()**0.5
+    if scale is not None:
+        v *= scale / (v**2).sum()**0.5
     return v
 
 def generate_region_random_direction(ui, region, scale=1):
@@ -77,7 +78,17 @@ def generate_mixture_random_direction(ui, region, scale=1, uniform_weight=1e-6):
     v = (v1 * uniform_weight + v2 * (1 - uniform_weight))
     v *= scale * (v2**2).sum()**0.5
     return v
-        
+
+def inside_region(region, unew, uold):
+    mask = region.inside(unew)
+    return mask
+    
+    tnew = region.transformLayer.transform(unew)
+    told = region.transformLayer.transform(uold)
+    mask2 = ((told.reshape((1, -1)) - tnew)**2).sum(axis=1) < region.maxradiussq
+    return np.logical_or(mask, mask2)
+
+
 class StepSampler(object):
     """
     Simple step sampler, staggering around
@@ -93,6 +104,7 @@ class StepSampler(object):
         self.nrejects = 0
         self.scale = 1.0
         self.last = None, None
+        self.nudge = 1.1**(1./self.nsteps)
         self.logstat = []
         self.logstat_labels = ['accepted', 'scale']
     
@@ -109,6 +121,12 @@ class StepSampler(object):
             plt.subplot(len(parts), 1, 1+i)
             plt.ylabel(label)
             plt.plot(part)
+            x = []
+            y = []
+            for j in range(0, len(part), 20):
+                x.append(j)
+                y.append(part[j:j+20].mean())
+            plt.plot(x, y)
             if np.min(part) > 0:
                 plt.yscale('log')
         plt.savefig(filename, bbox_inches='tight')
@@ -119,18 +137,19 @@ class StepSampler(object):
     
     def adjust_outside_region(self):
         #print("ineffective proposal scale (%e). shrinking..." % self.scale)
-        self.scale *= 0.1
+        self.scale /= self.nudge**10
         assert self.scale > 0
         self.last = None, None
         self.logstat.append([False, self.scale])
     
     def adjust_accept(self, accepted, unew, pnew, Lnew, nc):
         if accepted:
-            self.scale *= 1.04
+            #if self.scale < 1:
+            self.scale *= self.nudge
             self.last = unew, Lnew
             self.history.append((unew, Lnew))
         else:
-            self.scale /= 1.04
+            self.scale /= self.nudge**10
             self.nrejects += 1
         self.logstat.append([accepted, self.scale])
     
@@ -142,26 +161,28 @@ class StepSampler(object):
         # find most recent point in history conforming to current Lmin
         ui, Li = self.last
         if Li is not None and not Li >= Lmin:
-            #print("wandered out of L constraint; resetting", ui[0])
+            print("wandered out of L constraint; resetting", ui[0])
             ui, Li = None, None
         
-        if Li is not None and not region.inside(ui.reshape((1,-1))):
-            # region was updated and we are not inside anymore 
-            # so reset
-            ui, Li = None, None
+        #if Li is not None and not region.inside(ui.reshape((1,-1))):
+        #    # region was updated and we are not inside anymore 
+        #    # so reset
+        #    print("wandered out of region; resetting", ui[0])
+        #    ui, Li = None, None
         
         if Li is None and self.history:
             # try to resume from a previous point above the current contour
             for uj, Lj in self.history[::-1]:
-                if Lj >= Lmin and region.inside(uj.reshape((1,-1))):
+                if Lj > Lmin and region.inside(uj.reshape((1,-1))):
                     ui, Li = uj, Lj
                     break
+            pass
         
         # select starting point
         if Li is None:
             # choose a new random starting point
             mask = region.inside(us)
-            assert mask.any(), ("None of the live points satisfies the current region!", 
+            assert mask.all(), ("None of the live points satisfies the current region!", 
                 region.maxradiussq, region.u, region.unormed, us)
             i = np.random.randint(mask.sum())
             self.starti = i
@@ -173,13 +194,14 @@ class StepSampler(object):
             self.history.append((ui, Li))
         
         unew = self.move(ui, region, ndraw=ndraw, plot=plot)
+        #print("proposed", unew)
         if plot:
             plt.plot([ui[0], unew[:,0]], [ui[1], unew[:,1]], '-', color='k', lw=0.5)
             plt.plot(ui[0], ui[1], 'd', color='r', ms=4)
             plt.plot(unew[:,0], unew[:,1], 'x', color='r', ms=4)
         mask = np.logical_and(unew > 0, unew < 1).all(axis=1)
         unew = unew[mask,:]
-        mask = region.inside(unew)
+        mask = inside_region(region, unew, ui)
         nc = 0
         
         if mask.any():
@@ -188,12 +210,12 @@ class StepSampler(object):
             pnew = transform(unew)
             Lnew = loglike(pnew)
             nc = 1
-            if Lnew >= Lmin:
+            if Lnew > Lmin:
                 if plot:
                     plt.plot(unew[0], unew[1], 'o', color='g', ms=4)
                 self.adjust_accept(True, unew, pnew, Lnew, nc)
                 if len(self.history) >= self.nsteps:
-                    #print("made %d steps" % len(self.history))
+                    #print("made %d steps" % len(self.history), Lnew, Lmin)
                     self.history = []
                     self.last = None, None
                     return unew, pnew, Lnew, nc
@@ -321,6 +343,8 @@ class CubeSliceSampler(StepSampler):
             # expand direction until it is surely outside
             left = -self.scale
             right = self.scale
+            self.found_left = False
+            self.found_right = False
             u = 0
             
             self.interval = (v, left, right, u)
@@ -337,7 +361,7 @@ class CubeSliceSampler(StepSampler):
         if not self.found_left:
             xj = ui + v * left
 
-            if region.inside(xj.reshape((1, -1))):
+            if inside_region(region, xj.reshape((1, -1)), ui):
                 return xj.reshape((1, -1))
             else:
                 self.found_left = True
@@ -345,7 +369,7 @@ class CubeSliceSampler(StepSampler):
         if not self.found_right:
             xj = ui + v * right
             
-            if region.inside(xj.reshape((1, -1))):
+            if inside_region(region, xj.reshape((1, -1)), ui):
                 return xj.reshape((1, -1))
             else:
                 self.found_right = True
@@ -354,7 +378,7 @@ class CubeSliceSampler(StepSampler):
             u = np.random.uniform(left, right)
             xj = ui + v * u
             
-            if region.inside(xj.reshape((1, -1))):
+            if inside_region(region, xj.reshape((1, -1)), ui):
                 self.interval = (v, left, right, u)
                 return xj.reshape((1, -1))
             else:
@@ -370,7 +394,7 @@ class RegionSliceSampler(CubeSliceSampler):
     Slice sampler, in region axes
     """
     def generate_direction(self, ui, region):
-        return generate_region_oriented_direction(ui, region)
+        return generate_region_oriented_direction(ui, region, tscale=self.scale, scale=None)
 
 
 class RegionSequentialSliceSampler(CubeSliceSampler):
@@ -564,7 +588,7 @@ class GeodesicSliceSampler(StepSampler):
             if not self.found_left:
                 xj = ui + v * rleft
 
-                if region.inside(xj.reshape((1, -1))):
+                if inside_region(region, xj.reshape((1, -1)), ui):
                     return xj.reshape((1, -1))
                 else:
                     self.found_left = True
@@ -572,7 +596,7 @@ class GeodesicSliceSampler(StepSampler):
             if not self.found_right:
                 xj = ui + v * rright
                 
-                if region.inside(xj.reshape((1, -1))):
+                if inside_region(region, xj.reshape((1, -1)), ui):
                     return xj.reshape((1, -1))
                 else:
                     self.found_right = True
@@ -581,7 +605,7 @@ class GeodesicSliceSampler(StepSampler):
                 u = np.random.uniform(rleft, rright)
                 xj = ui + v * u
                 
-                if region.inside(xj.reshape((1, -1))):
+                if inside_region(region, xj.reshape((1, -1)), ui):
                     self.interval = (v, aleft, aright, u, center, rleft, rright)
                     return xj.reshape((1, -1))
                 else:
@@ -596,7 +620,7 @@ class GeodesicSliceSampler(StepSampler):
             u = np.random.uniform(aleft, aright)
             xj = self.sample_circle(region, ui, center, v, u, plot=plot)
             
-            if region.inside(xj.reshape((1, -1))):
+            if inside_region(region, xj.reshape((1, -1)), ui):
                 self.interval = (v, aleft, aright, u, center, rleft, rright)
                 return xj.reshape((1, -1))
             else:
@@ -649,7 +673,7 @@ class SamplingPathSliceSampler(StepSampler):
         self.path = None
 
     def generate_direction(self, ui, region, scale=1):
-        return generate_region_oriented_direction(ui, region, scale=scale)
+        return generate_region_oriented_direction(ui, region, tscale=1, scale=scale)
 
     def adjust_accept(self, accepted, unew, pnew, Lnew, nc):
         if accepted:
