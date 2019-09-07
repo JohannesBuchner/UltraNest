@@ -5,8 +5,8 @@ cimport numpy as np
 from numpy import pi
 cimport cython
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
+#@cython.boundscheck(False)
+#@cython.wraparound(False)
 def count_nearby(np.ndarray[np.float_t, ndim=2] apts, 
     np.ndarray[np.float_t, ndim=2] bpts, 
     np.float_t radiussq, 
@@ -41,8 +41,8 @@ def count_nearby(np.ndarray[np.float_t, ndim=2] apts,
     #return nnearby
 
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
+#@cython.boundscheck(False)
+#@cython.wraparound(False)
 def find_nearby(np.ndarray[np.float_t, ndim=2] apts, 
     np.ndarray[np.float_t, ndim=2] bpts, 
     np.float_t radiussq, 
@@ -80,7 +80,9 @@ def find_nearby(np.ndarray[np.float_t, ndim=2] apts,
     #return nnearby
 
 
-def compute_maxradiussq(np.ndarray[np.float_t, ndim=2] apts, np.ndarray[np.float_t, ndim=2] bpts):
+#@cython.boundscheck(False)
+#@cython.wraparound(False)
+cdef float compute_maxradiussq(np.ndarray[np.float_t, ndim=2] apts, np.ndarray[np.float_t, ndim=2] bpts):
     """
     For each point b in bpts measure shortest euclidean distance to any point in apts.
     Returns the square of the maximum over these.
@@ -447,7 +449,7 @@ class MLFriends(object):
         r = self.maxradiussq**0.5
         N, ndim = self.u.shape
         # how large is a sphere of size r in untransformed coordinates?
-        return self.transformLayer.volscale * r**ndim #* vol_prefactor(ndim)
+        return np.log(self.transformLayer.volscale) + np.log(r) * ndim #+ np.log(vol_prefactor(ndim))
     
     def set_transformLayer(self, transformLayer):
         """
@@ -482,7 +484,7 @@ class MLFriends(object):
         assert maxd > 0, (maxd, self.u)
         return maxd
 
-    def compute_enlargement(self, nbootstraps=50, minvol=0.):
+    def compute_enlargement(self, nbootstraps=50, minvol=0., rng=np.random):
         """
         Return MLFriends radius after nbootstraps bootstrapping rounds
         """
@@ -493,20 +495,22 @@ class MLFriends(object):
         maxf = 0.0
         
         for i in range(nbootstraps):
-            idx = np.random.randint(N, size=N)
+            idx = rng.randint(N, size=N)
             selected[:] = False
             selected[idx] = True
-            a = self.unormed[selected,:]
-            b = self.unormed[~selected,:]
+            ta = self.unormed[selected,:]
+            tb = self.unormed[~selected,:]
+            ua = self.u[selected,:]
+            ub = self.u[~selected,:]
             
             # compute distances from a to b
-            maxd = max(maxd, compute_maxradiussq(a, b))
+            maxd = max(maxd, compute_maxradiussq(ta, tb))
             
             # compute enlargement of bounding ellipsoid
-            ctr, cov = bounding_ellipsoid(self.unormed, minvol=minvol)
+            ctr, cov = bounding_ellipsoid(ua, minvol=minvol)
             a = np.linalg.inv(cov)  # inverse covariance
             # compute expansion factor
-            delta = b - ctr
+            delta = ub - ctr
             f = np.einsum('...i, ...i', np.tensordot(delta, a, axes=1), delta).max()
             assert np.isfinite(f), (ctr, cov, self.unormed, f, delta, a)
             maxf = max(maxf, f)
@@ -530,9 +534,9 @@ class MLFriends(object):
         nnearby = np.empty(nsamples, dtype=int)
         count_nearby(self.unormed, v, self.maxradiussq, nnearby)
         vmask = np.random.uniform(high=nnearby) < 1
-        vmask[vmask] = self.inside_ellipsoid(v[vmask,:])
         w = self.transformLayer.untransform(v[vmask,:])
         wmask = np.logical_and(w > 0, w < 1).all(axis=1)
+        wmask[wmask] = self.inside_ellipsoid(w[wmask])
 
         return w[wmask,:], idx[vmask][wmask]
     
@@ -540,13 +544,13 @@ class MLFriends(object):
         N, ndim = self.u.shape
         # draw from unit cube in prior space
         u = np.random.uniform(size=(nsamples, ndim))
+        wmask = self.inside_ellipsoid(u)
         # check if inside region in transformed space
-        v = self.transformLayer.transform(u)
-        idnearby = np.empty(nsamples, dtype=int)
+        v = self.transformLayer.transform(u[wmask,:])
+        idnearby = np.empty(len(v), dtype=int)
         find_nearby(self.unormed, v, self.maxradiussq, idnearby)
         vmask = idnearby >= 0
-        vmask[vmask] = self.inside_ellipsoid(v[vmask,:])
-        return u[vmask,:], idnearby[vmask]
+        return u[wmask,:][vmask,:], idnearby[vmask]
     
     def sample_from_transformed_boundingbox(self, nsamples=100):
         N, ndim = self.u.shape
@@ -555,11 +559,11 @@ class MLFriends(object):
         idnearby = np.empty(nsamples, dtype=int)
         find_nearby(self.unormed, v, self.maxradiussq, idnearby)
         vmask = idnearby >= 0
-        vmask[vmask] = self.inside_ellipsoid(v[vmask,:])
         
         # check if inside unit cube
         w = self.transformLayer.untransform(v[vmask,:])
         wmask = np.logical_and(w > 0, w < 1).all(axis=1)
+        wmask[wmask] = self.inside_ellipsoid(w[wmask])
 
         return w[wmask,:], idnearby[vmask][wmask]
     
@@ -568,20 +572,18 @@ class MLFriends(object):
         # draw from rectangle in transformed space
 
         z = np.random.normal(size=(nsamples, ndim))
-        u = z * (np.random.uniform(size=nsamples)**(1./ndim) / np.sqrt(np.sum(z**2, axis=1))).reshape((nsamples, 1))
-        #u = z * (np.sqrt(np.sum(z**2, axis=1))).reshape((nsamples, 1))
+        z /= ((z**2).sum(axis=1)**0.5).reshape((nsamples, 1))
+        u = z * np.random.uniform(size=(nsamples, 1))**(1./ndim)
         
-        v = self.ellipsoid_center + np.einsum('ij,kj->ki', self.ellipsoid_cov, u)
+        w = self.ellipsoid_center + np.einsum('ij,kj->ki', self.ellipsoid_cov**0.5, u)
         
-        idnearby = np.empty(nsamples, dtype=int)
+        wmask = np.logical_and(w > 0, w < 1).all(axis=1)
+        v = self.transformLayer.transform(w[wmask,:])
+        idnearby = np.empty(len(v), dtype=int)
         find_nearby(self.unormed, v, self.maxradiussq, idnearby)
         vmask = idnearby >= 0
         
-        # check if inside unit cube
-        w = self.transformLayer.untransform(v[vmask,:])
-        wmask = np.logical_and(w > 0, w < 1).all(axis=1)
-
-        return w[wmask,:], idnearby[vmask][wmask]
+        return w[wmask,:][vmask,:], idnearby[vmask]
     
     def sample(self, nsamples=100):
         samples, idx = self.current_sampling_method(nsamples=nsamples)
@@ -595,31 +597,31 @@ class MLFriends(object):
         bpts = self.transformLayer.transform(pts)
         idnearby = np.empty(len(pts), dtype=int)
         find_nearby(self.unormed, bpts, self.maxradiussq, idnearby)
-        idnearby[:] = 0
         mask = idnearby >= 0
         
         # additionally require points to be inside bounding ellipsoid
-        mask[mask] = self.inside_ellipsoid(bpts[mask])
+        mask[mask] = self.inside_ellipsoid(pts[mask,:])
         return mask
 
     def create_ellipsoid(self, minvol=0.0):
         assert self.enlarge is not None
         # compute enlargement of bounding ellipsoid
-        ctr, cov = bounding_ellipsoid(self.unormed, minvol=minvol)
+        ctr, cov = bounding_ellipsoid(self.u, minvol=minvol)
         a = np.linalg.inv(cov)
 
         self.ellipsoid_center = ctr
         self.ellipsoid_invcov = a / self.enlarge
         self.ellipsoid_cov = cov * self.enlarge
     
-    def inside_ellipsoid(self, bpts):
+    def inside_ellipsoid(self, u):
         # to disable wrapping ellipsoid
-        #return np.ones(len(bpts), dtype=bool)
+        #return np.ones(len(u), dtype=bool)
         
         # compute distance vector to center
-        d = (bpts - self.ellipsoid_center)
+        d = u - self.ellipsoid_center
         # distance in normalised coordates: vector . matrix . vector
         # where the matrix is the ellipsoid inverse covariance
+        r = np.einsum('ij,jk,ik->i', d, self.ellipsoid_invcov, d)
         # (r <= 1) means inside
-        return np.einsum('ij,jk,ik->i', d, self.ellipsoid_invcov, d) <= 1.000000001
+        return r <= 1.000001
     

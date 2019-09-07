@@ -1201,7 +1201,10 @@ class ReactiveNestedSampler(object):
             self.region = MLFriends(active_u, self.transformLayer)
             self.region_nodes = active_node_ids.copy()
             assert self.region.maxradiussq is None
-            r, f = self.region.compute_enlargement(nbootstraps=max(1, nbootstraps // self.mpi_size), minvol=minvol)
+            
+            r, f = self.region.compute_enlargement(minvol=minvol,
+                nbootstraps=max(1, nbootstraps // self.mpi_size)) 
+                #rng=np.random.RandomState(self.mpi_rank))
             #print("MLFriends built. r=%f" % r**0.5)
             if self.use_mpi:
                 recv_maxradii = self.comm.gather(r, root=0)
@@ -1231,7 +1234,9 @@ class ReactiveNestedSampler(object):
             oldu = self.region.u
             self.region.u = active_u
             self.region.set_transformLayer(self.transformLayer)
-            r, f = self.region.compute_enlargement(nbootstraps=max(1, nbootstraps // self.mpi_size), minvol=minvol)
+            r, f = self.region.compute_enlargement(minvol=minvol,
+                nbootstraps=max(1, nbootstraps // self.mpi_size))
+                #rng=np.random.RandomState(self.mpi_rank))
             #print("MLFriends built. r=%f" % r**0.5)
             if self.use_mpi:
                 recv_maxradii = self.comm.gather(r, root=0)
