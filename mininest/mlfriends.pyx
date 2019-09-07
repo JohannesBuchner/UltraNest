@@ -5,8 +5,8 @@ cimport numpy as np
 from numpy import pi
 cimport cython
 
-#@cython.boundscheck(False)
-#@cython.wraparound(False)
+@cython.boundscheck(False)
+@cython.wraparound(False)
 def count_nearby(np.ndarray[np.float_t, ndim=2] apts, 
     np.ndarray[np.float_t, ndim=2] bpts, 
     np.float_t radiussq, 
@@ -41,8 +41,8 @@ def count_nearby(np.ndarray[np.float_t, ndim=2] apts,
     #return nnearby
 
 
-#@cython.boundscheck(False)
-#@cython.wraparound(False)
+@cython.boundscheck(False)
+@cython.wraparound(False)
 def find_nearby(np.ndarray[np.float_t, ndim=2] apts, 
     np.ndarray[np.float_t, ndim=2] bpts, 
     np.float_t radiussq, 
@@ -80,8 +80,8 @@ def find_nearby(np.ndarray[np.float_t, ndim=2] apts,
     #return nnearby
 
 
-#@cython.boundscheck(False)
-#@cython.wraparound(False)
+@cython.boundscheck(False)
+@cython.wraparound(False)
 cdef float compute_maxradiussq(np.ndarray[np.float_t, ndim=2] apts, np.ndarray[np.float_t, ndim=2] bpts):
     """
     For each point b in bpts measure shortest euclidean distance to any point in apts.
