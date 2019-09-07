@@ -23,7 +23,7 @@ def main(args):
             draw_multiple=False,
         )
         sampler.run(log_interval=20, 
-            max_num_improvement_loops=1, min_num_live_points=args.num_live_points,)
+            max_num_improvement_loops=10, min_num_live_points=args.num_live_points,)
         sampler.print_results()
         sampler.plot()
     else:

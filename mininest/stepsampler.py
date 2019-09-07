@@ -80,12 +80,15 @@ def generate_mixture_random_direction(ui, region, scale=1, uniform_weight=1e-6):
     return v
 
 def inside_region(region, unew, uold):
-    mask = region.inside(unew)
-    return mask
+    return np.ones(len(unew), dtype=bool)
     
     tnew = region.transformLayer.transform(unew)
     told = region.transformLayer.transform(uold)
     mask2 = ((told.reshape((1, -1)) - tnew)**2).sum(axis=1) < region.maxradiussq
+    if mask2.all():
+        return mask2
+    
+    mask = region.inside(unew)
     return np.logical_or(mask, mask2)
 
 

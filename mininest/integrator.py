@@ -768,6 +768,16 @@ class ReactiveNestedSampler(object):
                 active_node_ids = np.asarray([n.id for n in active_nodes])
                 active_values = np.asarray([n.value for n in active_nodes])
                 active_u = self.pointpile.getu(active_node_ids)
+                
+                if self.region is not None:
+                    self.region.u = active_u
+                    self.region.unormed = self.region.transformLayer.transform(active_u)
+                    if len(self.region.transformLayer.clusterids) >= len(active_u):
+                        # shorten cluster ids, some nodes dropped away
+                        self.region.transformLayer.clusterids = self.region.transformLayer.clusterids[:len(active_u)]
+                    else:
+                        self.region.transformLayer.clusterids = np.zeros(len(active_u))
+                
                 self.update_region(
                     active_u=active_u, active_node_ids=active_node_ids)
                 
@@ -786,6 +796,7 @@ class ReactiveNestedSampler(object):
                           np.inf if self.ncall == initial_ncall else (i * nsamples + j + 1) * 100. / (self.ncall - initial_ncall) ))
                     sys.stdout.flush()
                 ndone += 1
+        self.region = None
     
     def widen_roots(self, nroots):
         """
@@ -1373,7 +1384,10 @@ class ReactiveNestedSampler(object):
             if self.region is None:
                 minimal_width_clusters = 0
             else:
-                minimal_width_clusters = self.cluster_num_live_points * self.region.transformLayer.nclusters
+                # compute number of clusters with more than 1 element
+                _, cluster_sizes = np.unique(self.region.transformLayer.clusterids, return_counts=True)
+                nclusters = (cluster_sizes > 1).sum()
+                minimal_width_clusters = self.cluster_num_live_points * nclusters
             
             minimal_width = max(minimal_widths_sequence[0][1], minimal_width_clusters)
             
@@ -1655,14 +1669,15 @@ class ReactiveNestedSampler(object):
                             nbootstraps=self.num_bootstraps, 
                             minvol=exp(-it / nlive) * self.volfactor)
                         
-                        nclusters = self.transformLayer.nclusters
+                        _, cluster_sizes = np.unique(self.region.transformLayer.clusterids, return_counts=True)
+                        nclusters = (cluster_sizes > 1).sum()
                         region_sequence.append((Lmin, nlive, nclusters))
                         
-                        if nlive < cluster_num_live_points * nclusters:
+                        if nlive < cluster_num_live_points * nclusters and improvement_it < max_num_improvement_loops:
                             # make wider here
                             if self.log:
                                 self.logger.info("Found %d clusters, but only have %d live points, want %d." % (
-                                    nclusters, nlive, cluster_num_live_points * nclusters))
+                                    self.region.transformLayer.nclusters, nlive, cluster_num_live_points * nclusters))
                             break
                         
                         #next_update_interval_ncall = self.ncall + (update_interval_ncall or nlive)
@@ -1710,7 +1725,7 @@ class ReactiveNestedSampler(object):
                         #    self.logger.debug("replacing node", Lmin, "from", rootid, "with", L)
                         node.children.append(child)
                         
-                        if i == 0 and nlive < max_num_live_points_for_efficiency:
+                        if i == 0 and nlive < max_num_live_points_for_efficiency and self.stepsampler is None:
                             efficiency_here = (it - it_at_first_region) / (self.ncall - ncall_at_run_start + 1.)
                             if efficiency_here < 1. / (nlive + 1):
                                 # running inefficiently; more live points could make sampling more efficient
@@ -1895,7 +1910,7 @@ class ReactiveNestedSampler(object):
             logzerr_single=(main_iterator.all_H[0] / self.min_num_live_points)**0.5,
             ess=ess,
             paramnames=self.paramnames + self.derivedparamnames,
-            ncall=self.ncall,
+            ncall=int(self.ncall),
         )
         if self.log_to_disk:
             if self.log:

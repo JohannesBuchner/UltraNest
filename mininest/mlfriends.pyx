@@ -1,5 +1,5 @@
 # cython: language_level=3
-# mython: profile=True
+#, profile=True
 import numpy as np
 cimport numpy as np
 from numpy import pi

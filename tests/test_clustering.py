@@ -71,6 +71,7 @@ class MockIntegrator(object):
     def __init__(self):
         self.use_mpi = False
         self.mpi_size = 1
+        self.mpi_rank = 0
         self.region = None
         self.transformLayer = None
         self.wrapped_axes = []
