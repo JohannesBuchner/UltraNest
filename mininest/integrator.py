@@ -1291,68 +1291,96 @@ class ReactiveNestedSampler(object):
         # rebuild space
         #print()
         #print("rebuilding space...", active_u.shape, active_u)
-        nextTransformLayer = self.transformLayer.create_new(active_u, self.region.maxradiussq, minvol=minvol)
-        #nextTransformLayer = ScalingLayer(wrapped_dims=self.wrapped_axes)
-        #nextTransformLayer.optimize(active_u, active_u)
-        assert not (nextTransformLayer.clusterids == 0).any()
-        smallest_cluster = min((nextTransformLayer.clusterids == i).sum() for i in np.unique(nextTransformLayer.clusterids))
-        if self.log and smallest_cluster == 1:
-            self.logger.debug("clustering found some lonely points [need_accept=%s] %s" % (
-                need_accept, np.unique(nextTransformLayer.clusterids, return_counts=True)))
-        
-        nextregion = MLFriends(active_u, nextTransformLayer)
-        
-        if not nextTransformLayer.nclusters < 20:
-            filename = 'overclustered_%d.npz' % nextTransformLayer.nclusters
-            if self.log:
-                self.logger.info("Found a lot of clusters: %d" % nextTransformLayer.nclusters)
+        with warnings.catch_warnings(), np.errstate(all='raise'):
+            try:
+                nextTransformLayer = self.transformLayer.create_new(active_u, self.region.maxradiussq, minvol=minvol)
+                #nextTransformLayer = ScalingLayer(wrapped_dims=self.wrapped_axes)
+                #nextTransformLayer.optimize(active_u, active_u)
+                assert not (nextTransformLayer.clusterids == 0).any()
+                _, cluster_sizes = np.unique(nextTransformLayer.clusterids, return_counts=True)
+                smallest_cluster = cluster_sizes.min()
+                if self.log and smallest_cluster == 1:
+                    self.logger.debug("clustering found some stray points [need_accept=%s] %s" % (
+                        need_accept, np.unique(nextTransformLayer.clusterids, return_counts=True)))
+                
+                nextregion = MLFriends(active_u, nextTransformLayer)
+                if not np.isfinite(nextregion.unormed).all():
+                    assert False
+                    #self.logger.warn("not updating region because new transform gave inf/nans")
+                    #self.region.create_ellipsoid(minvol=minvol)
+                    #return updated
+                
+                if not nextTransformLayer.nclusters < 20:
+                    filename = 'overclustered_%d.npz' % nextTransformLayer.nclusters
+                    if self.log:
+                        self.logger.info("Found a lot of clusters: %d (%d with >1 members) " % (
+                            nextTransformLayer.nclusters, (cluster_sizes > 1).sum()))
+                    
+                    if not os.path.exists(filename):
+                        self.logger.info("A lot of clusters! writing debug output file '%s'" % filename)
+                        np.savez(filename, 
+                            u=nextregion.u, unormed=nextregion.unormed, 
+                            maxradiussq=nextregion.maxradiussq,
+                            u0=self.region.u, unormed0=self.region.unormed, 
+                            maxradiussq0=self.region.maxradiussq)
+                        np.savetxt('overclustered_u_%d.txt' % nextTransformLayer.nclusters, nextregion.u)
+                    #assert nextTransformLayer.nclusters < 20, nextTransformLayer.nclusters
+                
+                #if self.log:
+                #    self.logger.info("computing maxradius...")
+                r, f = nextregion.compute_enlargement(minvol=minvol,
+                    nbootstraps=max(1, nbootstraps // self.mpi_size))
+                    #rng=np.random.RandomState(self.mpi_rank))
+                #print("MLFriends built. r=%f" % r**0.5)
+                if self.use_mpi:
+                    recv_maxradii = self.comm.gather(r, root=0)
+                    recv_maxradii = self.comm.bcast(recv_maxradii, root=0)
+                    r = np.max(recv_maxradii)
+                    recv_enlarge = self.comm.gather(f, root=0)
+                    recv_enlarge = self.comm.bcast(recv_enlarge, root=0)
+                    f = np.max(recv_enlarge)
+                
+                nextregion.maxradiussq = r
+                nextregion.enlarge = f
+                # verify correctness:
+                nextregion.create_ellipsoid(minvol=minvol)
+                assert (nextregion.u == active_u).all()
+                assert np.allclose(nextregion.unormed, nextregion.transformLayer.transform(active_u))
+                assert nextregion.inside(active_u).all(), ("live points should live in new region, but only %.3f%% do." % (100 * nextregion.inside(active_u).mean()), active_u)
+                good_region = nextregion.inside(active_u).all()
+                assert good_region
+                if not good_region:
+                    self.logger.warn("constructed region is inconsistent (maxr=%f,enlarge=%f)" % (r, f))
+                    np.savez('inconsistent_region.npz', 
+                        u=nextregion.u, unormed=nextregion.unormed, 
+                        maxradiussq=nextregion.maxradiussq,
+                        u0=self.region.u, unormed0=self.region.unormed, 
+                        maxradiussq0=self.region.maxradiussq)
+                    np.savetxt('inconsistent_region.txt', nextregion.u)
+                    
+                #good_region = good_region and region.transformLayer.nclusters * 5 < len(active_u)
+                 
+                #if self.log:
+                #    self.logger.debug("building new region ... r=%e, f=%e" % (r, f))
+                #print("MLFriends computed: r=%e nc=%d" % (r, nextTransformLayer.nclusters))
+                # force shrinkage of volume
+                # this is to avoid re-connection of dying out nodes
+                if good_region and (need_accept or nextregion.estimate_volume() <= self.region.estimate_volume()):
+                    self.region = nextregion
+                    self.transformLayer = self.region.transformLayer
+                    self.region_nodes = active_node_ids.copy()
+                    #if self.log:
+                    #    self.logger.debug("region updated: V=%e R=%e" % (self.region.estimate_volume(), r))
+                    updated = True
+                    
+                    assert not (self.transformLayer.clusterids == 0).any(), (self.transformLayer.clusterids, need_accept, updated)
+                
+            except Warning as w:
+                self.logger.warn("not updating region because: %s" % w)
+            except FloatingPointError as e:
+                self.logger.warn("not updating region because: %s" % e)
             
-            if not os.path.exists(filename):
-                self.logger.info("A lot of clusters! writing debug output file '%s'" % filename)
-                np.savez(filename, 
-                    u=nextregion.u, unormed=nextregion.unormed, 
-                    maxradiussq=nextregion.maxradiussq,
-                    u0=self.region.u, unormed0=self.region.unormed, 
-                    maxradiussq0=self.region.maxradiussq)
-                np.savetxt('overclustered_u_%d.txt' % nextTransformLayer.nclusters, nextregion.u)
-            #assert nextTransformLayer.nclusters < 20, nextTransformLayer.nclusters
-        
-        #if self.log:
-        #    self.logger.info("computing maxradius...")
-        r, f = nextregion.compute_enlargement(nbootstraps=max(1, nbootstraps // self.mpi_size))
-        #print("MLFriends built. r=%f" % r**0.5)
-        if self.use_mpi:
-            recv_maxradii = self.comm.gather(r, root=0)
-            recv_maxradii = self.comm.bcast(recv_maxradii, root=0)
-            r = np.max(recv_maxradii)
-            recv_enlarge = self.comm.gather(f, root=0)
-            recv_enlarge = self.comm.bcast(recv_enlarge, root=0)
-            f = np.max(recv_enlarge)
-        
-        nextregion.maxradiussq = r
-        nextregion.enlarge = f
-        # verify correctness:
-        nextregion.create_ellipsoid(minvol=minvol)
-        assert nextregion.inside(active_u).all(), ("live points should live in new region, but only %.3f%% do." % (100 * nextregion.inside(active_u).mean()), active_u)
-        
-        #if self.log:
-        #    self.logger.debug("building new region ... r=%e, f=%e" % (r, f))
-        #print("MLFriends computed: r=%e nc=%d" % (r, nextTransformLayer.nclusters))
-        # force shrinkage of volume
-        # this is to avoid re-connection of dying out nodes
-        if need_accept or nextregion.estimate_volume() <= self.region.estimate_volume():
-            self.region = nextregion
-            self.transformLayer = self.region.transformLayer
-            self.region_nodes = active_node_ids.copy()
-            #if self.log:
-            #    self.logger.debug("region updated: V=%e R=%e" % (self.region.estimate_volume(), r))
-            updated = True
-            
-            assert not (self.transformLayer.clusterids == 0).any(), (self.transformLayer.clusterids, need_accept, updated)
-        
-        
         self.region.create_ellipsoid(minvol=minvol)
-        
         assert len(self.region.u) == len(self.transformLayer.clusterids)
         return updated
     
