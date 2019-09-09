@@ -17,7 +17,6 @@ def test_region_sampling_scaling(plot=False):
     region = MLFriends(upoints, transformLayer)
     region.maxradiussq, region.enlarge = region.compute_enlargement(nbootstraps=30)
     print("enlargement factor:", region.enlarge, 1 / region.enlarge)
-    #region.enlarge = 1.
     region.create_ellipsoid()
     nclusters = transformLayer.nclusters
     assert nclusters == 1
@@ -33,10 +32,10 @@ def test_region_sampling_scaling(plot=False):
         plt.close()
 
     for method in region.sampling_methods:
+        print("sampling_method:", method)
         newpoints, nc = method(nsamples=4000)
         lo1, lo2 = newpoints.min(axis=0)
         hi1, hi2 = newpoints.max(axis=0)
-        print("sampling_method:", method)
         assert 0.15 < lo1 < 0.25, (method.__name__, newpoints, lo1, hi1, lo2, hi2)
         assert 0.015 < lo2 < 0.025, (method.__name__, newpoints, lo1, hi1, lo2, hi2)
         assert 0.45 < hi1 < 0.55, (method.__name__, newpoints, lo1, hi1, lo2, hi2)
@@ -105,7 +104,7 @@ def test_region_ellipsoid(plot=False):
     mask = region.inside_ellipsoid(bpts)
     
     d = (bpts - region.ellipsoid_center)
-    mask2 = np.einsum('ij,jk,ik->i', d, region.ellipsoid_invcov, d) <= 1.0
+    mask2 = np.einsum('ij,jk,ik->i', d, region.ellipsoid_invcov, d) <= region.enlarge
     
     assert_allclose(mask, mask2)
 

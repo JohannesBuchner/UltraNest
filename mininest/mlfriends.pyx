@@ -573,9 +573,10 @@ class MLFriends(object):
 
         z = np.random.normal(size=(nsamples, ndim))
         z /= ((z**2).sum(axis=1)**0.5).reshape((nsamples, 1))
-        u = z * np.random.uniform(size=(nsamples, 1))**(1./ndim)
-        
-        w = self.ellipsoid_center + np.einsum('ij,kj->ki', self.ellipsoid_cov**0.5, u)
+        u = z * self.enlarge**0.5 * np.random.uniform(size=(nsamples, 1))**(1./ndim)
+
+        w = self.ellipsoid_center + np.einsum('ij,kj->ki', self.ellipsoid_axes, u)
+        assert self.inside_ellipsoid(w).all()
         
         wmask = np.logical_and(w > 0, w < 1).all(axis=1)
         v = self.transformLayer.transform(w[wmask,:])
@@ -610,8 +611,13 @@ class MLFriends(object):
         a = np.linalg.inv(cov)
 
         self.ellipsoid_center = ctr
-        self.ellipsoid_invcov = a / self.enlarge
-        self.ellipsoid_cov = cov * self.enlarge
+        self.ellipsoid_invcov = a
+        self.ellipsoid_cov = cov
+
+        l, v = np.linalg.eigh(a)
+        self.ellipsoid_axlens = 1. / np.sqrt(l)
+        self.ellipsoid_axes = np.dot(v, np.diag(self.ellipsoid_axlens))
+
     
     def inside_ellipsoid(self, u):
         # to disable wrapping ellipsoid
@@ -623,5 +629,5 @@ class MLFriends(object):
         # where the matrix is the ellipsoid inverse covariance
         r = np.einsum('ij,jk,ik->i', d, self.ellipsoid_invcov, d)
         # (r <= 1) means inside
-        return r <= 1.000001
+        return r <= self.enlarge
     

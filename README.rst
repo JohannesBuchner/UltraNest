@@ -1,7 +1,7 @@
 MiniNest Alpha
 ===============
 
-Pre-release alpha software. Will probably be renamed later.
+Pre-release alpha software. Will probably be renamed later (pleonest? ultranest3? eaglenest? wanaka? )
 
 Nested sampling for Bayesian inference on arbitrary user-defined likelihoods.
 
@@ -27,6 +27,10 @@ Features
   * Multiple modes 
   * Degenerate parameter spaces such as bananas or tight correlations
   * Uses the robust, parameter-free MLFriends algorithm (metric learning RadFriends, Buchner+14,+19)
+  * Region follows new live points
+
+* High-dimensional problems with slice sampling (or ellipsoidal sampling, FlatNUTS, etc.),
+  inside region.
 
 * strategic nested sampling
 
@@ -41,13 +45,13 @@ Features
 
   * some functions implemented in Cython
   * vectorized likelihood function calls
-  * MPI-support
+  * Use multiple cores, fully parallelizable from laptops to clusters
+  * MPI support
 
 
 Coming soon
 =============
 
-* Support for high-dimensional problems (>=20d)
 * Resume from a different, but similar problem (data slightly different)
 
 Usage

@@ -1351,9 +1351,9 @@ class ReactiveNestedSampler(object):
                 nextregion.create_ellipsoid(minvol=minvol)
                 assert (nextregion.u == active_u).all()
                 assert np.allclose(nextregion.unormed, nextregion.transformLayer.transform(active_u))
-                assert nextregion.inside(active_u).all(), ("live points should live in new region, but only %.3f%% do." % (100 * nextregion.inside(active_u).mean()), active_u)
+                #assert nextregion.inside(active_u).all(), ("live points should live in new region, but only %.3f%% do." % (100 * nextregion.inside(active_u).mean()), active_u)
                 good_region = nextregion.inside(active_u).all()
-                assert good_region
+                #assert good_region
                 if not good_region:
                     self.logger.warn("constructed region is inconsistent (maxr=%f,enlarge=%f)" % (r, f))
                     np.savez('inconsistent_region.npz', 
@@ -1383,6 +1383,8 @@ class ReactiveNestedSampler(object):
             except Warning as w:
                 self.logger.warn("not updating region because: %s" % w)
             except FloatingPointError as e:
+                self.logger.warn("not updating region because: %s" % e)
+            except np.linalg.LinAlgError as e:
                 self.logger.warn("not updating region because: %s" % e)
             
         self.region.create_ellipsoid(minvol=minvol)
