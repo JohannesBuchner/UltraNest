@@ -234,11 +234,20 @@ def find_nodes_before(root, value):
     """
     Identify all nodes that have children above value.
     
-    (If a root child is above the value, its parent (root) is the leaf.)
+    (If a root child is above the value, its parent (root) is the leaf returned.)
+    
+    Returns: tuple: list_of_parents, list_of_nforks
+        
+        The list of number of forks experienced is:
+        1 if direct descendent of one of the root node's children,
+        where no node had more than one child.
+        12 if the root child had 4 children, one of which had 3 children.
     """
     roots = root.children
     parents = []
+    parent_weights = []
     
+    weights = {n.id: 1. for n in roots}
     explorer = BreadthFirstIterator(roots)
     while True:
         next = explorer.next_node()
@@ -248,15 +257,20 @@ def find_nodes_before(root, value):
         if node.value >= value:
             # already past (root child)
             parents.append(root)
+            parent_weights.append(1)
             break
         elif any(n.value >= value for n in node.children):
             # found matching parent
             parents.append(node)
+            parent_weights.append(weights[node.id])
             explorer.drop_next_node()
         else:
             # continue exploring
             explorer.expand_children_of(rootid, node)
-    return parents
+            weights.update({n.id: weights[node.id] * len(node.children)
+                for n in node.children})
+        del weights[node.id]
+    return parents, parent_weights
 
 
 class PointPile(object):

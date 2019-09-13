@@ -720,19 +720,31 @@ class ReactiveNestedSampler(object):
         
         self.volfactor = vol_prefactor(self.x_dim)
 
-    def widen_nodes(self, parents, nnodes_needed, update_interval_ncall):
+    def widen_nodes(self, weighted_parents, weights, nnodes_needed, update_interval_ncall):
         """
         Make sure that at Labove, there are nnodes_needed live points
         (parallel arcs).
         Sample from an appropriate region
         """
         
-        ndone = len(parents)
+        ndone = len(weighted_parents)
         if ndone == 0:
             if self.log:
                 self.logger.info('No parents, so widening roots')
             self.widen_roots(nnodes_needed)
-            return
+            return {}
+        
+        # select parents with weight 1/parent_weights
+        p = 1. / np.array(weights)
+        if (p == p[0]).all():
+            parents = weighted_parents
+        else:
+            # preferentially select nodes with few parents, as those
+            # have most weight
+            i = np.random.choice(len(weighted_parents), size=nnodes_needed, p=p / p.sum())
+            parents = [weighted_parents[ii] for ii in i]
+        
+        del weighted_parents, weights
         
         # sort from low to high
         parents.sort(key=operator.attrgetter('value'))
@@ -744,59 +756,22 @@ class ReactiveNestedSampler(object):
             if self.log:
                 self.logger.info('parent value is -inf, so widening roots')
             self.widen_roots(nnodes_needed)
-            return
+            return {}
         
-        if self.log:
-            self.logger.info('Sampling %d live points at L=%.1f...' % (nnodes_needed - ndone, Lmin))
-        
-        initial_ncall = self.ncall
-        next_update_interval_ncall = self.ncall
         # double until we reach the necessary points
+        # this is probably 1, from (2K - K) / K
         nsamples = int(np.ceil((nnodes_needed - ndone) / len(parents)))
         
-        self.region = None
-        for i, n in enumerate(parents):
-            # create region if it does not exist
-            # or update after some likelihood calls (unless only few nodes left)
-            if self.region is None or (self.ncall > next_update_interval_ncall and len(parents) - i > 50):
-                Lmin = n.value
-                # sort so that the last ones go away first
-                active_nodes = parents[i:][::-1]
-                
-                #if self.log:
-                #    self.logger.info('Making region from %d parents at L=%.1f...' % (len(active_nodes), Lmin))
-                active_node_ids = np.asarray([n.id for n in active_nodes])
-                active_values = np.asarray([n.value for n in active_nodes])
-                active_u = self.pointpile.getu(active_node_ids)
-                
-                if self.region is not None:
-                    self.region.u = active_u
-                    self.region.unormed = self.region.transformLayer.transform(active_u)
-                    if len(self.region.transformLayer.clusterids) >= len(active_u):
-                        # shorten cluster ids, some nodes dropped away
-                        self.region.transformLayer.clusterids = self.region.transformLayer.clusterids[:len(active_u)]
-                    else:
-                        self.region.transformLayer.clusterids = np.zeros(len(active_u))
-                
-                self.update_region(
-                    active_u=active_u, active_node_ids=active_node_ids)
-                
-                assert self.region.inside(active_u).all(), self.region.inside(active_u).mean()
-                
-                next_update_interval_ncall = self.ncall + update_interval_ncall
-            
-            for j in range(nsamples):
-                u, p, L = self.create_point(Lmin=n.value, ndraw=100, active_u=active_u, active_values=active_values)
-                child = self.pointpile.make_node(L, u, p)
-                n.children.append(child)
-                if self.log and self.show_status:
-                    sys.stdout.write('%d/%d Region@%.1f Like=%.1f->%.1f | it/evals=%d/%d = %.4f%%  \r' % (
-                          ndone, nnodes_needed, Lmin, n.value, L, 
-                          i * nsamples + j + 1, self.ncall - initial_ncall,
-                          np.inf if self.ncall == initial_ncall else (i * nsamples + j + 1) * 100. / (self.ncall - initial_ncall) ))
-                    sys.stdout.flush()
-                ndone += 1
-        self.region = None
+        if self.log:
+            self.logger.info('Will add %d live points (x%d) at L=%.1f...' % (nnodes_needed - ndone, nsamples, Lmin))
+        
+        # add points where necessary (parents can have multiple entries)
+        target_min_num_children = {}
+        for n in parents:
+            orign = target_min_num_children.get(n.id, len(n.children))
+            target_min_num_children[n.id] = orign + nsamples
+        
+        return target_min_num_children
     
     def widen_roots(self, nroots):
         """
@@ -1393,16 +1368,16 @@ class ReactiveNestedSampler(object):
     
     def expand_nodes_before(self, Lmin, nnodes_needed, update_interval_ncall):
         self.pointstore.reset()
-        parents = find_nodes_before(self.root, Lmin)
-        self.widen_nodes(parents, nnodes_needed, update_interval_ncall)
+        parents, weights = find_nodes_before(self.root, Lmin)
+        target_min_num_children = self.widen_nodes(parents, weights, nnodes_needed, update_interval_ncall)
         if len(parents) == 0:
             Llo = -np.inf
         else:
             Llo = min(n.value for n in parents)
         Lhi = Lmin
-        return Llo, Lhi
+        return Llo, Lhi, target_min_num_children
     
-    def should_node_be_expanded(self, it, Llo, Lhi, minimal_widths_sequence, node, parallel_values, max_ncalls, max_iters):
+    def should_node_be_expanded(self, it, Llo, Lhi, minimal_widths_sequence, target_min_num_children, node, parallel_values, max_ncalls, max_iters):
         """
         Should we sample a new point based on this node (above its likelihood value Lmin)?
         
@@ -1429,10 +1404,12 @@ class ReactiveNestedSampler(object):
             # if already has children, no need to expand
             # if we are wider than the width required
             # we do not need to expand this one
-            expand_node = len(node.children) == 0 
+            #expand_node = len(node.children) == 0
+            # prefer 1 child, or the number required, if specified
+            expand_node = len(node.children) < target_min_num_children.get(node.id, 1)
             
             # some exceptions:
-            if it > 0: 
+            if it > 0:
                 too_wide = nlive > minimal_width
                 # exception for widening for efficiency
                 if nlive <= self.max_num_live_points_for_efficiency:
@@ -1594,6 +1571,7 @@ class ReactiveNestedSampler(object):
         Lmax = -np.inf
         strategy_stale = True
         minimal_widths = []
+        target_min_num_children = {}
         improvement_it = 0
         
         assert max_iters is None or max_iters > 0, ("Invalid value for max_iters: %s. Set to None or positive number" % max_iters)
@@ -1686,7 +1664,7 @@ class ReactiveNestedSampler(object):
                     # can become an issue. We should try not to get stuck there
                     strategy_stale = Lhi - Llo < 0.01
                 
-                expand_node = self.should_node_be_expanded(it, Llo, Lhi, minimal_widths_sequence, node, active_values, max_ncalls, max_iters)
+                expand_node = self.should_node_be_expanded(it, Llo, Lhi, minimal_widths_sequence, target_min_num_children, node, active_values, max_ncalls, max_iters)
                 
                 region_fresh = False
                 if expand_node:
@@ -1708,13 +1686,6 @@ class ReactiveNestedSampler(object):
                         nclusters = (cluster_sizes > 1).sum()
                         region_sequence.append((Lmin, nlive, nclusters))
                         
-                        if nlive < cluster_num_live_points * nclusters and improvement_it < max_num_improvement_loops:
-                            # make wider here
-                            if self.log:
-                                self.logger.info("Found %d clusters, but only have %d live points, want %d." % (
-                                    self.region.transformLayer.nclusters, nlive, cluster_num_live_points * nclusters))
-                            break
-                        
                         #next_update_interval_ncall = self.ncall + (update_interval_ncall or nlive)
                         update_interval_iter = max(1, round(update_interval_iter_fraction * nlive))
                         next_update_interval_iter = it + update_interval_iter
@@ -1734,6 +1705,13 @@ class ReactiveNestedSampler(object):
                                 region=self.region, transformLayer=self.transformLayer,
                                 region_fresh=region_fresh)
                             self.pointstore.flush()
+
+                    if nlive < cluster_num_live_points * nclusters and improvement_it < max_num_improvement_loops:
+                        # make wider here
+                        if self.log:
+                            self.logger.info("Found %d clusters, but only have %d live points, want %d." % (
+                                self.region.transformLayer.nclusters, nlive, cluster_num_live_points * nclusters))
+                        break
                     
                     for i in range(2):
                         # sample point
@@ -1841,7 +1819,8 @@ class ReactiveNestedSampler(object):
                 nnodes_needed = cluster_num_live_points * nclusters
                 if nlive < nnodes_needed:
                     #self.root.children = []
-                    Llo, Lhi = self.expand_nodes_before(Lmin, nnodes_needed, update_interval_ncall or nlive)
+                    Llo, Lhi, target_min_num_children_new = self.expand_nodes_before(Lmin, nnodes_needed, update_interval_ncall or nlive)
+                    target_min_num_children.update(target_min_num_children_new)
                     #if self.log:
                     #    print_tree(self.root.children[::10])
                     minimal_widths.append((Llo, Lmin, nnodes_needed))
@@ -1870,7 +1849,7 @@ class ReactiveNestedSampler(object):
             if Llo <= Lhi:
                 #if self.log: 
                 #    print_tree(roots, title="Tree before forking:")
-                parents = find_nodes_before(self.root, Llo)
+                parents, parent_weights = find_nodes_before(self.root, Llo)
                 _, width = count_tree_between(self.root.children, Llo, Lhi)
                 nnodes_needed = width * 2
                 if self.log:
@@ -1881,7 +1860,7 @@ class ReactiveNestedSampler(object):
                 else:
                     Llo = min(n.value for n in parents)
                 self.pointstore.reset()
-                self.widen_nodes(parents, nnodes_needed, update_interval_ncall)
+                target_min_num_children.update(self.widen_nodes(parents, parent_weights, nnodes_needed, update_interval_ncall))
                 minimal_widths.append((Llo, Lhi, nnodes_needed))
                 #if self.log: 
                 #    print_tree(roots, title="Tree after forking:")
