@@ -1066,7 +1066,7 @@ class ReactiveNestedSampler(object):
             #self.logger.warn("Sampling seems stuck. Writing debug output file 'sampling-stuck-it%d.npz'..." % nit)
             np.savez('sampling-stuck-it%d.npz' % nit, u=self.region.u, unormed=self.region.unormed, maxradiussq=self.region.maxradiussq, 
                 sample_u=u, sample_v=v, sample_logl=logl)
-            warnings.warn("Sampling seems stuck, this could be numerical issue: You are probably trying to integrate to deep into the volume where all points become equal in logL; so cannot draw a higher point. Try loosening the quality constraints (increase frac_remain, dlogz, dKL, decrease min_ess). [%d/%d accepted, it=%d]" % (accepted.sum(), ndraw, nit))
+            warnings.warn("Sampling from region seems inefficient. You can try increasing nlive, frac_remain, dlogz, dKL, decrease min_ess). [%d/%d accepted, it=%d]" % (accepted.sum(), ndraw, nit))
             logl_region = self.loglike(self.transform(self.region.u))
             if not (logl_region > Lmin).any():
                 raise ValueError("Region cannot sample a point. Perhaps you are resuming from a different problem? Delete the output files and start again.")
@@ -1411,15 +1411,11 @@ class ReactiveNestedSampler(object):
             # some exceptions:
             if it > 0:
                 too_wide = nlive > minimal_width
-                # exception for widening for efficiency
-                if nlive <= self.max_num_live_points_for_efficiency:
-                    too_wide = False
-                
                 # we have to expand the first iteration, 
                 # otherwise the integrator never sets H
                 
                 if too_wide:
-                    #print("not expanding, because we are quite wide", nlive, minimal_width, minimal_widths_sequence, self.max_num_live_points_for_efficiency)
+                    #print("not expanding, because we are quite wide", nlive, minimal_width, minimal_widths_sequence)
                     expand_node = False
                 
                 if max_ncalls is not None and self.ncall >= max_ncalls:
@@ -1446,7 +1442,6 @@ class ReactiveNestedSampler(object):
             max_num_improvement_loops=-1,
             min_num_live_points=100,
             cluster_num_live_points=40,
-            max_num_live_points_for_efficiency=400,
         ):
         """
         Run until target convergence criteria are fulfilled:
@@ -1493,11 +1488,6 @@ class ReactiveNestedSampler(object):
         cluster_num_live_points: 
             require at least this many live points per detected cluster
         
-        max_num_live_points_for_efficiency: 
-            Increasing the number of live points can make the region
-            more accurate, increasing performance. If efficiency is low,
-            the number of live points is allowed to grow to this value.
-        
         """
         
         for result in self.run_iter(
@@ -1509,7 +1499,6 @@ class ReactiveNestedSampler(object):
             max_ncalls=max_ncalls, max_num_improvement_loops=max_num_improvement_loops,
             min_num_live_points=min_num_live_points,
             cluster_num_live_points=cluster_num_live_points,
-            max_num_live_points_for_efficiency=max_num_live_points_for_efficiency
             ):
             if self.log:
                 self.logger.info("did a run_iter pass!")
@@ -1533,7 +1522,6 @@ class ReactiveNestedSampler(object):
             max_num_improvement_loops=-1,
             min_num_live_points=100,
             cluster_num_live_points=40,
-            max_num_live_points_for_efficiency=400,
         ):
         """
         Use as an iterator like so:
@@ -1563,7 +1551,6 @@ class ReactiveNestedSampler(object):
         assert min_num_live_points >= cluster_num_live_points, ('min_num_live_points(%d) cannot be less than cluster_num_live_points(%d)' % (min_num_live_points, cluster_num_live_points))
         self.min_num_live_points = min_num_live_points
         self.cluster_num_live_points = cluster_num_live_points
-        self.max_num_live_points_for_efficiency = max_num_live_points_for_efficiency
         
         self.widen_roots(min_num_live_points)
 
@@ -1713,39 +1700,29 @@ class ReactiveNestedSampler(object):
                                 self.region.transformLayer.nclusters, nlive, cluster_num_live_points * nclusters))
                         break
                     
-                    for i in range(2):
-                        # sample point
-                        u, p, L = self.create_point(Lmin=Lmin, ndraw=ndraw, active_u=active_u, active_values=active_values)
-                        child = self.pointpile.make_node(L, u, p)
-                        main_iterator.Lmax = max(main_iterator.Lmax, L)
-                        
-                        # identify which point is being replaced (from when we built the region)
-                        worst = np.where(self.region_nodes == node.id)[0]
-                        self.region_nodes[worst] = child.id
-                        # if we keep the region informed about the new live points
-                        # then the region follows the live points even if maxradius is not updated
-                        self.region.u[worst] = u
-                        self.region.unormed[worst] = self.region.transformLayer.transform(u)
-                        
-                        # if we track the cluster assignment, then in the next round
-                        # the ids with the same members are likely to have the same id
-                        # this is imperfect
-                        #transformLayer.clusterids[worst] = transformLayer.clusterids[father[ib]]
-                        # so we just mark the replaced ones as "unassigned"
-                        self.transformLayer.clusterids[worst] = 0
-                        
-                        #if self.log: 
-                        #    self.logger.debug("replacing node", Lmin, "from", rootid, "with", L)
-                        node.children.append(child)
-                        
-                        if i == 0 and nlive < max_num_live_points_for_efficiency and self.stepsampler is None:
-                            efficiency_here = (it - it_at_first_region) / (self.ncall - ncall_at_run_start + 1.)
-                            if efficiency_here < 1. / (nlive + 1):
-                                # running inefficiently; more live points could make sampling more efficient
-                                if self.log:
-                                    self.logger.debug("Running inefficiently with %d live points. Sampling another." % (nlive))
-                                continue
-                        break
+                    # sample point
+                    u, p, L = self.create_point(Lmin=Lmin, ndraw=ndraw, active_u=active_u, active_values=active_values)
+                    child = self.pointpile.make_node(L, u, p)
+                    main_iterator.Lmax = max(main_iterator.Lmax, L)
+                    
+                    # identify which point is being replaced (from when we built the region)
+                    worst = np.where(self.region_nodes == node.id)[0]
+                    self.region_nodes[worst] = child.id
+                    # if we keep the region informed about the new live points
+                    # then the region follows the live points even if maxradius is not updated
+                    self.region.u[worst] = u
+                    self.region.unormed[worst] = self.region.transformLayer.transform(u)
+                    
+                    # if we track the cluster assignment, then in the next round
+                    # the ids with the same members are likely to have the same id
+                    # this is imperfect
+                    #transformLayer.clusterids[worst] = transformLayer.clusterids[father[ib]]
+                    # so we just mark the replaced ones as "unassigned"
+                    self.transformLayer.clusterids[worst] = 0
+                    
+                    #if self.log: 
+                    #    self.logger.debug("replacing node", Lmin, "from", rootid, "with", L)
+                    node.children.append(child)
                     
                     if self.log and (region_fresh or it % log_interval == 0 or time.time() > last_status + 0.1):
                         #nicelogger(self.paramnames, active_u, active_v, active_logl, it, ncall, logz, logz_remain, region=region)
