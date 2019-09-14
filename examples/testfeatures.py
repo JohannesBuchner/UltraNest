@@ -126,7 +126,6 @@ def main(args):
             max_iters=args.max_iters,
             cluster_num_live_points=args.cluster_num_live_points,
             min_num_live_points=args.num_live_points,
-            max_num_live_points_for_efficiency=args.max_num_live_points_for_efficiency,
             max_ncalls=int(args.max_ncalls),
         ):
         sampler.print_results()
@@ -222,7 +221,6 @@ if __name__ == '__main__':
             num_live_points = choose([100, 50, 400, 1000]),
             resume = choose([False, True]),
             cluster_num_live_points = choose([50, 0]),
-            max_num_live_points_for_efficiency = choose([400, 0]),
             update_interval_iter_fraction=choose([0.2, 1.0]),
             dlogz = choose([2.0, 0.5]),
             dKL = choose([1.0, 0.1]),
