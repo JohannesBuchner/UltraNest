@@ -95,7 +95,7 @@ def test_pathsampler():
     Ls = np.zeros(100)
     region = make_region(2)
     def transform(x): return x
-    def loglike(x): return 0.0
+    def loglike(x): return 0*x[:,0]
     def gradient(x):
         j = np.argmax(np.abs(x - 0.5))
         v = np.zeros(len(x))
@@ -129,7 +129,7 @@ def test_pathsampler():
     print("make reflect")
     print()
     stepper.set_gradient(gradient)
-    def loglike(x): return 0.0 if x[0] < 0.505 else -100
+    def loglike(x): return np.where(x[:,0] < 0.505, 0.0, -100)
     x, v, L, nc = stepper.__next__(region, Lmin, us, Ls, transform, loglike)
     assert x is None, x
     assert (stepper.naccepts, stepper.nrejects) == (1, 0), (stepper.naccepts, stepper.nrejects)
@@ -149,7 +149,7 @@ def test_pathsampler():
     print()
     # make stuck
     origscale = stepper.scale
-    def loglike(x): return -100
+    def loglike(x): return -100 + 0*x[:,0]
     x, v, L, nc = stepper.__next__(region, Lmin, us, Ls, transform, loglike)
     assert x is None, x
     assert stepper.nstuck == 0

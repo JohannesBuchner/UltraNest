@@ -49,10 +49,31 @@ Features
   * MPI support
 
 
-Coming soon
+TODO
 =============
 
 * Resume from a different, but similar problem (data slightly different)
+* Load & resume graph? Or at least store graph so it can be traversed.
+* Store non-transformed posterior points as samples
+* Store quality of proposed points (correlation length ~ nsteps)
+* Improve quality by successively forgetting points below some nsteps,
+  doubling the nsteps, and checking how lnZ changes. Stop when it remains
+  consistent.
+* Documentation:
+  * Example line fit
+  * Example line fit with heterogeneous xy errors
+  * Example line fit with outliers (mixture of 2 models)
+  * Example power law fit
+  * Example intrinsic 1d distribution from measurement errors, 2-component mixture
+  * Example extracting more posterior points (ESS)
+  * Example spectral line fit, white and GP
+  * Example time series analysis (2-component fourier)
+  * Example low-d Bayesian GP emulator as pre-filter to model evaluation
+  * Example in jupyter notebook
+  * Example resuming from similar data
+  * Example verifying integration with VB+IS
+  * Example running with MPI parallelisation
+  * Example: Use external plotter to show posterior distribution uncertainty
 
 Usage
 =============

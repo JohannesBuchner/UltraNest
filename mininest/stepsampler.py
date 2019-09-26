@@ -210,8 +210,8 @@ class StepSampler(object):
         if mask.any():
             i = np.where(mask)[0][0]
             unew = unew[i,:]
-            pnew = transform(unew)
-            Lnew = loglike(pnew)
+            pnew = transform(unew.reshape((1, -1)))
+            Lnew = loglike(pnew)[0]
             nc = 1
             if Lnew > Lmin:
                 if plot:
@@ -1018,7 +1018,7 @@ class SamplingPathStepSampler(StepSampler):
                     if plot:
                         plt.plot(unew[0], unew[1], '+', color='orange', ms=4)
                     pnew = transform(unew)
-                    Lnew = loglike(pnew)
+                    Lnew = loglike(pnew.reshape((1, -1)))
                     nc = 1
                 else:
                     Lnew = -np.inf
@@ -1070,7 +1070,7 @@ class SamplingPathStepSampler(StepSampler):
                     accept = np.logical_and(xk > 0, xk < 1).all() and region.inside(xk.reshape((1, -1)))
                     if accept:
                         pk = transform(xk)
-                        Lk = loglike(pk)
+                        Lk = loglike(pk.reshape((1, -1)))[0]
                         nc += 1
                         if Lk >= Lmin:
                             jump_successful = True
@@ -1276,8 +1276,8 @@ class OtherSamplerProxy(object):
                     # should evaluate point
                     Llast = None
                     if region.inside(u.reshape((1,-1))):
-                        p = transform(u)
-                        L = loglike(p)
+                        p = transform(u.reshape((1, -1)))
+                        L = loglike(p)[0]
                         self.ncalls += 1
                         if L > Lmin:
                             Llast = L
@@ -1292,8 +1292,8 @@ class OtherSamplerProxy(object):
                 assert i not in gaps
                 gaps[i] = True
                 if region.inside(u.reshape((1,-1))):
-                    p = transform(u)
-                    L = loglike(p)
+                    p = transform(u.reshape((1, -1)))
+                    L = loglike(p)[0]
                     self.ncalls += 1
                     if L > Lmin:
                         # point is OK

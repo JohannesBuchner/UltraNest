@@ -145,7 +145,7 @@ class HDF5PointStore(FilePointStore):
 	
 	Format is a HDF5 file, which grows.
 	"""
-	def __init__(self, filepath, ncols):
+	def __init__(self, filepath, ncols, **h5_file_args):
 		"""
 		Load and append to storage at filepath, which should contain
 		ncols columns (Lmin, L, and others)
@@ -153,7 +153,7 @@ class HDF5PointStore(FilePointStore):
 		import h5py
 		self.ncols = int(ncols)
 		self.stack_empty = True
-		self.fileobj = h5py.File(filepath)
+		self.fileobj = h5py.File(filepath, **h5_file_args)
 		self._load()
 	
 	def _load(self):

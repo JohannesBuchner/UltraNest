@@ -519,9 +519,10 @@ class ReactiveNestedSampler(object):
                  param_names,
                  loglike,
                  transform=None,
+                 derived_param_names=[],
                  append_run_num=True,
                  wrapped_params=None,
-                 derived_param_names=[],
+                 resume=False,
                  run_num=None,
                  log_dir=None,
                  num_test_samples=2,
@@ -542,8 +543,14 @@ class ReactiveNestedSampler(object):
         derived_param_names: list of str
             Additional derived parameters created by transform. (empty by default)
         
-        log_dir: where to store output files
-        append_run_num: if true, create a fresh subdirectory in log_dir
+        log_dir: 
+            where to store output files
+        resume: 
+            if false, overwrite previous data.
+            if true, continue previous run if available.
+        append_run_num: 
+            if true, create a fresh subdirectory in log_dir
+            implies resume=False
         
         wrapped_params: list of bools, indicating whether this parameter 
             wraps around in a circular parameter space.
@@ -620,7 +627,8 @@ class ReactiveNestedSampler(object):
         self.ncall_region = 0
         if self.log_to_disk:
             #self.pointstore = TextPointStore(os.path.join(self.logs['results'], 'points.tsv'), 2 + self.x_dim + self.num_params)
-            self.pointstore = HDF5PointStore(os.path.join(self.logs['results'], 'points.hdf5'), 2 + self.x_dim + self.num_params)
+            self.pointstore = HDF5PointStore(os.path.join(self.logs['results'], 'points.hdf5'), 
+                2 + self.x_dim + self.num_params, mode='a' if resume else 'w')
             self.ncall = len(self.pointstore.stack)
         else:
             self.pointstore = NullPointStore(2 + self.x_dim + self.num_params)
@@ -644,7 +652,7 @@ class ReactiveNestedSampler(object):
             print('setting seed:', self.mpi_rank, seed)
             np.random.seed(seed)
     
-    def set_likelihood_function(self, transform, loglike, num_test_samples, make_safe=True):
+    def set_likelihood_function(self, transform, loglike, num_test_samples, make_safe=False):
         
         # do some checks on the likelihood function 
         # this makes debugging easier by failing early with meaningful errors
@@ -1667,7 +1675,7 @@ class ReactiveNestedSampler(object):
                             active_rootids=active_rootids, 
                             bootstrap_rootids=main_iterator.rootids[1:,],
                             nbootstraps=self.num_bootstraps, 
-                            minvol=exp(-it / nlive) * self.volfactor)
+                            minvol=exp(main_iterator.logVolremaining))
                         
                         _, cluster_sizes = np.unique(self.region.transformLayer.clusterids, return_counts=True)
                         nclusters = (cluster_sizes > 1).sum()
@@ -1730,9 +1738,9 @@ class ReactiveNestedSampler(object):
                         ncall_here = self.ncall - ncall_at_run_start
                         it_here = it - it_at_first_region
                         if self.show_status:
-                            sys.stdout.write('Z=%.1f(%.2f%%) | Like=%.2f..%.2f | it/evals=%d/%d eff=%.4f%% N=%d \r' % (
+                            sys.stdout.write('Z=%.1f(%.2f%%) | Like=%.2f..%.2f [%.4f..%.4f]%s| it/evals=%d/%d eff=%.4f%% N=%d \r' % (
                                   main_iterator.logZ, 100 * (1 - main_iterator.remainder_fraction), 
-                                  Lmin, main_iterator.Lmax, it, self.ncall, 
+                                  Lmin, main_iterator.Lmax, Llo, Lhi, '*' if strategy_stale else ' ', it, self.ncall, 
                                   np.inf if ncall_here == 0 else it_here * 100 / ncall_here, 
                                   nlive))
                             sys.stdout.flush()

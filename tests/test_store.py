@@ -142,6 +142,12 @@ def test_hdf5_store():
 			ptst = PointStore(filepath, 5)
 		except IOError:
 			pass
+
+		ptst = PointStore(filepath, 4, mode='w')
+		assert ptst.pop(-np.inf)[1] is None, "overwritten store should be empty"
+		assert ptst.pop(100)[1] is None, "overwritten store should not return anything"
+		ptst.close()
+
 		
 	finally:
 		os.remove(filepath)
