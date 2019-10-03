@@ -17,6 +17,7 @@ Features
 
 * Checkpointing and resuming, even with different number of live points
 * Wrapped/circular parameters, derived parameters
+* Fast-slow parameters
 * Tracking solution modes
 * Run-time visualisations and exploration information
 * Corner plots, run and parameter exploration diagnostic plots
@@ -52,10 +53,9 @@ Features
 TODO
 =============
 
+* Store non-transformed posterior points as samples
 * Resume from a different, but similar problem (data slightly different)
 * Load & resume graph? Or at least store graph so it can be traversed.
-* Store non-transformed posterior points as samples
-* Implement basic fast-slow sampler
 * Store quality of proposed points (correlation length ~ nsteps)
 * Improve quality by successively forgetting points below some nsteps,
   doubling the nsteps, and checking how lnZ changes. Stop when it remains

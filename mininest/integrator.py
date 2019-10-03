@@ -1867,6 +1867,7 @@ class ReactiveNestedSampler(object):
             np.shape(main_iterator.all_logZ))
         
         saved_logl = np.array(saved_logl)
+        saved_u = self.pointpile.getu(saved_nodeids)
         saved_v = self.pointpile.getp(saved_nodeids)
         saved_logwt = np.array(main_iterator.logweights)
         saved_logwt0 = saved_logwt[:,0]
@@ -1919,7 +1920,11 @@ class ReactiveNestedSampler(object):
                 header=' '.join(self.paramnames + self.derivedparamnames), 
                 comments='')
             np.savetxt(os.path.join(self.logs['chains'], 'weighted_post.txt'), 
-                np.hstack((saved_wt0.reshape((-1, 1)), saved_logl.reshape((-1, 1)), saved_v)), 
+                np.hstack((saved_wt0.reshape((-1, 1)), saved_logl.reshape((-1, 1)), saved_v, saved_u)), 
+                header=' '.join(self.paramnames + self.derivedparamnames), 
+                comments='')
+            np.savetxt(os.path.join(self.logs['chains'], 'weighted_post_untransformed.txt'), 
+                np.hstack((saved_wt0.reshape((-1, 1)), saved_logl.reshape((-1, 1)), saved_u)), 
                 header=' '.join(self.paramnames + self.derivedparamnames), 
                 comments='')
             with open(os.path.join(self.logs['info'], 'parameters.txt'), 'w') as f:
