@@ -104,7 +104,7 @@ Run an example::
 
 Run the sampler::
 
-    from mininest import ReactiveNestedSampler
+    from ultranest import ReactiveNestedSampler
     
     paramnames = ['theta', 'L']
     
@@ -138,7 +138,7 @@ Run the sampler::
 PyMultinest compatibility layer allows a drop-in replacement::
 
     # instead of "from pymultinest.solve import solve", we use:
-    from mininest.solvecompat import pymultinest_solve_compat as solve
+    from ultranest.solvecompat import pymultinest_solve_compat as solve
     
     # the rest is exactly as in PyMultinest:
     
