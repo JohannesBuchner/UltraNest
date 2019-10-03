@@ -53,11 +53,8 @@ Features
 TODO
 =============
 
-* Resume from a different, but similar problem (data slightly different)
 * Store quality of proposed points (correlation length ~ nsteps)
-* Improve quality by successively forgetting points below some nsteps,
-  doubling the nsteps, and checking how lnZ changes. Stop when it remains
-  consistent.
+* Resume from a different, but similar problem (data slightly different)
 * Documentation:
   * Example line fit
   * Example line fit with heterogeneous xy errors
@@ -73,6 +70,9 @@ TODO
   * Example verifying integration with VB+IS
   * Example running with MPI parallelisation
   * Example: Use external plotter to show posterior distribution uncertainty
+  * Example: Improve quality by successively forgetting points below some nsteps,
+    doubling the nsteps, and checking how lnZ changes. Stop when it remains
+    consistent.
 
 Usage
 =============

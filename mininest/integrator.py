@@ -137,9 +137,9 @@ class NestedSampler(object):
 
         if self.log_to_disk:
             #self.pointstore = TextPointStore(os.path.join(self.logs['results'], 'points.tsv'), 2 + self.x_dim + self.num_params)
-            self.pointstore = HDF5PointStore(os.path.join(self.logs['results'], 'points.hdf5'), 2 + self.x_dim + self.num_params)
+            self.pointstore = HDF5PointStore(os.path.join(self.logs['results'], 'points.hdf5'), 3 + self.x_dim + self.num_params)
         else:
-            self.pointstore = NullPointStore(2 + self.x_dim + self.num_params)
+            self.pointstore = NullPointStore(3 + self.x_dim + self.num_params)
 
     def run(
             self,
@@ -177,8 +177,8 @@ class NestedSampler(object):
                 _, row = self.pointstore.pop(-np.inf)
                 if row is not None:
                     prev_logl.append(row[1])
-                    prev_u.append(row[2:2+self.x_dim])
-                    prev_v.append(row[2+self.x_dim:2+self.x_dim+self.num_params])
+                    prev_u.append(row[3:3+self.x_dim])
+                    prev_v.append(row[3+self.x_dim:3+self.x_dim+self.num_params])
                 else:
                     break
             
@@ -228,7 +228,7 @@ class NestedSampler(object):
         
             if self.log_to_disk:
                 for i in range(num_live_points_missing):
-                    self.pointstore.add([-np.inf, active_logl[i]] + active_u[i,:].tolist() + active_v[i,:].tolist())
+                    self.pointstore.add([-np.inf, active_logl[i], 0.] + active_u[i,:].tolist() + active_v[i,:].tolist())
             
             if len(prev_u) > 0:
                 active_u = np.concatenate((prev_u, active_u))
@@ -336,7 +336,7 @@ class NestedSampler(object):
             while True:
                 if ib >= len(samples) and use_point_stack:
                     # root checks the point store
-                    next_point = np.zeros((1, 2 + self.x_dim + self.num_params))
+                    next_point = np.zeros((1, 3 + self.x_dim + self.num_params))
                     
                     if self.log_to_disk:
                         _, stored_point = self.pointstore.pop(loglstar)
@@ -354,8 +354,8 @@ class NestedSampler(object):
                     
                     # unpack
                     likes = next_point[:,1]
-                    samples = next_point[:,2:2+self.x_dim]
-                    samplesv = next_point[:,2+self.x_dim:2+self.x_dim+self.num_params]
+                    samples = next_point[:,3:3+self.x_dim]
+                    samplesv = next_point[:,3+self.x_dim:3+self.x_dim+self.num_params]
                     # skip if we already know it is not useful
                     ib = 0 if np.isfinite(likes[0]) else 1
                 
@@ -400,7 +400,7 @@ class NestedSampler(object):
                     
                     if self.log:
                         for ui, vi, logli in zip(samples, samplesv, likes):
-                            self.pointstore.add([loglstar, logli] + ui.tolist() + vi.tolist())
+                            self.pointstore.add([loglstar, logli, 0.0] + ui.tolist() + vi.tolist())
                 
                 if likes[ib] > loglstar:
                     active_u[worst] = samples[ib, :]
@@ -628,10 +628,10 @@ class ReactiveNestedSampler(object):
         if self.log_to_disk:
             #self.pointstore = TextPointStore(os.path.join(self.logs['results'], 'points.tsv'), 2 + self.x_dim + self.num_params)
             self.pointstore = HDF5PointStore(os.path.join(self.logs['results'], 'points.hdf5'), 
-                2 + self.x_dim + self.num_params, mode='a' if resume else 'w')
+                3 + self.x_dim + self.num_params, mode='a' if resume else 'w')
             self.ncall = len(self.pointstore.stack)
         else:
-            self.pointstore = NullPointStore(2 + self.x_dim + self.num_params)
+            self.pointstore = NullPointStore(3 + self.x_dim + self.num_params)
         
         self.set_likelihood_function(transform, loglike, num_test_samples)
         self.viz_callback = viz_callback
@@ -676,11 +676,11 @@ class ReactiveNestedSampler(object):
         if not self.pointstore.stack_empty and num_resume_test_samples > 0:
             # test that last sample gives the same likelihood value
             _, lastrow = self.pointstore.stack[-1]
-            assert len(lastrow) == 2 + self.x_dim + self.num_params, ("Cannot resume: problem has different dimensionality", len(lastrow), (2, self.x_dim, self.num_params))
+            assert len(lastrow) == 3 + self.x_dim + self.num_params, ("Cannot resume: problem has different dimensionality", len(lastrow), (2, self.x_dim, self.num_params))
             lastL = lastrow[1]
-            lastu = lastrow[2:2+self.x_dim]
+            lastu = lastrow[3:3+self.x_dim]
             u = lastu.reshape((1, -1))
-            lastp = lastrow[2+self.x_dim:2+self.x_dim+self.num_params]
+            lastp = lastrow[3+self.x_dim:3+self.x_dim+self.num_params]
             if self.log:
                 self.logger.debug("Testing resume consistency: %s: u=%s -> p=%s -> L=%s " % (lastrow, lastu, lastp, lastL))
             p = transform(u) if transform is not None else u
@@ -807,8 +807,8 @@ class ReactiveNestedSampler(object):
                 if row is None:
                     break
                 prev_logl.append(row[1])
-                prev_u.append(row[2:2+self.x_dim])
-                prev_v.append(row[2+self.x_dim:2+self.x_dim+self.num_params])
+                prev_u.append(row[3:3+self.x_dim])
+                prev_v.append(row[3+self.x_dim:3+self.x_dim+self.num_params])
                 prev_rowid.append(rowid)
         
         if self.log:
@@ -864,7 +864,7 @@ class ReactiveNestedSampler(object):
             
             if self.log_to_disk:
                 for i in range(num_live_points_missing):
-                    rowid = self.pointstore.add([-np.inf, active_logl[i]] + active_u[i,:].tolist() + active_v[i,:].tolist())
+                    rowid = self.pointstore.add([-np.inf, active_logl[i], 0.0] + active_u[i,:].tolist() + active_v[i,:].tolist())
             
             if len(prev_u) > 0:
                 active_u = np.concatenate((prev_u, active_u))
@@ -1048,8 +1048,9 @@ class ReactiveNestedSampler(object):
         self.ncall_region += ndraw
         
         if self.log:
+            quality = self.stepsampler.nsteps
             for ui, vi, logli in zip(self.samples, self.samplesv, self.likes):
-                self.pointstore.add([Lmin, logli] + ui.tolist() + vi.tolist())
+                self.pointstore.add([Lmin, logli, quality] + ui.tolist() + vi.tolist())
     
     def refill_samples(self, Lmin, ndraw, nit):
         # get new samples
@@ -1105,7 +1106,7 @@ class ReactiveNestedSampler(object):
         
         if self.log:
             for ui, vi, logli in zip(self.samples, self.samplesv, self.likes):
-                self.pointstore.add([Lmin, logli] + ui.tolist() + vi.tolist())
+                self.pointstore.add([Lmin, logli, 0.0] + ui.tolist() + vi.tolist())
     
     def create_point(self, Lmin, ndraw, active_u, active_values):
         """
