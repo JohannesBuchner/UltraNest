@@ -430,6 +430,74 @@ class RegionBallSliceSampler(CubeSliceSampler):
 
 
 
+class SpeedVariableRegionSliceSampler(CubeSliceSampler):
+    """
+    Slice sampler, in region axes.
+    
+    Updates only some dimensions at a time, completely user-definable.
+    """
+
+    def __init__(self, step_matrix):
+        """
+        step_matrix: matrix or list of slices
+            
+            if a bool matrix of shape (n_steps, n_dims):
+                each row of the matrix indicates which parameters
+                should be updated.
+            
+            Example:
+                [[True, True], [False, True], [False, True]]
+                would update the first parameter 1/3 times, and the second
+                parameters every time. Three steps are made until the point
+                is considered independent.
+                
+                For a full update in every step, use 
+                np.ones((n_steps, n_dims), dtype=bool)
+                
+            if a list of slices:
+                each entry indicates which parameters should be updated.
+
+            Example:
+                [Ellipsis, slice(2,10), slice(5,10)]
+                would update the first parameter 1/3 times, parameters
+                2-9 2/3 times and parameter 5-9 in every step.
+                
+                Three steps are made until the point
+                is considered independent.
+        """
+        
+        nsteps = len(step_matrix)
+        
+        StepSampler.__init__(self, nsteps=nsteps)
+        self.reset()
+        self.step_matrix = step_matrix
+    
+
+    def generate_direction(self, ui, region, scale=1):
+        ndim = len(ui)
+        ti = region.transformLayer.transform(ui)
+        
+        # choose random axis in transformed space
+        j = np.random.randint(ndim)
+        tv = np.zeros(ndim)
+        tv[j] = 1.0
+        # convert back to unit cube space:
+        uj = region.transformLayer.untransform(ti + tv * 1e-3)
+        uk = ui.copy()
+        
+        j = self.axis_index % self.nsteps
+        self.axis_index = j + 1
+        # only update active dimensions
+        active_dims = self.step_matrix[j]
+        # project uj onto ui. vary only active dimensions
+        uk[active_dims] = uj[active_dims]
+        
+        v = uk - ui
+        v *= scale / (v**2).sum()**0.5
+        return v
+
+
+
 class GeodesicSliceSampler(StepSampler):
     """
     Geodesic slice sampler, respecting the region

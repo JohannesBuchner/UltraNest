@@ -2,12 +2,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mininest.mlfriends import ScalingLayer, AffineLayer, MLFriends
 from mininest.stepsampler import RegionMHSampler, CubeMHSampler
-from mininest.stepsampler import CubeSliceSampler, RegionSliceSampler, RegionBallSliceSampler, RegionSequentialSliceSampler
+from mininest.stepsampler import CubeSliceSampler, RegionSliceSampler, RegionBallSliceSampler, RegionSequentialSliceSampler, SpeedVariableRegionSliceSampler
 #from mininest.stepsampler import DESampler
 from mininest.stepsampler import OtherSamplerProxy, SamplingPathSliceSampler, SamplingPathStepSampler
 from mininest.stepsampler import GeodesicSliceSampler, RegionGeodesicSliceSampler
 import tqdm
 import joblib
+import warnings
 from problems import transform, get_problem
 
 mem = joblib.Memory('.', verbose=False)
@@ -33,6 +34,8 @@ def evaluate_warmed_sampler(problemname, ndim, nlive, nsteps, sampler):
     if hasattr(sampler, 'set_gradient'):
         sampler.set_gradient(grad)
     np.random.seed(1)
+    def multi_loglike(xs):
+        return np.asarray([loglike(x) for x in xs])
     us = np.array([warmup(ndim) for i in range(nlive)])
     Ls = np.array([loglike(u) for u in us])
     vol0 = max((volume(Li, ndim) for Li in Ls))
@@ -53,22 +56,33 @@ def evaluate_warmed_sampler(problemname, ndim, nlive, nsteps, sampler):
     for i in tqdm.trange(nsteps + nwarmup):
         if i % int(nlive * 0.2) == 0:
             minvol = (1 - 1./nlive)**i * vol0
-            nextTransformLayer = transformLayer.create_new(us, region.maxradiussq, minvol=minvol)
-            nextregion = MLFriends(us, nextTransformLayer)
-            nextregion.maxradiussq, nextregion.enlarge = nextregion.compute_enlargement(nbootstraps=30)
-            if nextregion.estimate_volume() <= region.estimate_volume():
-                region = nextregion
-                transformLayer = region.transformLayer
-            region.create_ellipsoid(minvol=minvol)
+            with warnings.catch_warnings(), np.errstate(all='raise'):
+                try:
+                    nextTransformLayer = transformLayer.create_new(us, region.maxradiussq, minvol=minvol)
+                    nextregion = MLFriends(us, nextTransformLayer)
+                    nextregion.maxradiussq, nextregion.enlarge = nextregion.compute_enlargement(nbootstraps=30)
+                    if nextregion.estimate_volume() <= region.estimate_volume():
+                        region = nextregion
+                        transformLayer = region.transformLayer
+                    region.create_ellipsoid(minvol=minvol)
+                except Warning as w:
+                    print("not updating region because: %s" % w)
+                except FloatingPointError as e:
+                    print("not updating region because: %s" % e)
+                except np.linalg.LinAlgError as e:
+                    print("not updating region because: %s" % e)
         
         # replace lowest likelihood point
         j = np.argmin(Ls)
         Lmin = float(Ls[j])
         while True:
-            u, v, logl, nc = sampler.__next__(region, Lmin, us, Ls, transform, loglike)
+            u, v, logl, nc = sampler.__next__(region, Lmin, us, Ls, transform, multi_loglike)
             if i > nwarmup:
                 ncalls += nc
             if logl is not None:
+                assert np.isfinite(u).all(), u
+                assert np.isfinite(v).all(), v
+                assert np.isfinite(logl), logl
                 break
         
         if i > nwarmup:
@@ -91,12 +105,12 @@ class MLFriendsSampler(object):
         nu = u.shape[0]
         self.starti = np.random.randint(len(us))
         if nu > 0:
-            u = u[0,:]
+            u = u[:1,:]
             v = transform(u)
-            logl = loglike(v)
+            logl = loglike(v)[0]
             accepted = logl > Lmin
             if accepted:
-                return u, v, logl, 1
+                return u[0], v[0], logl, 1
             return None, None, None, 1
         return None, None, None, 0
         
@@ -122,6 +136,9 @@ def main(args):
         #RegionBallSliceSampler(nsteps=16), RegionBallSliceSampler(nsteps=4), RegionBallSliceSampler(nsteps=1),
         RegionBallSliceSampler(nsteps=2*ndim), RegionBallSliceSampler(nsteps=ndim), RegionBallSliceSampler(nsteps=max(1, ndim//2)),
         RegionSequentialSliceSampler(nsteps=2*ndim), RegionSequentialSliceSampler(nsteps=ndim), RegionSequentialSliceSampler(nsteps=max(1, ndim//2)),
+
+        SpeedVariableRegionSliceSampler([Ellipsis]*ndim), SpeedVariableRegionSliceSampler([slice(i, ndim) for i in range(ndim)]),
+        SpeedVariableRegionSliceSampler([Ellipsis]*ndim + [slice(1 + ndim//2, None)]*ndim), 
         
         #SamplingPathSliceSampler(nsteps=16), SamplingPathSliceSampler(nsteps=4), SamplingPathSliceSampler(nsteps=1),
         
@@ -152,14 +169,14 @@ def main(args):
         #GeodesicSliceSampler(nsteps=ndim, radial_fraction=1),
         #GeodesicSliceSampler(nsteps=ndim * 4, radial_fraction=1),
 
-        RegionGeodesicSliceSampler(nsteps=2, radial_fraction=1/ndim),
-        RegionGeodesicSliceSampler(nsteps=4, radial_fraction=1/ndim),
-        RegionGeodesicSliceSampler(nsteps=ndim, radial_fraction=1/ndim),
-        RegionGeodesicSliceSampler(nsteps=ndim * 4, radial_fraction=1/ndim),
+        #RegionGeodesicSliceSampler(nsteps=2, radial_fraction=1/ndim),
+        #RegionGeodesicSliceSampler(nsteps=4, radial_fraction=1/ndim),
+        #RegionGeodesicSliceSampler(nsteps=ndim, radial_fraction=1/ndim),
+        #RegionGeodesicSliceSampler(nsteps=ndim * 4, radial_fraction=1/ndim),
 
-        RegionGeodesicSliceSampler(nsteps=ndim * 4, radial_fraction=1),
-        RegionGeodesicSliceSampler(nsteps=ndim, radial_fraction=1),
-        RegionGeodesicSliceSampler(nsteps=4, radial_fraction=4/ndim),
+        #RegionGeodesicSliceSampler(nsteps=ndim * 4, radial_fraction=1),
+        #RegionGeodesicSliceSampler(nsteps=ndim, radial_fraction=1),
+        #RegionGeodesicSliceSampler(nsteps=4, radial_fraction=4/ndim),
         #RegionGeodesicSliceSampler(nsteps=2, radial_fraction=2/ndim),
 
         #RegionGeodesicSliceSampler(nsteps=ndim * 4, radial_fraction=1),
