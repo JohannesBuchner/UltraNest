@@ -1,8 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from mininest.mlfriends import AffineLayer, MLFriends
-from mininest.samplingpath import SamplingPath, ContourSamplingPath
-from mininest.samplingpath import box_line_intersection, nearest_box_intersection_line, linear_steps_with_reflection, angle, get_sphere_tangents, norm
+from ultranest.mlfriends import AffineLayer, MLFriends
+from ultranest.samplingpath import SamplingPath, ContourSamplingPath
+from ultranest.samplingpath import box_line_intersection, nearest_box_intersection_line, linear_steps_with_reflection, angle, get_sphere_tangents, norm
 from numpy.testing import assert_allclose
 
 def test_horizontal():

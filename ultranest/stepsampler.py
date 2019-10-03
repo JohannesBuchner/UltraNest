@@ -728,7 +728,7 @@ class RegionGeodesicSliceSampler(GeodesicSliceSampler):
     
 
 
-from mininest.samplingpath import SamplingPath, ContourSamplingPath, extrapolate_ahead
+from ultranest.samplingpath import SamplingPath, ContourSamplingPath, extrapolate_ahead
 import matplotlib.pyplot as plt
 
 class SamplingPathSliceSampler(StepSampler):
@@ -1195,8 +1195,8 @@ class SamplingPathStepSampler(StepSampler):
         return None, None, None, nc
 
 
-from mininest.flatnuts import ClockedStepSampler, ClockedBisectSampler, ClockedNUTSSampler
-from mininest.flatnuts import SingleJumper, DirectJumper, IntervalJumper
+from ultranest.flatnuts import ClockedStepSampler, ClockedBisectSampler, ClockedNUTSSampler
+from ultranest.flatnuts import SingleJumper, DirectJumper, IntervalJumper
 
 
 class OtherSamplerProxy(object):

@@ -1,10 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from mininest.mlfriends import ScalingLayer, AffineLayer, MLFriends
-from mininest.stepsampler import RegionMHSampler, CubeMHSampler
-from mininest.stepsampler import CubeSliceSampler, RegionSliceSampler, SamplingPathSliceSampler, SamplingPathStepSampler, OtherSamplerProxy
-from mininest.stepsampler import GeodesicSliceSampler, RegionGeodesicSliceSampler
-#from mininest.stepsampler import DESampler
+from ultranest.mlfriends import ScalingLayer, AffineLayer, MLFriends
+from ultranest.stepsampler import RegionMHSampler, CubeMHSampler
+from ultranest.stepsampler import CubeSliceSampler, RegionSliceSampler, SamplingPathSliceSampler, SamplingPathStepSampler, OtherSamplerProxy
+from ultranest.stepsampler import GeodesicSliceSampler, RegionGeodesicSliceSampler
+#from ultranest.stepsampler import DESampler
 import tqdm
 from problems import transform, get_problem
 

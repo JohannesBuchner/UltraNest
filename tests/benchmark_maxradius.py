@@ -1,4 +1,4 @@
-from mininest.mlfriends import MLFriends, ScalingLayer, AffineLayer
+from ultranest.mlfriends import MLFriends, ScalingLayer, AffineLayer
 import numpy as np
 import time
 import matplotlib.pyplot as plt

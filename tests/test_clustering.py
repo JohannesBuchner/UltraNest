@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 here = os.path.dirname(__file__)
 
 def test_clustering():
-    from mininest.mlfriends import update_clusters
+    from ultranest.mlfriends import update_clusters
     for i in range(5):
         np.random.seed(i*100)
         
@@ -30,7 +30,7 @@ def test_clustering():
         assert 1 <= nclusters < 2
 
 def test_clusteringcase():
-    from mininest.mlfriends import update_clusters
+    from ultranest.mlfriends import update_clusters
     here = os.path.dirname(__file__)
     points = np.loadtxt(os.path.join(here, "clusters2.txt"))
     maxr = np.loadtxt(os.path.join(here, "clusters2_radius.txt"))
@@ -49,7 +49,7 @@ def test_clusteringcase():
 
 
 def test_clusteringcase_eggbox():
-    from mininest.mlfriends import update_clusters, ScalingLayer, MLFriends
+    from ultranest.mlfriends import update_clusters, ScalingLayer, MLFriends
     points = np.loadtxt(os.path.join(here, "eggboxregion.txt"))
     transformLayer = ScalingLayer()
     transformLayer.optimize(points, points)
@@ -66,7 +66,7 @@ def test_clusteringcase_eggbox():
     #plt.close()
     assert 14 < nclusters < 20, nclusters
 
-from mininest.utils import create_logger
+from ultranest.utils import create_logger
 class MockIntegrator(object):
     def __init__(self):
         self.use_mpi = False
@@ -79,7 +79,7 @@ class MockIntegrator(object):
         self.logger = create_logger("mock")
 
 def test_overclustering_eggbox_txt():
-    from mininest.mlfriends import update_clusters, ScalingLayer, MLFriends
+    from ultranest.mlfriends import update_clusters, ScalingLayer, MLFriends
     np.random.seed(1)
     for i in [20, 23, 24, 27, 49]:
         print()
@@ -114,7 +114,7 @@ def test_overclustering_eggbox_txt():
             assert 14 < nclusters < 20, (nclusters, i)
 
 def test_overclustering_eggbox_update():
-    from mininest import ReactiveNestedSampler
+    from ultranest import ReactiveNestedSampler
     np.random.seed(1)
     for i in [20, 23, 24, 27, 42]:
         print()

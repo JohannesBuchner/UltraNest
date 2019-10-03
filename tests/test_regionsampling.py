@@ -1,7 +1,7 @@
 import numpy as np
 import os
 import matplotlib.pyplot as plt
-from mininest.mlfriends import ScalingLayer, AffineLayer, MLFriends
+from ultranest.mlfriends import ScalingLayer, AffineLayer, MLFriends
 from numpy.testing import assert_allclose
 
 here = os.path.dirname(__file__)

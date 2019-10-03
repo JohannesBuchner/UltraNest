@@ -17,7 +17,7 @@ import warnings
 from numpy import log, exp, logaddexp
 
 from .utils import create_logger, make_run_dir, resample_equal, vol_prefactor
-from mininest.mlfriends import MLFriends, AffineLayer, ScalingLayer, find_nearby
+from ultranest.mlfriends import MLFriends, AffineLayer, ScalingLayer, find_nearby
 from .store import HDF5PointStore, NullPointStore
 from .viz import nicelogger
 from .netiter import PointPile, MultiCounter, BreadthFirstIterator, TreeNode, count_tree_between, find_nodes_before, logz_sequence
@@ -613,7 +613,7 @@ class ReactiveNestedSampler(object):
         
         #self.logger = create_logger(__name__ + '.' + type(self).__name__)
         if self.log:
-            self.logger = create_logger('mininest', log_dir=log_dir)
+            self.logger = create_logger('ultranest', log_dir=log_dir)
         self.root = TreeNode(id=-1, value=-np.inf)
 
         if self.log_to_disk:

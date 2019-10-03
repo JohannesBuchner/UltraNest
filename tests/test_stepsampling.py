@@ -1,8 +1,8 @@
 import numpy as np
-from mininest.mlfriends import ScalingLayer, AffineLayer, MLFriends
-from mininest import ReactiveNestedSampler
-from mininest.stepsampler import DESampler, RegionMHSampler, CubeMHSampler, CubeSliceSampler, RegionSliceSampler
-from mininest.stepsampler import SamplingPathStepSampler
+from ultranest.mlfriends import ScalingLayer, AffineLayer, MLFriends
+from ultranest import ReactiveNestedSampler
+from ultranest.stepsampler import DESampler, RegionMHSampler, CubeMHSampler, CubeSliceSampler, RegionSliceSampler
+from ultranest.stepsampler import SamplingPathStepSampler
 from numpy.testing import assert_allclose
 
 #here = os.path.dirname(__file__)

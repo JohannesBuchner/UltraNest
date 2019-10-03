@@ -1,11 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from mininest.mlfriends import ScalingLayer, AffineLayer, MLFriends
-from mininest.stepsampler import RegionMHSampler, CubeMHSampler
-from mininest.stepsampler import CubeSliceSampler, RegionSliceSampler, RegionBallSliceSampler, RegionSequentialSliceSampler, SpeedVariableRegionSliceSampler
-#from mininest.stepsampler import DESampler
-from mininest.stepsampler import OtherSamplerProxy, SamplingPathSliceSampler, SamplingPathStepSampler
-from mininest.stepsampler import GeodesicSliceSampler, RegionGeodesicSliceSampler
+from ultranest.mlfriends import ScalingLayer, AffineLayer, MLFriends
+from ultranest.stepsampler import RegionMHSampler, CubeMHSampler
+from ultranest.stepsampler import CubeSliceSampler, RegionSliceSampler, RegionBallSliceSampler, RegionSequentialSliceSampler, SpeedVariableRegionSliceSampler
+#from ultranest.stepsampler import DESampler
+from ultranest.stepsampler import OtherSamplerProxy, SamplingPathSliceSampler, SamplingPathStepSampler
+from ultranest.stepsampler import GeodesicSliceSampler, RegionGeodesicSliceSampler
 import tqdm
 import joblib
 import warnings

@@ -17,7 +17,7 @@ def main(args):
     paramnames = list(string.ascii_lowercase)[:args.x_dim]
     
     if args.reactive:
-        from mininest import ReactiveNestedSampler
+        from ultranest import ReactiveNestedSampler
         sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, 
             log_dir=args.log_dir, append_run_num=False,
             draw_multiple=False,
@@ -27,7 +27,7 @@ def main(args):
         sampler.print_results()
         sampler.plot()
     else:
-        from mininest import NestedSampler
+        from ultranest import NestedSampler
         sampler = NestedSampler(paramnames, loglike, transform=transform, 
             num_live_points=args.num_live_points,
             log_dir=args.log_dir, append_run_num=True)

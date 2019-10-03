@@ -4,7 +4,7 @@ import tempfile
 import pytest
 
 def test_run():
-    from mininest import NestedSampler
+    from ultranest import NestedSampler
 
     def loglike(z):
         a = np.array([-0.5 * sum([((xi - 0.83456 + i*0.1)/0.5)**2 for i, xi in enumerate(x)]) for x in z])
@@ -33,7 +33,7 @@ def test_run():
 
 
 def test_reactive_run():
-    from mininest import ReactiveNestedSampler
+    from ultranest import ReactiveNestedSampler
     np.random.seed(1)
     evals = set()
 
@@ -81,7 +81,7 @@ def test_reactive_run():
 
 @pytest.mark.parametrize("dlogz", [2.0, 0.5, 0.1])
 def test_run_resume(dlogz):
-    from mininest import ReactiveNestedSampler
+    from ultranest import ReactiveNestedSampler
     sigma = 0.01
     ndim = 1
 
@@ -123,7 +123,7 @@ def test_run_resume(dlogz):
         shutil.rmtree(folder, ignore_errors=True)
 
 def test_reactive_run_resume_eggbox():
-    from mininest import ReactiveNestedSampler
+    from ultranest import ReactiveNestedSampler
 
     def loglike(z):
         chi = (np.cos(z / 2.)).prod(axis=1)
@@ -170,7 +170,7 @@ def test_reactive_run_resume_eggbox():
         shutil.rmtree(folder, ignore_errors=True)
 
 def test_run_compat():
-    from mininest.solvecompat import pymultinest_solve_compat as solve
+    from ultranest.solvecompat import pymultinest_solve_compat as solve
     
     ndim = 2
     sigma = 0.01

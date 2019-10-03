@@ -1,12 +1,26 @@
-MiniNest Alpha
-===============
+=========
+UltraNest
+=========
 
-Pre-release alpha software. Will probably be renamed later (pleonest? ultranest3? eaglenest? wanaka? )
+Fit and compare complex models reliably and rapidly with advanced sampling techniques.
+
+.. image:: https://img.shields.io/pypi/v/ultranest.svg
+        :target: https://pypi.python.org/pypi/ultranest
+
+.. image:: https://img.shields.io/travis/JohannesBuchner/ultranest.svg
+        :target: https://travis-ci.org/JohannesBuchner/ultranest
+
+.. image:: https://readthedocs.org/projects/ultranest/badge/?version=latest
+        :target: https://ultranest.readthedocs.io/en/latest/?badge=latest
+        :alt: Documentation Status
+
+
+Pre-release alpha software.
 
 Nested sampling for Bayesian inference on arbitrary user-defined likelihoods.
 
 Features
-=========
+--------
 
 * Pythonic
 
@@ -51,10 +65,8 @@ Features
 
 
 TODO
-=============
+----
 
-* Store quality of proposed points (correlation length ~ nsteps)
-* Resume from a different, but similar problem (data slightly different)
 * Documentation:
   * Example line fit
   * Example line fit with heterogeneous xy errors
@@ -75,7 +87,7 @@ TODO
     consistent.
 
 Usage
-=============
+-----
 
 Install::
 
@@ -157,7 +169,7 @@ PyMultinest compatibility layer allows a drop-in replacement::
 
 
 Licence
-============
+-------
 
-Closed-source at the moment, will be released as open source later.
+GPLv3 (see LICENCE file). If you require another license, please contact me.
 

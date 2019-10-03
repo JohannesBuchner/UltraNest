@@ -1,7 +1,7 @@
 import numpy as np
 import tempfile
 import os
-from mininest.store import TextPointStore, HDF5PointStore, NullPointStore
+from ultranest.store import TextPointStore, HDF5PointStore, NullPointStore
 import pytest
 
 def test_text_store():

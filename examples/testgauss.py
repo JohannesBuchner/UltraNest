@@ -35,7 +35,7 @@ def main(args):
             print('%15s : %.3f +- %.3f' % (name, col.mean(), col.std()))
     
     elif args.reactive:
-        from mininest.solvecompat import pymultinest_solve_compat as solve
+        from ultranest.solvecompat import pymultinest_solve_compat as solve
         result = solve(LogLikelihood=flat_loglike, Prior=transform, 
             n_dims=ndim, outputfiles_basename=args.log_dir + 'MN-%dd' % ndim,
             verbose=True, resume=True, importance_nested_sampling=False)

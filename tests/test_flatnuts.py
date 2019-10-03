@@ -1,8 +1,8 @@
 import numpy as np
-from mininest.mlfriends import AffineLayer, ScalingLayer, MLFriends
-from mininest.flatnuts import ClockedStepSampler, ClockedBisectSampler, ClockedNUTSSampler
-from mininest.flatnuts import SingleJumper, DirectJumper
-from mininest.samplingpath import SamplingPath, ContourSamplingPath
+from ultranest.mlfriends import AffineLayer, ScalingLayer, MLFriends
+from ultranest.flatnuts import ClockedStepSampler, ClockedBisectSampler, ClockedNUTSSampler
+from ultranest.flatnuts import SingleJumper, DirectJumper
+from ultranest.samplingpath import SamplingPath, ContourSamplingPath
 from numpy.testing import assert_allclose
 
 def gap_free_path(sampler, ilo, ihi, transform, loglike, Lmin):

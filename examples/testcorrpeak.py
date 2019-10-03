@@ -61,14 +61,14 @@ def main(args):
             print('%15s : %.3f +- %.3f' % (name, col.mean(), col.std()))
     
     elif args.reactive:
-        from mininest import ReactiveNestedSampler
+        from ultranest import ReactiveNestedSampler
         sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, 
             log_dir=args.log_dir + 'RNS-%dd' % ndim, append_run_num=True)
         sampler.run(frac_remain=0.5, min_ess=400, min_num_live_points=args.num_live_points)
         sampler.print_results()
         sampler.plot()
     else:
-        from mininest import NestedSampler
+        from ultranest import NestedSampler
         sampler = NestedSampler(paramnames, loglike, transform=transform, 
             num_live_points=args.num_live_points,
             log_dir=args.log_dir + '-%dd' % ndim, append_run_num=True)

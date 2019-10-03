@@ -1,6 +1,6 @@
 """
 
-from mininest.solvecompat import pymultinest_solve_compat as solve
+from ultranest.solvecompat import pymultinest_solve_compat as solve
 
 is a drop-in replacement for
 

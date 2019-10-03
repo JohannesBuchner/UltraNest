@@ -1,4 +1,4 @@
-from mininest.mlfriends import ScalingLayer, AffineLayer
+from ultranest.mlfriends import ScalingLayer, AffineLayer
 import numpy as np
 import matplotlib.pyplot as plt
 

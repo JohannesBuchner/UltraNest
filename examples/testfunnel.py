@@ -23,14 +23,14 @@ def main(args):
     paramnames = ['sigma'] + list(string.ascii_lowercase)[:ndim]
     
     if args.reactive:
-        from mininest import ReactiveNestedSampler
+        from ultranest import ReactiveNestedSampler
         sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, 
             log_dir=args.log_dir + 'RNS-%dd' % ndim, 
             append_run_num=False, viz_callback = False, show_status = False)
         sampler.run(log_interval=20, min_num_live_points=args.num_live_points)
         sampler.plot()
     else:
-        from mininest import NestedSampler
+        from ultranest import NestedSampler
         sampler = NestedSampler(paramnames, loglike, transform=transform, 
             num_live_points=args.num_live_points,
             log_dir=args.log_dir + '-%dd' % ndim, append_run_num=False)

@@ -1,6 +1,6 @@
 import numpy as np
 
-from mininest.viz import round_parameterlimits
+from ultranest.viz import round_parameterlimits
 
 def wrap_single_test(vlo, vhi, plo_expected, phi_expected):
     assert vlo < vhi

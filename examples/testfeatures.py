@@ -110,7 +110,7 @@ def main(args):
         def transform(x):
             return x
     
-    from mininest import ReactiveNestedSampler
+    from ultranest import ReactiveNestedSampler
     sampler = ReactiveNestedSampler(paramnames, loglike, 
         transform=transform if args.pass_transform else None, 
         log_dir=log_dir, 

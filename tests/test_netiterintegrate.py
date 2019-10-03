@@ -1,8 +1,8 @@
 import os
 import numpy as np
-from mininest.store import TextPointStore
-from mininest.netiter import PointPile, TreeNode, count_tree, print_tree, dump_tree
-from mininest.netiter import SingleCounter, MultiCounter, BreadthFirstIterator
+from ultranest.store import TextPointStore
+from ultranest.netiter import PointPile, TreeNode, count_tree, print_tree, dump_tree
+from ultranest.netiter import SingleCounter, MultiCounter, BreadthFirstIterator
 
 
 
