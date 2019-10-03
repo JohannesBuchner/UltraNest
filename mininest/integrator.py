@@ -21,7 +21,7 @@ from mininest.mlfriends import MLFriends, AffineLayer, ScalingLayer, find_nearby
 from .store import HDF5PointStore, NullPointStore
 from .viz import nicelogger
 from .netiter import PointPile, MultiCounter, BreadthFirstIterator, TreeNode, count_tree_between, find_nodes_before, logz_sequence
-#from .netiter import print_tree, count_tree
+from .netiter import dump_tree
 
 import numpy as np
 
@@ -1941,8 +1941,11 @@ class ReactiveNestedSampler(object):
             samples=samples,
         )
         self.results = results
-                    
-        
+    
+    def store_tree(self):
+        if self.log_to_disk:
+            dump_tree(os.path.join(self.logs['results'], 'tree.hdf5'), 
+                self.root.children, self.pointpile)
     
     def print_results(self, logZ=True, posterior=True):
         if self.log:

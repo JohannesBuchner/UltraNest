@@ -1,7 +1,8 @@
 import os
 import numpy as np
 from mininest.store import TextPointStore
-from mininest.netiter import PointPile, SingleCounter, MultiCounter, BreadthFirstIterator, TreeNode, count_tree, print_tree
+from mininest.netiter import PointPile, TreeNode, count_tree, print_tree, dump_tree
+from mininest.netiter import SingleCounter, MultiCounter, BreadthFirstIterator
 
 
 
@@ -343,6 +344,25 @@ def test_visualisation():
 		tree.children.append(node)
 	print(tree)
 	print_tree(tree.children, title='Empty Tree')
+	
+
+def test_treedump():
+	print("testing tree dumping...")
+	pp = PointPile(1, 1)
+	tree = TreeNode()
+	for i in range(5):
+		j = np.random.randint(1000)
+		node = pp.make_node(j, np.array([j]), np.array([j]))
+		for k in range(i):
+			j = np.random.randint(1000)
+			node2 = pp.make_node(j, [j], [j])
+			node.children.append(node2)
+		tree.children.append(node)
+	dump_tree("test_tree.hdf5", tree.children, pp)
+	os.remove("test_tree.hdf5")
+	dump_tree("test_tree.hdf5", roots=tree.children, pointpile=pp)
+	dump_tree("test_tree.hdf5", tree.children, pp)
+	os.remove("test_tree.hdf5")
 	
 
 if __name__ == '__main__':

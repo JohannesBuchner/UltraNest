@@ -186,6 +186,37 @@ def print_tree(roots, title='Tree:'):
         explorer.expand_children_of(rootid, node)
         lastlane = laneid
 
+
+def dump_tree(filename, roots, pointpile):
+    """
+    Write a copy of the tree to a HDF5 file
+    """
+    import h5py
+    
+    nodes_from_ids = []
+    nodes_to_ids = []
+    nodes_values = []
+    
+    explorer = BreadthFirstIterator(roots)
+    while True:
+        next = explorer.next_node()
+        if next is None:
+            break
+        rootid, node, (active_nodes, active_rootids, active_values, active_nodeids) = next
+        for c in node.children:
+            nodes_from_ids.append(node.id)
+            nodes_to_ids.append(c.id)
+            nodes_values.append(c.value)
+        explorer.expand_children_of(rootid, node)
+    
+    with h5py.File(filename, 'w') as f:
+        f.create_dataset('unit_points', data=pointpile.us[:pointpile.nrows,:], compression='gzip', shuffle=True)
+        f.create_dataset('points', data=pointpile.ps[:pointpile.nrows,:], compression='gzip', shuffle=True)
+
+        f.create_dataset('nodes_parent_id', data=nodes_from_ids, compression='gzip', shuffle=True)
+        f.create_dataset('nodes_child_id', data=nodes_to_ids, compression='gzip', shuffle=True)
+        f.create_dataset('nodes_child_logl', data=nodes_values, compression='gzip', shuffle=True)
+
 def count_tree(roots):
     """
     Returns the maximum number of parallel edges and the total number of nodes
@@ -280,7 +311,7 @@ class PointPile(object):
     """
     def __init__(self, udim, pdim, chunksize=1000):
         self.nrows = 0
-        self.chunksize = 1000
+        self.chunksize = chunksize
         self.us = np.zeros((self.chunksize, udim))
         self.ps = np.zeros((self.chunksize, pdim))
         self.udim = udim
