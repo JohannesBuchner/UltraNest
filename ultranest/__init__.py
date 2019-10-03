@@ -8,3 +8,8 @@ from __future__ import print_function
 from __future__ import division
 
 from .integrator import NestedSampler, ReactiveNestedSampler
+
+
+__author__ = """Johannes Buchner"""
+__email__ = 'johannes.buchner.acad@gmx.com'
+__version__ = '2.0.0'

@@ -7,10 +7,13 @@ Welcome to UltraNest's documentation!
 
    readme
    installation
+   method
    usage
    modules
    contributing
    history
+
+.. include:: ../README.rst
 
 Indices and tables
 ==================

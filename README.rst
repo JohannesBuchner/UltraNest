@@ -15,9 +15,42 @@ Fit and compare complex models reliably and rapidly with advanced sampling techn
         :alt: Documentation Status
 
 
-Pre-release alpha software.
+About
+-------
 
-Nested sampling for Bayesian inference on arbitrary user-defined likelihoods.
+When scientific models are compared to data, two tasks are important:
+1) contraining the model parameters 2) comparing the model to other models.
+Different techniques have been developed to explore model parameter spaces.
+This package implements a Monte Carlo technique called nested sampling.
+
+Nested sampling allows Bayesian inference on arbitrary user-defined likelihoods.
+In particular, posterior probability distributions on model parameters
+are constructed, and the marginal likelihood ("evidence") Z is computed.
+The former can be used to describe the parameter constraints of the data,
+the latter can be used for model comparison (via `Bayes factors`) 
+as a measure of the prediction parsimony of a model.
+
+In the last decade, multiple variants of nested sampling have been 
+developed. These differ in how nested sampling finds better and
+better fits while respecting the priors 
+(constrained likelihood prior sampling techniques), and whether it is 
+allowed to go back to worse fits and explore the parameter space more.
+
+This package develops novel advanced techniques for both. They are
+especially remarkable for being free of tuning parameters and theoretically
+justified. Beyond that, UltraNest has support for Big Data sets
+and high-performance computing applications.
+
+UltraNest is intended for fitting complex physical models with slow
+likelihood evaluations, with one to hundreds of parameters.
+UltraNest intends to replace heuristic methods like multi-ellipsoid
+nested sampling and dynamic nested sampling with more rigorous methods, 
+UltraNest attempts to provide feature parity compared to other packages
+(such as MultiNest). 
+
+However, UltraNest is alpha-grade software. You can help by
+testing it and reporting issues. Code contributions for fixes and 
+new features are also welcome.
 
 Features
 --------
@@ -35,24 +68,24 @@ Features
 * Tracking solution modes
 * Run-time visualisations and exploration information
 * Corner plots, run and parameter exploration diagnostic plots
-* Robust ln(Z) error bars
+* Robust ln(Z) uncertainties
 
 * Robust exploration easily handles:
 
-  * Multiple modes 
   * Degenerate parameter spaces such as bananas or tight correlations
-  * Uses the robust, parameter-free MLFriends algorithm (metric learning RadFriends, Buchner+14,+19)
-  * Region follows new live points
-
-* High-dimensional problems with slice sampling (or ellipsoidal sampling, FlatNUTS, etc.),
-  inside region.
+  * Multiple modes/solutions in the parameter space
+  * Robust, parameter-free MLFriends algorithm 
+    (metric learning RadFriends, Buchner+14,+19), with new improvements
+    (region follows new live points, clustering improves metric iteratively).
+  * High-dimensional problems with slice sampling (or ellipsoidal sampling, FlatNUTS, etc.),
+    inside region.
 
 * strategic nested sampling
 
-  * can vary (increase) number of live points (similar to dynamic nested sampling)
-  * can sample clusters optimally (e.g., at least 50 points per cluster)
+  * can vary (increase) number of live points (akin to dynamic nested sampling, but with different targets)
+  * can sample clusters optimally (e.g., at least 50 points per cluster/mode/solution)
   * can target minimizing parameter estimation uncertainties
-  * can target a desired evidence uncertainties
+  * can target a desired evidence uncertainty threshold
   * can target a desired number of effective samples
   * or any combination of the above
 
@@ -68,6 +101,7 @@ TODO
 ----
 
 * Documentation:
+
   * Example line fit
   * Example line fit with heterogeneous xy errors
   * Example line fit with outliers (mixture of 2 models)

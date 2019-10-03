@@ -1,4 +1,4 @@
-ultranest
+API
 =========
 
 .. toctree::
