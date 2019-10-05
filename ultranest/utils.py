@@ -135,6 +135,7 @@ def resample_equal(samples, weights, rstate=None):
         else:
             j += 1
 
+    rstate.shuffle(idx)
     return samples[idx]
 
 

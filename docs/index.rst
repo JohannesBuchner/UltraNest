@@ -9,6 +9,7 @@ Welcome to UltraNest's documentation!
    installation
    method
    usage
+   example-line.ipynb
    modules
    contributing
    history

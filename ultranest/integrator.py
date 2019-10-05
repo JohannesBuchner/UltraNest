@@ -19,11 +19,12 @@ from numpy import log, exp, logaddexp
 from .utils import create_logger, make_run_dir, resample_equal, vol_prefactor
 from ultranest.mlfriends import MLFriends, AffineLayer, ScalingLayer, find_nearby
 from .store import HDF5PointStore, NullPointStore
-from .viz import nicelogger
+from .viz import get_default_viz_callback, nicelogger
 from .netiter import PointPile, MultiCounter, BreadthFirstIterator, TreeNode, count_tree_between, find_nodes_before, logz_sequence
 from .netiter import dump_tree
 
 import numpy as np
+
 
 def get_cumsum_range(pi, dp):
     ci = pi.cumsum()
@@ -166,6 +167,8 @@ class NestedSampler(object):
             log_interval = round(log_interval)
             if log_interval < 1:
                 raise ValueError("log_interval must be >= 1")
+
+        viz_callback = get_default_viz_callback()
 
         prev_u = []
         prev_v = []
@@ -323,7 +326,7 @@ class NestedSampler(object):
                 region.create_ellipsoid(minvol=exp(-it / self.num_live_points) * self.volfactor)
                 
                 if self.log:
-                    nicelogger(points=dict(u=active_u, p=active_v, logl=active_logl), 
+                    viz_callback(points=dict(u=active_u, p=active_v, logl=active_logl), 
                         info=dict(it=it, ncall=ncall, logz=logz, logz_remain=logz_remain, 
                         paramnames=self.paramnames + self.derivedparamnames, logvol=logvol), 
                         region=region, transformLayer=transformLayer)
@@ -528,7 +531,6 @@ class ReactiveNestedSampler(object):
                  num_test_samples=2,
                  draw_multiple=True,
                  num_bootstraps=30,
-                 viz_callback=nicelogger,
                  show_status=True,
                  ):
         """
@@ -564,13 +566,6 @@ class ReactiveNestedSampler(object):
         num_bootstraps: number of logZ estimators and MLFriends region 
             bootstrap rounds.
             
-        viz_callback: callback function when region was rebuilt. Allows to 
-            show current state of the live points. See nicelogger() function.
-            If no output desired, set to False.
-        
-        show_status: show integration progress as a status line. 
-            If no output desired, set to False.
-        
         """
 
         self.paramnames = param_names
@@ -634,8 +629,6 @@ class ReactiveNestedSampler(object):
             self.pointstore = NullPointStore(3 + self.x_dim + self.num_params)
         
         self.set_likelihood_function(transform, loglike, num_test_samples)
-        self.viz_callback = viz_callback
-        self.show_status = show_status
         self.stepsampler = None
     
     def setup_distributed_seeds(self):
@@ -1442,6 +1435,8 @@ class ReactiveNestedSampler(object):
             update_interval_iter_fraction=0.2,
             update_interval_ncall=None,
             log_interval=None,
+            show_status=True,
+            viz_callback=None,
             dlogz=0.5,
             dKL=0.5,
             frac_remain=0.01,
@@ -1449,7 +1444,7 @@ class ReactiveNestedSampler(object):
             max_iters=None,
             max_ncalls=None,
             max_num_improvement_loops=-1,
-            min_num_live_points=100,
+            min_num_live_points=400,
             cluster_num_live_points=40,
         ):
         """
@@ -1457,10 +1452,19 @@ class ReactiveNestedSampler(object):
         
         update_interval_iter_fraction: 
             Update region after (update_interval_iter_fraction*nlive) iterations.
+        
         update_interval_ncall: (not actually used)
             Update region after update_interval_ncall likelihood calls.
+        
         log_interval:
             Update stdout status line every log_interval iterations
+        
+        show_status: show integration progress as a status line. 
+            If no output desired, set to False.
+
+        viz_callback: callback function when region was rebuilt. Allows to 
+            show current state of the live points. See nicelogger() function.
+            If no output desired, set to False.
         
         Termination criteria
         ---------------------
@@ -1498,6 +1502,8 @@ class ReactiveNestedSampler(object):
             require at least this many live points per detected cluster
         
         """
+        if viz_callback is None:
+            viz_callback = get_default_viz_callback()
         
         for result in self.run_iter(
             update_interval_iter_fraction=update_interval_iter_fraction,
@@ -1508,6 +1514,8 @@ class ReactiveNestedSampler(object):
             max_ncalls=max_ncalls, max_num_improvement_loops=max_num_improvement_loops,
             min_num_live_points=min_num_live_points,
             cluster_num_live_points=cluster_num_live_points,
+            show_status=show_status,
+            viz_callback=viz_callback,
             ):
             if self.log:
                 self.logger.info("did a run_iter pass!")
@@ -1529,8 +1537,10 @@ class ReactiveNestedSampler(object):
             max_iters=None,
             max_ncalls=None,
             max_num_improvement_loops=-1,
-            min_num_live_points=100,
+            min_num_live_points=400,
             cluster_num_live_points=40,
+            show_status=True,
+            viz_callback=None,
         ):
         """
         Use as an iterator like so:
@@ -1540,6 +1550,9 @@ class ReactiveNestedSampler(object):
         
         Parameters as described in run() function.
         """
+        
+        if viz_callback is None:
+            viz_callback = get_default_viz_callback()
 
         # frac_remain=1  means 1:1 -> dlogz=log(0.5)
         # frac_remain=0.1 means 1:10 -> dlogz=log(0.1)
@@ -1689,9 +1702,9 @@ class ReactiveNestedSampler(object):
                         # provide nice output to follow what is going on
                         # but skip if we are resuming
                         #  and (self.ncall != ncall_at_run_start and it_at_first_region == it)
-                        if self.log and self.viz_callback:
+                        if self.log and viz_callback:
                             active_p = self.pointpile.getp(active_node_ids)
-                            self.viz_callback(points=dict(u=active_u, p=active_p, logl=active_values), 
+                            viz_callback(points=dict(u=active_u, p=active_p, logl=active_values), 
                                 info=dict(it=it, ncall=self.ncall, 
                                 logz=main_iterator.logZ, logz_remain=main_iterator.logZremain, 
                                 logvol=main_iterator.logVolremaining, 
@@ -1738,7 +1751,7 @@ class ReactiveNestedSampler(object):
                         last_status = time.time()
                         ncall_here = self.ncall - ncall_at_run_start
                         it_here = it - it_at_first_region
-                        if self.show_status:
+                        if show_status:
                             sys.stdout.write('Z=%.1f(%.2f%%) | Like=%.2f..%.2f [%.4f..%.4f]%s| it/evals=%d/%d eff=%.4f%% N=%d \r' % (
                                   main_iterator.logZ, 100 * (1 - main_iterator.remainder_fraction), 
                                   Lmin, main_iterator.Lmax, Llo, Lhi, '*' if strategy_stale else ' ', it, self.ncall, 
@@ -1794,7 +1807,7 @@ class ReactiveNestedSampler(object):
                     self.logger.info('Reached maximum number of improvement loops.')
                 break
             
-            if ncall_at_run_start == self.ncall:
+            if ncall_at_run_start == self.ncall and improvement_it > 1:
                 if self.log:
                     self.logger.info('No changes made. Probably the strategy was to explore in the remainder, but it is irrelevant already; try decreasing frac_remain.')
                 break
@@ -1980,37 +1993,47 @@ class ReactiveNestedSampler(object):
         """
         Write corner plot to plots/ directory.
         """
-        if self.log_to_disk:
+        from .plot import cornerplot
+        import matplotlib.pyplot as plt
+        if self.log:
             self.logger.info('Making corner plot ...')
-            from .plot import cornerplot
-            import matplotlib.pyplot as plt
-            cornerplot(self.results, logger=self.logger if self.log else None)
+        cornerplot(self.results, logger=self.logger if self.log else None)
+        if self.log_to_disk:
             plt.savefig(os.path.join(self.logs['plots'], 'corner.pdf'), bbox_inches='tight')
             plt.close()
             self.logger.info('Making corner plot ... done')
+
+    def plot_trace(self):
+        """
+        Write run and parameter trace diagnostic plots to plots/ directory.
+        """
+        from .plot import runplot, traceplot
+        import matplotlib.pyplot as plt
+        if self.log:
+            self.logger.info('Making trace plot ... ')
+        paramnames = self.paramnames + self.derivedparamnames
+        # get dynesty-compatible sequences
+        results = logz_sequence(self.root, self.pointpile)
+        traceplot(results = results, labels=paramnames)
+        if self.log_to_disk:
+            plt.savefig(os.path.join(self.logs['plots'], 'trace.pdf'), bbox_inches='tight')
+            plt.close()
+            self.logger.info('Making trace plot ... done')
+            self.logger.info('Plotting done')
 
     def plot_run(self):
         """
         Write run and parameter trace diagnostic plots to plots/ directory.
         """
-        if self.log_to_disk:
+        from .plot import runplot, traceplot
+        import matplotlib.pyplot as plt
+        if self.log:
             self.logger.info('Making run plot ... ')
-            from .plot import runplot, traceplot
-            import matplotlib.pyplot as plt
-            # get dynesty-compatible sequences
-            self.logger.debug("computing dynesty-compatible sequences")
-            results = logz_sequence(self.root, self.pointpile)
-            self.logger.debug("computing dynesty-compatible sequences done.")
-            runplot(results = results, logplot=True)
+        # get dynesty-compatible sequences
+        results = logz_sequence(self.root, self.pointpile)
+        runplot(results = results, logplot=True)
+        if self.log_to_disk:
             plt.savefig(os.path.join(self.logs['plots'], 'run.pdf'), bbox_inches='tight')
             plt.close()
             self.logger.info('Making run plot ... done')
-
-            self.logger.info('Making trace plot ... ')
-            paramnames = self.paramnames + self.derivedparamnames
-            traceplot(results = results, labels=paramnames)
-            plt.savefig(os.path.join(self.logs['plots'], 'trace.pdf'), bbox_inches='tight')
-            plt.close()
-            self.logger.info('Making trace plot ... done')
-            self.logger.info('Plotting done')
 

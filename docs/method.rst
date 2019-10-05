@@ -35,3 +35,25 @@ problems. UltraNest provides MCMC-based methods to find a new point.
 
 The animation is based on work by Chi Feng https://chi-feng.github.io/mcmc-demo/
 and is MIT licenced. The RadFriends implementation was contributed by Johannes Buchner.
+
+
+Literature
+------------
+
+On the theory behind nested sampling:
+
+* Skilling, J. (2004): Nested sampling
+* Chopin, N. & Robert, C. (2008): Properties of Nested Sampling
+* Evans, M. (2007): Discussion of nested sampling for Bayesian computations by John Skilling 
+* Skilling, J. (2009): Nested sampling's convergence
+* Walter, C. (2014): Point Process-based Monte Carlo estimation
+
+For an introduction of constrained-likelihood prior sampling methods and verification:
+
+* Buchner, J. (2014): A statistical test for Nested Sampling algorithms
+* Higson, E.; Handley, W.; Hobson, M. & Lasenby, A. (2019) NESTCHECK: diagnostic tests for nested sampling calculations
+
+On analysing many data sets:
+
+* Buchner, J. (2019): Collaborative Nested Sampling: Big Data versus Complex Physical Models
+

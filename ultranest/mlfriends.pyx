@@ -1,5 +1,5 @@
 # cython: language_level=3
-#, profile=True
+# ,profile=True
 import numpy as np
 cimport numpy as np
 from numpy import pi
@@ -572,11 +572,13 @@ class MLFriends(object):
         # draw from rectangle in transformed space
 
         z = np.random.normal(size=(nsamples, ndim))
+        assert ((z**2).sum(axis=1) > 0).all(), (z**2).sum(axis=1)
         z /= ((z**2).sum(axis=1)**0.5).reshape((nsamples, 1))
+        assert self.enlarge > 0, self.enlarge
         u = z * self.enlarge**0.5 * np.random.uniform(size=(nsamples, 1))**(1./ndim)
 
         w = self.ellipsoid_center + np.einsum('ij,kj->ki', self.ellipsoid_axes, u)
-        assert self.inside_ellipsoid(w).all()
+        #assert self.inside_ellipsoid(w).all()
         
         wmask = np.logical_and(w > 0, w < 1).all(axis=1)
         v = self.transformLayer.transform(w[wmask,:])
