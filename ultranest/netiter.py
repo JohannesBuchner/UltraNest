@@ -563,15 +563,20 @@ class MultiCounter(object):
             logZnew = logaddexp(logZ, wi)
             H = exp(wi - logZnew) * Li + exp(logZ - logZnew) * (self.all_H[active] + logZ) - logZnew
             first_setting = np.isinf(logZ)
+            #print()
+            #print("Hnext:", H[0], first_setting[0])
+            assert np.isfinite(H[~first_setting]).all(), (first_setting, self.all_H[active][~first_setting], H, wi, logZnew, Li, logZ)
             self.all_logZ[active] = np.where(first_setting, wi, logZnew)
+            #print("logZ:", self.all_logZ[0])
             if first_setting[0]:
                 assert np.all(np.isfinite(Li - wi)), (Li, wi)
             else:
                 assert np.isfinite(self.all_H[0]), self.all_H[0]
                 assert np.isfinite(H[0]), (first_setting[0], H[0], self.all_H[0], wi[0], logZnew[0], Li, logZ[0])
-            self.all_H[active] = np.where(first_setting, Li - wi, H)
+            self.all_H[active] = np.where(first_setting, -logwidth[active], H)
+            #print("H:", self.all_H[0])
+            assert np.isfinite(self.all_H[active]).all(), (self.all_H[active], first_setting[0], H[0], self.all_H[0], wi[0], logZnew[0], Li, logZ[0])
             #assert np.all(np.isfinite(self.all_H[active])), (H, self.all_H[active], wi, logZnew, Li, logZ)
-            #print(self.all_H)
             self.logZ = self.all_logZ[0]
             
             #self.Lmax = max((n.value for n in parallel_nodes))
@@ -579,9 +584,10 @@ class MultiCounter(object):
             #print("L=%.1f N=%d V=%.2e logw=%.2e logZ=%.1f logZremain=%.1f" % (Li, nlive[0], self.all_logVolremaining[0], (logwidth + Li)[0], self.all_logZ[0], logZremain))
             #print("L=%.1f N=%d V=%.2e logw=%.2e logZ=<%.1f logZremain=%.1f" % (Li, nlive[1], self.all_logVolremaining[1], (logwidth + Li)[1], self.all_logZ[1], logZremain))
 
-            # TODO: this needs to change if nlive varies
-            self.logZerr = (self.all_H[0] / nlive0)**0.5
-            assert np.all(np.isfinite(self.logZerr)), (self.logZerr, self.all_H[0], nlive)
+            if self.all_H[0] > 0:
+                # TODO: this needs to change if nlive varies
+                self.logZerr = (self.all_H[0] / nlive0)**0.5
+            #assert np.all(np.isfinite(self.logZerr)), (self.logZerr, self.all_H[0], nlive)
             
             # volume is reduced by exp(-1/N)
             self.all_logVolremaining[active] += logright[active]
