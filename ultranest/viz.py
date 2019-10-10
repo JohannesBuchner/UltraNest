@@ -156,8 +156,15 @@ def isnotebook():
     except NameError:
         return False      # Probably standard Python interpreter
 
+from xml.sax.saxutils import escape as html_escape
 
 class LivePointsWidget(object):
+    """
+    Widget for ipython and jupyter notebooks.
+    
+    Shows where the live points are currently in parameter space.
+    
+    """
     def __init__(self):
         self.grid = None
         self.label = None
@@ -172,10 +179,10 @@ class LivePointsWidget(object):
         for a, paramname in enumerate(paramnames):
             self.laststatus.append('*' * width)
             for b in range(width):
-                grid[a,b+2] = HTML("<div style='background:orange;'>&nbsp;</div>", layout=Layout(margin="0"))
-            grid[a,0] = HTML(paramname)
-            grid[a,1] = HTML("")
-            grid[a,-1] = HTML("")
+                grid[a,b+2] = HTML("<div style='background-color:#6E6BF4;'>&nbsp;</div>", layout=Layout(margin="0"))
+            grid[a,0] = HTML("<div style='background-color:#FFB858; font-weight:bold; padding-right: 2em;'>%s</div>" % html_escape(paramname), layout=Layout(margin="0"))
+            grid[a,1] = HTML("...", layout=Layout(margin="0"))
+            grid[a,-1] = HTML("...", layout=Layout(margin="0"))
         self.grid = grid
         
         self.label = HTML()
@@ -213,8 +220,8 @@ class LivePointsWidget(object):
         clusterids = transformLayer.clusterids % len(clusteridstrings)
         nmodes = transformLayer.nclusters
         labeltext = ("Mono-modal" if nmodes == 1 else "Have %d modes" % nmodes) + \
-            (" Volume: ~exp(%.2f) " % region.estimate_volume()) + ('*' if region_fresh else ' ') + \
-            " Expected Volume: exp(%.2f)" % info['logvol']
+            (" | Volume: ~exp(%.2f) " % region.estimate_volume()) + ('*' if region_fresh else ' ') + \
+            " | Expected Volume: exp(%.2f)" % info['logvol']
         
         if ndim == 1:
             pass
@@ -237,7 +244,6 @@ class LivePointsWidget(object):
                             'positive degeneracy' if rho[i,j] > 0 else 'negative degeneracy',
                             param2, param, rho[i,j]))
         
-        self.label.value = labeltext
         
         for i, (param, fmt) in enumerate(zip(paramnames, paramformats)):
             if nmodes == 1:
@@ -262,15 +268,16 @@ class LivePointsWidget(object):
             for j, (c, d) in enumerate(zip(linestr, oldlinestr)):
                 if c != d:
                     if c == ' ':
-                        self.grid[i,j+2].value = "<div style='background:white;'>&nbsp;</div>"
+                        self.grid[i,j+2].value = "<div style='background-color:white;'>&nbsp;</div>"
                     else:
-                        self.grid[i,j+2].value = "<div style='background:orange;'>%s</div>" % c
+                        self.grid[i,j+2].value = "<div style='background-color:#6E6BF4; font-family:monospace'>%s</div>" % c.replace('*', '&nbsp;')
             
             self.laststatus[i] = linestr
-            self.grid[i,0].value = param
-            self.grid[i,1].value = "%09s" % (fmt % plo_rounded[i])
-            self.grid[i,-1].value = "%09s" % (fmt % phi_rounded[i])
+            #self.grid[i,0].value = param
+            self.grid[i,1].value = fmt % plo_rounded[i]
+            self.grid[i,-1].value = fmt % phi_rounded[i]
 
+        self.label.value = labeltext
 
 
 def get_default_viz_callback():
