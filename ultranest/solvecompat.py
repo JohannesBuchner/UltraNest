@@ -31,7 +31,7 @@ def pymultinest_solve_compat(LogLikelihood, Prior, n_dims,
     if paramnames is None:
         paramnames = list(string.ascii_lowercase)[:n_dims]
     assert len(paramnames) == n_dims
-    min_ess = kwargs.pop('min_ess', 400)
+    min_ess = kwargs.pop('min_ess', 0)
     frac_remain = kwargs.pop('frac_remain', 0.01)
     outputkwargs = {}
     if not verbose:
@@ -41,7 +41,7 @@ def pymultinest_solve_compat(LogLikelihood, Prior, n_dims,
         vectorized_loglike, 
         transform=vectorized_transform, 
         log_dir=outputfiles_basename, 
-        append_run_num=not resume,
+        append_run_num=not resume, resume=resume,
         wrapped_params=wrapped_params,
         draw_multiple=False,
         **outputkwargs
