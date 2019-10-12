@@ -19,11 +19,11 @@ About
 -------
 
 When scientific models are compared to data, two tasks are important:
-1) contraining the model parameters 2) comparing the model to other models.
+1) contraining the model parameters and 2) comparing the model to other models.
 Different techniques have been developed to explore model parameter spaces.
 This package implements a Monte Carlo technique called nested sampling.
 
-Nested sampling allows Bayesian inference on arbitrary user-defined likelihoods.
+**Nested sampling** allows Bayesian inference on arbitrary user-defined likelihoods.
 In particular, posterior probability distributions on model parameters
 are constructed, and the marginal likelihood ("evidence") Z is computed.
 The former can be used to describe the parameter constraints of the data,
@@ -36,21 +36,21 @@ better fits while respecting the priors
 (constrained likelihood prior sampling techniques), and whether it is 
 allowed to go back to worse fits and explore the parameter space more.
 
-This package develops novel advanced techniques for both. They are
-especially remarkable for being free of tuning parameters and theoretically
-justified. Beyond that, UltraNest has support for Big Data sets
-and high-performance computing applications.
+This package develops novel, advanced techniques for both (See How it works).
+They are especially remarkable for being free of tuning parameters 
+and theoretically justified. Beyond that, UltraNest has support for 
+Big Data sets and high-performance computing applications.
 
 UltraNest is intended for fitting complex physical models with slow
 likelihood evaluations, with one to hundreds of parameters.
 UltraNest intends to replace heuristic methods like multi-ellipsoid
-nested sampling and dynamic nested sampling with more rigorous methods, 
-UltraNest attempts to provide feature parity compared to other packages
-(such as MultiNest). 
+nested sampling and dynamic nested sampling with more rigorous methods.
+UltraNest also attempts to provide feature parity compared to other packages
+(such as MultiNest).
 
-However, UltraNest is alpha-grade software. You can help by
+However, UltraNest is still in beta. You can help by
 testing it and reporting issues. Code contributions for fixes and 
-new features are also welcome.
+new features are also welcome. See :contributing:.
 
 Features
 --------
@@ -62,14 +62,6 @@ Features
   * Can control the run programmatically and check status
   * Reasonable defaults, but customizable
 
-* Checkpointing and resuming, even with different number of live points
-* Wrapped/circular parameters, derived parameters
-* Fast-slow parameters
-* Tracking solution modes
-* Run-time visualisations and exploration information
-* Corner plots, run and parameter exploration diagnostic plots
-* Robust ln(Z) uncertainties
-
 * Robust exploration easily handles:
 
   * Degenerate parameter spaces such as bananas or tight correlations
@@ -79,6 +71,8 @@ Features
     (region follows new live points, clustering improves metric iteratively).
   * High-dimensional problems with slice sampling (or ellipsoidal sampling, FlatNUTS, etc.),
     inside region.
+  * Wrapped/circular parameters, derived parameters
+  * Fast-slow parameters
 
 * strategic nested sampling
 
@@ -88,13 +82,20 @@ Features
   * can target a desired evidence uncertainty threshold
   * can target a desired number of effective samples
   * or any combination of the above
+  * Robust ln(Z) uncertainties by bootstrapping live points.
 
-* Very fast
+* Lightweight and fast
 
   * some functions implemented in Cython
   * vectorized likelihood function calls
   * Use multiple cores, fully parallelizable from laptops to clusters
   * MPI support
+
+* Advanced visualisation and crash recovery:
+
+  * Checkpointing and resuming, even with different number of live points
+  * Run-time visualisations and exploration information
+  * Corner plots, run and parameter exploration diagnostic plots
 
 
 TODO

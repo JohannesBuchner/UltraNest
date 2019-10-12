@@ -1,21 +1,22 @@
-"""
-
-
-"""
-
-
+"""Plotting utilities."""
 
 from __future__ import (print_function, division)
 from six.moves import range
 
 import logging
 import types
+import warnings
+
 import numpy as np
 import matplotlib.pyplot as pl
 from matplotlib.ticker import MaxNLocator, NullLocator
-#from matplotlib.colors import LinearSegmentedColormap, colorConverter
+# from matplotlib.colors import LinearSegmentedColormap, colorConverter
 from matplotlib.ticker import ScalarFormatter
-import warnings
+
+import scipy.stats
+import matplotlib.pyplot as plt
+import numpy
+
 from .utils import resample_equal
 from .utils import quantile as _quantile
 
@@ -23,7 +24,7 @@ try:
     str_type = types.StringTypes
     float_type = types.FloatType
     int_type = types.IntType
-except:
+except Exception:
     str_type = str
     float_type = float
     int_type = int
@@ -32,7 +33,9 @@ import corner
 
 __all__ = ["runplot", "cornerplot", "traceplot"]
 
+
 def cornerplot(results, logger=None):
+    """Make a corner plot with corner."""
     paramnames = results['paramnames']
     data = np.array(results['weighted_samples']['v'])
     weights = np.array(results['weighted_samples']['w'])
@@ -40,84 +43,92 @@ def cornerplot(results, logger=None):
     cumsumweights = np.cumsum(weights)
 
     mask = cumsumweights > 1e-4
-    
+
     if mask.sum() == 1:
         if logger is not None:
             warn = 'Posterior is still concentrated in a single point:'
             for i, p in enumerate(paramnames):
                 v = results['samples'][mask,i]
                 warn += "\n" + '    %-20s: %s' % (p, v)
-            
+
             logger.warning(warn)
             logger.info('Try running longer.')
         return
-    
+
     # monkey patch to disable a useless warning
     oldfunc = logging.warning
     logging.warning = lambda *args, **kwargs: None
-    corner.corner(data[mask,:], weights=weights[mask], 
+    corner.corner(data[mask,:], weights=weights[mask],
             labels=paramnames, show_titles=True)
     logging.warning = oldfunc
 
 
-import scipy.stats
-import matplotlib.pyplot as plt
-import numpy
-
 class PredictionBand(object):
-	"""
-	The PredictionBand class plots bands of model predictions 
-    as calculated from a chain.
-	
-	:param: x the independent variable
-	
-	call add to add predictions from the chain.
-	
-	Example:
-	
-	x = numpy.linspace(0, 1, 100)
-	band = PredictionBand(x)
-	for c in chain:
-		band.add(c[0] * x + c[1])
-	# add median line
-    band.line(color='k')
-    # add 1 sigma quantile
-	band.shade(color='k', alpha=0.3)
-    # add wider quantile
-	band.shade(q=0.01, color='gray', alpha=0.1)
-	plt.show()
-	
-	"""
-	def __init__(self, x, shadeargs={}, lineargs={}):
-		self.x = x
-		self.ys = []
-		self.shadeargs = shadeargs
-		self.lineargs = lineargs
-	def add(self, y):
-		""" add a possible prediction """
-		self.ys.append(y)
-	def set_shadeargs(self, **kwargs):
-		self.shadeargs = kwargs
-	def set_lineargs(self, **kwargs):
-		self.lineargs = kwargs
-	def get_line(self, q=0.5):
-		assert len(self.ys) > 0, self.ys
-		return scipy.stats.mstats.mquantiles(self.ys, q, axis=0)[0]
-	def shade(self, q=0.341, **kwargs):
-		""" Use the stored predictions to plot a shaded region
-		using 0.5-q and 0.5+q as limits. """
-		shadeargs = dict(self.shadeargs)
-		shadeargs.update(kwargs)
-		lo = self.get_line(0.5 - q)
-		hi = self.get_line(0.5 + q)
-		return plt.fill_between(self.x, lo, hi, **shadeargs)
-	def line(self, **kwargs):
-		""" Use the stored predictions to plot the median """
-		lineargs = dict(self.lineargs)
-		lineargs.update(kwargs)
-		mid = self.get_line(0.5)
-		return plt.plot(self.x, mid, **lineargs)
+    """Plot bands of model predictions as calculated from a chain.
 
+    Parameters
+    ----------
+    x: array
+        The independent variable
+
+    Usage
+    ------
+    call add(y) to add predictions from each chain point
+
+    Example::
+
+        x = numpy.linspace(0, 1, 100)
+        band = PredictionBand(x)
+        for c in chain:
+            band.add(c[0] * x + c[1])
+        # add median line
+        band.line(color='k')
+        # add 1 sigma quantile
+        band.shade(color='k', alpha=0.3)
+        # add wider quantile
+        band.shade(q=0.01, color='gray', alpha=0.1)
+        plt.show()
+
+    """
+
+    def __init__(self, x, shadeargs={}, lineargs={}):
+        """Initialise with independent variable *x*."""
+        self.x = x
+        self.ys = []
+        self.shadeargs = shadeargs
+        self.lineargs = lineargs
+
+    def add(self, y):
+        """Add a possible prediction *y*."""
+        self.ys.append(y)
+
+    def set_shadeargs(self, **kwargs):
+        """Set matplotlib style for shading."""
+        self.shadeargs = kwargs
+
+    def set_lineargs(self, **kwargs):
+        """Set matplotlib style for line."""
+        self.lineargs = kwargs
+
+    def get_line(self, q=0.5):
+        """Over prediction space x, get quantile *q*. Default is median."""
+        assert len(self.ys) > 0, self.ys
+        return scipy.stats.mstats.mquantiles(self.ys, q, axis=0)[0]
+
+    def shade(self, q=0.341, **kwargs):
+        """Plot a shaded region between 0.5-q and 0.5+q. Default is 1 sigma."""
+        shadeargs = dict(self.shadeargs)
+        shadeargs.update(kwargs)
+        lo = self.get_line(0.5 - q)
+        hi = self.get_line(0.5 + q)
+        return plt.fill_between(self.x, lo, hi, **shadeargs)
+
+    def line(self, **kwargs):
+        """Plot the median curve."""
+        lineargs = dict(self.lineargs)
+        lineargs.update(kwargs)
+        mid = self.get_line(0.5)
+        return plt.plot(self.x, mid, **lineargs)
 
 
 # the following function is taken from https://github.com/joshspeagle/dynesty/blob/master/dynesty/plotting.py
@@ -128,21 +139,23 @@ def runplot(results, span=None, logplot=False, kde=True, nkde=1000,
             color='blue', plot_kwargs=None, label_kwargs=None, lnz_error=True,
             lnz_truth=None, truth_color='red', truth_kwargs=None,
             max_x_ticks=8, max_y_ticks=3, use_math_text=True,
-            mark_final_live=True, fig=None):
-    """
-    Plot live points, ln(likelihood), ln(weight), and ln(evidence)
-    as a function of ln(prior volume).
+            mark_final_live=True, fig=None
+):
+    """Plot live points, ln(likelihood), ln(weight), and ln(evidence) vs. ln(prior volume).
+
     Parameters
     ----------
-    results : :class:`~dynesty.results.Results` instance
-        A :class:`~dynesty.results.Results` instance from a nested
+    results : dynesty.results.Results instance
+        dynesty.results.Results instance from a nested
         sampling run.
     span : iterable with shape (4,), optional
         A list where each element is either a length-2 tuple containing
         lower and upper bounds *or* a float from `(0., 1.]` giving the
         fraction below the maximum. If a fraction is provided,
         the bounds are chosen to be equal-tailed. An example would be::
+
             span = [(0., 10.), 0.001, 0.2, (5., 6.)]
+
         Default is `(0., 1.05 * max(data))` for each element.
     logplot : bool, optional
         Whether to plot the evidence on a log scale. Default is `False`.
@@ -167,16 +180,16 @@ def runplot(results, span=None, logplot=False, kde=True, nkde=1000,
     lnz_error : bool, optional
         Whether to plot the 1, 2, and 3-sigma approximate error bars
         derived from the ln(evidence) error approximation over the course
-        of the run. Default is `True`.
+        of the run. Default is True.
     lnz_truth : float, optional
         A reference value for the evidence that will be overplotted on the
         evidence subplot if provided.
     truth_color : str or iterable with shape (ndim,), optional
-        A `~matplotlib`-style color used when plotting :data:`lnz_truth`.
+        A `~matplotlib`-style color used when plotting `lnz_truth`.
         Default is `'red'`.
     truth_kwargs : dict, optional
         Extra keyword arguments that will be used for plotting
-        :data:`lnz_truth`.
+        `lnz_truth`.
     max_x_ticks : int, optional
         Maximum number of ticks allowed for the x axis. Default is `8`.
     max_y_ticks : int, optional
@@ -191,12 +204,13 @@ def runplot(results, span=None, logplot=False, kde=True, nkde=1000,
     fig : (`~matplotlib.figure.Figure`, `~matplotlib.axes.Axes`), optional
         If provided, overplot the run onto the provided figure.
         Otherwise, by default an internal figure is generated.
+
     Returns
     -------
     runplot : (`~matplotlib.figure.Figure`, `~matplotlib.axes.Axes`)
         Output summary plot.
-    """
 
+    """
     # Initialize values.
     if label_kwargs is None:
         label_kwargs = dict()
@@ -225,7 +239,7 @@ def runplot(results, span=None, logplot=False, kde=True, nkde=1000,
     try:
         nlive = results['samples_n']
         mark_final_live = False
-    except:
+    except Exception:
         nlive = np.ones(niter) * results['nlive']
         if nsamps - niter == results['nlive']:
             nlive_final = np.arange(1, results['nlive'] + 1)[::-1]
@@ -243,10 +257,10 @@ def runplot(results, span=None, logplot=False, kde=True, nkde=1000,
 
     # Determine plotting bounds for each subplot.
     data = [nlive, np.exp(logl), np.exp(logwt), logz if logplot else np.exp(logz)]
-    
+
     if kde:
         try:
-            #from scipy.ndimage import gaussian_filter as norm_kde
+            # from scipy.ndimage import gaussian_filter as norm_kde
             from scipy.stats import gaussian_kde
             # Derive kernel density estimate.
             wt_kde = gaussian_kde(resample_equal(-logvol, data[2]))  # KDE
@@ -254,7 +268,7 @@ def runplot(results, span=None, logplot=False, kde=True, nkde=1000,
             data[2] = wt_kde.pdf(-logvol_new)  # evaluate KDE PDF
         except ImportError:
             kde = False
-    
+
     if span is None:
         span = [(0., 1.05 * max(d)) for d in data]
         no_span = True
@@ -357,13 +371,13 @@ def runplot(results, span=None, logplot=False, kde=True, nkde=1000,
         if i == 3 and lnz_error:
             if logplot:
                 mask = logz >= ax.get_ylim()[0] - 10
-                [ax.fill_between(-logvol[mask], (logz + s*logzerr)[mask],
-                                 (logz - s*logzerr)[mask], 
+                [ax.fill_between(-logvol[mask], (logz + s * logzerr)[mask],
+                                 (logz - s * logzerr)[mask],
                                  color=c, alpha=0.2)
                  for s in range(1, 4)]
             else:
-                [ax.fill_between(-logvol, np.exp(logz + s*logzerr),
-                                 np.exp(logz - s*logzerr), color=c, alpha=0.2)
+                [ax.fill_between(-logvol, np.exp(logz + s * logzerr),
+                                 np.exp(logz - s * logzerr), color=c, alpha=0.2)
                  for s in range(1, 4)]
         # Mark addition of final live points.
         if mark_final_live:
@@ -391,12 +405,12 @@ def traceplot(results, span=None, quantiles=[0.025, 0.5, 0.975], smooth=0.02,
               show_titles=False, title_fmt=".2f", title_kwargs=None,
               truths=None, truth_color='red', truth_kwargs=None,
               verbose=False, fig=None):
-    """
-    Plot traces and marginalized posteriors for each parameter.
+    """Plot traces and marginalized posteriors for each parameter.
+
     Parameters
     ----------
-    results : :class:`~dynesty.results.Results` instance
-        A :class:`~dynesty.results.Results` instance from a nested
+    results : `~dynesty.results.Results` instance
+        A `~dynesty.results.Results` instance from a nested
         sampling run. **Compatible with results derived from**
         `nestle <http://kylebarbary.com/nestle/>`_.
     span : iterable with shape (ndim,), optional
@@ -499,12 +513,13 @@ def traceplot(results, span=None, quantiles=[0.025, 0.5, 0.975], smooth=0.02,
         If provided, overplot the traces and marginalized 1-D posteriors
         onto the provided figure. Otherwise, by default an
         internal figure is generated.
+
     Returns
     -------
     traceplot : (`~matplotlib.figure.Figure`, `~matplotlib.axes.Axes`)
         Output trace plot.
-    """
 
+    """
     # Initialize values.
     if title_kwargs is None:
         title_kwargs = dict()
@@ -533,7 +548,7 @@ def traceplot(results, span=None, quantiles=[0.025, 0.5, 0.975], smooth=0.02,
         weights = np.exp(results['logwt'] - results['logz'][-1])
     except:
         weights = results['weights']
-    
+
     wts = weights
     if kde:
         try:

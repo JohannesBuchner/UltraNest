@@ -2,8 +2,8 @@
 #
 
 # You can set these variables from the command line.
-SPHINXOPTS    =
-SPHINXBUILD   = python3 -msphinx
+SPHINXOPTS    = 
+SPHINXBUILD   = sphinx-build
 SPHINXPROJ    = ultranest
 SOURCEDIR     = .
 BUILDDIR      = build

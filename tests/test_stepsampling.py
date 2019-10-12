@@ -1,8 +1,8 @@
 import numpy as np
 from ultranest.mlfriends import ScalingLayer, AffineLayer, MLFriends
 from ultranest import ReactiveNestedSampler
-from ultranest.stepsampler import DESampler, RegionMHSampler, CubeMHSampler, CubeSliceSampler, RegionSliceSampler
-from ultranest.stepsampler import SamplingPathStepSampler
+from ultranest.stepsampler import RegionMHSampler, CubeMHSampler, CubeSliceSampler, RegionSliceSampler
+from ultranest.pathsampler import SamplingPathStepSampler
 from numpy.testing import assert_allclose
 
 #here = os.path.dirname(__file__)
@@ -20,7 +20,7 @@ paramnames = ['param%d' % i for i in range(6)]
 
 def test_stepsampler_cubemh(plot=False):
     np.random.seed(1)
-    sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform)
+    sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, vectorized=True)
     sampler.stepsampler = CubeMHSampler(nsteps=len(paramnames))
     r = sampler.run(log_interval=50, min_num_live_points=400)
     sampler.print_results()
@@ -31,7 +31,7 @@ def test_stepsampler_cubemh(plot=False):
 
 def test_stepsampler_regionmh(plot=False):
     np.random.seed(1)
-    sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform)
+    sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, vectorized=True)
     sampler.stepsampler = RegionMHSampler(nsteps=4 * len(paramnames))
     r = sampler.run(log_interval=50, min_num_live_points=400)
     sampler.print_results()
@@ -40,21 +40,9 @@ def test_stepsampler_regionmh(plot=False):
     assert a.sum() > 1, a
     assert b.sum() > 1, b
 
-def test_stepsampler_de(plot=False):
-    np.random.seed(1)
-    sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform)
-    sampler.stepsampler = DESampler(nsteps=len(paramnames))
-    r = sampler.run(log_interval=50, min_num_live_points=400)
-    sampler.print_results()
-    #sampler.plot()
-    a = (np.abs(r['samples'] - 0.7) < 0.1).all(axis=1)
-    b = (np.abs(r['samples'] - 0.3) < 0.1).all(axis=1)
-    assert a.sum() > 1
-    assert b.sum() > 1
-
 def test_stepsampler_cubeslice(plot=False):
     np.random.seed(1)
-    sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform)
+    sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, vectorized=True)
     sampler.stepsampler = CubeSliceSampler(nsteps=len(paramnames))
     r = sampler.run(log_interval=50, min_num_live_points=400)
     sampler.print_results()
@@ -65,7 +53,7 @@ def test_stepsampler_cubeslice(plot=False):
 
 def test_stepsampler_regionslice(plot=False):
     np.random.seed(1)
-    sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform)
+    sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, vectorized=True)
     sampler.stepsampler = RegionSliceSampler(nsteps=len(paramnames))
     r = sampler.run(log_interval=50, min_num_live_points=400)
     sampler.print_results()

@@ -18,7 +18,7 @@ def test_run():
     
     paramnames = ['Hinz', 'Kunz']
 
-    sampler = NestedSampler(paramnames, loglike, transform=transform, num_live_points=400)
+    sampler = NestedSampler(paramnames, loglike, transform=transform, num_live_points=400, vectorized=True)
     r = sampler.run(log_interval=50)
     
     ncalls = loglike.ncalls
@@ -52,7 +52,7 @@ def test_reactive_run():
     paramnames = ['Hinz', 'Kunz']
 
     sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, 
-        draw_multiple=False)
+        draw_multiple=False, vectorized=True)
     r = sampler.run(log_interval=50, min_num_live_points=400)
     ncalls = loglike.ncalls
     nunique = len(evals)
@@ -103,7 +103,7 @@ def test_run_resume(dlogz):
     try:
         for i in range(2):
             sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, 
-                log_dir=folder, append_run_num=False)
+                log_dir=folder, append_run_num=False, vectorized=True)
             r = sampler.run(log_interval=50, dlogz=dlogz, min_num_live_points=400)
             sampler.print_results()
             sampler.pointstore.close()
@@ -146,7 +146,7 @@ def test_reactive_run_resume_eggbox():
             print()
             sampler = ReactiveNestedSampler(paramnames, 
                 loglike, transform=transform,
-                log_dir=folder, append_run_num=False)
+                log_dir=folder, append_run_num=False, vectorized=True)
             initial_ncalls = int(sampler.ncall)
             loglike.ncalls = 0
             r = sampler.run(max_iters=200 + i*200, 

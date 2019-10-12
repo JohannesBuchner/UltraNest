@@ -1,3 +1,5 @@
+"""Utility functions for logging and statistics."""
+
 import logging
 import sys
 import os
@@ -7,6 +9,15 @@ import errno
 
 
 def create_logger(module_name, log_dir=None, level=logging.INFO):
+    """
+    Set up the logging channel *module_name*.
+
+    Append to debug.log in log_dir (if not None).
+    Write to stdout with output level *level*.
+
+    If logging handlers are already registered, no new handlers are
+    registered.
+    """
     logger = logging.getLogger(str(module_name))
     first_logger = logger.handlers == []
     if log_dir is not None and first_logger:
@@ -25,11 +36,28 @@ def create_logger(module_name, log_dir=None, level=logging.INFO):
         formatter = logging.Formatter('[{}] [%(levelname)s] %(message)s'.format(module_name))
         handler.setFormatter(formatter)
         logger.addHandler(handler)
-    
+
     return logger
 
+
 def make_run_dir(log_dir, run_num=None, append_run_num=True):
-    """Generates a new numbered directory for this run to store output"""
+    """Generate a new numbered directory for this run to store output.
+
+    Parameters
+    ----------
+    log_dir: str
+        base path
+    run_num: int
+        folder to add to path, such as prefix/1/
+    append_run_num: bool
+        If true, set run_num to next unused number
+
+    Returns
+    -------
+    dictionary of folder paths for different purposes.
+    Keys are run_dir (the path), info, results, chains, plots.
+
+    """
     def makedirs(name):
         # for Python2 compatibility:
         try:
@@ -39,9 +67,9 @@ def make_run_dir(log_dir, run_num=None, append_run_num=True):
                 raise
         # Python 3:
         # os.makedirs(name, exist_ok=True)
-    
+
     makedirs(log_dir)
-    
+
     if run_num is None or run_num == '':
         run_num = (sum(os.path.isdir(os.path.join(log_dir,i))
                       for i in os.listdir(log_dir)) + 1)
@@ -67,7 +95,19 @@ def make_run_dir(log_dir, run_num=None, append_run_num=True):
             'plots': os.path.join(run_dir, 'plots')
             }
 
+
+def vectorize(function):
+    """Vectorize likelihood or prior_transform function."""
+    def vectorized(args):
+        return np.asarray([function(arg) for arg in args])
+
+    vectorized.__name__ = function.__name__
+    return vectorized
+
+
+"""Square root of a small number."""
 SQRTEPS = (float(np.finfo(np.float64).eps))**0.5
+
 
 def resample_equal(samples, weights, rstate=None):
     """Resample the samples so that the final samples all have equal weight.
@@ -81,10 +121,9 @@ def resample_equal(samples, weights, rstate=None):
     samples : `~numpy.ndarray`
         Unequally weight samples returned by the nested sampling algorithm.
         Shape is (N, ...), with N the number of samples.
-
     weights : `~numpy.ndarray`
         Weight of each sample. Shape is (N,).
-    
+
     Returns
     -------
     equal_weight_samples : `~numpy.ndarray`
@@ -92,7 +131,6 @@ def resample_equal(samples, weights, rstate=None):
 
     Examples
     --------
-
     >>> x = np.array([[1., 1.], [2., 2.], [3., 3.], [4., 4.]])
     >>> w = np.array([0.6, 0.2, 0.15, 0.05])
     >>> nestle.resample_equal(x, w)
@@ -113,7 +151,6 @@ def resample_equal(samples, weights, rstate=None):
     However, the method used in this function is less "noisy".
 
     """
-
     if abs(np.sum(weights) - 1.) > SQRTEPS:  # same tol as in np.random.choice.
         raise ValueError("weights do not sum to 1")
 
@@ -139,10 +176,9 @@ def resample_equal(samples, weights, rstate=None):
     return samples[idx]
 
 
-
 def quantile(x, q, weights=None):
-    """
-    Compute (weighted) quantiles from an input set of samples.
+    """Compute (weighted) quantiles from an input set of samples.
+
     Parameters
     ----------
     x : `~numpy.ndarray` with shape (nsamps,)
@@ -151,12 +187,13 @@ def quantile(x, q, weights=None):
        The list of quantiles to compute from `[0., 1.]`.
     weights : `~numpy.ndarray` with shape (nsamps,), optional
         The associated weight from each sample.
+
     Returns
     -------
     quantiles : `~numpy.ndarray` with shape (nquantiles,)
         The weighted sample quantiles computed at `q`.
-    """
 
+    """
     # Initial check.
     x = np.atleast_1d(x)
     q = np.atleast_1d(q)
@@ -183,10 +220,10 @@ def quantile(x, q, weights=None):
 
 
 def vol_prefactor(n):
-    """Volume constant for an n-dimensional sphere:
+    """Volume constant for an *n*-dimensional sphere.
 
-    for n even:      (2pi)^(n    /2) / (2 * 4 * ... * n)
-    for n odd :  2 * (2pi)^((n-1)/2) / (1 * 3 * ... * n)
+    for n even:  $$    (2pi)^(n    /2) / (2 * 4 * ... * n)$$
+    for n odd :  $$2 * (2pi)^((n-1)/2) / (1 * 3 * ... * n)$$
     """
     if n % 2 == 0:
         f = 1.

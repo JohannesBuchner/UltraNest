@@ -11,7 +11,6 @@ def wrap_single_test(vlo, vhi, plo_expected, phi_expected):
 
 def wrap_single_fmt_test(vlo, vhi, fmt_expected):
     assert vlo < vhi
-    err_msg = 'for input values (%s, %s)' % (vlo, vhi)
     plo, phi, fmts = round_parameterlimits(np.asarray([vlo]), np.asarray([vhi]), [(vlo, vhi)])
     assert fmts[0] == fmt_expected, (fmts, fmt_expected)
     fmt = fmts[0]

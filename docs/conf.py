@@ -40,6 +40,7 @@ extensions = [
     'sphinx.ext.mathjax',
     'nbsphinx',
     'sphinx_rtd_theme',
+    'sphinx.ext.napoleon',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -88,9 +89,17 @@ pygments_style = 'sphinx'
 todo_include_todos = False
 
 
+# avoid time-out when running the doc
+nbsphinx_timeout = 10 * 60
+
+nbsphinx_execute_arguments = [
+    "--InlineBackend.figure_formats={'svg', 'pdf'}",
+    "--InlineBackend.rc={'figure.dpi': 96}",
+]
 
 autodoc_member_order = 'bysource'
 
+autoclass_content = 'both'
 
 # -- Options for HTML output -------------------------------------------
 
@@ -103,7 +112,16 @@ html_theme = "sphinx_rtd_theme"
 # theme further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {}
+html_theme_options = {
+    'canonical_url': 'https://johannesbuchner.github.io/UltraNest/',
+    'style_external_links': True,
+    # 'vcs_pageview_mode': 'edit',
+    'style_nav_header_background': '#2980B9',
+    #'only_logo': False,
+}
+html_logo = "../logo.svg"
+html_show_sourcelink = True
+
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

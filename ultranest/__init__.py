@@ -8,6 +8,7 @@ from __future__ import print_function
 from __future__ import division
 
 from .integrator import NestedSampler, ReactiveNestedSampler
+from .utils import vectorize
 
 
 __author__ = """Johannes Buchner"""

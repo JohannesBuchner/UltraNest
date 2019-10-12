@@ -132,7 +132,7 @@ def test_overclustering_eggbox_update():
             noverlap += (u1 == data['u0']).all(axis=1).sum()
         print("u0:%d -> u:%d : %d points are common" % (nsamples, nsamples, noverlap))
         
-        ReactiveNestedSampler.update_region(mock, data['u0'], data['u0'])
+        ReactiveNestedSampler._update_region(mock, data['u0'], data['u0'])
         nclusters = mock.transformLayer.nclusters
         print("initialised with: r=%e nc=%d" % (mock.region.maxradiussq, nclusters))
         smallest_cluster = min((mock.transformLayer.clusterids == i).sum() for i in np.unique(mock.transformLayer.clusterids))
@@ -167,7 +167,7 @@ def test_overclustering_eggbox_update():
             print("setting maxradiussq to None")
             mock.region.maxradiussq = None
 
-        updated = ReactiveNestedSampler.update_region(mock, data['u'], data['u'])
+        updated = ReactiveNestedSampler._update_region(mock, data['u'], data['u'])
         nclusters = mock.transformLayer.nclusters
         print("transitioned to : r=%e nc=%d %s" % (mock.region.maxradiussq, nclusters, updated))
         smallest_cluster = min((mock.transformLayer.clusterids == i).sum() for i in np.unique(mock.transformLayer.clusterids))

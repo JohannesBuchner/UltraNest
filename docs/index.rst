@@ -8,11 +8,23 @@ Welcome to UltraNest's documentation!
    readme
    installation
    method
-   usage
-   example-line.ipynb
-   modules
+   usage-spectral-line.ipynb
    contributing
+   issues
+   modules
    history
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Tutorials:
+
+   example-sine-line.ipynb
+   example-sine-modelcomparison.ipynb
+   example-sine-highd.ipynb
+   example-intrinsic-distribution.ipynb
+   example-line.ipynb
+   example-outliers.ipynb
+   usage-powerlaw.ipynb
 
 .. include:: ../README.rst
 
