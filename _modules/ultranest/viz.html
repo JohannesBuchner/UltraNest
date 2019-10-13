@@ -1,0 +1,584 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>ultranest.viz &mdash; UltraNest 2.0.0 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/icon.ico"/>
+  
+  
+  
+    <link rel="canonical" href="https://johannesbuchner.github.io/UltraNest/_modules/ultranest/viz.html"/>
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> UltraNest
+          
+
+          
+            
+            <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../readme.html">UltraNest</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../method.html">How it works</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage-spectral-line.html">Basic usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../performance.html">Tour of the features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../issues.html">Frequently Asked Questions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../history.html">Release Notes</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../example-sine-line.html">Time series fitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-sine-modelcomparison.html">Model comparison</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-sine-highd.html">Higher-dimensional fitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-intrinsic-distribution.html">Tutorial: intrinsic distribution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-line.html">Tutorial: fitting a line</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-outliers.html">Tutorial: distribution with outliers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-sine-bayesian-workflow.html">Bayesian workflow</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">UltraNest</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content style-external-links">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>ultranest.viz</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for ultranest.viz</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Visual impression of current exploration.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span><span class="p">,</span> <span class="n">division</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+
+
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="n">log10</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">string</span>
+<span class="kn">from</span> <span class="nn">xml.sax.saxutils</span> <span class="k">import</span> <span class="n">escape</span> <span class="k">as</span> <span class="n">html_escape</span>
+
+
+<span class="n">clusteridstrings</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">ascii_uppercase</span><span class="p">)</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">ascii_lowercase</span><span class="p">)</span>
+
+<span class="n">spearman</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">scipy.stats</span>
+    <span class="n">spearman</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">spearmanr</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="k">pass</span>
+
+
+<div class="viewcode-block" id="round_parameterlimits"><a class="viewcode-back" href="../../ultranest.html#ultranest.viz.round_parameterlimits">[docs]</a><span class="k">def</span> <span class="nf">round_parameterlimits</span><span class="p">(</span><span class="n">plo</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">paramlimitguess</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Guess the current parameter range.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    plo: array of floats</span>
+<span class="sd">        for each parameter, current minimum value</span>
+<span class="sd">    phi: array of floats</span>
+<span class="sd">        for each parameter, current maximum value</span>
+<span class="sd">    paramlimitguess: array of float tuples</span>
+<span class="sd">        for each parameter, guess of parameter range if available</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    plo_rounded: array of floats</span>
+<span class="sd">        for each parameter, rounded minimum value</span>
+<span class="sd">    phi_rounded: array of floats</span>
+<span class="sd">        for each parameter, rounded maximum value</span>
+<span class="sd">    formats: array of float tuples</span>
+<span class="sd">        for each parameter, string format for representing it.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">):</span>
+        <span class="n">expos</span> <span class="o">=</span> <span class="n">log10</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">([</span><span class="n">plo</span><span class="p">,</span> <span class="n">phi</span><span class="p">]))</span>
+    <span class="n">expolo</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">expos</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+    <span class="n">expohi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">expos</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+    <span class="n">is_negative</span> <span class="o">=</span> <span class="n">plo</span> <span class="o">&lt;</span> <span class="mi">0</span>
+    <span class="n">plo_rounded</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">is_negative</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="o">**</span><span class="n">expohi</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">phi_rounded</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">is_negative</span><span class="p">,</span> <span class="mi">10</span><span class="o">**</span><span class="n">expohi</span><span class="p">,</span> <span class="mi">10</span><span class="o">**</span><span class="n">expohi</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">paramlimitguess</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">plo_guess</span><span class="p">,</span> <span class="n">phi_guess</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">paramlimitguess</span><span class="p">):</span>
+            <span class="c1"># if plo_guess is higher than what we thought, we can increase to match</span>
+            <span class="k">if</span> <span class="n">plo_guess</span> <span class="o">&lt;=</span> <span class="n">plo</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">and</span> <span class="n">plo_guess</span> <span class="o">&gt;=</span> <span class="n">plo_rounded</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                <span class="n">plo_rounded</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">plo_guess</span>
+            <span class="k">if</span> <span class="n">phi_guess</span> <span class="o">&gt;=</span> <span class="n">phi</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">and</span> <span class="n">phi_guess</span> <span class="o">&lt;=</span> <span class="n">phi_rounded</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                <span class="n">phi_rounded</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">phi_guess</span>
+
+    <span class="n">formats</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">plo</span><span class="p">)):</span>
+        <span class="n">fmt</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%+.1e</span><span class="s1">&#39;</span>
+        <span class="k">if</span> <span class="o">-</span><span class="mi">1</span> <span class="o">&lt;=</span> <span class="n">expolo</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">2</span> <span class="ow">and</span> <span class="o">-</span><span class="mi">1</span> <span class="o">&lt;=</span> <span class="n">expohi</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">fmt</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%+.1f</span><span class="s1">&#39;</span>
+        <span class="k">if</span> <span class="o">-</span><span class="mi">4</span> <span class="o">&lt;=</span> <span class="n">expolo</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="o">-</span><span class="mi">4</span> <span class="o">&lt;=</span> <span class="n">expohi</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">fmt</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%%</span><span class="s1">+.</span><span class="si">%d</span><span class="s1">f&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="o">-</span><span class="nb">min</span><span class="p">(</span><span class="n">expolo</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">expohi</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+        <span class="k">if</span> <span class="n">fmt</span> <span class="o">%</span> <span class="n">plo</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">fmt</span> <span class="o">%</span> <span class="n">phi</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+            <span class="n">fmt</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%%</span><span class="s1">+.</span><span class="si">%d</span><span class="s1">f&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="o">-</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">log10</span><span class="p">(</span><span class="n">phi</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">plo</span><span class="p">[</span><span class="n">i</span><span class="p">]))))</span>
+        <span class="n">formats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fmt</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">plo_rounded</span><span class="p">,</span> <span class="n">phi_rounded</span><span class="p">,</span> <span class="n">formats</span></div>
+
+
+<div class="viewcode-block" id="nicelogger"><a class="viewcode-back" href="../../ultranest.html#ultranest.viz.nicelogger">[docs]</a><span class="k">def</span> <span class="nf">nicelogger</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">transformLayer</span><span class="p">,</span> <span class="n">region_fresh</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Log current live points and integration progress to stdout.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    points: dict with keys u, p, logl</span>
+<span class="sd">        live points (u: cube coordinates, p: transformed coordinates,</span>
+<span class="sd">        logl: loglikelihood values)</span>
+<span class="sd">    info: dict</span>
+<span class="sd">        integration information. Keys are:</span>
+
+<span class="sd">        - paramlims (optional): parameter ranges</span>
+<span class="sd">        - logvol: expected volume at this iteration</span>
+
+<span class="sd">    region: MLFriends</span>
+<span class="sd">        Current region.</span>
+<span class="sd">    transformLayer: ScaleLayer or AffineLayer</span>
+<span class="sd">        Current transformLayer (for clustering information).</span>
+<span class="sd">    region_fresh: bool</span>
+<span class="sd">        Whether the region was just updated.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># u, p, logl = points[&#39;u&#39;], points[&#39;p&#39;], points[&#39;logl&#39;]</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">points</span><span class="p">[</span><span class="s1">&#39;p&#39;</span><span class="p">]</span>
+    <span class="n">paramnames</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;paramnames&#39;</span><span class="p">]</span>
+    <span class="c1"># print()</span>
+    <span class="c1"># print(&#39;lnZ = %.1f, remainder = %.1f, lnLike = %.1f | Efficiency: %d/%d = %.4f%%\r&#39; % (</span>
+    <span class="c1">#       logz, logz_remain, np.max(logl), ncall, it, it * 100 / ncall))</span>
+
+    <span class="n">plo</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">phi</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">plo_rounded</span><span class="p">,</span> <span class="n">phi_rounded</span><span class="p">,</span> <span class="n">paramformats</span> <span class="o">=</span> <span class="n">round_parameterlimits</span><span class="p">(</span><span class="n">plo</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">paramlimitguess</span><span class="o">=</span><span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;paramlims&#39;</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">isatty</span><span class="p">()</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">shutil</span><span class="p">,</span> <span class="s1">&#39;get_terminal_size&#39;</span><span class="p">):</span>
+        <span class="n">columns</span><span class="p">,</span> <span class="n">_rows</span> <span class="o">=</span> <span class="n">shutil</span><span class="o">.</span><span class="n">get_terminal_size</span><span class="p">(</span><span class="n">fallback</span><span class="o">=</span><span class="p">(</span><span class="mi">80</span><span class="p">,</span> <span class="mi">25</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">columns</span><span class="p">,</span> <span class="n">_rows</span> <span class="o">=</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">25</span>
+
+    <span class="n">paramwidth</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">pname</span><span class="p">)</span> <span class="k">for</span> <span class="n">pname</span> <span class="ow">in</span> <span class="n">paramnames</span><span class="p">])</span>
+    <span class="n">width</span> <span class="o">=</span> <span class="n">columns</span> <span class="o">-</span> <span class="mi">23</span> <span class="o">-</span> <span class="n">paramwidth</span>
+    <span class="n">width</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+    <span class="n">indices</span> <span class="o">=</span> <span class="p">((</span><span class="n">p</span> <span class="o">-</span> <span class="n">plo_rounded</span><span class="p">)</span> <span class="o">*</span> <span class="n">width</span> <span class="o">/</span> <span class="p">(</span><span class="n">phi_rounded</span> <span class="o">-</span> <span class="n">plo_rounded</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">indices</span><span class="p">[</span><span class="n">indices</span> <span class="o">&gt;=</span> <span class="n">width</span><span class="p">]</span> <span class="o">=</span> <span class="n">width</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">indices</span><span class="p">[</span><span class="n">indices</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">ndim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">plo</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">()</span>
+    <span class="n">clusterids</span> <span class="o">=</span> <span class="n">transformLayer</span><span class="o">.</span><span class="n">clusterids</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">clusteridstrings</span><span class="p">)</span>
+    <span class="n">nmodes</span> <span class="o">=</span> <span class="n">transformLayer</span><span class="o">.</span><span class="n">nclusters</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Mono-modal&quot;</span> <span class="k">if</span> <span class="n">nmodes</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="s2">&quot;Have </span><span class="si">%d</span><span class="s2"> modes&quot;</span> <span class="o">%</span> <span class="n">nmodes</span><span class="p">,</span>
+        <span class="s2">&quot;Volume: ~exp(</span><span class="si">%.2f</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="n">region</span><span class="o">.</span><span class="n">estimate_volume</span><span class="p">(),</span> <span class="s1">&#39;*&#39;</span> <span class="k">if</span> <span class="n">region_fresh</span> <span class="k">else</span> <span class="s1">&#39; &#39;</span><span class="p">,</span>
+        <span class="s2">&quot;Expected Volume: exp(</span><span class="si">%.2f</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;logvol&#39;</span><span class="p">])</span>
+
+    <span class="nb">print</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">elif</span> <span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">spearman</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rho</span><span class="p">,</span> <span class="n">pval</span> <span class="o">=</span> <span class="n">spearman</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">pval</span> <span class="o">&lt;</span> <span class="mf">0.01</span> <span class="ow">and</span> <span class="nb">abs</span><span class="p">(</span><span class="n">rho</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.75</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   </span><span class="si">%s</span><span class="s2"> between </span><span class="si">%s</span><span class="s2"> and </span><span class="si">%s</span><span class="s2">: rho=</span><span class="si">%.2f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="s1">&#39;positive degeneracy&#39;</span> <span class="k">if</span> <span class="n">rho</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s1">&#39;negative degeneracy&#39;</span><span class="p">,</span>
+                <span class="n">paramnames</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">paramnames</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">rho</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="n">spearman</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rho</span><span class="p">,</span> <span class="n">pval</span> <span class="o">=</span> <span class="n">spearman</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">param</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">paramnames</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">param2</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">paramnames</span><span class="p">[:</span><span class="n">i</span><span class="p">]):</span>
+                <span class="k">if</span> <span class="n">pval</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.01</span> <span class="ow">and</span> <span class="nb">abs</span><span class="p">(</span><span class="n">rho</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mf">0.99</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   perfect </span><span class="si">%s</span><span class="s2"> between </span><span class="si">%s</span><span class="s2"> and </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+                        <span class="s1">&#39;positive relation&#39;</span> <span class="k">if</span> <span class="n">rho</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s1">&#39;negative relation&#39;</span><span class="p">,</span>
+                        <span class="n">param2</span><span class="p">,</span> <span class="n">param</span><span class="p">))</span>
+                <span class="k">elif</span> <span class="n">pval</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.01</span> <span class="ow">and</span> <span class="nb">abs</span><span class="p">(</span><span class="n">rho</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mf">0.75</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   </span><span class="si">%s</span><span class="s2"> between </span><span class="si">%s</span><span class="s2"> and </span><span class="si">%s</span><span class="s2">: rho=</span><span class="si">%.2f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+                        <span class="s1">&#39;positive degeneracy&#39;</span> <span class="k">if</span> <span class="n">rho</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s1">&#39;negative degeneracy&#39;</span><span class="p">,</span>
+                        <span class="n">param2</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="n">rho</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]))</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">paramnames</span><span class="p">,</span> <span class="n">paramformats</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">nmodes</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39; &#39;</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">width</span><span class="p">)]</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">indices</span><span class="p">[:,</span><span class="n">i</span><span class="p">]):</span>
+                <span class="n">line</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;*&#39;</span>
+            <span class="n">linestr</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39; &#39;</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">width</span><span class="p">)]</span>
+            <span class="k">for</span> <span class="n">clusterid</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">clusterids</span><span class="p">,</span> <span class="n">indices</span><span class="p">[:,</span><span class="n">i</span><span class="p">]):</span>
+                <span class="k">if</span> <span class="n">clusterid</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">line</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">):</span>
+                    <span class="c1"># set it to correct cluster id</span>
+                    <span class="n">line</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">clusteridstrings</span><span class="p">[</span><span class="n">clusterid</span><span class="p">]</span>
+                <span class="k">elif</span> <span class="n">clusterid</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">line</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39; &#39;</span><span class="p">:</span>
+                    <span class="c1"># empty, so set it although we don&#39;t know the cluster id</span>
+                    <span class="n">line</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;0&#39;</span>
+                <span class="c1"># else:</span>
+                <span class="c1">#    line[j] = &#39;*&#39;</span>
+            <span class="n">linestr</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+        <span class="n">line</span> <span class="o">=</span> <span class="n">linestr</span>
+        <span class="n">ilo</span><span class="p">,</span> <span class="n">ihi</span> <span class="o">=</span> <span class="n">indices</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">indices</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">ilo</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">line</span><span class="p">[:</span><span class="mi">10</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39; &#39;</span> <span class="o">*</span> <span class="mi">10</span>
+            <span class="n">leftstr</span> <span class="o">=</span> <span class="n">fmt</span> <span class="o">%</span> <span class="n">plo</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="n">ilo</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">leftstr</span><span class="p">)</span>  <span class="c1"># left-bound</span>
+            <span class="k">if</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">width</span> <span class="ow">and</span> <span class="n">j</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="p">[:</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">leftstr</span> <span class="o">+</span> <span class="n">line</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">leftstr</span><span class="p">):]</span>
+        <span class="k">if</span> <span class="n">ihi</span> <span class="o">&lt;</span> <span class="n">width</span> <span class="o">-</span> <span class="mi">10</span><span class="p">:</span>
+            <span class="n">rightstr</span> <span class="o">=</span> <span class="n">fmt</span> <span class="o">%</span> <span class="n">phi</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="n">ihi</span> <span class="o">+</span> <span class="mi">3</span>  <span class="c1"># right-bound</span>
+            <span class="k">if</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">width</span> <span class="ow">and</span> <span class="n">j</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="p">[:</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">rightstr</span> <span class="o">+</span> <span class="n">line</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">rightstr</span><span class="p">):]</span>
+
+        <span class="n">parampadded</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;</span><span class="si">%%</span><span class="s1">-</span><span class="si">%d</span><span class="s1">s&#39;</span> <span class="o">%</span> <span class="n">paramwidth</span><span class="p">)</span> <span class="o">%</span> <span class="n">param</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: </span><span class="si">%09s</span><span class="s1">|</span><span class="si">%s</span><span class="s1">|</span><span class="si">%9s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">parampadded</span><span class="p">,</span> <span class="n">fmt</span> <span class="o">%</span> <span class="n">plo_rounded</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">line</span><span class="p">,</span> <span class="n">fmt</span> <span class="o">%</span> <span class="n">phi_rounded</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+
+    <span class="nb">print</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="isnotebook"><a class="viewcode-back" href="../../ultranest.html#ultranest.viz.isnotebook">[docs]</a><span class="k">def</span> <span class="nf">isnotebook</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Check if running in a Jupyter notebook.&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">shell</span> <span class="o">=</span> <span class="n">get_ipython</span><span class="p">()</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
+        <span class="k">if</span> <span class="n">shell</span> <span class="o">==</span> <span class="s1">&#39;ZMQInteractiveShell&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>   <span class="c1"># Jupyter notebook or qtconsole</span>
+        <span class="k">elif</span> <span class="n">shell</span> <span class="o">==</span> <span class="s1">&#39;TerminalInteractiveShell&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># Terminal running IPython</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># Other type (?)</span>
+    <span class="k">except</span> <span class="ne">NameError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>      <span class="c1"># Probably standard Python interpreter</span></div>
+
+
+<div class="viewcode-block" id="LivePointsWidget"><a class="viewcode-back" href="../../ultranest.html#ultranest.viz.LivePointsWidget">[docs]</a><span class="k">class</span> <span class="nc">LivePointsWidget</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Widget for ipython and jupyter notebooks.</span>
+
+<span class="sd">    Shows where the live points are currently in parameter space.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialise. To draw, call .initialize().&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">laststatus</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="LivePointsWidget.initialize"><a class="viewcode-back" href="../../ultranest.html#ultranest.viz.LivePointsWidget.initialize">[docs]</a>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">paramnames</span><span class="p">,</span> <span class="n">width</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set up and display widget.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        paramnames: list of str</span>
+<span class="sd">            Parameter names</span>
+<span class="sd">        width: int</span>
+<span class="sd">            number of html table columns.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">ipywidgets</span> <span class="k">import</span> <span class="n">HTML</span><span class="p">,</span> <span class="n">VBox</span><span class="p">,</span> <span class="n">GridBox</span><span class="p">,</span> <span class="n">Layout</span><span class="p">,</span> <span class="n">GridspecLayout</span>
+        <span class="kn">from</span> <span class="nn">IPython.display</span> <span class="k">import</span> <span class="n">display</span>
+
+        <span class="n">grid</span> <span class="o">=</span> <span class="n">GridspecLayout</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">paramnames</span><span class="p">),</span> <span class="n">width</span> <span class="o">+</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">laststatus</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">paramname</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">paramnames</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">laststatus</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;*&#39;</span> <span class="o">*</span> <span class="n">width</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">width</span><span class="p">):</span>
+                <span class="n">grid</span><span class="p">[</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">HTML</span><span class="p">(</span><span class="s2">&quot;&lt;div style=&#39;background-color:#6E6BF4;&#39;&gt;&amp;nbsp;&lt;/div&gt;&quot;</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">Layout</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="s2">&quot;0&quot;</span><span class="p">))</span>
+            <span class="n">grid</span><span class="p">[</span><span class="n">a</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">HTML</span><span class="p">(</span><span class="s2">&quot;&lt;div style=&#39;background-color:#FFB858; font-weight:bold; padding-right: 2em;&#39;&gt;</span><span class="si">%s</span><span class="s2">&lt;/div&gt;&quot;</span> <span class="o">%</span> <span class="n">html_escape</span><span class="p">(</span><span class="n">paramname</span><span class="p">),</span> <span class="n">layout</span><span class="o">=</span><span class="n">Layout</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="s2">&quot;0&quot;</span><span class="p">))</span>
+            <span class="n">grid</span><span class="p">[</span><span class="n">a</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">HTML</span><span class="p">(</span><span class="s2">&quot;...&quot;</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">Layout</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="s2">&quot;0&quot;</span><span class="p">))</span>
+            <span class="n">grid</span><span class="p">[</span><span class="n">a</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">HTML</span><span class="p">(</span><span class="s2">&quot;...&quot;</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">Layout</span><span class="p">(</span><span class="n">margin</span><span class="o">=</span><span class="s2">&quot;0&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span> <span class="o">=</span> <span class="n">grid</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="n">HTML</span><span class="p">()</span>
+        <span class="n">box</span> <span class="o">=</span> <span class="n">VBox</span><span class="p">(</span><span class="n">children</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="n">grid</span><span class="p">])</span>
+        <span class="n">display</span><span class="p">(</span><span class="n">box</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">points</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">transformLayer</span><span class="p">,</span> <span class="n">region_fresh</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update widget to show current live points and integration progress to stdout.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        -----------</span>
+<span class="sd">        points: dict with keys u, p, logl</span>
+<span class="sd">            live points (u: cube coordinates, p: transformed coordinates,</span>
+<span class="sd">            logl: loglikelihood values)</span>
+<span class="sd">        info: dict</span>
+<span class="sd">            integration information. Keys are:</span>
+
+<span class="sd">            - paramlims (optional): parameter ranges</span>
+<span class="sd">            - logvol: expected volume at this iteration</span>
+
+<span class="sd">        region: MLFriends</span>
+<span class="sd">            Current region.</span>
+<span class="sd">        transformLayer: ScaleLayer or AffineLayer</span>
+<span class="sd">            Current transformLayer (for clustering information).</span>
+<span class="sd">        region_fresh: bool</span>
+<span class="sd">            Whether the region was just updated.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># t = time.time()</span>
+        <span class="c1"># if self.lastupdate is not None and self.lastupdate &lt; t - 5:</span>
+        <span class="c1">#    return</span>
+        <span class="c1"># self.lastupdate = t</span>
+        <span class="c1"># u, p, logl = points[&#39;u&#39;], points[&#39;p&#39;], points[&#39;logl&#39;]</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">points</span><span class="p">[</span><span class="s1">&#39;p&#39;</span><span class="p">]</span>
+        <span class="n">paramnames</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;paramnames&#39;</span><span class="p">]</span>
+        <span class="c1"># print()</span>
+        <span class="c1"># print(&#39;lnZ = %.1f, remainder = %.1f, lnLike = %.1f | Efficiency: %d/%d = %.4f%%\r&#39; % (</span>
+        <span class="c1">#       logz, logz_remain, np.max(logl), ncall, it, it * 100 / ncall))</span>
+
+        <span class="n">plo</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">phi</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">plo_rounded</span><span class="p">,</span> <span class="n">phi_rounded</span><span class="p">,</span> <span class="n">paramformats</span> <span class="o">=</span> <span class="n">round_parameterlimits</span><span class="p">(</span><span class="n">plo</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">paramlimitguess</span><span class="o">=</span><span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;paramlims&#39;</span><span class="p">))</span>
+
+        <span class="n">width</span> <span class="o">=</span> <span class="mi">50</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span><span class="n">paramnames</span><span class="p">,</span> <span class="n">width</span><span class="p">)</span>
+
+        <span class="n">indices</span> <span class="o">=</span> <span class="p">((</span><span class="n">p</span> <span class="o">-</span> <span class="n">plo_rounded</span><span class="p">)</span> <span class="o">*</span> <span class="n">width</span> <span class="o">/</span> <span class="p">(</span><span class="n">phi_rounded</span> <span class="o">-</span> <span class="n">plo_rounded</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">indices</span><span class="p">[</span><span class="n">indices</span> <span class="o">&gt;=</span> <span class="n">width</span><span class="p">]</span> <span class="o">=</span> <span class="n">width</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">indices</span><span class="p">[</span><span class="n">indices</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">ndim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">plo</span><span class="p">)</span>
+
+        <span class="n">clusterids</span> <span class="o">=</span> <span class="n">transformLayer</span><span class="o">.</span><span class="n">clusterids</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">clusteridstrings</span><span class="p">)</span>
+        <span class="n">nmodes</span> <span class="o">=</span> <span class="n">transformLayer</span><span class="o">.</span><span class="n">nclusters</span>
+        <span class="n">labeltext</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;Mono-modal&quot;</span> <span class="k">if</span> <span class="n">nmodes</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="s2">&quot;Have </span><span class="si">%d</span><span class="s2"> modes&quot;</span> <span class="o">%</span> <span class="n">nmodes</span><span class="p">)</span> <span class="o">+</span> \
+            <span class="p">(</span><span class="s2">&quot; | Volume: ~exp(</span><span class="si">%.2f</span><span class="s2">) &quot;</span> <span class="o">%</span> <span class="n">region</span><span class="o">.</span><span class="n">estimate_volume</span><span class="p">())</span> <span class="o">+</span> <span class="p">(</span><span class="s1">&#39;*&#39;</span> <span class="k">if</span> <span class="n">region_fresh</span> <span class="k">else</span> <span class="s1">&#39; &#39;</span><span class="p">)</span> <span class="o">+</span> \
+            <span class="s2">&quot; | Expected Volume: exp(</span><span class="si">%.2f</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;logvol&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">elif</span> <span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">spearman</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">rho</span><span class="p">,</span> <span class="n">pval</span> <span class="o">=</span> <span class="n">spearman</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">pval</span> <span class="o">&lt;</span> <span class="mf">0.01</span> <span class="ow">and</span> <span class="nb">abs</span><span class="p">(</span><span class="n">rho</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.75</span><span class="p">:</span>
+                <span class="n">labeltext</span> <span class="o">+=</span> <span class="p">(</span><span class="s2">&quot;&lt;br/&gt;   </span><span class="si">%s</span><span class="s2"> between </span><span class="si">%s</span><span class="s2"> and </span><span class="si">%s</span><span class="s2">: rho=</span><span class="si">%.2f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+                    <span class="s1">&#39;positive degeneracy&#39;</span> <span class="k">if</span> <span class="n">rho</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s1">&#39;negative degeneracy&#39;</span><span class="p">,</span>
+                    <span class="n">paramnames</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">paramnames</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">rho</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">spearman</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">rho</span><span class="p">,</span> <span class="n">pval</span> <span class="o">=</span> <span class="n">spearman</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">param</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">paramnames</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">param2</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">paramnames</span><span class="p">[:</span><span class="n">i</span><span class="p">]):</span>
+                    <span class="k">if</span> <span class="n">pval</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.01</span> <span class="ow">and</span> <span class="nb">abs</span><span class="p">(</span><span class="n">rho</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mf">0.99</span><span class="p">:</span>
+                        <span class="n">labeltext</span> <span class="o">+=</span> <span class="p">(</span><span class="s2">&quot;&lt;br/&gt;   perfect </span><span class="si">%s</span><span class="s2"> between </span><span class="si">%s</span><span class="s2"> and </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+                            <span class="s1">&#39;positive relation&#39;</span> <span class="k">if</span> <span class="n">rho</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s1">&#39;negative relation&#39;</span><span class="p">,</span>
+                            <span class="n">param2</span><span class="p">,</span> <span class="n">param</span><span class="p">))</span>
+                    <span class="k">elif</span> <span class="n">pval</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.01</span> <span class="ow">and</span> <span class="nb">abs</span><span class="p">(</span><span class="n">rho</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mf">0.75</span><span class="p">:</span>
+                        <span class="n">labeltext</span> <span class="o">+=</span> <span class="p">(</span><span class="s2">&quot;&lt;br/&gt;   </span><span class="si">%s</span><span class="s2"> between </span><span class="si">%s</span><span class="s2"> and </span><span class="si">%s</span><span class="s2">: rho=</span><span class="si">%.2f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+                            <span class="s1">&#39;positive degeneracy&#39;</span> <span class="k">if</span> <span class="n">rho</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s1">&#39;negative degeneracy&#39;</span><span class="p">,</span>
+                            <span class="n">param2</span><span class="p">,</span> <span class="n">param</span><span class="p">,</span> <span class="n">rho</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]))</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">fmt</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">paramnames</span><span class="p">,</span> <span class="n">paramformats</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">nmodes</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39; &#39;</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">width</span><span class="p">)]</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">indices</span><span class="p">[:,</span><span class="n">i</span><span class="p">]):</span>
+                    <span class="n">line</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;*&#39;</span>
+                <span class="n">linestr</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39; &#39;</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">width</span><span class="p">)]</span>
+                <span class="k">for</span> <span class="n">clusterid</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">clusterids</span><span class="p">,</span> <span class="n">indices</span><span class="p">[:,</span><span class="n">i</span><span class="p">]):</span>
+                    <span class="k">if</span> <span class="n">clusterid</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">line</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">):</span>
+                        <span class="c1"># set it to correct cluster id</span>
+                        <span class="n">line</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">clusteridstrings</span><span class="p">[</span><span class="n">clusterid</span><span class="p">]</span>
+                    <span class="k">elif</span> <span class="n">clusterid</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">line</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39; &#39;</span><span class="p">:</span>
+                        <span class="c1"># empty, so set it although we don&#39;t know the cluster id</span>
+                        <span class="n">line</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;0&#39;</span>
+                    <span class="c1"># else:</span>
+                    <span class="c1">#     line[j] = &#39;*&#39;</span>
+                <span class="n">linestr</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+            <span class="n">oldlinestr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">laststatus</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">linestr</span><span class="p">,</span> <span class="n">oldlinestr</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="n">c</span> <span class="o">!=</span> <span class="n">d</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39; &#39;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;&lt;div style=&#39;background-color:white;&#39;&gt;&amp;nbsp;&lt;/div&gt;&quot;</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="s2">&quot;&lt;div style=&#39;background-color:#6E6BF4; font-family:monospace&#39;&gt;</span><span class="si">%s</span><span class="s2">&lt;/div&gt;&quot;</span> <span class="o">%</span> <span class="n">c</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="p">,</span> <span class="s1">&#39;&amp;nbsp;&#39;</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">laststatus</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">linestr</span>
+            <span class="c1"># self.grid[i,0].value = param</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">fmt</span> <span class="o">%</span> <span class="n">plo_rounded</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">fmt</span> <span class="o">%</span> <span class="n">phi_rounded</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">labeltext</span></div>
+
+
+<div class="viewcode-block" id="get_default_viz_callback"><a class="viewcode-back" href="../../ultranest.html#ultranest.viz.get_default_viz_callback">[docs]</a><span class="k">def</span> <span class="nf">get_default_viz_callback</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Get default callback.</span>
+
+<span class="sd">    LivePointsWidget for Jupyter notebook, nicelogger otherwise.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">isnotebook</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">LivePointsWidget</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">nicelogger</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014-2019, Johannes Buchner
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,348 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Time series fitting\n",
+    "\n",
+    "This tutorial demonstrates:\n",
+    "\n",
+    "* How to define a model with a periodic parameter\n",
+    "* How to obtain posterior probability distributions\n",
+    "* How to plot the results\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Model\n",
+    "\n",
+    "Lets fit a sine model with gaussian measurement errors.\n",
+    "\n",
+    "$$ y = A \\sin\\left(2 \\pi \\left(\\frac{t}{P} + t_0\\right)\\right) + B + \\epsilon $$\n",
+    "\n",
+    "where $\\epsilon \\sim \\mathrm{Normal}(0, \\sigma)$\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import numpy as np\n",
+    "from numpy import sin, pi\n",
+    "\n",
+    "def sine_model(t, B, A, P, t0):\n",
+    "    return A * sin((t / P + t0) * 2 * pi) + B"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "\n",
+    "The model has four unknown parameters:\n",
+    "\n",
+    "* the signal offset $B$\n",
+    "* the amplitude $A$\n",
+    "* the period $P$\n",
+    "* the time offset $t_0$\n",
+    "\n",
+    "## Generating data\n",
+    "\n",
+    "Lets generate some data following this model:\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "np.random.seed(42)\n",
+    "\n",
+    "n_data = 20\n",
+    "\n",
+    "# time of observations\n",
+    "t = np.random.uniform(0, 5, size=n_data)\n",
+    "# measurement values\n",
+    "yerr = 1.0\n",
+    "y = np.random.normal(sine_model(t, A=4.2, P=3, t0=0, B=1.0), yerr)\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Visualise the data\n",
+    "\n",
+    "Lets plot the data first to see what is going on:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "%matplotlib inline\n",
+    "import matplotlib.pyplot as plt\n",
+    "\n",
+    "plt.figure()\n",
+    "plt.xlabel('x')\n",
+    "plt.ylabel('y')\n",
+    "plt.errorbar(x=t, y=y, yerr=yerr,\n",
+    "             marker='o', ls=' ', color='orange')\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "A beautiful noisy data set, but we can see the modulation.\n",
+    "\n",
+    "Now the question is: what model parameters are allowed under these data?\n",
+    "\n",
+    "First, we need to define the parameter ranges through a prior:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "parameters = ['B', 'A', 'P', '$t_0$']\n",
+    "\n",
+    "def prior_transform(cube):\n",
+    "    # the argument, cube, consists of values from 0 to 1\n",
+    "    # we have to convert them to physical scales\n",
+    "    \n",
+    "    params = cube.copy()\n",
+    "    # let background level go from -10 to +10\n",
+    "    params[0] = cube[0] * 20 - 10\n",
+    "    # let amplitude go from 0.01 to 100\n",
+    "    params[1] = 10**(cube[1] * 4 - 2)\n",
+    "    # let period go from 0.3 to 30\n",
+    "    params[2] = 10**(cube[2] * 2)\n",
+    "    # let time go from 0 to 1\n",
+    "    params[3] = cube[3]\n",
+    "    return params\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Define the likelihood, which measures how far the data are from the model predictions.\n",
+    "More precisely, how often the parameters would arise under the given parameters.\n",
+    "We assume gaussian measurement errors of known size (yerr).\n",
+    "\n",
+    "$$\\chi^2 = \\sum\\left(\\frac{m_i-y_i}{\\sigma}\\right)^2 $$\n",
+    "$$\\log \\cal{L} = -\\chi^2 / 2$$\n",
+    "\n",
+    "where the model is the sine_model function from above at time $t_i$."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import scipy.stats\n",
+    "\n",
+    "def log_likelihood(params):\n",
+    "    # unpack the current parameters:\n",
+    "    B, A, P, t0 = params\n",
+    "\n",
+    "    # compute for each x point, where it should lie in y\n",
+    "    y_model = sine_model(t, A=A, B=B, P=P, t0=t0)\n",
+    "    # compute likelihood\n",
+    "    loglike = -0.5 * (((y_model - y) / yerr)**2).sum()\n",
+    "    \n",
+    "    return loglike\n",
+    "    "
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "\n",
+    "Implicitly, this model assumes that the bulge mass is predicted by the black hole mass.\n",
+    "Alternatively, one could flip the axes, or define the scatter orthogonally, \n",
+    "but lets stick with our approach for now.\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Solve the problem:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import sys\n",
+    "if '..' not in sys.path: sys.path.append('..')\n",
+    "import ultranest\n",
+    "\n",
+    "import logging\n",
+    "logging.getLogger('ultranest').addHandler(logging.NullHandler())\n",
+    "#logging.getLogger('ultranest').handlers = []\n",
+    "\n",
+    "sampler = ultranest.ReactiveNestedSampler(\n",
+    "    parameters, log_likelihood, prior_transform,\n",
+    "    wrapped_params=[False, False, False, True],\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "result = sampler.run(min_num_live_points=400, dKL=np.inf, min_ess=100)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Plot the parameter posterior probability distribution\n",
+    "\n",
+    "A classic corner plot:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from ultranest.plot import cornerplot\n",
+    "cornerplot(result)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "sampler.ncall"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Plot the fit:"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "To evaluate whether the results make any sense, we want\n",
+    "to look whether the fitted function goes through the data points."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "plt.figure()\n",
+    "plt.xlabel('x')\n",
+    "plt.ylabel('y')\n",
+    "plt.errorbar(x=t, y=y, yerr=yerr,\n",
+    "             marker='o', ls=' ', color='orange')\n",
+    "\n",
+    "\n",
+    "t_grid = np.linspace(0, 5, 400)\n",
+    "\n",
+    "from ultranest.plot import PredictionBand\n",
+    "band = PredictionBand(t_grid)\n",
+    "\n",
+    "# go through the solutions\n",
+    "for B, A, P, t0 in sampler.results['samples']:\n",
+    "    # compute for each time the y value\n",
+    "    band.add(sine_model(t_grid, A=A, B=B, P=P, t0=t0))\n",
+    "\n",
+    "band.line(color='k')\n",
+    "# add 1 sigma quantile\n",
+    "band.shade(color='k', alpha=0.3)\n",
+    "# add wider quantile (0.01 .. 0.99)\n",
+    "band.shade(q=0.49, color='gray', alpha=0.2)\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Trace plot\n",
+    "\n",
+    "Finally, to understand the structure of the problem and possible multi-modality,\n",
+    "we can use a nested sampling trace plot to look at the history of the exploration."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "The trace plot below shows one parameter per panel.\n",
+    "Sampling progresses from the left (entire prior volume) to the right, in the left panel. More and more of the full range is excluded.\n",
+    "The right panels show the marginal posterior distribution."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "sampler.plot_trace()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.6.8"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}

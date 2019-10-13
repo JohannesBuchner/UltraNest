@@ -1,0 +1,634 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Tour of the features &mdash; UltraNest 2.0.0 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="_static/icon.ico"/>
+  
+  
+  
+    <link rel="canonical" href="https://johannesbuchner.github.io/UltraNest/performance.html"/>
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="API" href="modules.html" />
+    <link rel="prev" title="Basic usage" href="usage-spectral-line.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> UltraNest
+          
+
+          
+            
+            <img src="_static/logo.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="readme.html">UltraNest</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="method.html">How it works</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage-spectral-line.html">Basic usage</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Tour of the features</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#usage-in-a-program">Usage in a program</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#speed-ups">Speed ups</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id3">Usage in a program</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#high-dimensional-models">High-dimensional models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-multiple-cores">Using multiple cores</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#more-features">More features</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="issues.html">Frequently Asked Questions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="history.html">Release Notes</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="example-sine-line.html">Time series fitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-sine-modelcomparison.html">Model comparison</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-sine-highd.html">Higher-dimensional fitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-intrinsic-distribution.html">Tutorial: intrinsic distribution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-line.html">Tutorial: fitting a line</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-outliers.html">Tutorial: distribution with outliers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-sine-bayesian-workflow.html">Bayesian workflow</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">UltraNest</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content style-external-links">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Tour of the features</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/performance.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="tour-of-the-features">
+<h1>Tour of the features<a class="headerlink" href="#tour-of-the-features" title="Permalink to this headline">¶</a></h1>
+<p>This tutorial demonstrates:</p>
+<ul class="simple">
+<li><p>How to make a program that uses nested sampling.</p></li>
+<li><p>How to store and resume runs</p></li>
+<li><p>How to use UltraNest in 100 dimensions.</p></li>
+<li><p>How to speed up likelihood functions with vectorization</p></li>
+<li><p>How to write a program with UltraNest.</p></li>
+<li><p>How to execute on multiple cores.</p></li>
+</ul>
+<div class="section" id="usage-in-a-program">
+<h2>Usage in a program<a class="headerlink" href="#usage-in-a-program" title="Permalink to this headline">¶</a></h2>
+<div class="literal-block-wrapper docutils container" id="simple-py">
+<div class="code-block-caption"><span class="caption-text">simple.py</span><a class="headerlink" href="#simple-py" title="Permalink to this code">¶</a></div>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span> <span class="kn">import</span> <span class="nn">scipy.stats</span>
+
+ <span class="n">paramnames</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;param1&#39;</span><span class="p">,</span> <span class="s1">&#39;param2&#39;</span><span class="p">,</span> <span class="s1">&#39;param3&#39;</span><span class="p">]</span>
+ <span class="n">centers</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">]</span>
+ <span class="n">sigma</span> <span class="o">=</span> <span class="mf">0.1</span>
+
+ <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="n">cube</span><span class="p">):</span>
+     <span class="k">return</span> <span class="n">cube</span>
+
+ <span class="k">def</span> <span class="nf">loglike</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
+     <span class="k">return</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">centers</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span><span class="o">.</span><span class="n">logpdf</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+ <span class="kn">from</span> <span class="nn">ultranest</span> <span class="k">import</span> <span class="n">ReactiveNestedSampler</span>
+ <span class="n">sampler</span> <span class="o">=</span> <span class="n">ReactiveNestedSampler</span><span class="p">(</span><span class="n">paramnames</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">transform</span><span class="p">,</span>
+     <span class="n">log_dir</span><span class="o">=</span><span class="s1">&#39;my_gauss&#39;</span><span class="p">,</span> <span class="c1"># folder where to store files</span>
+     <span class="n">resume</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="c1"># whether to resume from there (otherwise start from scratch)</span>
+     <span class="p">)</span>
+
+ <span class="n">sampler</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+     <span class="n">min_num_live_points</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span>
+     <span class="n">dlogz</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="c1"># desired accuracy on logz</span>
+     <span class="n">min_ess</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="c1"># number of effective samples</span>
+     <span class="n">update_interval_iter_fraction</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span> <span class="c1"># how often to update region</span>
+     <span class="n">max_num_improvement_loops</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="c1"># how many times to go back and improve</span>
+ <span class="p">)</span>
+
+ <span class="n">sampler</span><span class="o">.</span><span class="n">print_results</span><span class="p">()</span>
+
+ <span class="n">sampler</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+ <span class="n">sampler</span><span class="o">.</span><span class="n">plot_trace</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<p>Running this, you should see outputs like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Mono</span><span class="o">-</span><span class="n">modal</span> <span class="n">Volume</span><span class="p">:</span> <span class="o">~</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">9.21</span><span class="p">)</span> <span class="o">*</span> <span class="n">Expected</span> <span class="n">Volume</span><span class="p">:</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">4.83</span><span class="p">)</span>
+
+<span class="n">param1</span><span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>            <span class="o">+</span><span class="mf">0.3</span>  <span class="o">***************</span>  <span class="o">+</span><span class="mf">0.5</span>                         <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param2</span><span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                   <span class="o">+</span><span class="mf">0.4</span>  <span class="o">***************</span>  <span class="o">+</span><span class="mf">0.6</span>                  <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param3</span><span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                         <span class="o">+</span><span class="mf">0.5</span>  <span class="o">***************</span>  <span class="o">+</span><span class="mf">0.7</span>            <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+
+<span class="n">Z</span><span class="o">=-</span><span class="mf">0.2</span><span class="p">(</span><span class="mf">75.84</span><span class="o">%</span><span class="p">)</span> <span class="o">|</span> <span class="n">Like</span><span class="o">=</span><span class="mf">3.59</span><span class="o">..</span><span class="mf">4.14</span> <span class="p">[</span><span class="o">-</span><span class="mf">37.4805</span><span class="o">..</span><span class="mf">3.8990</span><span class="p">]</span> <span class="o">|</span> <span class="n">it</span><span class="o">/</span><span class="n">evals</span><span class="o">=</span><span class="mi">2080</span><span class="o">/</span><span class="mi">3730</span> <span class="n">eff</span><span class="o">=</span><span class="mf">62.4625</span><span class="o">%</span> <span class="n">N</span><span class="o">=</span><span class="mi">400</span>
+</pre></div>
+</div>
+<p>This reports</p>
+<ol class="arabic simple">
+<li><p>the current sampling region size and how many clusters it found.</p></li>
+<li><p>for each parameter, a linear plot where the live points (shown as <a href="#id1"><span class="problematic" id="id2">*</span></a>) are currently exploring.</p></li>
+<li><p>Current estimate of logz, percentage of completion, live point log-likelihood values,
+log-likelihood value range being targeted at the moment</p></li>
+<li><p>The current iteration, how many likelihood function evaluations have been performed,
+the current efficiency and the number of current live points.</p></li>
+</ol>
+<p>At the end, you should see:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">ultranest</span><span class="p">]</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">Explored</span> <span class="n">until</span> <span class="n">L</span><span class="o">=</span><span class="mi">4</span>  <span class="o">..</span><span class="mf">4.0913</span><span class="p">]</span><span class="o">*|</span> <span class="n">it</span><span class="o">/</span><span class="n">evals</span><span class="o">=</span><span class="mi">3440</span><span class="o">/</span><span class="mi">6029</span> <span class="n">eff</span><span class="o">=</span><span class="mf">61.1121</span><span class="o">%</span> <span class="n">N</span><span class="o">=</span><span class="mi">400</span>
+<span class="p">[</span><span class="n">ultranest</span><span class="p">]</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">Likelihood</span> <span class="n">function</span> <span class="n">evaluations</span><span class="p">:</span> <span class="mi">6077</span>
+<span class="p">[</span><span class="n">ultranest</span><span class="p">]</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">Writing</span> <span class="n">samples</span> <span class="ow">and</span> <span class="n">results</span> <span class="n">to</span> <span class="n">disk</span> <span class="o">...</span>
+<span class="p">[</span><span class="n">ultranest</span><span class="p">]</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">Writing</span> <span class="n">samples</span> <span class="ow">and</span> <span class="n">results</span> <span class="n">to</span> <span class="n">disk</span> <span class="o">...</span> <span class="n">done</span>
+<span class="p">[</span><span class="n">ultranest</span><span class="p">]</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span>   <span class="n">logZ</span> <span class="o">=</span> <span class="mf">0.0331</span> <span class="o">+-</span> <span class="mf">0.0725</span>
+<span class="p">[</span><span class="n">ultranest</span><span class="p">]</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">Effective</span> <span class="n">samples</span> <span class="n">strategy</span> <span class="n">satisfied</span> <span class="p">(</span><span class="n">ESS</span> <span class="o">=</span> <span class="mf">1875.4</span><span class="p">,</span> <span class="n">need</span> <span class="o">&gt;</span><span class="mi">400</span><span class="p">)</span>
+<span class="p">[</span><span class="n">ultranest</span><span class="p">]</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">Posterior</span> <span class="n">uncertainty</span> <span class="n">strategy</span> <span class="ow">is</span> <span class="n">satisfied</span> <span class="p">(</span><span class="n">KL</span><span class="p">:</span> <span class="mf">0.47</span><span class="o">+-</span><span class="mf">0.06</span> <span class="n">nat</span><span class="p">,</span> <span class="n">need</span> <span class="o">&lt;</span><span class="mf">0.50</span> <span class="n">nat</span><span class="p">)</span>
+<span class="p">[</span><span class="n">ultranest</span><span class="p">]</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">Evidency</span> <span class="n">uncertainty</span> <span class="n">strategy</span> <span class="ow">is</span> <span class="n">satisfied</span> <span class="p">(</span><span class="n">dlogz</span><span class="o">=</span><span class="mf">0.16</span><span class="p">,</span> <span class="n">need</span> <span class="o">&lt;</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="p">[</span><span class="n">ultranest</span><span class="p">]</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span>   <span class="n">logZ</span> <span class="n">error</span> <span class="n">budget</span><span class="p">:</span> <span class="n">single</span><span class="p">:</span> <span class="mf">0.08</span> <span class="n">bs</span><span class="p">:</span><span class="mf">0.07</span> <span class="n">tail</span><span class="p">:</span><span class="mf">0.01</span> <span class="n">total</span><span class="p">:</span><span class="mf">0.07</span> <span class="n">required</span><span class="p">:</span><span class="o">&lt;</span><span class="mf">0.50</span>
+<span class="p">[</span><span class="n">ultranest</span><span class="p">]</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">done</span> <span class="n">iterating</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>This indicates that all three strategies are satisfied and no further
+improvements are needed.</p>
+<p>sampler.print_results() gives a brief summary of logz and its uncertainties,
+and the parameter constraints:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">logZ</span> <span class="o">=</span> <span class="mf">0.042</span> <span class="o">+-</span> <span class="mf">0.101</span>
+  <span class="n">single</span> <span class="n">instance</span><span class="p">:</span> <span class="n">logZ</span> <span class="o">=</span> <span class="mf">0.042</span> <span class="o">+-</span> <span class="mf">0.081</span>
+  <span class="n">bootstrapped</span>   <span class="p">:</span> <span class="n">logZ</span> <span class="o">=</span> <span class="mf">0.033</span> <span class="o">+-</span> <span class="mf">0.101</span>
+  <span class="n">tail</span>           <span class="p">:</span> <span class="n">logZ</span> <span class="o">=</span> <span class="o">+-</span> <span class="mf">0.010</span>
+
+    <span class="n">param1</span>              <span class="mf">0.40</span> <span class="o">+-</span> <span class="mf">0.10</span>
+    <span class="n">param2</span>              <span class="mf">0.500</span> <span class="o">+-</span> <span class="mf">0.099</span>
+    <span class="n">param3</span>              <span class="mf">0.602</span> <span class="o">+-</span> <span class="mf">0.098</span>
+</pre></div>
+</div>
+<p>In the folder my_gauss you can find useful files:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">*</span> <span class="o">**</span><span class="n">debug</span><span class="o">.</span><span class="n">log</span><span class="o">**</span><span class="p">:</span> <span class="n">log</span> <span class="n">file</span> <span class="n">of</span> <span class="n">the</span> <span class="n">run</span><span class="o">.</span> <span class="n">Include</span> <span class="n">when</span> <span class="n">reporting</span> <span class="n">bugs</span><span class="o">.</span>
+<span class="o">*</span> <span class="o">**</span><span class="n">results</span><span class="o">/</span><span class="n">points</span><span class="o">.</span><span class="n">hdf5</span><span class="o">**</span><span class="p">:</span> <span class="n">file</span> <span class="n">storing</span> <span class="nb">all</span> <span class="n">sampled</span> <span class="n">points</span><span class="o">.</span> <span class="n">Used</span> <span class="k">for</span> <span class="n">resuming</span><span class="o">.</span>
+<span class="o">*</span> <span class="o">**</span><span class="n">chains</span><span class="o">/</span><span class="n">equal_weighted_post</span><span class="o">.</span><span class="n">txt</span><span class="o">**</span><span class="p">:</span> <span class="n">posterior</span> <span class="n">samples</span><span class="o">.</span> <span class="n">Each</span> <span class="n">column</span> <span class="n">corresponds</span> <span class="n">to</span> <span class="n">one</span> <span class="n">parameter</span><span class="o">.</span>
+<span class="o">*</span> <span class="o">**</span><span class="n">chains</span><span class="o">/</span><span class="n">weighted_post</span><span class="o">.</span><span class="n">txt</span><span class="o">**</span><span class="p">:</span> <span class="n">weighted</span> <span class="n">posterior</span> <span class="n">samples</span><span class="o">.</span> <span class="n">Weight</span><span class="p">,</span> <span class="o">-</span><span class="n">loglikelihood</span><span class="p">,</span> <span class="n">parameter</span> <span class="n">value</span> <span class="p">(</span><span class="n">d</span> <span class="n">times</span><span class="p">)</span><span class="o">.</span> <span class="n">getdist</span> <span class="n">compatible</span><span class="o">.</span>
+<span class="o">*</span> <span class="o">**</span><span class="n">chains</span><span class="o">/</span><span class="n">weighted_post</span><span class="o">.</span><span class="n">paramnames</span><span class="o">**</span><span class="p">:</span> <span class="n">Parameter</span> <span class="n">names</span>
+<span class="o">*</span> <span class="o">**</span><span class="n">info</span><span class="o">/</span><span class="n">results</span><span class="o">.</span><span class="n">json</span><span class="o">**</span><span class="p">:</span> <span class="nb">all</span> <span class="n">results</span> <span class="p">(</span><span class="n">logz</span><span class="p">,</span> <span class="n">etc</span><span class="o">.</span><span class="p">)</span> <span class="k">as</span> <span class="n">a</span> <span class="n">json</span> <span class="n">dictionary</span>
+<span class="o">*</span> <span class="o">**</span><span class="n">plots</span><span class="o">/</span><span class="n">corner</span><span class="o">.</span><span class="n">pdf</span><span class="o">**</span><span class="p">:</span> <span class="n">corner</span> <span class="n">plot</span>
+<span class="o">*</span> <span class="o">**</span><span class="n">plots</span><span class="o">/</span><span class="n">run</span><span class="o">.</span><span class="n">pdf</span><span class="o">**</span><span class="p">:</span> <span class="n">diagnostic</span> <span class="n">plot</span> <span class="n">showing</span> <span class="n">integration</span> <span class="n">progress</span>
+<span class="o">*</span> <span class="o">**</span><span class="n">plots</span><span class="o">/</span><span class="n">trace</span><span class="o">.</span><span class="n">pdf</span><span class="o">**</span><span class="p">:</span> <span class="n">diagnostic</span> <span class="n">plot</span> <span class="n">showing</span> <span class="n">problem</span> <span class="n">structure</span>
+</pre></div>
+</div>
+<p>Some features worth noting here:</p>
+<ul class="simple">
+<li><p>Key diagnostic plots are included.</p></li>
+<li><p>The program can resume from crashes – even if run with a different number of live points.</p></li>
+<li><p>UltraNest shows what it is currently exploring. This is especially useful for debugging models.</p></li>
+</ul>
+<p>Lets go to some more advanced usage examples: Integrating a 100-dimensional gaussian.
+For that, we have to make a few modifications.</p>
+</div>
+<div class="section" id="speed-ups">
+<h2>Speed ups<a class="headerlink" href="#speed-ups" title="Permalink to this headline">¶</a></h2>
+<p>Implementing a gaussian likelihood can be done in a few ways.</p>
+<p>Very slow:</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">loglike</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">centers</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span><span class="o">.</span><span class="n">logpdf</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Creating scipy.stats random variable object is slow.
+Calling the functions directly is better:</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">loglike</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">logpdf</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">centers</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>We can improve further by implementing the function ourself:</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">loglike</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
+    <span class="n">like</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(((</span><span class="n">theta</span> <span class="o">-</span> <span class="n">centers</span><span class="p">)</span><span class="o">/</span><span class="n">sigma</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">sigma</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">ndim</span>
+    <span class="k">return</span> <span class="n">like</span>
+</pre></div>
+</div>
+<p>Finally, we can make a vectorized function, which can process <em>many</em> points at the same time.
+This reduces function calls.</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">loglike</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
+    <span class="n">like</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(((</span><span class="n">theta</span> <span class="o">-</span> <span class="n">centers</span><span class="p">)</span><span class="o">/</span><span class="n">sigma</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">sigma</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">ndim</span>
+    <span class="k">return</span> <span class="n">like</span>
+</pre></div>
+</div>
+<p>To use this function, pass <code class="docutils literal notranslate"><span class="pre">vectorized=True</span></code> to ReactiveNestedSampler.
+Lets see how this looks like in a full program.</p>
+</div>
+<div class="section" id="id3">
+<h2>Usage in a program<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<p>Below is a Python program that implements a gaussian likelihood,
+and allows the user to specify the problem dimension and a few sampler parameters.</p>
+<div class="literal-block-wrapper docutils container" id="gauss-py">
+<div class="code-block-caption"><span class="caption-text">gauss.py</span><a class="headerlink" href="#gauss-py" title="Permalink to this code">¶</a></div>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span> <span class="kn">import</span> <span class="nn">argparse</span>
+ <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+ <span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="n">log</span>
+
+ <span class="c1"># define command line arguments:</span>
+ <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">()</span>
+
+ <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--x_dim&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                     <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Dimensionality&quot;</span><span class="p">)</span>
+ <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--num_live_points&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>
+ <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--sigma&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+ <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--slice&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">)</span>
+ <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--slice_steps&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+ <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--log_dir&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;logs/loggauss&#39;</span><span class="p">)</span>
+
+ <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+ <span class="n">ndim</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">x_dim</span>
+ <span class="n">sigma</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">sigma</span>
+ <span class="n">width</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="mi">5</span> <span class="o">*</span> <span class="n">sigma</span><span class="p">)</span>
+ <span class="n">centers</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">ndim</span><span class="p">)</span><span class="o">/</span><span class="mf">2.</span><span class="p">)</span> <span class="o">*</span> <span class="n">width</span> <span class="o">+</span> <span class="mf">1.</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.</span>
+
+ <span class="c1"># Here, we implement a vectorized loglikelihood, which can</span>
+ <span class="c1"># process many points at the same time. This reduces function calls.</span>
+ <span class="k">def</span> <span class="nf">loglike</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
+     <span class="n">like</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(((</span><span class="n">theta</span> <span class="o">-</span> <span class="n">centers</span><span class="p">)</span><span class="o">/</span><span class="n">sigma</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">sigma</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">ndim</span>
+     <span class="k">return</span> <span class="n">like</span>
+
+ <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+     <span class="k">return</span> <span class="n">x</span>
+
+ <span class="n">paramnames</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;param</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndim</span><span class="p">)]</span>
+
+ <span class="c1"># set up nested sampler:</span>
+
+ <span class="kn">from</span> <span class="nn">ultranest</span> <span class="k">import</span> <span class="n">ReactiveNestedSampler</span>
+
+ <span class="n">sampler</span> <span class="o">=</span> <span class="n">ReactiveNestedSampler</span><span class="p">(</span><span class="n">paramnames</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">transform</span><span class="p">,</span>
+     <span class="n">log_dir</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">log_dir</span> <span class="o">+</span> <span class="s1">&#39;RNS-</span><span class="si">%d</span><span class="s1">d&#39;</span> <span class="o">%</span> <span class="n">ndim</span><span class="p">,</span> <span class="n">resume</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+     <span class="n">vectorized</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+ <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">slice</span><span class="p">:</span>
+     <span class="c1"># set up step sampler. Here, we use a slice sampler:</span>
+     <span class="kn">import</span> <span class="nn">ultranest.stepsampler</span>
+     <span class="n">sampler</span><span class="o">.</span><span class="n">stepsampler</span> <span class="o">=</span> <span class="n">ultranest</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="n">RegionSliceSampler</span><span class="p">(</span><span class="n">nsteps</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">slice_steps</span><span class="p">)</span>
+
+ <span class="c1"># run sampler, with a few custom arguments:</span>
+ <span class="n">sampler</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">dlogz</span><span class="o">=</span><span class="mf">0.5</span> <span class="o">+</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">ndim</span><span class="p">,</span>
+     <span class="n">update_interval_iter_fraction</span><span class="o">=</span><span class="mf">0.4</span> <span class="k">if</span> <span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">20</span> <span class="k">else</span> <span class="mf">0.2</span><span class="p">,</span>
+     <span class="n">max_num_improvement_loops</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+     <span class="n">min_num_live_points</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">num_live_points</span><span class="p">)</span>
+
+ <span class="n">sampler</span><span class="o">.</span><span class="n">print_results</span><span class="p">()</span>
+
+ <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">slice</span><span class="p">:</span>
+     <span class="n">sampler</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">filename</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">log_dir</span> <span class="o">+</span> <span class="s1">&#39;RNS-</span><span class="si">%d</span><span class="s1">d/stepsampler_stats_regionslice.pdf&#39;</span> <span class="o">%</span> <span class="n">ndim</span><span class="p">)</span>
+
+ <span class="n">sampler</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<p>Note that our likelihood is vectorized, and we pass <code class="docutils literal notranslate"><span class="pre">vectorized=True</span></code>.</p>
+<p>A similar program is included in the git repository as <em>examples/testasymgauss.py</em>.</p>
+</div>
+<div class="section" id="high-dimensional-models">
+<h2>High-dimensional models<a class="headerlink" href="#high-dimensional-models" title="Permalink to this headline">¶</a></h2>
+<p>In high-dimensional spaces, MLFriends by itself is inefficient, so
+we have to use a step sampling technique. There are several implemented
+in <a class="reference internal" href="ultranest.html#module-ultranest.stepsampler" title="ultranest.stepsampler"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ultranest.stepsampler</span></code></a>. Here we are using slice sampling
+that learns the direction from the existing live points.
+This is similar to PolyChord, except the region is also used to reject
+distant proposals, and the clustering is better justified (based on MLFriends).</p>
+<p>Lets run our program on a 100-dimensional gauss:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python3 gauss.py --x_dim<span class="o">=</span><span class="m">100</span> --num_live_points<span class="o">=</span><span class="m">400</span> --slice  --slice_steps<span class="o">=</span><span class="m">100</span>
+</pre></div>
+</div>
+<p>After a while (a few hours on my laptop), this will have traversed the parameter space:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Z</span><span class="o">=</span><span class="mf">0.3</span><span class="p">(</span><span class="mf">43.44</span><span class="o">%</span><span class="p">)</span> <span class="o">|</span> <span class="n">Like</span><span class="o">=</span><span class="mf">89.39</span><span class="o">..</span><span class="mf">96.29</span> <span class="p">[</span><span class="mf">89.3916</span><span class="o">..</span><span class="mf">89.3936</span><span class="p">]</span><span class="o">*|</span> <span class="n">it</span><span class="o">/</span><span class="n">evals</span><span class="o">=</span><span class="mi">39671</span><span class="o">/</span><span class="mi">11660719</span> <span class="n">eff</span><span class="o">=</span><span class="mf">0.2939</span><span class="o">%</span> <span class="n">N</span><span class="o">=</span><span class="mi">400</span>
+
+<span class="n">param1</span>  <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                        <span class="o">+</span><span class="mf">0.2</span>  <span class="mi">0</span> <span class="mi">0000</span>  <span class="mi">0100000000000000000000100010001000010100010000000010000</span> <span class="mi">0</span> <span class="mi">0</span>  <span class="mi">00</span> <span class="mi">0</span>       <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.8</span>                 <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param2</span>  <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                      <span class="o">+</span><span class="mf">0.3</span>  <span class="mi">0</span>   <span class="mi">0</span>  <span class="mi">0</span>  <span class="mi">001</span> <span class="mi">0</span> <span class="mi">00000100000100010110001010000010000000000000000</span> <span class="mi">00</span> <span class="mi">0</span>   <span class="mi">00</span> <span class="mi">00</span>  <span class="o">+</span><span class="mf">0.9</span>        <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param3</span>  <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                                   <span class="o">+</span><span class="mf">0.4</span>  <span class="mi">00</span> <span class="mi">0</span>  <span class="mi">0</span>  <span class="mi">000001010000100000010000010001010000100000000000000000000000</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span>  <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param4</span>  <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                                     <span class="o">+</span><span class="mf">0.4</span>  <span class="mi">0</span>  <span class="mi">0</span>   <span class="mi">0</span>  <span class="mi">000000</span> <span class="mi">001</span> <span class="mi">0000000000100000010001100000000010010000000000</span> <span class="mi">000</span>  <span class="mi">00</span><span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param5</span>  <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                                      <span class="o">+</span><span class="mf">0.5</span>  <span class="mi">0</span> <span class="mi">0</span> <span class="mi">000000000000</span> <span class="mi">00000000000100000100011001000101100000000000000000</span> <span class="mi">0000</span>  <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param6</span>  <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                               <span class="o">+</span><span class="mf">0.4</span>  <span class="mi">0</span> <span class="mi">0</span>  <span class="mi">0000000</span> <span class="mi">000000010110000000110001100100000000000100000000</span>    <span class="mi">0</span> <span class="mi">0</span>   <span class="mi">0</span>         <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param7</span>  <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                               <span class="o">+</span><span class="mf">0.3</span>  <span class="mi">00</span> <span class="mi">0</span> <span class="mi">00</span>  <span class="mi">00000000000000010000000000110010010100000000010000000</span> <span class="mi">0</span> <span class="mi">0</span>  <span class="mi">0</span>    <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.8</span>                 <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param8</span>  <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>          <span class="o">+</span><span class="mf">0.1</span>  <span class="mi">0</span>     <span class="mi">0</span>  <span class="mi">100</span> <span class="mi">00101000000000000000010010000010110000000000010000000</span>  <span class="mi">0</span> <span class="mi">0</span>   <span class="mi">0</span>   <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.7</span>                                 <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param9</span>  <span class="p">:</span>     <span class="o">+</span><span class="mf">0.00</span><span class="o">|</span>     <span class="mi">0</span>   <span class="mi">000</span>  <span class="mi">00000000000000100000100011100010010010000000100000000000000</span> <span class="mi">00</span>   <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.59</span>                                               <span class="o">|</span>    <span class="o">+</span><span class="mf">1.00</span>
+<span class="n">param10</span> <span class="p">:</span>     <span class="o">+</span><span class="mf">0.00</span><span class="o">|</span>   <span class="mi">00000000000001010100000100100101010000000000000100000000</span>  <span class="mi">00</span> <span class="mi">000</span>  <span class="o">+</span><span class="mf">0.50</span>                                                            <span class="o">|</span>    <span class="o">+</span><span class="mf">1.00</span>
+<span class="n">param11</span> <span class="p">:</span>     <span class="o">+</span><span class="mf">0.00</span><span class="o">|</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">00000000</span> <span class="mi">0000010000000101001000000101000001010000000000</span> <span class="mi">0</span> <span class="mi">000</span> <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.51</span>                                                           <span class="o">|</span>    <span class="o">+</span><span class="mf">1.00</span>
+<span class="n">param12</span> <span class="p">:</span>     <span class="o">+</span><span class="mf">0.00</span><span class="o">|</span>    <span class="mi">0</span> <span class="mi">0</span>   <span class="mi">00</span> <span class="mi">0000</span> <span class="mi">00000100000000000010000010110010000001001000000000</span> <span class="mi">000</span> <span class="mi">00</span>  <span class="mi">0</span> <span class="mi">0</span> <span class="mi">00</span>  <span class="o">+</span><span class="mf">0.61</span>                                            <span class="o">|</span>    <span class="o">+</span><span class="mf">1.00</span>
+<span class="n">param13</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>               <span class="o">+</span><span class="mf">0.2</span>  <span class="mi">0</span> <span class="mi">00</span>  <span class="mi">0</span> <span class="mi">0000000000000010010000000110000110000000000010001100</span> <span class="mi">000</span> <span class="mi">00</span>  <span class="mi">0</span>       <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.7</span>                             <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param14</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                             <span class="o">+</span><span class="mf">0.3</span>  <span class="mi">0</span>  <span class="mi">0</span>    <span class="mi">0</span>   <span class="mi">00000000000000001100000001010001001000010001000000000</span>  <span class="mi">001000</span>      <span class="mi">0</span>   <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.9</span>         <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param15</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                                   <span class="o">+</span><span class="mf">0.4</span>  <span class="mi">00000000000000010011000000000010010000000010000100010000</span> <span class="mi">00</span> <span class="mi">1</span> <span class="mi">0000</span>  <span class="o">+</span><span class="mf">0.9</span>     <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param16</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                                  <span class="o">+</span><span class="mf">0.4</span>  <span class="mi">01</span>        <span class="mi">000</span> <span class="mi">010</span> <span class="mi">00000000010001100010000000000000000000000100010000000</span> <span class="mi">00</span>    <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param17</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                                    <span class="o">+</span><span class="mf">0.4</span>  <span class="mi">0</span>     <span class="mi">0000</span> <span class="mi">0</span> <span class="mi">00000000000000010000000011000110000111000000000000000000000</span> <span class="mi">0</span> <span class="mi">0</span><span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param18</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                                    <span class="o">+</span><span class="mf">0.4</span>  <span class="mi">01</span> <span class="mi">0</span>  <span class="mi">000</span> <span class="mi">0000000010100000000100100010001000100000100000000000</span> <span class="mi">000</span>    <span class="mi">0</span> <span class="mi">0</span>   <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param19</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                 <span class="o">+</span><span class="mf">0.2</span>  <span class="mi">0</span>            <span class="mi">0</span>    <span class="mi">0</span>  <span class="mi">0</span> <span class="mi">000</span> <span class="mi">0000000010101100000001101100000000000000000000000</span> <span class="mi">00000000</span> <span class="mi">000</span>   <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.9</span>            <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param20</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>            <span class="o">+</span><span class="mf">0.1</span>  <span class="mi">0</span>          <span class="mi">0</span>   <span class="mi">000000</span>  <span class="mi">0001000000000100000010000000010100000011001000000</span> <span class="mi">00000010</span>  <span class="o">+</span><span class="mf">0.7</span>                             <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param21</span> <span class="p">:</span>     <span class="o">+</span><span class="mf">0.00</span><span class="o">|</span>       <span class="mi">0</span>             <span class="mi">010</span> <span class="mi">00000000000000000110010000100000110000010000</span>  <span class="mi">0000000000</span>  <span class="mi">1</span>  <span class="o">+</span><span class="mf">0.63</span>                                           <span class="o">|</span>    <span class="o">+</span><span class="mf">1.00</span>
+<span class="n">param22</span> <span class="p">:</span>     <span class="o">+</span><span class="mf">0.00</span><span class="o">|</span>  <span class="mi">00</span> <span class="mi">0</span> <span class="mi">0000001</span> <span class="mi">00000100000010001110110100000000000000000000000000000</span> <span class="mi">00</span>      <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.58</span>                                                 <span class="o">|</span>    <span class="o">+</span><span class="mf">1.00</span>
+<span class="n">param23</span> <span class="p">:</span>    <span class="o">+</span><span class="mf">0.000</span><span class="o">|</span> <span class="mi">0</span> <span class="mi">0000000000000000000001000110000010011000110000000000000</span> <span class="mi">0</span> <span class="mi">00</span> <span class="mi">0</span>     <span class="mi">0</span>        <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.597</span>                                              <span class="o">|</span>   <span class="o">+</span><span class="mf">1.000</span>
+<span class="n">param24</span> <span class="p">:</span>    <span class="o">+</span><span class="mf">0.000</span><span class="o">|</span><span class="mi">0</span>  <span class="mi">00000</span> <span class="mi">00001000000010000000010000000001000001001011000010000</span>     <span class="mi">000</span>       <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.577</span>                                                <span class="o">|</span>   <span class="o">+</span><span class="mf">1.000</span>
+<span class="n">param25</span> <span class="p">:</span>     <span class="o">+</span><span class="mf">0.00</span><span class="o">|</span>      <span class="mi">0</span>        <span class="mi">0</span> <span class="mi">1</span>    <span class="mi">0000000010000000000010100000000010001011010000000000000</span>  <span class="mi">0</span>   <span class="mi">0</span> <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.64</span>                                         <span class="o">|</span>    <span class="o">+</span><span class="mf">1.00</span>
+<span class="n">param26</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                     <span class="o">+</span><span class="mf">0.2</span>  <span class="mi">00</span>   <span class="mi">00</span> <span class="mi">00000010010000000000000010100010100001010000100000000000000</span> <span class="mi">0000</span>  <span class="o">+</span><span class="mf">0.7</span>                             <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param27</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                         <span class="o">+</span><span class="mf">0.4</span>  <span class="mi">0</span> <span class="mi">1</span>   <span class="mi">0</span> <span class="mi">0100000001000000000000011001000100000010000000000001</span> <span class="mi">00</span>  <span class="mi">00</span>  <span class="o">+</span><span class="mf">0.9</span>              <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param28</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                                 <span class="o">+</span><span class="mf">0.4</span>  <span class="mi">0</span> <span class="mi">00</span>     <span class="mi">00</span> <span class="mi">01</span> <span class="mi">00000000100000000000001100010000000000011001000000</span>   <span class="mi">0</span>  <span class="mi">01</span>      <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param29</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                                          <span class="o">+</span><span class="mf">0.5</span>  <span class="mi">1</span>  <span class="mi">0000000</span> <span class="mi">0</span>  <span class="mi">000000000000001110001000000100000100010001000000000</span> <span class="mi">00</span> <span class="mi">0</span><span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param30</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                                    <span class="o">+</span><span class="mf">0.4</span>  <span class="mi">0</span> <span class="mi">0</span>   <span class="mi">0</span>  <span class="mi">00</span> <span class="mi">000000100000000010000001000001001100010000000001000100</span> <span class="mi">0</span>     <span class="mi">0</span>  <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param31</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                              <span class="o">+</span><span class="mf">0.4</span>  <span class="mi">0</span> <span class="mi">00</span>  <span class="mi">00</span>  <span class="mi">00000000000000100001000001000111010000000010000000000000</span>               <span class="mi">0</span><span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param32</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                              <span class="o">+</span><span class="mf">0.3</span>  <span class="mi">0</span> <span class="mi">000</span> <span class="mi">0000100000000000000000101101000010000000001010000000</span> <span class="mi">0000000</span>   <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.8</span>                      <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param33</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                 <span class="o">+</span><span class="mf">0.2</span>  <span class="mi">0</span> <span class="mi">00</span>  <span class="mi">000000010010100000010000000001000000000000000101001000000000</span>       <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.7</span>                               <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param34</span> <span class="p">:</span>     <span class="o">+</span><span class="mf">0.00</span><span class="o">|</span>      <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">00</span> <span class="mi">00000000000010000100000100000000010001000011000000</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">1</span> <span class="mi">000</span>   <span class="mi">0</span>   <span class="mi">0</span>     <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.67</span>                                    <span class="o">|</span>    <span class="o">+</span><span class="mf">1.00</span>
+<span class="n">param35</span> <span class="p">:</span>   <span class="o">+</span><span class="mf">0.0000</span><span class="o">|</span><span class="mi">0</span>  <span class="mi">0</span> <span class="mi">0000000000001010000000000100000100000001101000000000000</span> <span class="mi">01000</span> <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.5073</span>                                                         <span class="o">|</span>  <span class="o">+</span><span class="mf">1.0000</span>
+<span class="n">param36</span> <span class="p">:</span>    <span class="o">+</span><span class="mf">0.000</span><span class="o">|</span> <span class="mi">0</span> <span class="mi">000110000000000001000110000100100000100010000000000000000000</span>  <span class="mi">00</span> <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.508</span>                                                         <span class="o">|</span>   <span class="o">+</span><span class="mf">1.000</span>
+<span class="n">param37</span> <span class="p">:</span>    <span class="o">+</span><span class="mf">0.000</span><span class="o">|</span><span class="mi">0</span>   <span class="mi">0</span>   <span class="mi">00</span> <span class="mi">00000101</span> <span class="mi">00000010001000000001010010000000010000000000000100</span>    <span class="mi">0000</span>  <span class="o">+</span><span class="mf">0.579</span>                                                <span class="o">|</span>   <span class="o">+</span><span class="mf">1.000</span>
+<span class="n">param38</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>           <span class="o">+</span><span class="mf">0.1</span>  <span class="mi">0</span>     <span class="mi">0</span> <span class="mi">0000</span> <span class="mi">0</span> <span class="mi">0000000000010000000100100000000000100100000010000001</span> <span class="mi">00</span>    <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.7</span>                                    <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param39</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                             <span class="o">+</span><span class="mf">0.3</span>  <span class="mi">0</span>  <span class="mi">0000</span> <span class="mi">000010</span> <span class="mi">0000000100000100000001011000010000000010001000</span> <span class="mi">000000</span> <span class="mi">0</span>      <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.8</span>                <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param40</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                              <span class="o">+</span><span class="mf">0.4</span>  <span class="mi">0</span>    <span class="mi">0</span> <span class="mi">0</span> <span class="mi">00000</span> <span class="mi">00010000000100100010000001110010000000000000000000</span> <span class="mi">000</span> <span class="mi">0</span> <span class="mi">0</span>         <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param41</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                                     <span class="o">+</span><span class="mf">0.4</span>  <span class="mi">0</span>  <span class="mi">0</span> <span class="mi">00000000</span> <span class="mi">100000100101010000000000100000000110000000100000000000</span> <span class="mi">0</span>   <span class="mi">00</span><span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param42</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                                       <span class="o">+</span><span class="mf">0.5</span>  <span class="mi">0</span> <span class="mi">00</span> <span class="mi">00</span> <span class="mi">0</span>  <span class="mi">00</span> <span class="mi">0000000100001000100001000000010101101000000000000</span> <span class="mi">000</span>   <span class="mi">000</span><span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param43</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                                     <span class="o">+</span><span class="mf">0.4</span>  <span class="mi">0</span>    <span class="mi">000000000010000110000000000100001100001000100000000000000</span>  <span class="mi">0000</span>   <span class="mi">0</span> <span class="mi">0</span> <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param44</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                   <span class="o">+</span><span class="mf">0.3</span>  <span class="mi">0</span>      <span class="mi">0</span>   <span class="mi">0</span> <span class="mi">000000110000001000010100000000110001000010000000000000000000</span>          <span class="mi">00</span>        <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param45</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                <span class="o">+</span><span class="mf">0.2</span>  <span class="mi">0</span>        <span class="mi">000</span>   <span class="mi">000</span> <span class="mi">0</span> <span class="mi">0000001010000000001000101000000010001100000000000000</span>        <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.8</span>                        <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param46</span> <span class="p">:</span>    <span class="o">+</span><span class="mf">0.000</span><span class="o">|</span><span class="mi">0</span>          <span class="mi">0</span>   <span class="mi">0</span> <span class="mi">000</span> <span class="mi">00</span> <span class="mi">0001</span> <span class="mi">000000111000000010011000000000000000010000000</span> <span class="mi">00</span> <span class="mi">0</span>   <span class="mi">00</span>  <span class="o">+</span><span class="mf">0.625</span>                                          <span class="o">|</span>   <span class="o">+</span><span class="mf">1.000</span>
+<span class="n">param47</span> <span class="p">:</span>     <span class="o">+</span><span class="mf">0.00</span><span class="o">|</span>        <span class="mi">0</span> <span class="mi">00</span> <span class="mi">0010000000000000000101010000100000000000100100000100000000</span>  <span class="o">+</span><span class="mf">0.53</span>                                                        <span class="o">|</span>    <span class="o">+</span><span class="mf">1.00</span>
+<span class="n">param48</span> <span class="p">:</span>     <span class="o">+</span><span class="mf">0.00</span><span class="o">|</span>    <span class="mi">00</span> <span class="mi">00</span> <span class="mi">0001000000000000110000101101000000001000000</span> <span class="mi">00000</span>  <span class="mi">0</span>  <span class="mi">0</span>          <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.56</span>                                                   <span class="o">|</span>    <span class="o">+</span><span class="mf">1.00</span>
+<span class="n">param49</span> <span class="p">:</span>    <span class="o">+</span><span class="mf">0.000</span><span class="o">|</span> <span class="mi">0</span>     <span class="mi">100010000000000000000010100110000010000000000001000000</span> <span class="mi">0010</span>   <span class="mi">00</span>  <span class="o">+</span><span class="mf">0.527</span>                                                       <span class="o">|</span>   <span class="o">+</span><span class="mf">1.000</span>
+<span class="n">param50</span> <span class="p">:</span>     <span class="o">+</span><span class="mf">0.00</span><span class="o">|</span>      <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span>       <span class="mi">000000000000010000101100001100000100000000000000010000000</span> <span class="mi">10</span> <span class="mi">00</span>   <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.63</span>                                          <span class="o">|</span>    <span class="o">+</span><span class="mf">1.00</span>
+<span class="n">param51</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                  <span class="o">+</span><span class="mf">0.2</span>  <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0000</span> <span class="mi">0</span> <span class="mi">0000000100000000010000011000110001000001000000000</span> <span class="mi">000000</span>    <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.7</span>                                <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param52</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                      <span class="o">+</span><span class="mf">0.3</span>  <span class="mi">0</span> <span class="mi">00000000100000010010010000000000001000101010000000000000</span>  <span class="mi">0</span> <span class="mi">00000</span>  <span class="o">+</span><span class="mf">0.8</span>                 <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param53</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                                   <span class="o">+</span><span class="mf">0.4</span>  <span class="mi">0</span>    <span class="mi">010</span> <span class="mi">000000000100000000101011000000000010100000000000000000000</span> <span class="mi">0</span>  <span class="mi">0</span>   <span class="mi">0</span>  <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param54</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                                       <span class="o">+</span><span class="mf">0.5</span>  <span class="mi">0</span>    <span class="mi">00</span>  <span class="mi">0</span>  <span class="mi">000000011000000000001011000110000000000000000000100000</span> <span class="mi">000000</span><span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param55</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                              <span class="o">+</span><span class="mf">0.4</span>  <span class="mi">0</span>         <span class="mi">0</span>   <span class="mi">0000000000</span> <span class="mi">01000000000000010110100100100000000001000000</span> <span class="mi">0</span> <span class="mi">000</span>  <span class="mi">0</span>    <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param56</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                        <span class="o">+</span><span class="mf">0.3</span>  <span class="mi">0</span>     <span class="mi">0</span>   <span class="mi">00</span>  <span class="mi">00</span> <span class="mi">010000010010100000000001100110100000000000000000000000000</span>  <span class="mi">00</span> <span class="mi">00</span>   <span class="mi">0</span>   <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param57</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                     <span class="o">+</span><span class="mf">0.3</span>  <span class="mi">0000100000000000000111000000010010000000110000000000100000000</span> <span class="mi">0</span> <span class="mi">00</span> <span class="mi">0</span>     <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.9</span>           <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param58</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>               <span class="o">+</span><span class="mf">0.2</span>  <span class="mi">0</span>        <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0000000000000010000011010010011000000000010000000</span> <span class="mi">000</span> <span class="mi">00</span> <span class="mi">0</span>   <span class="mi">00</span>  <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.7</span>                            <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param59</span> <span class="p">:</span>     <span class="o">+</span><span class="mf">0.00</span><span class="o">|</span>         <span class="mi">00</span>   <span class="mi">00</span> <span class="mi">00000000000110000001000000001100000001001000100000000000</span> <span class="mi">00001</span> <span class="mi">0</span>     <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.64</span>                                        <span class="o">|</span>    <span class="o">+</span><span class="mf">1.00</span>
+<span class="n">param60</span> <span class="p">:</span>     <span class="o">+</span><span class="mf">0.00</span><span class="o">|</span>  <span class="mi">0</span>  <span class="mi">00</span> <span class="mi">0000</span> <span class="mi">0</span> <span class="mi">000000100110111000000000010000001000010000000</span> <span class="mi">0000</span>  <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.50</span>                                                           <span class="o">|</span>    <span class="o">+</span><span class="mf">1.00</span>
+<span class="n">param61</span> <span class="p">:</span>    <span class="o">+</span><span class="mf">0.000</span><span class="o">|</span> <span class="mi">000000000000000000001010000000000010010010010010000000000000</span> <span class="mi">00</span> <span class="mi">0</span> <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.507</span>                                                          <span class="o">|</span>   <span class="o">+</span><span class="mf">1.000</span>
+<span class="n">param62</span> <span class="p">:</span>    <span class="o">+</span><span class="mf">0.000</span><span class="o">|</span><span class="mi">0</span>       <span class="mi">00</span>  <span class="mi">100000010010000001000010000000001000000000000101000000</span> <span class="mi">1</span> <span class="mi">0</span> <span class="mi">0</span>                     <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.700</span>                                <span class="o">|</span>   <span class="o">+</span><span class="mf">1.000</span>
+<span class="n">param63</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>         <span class="o">+</span><span class="mf">0.1</span>  <span class="mi">0</span>   <span class="mi">0000</span>     <span class="mi">000000000000000000000000100101011011000000000000100</span> <span class="mi">00</span> <span class="mi">00</span>  <span class="mi">0</span>  <span class="mi">0</span>   <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.7</span>                                 <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param64</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                <span class="o">+</span><span class="mf">0.3</span>  <span class="mi">0</span>  <span class="mi">00</span> <span class="mi">000000000000000000110000010110000100001000000001</span> <span class="mi">01</span> <span class="mi">000000</span>       <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.8</span>                  <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param65</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                       <span class="o">+</span><span class="mf">0.3</span>  <span class="mi">0</span>       <span class="mi">0101</span> <span class="mi">0000000000001000001000000100001000000100001000000000000</span> <span class="mi">0</span>  <span class="mi">00</span> <span class="mi">0</span>  <span class="mi">00</span>         <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param66</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                                       <span class="o">+</span><span class="mf">0.5</span>  <span class="mi">0</span> <span class="mi">000000</span> <span class="mi">0</span> <span class="mi">00000000100000001000000100100000000000000100000</span> <span class="mi">0100000</span>   <span class="mi">00</span>  <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param67</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                                            <span class="o">+</span><span class="mf">0.5</span>  <span class="mi">00</span>  <span class="mi">0000</span>  <span class="mi">0000001001000000000011000000100000010000000001100000</span> <span class="mi">01</span>   <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param68</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                                       <span class="o">+</span><span class="mf">0.5</span>  <span class="mi">0</span>  <span class="mi">000</span> <span class="mi">0000000000000000100010100000100001101001000010000000</span> <span class="mi">0</span> <span class="mi">00</span>  <span class="mi">00</span> <span class="mi">0</span>   <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param69</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                       <span class="o">+</span><span class="mf">0.3</span>  <span class="mi">0</span>    <span class="mi">00</span> <span class="mi">0</span>   <span class="mi">00</span> <span class="mi">00100000000000000001000000001101000100001000010000000000</span> <span class="mi">0</span>         <span class="mi">0</span>      <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param70</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                              <span class="o">+</span><span class="mf">0.3</span>  <span class="mi">0</span>   <span class="mi">0</span> <span class="mi">000000010</span> <span class="mi">10000010100000000011000010110000000000000</span> <span class="mi">000</span>  <span class="mi">000</span>  <span class="o">+</span><span class="mf">0.8</span>                          <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param71</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>       <span class="o">+</span><span class="mf">0.1</span>  <span class="mi">0</span> <span class="mi">0000</span> <span class="mi">0</span> <span class="mi">0</span>  <span class="mi">0</span> <span class="mi">1010</span> <span class="mi">000000000000000110000100100010100000000001</span> <span class="mi">00000</span> <span class="mi">00</span> <span class="mi">0</span>  <span class="mi">0</span> <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.7</span>                                      <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param72</span> <span class="p">:</span>     <span class="o">+</span><span class="mf">0.00</span><span class="o">|</span>    <span class="mi">0</span>  <span class="mi">000</span> <span class="mi">00000100000000001000110001000000010100000000001000000</span> <span class="mi">0000</span>  <span class="mi">0</span>  <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.55</span>                                                    <span class="o">|</span>    <span class="o">+</span><span class="mf">1.00</span>
+<span class="n">param73</span> <span class="p">:</span>    <span class="o">+</span><span class="mf">0.000</span><span class="o">|</span><span class="mi">0</span> <span class="mi">00000000000000000000010010010000011010000010000000000000</span> <span class="mi">000</span> <span class="mi">000</span>      <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.540</span>                                                     <span class="o">|</span>   <span class="o">+</span><span class="mf">1.000</span>
+<span class="n">param74</span> <span class="p">:</span>     <span class="o">+</span><span class="mf">0.00</span><span class="o">|</span>  <span class="mi">0</span> <span class="mi">000</span>  <span class="mi">000</span> <span class="mi">0000100010000001000000101010000000001010001000000000</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">00</span>     <span class="mi">0</span>   <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.61</span>                                             <span class="o">|</span>    <span class="o">+</span><span class="mf">1.00</span>
+<span class="n">param75</span> <span class="p">:</span>     <span class="o">+</span><span class="mf">0.00</span><span class="o">|</span>         <span class="mi">0</span>  <span class="mi">0000010</span>  <span class="mi">00001000100010001010001010000000000000000000010000</span> <span class="mi">000</span>   <span class="mi">0</span>     <span class="mi">0</span>    <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.67</span>                                     <span class="o">|</span>    <span class="o">+</span><span class="mf">1.00</span>
+<span class="n">param76</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>          <span class="o">+</span><span class="mf">0.1</span>  <span class="mi">0</span>     <span class="mi">0</span>   <span class="mi">0</span> <span class="mi">0</span>  <span class="mi">00000000100100000000010110100000010010000100000000000</span> <span class="mi">000000</span>  <span class="o">+</span><span class="mf">0.7</span>                                     <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param77</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                       <span class="o">+</span><span class="mf">0.3</span>  <span class="mi">000</span>      <span class="mi">001000100000010000000100000010000010001000000000</span> <span class="mi">0</span> <span class="mi">00</span>  <span class="mi">0</span>  <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.8</span>               <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param78</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                      <span class="o">+</span><span class="mf">0.3</span>  <span class="mi">0</span>  <span class="mi">0</span> <span class="mi">0</span>    <span class="mi">0</span>   <span class="mi">0</span>  <span class="mi">0</span> <span class="mi">00000000010000000000011000001101010000010000000000000000000</span> <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.9</span>    <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param79</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                                     <span class="o">+</span><span class="mf">0.4</span>  <span class="mi">0</span>  <span class="mi">00</span>  <span class="mi">00</span> <span class="mi">0100</span> <span class="mi">01100000000000000001000000000100010000000010001000</span> <span class="mi">0</span> <span class="mi">00</span> <span class="mi">0</span> <span class="mi">1</span> <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param80</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                                          <span class="o">+</span><span class="mf">0.5</span>  <span class="mi">00</span>   <span class="mi">000000000010001011000000000000001010100100000000000000010000</span>   <span class="mi">0</span> <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param81</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                               <span class="o">+</span><span class="mf">0.4</span>  <span class="mi">0</span> <span class="mi">0</span>   <span class="mi">0000000</span>  <span class="mi">0000000000100001010001100000100000000000000000</span> <span class="mi">11000</span> <span class="mi">0000</span>         <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param82</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                      <span class="o">+</span><span class="mf">0.3</span>  <span class="mi">0</span> <span class="mi">00</span>  <span class="mi">0000000000001010010000001000100000001000000000000010000</span> <span class="mi">0</span>   <span class="mi">1</span> <span class="mi">00</span>  <span class="o">+</span><span class="mf">0.9</span>              <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param83</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                <span class="o">+</span><span class="mf">0.2</span>  <span class="mi">0</span>   <span class="mi">0</span> <span class="mi">000</span> <span class="mi">000000000000000001010100010100100000000000000000</span> <span class="mi">01</span> <span class="mi">001000</span>  <span class="mi">000</span>  <span class="mi">0</span>     <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.8</span>                        <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param84</span> <span class="p">:</span>     <span class="o">+</span><span class="mf">0.00</span><span class="o">|</span>  <span class="mi">0</span>            <span class="mi">0</span> <span class="mi">00</span>  <span class="mi">00101000000000001000000001000011000100000000001100</span>  <span class="mi">0000</span> <span class="mi">000</span>  <span class="mi">0</span>    <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.66</span>                                      <span class="o">|</span>    <span class="o">+</span><span class="mf">1.00</span>
+<span class="n">param85</span> <span class="p">:</span>    <span class="o">+</span><span class="mf">0.000</span><span class="o">|</span><span class="mi">0</span>  <span class="mi">00000000000000100010001001001010000000000010010000000000</span> <span class="mi">0</span> <span class="mi">0</span>  <span class="mi">00</span>    <span class="mi">0</span> <span class="mi">0</span>         <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.622</span>                                          <span class="o">|</span>   <span class="o">+</span><span class="mf">1.000</span>
+<span class="n">param86</span> <span class="p">:</span>    <span class="o">+</span><span class="mf">0.000</span><span class="o">|</span><span class="mi">000</span> <span class="mi">10</span> <span class="mi">0000000100100000000000100001010100000100000000100000000</span> <span class="mi">0</span> <span class="mi">00</span>       <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.556</span>                                                   <span class="o">|</span>   <span class="o">+</span><span class="mf">1.000</span>
+<span class="n">param87</span> <span class="p">:</span>     <span class="o">+</span><span class="mf">0.00</span><span class="o">|</span>  <span class="mi">0</span>    <span class="mi">0</span> <span class="mi">000</span> <span class="mi">0001000000000000001111101100000010000000000000000000</span>  <span class="mi">00000</span> <span class="mi">0</span>   <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.58</span>                                                 <span class="o">|</span>    <span class="o">+</span><span class="mf">1.00</span>
+<span class="n">param88</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>          <span class="o">+</span><span class="mf">0.1</span>  <span class="mi">0</span>  <span class="mi">0</span> <span class="mi">00000000000000000110000000011101010001000000000000</span> <span class="mi">000000</span>   <span class="mi">00</span> <span class="mi">0</span>  <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.7</span>                                        <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param89</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                           <span class="o">+</span><span class="mf">0.2</span>  <span class="mi">0000</span> <span class="mi">0000000000000000001000100001111010000000000001000000000</span> <span class="mi">00</span>  <span class="mi">0</span> <span class="mi">0</span>  <span class="mi">0</span> <span class="mi">00</span>        <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.9</span>            <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param90</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                         <span class="o">+</span><span class="mf">0.4</span>  <span class="mi">00</span>   <span class="mi">0</span>  <span class="mi">00</span> <span class="mi">0000</span> <span class="mi">0000000010100000000101000110000000000100000110000000</span>   <span class="mi">0</span> <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.9</span>       <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param91</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                         <span class="o">+</span><span class="mf">0.4</span>  <span class="mi">0</span>            <span class="mi">0</span>   <span class="mi">0</span> <span class="mi">0000000000110000101000000110000001000000000000000000000000</span> <span class="mi">0</span>   <span class="mi">0</span> <span class="mi">0</span>  <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param92</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                                         <span class="o">+</span><span class="mf">0.5</span>  <span class="mi">000</span> <span class="mi">00</span> <span class="mi">000000</span> <span class="mi">0000000000001001010000000000011100000010001000</span> <span class="mi">00</span> <span class="mi">0</span>   <span class="mi">10</span> <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param93</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                                              <span class="o">+</span><span class="mf">0.5</span>  <span class="mi">00</span> <span class="mi">000</span> <span class="mi">00000001000001000010000101100000000001001010000000000</span>      <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param94</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                              <span class="o">+</span><span class="mf">0.4</span>  <span class="mi">0</span> <span class="mi">00</span> <span class="mi">0010000000010000000010100000100101011000000000000000000</span>  <span class="mi">0</span> <span class="mi">000</span>      <span class="mi">0</span>        <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param95</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                          <span class="o">+</span><span class="mf">0.2</span>  <span class="mi">0</span> <span class="mi">0</span>   <span class="mi">00</span>   <span class="mi">100010000000000000001000011000000101010000000100</span> <span class="mi">000</span> <span class="mi">00</span> <span class="mi">000</span> <span class="mi">0</span>   <span class="mi">0</span>           <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.9</span>        <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param96</span> <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>         <span class="o">+</span><span class="mf">0.1</span>  <span class="mi">0</span>    <span class="mi">00</span>  <span class="mi">00000000100000000000000001000011000101010010000000000000000</span> <span class="mi">00</span>       <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.7</span>                                  <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param97</span> <span class="p">:</span>    <span class="o">+</span><span class="mf">0.000</span><span class="o">|</span><span class="mi">0</span>     <span class="mi">0</span> <span class="mi">0</span>  <span class="mi">0</span> <span class="mi">000010000100100010001001000000000000000000100000000000001000010</span> <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.580</span>                                                <span class="o">|</span>   <span class="o">+</span><span class="mf">1.000</span>
+<span class="n">param98</span> <span class="p">:</span>     <span class="o">+</span><span class="mf">0.00</span><span class="o">|</span> <span class="mi">0</span>   <span class="mi">00</span>  <span class="mi">0010000000001000000011000010000101000000100000</span> <span class="mi">000000</span> <span class="mi">0</span>  <span class="mi">00</span> <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.52</span>                                                         <span class="o">|</span>    <span class="o">+</span><span class="mf">1.00</span>
+<span class="n">param99</span> <span class="p">:</span>     <span class="o">+</span><span class="mf">0.00</span><span class="o">|</span>  <span class="mi">0</span>   <span class="mi">00000000000000000100001001011001100100000000000000</span> <span class="mi">000000</span> <span class="mi">0</span>  <span class="mi">00</span> <span class="mi">0</span> <span class="mi">00000</span>  <span class="o">+</span><span class="mf">0.57</span>                                                  <span class="o">|</span>    <span class="o">+</span><span class="mf">1.00</span>
+<span class="n">param100</span><span class="p">:</span>     <span class="o">+</span><span class="mf">0.00</span><span class="o">|</span>  <span class="mi">0</span>      <span class="mi">0</span> <span class="mi">0</span> <span class="mi">01</span>  <span class="mi">0000000000100000010000010100010100000001000100000000000</span> <span class="mi">00</span> <span class="mi">0</span>     <span class="mi">0</span>       <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.67</span>                                    <span class="o">|</span>    <span class="o">+</span><span class="mf">1.00</span>
+</pre></div>
+</div>
+<p>The integral is given as:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">logZ</span> <span class="o">=</span> <span class="mf">1.043</span> <span class="o">+-</span> <span class="mf">0.846</span>
+  <span class="n">single</span> <span class="n">instance</span><span class="p">:</span> <span class="n">logZ</span> <span class="o">=</span> <span class="mf">1.043</span> <span class="o">+-</span> <span class="mf">0.458</span>
+  <span class="n">bootstrapped</span>   <span class="p">:</span> <span class="n">logZ</span> <span class="o">=</span> <span class="mf">1.084</span> <span class="o">+-</span> <span class="mf">0.743</span>
+  <span class="n">tail</span>           <span class="p">:</span> <span class="n">logZ</span> <span class="o">=</span> <span class="o">+-</span> <span class="mf">0.405</span>
+</pre></div>
+</div>
+<p>This result is close to the analytic value (0) on infinite bounds
+(the prior boundaries slightly increase the result).</p>
+<p>We can test whether the slice sampler is good enough by halving
+<code class="docutils literal notranslate"><span class="pre">slice_steps</span></code>. the logZ estimate should ideally be consistent.</p>
+</div>
+<div class="section" id="using-multiple-cores">
+<h2>Using multiple cores<a class="headerlink" href="#using-multiple-cores" title="Permalink to this headline">¶</a></h2>
+<p>Depending on your numpy installation, this may already use multiple CPUs.
+You can control this with the OMP_NUM_THREADS environment variable:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># avoid automatic parallelisation</span>
+<span class="nb">export</span> <span class="nv">OMP_NUM_THREADS</span><span class="o">=</span><span class="m">1</span>
+</pre></div>
+</div>
+<p>You can parallelise the program with MPI. No code changes are required.
+You need to install MPI (for example, OpenMPI) and mpi4py (pip install mpi4py).
+Then run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mpiexec -np <span class="m">4</span> python3 gauss.py --x_dim<span class="o">=</span><span class="m">100</span> --num_live_points<span class="o">=</span><span class="m">400</span> --slice  --slice_steps<span class="o">=</span><span class="m">100</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="more-features">
+<h2>More features<a class="headerlink" href="#more-features" title="Permalink to this headline">¶</a></h2>
+<p>To find more features such as …</p>
+<ul class="simple">
+<li><p>Circular/wrapped parameter spaces</p></li>
+<li><p>Model comparison of empirical and physical models</p></li>
+<li><p>Quantifying posterior uncertainty</p></li>
+<li><p>Using in a Jupyter notebook</p></li>
+</ul>
+<p>… see the tutorials!</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="modules.html" class="btn btn-neutral float-right" title="API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="usage-spectral-line.html" class="btn btn-neutral float-left" title="Basic usage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014-2019, Johannes Buchner
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

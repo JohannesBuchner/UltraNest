@@ -1,0 +1,379 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>UltraNest &mdash; UltraNest 2.0.0 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="_static/icon.ico"/>
+  
+  
+  
+    <link rel="canonical" href="https://johannesbuchner.github.io/UltraNest/readme.html"/>
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation" href="installation.html" />
+    <link rel="prev" title="Welcome to UltraNest’s documentation!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> UltraNest
+          
+
+          
+            
+            <img src="_static/logo.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">UltraNest</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#about">About</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#features">Features</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#todo">TODO</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#usage">Usage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#licence">Licence</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="method.html">How it works</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage-spectral-line.html">Basic usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="performance.html">Tour of the features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="issues.html">Frequently Asked Questions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="history.html">Release Notes</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="example-sine-line.html">Time series fitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-sine-modelcomparison.html">Model comparison</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-sine-highd.html">Higher-dimensional fitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-intrinsic-distribution.html">Tutorial: intrinsic distribution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-line.html">Tutorial: fitting a line</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-outliers.html">Tutorial: distribution with outliers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-sine-bayesian-workflow.html">Bayesian workflow</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">UltraNest</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content style-external-links">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>UltraNest</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/readme.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="ultranest">
+<h1>UltraNest<a class="headerlink" href="#ultranest" title="Permalink to this headline">¶</a></h1>
+<p>Fit and compare complex models reliably and rapidly with advanced sampling techniques.</p>
+<a class="reference external image-reference" href="https://pypi.python.org/pypi/ultranest"><img alt="https://img.shields.io/pypi/v/ultranest.svg" src="https://img.shields.io/pypi/v/ultranest.svg" /></a>
+<a class="reference external image-reference" href="https://travis-ci.org/JohannesBuchner/ultranest"><img alt="https://img.shields.io/travis/JohannesBuchner/ultranest.svg" src="https://img.shields.io/travis/JohannesBuchner/ultranest.svg" /></a>
+<a class="reference external image-reference" href="https://ultranest.readthedocs.io/en/latest/?badge=latest"><img alt="Documentation Status" src="https://readthedocs.org/projects/ultranest/badge/?version=latest" /></a>
+<p>Correctness. Speed. Ease of use. 🦔</p>
+<div class="section" id="about">
+<h2>About<a class="headerlink" href="#about" title="Permalink to this headline">¶</a></h2>
+<p>When scientific models are compared to data, two tasks are important:
+1) contraining the model parameters and 2) comparing the model to other models.
+Different techniques have been developed to explore model parameter spaces.
+This package implements a Monte Carlo technique called nested sampling.</p>
+<p><strong>Nested sampling</strong> allows Bayesian inference on arbitrary user-defined likelihoods.
+In particular, posterior probability distributions on model parameters
+are constructed, and the marginal likelihood (“evidence”) Z is computed.
+The former can be used to describe the parameter constraints of the data,
+the latter can be used for model comparison (via <cite>Bayes factors</cite>)
+as a measure of the prediction parsimony of a model.</p>
+<p>In the last decade, multiple variants of nested sampling have been
+developed. These differ in how nested sampling finds better and
+better fits while respecting the priors
+(constrained likelihood prior sampling techniques), and whether it is
+allowed to go back to worse fits and explore the parameter space more.</p>
+<p>This package develops novel, advanced techniques for both (See How it works).
+They are especially remarkable for being free of tuning parameters
+and theoretically justified. Beyond that, UltraNest has support for
+Big Data sets and high-performance computing applications.</p>
+<p>UltraNest is intended for fitting complex physical models with slow
+likelihood evaluations, with one to hundreds of parameters.
+UltraNest intends to replace heuristic methods like multi-ellipsoid
+nested sampling and dynamic nested sampling with more rigorous methods.
+UltraNest also attempts to provide feature parity compared to other packages
+(such as MultiNest).</p>
+<p>However, UltraNest is still in beta. You can help by
+testing it and reporting issues. Code contributions for fixes and
+new features are also welcome. See :contributing:.</p>
+</div>
+<div class="section" id="features">
+<h2>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>Pythonic</p>
+<ul>
+<li><p>pip installable</p></li>
+<li><p>Easy to program for: Sanity checks with meaningful errors</p></li>
+<li><p>Can control the run programmatically and check status</p></li>
+<li><p>Reasonable defaults, but customizable</p></li>
+<li><p>Thoroughly tested with many unit and integration tests</p></li>
+</ul>
+</li>
+<li><p>Robust exploration easily handles:</p>
+<ul>
+<li><p>Degenerate parameter spaces such as bananas or tight correlations</p></li>
+<li><p>Multiple modes/solutions in the parameter space</p></li>
+<li><p>Robust, parameter-free MLFriends algorithm
+(metric learning RadFriends, Buchner+14,+19), with new improvements
+(region follows new live points, clustering improves metric iteratively).</p></li>
+<li><p>High-dimensional problems with slice sampling (or ellipsoidal sampling, FlatNUTS, etc.),
+inside region.</p></li>
+<li><p>Wrapped/circular parameters, derived parameters</p></li>
+<li><p>Fast-slow parameters</p></li>
+</ul>
+</li>
+<li><p>strategic nested sampling</p>
+<ul>
+<li><p>can vary (increase) number of live points (akin to dynamic nested sampling, but with different targets)</p></li>
+<li><p>can sample clusters optimally (e.g., at least 50 points per cluster/mode/solution)</p></li>
+<li><p>can target minimizing parameter estimation uncertainties</p></li>
+<li><p>can target a desired evidence uncertainty threshold</p></li>
+<li><p>can target a desired number of effective samples</p></li>
+<li><p>or any combination of the above</p></li>
+<li><p>Robust ln(Z) uncertainties by bootstrapping live points.</p></li>
+</ul>
+</li>
+<li><p>Lightweight and fast</p>
+<ul>
+<li><p>some functions implemented in Cython</p></li>
+<li><p>vectorized likelihood function calls</p></li>
+<li><p>Use multiple cores, fully parallelizable from laptops to clusters</p></li>
+<li><p>MPI support</p></li>
+</ul>
+</li>
+<li><p>Advanced visualisation and crash recovery:</p>
+<ul>
+<li><p>Checkpointing and resuming, even with different number of live points</p></li>
+<li><p>Run-time visualisations and exploration information</p></li>
+<li><p>Corner plots, run and parameter exploration diagnostic plots</p></li>
+</ul>
+</li>
+</ul>
+<div class="section" id="todo">
+<h3>TODO<a class="headerlink" href="#todo" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><p>Documentation:</p>
+<ul>
+<li><p>Example power law fit</p></li>
+<li><p>Example spectral line fit, white and GP</p></li>
+<li><p>Example low-d Bayesian GP emulator as pre-filter to model evaluation</p></li>
+<li><p>Example verifying integration with VB+IS</p></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="usage">
+<h3>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h3>
+<p>Read the full documentation at:</p>
+<p><a class="reference external" href="https://johannesbuchner.github.io/UltraNest/">https://johannesbuchner.github.io/UltraNest/</a></p>
+</div>
+<div class="section" id="licence">
+<h3>Licence<a class="headerlink" href="#licence" title="Permalink to this headline">¶</a></h3>
+<p>GPLv3 (see LICENCE file). If you require another license, please contact me.</p>
+<p>Icon made by <a class="reference external" href="https://www.flaticon.com/authors/freepik">Freepik</a>.</p>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="installation.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to UltraNest’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014-2019, Johannes Buchner
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

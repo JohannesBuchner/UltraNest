@@ -1,0 +1,382 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>How it works &mdash; UltraNest 2.0.0 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="_static/icon.ico"/>
+  
+  
+  
+    <link rel="canonical" href="https://johannesbuchner.github.io/UltraNest/method.html"/>
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Basic usage" href="usage-spectral-line.html" />
+    <link rel="prev" title="Installation" href="installation.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> UltraNest
+          
+
+          
+            
+            <img src="_static/logo.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="readme.html">UltraNest</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">How it works</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#literature">Literature</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#code-concepts">Code Concepts</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="usage-spectral-line.html">Basic usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="performance.html">Tour of the features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="issues.html">Frequently Asked Questions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="history.html">Release Notes</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="example-sine-line.html">Time series fitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-sine-modelcomparison.html">Model comparison</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-sine-highd.html">Higher-dimensional fitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-intrinsic-distribution.html">Tutorial: intrinsic distribution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-line.html">Tutorial: fitting a line</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-outliers.html">Tutorial: distribution with outliers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-sine-bayesian-workflow.html">Bayesian workflow</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">UltraNest</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content style-external-links">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>How it works</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/method.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="how-it-works">
+<h1>How it works<a class="headerlink" href="#how-it-works" title="Permalink to this headline">¶</a></h1>
+<p>UltraNest combines several methods, and will be described in detail
+in a future paper.</p>
+<p>The animation below gives an idea how the algorithm proceeds through visualisation.
+Choose different 2d target distributions to explore, and compare to a
+simple MCMC algorithm.</p>
+<iframe src="_static/mcmc-demo/app.html" style="width:100%; height:400px;"></iframe><ol class="arabic simple">
+<li><p>Initially, points are drawn from the entire parameter space (green) according to the prior.</p></li>
+<li><p>The lowest of these live point (worst fit) is removed, and a better one sought.
+At each removal, the volume sampled by the live point shrinks by a constant
+factor.</p></li>
+<li><p>To still sample from the prior, MLFriends creates ellipsoids around all
+live points and samples from them. The ellipsoid size is determined
+by bootstrapping: Some points are randomly left out, and the ellipsoids
+have to be large enough so that they could have been sampled. This is
+repeated several times. In UltraNest, the ellipsoid shape is learnt
+as well.</p></li>
+<li><p>Nested sampling proceeds to the peak, keeping track of the likelihood.
+The volume becomes smaller and smaller. At some point, the remainder
+does not contribute any probability mass, and the exploration is finished.</p></li>
+<li><p>The removed points are weighted by their likelihood and the volume they
+represent. These are the posterior samples (histograms).</p></li>
+</ol>
+<p>The sampling can become inefficient, for example for high-dimensional
+problems. UltraNest provides MCMC-based methods to find a new point.</p>
+<p>The animation is based on work by Chi Feng <a class="reference external" href="https://chi-feng.github.io/mcmc-demo/">https://chi-feng.github.io/mcmc-demo/</a>
+and is MIT licenced. The RadFriends implementation was contributed by Johannes Buchner.</p>
+<div class="section" id="literature">
+<h2>Literature<a class="headerlink" href="#literature" title="Permalink to this headline">¶</a></h2>
+<p>On the theory behind nested sampling:</p>
+<ul class="simple">
+<li><p>Skilling, J. (2004): Nested sampling</p></li>
+<li><p>Chopin, N. &amp; Robert, C. (2008): Properties of Nested Sampling</p></li>
+<li><p>Evans, M. (2007): Discussion of nested sampling for Bayesian computations by John Skilling</p></li>
+<li><p>Skilling, J. (2009): Nested sampling’s convergence</p></li>
+<li><p>Walter, C. (2014): Point Process-based Monte Carlo estimation</p></li>
+</ul>
+<p>For an introduction of constrained-likelihood prior sampling methods and verification:</p>
+<ul class="simple">
+<li><p>Buchner, J. (2014): A statistical test for Nested Sampling algorithms</p></li>
+<li><p>Higson, E.; Handley, W.; Hobson, M. &amp; Lasenby, A. (2019) NESTCHECK: diagnostic tests for nested sampling calculations</p></li>
+</ul>
+<p>On analysing many data sets:</p>
+<ul class="simple">
+<li><p>Buchner, J. (2019): Collaborative Nested Sampling: Big Data versus Complex Physical Models</p></li>
+</ul>
+</div>
+<div class="section" id="code-concepts">
+<h2>Code Concepts<a class="headerlink" href="#code-concepts" title="Permalink to this headline">¶</a></h2>
+<p>This content gives some hints for those who want to dive into the codebase.</p>
+<p>UltraNest maps four spaces:</p>
+<ul class="simple">
+<li><p>u: The unit cube space</p></li>
+<li><p>t: A affine projection of the unit cube space (called transformLayer)</p></li>
+<li><p>p: The physical parameter space</p></li>
+<li><p>L/logl: Likelihood values</p></li>
+</ul>
+<p>The transformations are made as follows:</p>
+<ul class="simple">
+<li><p>unit cube &lt;-&gt; transformLayer space: region.transformLayer.transform() and untransform()</p></li>
+<li><p>unit cube -&gt; physical parameter space: user-provided prior transform function</p></li>
+<li><p>physical parameter space -&gt; likelihood values: user-provided likelihood function</p></li>
+</ul>
+<p>The tree-based concept envisions the full prior volume as the root of a tree.
+Branches indicate divisions. The first children of the tree root are
+sampled directly from the prior, and are called <em>roots</em> in the code (although
+they are the first branches).</p>
+<p>The nested sampling algorithm is a breadth-first search of this tree,
+with nodes expanded as needed. Replacements of a node by its children
+is a nested sampling shrinkage. When children are added to nodes is
+driven by software agents. These agents can optimize for various strategies.</p>
+<p>Four strategies are implemented. They can be independently activated by the user:</p>
+<ul class="simple">
+<li><p>Obtain a logz error below a threshold (<em>dlogz</em>)</p></li>
+<li><p>Obtain a certain number of effective samples (<em>min_ess</em>)</p></li>
+<li><p>Keep a certain number of live points (width of tree) per cluster (<em>cluster_num_live_points</em>).</p></li>
+<li><p>Obtain a posterior uncertainty below a threshold (<em>dKL</em>).</p></li>
+</ul>
+<p>The breadth-first search starts with the <em>roots</em>. Additionally,
+alternative breadth-first searches with some <em>roots</em> left out
+(bootstrapping) is simulated simultaneously. The breadth-first search
+computes logz and adds uncertainty contributions from:</p>
+<ul class="simple">
+<li><p>The limited shrinkage estimate (information H)</p></li>
+<li><p>The bootstraps (simulating alternative, repeated nested sampling runs)</p></li>
+<li><p>The noise in shrinkage estimates (by sampling it a binomial distribution in each bootstrap realisation)</p></li>
+</ul>
+<p>The combination makes UltraNest’s logz uncertainties very reliable.</p>
+<p>MLFriends (2019 paper) is a substantial improvement upon the original RadFriends algorithm (2014 paper).
+RadFriends obtains regions by leaving some points out, and testing how
+large spheres around the live points have to be to be able to recover them.
+This bootstrapping is repeated many times (bootstrapping), to be robust.
+This way, RadFriends learns automatically about multiple modes.
+RadFriends is slow, because it does not learn the relative sizes of different parameters,
+nor the correlation between them. MLFriends (2019 paper) improves by obtaining the covariance
+of the live points, and thus uses a Mahalanobis distance.
+This learned metric helps reduce the region, and accelerates sampling.
+At the same time, MLFriends provides natural agglomerate clustering – points within each others
+ellipsoids belong to the same cluster.</p>
+<p>UltraNest improves MLFriends further by iteratively
+1) using metric for getting MLFriends ellipsoid radius
+2) using radius to identify clusters.
+3) shift clusters on top of each other and learn a new metric.
+Another improvement is that in MPI-parallelised runs, UltraNest
+distributes the RadFriends bootstraps. This makes clustering very fast
+(MultiNest has to stop for clustering on the master).</p>
+<p>UltraNest also adds a enveloping ellipsoid. This can help in
+mono-modal gaussian problems. Contrary to Mukherjee, Parkinson &amp; Liddle (2006),
+the ellipsoid enlargement is learned by bootstrapping, and is thus robust and
+well-justified. Both regions are used as filters.
+UltraNest samples in four region sampling schemes:</p>
+<ul class="simple">
+<li><p>Sample from unit cube, filter with MLFriends &amp; ellipsoid</p></li>
+<li><p>Sample from MLFriends points, filter with unit cube &amp; ellipsoid</p></li>
+<li><p>Sample from MLFriends region bounding box, filter with unit cube &amp; ellipsoid</p></li>
+<li><p>Sample from ellipsoid, filter with unit cube &amp; MLFriends region</p></li>
+</ul>
+<p>UltraNest switches between these methods when the current on becomes inefficient.
+Efficiency here means being able to draw points, not whether they are
+above the likelihood contour.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="usage-spectral-line.html" class="btn btn-neutral float-right" title="Basic usage" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014-2019, Johannes Buchner
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

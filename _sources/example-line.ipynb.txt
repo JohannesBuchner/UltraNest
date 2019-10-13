@@ -1,0 +1,689 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Tutorial: fitting a line\n",
+    "\n",
+    "In this tutorial you will learn:\n",
+    "\n",
+    " - How to fit a line to data with error bars\n",
+    " - How to obtain the intrinsic scatter and its uncertainties\n",
+    " - How to quantify the numerical error of the sampling\n",
+    " - How to compare empirical models\n",
+    "\n",
+    "\n",
+    "Lets say we want to fit a line to some data points.\n",
+    "\n",
+    "Here is our data: measurements of three observables (The bulge mass of galaxies, the velocity dispersion and the mass of the black hole."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import numpy as np\n",
+    "# Black hole data from Kormendy & Ho (2014) https://arxiv.org/abs/1304.7762 https://arxiv.org/abs/1308.6483\n",
+    "# Bulge mass and error (log Msun)\n",
+    "mB = np.array([9.05, 11.84, 11.27, 10.65, 11.5, 11.74, 11.33, 10.26, 11.06, 11.61, 10.5, 10.91, 11.26, 11.01, 11.77, 11.65, 10.85, 11.62, 11.51, 10.88, 11.84, 10.85, 11.72, 9.64, 11.64, 10.97, 11.16, 12.09, 11.28, 11.05, 11.65, 11.6, 11.0, 10.57, 11.69, 11.25, 11.61, 11.65, 11.75, 11.6, 11.81, 11.78])\n",
+    "mBerr = np.array([0.1, 0.09, 0.09, 0.09, 0.09, 0.09, 0.09, 0.09, 0.09, 0.09, 0.09, 0.09, 0.09, 0.09, 0.09, 0.09, 0.09, 0.09, 0.09, 0.09, 0.09, 0.09, 0.09, 0.1, 0.09, 0.09, 0.09, 0.09, 0.09, 0.09, 0.09, 0.09, 0.09, 0.09, 0.09, 0.09, 0.1, 0.09, 0.09, 0.09, 0.1, 0.09])\n",
+    "# Black hole mass, errors, and magnitude\n",
+    "mBH = np.log10([2.45e+06, 1.69e+08, 1.47e+09, 5.90e+08, 8.81e+08, 4.65e+09, 3.87e+09,\n",
+    " 1.45e+07, 1.08e+07, 3.72e+09, 1.78e+08, 4.16e+08, 1.37e+08, 4.65e+08,\n",
+    " 9.09e+09, 5.29e+08, 9.78e+08, 9.25e+08, 1.30e+07, 6.96e+07, 2.54e+09,\n",
+    " 9.00e+07, 6.15e+09, 6.00e+08, 4.72e+09, 2.02e+08, 1.71e+09, 2.08e+10,\n",
+    " 8.55e+08, 5.69e+07, 4.75e+09, 3.69e+09, 2.73e+08, 4.87e+08, 3.74e+09,\n",
+    " 2.10e+09, 3.96e+08, 2.30e+09, 1.34e+09, 2.48e+09, 3.74e+09, 1.30e+09])\n",
+    "mBHlo = np.log10([1.43e+06, 1.39e+08, 1.27e+09, 5.39e+08, 4.35e+08, 4.24e+09, 3.16e+09,\n",
+    " 0.10e+07, 1.03e+07, 3.21e+09, 8.50e+07, 3.12e+08, 9.00e+07, 3.66e+08,\n",
+    " 6.28e+09, 4.21e+08, 6.70e+08, 8.38e+08, 0.10e+07, 5.62e+07, 2.44e+09,\n",
+    " 4.50e+07, 5.78e+09, 4.00e+08, 3.67e+09, 1.52e+08, 1.52e+09, 4.90e+09,\n",
+    " 4.07e+08, 4.65e+07, 2.81e+09, 2.65e+09, 1.94e+08, 3.34e+08, 2.59e+09,\n",
+    " 2.00e+09, 2.40e+08, 2.19e+09, 9.30e+08, 2.29e+09, 3.22e+09, 1.11e+09])\n",
+    "mBHhi = np.log10([3.460e+06, 1.970e+08, 1.680e+09, 6.510e+08, 1.781e+09, 5.380e+09,\n",
+    " 4.480e+09, 2.910e+07, 1.120e+07, 3.830e+09, 2.720e+08, 5.200e+08,\n",
+    " 1.820e+08, 5.640e+08, 1.143e+10, 6.360e+08, 1.286e+09, 1.023e+09,\n",
+    " 2.240e+08, 8.290e+07, 3.120e+09, 1.350e+08, 6.530e+09, 9.000e+08,\n",
+    " 5.760e+09, 2.530e+08, 1.810e+09, 3.660e+10, 1.293e+09, 6.730e+07,\n",
+    " 5.630e+09, 3.790e+09, 3.410e+08, 6.400e+08, 5.500e+09, 2.730e+09,\n",
+    " 6.720e+08, 3.450e+09, 1.850e+09, 2.960e+09, 4.160e+09, 1.500e+09])\n",
+    "\n",
+    "# Velocity dispersion and error (km/s)\n",
+    "sigma = np.array([77.0, 226.0, 328.0, 167.0, 315.0, 276.0, 270.0, 175.0, 166.0, 297.0, 145.0, 206.0, 229.0, 182.0, 270.0, 315.0, 242.0, 296.0, 182.0, 167.0, 300.0, 190.0, 324.0, 185.0, 380.0, 177.0, 355.0, 347.0, 222.0, 150.0, 333.0, 328.0, 183.0, 239.0, 318.0, 389.0, 266.0, 292.0, 257.0, 331.0, 288.0, 322.0])\n",
+    "sigmaerr = np.array([3.0, 9.0, 9.0, 3.0, 3.0, 2.0, 10.0, 8.0, 16.0, 12.0, 7.0, 10.0, 11.0, 9.0, 27.0, 15.0, 12.0, 14.0, 5.0, 8.0, 7.0, 9.0, 28.0, 9.0, 19.0, 8.0, 14.0, 5.0, 11.0, 7.0, 2.0, 11.0, 9.0, 11.0, 2.0, 3.0, 13.0, 5.0, 26.0, 5.0, 14.0, 16.0])\n",
+    "\n",
+    "n_data = len(mBerr)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Visualise the data\n",
+    "\n",
+    "Lets plot the data first to see what is going on:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "%matplotlib inline\n",
+    "import matplotlib.pyplot as plt\n",
+    "plt.figure()\n",
+    "xlabel = 'Bulge mass [log, $M_\\odot$]'\n",
+    "ylabel = 'Velocity dispersion [km/s]'\n",
+    "plt.xlabel(xlabel)\n",
+    "plt.ylabel(ylabel)\n",
+    "plt.errorbar(x=mB, xerr=mBerr, y=sigma, yerr=sigmaerr, \n",
+    "             marker='o', ls=' ', color='orange')\n",
+    "plt.yscale('log')"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Data properties\n",
+    "\n",
+    "This scatter plot shows: \n",
+    "\n",
+    "* error bars in both x and y\n",
+    "* asymmetric error bars\n",
+    "* intrinsic scatter\n",
+    "\n",
+    "### Resampling the data\n",
+    "\n",
+    "We could also represent each data point by a cloud of samples.\n",
+    "Each point represents a possible true solution of that galaxy.\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "samples = []\n",
+    "\n",
+    "plt.figure()\n",
+    "for i in range(n_data):\n",
+    "    # draw normal random points\n",
+    "    \n",
+    "    # scale according to error bars and values\n",
+    "    samples_mBi = np.random.normal(mB[i], mBerr[i], size=400)\n",
+    "    \n",
+    "    # same for sigma\n",
+    "    samples_sigmai = np.random.normal(sigma[i], sigmaerr[i], size=400)\n",
+    "    \n",
+    "    # we will work in log-sigma:\n",
+    "    samples_logsigmai = np.log10(samples_sigmai)\n",
+    "    \n",
+    "    samples.append([samples_mBi, samples_logsigmai])\n",
+    "    \n",
+    "    # for each galaxy, plot alittle cloud with its own colors\n",
+    "    plt.scatter(samples_mBi, samples_logsigmai, s=2, marker='x')\n",
+    "\n",
+    "samples = np.array(samples)\n",
+    "xlabel = 'Bulge mass [log, $M_\\odot$]'\n",
+    "ylabel = 'Velocity dispersion [log, km/s]'\n",
+    "plt.xlabel(xlabel)\n",
+    "plt.ylabel(ylabel)\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "samples.shape"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Model\n",
+    "\n",
+    "Lets fit a line model with intrinsic, gaussian scatter.\n",
+    "\n",
+    "$$ y \\sim \\mathrm{Normal}(x \\times alpha + beta, sigma) $$\n",
+    "\n",
+    "The model has three unknown parameters:\n",
+    "\n",
+    "* the slope $\\alpha$\n",
+    "* the offset $\\beta$\n",
+    "* the scatter $\\sigma$\n",
+    "\n",
+    "Lets write down prior ranges for these parameters:\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "parameters = ['slope', 'offset', 'scatter']\n",
+    "\n",
+    "def prior_transform(cube):\n",
+    "    # the argument, cube, consists of values from 0 to 1\n",
+    "    # we have to convert them to physical scales\n",
+    "    \n",
+    "    params = cube.copy()\n",
+    "    # let slope go from -3 to +3\n",
+    "    lo = -3\n",
+    "    hi = +3\n",
+    "    params[0] = cube[0] * (hi - lo) + lo\n",
+    "    # let offset go from 10 to 1000 km/s -- use log\n",
+    "    lo = np.log10(10)\n",
+    "    hi = np.log10(1000)\n",
+    "    params[1] = cube[1] * (hi - lo) + lo\n",
+    "    # let scatter go from 0.001 to 10\n",
+    "    lo = np.log10(0.001)\n",
+    "    hi = np.log10(10)\n",
+    "    params[2] = 10**(cube[2] * (hi - lo) + lo)\n",
+    "    return params\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Define the likelihood, which measures how far the data are from the model predictions.\n",
+    "More precisely, how often the parameters would arise under the given parameters."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import scipy.stats\n",
+    "\n",
+    "def log_likelihood(params):\n",
+    "    # unpack the current parameters:\n",
+    "    slope, offset, scatter = params\n",
+    "\n",
+    "    # compute for each x point, where it should lie in y\n",
+    "    y_expected = (samples[:,0] - 10) * slope + offset\n",
+    "    # compute the probability of each sample\n",
+    "    probs_samples = scipy.stats.norm(y_expected, scatter).pdf(samples[:,1])\n",
+    "    # average over each galaxy, because we assume one of the points is the correct one (logical OR)\n",
+    "    probs_objects = probs_samples.mean(axis=1)\n",
+    "    assert len(probs_objects) == n_data\n",
+    "    # multiply over the galaxies, because we assume our model holds true for all objects (logical AND)\n",
+    "    # for numerical stability, we work in log and avoid zeros\n",
+    "    loglike = np.log(probs_objects + 1e-100).sum()\n",
+    "    return loglike\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "\n",
+    "Implicitly, this model assumes that the velocity dispersion is predicted by the bulge mass.\n",
+    "Alternatively, one could flip the axes, or define the scatter orthogonally.\n",
+    "But lets stick with our approach for now.\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Solving the problem"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import ultranest\n",
+    "\n",
+    "sampler = ultranest.ReactiveNestedSampler(parameters, log_likelihood, prior_transform)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Lets first try with relatively poor sampling:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "result = sampler.run(min_num_live_points=50, min_ess=100) # you can increase these numbers later"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from ultranest.plot import cornerplot\n",
+    "cornerplot(sampler.results)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "plt.figure()\n",
+    "plt.xlabel(xlabel)\n",
+    "plt.ylabel(ylabel)\n",
+    "plt.errorbar(x=mB, xerr=mBerr, y=sigma, yerr=sigmaerr, \n",
+    "             marker='o', ls=' ', color='orange')\n",
+    "\n",
+    "from ultranest.plot import PredictionBand\n",
+    "x = np.linspace(9, 12.5, 400)\n",
+    "band = PredictionBand(x)\n",
+    "band_lo = PredictionBand(x)\n",
+    "band_hi = PredictionBand(x)\n",
+    "\n",
+    "for params in sampler.results['samples'][:40]:\n",
+    "    slope, offset, scatter = params\n",
+    "    y = (x - 10) * slope + offset\n",
+    "    band.add(10**y)\n",
+    "    \n",
+    "    # indicate intrinsic scatter\n",
+    "    band_hi.add(10**(y + scatter))\n",
+    "    band_lo.add(10**(y - scatter))\n",
+    "\n",
+    "band.shade(color='k', alpha=0.1)\n",
+    "band.line(color='k')\n",
+    "band_lo.line(color='r', ls='--')\n",
+    "band_hi.line(color='r', ls='--')\n",
+    "\n",
+    "plt.yscale('log');\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Understanding the uncertainties\n",
+    "\n",
+    "Lets focus on the scatter parameter.\n",
+    "\n",
+    "We want to understand how well we can constrain it.\n",
+    "\n",
+    "We can make a histogram of the posterior samples:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "scatter_samples = result['weighted_samples']['v'][:,2]\n",
+    "weights = result['weighted_samples']['w']\n",
+    "\n",
+    "plt.figure(figsize=(8, 2.5))\n",
+    "\n",
+    "bins=np.linspace(0.01, 0.2, 100)\n",
+    "plt.hist(scatter_samples, weights=weights, bins=bins, density=True, histtype='step')\n",
+    "\n",
+    "plt.xlabel('sigma')\n",
+    "plt.ylabel(\"Posterior probability\")\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Quantifying the distribution tails\n",
+    "\n",
+    "But how well do we really know this probability distribution? We put uncertainties on it, because UltraNest provides bootstrapped weights, which emulates multiple (30) runs with a different number of live points."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "result['weighted_samples']['bs_w'].shape"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from fastkde import fastKDE"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "plt.figure()\n",
+    "bins=np.linspace(0.01, 0.2, 64+1)\n",
+    "scatter_samples = result['samples'][:,2]\n",
+    "\n",
+    "pdf, _ = fastKDE.pdf(scatter_samples, axes=(bins,))\n",
+    "plt.plot(bins, pdf, color='k')\n",
+    "\n",
+    "from ultranest.plot import PredictionBand\n",
+    "from ultranest.integrator import resample_equal\n",
+    "band = PredictionBand(bins)\n",
+    "\n",
+    "for weights in result['weighted_samples']['bs_w'].transpose():\n",
+    "    scatter_samples = resample_equal(result['weighted_samples']['v'][:,2], weights)\n",
+    "    pdf, _ = fastKDE.pdf(scatter_samples, axes=(bins,))\n",
+    "    band.add(pdf)\n",
+    "\n",
+    "band.line(ls='--', color='r', alpha=0.5)\n",
+    "band.shade(0.49, color='r', alpha=0.1)\n",
+    "\n",
+    "\n",
+    "plt.xlabel('$\\sigma$')\n",
+    "plt.ylabel(\"Posterior probability\")\n",
+    "#plt.yscale('log')\n",
+    "plt.ylim(1e-3, 50);\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "![title](static/recursion.jpg)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Task for you\n",
+    "\n",
+    "Edit this notebook. Try adjusting the number of live points (min_num_live_points) and effective sample size (min_ess) parameters above to decrease the uncertainties.\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Comparing empirical models"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We are using an ad-hoc/empirical model function,\n",
+    "and it does not have well-defined priors.\n",
+    "Because of that, doing Bayesian model comparison with Bayes factors does not make sense.\n",
+    "\n",
+    "Instead, we can compare models based on their information content, and their\n",
+    "prediction power.\n",
+    "\n",
+    "Lets see how much better the line model is to a constant."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "parameters0 = ['offset', 'scatter']\n",
+    "\n",
+    "def prior_transform0(cube):\n",
+    "    params = cube.copy()\n",
+    "    # let offset go from 10 to 1000 km/s -- use log\n",
+    "    lo = np.log10(10)\n",
+    "    hi = np.log10(1000)\n",
+    "    params[0] = cube[0] * (hi - lo) + lo\n",
+    "    # let scatter go from 0.001 to 10\n",
+    "    lo = np.log10(0.001)\n",
+    "    hi = np.log10(10)\n",
+    "    params[1] = 10**(cube[1] * (hi - lo) + lo)\n",
+    "    return params\n",
+    "\n",
+    "\n",
+    "def log_likelihood0(params):\n",
+    "    # unpack the current parameters:\n",
+    "    offset, scatter = params\n",
+    "\n",
+    "    # compute for each x point, where it should lie in y\n",
+    "    y_expected = offset\n",
+    "    # compute the probability of each sample\n",
+    "    probs_samples = scipy.stats.norm(y_expected, scatter).pdf(samples[:,1])\n",
+    "    # average over each galaxy, because we assume one of the points is the correct one (logical OR)\n",
+    "    probs_objects = probs_samples.mean(axis=1)\n",
+    "    assert len(probs_objects) == n_data\n",
+    "    # multiply over the galaxies, because we assume our model holds true for all objects (logical AND)\n",
+    "    # for numerical stability, we work in log and avoid zeros\n",
+    "    loglike = np.log(probs_objects + 1e-100).sum()\n",
+    "    return loglike\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "sampler0 = ultranest.ReactiveNestedSampler(parameters0, log_likelihood0, prior_transform0)\n",
+    "result0 = sampler0.run()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Model comparison with AIC\n",
+    "\n",
+    "Here we compute the Akaike information criterion (AIC).\n",
+    "https://en.wikipedia.org/wiki/Akaike_information_criterion\n",
+    "\n",
+    "The model with the lowest AIC should be preferred."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "Lmax0 = result0['weighted_samples']['L'].max()\n",
+    "AIC0 = -2 * Lmax0 + len(parameters0)\n",
+    "\n",
+    "Lmax1 = result['weighted_samples']['L'].max()\n",
+    "AIC1 = -2 * Lmax1 + len(parameters)\n",
+    "\n",
+    "print(\"AIC of constant model: %d\" % AIC0)\n",
+    "print(\"AIC of line model    : %d\" % AIC1)\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "The line model is doing better according to the AIC."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Model comparison by prediction power\n",
+    "\n",
+    "We can also leave out some data points and see how\n",
+    "well the model, trained on the others, predicts the unseen data points.\n",
+    "\n",
+    "There are many ways to leave points out (K-Fold, LOO, bootstrapping).\n",
+    "Here we use a 5-fold cross-validation."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "samples_orig = samples.copy()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from scipy.misc import logsumexp"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "Kpredicts = []\n",
+    "\n",
+    "for lo, hi in [(9, 9.5), (9.5, 10), (10, 10.5), (10.5, 11), (11, 11.5), (11.5, 12.2)]:\n",
+    "#for lo, hi in [(9, 10), (10, 11), (11, 12.2)]:\n",
+    "    # leave out samples within that interval\n",
+    "    excluded = np.logical_and(mB >= lo, mB < hi)\n",
+    "    # all the others are allowed\n",
+    "    included = ~excluded\n",
+    "    # set samples (used inside likelihood functions)\n",
+    "    samples = samples_orig[included]\n",
+    "    n_data = len(samples)\n",
+    "    \n",
+    "    # analyse with line model\n",
+    "    sampler1 = ultranest.ReactiveNestedSampler(parameters, log_likelihood, prior_transform)\n",
+    "    result1 = sampler1.run()\n",
+    "    \n",
+    "    # analyse with constant model\n",
+    "    sampler0 = ultranest.ReactiveNestedSampler(parameters0, log_likelihood0, prior_transform0)\n",
+    "    result0 = sampler0.run()\n",
+    "    \n",
+    "    # now set the samples to the withheld data\n",
+    "    samples = samples_orig[excluded]\n",
+    "    n_data = len(samples)\n",
+    "    # get the log of the mean likelihood from each model\n",
+    "    Zpredict0 = logsumexp([log_likelihood0(sample) for sample in result0['samples']])\n",
+    "    Zpredict1 = logsumexp([log_likelihood(sample) for sample in result1['samples']])\n",
+    "    \n",
+    "    Kpredicts.append(Zpredict1 - Zpredict0)\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "So lets look at the prediction quality of line model compared to constant model:\n",
+    "Positive values indicate preference for the line model, each entry is a K-fold instance."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "Kpredicts"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "averaging the results, we get:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "np.mean(Kpredicts)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Again positive, so in terms of prediction, the line model is better."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Next\n",
+    "\n",
+    "To recap, we looked at two methods to compare empirical (ad-hoc) models.\n",
+    "\n",
+    "Next, you can explore the black hole mass scaling relation, or a combination of the three measurables in the data:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "plt.figure()\n",
+    "plt.xlabel('Black Hole mass [log, $M_\\odot$]')\n",
+    "plt.ylabel('Bulge mass [log, $M_\\odot$]')\n",
+    "plt.errorbar(y=mB, yerr=mBerr, x=mBH, xerr=[mBHhi-mBH, mBH-mBHlo], \n",
+    "             marker='o', ls=' ', color='orange');\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.6.8"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}

@@ -1,0 +1,303 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Tutorial: distribution with outliers\n",
+    "\n",
+    "In this tutorial you will learn:\n",
+    "\n",
+    " - How to deal with outliers and non-gaussian distributions\n",
+    "\n",
+    "In the \"intrinsic distribution\" tutorial, we fitted a gaussian distribution.\n",
+    "But maybe we do not want to make such a strong assumption -- we may not know the \n",
+    "exact distribution. Perhaps it is skewed, has several sub-populations.\n",
+    "This can be tested by trying out different models.\n",
+    "\n",
+    "Here, we check compare three scenarios:\n",
+    "\n",
+    "1. baseline model: a gaussian distribution\n",
+    "2. baseline model + outlier model\n",
+    "3. heavy-tailed distribution\n",
+    "\n",
+    "Here is our data:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import numpy as np\n",
+    "# velocity dispersions of dwarf galaxies by van Dokkum et al., Nature, 555, 629 https://arxiv.org/abs/1803.10237v1\n",
+    "\n",
+    "values = np.array([15, 4, 2, 11, 1, -2, -1, -14, -39, -3])\n",
+    "values_lo = np.array([7, 16, 6, 3, 6, 5, 10, 6, 11, 13])\n",
+    "values_hi = np.array([7, 15, 8, 3, 6, 6, 10, 7, 14, 14])\n",
+    "\n",
+    "n_data = len(values)\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Visualise the data\n",
+    "\n",
+    "Lets plot the data first to see what is going on:\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "%matplotlib inline\n",
+    "import matplotlib.pyplot as plt\n",
+    "\n",
+    "samples = []\n",
+    "for i in range(n_data):\n",
+    "    # draw normal random points\n",
+    "    u = np.random.normal(size=400)\n",
+    "    v = values[i] + np.where(u < 0, u * values_lo[i], u * values_hi[i])\n",
+    "    samples.append(v)\n",
+    "\n",
+    "samples = np.array(samples)\n",
+    "\n",
+    "plt.figure()\n",
+    "# for each galaxy, plot alittle cloud with its own colors\n",
+    "plt.violinplot(samples.transpose(), vert=False, showextrema=False)\n",
+    "\n",
+    "xlabel = 'Velocity [km/s]'\n",
+    "plt.xlabel(xlabel)\n",
+    "plt.xlim(-50, 50);"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Models\n",
+    "\n",
+    "### Gaussian"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "parameters = ['mean', 'scatter']\n",
+    "\n",
+    "def prior_transform(cube):\n",
+    "    params = cube.copy()\n",
+    "    params[0] = cube[0] * 200 - 100 # mean from -100 to +100\n",
+    "    params[1] = 10**(cube[1] * 2)   # scatter from 1 to 100\n",
+    "    return params\n",
+    "\n",
+    "import scipy.stats\n",
+    "\n",
+    "def log_likelihood(params):\n",
+    "    probs_samples = scipy.stats.norm(*params).pdf(samples)\n",
+    "    probs_objects = probs_samples.mean(axis=1)\n",
+    "    loglike = np.log(probs_objects + 1e-100).sum()\n",
+    "    return loglike\n",
+    "\n",
+    "import ultranest\n",
+    "\n",
+    "sampler = ultranest.ReactiveNestedSampler(parameters, log_likelihood, prior_transform)\n",
+    "result = sampler.run()\n",
+    "sampler.print_results()\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Gaussian + Outliers"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "parameters2 = ['mean', 'scatter', 'w_outlier']\n",
+    "\n",
+    "def prior_transform2(cube):\n",
+    "    params = cube.copy()\n",
+    "    params[0] = cube[0] * 200 - 100 # mean from -100 to +100\n",
+    "    params[1] = 10**(cube[1] * 2)   # scatter from 1 to 100\n",
+    "    params[2] = (cube[2] * 0.2)     # fraction of outliers: allow 0-20%\n",
+    "    return params\n",
+    "\n",
+    "def log_likelihood2(params):\n",
+    "    mean, scatter, weight = params\n",
+    "    \n",
+    "    # compute probability if following distribution\n",
+    "    probs_samples = scipy.stats.norm(mean, scatter).pdf(samples)\n",
+    "    # compute probability density, if outlier:\n",
+    "    prob_outlier = scipy.stats.uniform(-100, 200).pdf(samples)\n",
+    "    \n",
+    "    # combine the two populations with weight:\n",
+    "    probs_samples = probs_samples * (1 - weight) + weight * prob_outlier\n",
+    "    \n",
+    "    # average within each object (logical OR)\n",
+    "    probs_objects = probs_samples.mean(axis=1)\n",
+    "    # multiply across object (logical AND)\n",
+    "    loglike = np.log(probs_objects + 1e-100).sum()\n",
+    "    return loglike\n",
+    "\n",
+    "\n",
+    "sampler2 = ultranest.ReactiveNestedSampler(parameters2, log_likelihood2, prior_transform2)\n",
+    "result2 = sampler2.run()\n",
+    "sampler2.print_results()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Heavy-tailed distribution"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "parameters3 = ['mean', 'scatter', 'dof']\n",
+    "\n",
+    "def prior_transform3(cube):\n",
+    "    params = cube.copy()\n",
+    "    params[0] = cube[0] * 200 - 100 # mean from -100 to +100\n",
+    "    params[1] = 10**(cube[1] * 2)   # scatter from 1 to 100\n",
+    "    params[2] = 10**(cube[2])       # degrees of freedom in student-t: 1 (heavy tails)..10 (gaussian)\n",
+    "    return params\n",
+    "\n",
+    "def log_likelihood3(params):\n",
+    "    mean, scatter, dof = params\n",
+    "    # compute student-t probability\n",
+    "    probs_samples = scipy.stats.t(loc=mean, scale=scatter, df=dof).pdf(samples)\n",
+    "    # average within each object (logical OR)\n",
+    "    probs_objects = probs_samples.mean(axis=1)\n",
+    "    # multiply across object (logical AND)\n",
+    "    loglike = np.log(probs_objects + 1e-100).sum()\n",
+    "    return loglike\n",
+    "\n",
+    "sampler3 = ultranest.ReactiveNestedSampler(parameters3, log_likelihood3, prior_transform3)\n",
+    "sampler3.run()\n",
+    "sampler3.print_results()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Comparing the models"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "plt.figure(figsize=(5, 12))\n",
+    "plt.xlabel(xlabel)\n",
+    "\n",
+    "from ultranest.plot import PredictionBand\n",
+    "x = np.linspace(-50, 50, 400)\n",
+    "\n",
+    "\n",
+    "plt.subplot(3, 1, 1)\n",
+    "band = PredictionBand(x)\n",
+    "\n",
+    "for params in sampler.results['samples'][:40]:\n",
+    "    mean, scatter = params\n",
+    "    band.add(scipy.stats.norm(mean, scatter).pdf(x))\n",
+    "\n",
+    "band.shade(color='k', alpha=0.1, label=\"Gaussian\")\n",
+    "band.line(color='k')\n",
+    "plt.legend(loc='upper right')\n",
+    "plt.title(\"Gaussian: lnZ=%.1f\" % sampler.results['logz'])\n",
+    "\n",
+    "plt.subplot(3, 1, 2)\n",
+    "band = PredictionBand(x)\n",
+    "bando = PredictionBand(x)\n",
+    "\n",
+    "for params in sampler2.results['samples'][:40]:\n",
+    "    mean, scatter, outlier_weight = params\n",
+    "    band.add(scipy.stats.norm(mean, scatter).pdf(x) * (1 - outlier_weight))\n",
+    "    bando.add(scipy.stats.norm(-100, 200).pdf(x) * outlier_weight)\n",
+    "\n",
+    "band.shade(color='k', alpha=0.1, label=\"Gaussian\")\n",
+    "band.line(color='k');\n",
+    "bando.shade(color='orange', alpha=0.1, label=\"Outliers\")\n",
+    "bando.line(color='orange');\n",
+    "plt.legend(loc='upper right')\n",
+    "plt.title(\"Gaussian + outliers: lnZ=%.1f\" % sampler2.results['logz'])\n",
+    "\n",
+    "plt.subplot(3, 1, 3)\n",
+    "\n",
+    "for params in sampler3.results['samples'][:40]:\n",
+    "    mean, scatter, df = params\n",
+    "    band.add(scipy.stats.t(loc=mean, scale=scatter, df=df).pdf(x))\n",
+    "\n",
+    "band.shade(color='k', alpha=0.1, label='Student-t')\n",
+    "band.line(color='k');\n",
+    "plt.title(\"Student-t: lnZ=%.1f\" % sampler3.results['logz'])\n",
+    "plt.legend(loc='upper right')\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "The models look very similar in their predictions, and their lnZ values are also quite close.\n",
+    "So I would not have a strong preference in any direction."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "### Next\n",
+    "\n",
+    "1. Try adding an outlier.\n",
+    "2. Try adjusting the number of live points (min_num_live_points) and effective sample size (min_ess) parameters above to decrease the uncertainties.\n",
+    "3. Try varying the prior ranges.\n",
+    "4. Continue with the other tutorials and explore other UltraNest features"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.6.8"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
