@@ -10,9 +10,9 @@ Welcome to UltraNest's documentation!
    method
    usage-spectral-line.ipynb
    performance
-   contributing
-   issues
    modules
+   issues
+   contributing
    history
 
 .. toctree::

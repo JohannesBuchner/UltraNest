@@ -21,6 +21,7 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath('_ext'))
 
 import sphinx_rtd_theme
 
@@ -41,6 +42,7 @@ extensions = [
     'nbsphinx',
     'sphinx_rtd_theme',
     'sphinx.ext.napoleon',
+    'edit_on_github',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -100,6 +102,12 @@ nbsphinx_execute_arguments = [
 autodoc_member_order = 'bysource'
 
 autoclass_content = 'both'
+
+
+edit_on_github_project = 'JohannesBuchner/UltraNest'
+edit_on_github_branch = 'master'
+
+edit_on_github_src = 'docs/'  # optional. default: ''
 
 # -- Options for HTML output -------------------------------------------
 
