@@ -119,9 +119,11 @@ html_theme_options = {
     'style_nav_header_background': '#2980B9',
     #'only_logo': False,
 }
-html_logo = "../logo.svg"
+html_logo = "static/logo.svg"
 html_show_sourcelink = True
+html_favicon = "static/icon.ico"
 
+html_show_sphinx = False
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

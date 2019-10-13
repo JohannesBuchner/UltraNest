@@ -25,6 +25,7 @@ Welcome to UltraNest's documentation!
    example-intrinsic-distribution.ipynb
    example-line.ipynb
    example-outliers.ipynb
+   example-sine-bayesian-workflow.ipynb
 
 .. include:: ../README.rst
 

@@ -701,12 +701,6 @@ class ReactiveNestedSampler(object):
             self.logger = create_logger('ultranest', log_dir=log_dir)
         self.root = TreeNode(id=-1, value=-np.inf)
 
-        if self.log_to_disk:
-            with open(os.path.join(self.logs['results'], 'results.csv'), 'w') as f:
-                writer = csv.writer(f)
-                writer.writerow(['step', 'acceptance', 'min_ess',
-                                 'max_ess', 'jump_distance', 'scale', 'loglstar', 'logz', 'fraction_remain', 'ncall'])
-
         self.pointpile = PointPile(self.x_dim, self.num_params)
         self.ncall = 0
         self.ncall_region = 0
@@ -2136,14 +2130,12 @@ class ReactiveNestedSampler(object):
                 header=' '.join(self.paramnames + self.derivedparamnames),
                 comments='')
             np.savetxt(os.path.join(self.logs['chains'], 'weighted_post.txt'),
-                np.hstack((saved_wt0.reshape((-1, 1)), saved_logl.reshape((-1, 1)), saved_v, saved_u)),
-                header=' '.join(self.paramnames + self.derivedparamnames),
-                comments='')
+                np.hstack((saved_wt0.reshape((-1, 1)), -saved_logl.reshape((-1, 1)), saved_v)),
+                comments='#')
             np.savetxt(os.path.join(self.logs['chains'], 'weighted_post_untransformed.txt'),
                 np.hstack((saved_wt0.reshape((-1, 1)), saved_logl.reshape((-1, 1)), saved_u)),
-                header=' '.join(self.paramnames + self.derivedparamnames),
                 comments='')
-            with open(os.path.join(self.logs['info'], 'parameters.txt'), 'w') as f:
+            with open(os.path.join(self.logs['chains'], 'weighted_post.paramnames'), 'w') as f:
                 f.write('\n'.join(self.paramnames + self.derivedparamnames) + '\n')
             with open(os.path.join(self.logs['info'], 'results.json'), 'w') as f:
                 json.dump(results, f)

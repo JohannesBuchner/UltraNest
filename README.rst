@@ -105,23 +105,10 @@ TODO
 
 * Documentation:
 
-  * Example line fit
-  * Example line fit with heterogeneous xy errors
-  * Example line fit with outliers (mixture of 2 models)
   * Example power law fit
-  * Example intrinsic 1d distribution from measurement errors, 2-component mixture
-  * Example extracting more posterior points (ESS)
   * Example spectral line fit, white and GP
-  * Example time series analysis (2-component fourier)
   * Example low-d Bayesian GP emulator as pre-filter to model evaluation
-  * Example in jupyter notebook
-  * Example resuming from similar data
   * Example verifying integration with VB+IS
-  * Example running with MPI parallelisation
-  * Example: Use external plotter to show posterior distribution uncertainty
-  * Example: Improve quality by successively forgetting points below some nsteps,
-    doubling the nsteps, and checking how lnZ changes. Stop when it remains
-    consistent.
 
 Usage
 -----
@@ -136,3 +123,4 @@ Licence
 
 GPLv3 (see LICENCE file). If you require another license, please contact me.
 
+Icon made by `Freepik <https://www.flaticon.com/authors/freepik>`_.
