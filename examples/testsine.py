@@ -78,13 +78,13 @@ def main(args):
     elif args.reactive:
         from ultranest import ReactiveNestedSampler
         sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, 
-            log_dir=args.log_dir,
+            log_dir=args.log_dir, vectorized=True,
             derived_param_names=derivednames, wrapped_params=wrapped_params,
             append_run_num=False)
     else:
         from ultranest import NestedSampler
         sampler = NestedSampler(paramnames, loglike, transform=transform, 
-            log_dir=args.log_dir,
+            log_dir=args.log_dir, vectorized=True,
             derived_param_names=derivednames, wrapped_params=wrapped_params,
             append_run_num=False)
     

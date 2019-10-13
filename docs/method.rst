@@ -57,3 +57,48 @@ On analysing many data sets:
 
 * Buchner, J. (2019): Collaborative Nested Sampling: Big Data versus Complex Physical Models
 
+
+Concepts
+---------
+
+UltraNest maps four spaces:
+
+* u: The unit cube space
+* t: A affine projection of the unit cube space (called transformLayer)
+* p: The physical parameter space
+* L/logl: Likelihood values
+
+The transformations are made as follows:
+
+* unit cube <-> transformLayer space: region.transformLayer.transform() and untransform()
+* unit cube -> physical parameter space: user-provided prior transform function
+* physical parameter space -> likelihood values: user-provided likelihood function
+
+The tree-based concept envisions the full prior volume as the root of a tree.
+Branches indicate divisions. The first children of the tree root are 
+sampled directly from the prior, and are called *roots* in the code (although
+they are the first branches).
+
+The nested sampling algorithm is a breadth-first search of this tree,
+with nodes expanded as needed. Replacements of a node by its children
+is a nested sampling shrinkage. When children are added to nodes is
+driven by software agents. These agents can optimize for various strategies.
+
+Four strategies are implemented. They can be independently activated by the user:
+
+* Obtain a logz error below a threshold (*dlogz*)
+* Obtain a certain number of effective samples (*min_ess*)
+* Keep a certain number of live points (width of tree) per cluster (*cluster_num_live_points*).
+* Obtain a posterior uncertainty below a threshold (*dKL*).
+
+The breadth-first search starts with the *roots*. Additionally,
+alternative breadth-first searches with some *roots* left out 
+(bootstrapping) is simulated simultaneously. The breadth-first search
+computes logz and adds uncertainty contributions from:
+
+* The limited shrinkage estimate (information H)
+* The bootstraps (simulating alternative, repeated nested sampling runs)
+* The noise in shrinkage estimates (by sampling it a binomial distribution in each bootstrap realisation)
+
+The combination makes UltraNest's logz uncertainties very reliable.
+

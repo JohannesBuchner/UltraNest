@@ -20,14 +20,15 @@ def main(args):
     if args.reactive:
         from ultranest import ReactiveNestedSampler
         sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, 
-            log_dir=args.log_dir + 'RNS-%dd' % args.x_dim, append_run_num=False)
+            log_dir=args.log_dir + 'RNS-%dd' % args.x_dim, append_run_num=False,
+            vectorized=True)
             #log_dir=None)
         sampler.run(log_interval=20, min_num_live_points=args.num_live_points)
         sampler.plot()
     else:
         from ultranest import NestedSampler
         sampler = NestedSampler(paramnames, loglike, transform=transform, 
-            num_live_points=args.num_live_points,
+            num_live_points=args.num_live_points, vectorized=True,
             log_dir=args.log_dir + '%dd' % args.x_dim, append_run_num=True)
             #log_dir=None)
         sampler.run(log_interval=20)

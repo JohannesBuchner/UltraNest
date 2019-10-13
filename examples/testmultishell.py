@@ -25,14 +25,15 @@ def main(args):
     if args.reactive:
         from ultranest import ReactiveNestedSampler
         sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, 
-            log_dir=args.log_dir + 'RNS-%dd' % args.x_dim, append_run_num=False)
+            log_dir=args.log_dir + 'RNS-%dd' % args.x_dim, append_run_num=False,
+            vectorized=True)
             #log_dir=None)
         if args.slice:
             import ultranest.stepsampler
-            sampler.stepsampler = ultranest.stepsampler.RegionSliceSampler(nsteps=100) #max(10, 4 * ndim))
+            sampler.stepsampler = ultranest.stepsampler.RegionSliceSampler(nsteps=max(10, 4 * ndim))
         sampler.run(
             #frac_remain=0.5, 
-            min_ess=20000,
+            #min_ess=20000,
             #dKL=np.inf, dlogz=0.5 + 0.1 * ndim,
             #update_interval_iter_fraction=0.4 if ndim > 20 else 0.2,
             #cluster_num_live_points=40,

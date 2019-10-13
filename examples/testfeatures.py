@@ -113,7 +113,7 @@ def main(args):
     from ultranest import ReactiveNestedSampler
     sampler = ReactiveNestedSampler(paramnames, loglike, 
         transform=transform if args.pass_transform else None, 
-        log_dir=log_dir, 
+        log_dir=log_dir, vectorized=True,
         append_run_num=not args.resume,
         wrapped_params=wrapped_params,
     )

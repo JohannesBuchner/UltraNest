@@ -20,7 +20,7 @@ def main(args):
         from ultranest import ReactiveNestedSampler
         sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, 
             log_dir=args.log_dir, append_run_num=False,
-            draw_multiple=False,
+            draw_multiple=False, vectorized=True,
         )
         sampler.run(log_interval=20, 
             max_num_improvement_loops=10, min_num_live_points=args.num_live_points,)
@@ -29,7 +29,7 @@ def main(args):
     else:
         from ultranest import NestedSampler
         sampler = NestedSampler(paramnames, loglike, transform=transform, 
-            num_live_points=args.num_live_points,
+            num_live_points=args.num_live_points, vectorized=True,
             log_dir=args.log_dir, append_run_num=True)
             #log_dir=None)
         sampler.run(log_interval=20)
