@@ -87,14 +87,13 @@ class NestedSampler(object):
                  param_names,
                  loglike,
                  transform=None,
-                 append_run_num=True,
-                 wrapped_params=None,
                  derived_param_names=[],
-                 resume=False,
+                 resume='subfolder',
                  run_num=None,
                  log_dir='logs/test',
                  num_live_points=1000,
                  vectorized=False,
+                 wrapped_params=[],
                  ):
         """Set up nested sampler.
 
@@ -112,12 +111,10 @@ class NestedSampler(object):
             Additional derived parameters created by transform. (empty by default)
         log_dir: str
             where to store output files
-        resume: bool
-            if false, overwrite previous data.
-            if true, continue previous run if available.
-        append_run_num: bool
-            if true, create a fresh subdirectory in log_dir
-            implies resume=False
+        resume: 'resume', 'overwrite' or 'subfolder'
+            if 'overwrite', overwrite previous data.
+            if 'subfolder', create a fresh subdirectory in log_dir
+            if 'resume' or True, continue previous run if available.
         wrapped_params: list of bools
             indicating whether this parameter wraps around (circular parameter).
         num_live_points: int
@@ -140,6 +137,10 @@ class NestedSampler(object):
             self.wrapped_axes = []
         else:
             self.wrapped_axes = np.where(wrapped_params)[0]
+
+        assert resume in (True, 'overwrite', 'subfolder', 'resume'), "resume should be one of 'overwrite' 'subfolder' or 'resume'"
+        append_run_num = resume == 'subfolder'
+        resume = resume == 'resume' or resume == True
 
         if not vectorized:
             transform = vectorize(transform)
@@ -602,9 +603,8 @@ class ReactiveNestedSampler(object):
                  loglike,
                  transform=None,
                  derived_param_names=[],
-                 append_run_num=True,
                  wrapped_params=None,
-                 resume=False,
+                 resume='subfolder',
                  run_num=None,
                  log_dir=None,
                  num_test_samples=2,
@@ -631,12 +631,10 @@ class ReactiveNestedSampler(object):
 
         log_dir: str
             where to store output files
-        resume: bool
-            if false, overwrite previous data.
-            if true, continue previous run if available.
-        append_run_num: bool
-            if true, create a fresh subdirectory in log_dir
-            implies resume=False
+        resume: 'resume', 'overwrite' or 'subfolder'
+            if 'overwrite', overwrite previous data.
+            if 'subfolder', create a fresh subdirectory in log_dir
+            if 'resume' or True, continue previous run if available.
 
         wrapped_params: list of bools
             indicating whether this parameter wraps around (circular parameter).
@@ -689,6 +687,10 @@ class ReactiveNestedSampler(object):
         self.log = self.mpi_rank == 0
         self.log_to_disk = self.log and log_dir is not None
 
+        assert resume in (True, 'overwrite', 'subfolder', 'resume'), "resume should be one of 'overwrite' 'subfolder' or 'resume'"
+        append_run_num = resume == 'subfolder'
+        resume = resume == 'resume' or resume == True
+        
         if self.log and log_dir is not None:
             self.logs = make_run_dir(log_dir, run_num, append_run_num=append_run_num)
             log_dir = self.logs['run_dir']
@@ -717,7 +719,8 @@ class ReactiveNestedSampler(object):
             self.pointstore = NullPointStore(3 + self.x_dim + self.num_params)
 
         if not vectorized:
-            transform = vectorize(transform)
+            if transform is not None:
+                transform = vectorize(transform)
             loglike = vectorize(loglike)
             draw_multiple = False
 
@@ -1515,11 +1518,11 @@ class ReactiveNestedSampler(object):
                     assert not (self.transformLayer.clusterids == 0).any(), (self.transformLayer.clusterids, need_accept, updated)
 
             except Warning as w:
-                self.logger.warning("not updating region because: %s", exc_info=True)
+                self.logger.warning("not updating region", exc_info=True)
             except FloatingPointError as e:
-                self.logger.warning("not updating region because: %s", exc_info=True)
+                self.logger.warning("not updating region", exc_info=True)
             except np.linalg.LinAlgError as e:
-                self.logger.warning("not updating region because: %s", exc_info=True)
+                self.logger.warning("not updating region", exc_info=True)
 
         self.region.create_ellipsoid(minvol=minvol)
         assert len(self.region.u) == len(self.transformLayer.clusterids)

@@ -65,7 +65,7 @@ def main(args):
         result = solve(LogLikelihood=flat_loglike, Prior=flat_transform, 
             n_dims=ndim, outputfiles_basename=args.log_dir + 'MN-%dd' % ndim,
             n_live_points=args.num_live_points,
-            verbose=True, resume=True, importance_nested_sampling=False)
+            verbose=True, resume=False, importance_nested_sampling=False)
         
         print()
         print('evidence: %(logZ).1f +- %(logZerr).1f' % result)
@@ -80,13 +80,13 @@ def main(args):
         sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, 
             log_dir=args.log_dir, vectorized=True,
             derived_param_names=derivednames, wrapped_params=wrapped_params,
-            append_run_num=False)
+            resume='overwrite')
     else:
         from ultranest import NestedSampler
         sampler = NestedSampler(paramnames, loglike, transform=transform, 
             log_dir=args.log_dir, vectorized=True,
             derived_param_names=derivednames, wrapped_params=wrapped_params,
-            append_run_num=False)
+            resume='overwrite')
     
     sampler.run(min_num_live_points=args.num_live_points)
         

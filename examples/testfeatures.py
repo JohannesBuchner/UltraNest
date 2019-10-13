@@ -114,7 +114,7 @@ def main(args):
     sampler = ReactiveNestedSampler(paramnames, loglike, 
         transform=transform if args.pass_transform else None, 
         log_dir=log_dir, vectorized=True,
-        append_run_num=not args.resume,
+        resume='resume' if args.resume else 'overwrite',
         wrapped_params=wrapped_params,
     )
     for result in sampler.run_iter(

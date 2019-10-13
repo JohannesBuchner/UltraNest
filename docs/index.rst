@@ -9,6 +9,7 @@ Welcome to UltraNest's documentation!
    installation
    method
    usage-spectral-line.ipynb
+   performance
    contributing
    issues
    modules
@@ -24,7 +25,6 @@ Welcome to UltraNest's documentation!
    example-intrinsic-distribution.ipynb
    example-line.ipynb
    example-outliers.ipynb
-   usage-powerlaw.ipynb
 
 .. include:: ../README.rst
 

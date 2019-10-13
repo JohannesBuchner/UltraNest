@@ -103,7 +103,7 @@ def test_run_resume(dlogz):
     try:
         for i in range(2):
             sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, 
-                log_dir=folder, append_run_num=False, vectorized=True)
+                log_dir=folder, resume=True, vectorized=True)
             r = sampler.run(log_interval=50, dlogz=dlogz, min_num_live_points=400)
             sampler.print_results()
             sampler.pointstore.close()
@@ -146,7 +146,7 @@ def test_reactive_run_resume_eggbox():
             print()
             sampler = ReactiveNestedSampler(paramnames, 
                 loglike, transform=transform,
-                log_dir=folder, append_run_num=False, vectorized=True)
+                log_dir=folder, resume=True, vectorized=True)
             initial_ncalls = int(sampler.ncall)
             loglike.ncalls = 0
             r = sampler.run(max_iters=200 + i*200, 
@@ -186,7 +186,7 @@ def test_run_compat():
 
     result = solve(LogLikelihood=loglike, Prior=transform, 
         n_dims=ndim, outputfiles_basename=None,
-        verbose=True, resume=True, importance_nested_sampling=False)
+        verbose=True, resume='resume', importance_nested_sampling=False)
     
     print()
     print('evidence: %(logZ).1f +- %(logZerr).1f' % result)

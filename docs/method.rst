@@ -58,8 +58,10 @@ On analysing many data sets:
 * Buchner, J. (2019): Collaborative Nested Sampling: Big Data versus Complex Physical Models
 
 
-Concepts
----------
+Code Concepts
+---------------
+
+This content gives some hints for those who want to dive into the codebase.
 
 UltraNest maps four spaces:
 
@@ -101,4 +103,39 @@ computes logz and adds uncertainty contributions from:
 * The noise in shrinkage estimates (by sampling it a binomial distribution in each bootstrap realisation)
 
 The combination makes UltraNest's logz uncertainties very reliable.
+
+MLFriends (2019 paper) is a substantial improvement upon the original RadFriends algorithm (2014 paper).
+RadFriends obtains regions by leaving some points out, and testing how
+large spheres around the live points have to be to be able to recover them.
+This bootstrapping is repeated many times (bootstrapping), to be robust.
+This way, RadFriends learns automatically about multiple modes.
+RadFriends is slow, because it does not learn the relative sizes of different parameters,
+nor the correlation between them. MLFriends (2019 paper) improves by obtaining the covariance
+of the live points, and thus uses a Mahalanobis distance. 
+This learned metric helps reduce the region, and accelerates sampling.
+At the same time, MLFriends provides natural agglomerate clustering -- points within each others
+ellipsoids belong to the same cluster.
+
+UltraNest improves MLFriends further by iteratively 
+1) using metric for getting MLFriends ellipsoid radius 
+2) using radius to identify clusters.
+3) shift clusters on top of each other and learn a new metric.
+Another improvement is that in MPI-parallelised runs, UltraNest 
+distributes the RadFriends bootstraps. This makes clustering very fast
+(MultiNest has to stop for clustering on the master).
+
+UltraNest also adds a enveloping ellipsoid. This can help in 
+mono-modal gaussian problems. Contrary to Mukherjee, Parkinson & Liddle (2006), 
+the ellipsoid enlargement is learned by bootstrapping, and is thus robust and
+well-justified. Both regions are used as filters.
+UltraNest samples in four region sampling schemes:
+
+* Sample from unit cube, filter with MLFriends & ellipsoid
+* Sample from MLFriends points, filter with unit cube & ellipsoid
+* Sample from MLFriends region bounding box, filter with unit cube & ellipsoid
+* Sample from ellipsoid, filter with unit cube & MLFriends region
+
+UltraNest switches between these methods when the current on becomes inefficient.
+Efficiency here means being able to draw points, not whether they are
+above the likelihood contour.
 

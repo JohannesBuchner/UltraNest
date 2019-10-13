@@ -15,6 +15,14 @@ def nearest_box_intersection_line(ray_origin, ray_direction, fwd=True):
     Based on
     http://www.iquilezles.org/www/articles/intersectors/intersectors.htm
 
+    To continue forward traversing at the reflection point use::
+
+        while True:
+            # update current point x
+            x, _, i = box_line_intersection(x, v)
+            # change direction
+            v[i] *= -1
+
     Parameters
     -----------
     ray_origin: vector
@@ -30,16 +38,6 @@ def nearest_box_intersection_line(ray_origin, ray_direction, fwd=True):
         intersection point distance from ray\_origin in units in ray\_direction
     i: int
         axes which change direction at pN
-
-    Usage
-    ------
-    To continue forward traversing at the reflection point use::
-
-        while True:
-            # update current point x
-            x, _, i = box_line_intersection(x, v)
-            # change direction
-            v[i] *= -1
 
     """
     # make sure ray starts inside the box

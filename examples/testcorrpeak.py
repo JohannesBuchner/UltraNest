@@ -63,7 +63,7 @@ def main(args):
     elif args.reactive:
         from ultranest import ReactiveNestedSampler
         sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, 
-            log_dir=args.log_dir + 'RNS-%dd' % ndim, append_run_num=True,
+            log_dir=args.log_dir + 'RNS-%dd' % ndim,
             vectorized=True)
         sampler.run(frac_remain=0.5, min_ess=400, min_num_live_points=args.num_live_points)
         sampler.print_results()
@@ -72,7 +72,7 @@ def main(args):
         from ultranest import NestedSampler
         sampler = NestedSampler(paramnames, loglike, transform=transform, 
             num_live_points=args.num_live_points, vectorized=True,
-            log_dir=args.log_dir + '-%dd' % ndim, append_run_num=True)
+            log_dir=args.log_dir + '-%dd' % ndim)
         sampler.run()
         sampler.print_results()
         sampler.plot()
