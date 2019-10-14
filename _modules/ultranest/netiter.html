@@ -464,7 +464,7 @@
 <span class="sd">    --------</span>
 <span class="sd">    list_of_parents: list of nodes</span>
 <span class="sd">        parents</span>
-<span class="sd">    list_of_nforks:</span>
+<span class="sd">    list_of_nforks: list of floats</span>
 <span class="sd">        The list of number of forks experienced is:</span>
 <span class="sd">        1 if direct descendent of one of the root node&#39;s children,</span>
 <span class="sd">        where no node had more than one child.</span>
@@ -530,7 +530,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">pdim</span> <span class="o">=</span> <span class="n">pdim</span>
 
 <div class="viewcode-block" id="PointPile.add"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.PointPile.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">newpointu</span><span class="p">,</span> <span class="n">newpointp</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Save point newpointu (cube) / newpointp (parameters).&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Save point `newpointu` (cube) / `newpointp` (parameters).&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nrows</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">us</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">us</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">us</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">chunksize</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">udim</span><span class="p">))))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">ps</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">chunksize</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdim</span><span class="p">))))</span>
@@ -542,15 +542,15 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">nrows</span> <span class="o">-</span> <span class="mi">1</span></div>
 
 <div class="viewcode-block" id="PointPile.getu"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.PointPile.getu">[docs]</a>    <span class="k">def</span> <span class="nf">getu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get cube point(s) with index(indices) i.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Get cube point(s) with index(indices) `i`.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">us</span><span class="p">[</span><span class="n">i</span><span class="p">]</span></div>
 
 <div class="viewcode-block" id="PointPile.getp"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.PointPile.getp">[docs]</a>    <span class="k">def</span> <span class="nf">getp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get parameter point(s) with index(indices) i.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Get parameter point(s) with index(indices) `i`.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ps</span><span class="p">[</span><span class="n">i</span><span class="p">]</span></div>
 
 <div class="viewcode-block" id="PointPile.make_node"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.PointPile.make_node">[docs]</a>    <span class="k">def</span> <span class="nf">make_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Save point u (cube) / p (parameters), return a tree node.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Save point `u` (cube) / `p` (parameters), return a tree node.&quot;&quot;&quot;</span>
         <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">TreeNode</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="n">index</span><span class="p">)</span></div></div>
 
@@ -663,20 +663,20 @@
 
 <span class="sd">    Properties</span>
 <span class="sd">    -----------</span>
-<span class="sd">    - logZ, logZerr, logVolremaining: main estimator</span>
-<span class="sd">      logZerr is probably not reliable, because it needs nlive</span>
-<span class="sd">      to convert H to logZerr.</span>
-<span class="sd">    - Lmax: highest loglikelihood currently known</span>
-<span class="sd">    - logZ_bs, logZerr_bs: bootstrapped logZ estimate</span>
-<span class="sd">    - logZremain, remainder_ratio: weight and fraction of the unexplored remainder</span>
+<span class="sd">    - ``logZ``, ``logZerr``, ``logVolremaining``: main estimator</span>
+<span class="sd">      ``logZerr`` is probably not reliable, because it needs ``nlive``</span>
+<span class="sd">      to convert ``H`` to ``logZerr``.</span>
+<span class="sd">    - ``Lmax``: highest loglikelihood currently known</span>
+<span class="sd">    - ``logZ_bs``, ``logZerr_bs``: bootstrapped logZ estimate</span>
+<span class="sd">    - ``logZremain``, ``remainder_ratio``: weight and fraction of the unexplored remainder</span>
 
 <span class="sd">    Each of the following has as many entries as number of iterations:</span>
 
-<span class="sd">    - all_H, all_logZ, all_logVolremaining, logweights:</span>
+<span class="sd">    - ``all_H``, ``all_logZ``, ``all_logVolremaining``, ``logweights``:</span>
 <span class="sd">      information for all instances</span>
 <span class="sd">      first entry is the main estimator, i.e., not bootstrapped</span>
-<span class="sd">    - istail: whether that node was a leaf.</span>
-<span class="sd">    - nlive: number of parallel arcs (&quot;live points&quot;)</span>
+<span class="sd">    - ``istail``: whether that node was a leaf.</span>
+<span class="sd">    - ``nlive``: number of parallel arcs (&quot;live points&quot;)</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -742,20 +742,20 @@
 <div class="viewcode-block" id="MultiCounter.passing_node"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.MultiCounter.passing_node">[docs]</a>    <span class="k">def</span> <span class="nf">passing_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rootid</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">rootids</span><span class="p">,</span> <span class="n">parallel_values</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Accumulate node to the integration.</span>
 
-<span class="sd">        Breadth-first removed *node* and nodes active next to node (*parallel_nodes*).</span>
+<span class="sd">        Breadth-first removed `node` and nodes active next to node (`parallel_nodes`).</span>
 <span class="sd">        rootid and rootids are needed to identify which bootstrap instance</span>
 <span class="sd">        should accumulate.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        rootid: TreeNode</span>
-<span class="sd">            root node this *node* is from.</span>
+<span class="sd">            root node this `node` is from.</span>
 <span class="sd">        node: TreeNode</span>
 <span class="sd">            node being processed.</span>
 <span class="sd">        rootids: array of ints</span>
 <span class="sd">            for each parallel node, which root it belongs to.</span>
 <span class="sd">        parallel_nodes: array of TreeNodes</span>
-<span class="sd">            parallel nodes passing *node*.</span>
+<span class="sd">            parallel nodes passing `node`.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># node is being consumed</span>
@@ -862,7 +862,7 @@
 <div class="viewcode-block" id="logz_sequence"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.logz_sequence">[docs]</a><span class="k">def</span> <span class="nf">logz_sequence</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">pointpile</span><span class="p">,</span> <span class="n">nbootstraps</span><span class="o">=</span><span class="mi">12</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Run MultiCounter through tree `root`.</span>
 
-<span class="sd">    Keeps track of, and returns (logz, logzerr, logv, nlive).</span>
+<span class="sd">    Keeps track of, and returns ``(logz, logzerr, logv, nlive)``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">roots</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">children</span>
 

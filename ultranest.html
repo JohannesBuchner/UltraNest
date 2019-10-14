@@ -184,8 +184,6 @@
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="_sources/ultranest.rst.txt" rel="nofollow"> View page source</a>
-          
         
       </li>
     
@@ -328,28 +326,29 @@ of points.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>update_interval_iter_fraction</strong> – Update region after (update_interval_iter_fraction*nlive) iterations.</p></li>
-<li><p><strong>update_interval_ncall</strong> (<em>(</em><em>not actually used</em><em>)</em>) – Update region after update_interval_ncall likelihood calls.</p></li>
-<li><p><strong>log_interval</strong> – Update stdout status line every log_interval iterations</p></li>
-<li><p><strong>show_status</strong> (<em>show integration progress as a status line.</em>) – If no output desired, set to False.</p></li>
-<li><p><strong>viz_callback</strong> (<em>callback function when region was rebuilt. Allows to</em>) – show current state of the live points. See nicelogger() function.
+<li><p><strong>update_interval_iter_fraction</strong> (<em>float</em>) – Update region after (update_interval_iter_fraction*nlive) iterations.</p></li>
+<li><p><strong>update_interval_ncall</strong> (<em>int</em>) – Update region after update_interval_ncall likelihood calls (not used).</p></li>
+<li><p><strong>log_interval</strong> (<em>int</em>) – Update stdout status line every log_interval iterations</p></li>
+<li><p><strong>show_status</strong> (<em>bool</em>) – show integration progress as a status line.
 If no output desired, set to False.</p></li>
-<li><p><strong>criteria</strong> (<em>Termination</em>) – </p></li>
-<li><p><strong>---------------------</strong> – </p></li>
-<li><p><strong>dlogz</strong> – Target evidence uncertainty. This is the std
+<li><p><strong>viz_callback</strong> (<em>function</em>) – callback function when region was rebuilt. Allows to
+show current state of the live points.
+See <code class="xref py py-func docutils literal notranslate"><span class="pre">nicelogger()</span></code> or <code class="xref py py-class docutils literal notranslate"><span class="pre">LivePointsWidget</span></code>.
+If no output desired, set to False.</p></li>
+<li><p><strong>dlogz</strong> (<em>float</em>) – Target evidence uncertainty. This is the std
 between bootstrapped logz integrators.</p></li>
-<li><p><strong>dKL</strong> – Target posterior uncertainty. This is the
+<li><p><strong>dKL</strong> (<em>float</em>) – Target posterior uncertainty. This is the
 Kullback-Leibler divergence in nat between bootstrapped integrators.</p></li>
-<li><p><strong>frac_remain</strong> – Integrate until this fraction of the integral is left in the remainder.
+<li><p><strong>frac_remain</strong> (<em>float</em>) – Integrate until this fraction of the integral is left in the remainder.
 Set to a low number (1e-2 … 1e-5) to make sure peaks are discovered.
 Set to a higher number (0.5) if you know the posterior is simple.</p></li>
-<li><p><strong>min_ess</strong> – Target number of effective posterior samples.</p></li>
-<li><p><strong>max_iters</strong> – maximum number of integration iterations.</p></li>
-<li><p><strong>max_ncalls</strong> – stop after this many likelihood evaluations.</p></li>
+<li><p><strong>min_ess</strong> (<em>int</em>) – Target number of effective posterior samples.</p></li>
+<li><p><strong>max_iters</strong> (<em>int</em>) – maximum number of integration iterations.</p></li>
+<li><p><strong>max_ncalls</strong> (<em>int</em>) – stop after this many likelihood evaluations.</p></li>
 <li><p><strong>max_num_improvement_loops</strong> (<em>int</em>) – run() tries to assess iteratively where more samples are needed.
 This number limits the number of improvement loops.</p></li>
-<li><p><strong>min_num_live_points</strong> – minimum number of live points throughout the run</p></li>
-<li><p><strong>cluster_num_live_points</strong> – require at least this many live points per detected cluster</p></li>
+<li><p><strong>min_num_live_points</strong> (<em>int</em>) – minimum number of live points throughout the run</p></li>
+<li><p><strong>cluster_num_live_points</strong> (<em>int</em>) – require at least this many live points per detected cluster</p></li>
 </ul>
 </dd>
 </dl>
@@ -863,7 +862,7 @@ The number of edges passing the node “in parallel” are “active”.</p>
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p><ul class="simple">
 <li><p><strong>list_of_parents</strong> (<em>list of nodes</em>) – parents</p></li>
-<li><p><em>list_of_nforks</em> – The list of number of forks experienced is:
+<li><p><strong>list_of_nforks</strong> (<em>list of floats</em>) – The list of number of forks experienced is:
 1 if direct descendent of one of the root node’s children,
 where no node had more than one child.
 12 if the root child had 4 children, one of which had 3 children.</p></li>
@@ -894,25 +893,25 @@ the point coordinates.</p>
 <dl class="method">
 <dt id="ultranest.netiter.PointPile.add">
 <code class="sig-name descname">add</code><span class="sig-paren">(</span><em class="sig-param">newpointu</em>, <em class="sig-param">newpointp</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/netiter.html#PointPile.add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.netiter.PointPile.add" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save point newpointu (cube) / newpointp (parameters).</p>
+<dd><p>Save point <cite>newpointu</cite> (cube) / <cite>newpointp</cite> (parameters).</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="ultranest.netiter.PointPile.getu">
 <code class="sig-name descname">getu</code><span class="sig-paren">(</span><em class="sig-param">i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/netiter.html#PointPile.getu"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.netiter.PointPile.getu" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get cube point(s) with index(indices) i.</p>
+<dd><p>Get cube point(s) with index(indices) <cite>i</cite>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="ultranest.netiter.PointPile.getp">
 <code class="sig-name descname">getp</code><span class="sig-paren">(</span><em class="sig-param">i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/netiter.html#PointPile.getp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.netiter.PointPile.getp" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get parameter point(s) with index(indices) i.</p>
+<dd><p>Get parameter point(s) with index(indices) <cite>i</cite>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="ultranest.netiter.PointPile.make_node">
 <code class="sig-name descname">make_node</code><span class="sig-paren">(</span><em class="sig-param">value</em>, <em class="sig-param">u</em>, <em class="sig-param">p</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/netiter.html#PointPile.make_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.netiter.PointPile.make_node" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save point u (cube) / p (parameters), return a tree node.</p>
+<dd><p>Save point <cite>u</cite> (cube) / <cite>p</cite> (parameters), return a tree node.</p>
 </dd></dl>
 
 </dd></dl>
@@ -963,20 +962,20 @@ if True, draw a random sample</p>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Like SingleCounter, but bootstrap capable.</p>
 <ul class="simple">
-<li><p>logZ, logZerr, logVolremaining: main estimator
-logZerr is probably not reliable, because it needs nlive
-to convert H to logZerr.</p></li>
-<li><p>Lmax: highest loglikelihood currently known</p></li>
-<li><p>logZ_bs, logZerr_bs: bootstrapped logZ estimate</p></li>
-<li><p>logZremain, remainder_ratio: weight and fraction of the unexplored remainder</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">logZ</span></code>, <code class="docutils literal notranslate"><span class="pre">logZerr</span></code>, <code class="docutils literal notranslate"><span class="pre">logVolremaining</span></code>: main estimator
+<code class="docutils literal notranslate"><span class="pre">logZerr</span></code> is probably not reliable, because it needs <code class="docutils literal notranslate"><span class="pre">nlive</span></code>
+to convert <code class="docutils literal notranslate"><span class="pre">H</span></code> to <code class="docutils literal notranslate"><span class="pre">logZerr</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Lmax</span></code>: highest loglikelihood currently known</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">logZ_bs</span></code>, <code class="docutils literal notranslate"><span class="pre">logZerr_bs</span></code>: bootstrapped logZ estimate</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">logZremain</span></code>, <code class="docutils literal notranslate"><span class="pre">remainder_ratio</span></code>: weight and fraction of the unexplored remainder</p></li>
 </ul>
 <p>Each of the following has as many entries as number of iterations:</p>
 <ul class="simple">
-<li><p>all_H, all_logZ, all_logVolremaining, logweights:
+<li><p><code class="docutils literal notranslate"><span class="pre">all_H</span></code>, <code class="docutils literal notranslate"><span class="pre">all_logZ</span></code>, <code class="docutils literal notranslate"><span class="pre">all_logVolremaining</span></code>, <code class="docutils literal notranslate"><span class="pre">logweights</span></code>:
 information for all instances
 first entry is the main estimator, i.e., not bootstrapped</p></li>
-<li><p>istail: whether that node was a leaf.</p></li>
-<li><p>nlive: number of parallel arcs (“live points”)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">istail</span></code>: whether that node was a leaf.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">nlive</span></code>: number of parallel arcs (“live points”)</p></li>
 </ul>
 <p>Initialise counter.</p>
 <dl class="field-list simple">
@@ -1011,16 +1010,16 @@ if True, draw a random sample</p></li>
 <dt id="ultranest.netiter.MultiCounter.passing_node">
 <code class="sig-name descname">passing_node</code><span class="sig-paren">(</span><em class="sig-param">rootid</em>, <em class="sig-param">node</em>, <em class="sig-param">rootids</em>, <em class="sig-param">parallel_values</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/netiter.html#MultiCounter.passing_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.netiter.MultiCounter.passing_node" title="Permalink to this definition">¶</a></dt>
 <dd><p>Accumulate node to the integration.</p>
-<p>Breadth-first removed <em>node</em> and nodes active next to node (<em>parallel_nodes</em>).
+<p>Breadth-first removed <cite>node</cite> and nodes active next to node (<cite>parallel_nodes</cite>).
 rootid and rootids are needed to identify which bootstrap instance
 should accumulate.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>rootid</strong> (<a class="reference internal" href="#ultranest.netiter.TreeNode" title="ultranest.netiter.TreeNode"><em>TreeNode</em></a>) – root node this <em>node</em> is from.</p></li>
+<li><p><strong>rootid</strong> (<a class="reference internal" href="#ultranest.netiter.TreeNode" title="ultranest.netiter.TreeNode"><em>TreeNode</em></a>) – root node this <cite>node</cite> is from.</p></li>
 <li><p><strong>node</strong> (<a class="reference internal" href="#ultranest.netiter.TreeNode" title="ultranest.netiter.TreeNode"><em>TreeNode</em></a>) – node being processed.</p></li>
 <li><p><strong>rootids</strong> (<em>array of ints</em>) – for each parallel node, which root it belongs to.</p></li>
-<li><p><strong>parallel_nodes</strong> (<em>array of TreeNodes</em>) – parallel nodes passing <em>node</em>.</p></li>
+<li><p><strong>parallel_nodes</strong> (<em>array of TreeNodes</em>) – parallel nodes passing <cite>node</cite>.</p></li>
 </ul>
 </dd>
 </dl>
@@ -1032,7 +1031,7 @@ should accumulate.</p>
 <dt id="ultranest.netiter.logz_sequence">
 <code class="sig-prename descclassname">ultranest.netiter.</code><code class="sig-name descname">logz_sequence</code><span class="sig-paren">(</span><em class="sig-param">root</em>, <em class="sig-param">pointpile</em>, <em class="sig-param">nbootstraps=12</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/netiter.html#logz_sequence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.netiter.logz_sequence" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run MultiCounter through tree <cite>root</cite>.</p>
-<p>Keeps track of, and returns (logz, logzerr, logv, nlive).</p>
+<p>Keeps track of, and returns <code class="docutils literal notranslate"><span class="pre">(logz,</span> <span class="pre">logzerr,</span> <span class="pre">logv,</span> <span class="pre">nlive)</span></code>.</p>
 </dd></dl>
 
 </div>
@@ -1259,9 +1258,9 @@ internal figure is generated.</p></li>
 <dl class="function">
 <dt id="ultranest.samplingpath.linear_steps_with_reflection">
 <code class="sig-prename descclassname">ultranest.samplingpath.</code><code class="sig-name descname">linear_steps_with_reflection</code><span class="sig-paren">(</span><em class="sig-param">ray_origin</em>, <em class="sig-param">ray_direction</em>, <em class="sig-param">t</em>, <em class="sig-param">wrapped_dims=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/samplingpath.html#linear_steps_with_reflection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.samplingpath.linear_steps_with_reflection" title="Permalink to this definition">¶</a></dt>
-<dd><p>Go <em>t</em> steps in direction <em>ray_direction</em> from <em>ray_origin</em>.</p>
+<dd><p>Go <cite>t</cite> steps in direction <cite>ray_direction</cite> from <cite>ray_origin</cite>.</p>
 <p>Reflect off the unit cube if encountered, respecting wrapped dimensions.
-In any case, the distance should be t * ray_direction.</p>
+In any case, the distance should be <code class="docutils literal notranslate"><span class="pre">t</span> <span class="pre">*</span> <span class="pre">ray_direction</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p><ul class="simple">
@@ -1311,7 +1310,7 @@ which direction does the normal vector point?</p>
 <dl class="function">
 <dt id="ultranest.samplingpath.reflect">
 <code class="sig-prename descclassname">ultranest.samplingpath.</code><code class="sig-name descname">reflect</code><span class="sig-paren">(</span><em class="sig-param">v</em>, <em class="sig-param">normal</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/samplingpath.html#reflect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.samplingpath.reflect" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reflect vector <em>v</em> off a <em>normal</em> vector, return new direction vector.</p>
+<dd><p>Reflect vector <code class="docutils literal notranslate"><span class="pre">v</span></code> off a <code class="docutils literal notranslate"><span class="pre">normal</span></code> vector, return new direction vector.</p>
 </dd></dl>
 
 <dl class="function">
@@ -1327,7 +1326,7 @@ which direction does the normal vector point?</p>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>tpos, tneg</strong> – the positive and negative coordinate along the l vector where r is intersected.
+<dd class="field-even"><p><strong>tpos, tneg</strong> – the positive and negative coordinate along the <cite>l</cite> vector where <cite>r</cite> is intersected.
 If no intersection, throws AssertError.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
@@ -1339,30 +1338,30 @@ If no intersection, throws AssertError.</p>
 <dl class="function">
 <dt id="ultranest.samplingpath.isunitlength">
 <code class="sig-prename descclassname">ultranest.samplingpath.</code><code class="sig-name descname">isunitlength</code><span class="sig-paren">(</span><em class="sig-param">vec</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/samplingpath.html#isunitlength"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.samplingpath.isunitlength" title="Permalink to this definition">¶</a></dt>
-<dd><p>Verify that <em>vec</em> is of unit length.</p>
+<dd><p>Verify that <cite>vec</cite> is of unit length.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="ultranest.samplingpath.angle">
 <code class="sig-prename descclassname">ultranest.samplingpath.</code><code class="sig-name descname">angle</code><span class="sig-paren">(</span><em class="sig-param">a</em>, <em class="sig-param">b</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/samplingpath.html#angle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.samplingpath.angle" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute dot product between vectors a and b.</p>
+<dd><p>Compute dot product between vectors <cite>a</cite> and <cite>b</cite>.</p>
 <p>The arccos of the return value would give an actual angle.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="ultranest.samplingpath.extrapolate_ahead">
 <code class="sig-prename descclassname">ultranest.samplingpath.</code><code class="sig-name descname">extrapolate_ahead</code><span class="sig-paren">(</span><em class="sig-param">dj</em>, <em class="sig-param">xj</em>, <em class="sig-param">vj</em>, <em class="sig-param">contourpath=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/samplingpath.html#extrapolate_ahead"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.samplingpath.extrapolate_ahead" title="Permalink to this definition">¶</a></dt>
-<dd><p>Make di steps of size vj from xj.</p>
+<dd><p>Make <cite>di</cite> steps of size <cite>vj</cite> from <cite>xj</cite>.</p>
 <p>Reflect off unit cube if necessary.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="ultranest.samplingpath.interpolate">
 <code class="sig-prename descclassname">ultranest.samplingpath.</code><code class="sig-name descname">interpolate</code><span class="sig-paren">(</span><em class="sig-param">i</em>, <em class="sig-param">points</em>, <em class="sig-param">fwd_possible</em>, <em class="sig-param">rwd_possible</em>, <em class="sig-param">contourpath=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/samplingpath.html#interpolate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.samplingpath.interpolate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Interpolate a point on the path indicated by <em>points</em>.</p>
+<dd><p>Interpolate a point on the path indicated by <cite>points</cite>.</p>
 <p>Given a sparsely sampled track (stored in .points),
 potentially encountering reflections,
-extract the corrdinates of the point with index <em>i</em>.
+extract the corrdinates of the point with index <cite>i</cite>.
 That point may not have been evaluated yet.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1382,24 +1381,24 @@ That point may not have been evaluated yet.</p>
 <em class="property">class </em><code class="sig-prename descclassname">ultranest.samplingpath.</code><code class="sig-name descname">SamplingPath</code><span class="sig-paren">(</span><em class="sig-param">x0</em>, <em class="sig-param">v0</em>, <em class="sig-param">L0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/samplingpath.html#SamplingPath"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.samplingpath.SamplingPath" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Path described by a (potentially sparse) sequence of points.</p>
-<p>Convention of the stored point tuple (i, x, v, L):
-i: index (0 is starting point)
-x: point
-v: direction
-L: loglikelihood value</p>
+<p>Convention of the stored point tuple <code class="docutils literal notranslate"><span class="pre">(i,</span> <span class="pre">x,</span> <span class="pre">v,</span> <span class="pre">L)</span></code>:
+<cite>i</cite>: index (0 is starting point)
+<cite>x</cite>: point
+<cite>v</cite>: direction
+<cite>L</cite>: loglikelihood value</p>
 <p>Initialise with path starting point.</p>
-<p>Starting point (x0), direction (v0) and
-loglikelihood value (L0) of the path. Is given index 0.</p>
+<p>Starting point (<cite>x0</cite>), direction (<cite>v0</cite>) and
+loglikelihood value (<cite>L0</cite>) of the path. Is given index 0.</p>
 <dl class="method">
 <dt id="ultranest.samplingpath.SamplingPath.add">
 <code class="sig-name descname">add</code><span class="sig-paren">(</span><em class="sig-param">i</em>, <em class="sig-param">xi</em>, <em class="sig-param">vi</em>, <em class="sig-param">Li</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/samplingpath.html#SamplingPath.add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.samplingpath.SamplingPath.add" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add point <em>xi</em>, direction <em>vi</em> and value <em>Li</em> with index <em>i</em> to the path.</p>
+<dd><p>Add point <cite>xi</cite>, direction <cite>vi</cite> and value <cite>Li</cite> with index <cite>i</cite> to the path.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="ultranest.samplingpath.SamplingPath.reset">
 <code class="sig-name descname">reset</code><span class="sig-paren">(</span><em class="sig-param">x0</em>, <em class="sig-param">v0</em>, <em class="sig-param">L0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/samplingpath.html#SamplingPath.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.samplingpath.SamplingPath.reset" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reset path, start from x0, v0, L0.</p>
+<dd><p>Reset path, start from <code class="docutils literal notranslate"><span class="pre">x0,</span> <span class="pre">v0,</span> <span class="pre">L0</span></code>.</p>
 </dd></dl>
 
 <dl class="method">
@@ -1412,7 +1411,7 @@ loglikelihood value (L0) of the path. Is given index 0.</p>
 <dl class="method">
 <dt id="ultranest.samplingpath.SamplingPath.interpolate">
 <code class="sig-name descname">interpolate</code><span class="sig-paren">(</span><em class="sig-param">i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/samplingpath.html#SamplingPath.interpolate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.samplingpath.SamplingPath.interpolate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Interpolate point with index <em>i</em> on path.</p>
+<dd><p>Interpolate point with index <cite>i</cite> on path.</p>
 </dd></dl>
 
 <dl class="method">
@@ -1440,17 +1439,17 @@ loglikelihood value (L0) of the path. Is given index 0.</p>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Region-aware form of the sampling path.</p>
 <p>Uses region points to guess a likelihood contour gradient.</p>
-<p>Initialise with <em>samplingpath</em> and <em>region</em>.</p>
+<p>Initialise with <cite>samplingpath</cite> and <cite>region</cite>.</p>
 <dl class="method">
 <dt id="ultranest.samplingpath.ContourSamplingPath.add">
 <code class="sig-name descname">add</code><span class="sig-paren">(</span><em class="sig-param">i</em>, <em class="sig-param">x</em>, <em class="sig-param">v</em>, <em class="sig-param">L</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/samplingpath.html#ContourSamplingPath.add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.samplingpath.ContourSamplingPath.add" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add point <em>xi</em>, direction <em>vi</em> and value <em>Li</em> with index <em>i</em> to the path.</p>
+<dd><p>Add point <cite>xi</cite>, direction <cite>vi</cite> and value <cite>Li</cite> with index <cite>i</cite> to the path.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="ultranest.samplingpath.ContourSamplingPath.interpolate">
 <code class="sig-name descname">interpolate</code><span class="sig-paren">(</span><em class="sig-param">i</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/samplingpath.html#ContourSamplingPath.interpolate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.samplingpath.ContourSamplingPath.interpolate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Interpolate point with index <em>i</em> on path.</p>
+<dd><p>Interpolate point with index <cite>i</cite> on path.</p>
 </dd></dl>
 
 <dl class="method">
@@ -1474,7 +1473,7 @@ loglikelihood value (L0) of the path. Is given index 0.</p>
 <dt id="ultranest.samplingpath.ContourSamplingPath.gradient">
 <code class="sig-name descname">gradient</code><span class="sig-paren">(</span><em class="sig-param">reflpoint</em>, <em class="sig-param">plot=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/samplingpath.html#ContourSamplingPath.gradient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.samplingpath.ContourSamplingPath.gradient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute gradient approximation.</p>
-<p>Finds spheres enclosing the <em>reflpoint</em>, and chooses their mean
+<p>Finds spheres enclosing the <cite>reflpoint</cite>, and chooses their mean
 as the direction to go towards. If no spheres enclose the
 reflpoint, use nearest sphere.</p>
 <p>v is not used, because that would break detailed balance.</p>
@@ -1540,7 +1539,7 @@ do not terminate at the same number of iterations.</p>
 <dl class="function">
 <dt id="ultranest.stepsampler.generate_random_direction">
 <code class="sig-prename descclassname">ultranest.stepsampler.</code><code class="sig-name descname">generate_random_direction</code><span class="sig-paren">(</span><em class="sig-param">ui</em>, <em class="sig-param">region</em>, <em class="sig-param">scale=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#generate_random_direction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.generate_random_direction" title="Permalink to this definition">¶</a></dt>
-<dd><p>Draw uniform direction vector in unit cube space of length <em>scale</em>.</p>
+<dd><p>Draw uniform direction vector in unit cube space of length <cite>scale</cite>.</p>
 <p>Region is not used.</p>
 </dd></dl>
 
@@ -1548,22 +1547,22 @@ do not terminate at the same number of iterations.</p>
 <dt id="ultranest.stepsampler.generate_cube_oriented_direction">
 <code class="sig-prename descclassname">ultranest.stepsampler.</code><code class="sig-name descname">generate_cube_oriented_direction</code><span class="sig-paren">(</span><em class="sig-param">ui</em>, <em class="sig-param">region</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#generate_cube_oriented_direction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.generate_cube_oriented_direction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Draw a unit direction vector in direction of a random unit cube axes.</p>
-<p><em>region</em> is not used.</p>
+<p><cite>region</cite> is not used.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="ultranest.stepsampler.generate_region_oriented_direction">
 <code class="sig-prename descclassname">ultranest.stepsampler.</code><code class="sig-name descname">generate_region_oriented_direction</code><span class="sig-paren">(</span><em class="sig-param">ui</em>, <em class="sig-param">region</em>, <em class="sig-param">tscale=1</em>, <em class="sig-param">scale=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#generate_region_oriented_direction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.generate_region_oriented_direction" title="Permalink to this definition">¶</a></dt>
-<dd><p>Draw a random direction vector in direction of one of the <em>region</em> axes.</p>
-<p>The vector length is <em>scale</em> (if given).
-If not, the vector length in transformed space is <em>tscale</em>.</p>
+<dd><p>Draw a random direction vector in direction of one of the <cite>region</cite> axes.</p>
+<p>The vector length is <cite>scale</cite> (if given).
+If not, the vector length in transformed space is <cite>tscale</cite>.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="ultranest.stepsampler.generate_region_random_direction">
 <code class="sig-prename descclassname">ultranest.stepsampler.</code><code class="sig-name descname">generate_region_random_direction</code><span class="sig-paren">(</span><em class="sig-param">ui</em>, <em class="sig-param">region</em>, <em class="sig-param">scale=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#generate_region_random_direction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.generate_region_random_direction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Draw a direction vector in a random direction of the region.</p>
-<p>The vector length is <em>scale</em> (in unit cube space).</p>
+<p>The vector length is <cite>scale</cite> (in unit cube space).</p>
 </dd></dl>
 
 <dl class="function">
@@ -1584,7 +1583,7 @@ If not, the vector length in transformed space is <em>tscale</em>.</p>
 <dl class="function">
 <dt id="ultranest.stepsampler.inside_region">
 <code class="sig-prename descclassname">ultranest.stepsampler.</code><code class="sig-name descname">inside_region</code><span class="sig-paren">(</span><em class="sig-param">region</em>, <em class="sig-param">unew</em>, <em class="sig-param">uold</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#inside_region"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.inside_region" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check if unew is inside region.</p>
+<dd><p>Check if <cite>unew</cite> is inside region.</p>
 <p>always returns True at the moment.</p>
 </dd></dl>
 
@@ -1621,7 +1620,7 @@ If not, the vector length in transformed space is <em>tscale</em>.</p>
 <dl class="method">
 <dt id="ultranest.stepsampler.StepSampler.adjust_accept">
 <code class="sig-name descname">adjust_accept</code><span class="sig-paren">(</span><em class="sig-param">accepted</em>, <em class="sig-param">unew</em>, <em class="sig-param">pnew</em>, <em class="sig-param">Lnew</em>, <em class="sig-param">nc</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#StepSampler.adjust_accept"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.StepSampler.adjust_accept" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adjust proposal given that we have been <em>accepted</em> at a new point after <em>nc</em> calls.</p>
+<dd><p>Adjust proposal given that we have been <cite>accepted</cite> at a new point after <cite>nc</cite> calls.</p>
 </dd></dl>
 
 <dl class="method">
@@ -1696,7 +1695,7 @@ If not, the vector length in transformed space is <em>tscale</em>.</p>
 <dl class="method">
 <dt id="ultranest.stepsampler.CubeSliceSampler.adjust_accept">
 <code class="sig-name descname">adjust_accept</code><span class="sig-paren">(</span><em class="sig-param">accepted</em>, <em class="sig-param">unew</em>, <em class="sig-param">pnew</em>, <em class="sig-param">Lnew</em>, <em class="sig-param">nc</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#CubeSliceSampler.adjust_accept"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.CubeSliceSampler.adjust_accept" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adjust proposal given that we have been <em>accepted</em> at a new point after <em>nc</em> calls.</p>
+<dd><p>Adjust proposal given that we have been <cite>accepted</cite> at a new point after <cite>nc</cite> calls.</p>
 </dd></dl>
 
 <dl class="method">
@@ -1832,7 +1831,7 @@ ellipsoid sampling is biased.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>nsteps</strong> (<em>int</em>) – number of accepted steps until the sample is considered independent.</p></li>
 <li><p><strong>radial_fraction</strong> (<em>float</em>) – what fraction of the steps should alter the radius.
-Try 1. / nsteps.</p></li>
+Try <code class="docutils literal notranslate"><span class="pre">1.</span> <span class="pre">/</span> <span class="pre">nsteps</span></code>.</p></li>
 <li><p><strong>scale</strong> (<em>float</em>) – initial scale</p></li>
 <li><p><strong>adapt</strong> (<em>bool</em>) – whether to adapt the scale.</p></li>
 </ul>
@@ -1859,19 +1858,19 @@ Try 1. / nsteps.</p></li>
 <dl class="method">
 <dt id="ultranest.stepsampler.GeodesicSliceSampler.sample_central_ray">
 <code class="sig-name descname">sample_central_ray</code><span class="sig-paren">(</span><em class="sig-param">region</em>, <em class="sig-param">ui</em>, <em class="sig-param">center</em>, <em class="sig-param">u</em>, <em class="sig-param">plot=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#GeodesicSliceSampler.sample_central_ray"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.GeodesicSliceSampler.sample_central_ray" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sample radially from center towards ui.</p>
+<dd><p>Sample radially from <cite>center</cite> towards <cite>ui</cite>.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="ultranest.stepsampler.GeodesicSliceSampler.sample_circle">
 <code class="sig-name descname">sample_circle</code><span class="sig-paren">(</span><em class="sig-param">region</em>, <em class="sig-param">ui</em>, <em class="sig-param">center</em>, <em class="sig-param">v</em>, <em class="sig-param">u</em>, <em class="sig-param">plot=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#GeodesicSliceSampler.sample_circle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.GeodesicSliceSampler.sample_circle" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sample on an arc passing through ui and v with ellipsoid sampling.</p>
+<dd><p>Sample on an arc passing through <cite>ui</cite> and <cite>v</cite> with ellipsoid sampling.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="ultranest.stepsampler.GeodesicSliceSampler.adjust_accept">
 <code class="sig-name descname">adjust_accept</code><span class="sig-paren">(</span><em class="sig-param">accepted</em>, <em class="sig-param">unew</em>, <em class="sig-param">pnew</em>, <em class="sig-param">Lnew</em>, <em class="sig-param">nc</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#GeodesicSliceSampler.adjust_accept"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.GeodesicSliceSampler.adjust_accept" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adjust proposal given that we have been <em>accepted</em> at a new point after <em>nc</em> calls.</p>
+<dd><p>Adjust proposal given that we have been <cite>accepted</cite> at a new point after <cite>nc</cite> calls.</p>
 </dd></dl>
 
 <dl class="method">
@@ -1899,7 +1898,7 @@ Try 1. / nsteps.</p></li>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>nsteps</strong> (<em>int</em>) – number of accepted steps until the sample is considered independent.</p></li>
 <li><p><strong>radial_fraction</strong> (<em>float</em>) – what fraction of the steps should alter the radius.
-Try 1. / nsteps.</p></li>
+Try <code class="docutils literal notranslate"><span class="pre">1.</span> <span class="pre">/</span> <span class="pre">nsteps</span></code>.</p></li>
 <li><p><strong>scale</strong> (<em>float</em>) – initial scale</p></li>
 <li><p><strong>adapt</strong> (<em>bool</em>) – whether to adapt the scale.</p></li>
 </ul>
@@ -2046,9 +2045,9 @@ h5_file_args are passed on to hdf5.File.</p>
 <dl class="function">
 <dt id="ultranest.utils.create_logger">
 <code class="sig-prename descclassname">ultranest.utils.</code><code class="sig-name descname">create_logger</code><span class="sig-paren">(</span><em class="sig-param">module_name</em>, <em class="sig-param">log_dir=None</em>, <em class="sig-param">level=20</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/utils.html#create_logger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.utils.create_logger" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set up the logging channel <em>module_name</em>.</p>
-<p>Append to debug.log in log_dir (if not None).
-Write to stdout with output level <em>level</em>.</p>
+<dd><p>Set up the logging channel <cite>module_name</cite>.</p>
+<p>Append to <code class="docutils literal notranslate"><span class="pre">debug.log</span></code> in <cite>log_dir</cite> (if not <code class="docutils literal notranslate"><span class="pre">None</span></code>).
+Write to stdout with output level <cite>level</cite>.</p>
 <p>If logging handlers are already registered, no new handlers are
 registered.</p>
 </dd></dl>
@@ -2068,7 +2067,7 @@ registered.</p>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><ul class="simple">
 <li><p><em>dictionary of folder paths for different purposes.</em></p></li>
-<li><p><em>Keys are run_dir (the path), info, results, chains, plots.</em></p></li>
+<li><p><em>Keys are “run_dir” (the path), “info”, “results”, “chains”, “plots”.</em></p></li>
 </ul>
 </p>
 </dd>
@@ -2148,9 +2147,9 @@ Another way to sample according to weights would be:</p>
 <dl class="function">
 <dt id="ultranest.utils.vol_prefactor">
 <code class="sig-prename descclassname">ultranest.utils.</code><code class="sig-name descname">vol_prefactor</code><span class="sig-paren">(</span><em class="sig-param">n</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/utils.html#vol_prefactor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.utils.vol_prefactor" title="Permalink to this definition">¶</a></dt>
-<dd><p>Volume constant for an <em>n</em>-dimensional sphere.</p>
-<p>for n even:  $$    (2pi)^(n    /2) / (2 * 4 * … * n)$$
-for n odd :  $$2 * (2pi)^((n-1)/2) / (1 * 3 * … * n)$$</p>
+<dd><p>Volume constant for an <cite>n</cite>-dimensional sphere.</p>
+<p>for <cite>n</cite> even:  $$    (2pi)^(n    /2) / (2 * 4 * … * n)$$
+for <cite>n</cite> odd :  $$2 * (2pi)^((n-1)/2) / (1 * 3 * … * n)$$</p>
 </dd></dl>
 
 </div>
@@ -2187,7 +2186,7 @@ for n odd :  $$2 * (2pi)^((n-1)/2) / (1 * 3 * … * n)$$</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>points</strong> (<em>dict with keys u</em><em>, </em><em>p</em><em>, </em><em>logl</em>) – live points (u: cube coordinates, p: transformed coordinates,
+<li><p><strong>points</strong> (<em>dict with keys &quot;u&quot;</em><em>, </em><em>&quot;p&quot;</em><em>, </em><em>&quot;logl&quot;</em>) – live points (u: cube coordinates, p: transformed coordinates,
 logl: loglikelihood values)</p></li>
 <li><p><strong>info</strong> (<em>dict</em>) – <p>integration information. Keys are:</p>
 <ul>

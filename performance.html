@@ -103,7 +103,7 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Tour of the features</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#usage-in-a-program">Usage in a program</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#speed-ups">Speed ups</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id3">Usage in a program</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id1">Usage in a program</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#high-dimensional-models">High-dimensional models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#using-multiple-cores">Using multiple cores</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#more-features">More features</a></li>
@@ -174,8 +174,6 @@
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="_sources/performance.rst.txt" rel="nofollow"> View page source</a>
-          
         
       </li>
     
@@ -272,7 +270,7 @@
 <p>This reports</p>
 <ol class="arabic simple">
 <li><p>the current sampling region size and how many clusters it found.</p></li>
-<li><p>for each parameter, a linear plot where the live points (shown as <a href="#id1"><span class="problematic" id="id2">*</span></a>) are currently exploring.</p></li>
+<li><p>for each parameter, a linear plot where the live points (shown as *) are currently exploring.</p></li>
 <li><p>Current estimate of logz, percentage of completion, live point log-likelihood values,
 log-likelihood value range being targeted at the moment</p></li>
 <li><p>The current iteration, how many likelihood function evaluations have been performed,
@@ -356,8 +354,8 @@ This reduces function calls.</p>
 <p>To use this function, pass <code class="docutils literal notranslate"><span class="pre">vectorized=True</span></code> to ReactiveNestedSampler.
 Lets see how this looks like in a full program.</p>
 </div>
-<div class="section" id="id3">
-<h2>Usage in a program<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h2>Usage in a program<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
 <p>Below is a Python program that implements a gaussian likelihood,
 and allows the user to specify the problem dimension and a few sampler parameters.</p>
 <div class="literal-block-wrapper docutils container" id="gauss-py">

@@ -267,10 +267,10 @@
 
 
 <div class="viewcode-block" id="linear_steps_with_reflection"><a class="viewcode-back" href="../../ultranest.html#ultranest.samplingpath.linear_steps_with_reflection">[docs]</a><span class="k">def</span> <span class="nf">linear_steps_with_reflection</span><span class="p">(</span><span class="n">ray_origin</span><span class="p">,</span> <span class="n">ray_direction</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">wrapped_dims</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Go *t* steps in direction *ray_direction* from *ray_origin*.</span>
+    <span class="sd">&quot;&quot;&quot;Go `t` steps in direction `ray_direction` from `ray_origin`.</span>
 
 <span class="sd">    Reflect off the unit cube if encountered, respecting wrapped dimensions.</span>
-<span class="sd">    In any case, the distance should be t * ray_direction.</span>
+<span class="sd">    In any case, the distance should be ``t * ray_direction``.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    --------</span>
@@ -364,7 +364,7 @@
 
 
 <div class="viewcode-block" id="reflect"><a class="viewcode-back" href="../../ultranest.html#ultranest.samplingpath.reflect">[docs]</a><span class="k">def</span> <span class="nf">reflect</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">normal</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Reflect vector *v* off a *normal* vector, return new direction vector.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Reflect vector ``v`` off a ``normal`` vector, return new direction vector.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">v</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">normal</span> <span class="o">*</span> <span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">*</span> <span class="n">normal</span></div>
 
 
@@ -383,7 +383,7 @@
 <span class="sd">    Returns</span>
 <span class="sd">    --------</span>
 <span class="sd">    tpos, tneg: floats</span>
-<span class="sd">        the positive and negative coordinate along the l vector where r is intersected.</span>
+<span class="sd">        the positive and negative coordinate along the `l` vector where `r` is intersected.</span>
 <span class="sd">        If no intersection, throws AssertError.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -397,12 +397,12 @@
 
 
 <div class="viewcode-block" id="isunitlength"><a class="viewcode-back" href="../../ultranest.html#ultranest.samplingpath.isunitlength">[docs]</a><span class="k">def</span> <span class="nf">isunitlength</span><span class="p">(</span><span class="n">vec</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Verify that *vec* is of unit length.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Verify that `vec` is of unit length.&quot;&quot;&quot;</span>
     <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">norm</span><span class="p">(</span><span class="n">vec</span><span class="p">),</span> <span class="mi">1</span><span class="p">),</span> <span class="n">norm</span><span class="p">(</span><span class="n">vec</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="angle"><a class="viewcode-back" href="../../ultranest.html#ultranest.samplingpath.angle">[docs]</a><span class="k">def</span> <span class="nf">angle</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Compute dot product between vectors a and b.</span>
+    <span class="sd">&quot;&quot;&quot;Compute dot product between vectors `a` and `b`.</span>
 
 <span class="sd">    The arccos of the return value would give an actual angle.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -412,7 +412,7 @@
 
 
 <div class="viewcode-block" id="extrapolate_ahead"><a class="viewcode-back" href="../../ultranest.html#ultranest.samplingpath.extrapolate_ahead">[docs]</a><span class="k">def</span> <span class="nf">extrapolate_ahead</span><span class="p">(</span><span class="n">dj</span><span class="p">,</span> <span class="n">xj</span><span class="p">,</span> <span class="n">vj</span><span class="p">,</span> <span class="n">contourpath</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Make di steps of size vj from xj.</span>
+    <span class="sd">&quot;&quot;&quot;Make `di` steps of size `vj` from `xj`.</span>
 
 <span class="sd">    Reflect off unit cube if necessary.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -473,11 +473,11 @@
 
 
 <div class="viewcode-block" id="interpolate"><a class="viewcode-back" href="../../ultranest.html#ultranest.samplingpath.interpolate">[docs]</a><span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">points</span><span class="p">,</span> <span class="n">fwd_possible</span><span class="p">,</span> <span class="n">rwd_possible</span><span class="p">,</span> <span class="n">contourpath</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Interpolate a point on the path indicated by *points*.</span>
+    <span class="sd">&quot;&quot;&quot;Interpolate a point on the path indicated by `points`.</span>
 
 <span class="sd">    Given a sparsely sampled track (stored in .points),</span>
 <span class="sd">    potentially encountering reflections,</span>
-<span class="sd">    extract the corrdinates of the point with index *i*.</span>
+<span class="sd">    extract the corrdinates of the point with index `i`.</span>
 <span class="sd">    That point may not have been evaluated yet.</span>
 
 <span class="sd">    Parameters</span>
@@ -549,23 +549,23 @@
 <div class="viewcode-block" id="SamplingPath"><a class="viewcode-back" href="../../ultranest.html#ultranest.samplingpath.SamplingPath">[docs]</a><span class="k">class</span> <span class="nc">SamplingPath</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Path described by a (potentially sparse) sequence of points.</span>
 
-<span class="sd">    Convention of the stored point tuple (i, x, v, L):</span>
-<span class="sd">    i: index (0 is starting point)</span>
-<span class="sd">    x: point</span>
-<span class="sd">    v: direction</span>
-<span class="sd">    L: loglikelihood value</span>
+<span class="sd">    Convention of the stored point tuple ``(i, x, v, L)``:</span>
+<span class="sd">    `i`: index (0 is starting point)</span>
+<span class="sd">    `x`: point</span>
+<span class="sd">    `v`: direction</span>
+<span class="sd">    `L`: loglikelihood value</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">v0</span><span class="p">,</span> <span class="n">L0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Initialise with path starting point.</span>
 
-<span class="sd">        Starting point (x0), direction (v0) and</span>
-<span class="sd">        loglikelihood value (L0) of the path. Is given index 0.</span>
+<span class="sd">        Starting point (`x0`), direction (`v0`) and</span>
+<span class="sd">        loglikelihood value (`L0`) of the path. Is given index 0.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">v0</span><span class="p">,</span> <span class="n">L0</span><span class="p">)</span>
 
 <div class="viewcode-block" id="SamplingPath.add"><a class="viewcode-back" href="../../ultranest.html#ultranest.samplingpath.SamplingPath.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="n">vi</span><span class="p">,</span> <span class="n">Li</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Add point *xi*, direction *vi* and value *Li* with index *i* to the path.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Add point `xi`, direction `vi` and value `Li` with index `i` to the path.&quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="n">Li</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">xi</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">xi</span><span class="p">,</span> <span class="n">xi</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">vi</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">vi</span><span class="p">,</span> <span class="n">vi</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
@@ -573,7 +573,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">i</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="n">vi</span><span class="p">,</span> <span class="n">Li</span><span class="p">))</span></div>
 
 <div class="viewcode-block" id="SamplingPath.reset"><a class="viewcode-back" href="../../ultranest.html#ultranest.samplingpath.SamplingPath.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">v0</span><span class="p">,</span> <span class="n">L0</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Reset path, start from x0, v0, L0.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Reset path, start from ``x0, v0, L0``.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">points</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">v0</span><span class="p">,</span> <span class="n">L0</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fwd_possible</span> <span class="o">=</span> <span class="kc">True</span>
@@ -593,7 +593,7 @@
         <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">x</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;o-&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">mfc</span><span class="o">=</span><span class="s1">&#39;None&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="SamplingPath.interpolate"><a class="viewcode-back" href="../../ultranest.html#ultranest.samplingpath.SamplingPath.interpolate">[docs]</a>    <span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Interpolate point with index *i* on path.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Interpolate point with index `i` on path.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">,</span> <span class="n">fwd_possible</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">fwd_possible</span><span class="p">,</span> <span class="n">rwd_possible</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rwd_possible</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="SamplingPath.extrapolate"><a class="viewcode-back" href="../../ultranest.html#ultranest.samplingpath.SamplingPath.extrapolate">[docs]</a>    <span class="k">def</span> <span class="nf">extrapolate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
@@ -630,17 +630,17 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">samplingpath</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Initialise with *samplingpath* and *region*.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Initialise with `samplingpath` and `region`.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">samplingpath</span> <span class="o">=</span> <span class="n">samplingpath</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">points</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">samplingpath</span><span class="o">.</span><span class="n">points</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">region</span> <span class="o">=</span> <span class="n">region</span>
 
 <div class="viewcode-block" id="ContourSamplingPath.add"><a class="viewcode-back" href="../../ultranest.html#ultranest.samplingpath.ContourSamplingPath.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">L</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Add point *xi*, direction *vi* and value *Li* with index *i* to the path.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Add point `xi`, direction `vi` and value `Li` with index `i` to the path.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">samplingpath</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">L</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="ContourSamplingPath.interpolate"><a class="viewcode-back" href="../../ultranest.html#ultranest.samplingpath.ContourSamplingPath.interpolate">[docs]</a>    <span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Interpolate point with index *i* on path.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Interpolate point with index `i` on path.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">samplingpath</span><span class="o">.</span><span class="n">points</span><span class="p">,</span>
             <span class="n">fwd_possible</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">samplingpath</span><span class="o">.</span><span class="n">fwd_possible</span><span class="p">,</span>
             <span class="n">rwd_possible</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">samplingpath</span><span class="o">.</span><span class="n">rwd_possible</span><span class="p">,</span>
@@ -675,7 +675,7 @@
 <div class="viewcode-block" id="ContourSamplingPath.gradient"><a class="viewcode-back" href="../../ultranest.html#ultranest.samplingpath.ContourSamplingPath.gradient">[docs]</a>    <span class="k">def</span> <span class="nf">gradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reflpoint</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Compute gradient approximation.</span>
 
-<span class="sd">        Finds spheres enclosing the *reflpoint*, and chooses their mean</span>
+<span class="sd">        Finds spheres enclosing the `reflpoint`, and chooses their mean</span>
 <span class="sd">        as the direction to go towards. If no spheres enclose the</span>
 <span class="sd">        reflpoint, use nearest sphere.</span>
 

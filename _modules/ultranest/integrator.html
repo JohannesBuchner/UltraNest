@@ -206,7 +206,7 @@
 
 
 <span class="k">def</span> <span class="nf">_get_cumsum_range</span><span class="p">(</span><span class="n">pi</span><span class="p">,</span> <span class="n">dp</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;From probabilities pi compute the quantile indices of dp and 1-dp.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;From probabilities pi compute the quantile indices of `dp` and ``1-dp``.&quot;&quot;&quot;</span>
     <span class="n">ci</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()</span>
     <span class="n">ilo</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">ci</span> <span class="o">&gt;</span> <span class="n">dp</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">ilo</span> <span class="o">=</span> <span class="n">ilo</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ilo</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span>
@@ -915,9 +915,9 @@
             <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_set_likelihood_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">num_test_samples</span><span class="p">,</span> <span class="n">make_safe</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Store the transform and loglikelihood functions.</span>
+        <span class="sd">&quot;&quot;&quot;Store the transform and log-likelihood functions.</span>
 
-<span class="sd">        Tests with *num_test_samples* whether they work and give the correct output.</span>
+<span class="sd">        Tests with `num_test_samples` whether they work and give the correct output.</span>
 
 <span class="sd">        if make_safe is set, make functions safer by accepting misformed</span>
 <span class="sd">        return shapes and non-finite likelihood values.</span>
@@ -997,7 +997,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">volfactor</span> <span class="o">=</span> <span class="n">vol_prefactor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x_dim</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_widen_nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weighted_parents</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">nnodes_needed</span><span class="p">,</span> <span class="n">update_interval_ncall</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Ensure that at parents have nnodes_needed live points (parallel arcs).</span>
+        <span class="sd">&quot;&quot;&quot;Ensure that at parents have `nnodes_needed` live points (parallel arcs).</span>
 
 <span class="sd">        If not, fill up by sampling.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1048,7 +1048,7 @@
         <span class="k">return</span> <span class="n">target_min_num_children</span>
 
     <span class="k">def</span> <span class="nf">_widen_roots</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nroots</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Ensure root has nroots children.</span>
+        <span class="sd">&quot;&quot;&quot;Ensure root has `nroots` children.</span>
 
 <span class="sd">        Sample from prior to fill up (if needed).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1197,7 +1197,7 @@
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 
     <span class="k">def</span> <span class="nf">_find_strategy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">saved_logl</span><span class="p">,</span> <span class="n">main_iterator</span><span class="p">,</span> <span class="n">dlogz</span><span class="p">,</span> <span class="n">dKL</span><span class="p">,</span> <span class="n">min_ess</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Ask each strategy which loglikelihood interval needs more exploration.</span>
+        <span class="sd">&quot;&quot;&quot;Ask each strategy which log-likelihood interval needs more exploration.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -1307,7 +1307,7 @@
         <span class="k">return</span> <span class="p">(</span><span class="n">Llo_Z</span><span class="p">,</span> <span class="n">Lhi_Z</span><span class="p">),</span> <span class="p">(</span><span class="n">Llo_KL</span><span class="p">,</span> <span class="n">Lhi_KL</span><span class="p">),</span> <span class="p">(</span><span class="n">Llo_ess</span><span class="p">,</span> <span class="n">Lhi_ess</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_pump_region</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">,</span> <span class="n">ndraw</span><span class="p">,</span> <span class="n">nit</span><span class="p">,</span> <span class="n">active_u</span><span class="p">,</span> <span class="n">active_values</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get new samples at Lmin with stepsampler.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Get new samples at `Lmin` with :attribute:`stepsampler`.&quot;&quot;&quot;</span>
         <span class="c1"># tlive = self.region.transformLayer.transform(ulive)</span>
         <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">logl</span><span class="p">,</span> <span class="n">nc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="fm">__next__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span>
             <span class="n">transform</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">loglike</span><span class="p">,</span>
@@ -1405,7 +1405,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">pointstore</span><span class="o">.</span><span class="n">add</span><span class="p">([</span><span class="n">Lmin</span><span class="p">,</span> <span class="n">logli</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span> <span class="o">+</span> <span class="n">ui</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span> <span class="o">+</span> <span class="n">vi</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
 
     <span class="k">def</span> <span class="nf">_create_point</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">,</span> <span class="n">ndraw</span><span class="p">,</span> <span class="n">active_u</span><span class="p">,</span> <span class="n">active_values</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Draw a new point above likelihood threshold Lmin.</span>
+        <span class="sd">&quot;&quot;&quot;Draw a new point above likelihood threshold `Lmin`.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        -----------</span>
@@ -1473,7 +1473,7 @@
         <span class="n">bootstrap_rootids</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">active_rootids</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">nbootstraps</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">minvol</span><span class="o">=</span><span class="mf">0.</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Build a new MLFriends region from active_u.</span>
+        <span class="sd">&quot;&quot;&quot;Build a new MLFriends region from `active_u`.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        -----------</span>
@@ -1701,7 +1701,7 @@
         <span class="k">return</span> <span class="n">updated</span>
 
     <span class="k">def</span> <span class="nf">_expand_nodes_before</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">,</span> <span class="n">nnodes_needed</span><span class="p">,</span> <span class="n">update_interval_ncall</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Expand nodes before Lmin to have nnodes_needed.</span>
+        <span class="sd">&quot;&quot;&quot;Expand nodes before `Lmin` to have `nnodes_needed`.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        --------</span>
@@ -1818,55 +1818,55 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        update_interval_iter_fraction:</span>
+<span class="sd">        update_interval_iter_fraction: float</span>
 <span class="sd">            Update region after (update_interval_iter_fraction*nlive) iterations.</span>
 
-<span class="sd">        update_interval_ncall: (not actually used)</span>
-<span class="sd">            Update region after update_interval_ncall likelihood calls.</span>
+<span class="sd">        update_interval_ncall: int</span>
+<span class="sd">            Update region after update_interval_ncall likelihood calls (not used).</span>
 
-<span class="sd">        log_interval:</span>
+<span class="sd">        log_interval: int</span>
 <span class="sd">            Update stdout status line every log_interval iterations</span>
 
-<span class="sd">        show_status: show integration progress as a status line.</span>
+<span class="sd">        show_status: bool</span>
+<span class="sd">            show integration progress as a status line.</span>
 <span class="sd">            If no output desired, set to False.</span>
 
-<span class="sd">        viz_callback: callback function when region was rebuilt. Allows to</span>
-<span class="sd">            show current state of the live points. See nicelogger() function.</span>
+<span class="sd">        viz_callback: function</span>
+<span class="sd">            callback function when region was rebuilt. Allows to</span>
+<span class="sd">            show current state of the live points. </span>
+<span class="sd">            See :func:`nicelogger` or :class:`LivePointsWidget`.</span>
 <span class="sd">            If no output desired, set to False.</span>
 
-<span class="sd">        Termination criteria</span>
-<span class="sd">        ---------------------</span>
-
-<span class="sd">        dlogz:</span>
+<span class="sd">        dlogz: float</span>
 <span class="sd">            Target evidence uncertainty. This is the std</span>
 <span class="sd">            between bootstrapped logz integrators.</span>
 
-<span class="sd">        dKL:</span>
+<span class="sd">        dKL: float</span>
 <span class="sd">            Target posterior uncertainty. This is the</span>
 <span class="sd">            Kullback-Leibler divergence in nat between bootstrapped integrators.</span>
 
-<span class="sd">        frac_remain:</span>
+<span class="sd">        frac_remain: float</span>
 <span class="sd">            Integrate until this fraction of the integral is left in the remainder.</span>
 <span class="sd">            Set to a low number (1e-2 ... 1e-5) to make sure peaks are discovered.</span>
 <span class="sd">            Set to a higher number (0.5) if you know the posterior is simple.</span>
 
-<span class="sd">        min_ess:</span>
+<span class="sd">        min_ess: int</span>
 <span class="sd">            Target number of effective posterior samples.</span>
 
-<span class="sd">        max_iters:</span>
+<span class="sd">        max_iters: int</span>
 <span class="sd">            maximum number of integration iterations.</span>
 
-<span class="sd">        max_ncalls:</span>
+<span class="sd">        max_ncalls: int</span>
 <span class="sd">            stop after this many likelihood evaluations.</span>
 
 <span class="sd">        max_num_improvement_loops: int</span>
 <span class="sd">            run() tries to assess iteratively where more samples are needed.</span>
 <span class="sd">            This number limits the number of improvement loops.</span>
 
-<span class="sd">        min_num_live_points:</span>
+<span class="sd">        min_num_live_points: int</span>
 <span class="sd">            minimum number of live points throughout the run</span>
 
-<span class="sd">        cluster_num_live_points:</span>
+<span class="sd">        cluster_num_live_points: int</span>
 <span class="sd">            require at least this many live points per detected cluster</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>

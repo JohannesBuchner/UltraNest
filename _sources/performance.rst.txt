@@ -64,7 +64,7 @@ Running this, you should see outputs like::
 This reports
 
 1. the current sampling region size and how many clusters it found.
-2. for each parameter, a linear plot where the live points (shown as *) are currently exploring.
+2. for each parameter, a linear plot where the live points (shown as \*) are currently exploring.
 3. Current estimate of logz, percentage of completion, live point log-likelihood values, 
    log-likelihood value range being targeted at the moment
 4. The current iteration, how many likelihood function evaluations have been performed,

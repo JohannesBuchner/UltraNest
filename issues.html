@@ -166,8 +166,6 @@
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="_sources/issues.rst.txt" rel="nofollow"> View page source</a>
-          
         
       </li>
     
@@ -205,7 +203,7 @@
 </style>
 <div class="section" id="frequently-asked-questions">
 <h1>Frequently Asked Questions<a class="headerlink" href="#frequently-asked-questions" title="Permalink to this headline">¶</a></h1>
-<p>See <a href="#id1"><span class="problematic" id="id2">`contributing`_</span></a> for how to report bugs and ask questions.</p>
+<p>See <a class="reference internal" href="contributing.html"><span class="doc">Contributing</span></a> for how to report bugs and ask questions.</p>
 <ul>
 <li><p>How do I suppress the output?</p>
 <blockquote>
@@ -220,8 +218,8 @@
 </pre></div>
 </div>
 <p>You may want to alter the above to log to a file only.</p>
-<p>To suppress the live point visualisations, set <em>viz_callback=False</em> in sampler.run().</p>
-<p>To suppress the status line, set <em>show_status=False</em> in sampler.run().</p>
+<p>To suppress the live point visualisations, set <code class="docutils literal notranslate"><span class="pre">viz_callback=False</span></code> in <code class="docutils literal notranslate"><span class="pre">sampler.run()</span></code>.</p>
+<p>To suppress the status line, set <code class="docutils literal notranslate"><span class="pre">show_status=False</span></code> in <code class="docutils literal notranslate"><span class="pre">sampler.run()</span></code>.</p>
 </div></blockquote>
 </li>
 <li><p>How should I choose the number of live points?</p>
@@ -295,11 +293,6 @@ chances are good that the result is reliable.</p>
 </pre></div>
 </div>
 </li>
-<li><p>How can I add a question here?</p>
-<blockquote>
-<div><p>See <a href="#id3"><span class="problematic" id="id4">`contributing`_</span></a> for how to report bugs and ask questions.</p>
-</div></blockquote>
-</li>
 <li><p>How should I cite UltraNest?</p>
 <blockquote>
 <div><p>The main method (MLFriends) is described in:</p>
@@ -307,16 +300,20 @@ chances are good that the result is reliable.</p>
 <li><p>Buchner, J. (2014): A statistical test for Nested Sampling algorithms</p></li>
 <li><p>Buchner, J. (2019): Collaborative Nested Sampling: Big Data versus Complex Physical Models</p></li>
 </ul>
-<p>So it is appropriate to write something like:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>        <span class="n">We</span> <span class="n">derive</span> <span class="n">posterior</span> <span class="n">probability</span> <span class="n">distributions</span> <span class="ow">and</span> <span class="n">the</span> <span class="n">Bayesian</span>
-        <span class="n">evidence</span> <span class="k">with</span> <span class="n">the</span> <span class="n">nested</span> <span class="n">sampling</span> <span class="n">Monte</span> <span class="n">Carlo</span> <span class="n">algorithm</span>
-        <span class="n">MLFriends</span> <span class="p">(</span><span class="n">Buchner</span><span class="p">,</span> <span class="mi">2014</span><span class="p">;</span> <span class="mi">2019</span><span class="p">)</span> <span class="n">using</span> <span class="n">the</span>
-        <span class="n">UltraNest</span><span class="p">[</span><span class="n">johannesbuchner</span><span class="o">.</span><span class="n">github</span><span class="o">.</span><span class="n">io</span><span class="o">/</span><span class="n">UltraNest</span><span class="o">/</span><span class="p">]</span> <span class="n">software</span><span class="o">.</span>
-
-<span class="n">If</span> <span class="n">you</span> <span class="n">use</span> <span class="n">the</span> <span class="n">corner</span> <span class="n">plot</span><span class="p">,</span> <span class="n">also</span> <span class="n">cite</span> <span class="n">corner</span><span class="o">.</span>
-<span class="n">If</span> <span class="n">you</span> <span class="n">use</span> <span class="n">the</span> <span class="n">trace</span> <span class="ow">or</span> <span class="n">run</span> <span class="n">plot</span><span class="p">,</span> <span class="n">also</span> <span class="n">cite</span> <span class="n">dynesty</span><span class="o">.</span>
+<p>So it is appropriate to write something like</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>We derive posterior probability distributions and the Bayesian
+evidence with the nested sampling Monte Carlo algorithm
+MLFriends (Buchner, 2014; 2019) using the
+UltraNest[https://johannesbuchner.github.io/UltraNest/] software.
 </pre></div>
 </div>
+<p>If you use the corner plot, also cite corner.
+If you use the trace or run plot, also cite dynesty.</p>
+</div></blockquote>
+</li>
+<li><p>How can I add a question here?</p>
+<blockquote>
+<div><p>See <a class="reference internal" href="contributing.html"><span class="doc">Contributing</span></a> for how to report bugs and ask questions.</p>
 </div></blockquote>
 </li>
 </ul>
