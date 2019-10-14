@@ -213,15 +213,20 @@
 <h1>Tour of the features<a class="headerlink" href="#tour-of-the-features" title="Permalink to this headline">¶</a></h1>
 <p>This tutorial demonstrates:</p>
 <ul class="simple">
-<li><p>How to make a program that uses nested sampling.</p></li>
+<li><p>How to make a program that uses nested sampling</p></li>
 <li><p>How to store and resume runs</p></li>
-<li><p>How to use UltraNest in 100 dimensions.</p></li>
+<li><p>How to use UltraNest in 100 dimensions</p></li>
 <li><p>How to speed up likelihood functions with vectorization</p></li>
-<li><p>How to write a program with UltraNest.</p></li>
-<li><p>How to execute on multiple cores.</p></li>
+<li><p>How to write a program with UltraNest</p></li>
+<li><p>How to execute on multiple cores</p></li>
 </ul>
 <div class="section" id="usage-in-a-program">
 <h2>Usage in a program<a class="headerlink" href="#usage-in-a-program" title="Permalink to this headline">¶</a></h2>
+<p>Lets write a script simple.py.</p>
+<p>It defines a prior and likelihood then analyses it
+To understand this, have a look at the
+<cite>Basic usage &lt;usage-spectral-line.ipynb#Basic usage&gt;</cite> page.
+Or even <cite>usage-spectral-line:Basic usage</cite>.</p>
 <div class="literal-block-wrapper docutils container" id="simple-py">
 <div class="code-block-caption"><span class="caption-text">simple.py</span><a class="headerlink" href="#simple-py" title="Permalink to this code">¶</a></div>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span> <span class="kn">import</span> <span class="nn">scipy.stats</span>
@@ -257,16 +262,15 @@
 </pre></div>
 </div>
 </div>
-<p>Running this, you should see outputs like:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Mono</span><span class="o">-</span><span class="n">modal</span> <span class="n">Volume</span><span class="p">:</span> <span class="o">~</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">9.21</span><span class="p">)</span> <span class="o">*</span> <span class="n">Expected</span> <span class="n">Volume</span><span class="p">:</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">4.83</span><span class="p">)</span>
-
-<span class="n">param1</span><span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>            <span class="o">+</span><span class="mf">0.3</span>  <span class="o">***************</span>  <span class="o">+</span><span class="mf">0.5</span>                         <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
-<span class="n">param2</span><span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                   <span class="o">+</span><span class="mf">0.4</span>  <span class="o">***************</span>  <span class="o">+</span><span class="mf">0.6</span>                  <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
-<span class="n">param3</span><span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                         <span class="o">+</span><span class="mf">0.5</span>  <span class="o">***************</span>  <span class="o">+</span><span class="mf">0.7</span>            <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
-
-<span class="n">Z</span><span class="o">=-</span><span class="mf">0.2</span><span class="p">(</span><span class="mf">75.84</span><span class="o">%</span><span class="p">)</span> <span class="o">|</span> <span class="n">Like</span><span class="o">=</span><span class="mf">3.59</span><span class="o">..</span><span class="mf">4.14</span> <span class="p">[</span><span class="o">-</span><span class="mf">37.4805</span><span class="o">..</span><span class="mf">3.8990</span><span class="p">]</span> <span class="o">|</span> <span class="n">it</span><span class="o">/</span><span class="n">evals</span><span class="o">=</span><span class="mi">2080</span><span class="o">/</span><span class="mi">3730</span> <span class="n">eff</span><span class="o">=</span><span class="mf">62.4625</span><span class="o">%</span> <span class="n">N</span><span class="o">=</span><span class="mi">400</span>
-</pre></div>
-</div>
+<p>Running this, you should see outputs like:
+.. code-block:: none</p>
+<blockquote>
+<div><p>Mono-modal Volume: ~exp(-9.21) * Expected Volume: exp(-4.83)</p>
+<p>param1:      +0.0|            +0.3  <strong>***********</strong>  +0.5                         |     +1.0
+param2:      +0.0|                   +0.4  <strong>***********</strong>  +0.6                  |     +1.0
+param3:      +0.0|                         +0.5  <strong>***********</strong>  +0.7            |     +1.0</p>
+<p>Z=-0.2(75.84%) | Like=3.59..4.14 [-37.4805..3.8990] | it/evals=2080/3730 eff=62.4625% N=400</p>
+</div></blockquote>
 <p>This reports</p>
 <ol class="arabic simple">
 <li><p>the current sampling region size and how many clusters it found.</p></li>
@@ -276,45 +280,50 @@ log-likelihood value range being targeted at the moment</p></li>
 <li><p>The current iteration, how many likelihood function evaluations have been performed,
 the current efficiency and the number of current live points.</p></li>
 </ol>
-<p>At the end, you should see:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">ultranest</span><span class="p">]</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">Explored</span> <span class="n">until</span> <span class="n">L</span><span class="o">=</span><span class="mi">4</span>  <span class="o">..</span><span class="mf">4.0913</span><span class="p">]</span><span class="o">*|</span> <span class="n">it</span><span class="o">/</span><span class="n">evals</span><span class="o">=</span><span class="mi">3440</span><span class="o">/</span><span class="mi">6029</span> <span class="n">eff</span><span class="o">=</span><span class="mf">61.1121</span><span class="o">%</span> <span class="n">N</span><span class="o">=</span><span class="mi">400</span>
-<span class="p">[</span><span class="n">ultranest</span><span class="p">]</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">Likelihood</span> <span class="n">function</span> <span class="n">evaluations</span><span class="p">:</span> <span class="mi">6077</span>
-<span class="p">[</span><span class="n">ultranest</span><span class="p">]</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">Writing</span> <span class="n">samples</span> <span class="ow">and</span> <span class="n">results</span> <span class="n">to</span> <span class="n">disk</span> <span class="o">...</span>
-<span class="p">[</span><span class="n">ultranest</span><span class="p">]</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">Writing</span> <span class="n">samples</span> <span class="ow">and</span> <span class="n">results</span> <span class="n">to</span> <span class="n">disk</span> <span class="o">...</span> <span class="n">done</span>
-<span class="p">[</span><span class="n">ultranest</span><span class="p">]</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span>   <span class="n">logZ</span> <span class="o">=</span> <span class="mf">0.0331</span> <span class="o">+-</span> <span class="mf">0.0725</span>
-<span class="p">[</span><span class="n">ultranest</span><span class="p">]</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">Effective</span> <span class="n">samples</span> <span class="n">strategy</span> <span class="n">satisfied</span> <span class="p">(</span><span class="n">ESS</span> <span class="o">=</span> <span class="mf">1875.4</span><span class="p">,</span> <span class="n">need</span> <span class="o">&gt;</span><span class="mi">400</span><span class="p">)</span>
-<span class="p">[</span><span class="n">ultranest</span><span class="p">]</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">Posterior</span> <span class="n">uncertainty</span> <span class="n">strategy</span> <span class="ow">is</span> <span class="n">satisfied</span> <span class="p">(</span><span class="n">KL</span><span class="p">:</span> <span class="mf">0.47</span><span class="o">+-</span><span class="mf">0.06</span> <span class="n">nat</span><span class="p">,</span> <span class="n">need</span> <span class="o">&lt;</span><span class="mf">0.50</span> <span class="n">nat</span><span class="p">)</span>
-<span class="p">[</span><span class="n">ultranest</span><span class="p">]</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">Evidency</span> <span class="n">uncertainty</span> <span class="n">strategy</span> <span class="ow">is</span> <span class="n">satisfied</span> <span class="p">(</span><span class="n">dlogz</span><span class="o">=</span><span class="mf">0.16</span><span class="p">,</span> <span class="n">need</span> <span class="o">&lt;</span><span class="mf">0.5</span><span class="p">)</span>
-<span class="p">[</span><span class="n">ultranest</span><span class="p">]</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span>   <span class="n">logZ</span> <span class="n">error</span> <span class="n">budget</span><span class="p">:</span> <span class="n">single</span><span class="p">:</span> <span class="mf">0.08</span> <span class="n">bs</span><span class="p">:</span><span class="mf">0.07</span> <span class="n">tail</span><span class="p">:</span><span class="mf">0.01</span> <span class="n">total</span><span class="p">:</span><span class="mf">0.07</span> <span class="n">required</span><span class="p">:</span><span class="o">&lt;</span><span class="mf">0.50</span>
-<span class="p">[</span><span class="n">ultranest</span><span class="p">]</span> <span class="p">[</span><span class="n">INFO</span><span class="p">]</span> <span class="n">done</span> <span class="n">iterating</span><span class="o">.</span>
-</pre></div>
-</div>
+<p>At the end, you should see:
+.. code-block:: none</p>
+<blockquote>
+<div><p>[ultranest] [INFO] Explored until L=4  ..4.0913]*| it/evals=3440/6029 eff=61.1121% N=400
+[ultranest] [INFO] Likelihood function evaluations: 6077
+[ultranest] [INFO] Writing samples and results to disk …
+[ultranest] [INFO] Writing samples and results to disk … done
+[ultranest] [INFO]   logZ = 0.0331 +- 0.0725
+[ultranest] [INFO] Effective samples strategy satisfied (ESS = 1875.4, need &gt;400)
+[ultranest] [INFO] Posterior uncertainty strategy is satisfied (KL: 0.47+-0.06 nat, need &lt;0.50 nat)
+[ultranest] [INFO] Evidency uncertainty strategy is satisfied (dlogz=0.16, need &lt;0.5)
+[ultranest] [INFO]   logZ error budget: single: 0.08 bs:0.07 tail:0.01 total:0.07 required:&lt;0.50
+[ultranest] [INFO] done iterating.</p>
+</div></blockquote>
 <p>This indicates that all three strategies are satisfied and no further
 improvements are needed.</p>
 <p>sampler.print_results() gives a brief summary of logz and its uncertainties,
-and the parameter constraints:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">logZ</span> <span class="o">=</span> <span class="mf">0.042</span> <span class="o">+-</span> <span class="mf">0.101</span>
-  <span class="n">single</span> <span class="n">instance</span><span class="p">:</span> <span class="n">logZ</span> <span class="o">=</span> <span class="mf">0.042</span> <span class="o">+-</span> <span class="mf">0.081</span>
-  <span class="n">bootstrapped</span>   <span class="p">:</span> <span class="n">logZ</span> <span class="o">=</span> <span class="mf">0.033</span> <span class="o">+-</span> <span class="mf">0.101</span>
-  <span class="n">tail</span>           <span class="p">:</span> <span class="n">logZ</span> <span class="o">=</span> <span class="o">+-</span> <span class="mf">0.010</span>
-
-    <span class="n">param1</span>              <span class="mf">0.40</span> <span class="o">+-</span> <span class="mf">0.10</span>
-    <span class="n">param2</span>              <span class="mf">0.500</span> <span class="o">+-</span> <span class="mf">0.099</span>
-    <span class="n">param3</span>              <span class="mf">0.602</span> <span class="o">+-</span> <span class="mf">0.098</span>
-</pre></div>
-</div>
+and the parameter constraints:
+.. code-block:: none</p>
+<blockquote>
+<div><dl>
+<dt>logZ = 0.042 +- 0.101</dt><dd><p>single instance: logZ = 0.042 +- 0.081
+bootstrapped   : logZ = 0.033 +- 0.101
+tail           : logZ = +- 0.010</p>
+<blockquote>
+<div><p>param1              0.40 +- 0.10
+param2              0.500 +- 0.099
+param3              0.602 +- 0.098</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
 <p>In the folder my_gauss you can find useful files:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">*</span> <span class="o">**</span><span class="n">debug</span><span class="o">.</span><span class="n">log</span><span class="o">**</span><span class="p">:</span> <span class="n">log</span> <span class="n">file</span> <span class="n">of</span> <span class="n">the</span> <span class="n">run</span><span class="o">.</span> <span class="n">Include</span> <span class="n">when</span> <span class="n">reporting</span> <span class="n">bugs</span><span class="o">.</span>
-<span class="o">*</span> <span class="o">**</span><span class="n">results</span><span class="o">/</span><span class="n">points</span><span class="o">.</span><span class="n">hdf5</span><span class="o">**</span><span class="p">:</span> <span class="n">file</span> <span class="n">storing</span> <span class="nb">all</span> <span class="n">sampled</span> <span class="n">points</span><span class="o">.</span> <span class="n">Used</span> <span class="k">for</span> <span class="n">resuming</span><span class="o">.</span>
-<span class="o">*</span> <span class="o">**</span><span class="n">chains</span><span class="o">/</span><span class="n">equal_weighted_post</span><span class="o">.</span><span class="n">txt</span><span class="o">**</span><span class="p">:</span> <span class="n">posterior</span> <span class="n">samples</span><span class="o">.</span> <span class="n">Each</span> <span class="n">column</span> <span class="n">corresponds</span> <span class="n">to</span> <span class="n">one</span> <span class="n">parameter</span><span class="o">.</span>
-<span class="o">*</span> <span class="o">**</span><span class="n">chains</span><span class="o">/</span><span class="n">weighted_post</span><span class="o">.</span><span class="n">txt</span><span class="o">**</span><span class="p">:</span> <span class="n">weighted</span> <span class="n">posterior</span> <span class="n">samples</span><span class="o">.</span> <span class="n">Weight</span><span class="p">,</span> <span class="o">-</span><span class="n">loglikelihood</span><span class="p">,</span> <span class="n">parameter</span> <span class="n">value</span> <span class="p">(</span><span class="n">d</span> <span class="n">times</span><span class="p">)</span><span class="o">.</span> <span class="n">getdist</span> <span class="n">compatible</span><span class="o">.</span>
-<span class="o">*</span> <span class="o">**</span><span class="n">chains</span><span class="o">/</span><span class="n">weighted_post</span><span class="o">.</span><span class="n">paramnames</span><span class="o">**</span><span class="p">:</span> <span class="n">Parameter</span> <span class="n">names</span>
-<span class="o">*</span> <span class="o">**</span><span class="n">info</span><span class="o">/</span><span class="n">results</span><span class="o">.</span><span class="n">json</span><span class="o">**</span><span class="p">:</span> <span class="nb">all</span> <span class="n">results</span> <span class="p">(</span><span class="n">logz</span><span class="p">,</span> <span class="n">etc</span><span class="o">.</span><span class="p">)</span> <span class="k">as</span> <span class="n">a</span> <span class="n">json</span> <span class="n">dictionary</span>
-<span class="o">*</span> <span class="o">**</span><span class="n">plots</span><span class="o">/</span><span class="n">corner</span><span class="o">.</span><span class="n">pdf</span><span class="o">**</span><span class="p">:</span> <span class="n">corner</span> <span class="n">plot</span>
-<span class="o">*</span> <span class="o">**</span><span class="n">plots</span><span class="o">/</span><span class="n">run</span><span class="o">.</span><span class="n">pdf</span><span class="o">**</span><span class="p">:</span> <span class="n">diagnostic</span> <span class="n">plot</span> <span class="n">showing</span> <span class="n">integration</span> <span class="n">progress</span>
-<span class="o">*</span> <span class="o">**</span><span class="n">plots</span><span class="o">/</span><span class="n">trace</span><span class="o">.</span><span class="n">pdf</span><span class="o">**</span><span class="p">:</span> <span class="n">diagnostic</span> <span class="n">plot</span> <span class="n">showing</span> <span class="n">problem</span> <span class="n">structure</span>
-</pre></div>
-</div>
+<ul class="simple">
+<li><p><strong>debug.log</strong>: log file of the run. Include when reporting bugs.</p></li>
+<li><p><strong>results/points.hdf5</strong>: file storing all sampled points. Used for resuming.</p></li>
+<li><p><strong>chains/equal_weighted_post.txt</strong>: posterior samples. Each column corresponds to one parameter.</p></li>
+<li><p><strong>chains/weighted_post.txt</strong>: weighted posterior samples. Weight, -loglikelihood, parameter value (d times). getdist compatible.</p></li>
+<li><p><strong>chains/weighted_post.paramnames</strong>: Parameter names</p></li>
+<li><p><strong>info/results.json</strong>: all results (logz, etc.) as a json dictionary</p></li>
+<li><p><strong>plots/corner.pdf</strong>: corner plot</p></li>
+<li><p><strong>plots/run.pdf</strong>: diagnostic plot showing integration progress</p></li>
+<li><p><strong>plots/trace.pdf</strong>: diagnostic plot showing problem structure</p></li>
+</ul>
 <p>Some features worth noting here:</p>
 <ul class="simple">
 <li><p>Key diagnostic plots are included.</p></li>

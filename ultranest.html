@@ -41,9 +41,7 @@
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Frequently Asked Questions" href="issues.html" />
-    <link rel="prev" title="API" href="modules.html" /> 
+    <link rel="search" title="Search" href="search.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -95,29 +93,13 @@
             
             
               <p class="caption"><span class="caption-text">Contents:</span></p>
-<ul class="current">
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="readme.html">UltraNest</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="method.html">How it works</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usage-spectral-line.html">Basic usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="performance.html">Tour of the features</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="modules.html">API</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">ultranest package</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-ultranest.integrator">ultranest.integrator module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-ultranest.mlfriends">ultranest.mlfriends module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-ultranest.netiter">ultranest.netiter module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-ultranest.plot">ultranest.plot module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-ultranest.samplingpath">ultranest.samplingpath module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-ultranest.solvecompat">ultranest.solvecompat module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-ultranest.stepsampler">ultranest.stepsampler module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-ultranest.store">ultranest.store module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-ultranest.utils">ultranest.utils module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-ultranest.viz">ultranest.viz module</a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="issues.html">Frequently Asked Questions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="history.html">Release Notes</a></li>
@@ -175,8 +157,6 @@
   <ul class="wy-breadcrumbs">
     
       <li><a href="index.html">Docs</a> &raquo;</li>
-        
-          <li><a href="modules.html">API</a> &raquo;</li>
         
       <li>ultranest package</li>
     
@@ -437,6 +417,7 @@ if log directory specified, otherwise show interactively.</p>
 <p>Affine whitening transformation.</p>
 <p>Learns the covariance of points.</p>
 <p>Initialise layer.</p>
+<p>The parameters are optional and can be learned from points with <a href="#id1"><span class="problematic" id="id2">:method:`optimize`</span></a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -446,7 +427,6 @@ if log directory specified, otherwise show interactively.</p>
 <li><p><strong>nclusters</strong> (<em>int</em>) – number of clusters</p></li>
 <li><p><strong>wrapped_dims</strong> (<em>array of bools</em>) – indicates which parameter axes are circular.</p></li>
 <li><p><strong>clusterids</strong> (<em>array of int</em>) – cluster id for each point</p></li>
-<li><p><strong>can be learned from points with .optimize</strong><strong>(</strong><strong>)</strong> (<em>These</em>) – </p></li>
 </ul>
 </dd>
 </dl>
@@ -461,7 +441,7 @@ if log directory specified, otherwise show interactively.</p>
 <dt id="ultranest.mlfriends.AffineLayer.optimize">
 <code class="sig-name descname">optimize</code><a class="headerlink" href="#ultranest.mlfriends.AffineLayer.optimize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Optimize layer.</p>
-<p>Estimates covariance of <em>centered_points</em>. <em>minvol</em> sets the
+<p>Estimates covariance of <cite>centered_points</cite>. <cite>minvol</cite> sets the
 smallest allowed size of the covariance to avoid numerical
 collapse.</p>
 </dd></dl>
@@ -504,14 +484,14 @@ likelihood constraints</p></li>
 <dl class="attribute">
 <dt id="ultranest.mlfriends.MLFriends.compute_enlargement">
 <code class="sig-name descname">compute_enlargement</code><a class="headerlink" href="#ultranest.mlfriends.MLFriends.compute_enlargement" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return MLFriends radius and ellipsoid enlargement after <em>nbootstraps</em> bootstrapping rounds.</p>
+<dd><p>Return MLFriends radius and ellipsoid enlargement after <cite>nbootstraps</cite> bootstrapping rounds.</p>
 <p>The wrapping ellipsoid covariance is determined in each bootstrap round.</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="ultranest.mlfriends.MLFriends.compute_maxradiussq">
 <code class="sig-name descname">compute_maxradiussq</code><a class="headerlink" href="#ultranest.mlfriends.MLFriends.compute_maxradiussq" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return MLFriends radius after <em>nbootstraps</em> bootstrapping rounds</p>
+<dd><p>Return MLFriends radius after <cite>nbootstraps</cite> bootstrapping rounds</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -558,7 +538,7 @@ for each point in <em>pts</em>.</p>
 <dd class="field-odd"><p><strong>u</strong> (<em>array of vectors</em>) – Points to check</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>is_inside</strong> – True if inside wrapping ellipsoid, for each point in <em>pts</em>.</p>
+<dd class="field-even"><p><strong>is_inside</strong> – True if inside wrapping ellipsoid, for each point in <cite>pts</cite>.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>array of bools</p>
@@ -570,7 +550,7 @@ for each point in <em>pts</em>.</p>
 <dt id="ultranest.mlfriends.MLFriends.sample">
 <code class="sig-name descname">sample</code><a class="headerlink" href="#ultranest.mlfriends.MLFriends.sample" title="Permalink to this definition">¶</a></dt>
 <dd><p>Draw uniformly sampled points from MLFriends region.</p>
-<p>Switches automatically between the <em>.sampling_methods</em>.</p>
+<p>Switches automatically between the <a href="#id3"><span class="problematic" id="id4">:attribute:`sampling_methods`</span></a>.</p>
 </dd></dl>
 
 <dl class="attribute">
@@ -604,7 +584,7 @@ for each point in <em>pts</em>.</p>
 <dl class="attribute">
 <dt id="ultranest.mlfriends.MLFriends.set_transformLayer">
 <code class="sig-name descname">set_transformLayer</code><a class="headerlink" href="#ultranest.mlfriends.MLFriends.set_transformLayer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Update transformation layer. Invalidates maxradius.</p>
+<dd><p>Update transformation layer. Invalidates <a href="#id5"><span class="problematic" id="id6">:attribute:`maxradius`</span></a>.</p>
 </dd></dl>
 
 </dd></dl>
@@ -638,12 +618,10 @@ for each point in <em>pts</em>.</p>
 </pre></div>
 </div>
 <p>it would identify the middle, subtract it, so that the new space
-is</p>
-<blockquote>
-<div><div class="line-block">
-<div class="line"><strong>****</strong>      |</div>
+is:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">|</span>      <span class="o">********</span>      <span class="o">|</span>
+</pre></div>
 </div>
-</div></blockquote>
 <p>Does nothing if there are no wrapped/circular parameters.</p>
 </dd></dl>
 
@@ -703,15 +681,15 @@ minvol is True.</p></li>
 <dl class="function">
 <dt id="ultranest.mlfriends.count_nearby">
 <code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">count_nearby</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.mlfriends.count_nearby" title="Permalink to this definition">¶</a></dt>
-<dd><p>Count the number of points in <em>a</em> within square radius <em>radiussq</em> for each point <em>b</em> in <em>bpts</em>.</p>
-<p>The number is written to <em>nnearby</em> (of same length as bpts).</p>
+<dd><p>Count the number of points in <cite>a</cite> within square radius <cite>radiussq</cite> for each point <cite>b</cite> in <cite>bpts</cite>.</p>
+<p>The number is written to <cite>nnearby</cite> (of same length as bpts).</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="ultranest.mlfriends.find_nearby">
 <code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">find_nearby</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.mlfriends.find_nearby" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the index of a point in <em>a</em> within square radius <em>radiussq</em>, for each point <em>b</em> in <em>bpts</em>.</p>
-<p>The number is written to <em>nnearby</em> (of same length as <em>bpts</em>).
+<dd><p>Gets the index of a point in <cite>a</cite> within square radius <cite>radiussq</cite>, for each point <cite>b</cite> in <cite>bpts</cite>.</p>
+<p>The number is written to <cite>nnearby</cite> (of same length as <cite>bpts</cite>).
 If none is found, -1 is returned.</p>
 </dd></dl>
 
@@ -726,10 +704,10 @@ to fulfill the given target product of eigenvalues.</p>
 <dl class="function">
 <dt id="ultranest.mlfriends.update_clusters">
 <code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">update_clusters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.mlfriends.update_clusters" title="Permalink to this definition">¶</a></dt>
-<dd><p>Clusters <em>upoints</em>, so that clusters are distinct if no member pair is within a radius of sqrt(<em>maxradiussq</em>)</p>
+<dd><p>Clusters <cite>upoints</cite>, so that clusters are distinct if no member pair is within a radius of sqrt(<cite>maxradiussq</cite>)</p>
 <p>clusterids are the cluster indices of each point
 clusterids re-uses the existing ids to assign new cluster ids</p>
-<p>clustering is performed on a transformed coordinate space (<em>tpoints</em>).
+<p>clustering is performed on a transformed coordinate space (<cite>tpoints</cite>).
 Returned values are based on upoints.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -2246,15 +2224,6 @@ logl: loglikelihood values)</p></li>
            
           </div>
           <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="issues.html" class="btn btn-neutral float-right" title="Frequently Asked Questions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="modules.html" class="btn btn-neutral float-left" title="API" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
-    </div>
   
 
   <hr/>
