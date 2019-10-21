@@ -1,20 +1,25 @@
 """
-
 FLATNUTS
 =========
 
+Experimental.
+
 Directional sampling within regions.
 
-Work in unit cube space. assume a step size
-1) starting from a live point
-2) choose a random direction based on whitened space metric
-3) for forward and backward direction:
-  3.1) find distance where leaving spheres (surely outside)
-  3.2) bisect the step that leads out of the likelihood threshold
-  3.3) can we scatter forward?
+Work in unit cube space. assume a step size.
+
+1. starting from a live point
+2. choose a random direction based on whitened space metric
+3. for forward and backward direction:
+
+  1. find distance where leaving spheres (surely outside)
+  2. bisect the step that leads out of the likelihood threshold
+  3. can we scatter forward?
+
      - if we stepped outside the unit cube, use normal to the parameter(s) we stepped out from
      - if gradient available, use it at first outside point
      - for each sphere that contains the last inside point:
+
        - resize so that first outside point is on the surface, get tangential vector there
          (this vector is just the difference between sphere center and last inside point)
        - compute reflection of direction vector with tangential plane

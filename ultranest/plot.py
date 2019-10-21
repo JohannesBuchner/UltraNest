@@ -31,7 +31,7 @@ except Exception:
 
 import corner
 
-__all__ = ["runplot", "cornerplot", "traceplot"]
+__all__ = ["runplot", "cornerplot", "traceplot", "PredictionBand"]
 
 
 def cornerplot(results, logger=None):
@@ -66,13 +66,6 @@ def cornerplot(results, logger=None):
 class PredictionBand(object):
     """Plot bands of model predictions as calculated from a chain.
 
-    Parameters
-    ----------
-    x: array
-        The independent variable
-
-    Usage
-    ------
     call add(y) to add predictions from each chain point
 
     Example::
@@ -88,6 +81,11 @@ class PredictionBand(object):
         # add wider quantile
         band.shade(q=0.01, color='gray', alpha=0.1)
         plt.show()
+
+    Parameters
+    ----------
+    x: array
+        The independent variable
 
     """
 

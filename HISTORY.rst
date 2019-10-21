@@ -11,5 +11,5 @@ Release Notes
 ------------------
 
 * A simpler version referenced in Buchner et al. (2014),
-  combining RadFriends (with an optional Metropolis-Hastings proposal).
+  combining RadFriends with an optional Metropolis-Hastings proposal.
 

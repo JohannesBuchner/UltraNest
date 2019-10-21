@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 
 
 def generate_random_direction(ui, region, scale=1):
-    """Draw uniform direction vector in unit cube space of length *scale*.
+    """Draw uniform direction vector in unit cube space of length `scale`.
 
     Region is not used.
     """
@@ -25,7 +25,7 @@ def generate_random_direction(ui, region, scale=1):
 def generate_cube_oriented_direction(ui, region):
     """Draw a unit direction vector in direction of a random unit cube axes.
 
-    *region* is not used.
+    `region` is not used.
     """
     ndim = len(ui)
     # choose axis
@@ -37,10 +37,10 @@ def generate_cube_oriented_direction(ui, region):
 
 
 def generate_region_oriented_direction(ui, region, tscale=1, scale=None):
-    """Draw a random direction vector in direction of one of the *region* axes.
+    """Draw a random direction vector in direction of one of the `region` axes.
 
-    The vector length is *scale* (if given).
-    If not, the vector length in transformed space is *tscale*.
+    The vector length is `scale` (if given).
+    If not, the vector length in transformed space is `tscale`.
     """
     ndim = len(ui)
     ti = region.transformLayer.transform(ui)
@@ -60,7 +60,7 @@ def generate_region_oriented_direction(ui, region, tscale=1, scale=None):
 def generate_region_random_direction(ui, region, scale=1):
     """Draw a direction vector in a random direction of the region.
 
-    The vector length is *scale* (in unit cube space).
+    The vector length is `scale` (in unit cube space).
     """
     ti = region.transformLayer.transform(ui)
 
@@ -97,7 +97,7 @@ def generate_mixture_random_direction(ui, region, scale=1, uniform_weight=1e-6):
 
 
 def inside_region(region, unew, uold):
-    """Check if unew is inside region.
+    """Check if `unew` is inside region.
 
     always returns True at the moment.
     """
@@ -176,7 +176,7 @@ class StepSampler(object):
         self.logstat.append([False, self.scale])
 
     def adjust_accept(self, accepted, unew, pnew, Lnew, nc):
-        """Adjust proposal given that we have been *accepted* at a new point after *nc* calls."""
+        """Adjust proposal given that we have been `accepted` at a new point after `nc` calls."""
         if accepted:
             # if self.scale < 1:
             self.scale *= self.nudge
@@ -334,7 +334,7 @@ class CubeSliceSampler(StepSampler):
         return generate_cube_oriented_direction(ui, region)
 
     def adjust_accept(self, accepted, unew, pnew, Lnew, nc):
-        """Adjust proposal given that we have been *accepted* at a new point after *nc* calls."""
+        """Adjust proposal given that we have been `accepted` at a new point after `nc` calls."""
         v, left, right, u = self.interval
         if not self.found_left:
             if accepted:
@@ -457,8 +457,16 @@ class RegionSequentialSliceSampler(CubeSliceSampler):
         return v
 
 
+class BallSliceSampler(CubeSliceSampler):
+    """Hit & run sampler. Choose random directions in space."""
+
+    def generate_direction(self, ui, region):
+        """Choose a isotropically random direction from region.transformLayer."""
+        return generate_random_direction(ui, region)
+
+
 class RegionBallSliceSampler(CubeSliceSampler):
-    """Slice sampler, in random directions according to region."""
+    """Hit & run sampler. Choose random directions according to region."""
 
     def generate_direction(self, ui, region):
         """Choose a isotropically random direction from region.transformLayer."""
@@ -562,7 +570,7 @@ class GeodesicSliceSampler(StepSampler):
             number of accepted steps until the sample is considered independent.
         radial_fraction: float
             what fraction of the steps should alter the radius.
-            Try 1. / nsteps.
+            Try ``1. / nsteps``.
         scale: float
             initial scale
         adapt: bool
@@ -616,7 +624,7 @@ class GeodesicSliceSampler(StepSampler):
         return v
 
     def sample_central_ray(self, region, ui, center, u, plot=False):
-        """Sample radially from center towards ui."""
+        """Sample radially from `center` towards `ui`."""
         # go u long in transformed space
         ti = region.transformLayer.transform(ui)
         tj = (ti - center) * u + center
@@ -627,7 +635,7 @@ class GeodesicSliceSampler(StepSampler):
         return uj
 
     def sample_circle(self, region, ui, center, v, u, plot=False):
-        """Sample on an arc passing through ui and v with ellipsoid sampling."""
+        """Sample on an arc passing through `ui` and `v` with ellipsoid sampling."""
         # make a circle around center going through transformed ui and v
         ti = region.transformLayer.transform(ui)
         tj = (ti - center) * np.cos(u) + v * np.sin(u) + center
@@ -640,7 +648,7 @@ class GeodesicSliceSampler(StepSampler):
         return uj
 
     def adjust_accept(self, accepted, unew, pnew, Lnew, nc):
-        """Adjust proposal given that we have been *accepted* at a new point after *nc* calls."""
+        """Adjust proposal given that we have been `accepted` at a new point after `nc` calls."""
         v, aleft, aright, u, center, rleft, rright = self.interval
         if self.sampling_radius:
             if not self.found_left:

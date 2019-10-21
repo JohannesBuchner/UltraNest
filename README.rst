@@ -10,14 +10,14 @@ Fit and compare complex models reliably and rapidly with advanced sampling techn
 .. image:: https://img.shields.io/travis/JohannesBuchner/ultranest.svg
         :target: https://travis-ci.org/JohannesBuchner/ultranest
 
-.. image:: https://readthedocs.org/projects/ultranest/badge/?version=latest
-        :target: https://ultranest.readthedocs.io/en/latest/?badge=latest
+.. image:: https://img.shields.io/badge/docs-published-ok.svg
+        :target: https://johannesbuchner.github.io/UltraNest/
         :alt: Documentation Status
 
 Correctness. Speed. Ease of use. 🦔
 
 About
-======
+-----
 
 When scientific models are compared to data, two tasks are important:
 1) contraining the model parameters and 2) comparing the model to other models.
@@ -51,10 +51,11 @@ UltraNest also attempts to provide feature parity compared to other packages
 
 However, UltraNest is still in beta. You can help by
 testing it and reporting issues. Code contributions for fixes and 
-new features are also welcome. See :contributing:.
+new features are also welcome.
+See the `Contributing page<https://johannesbuchner.github.io/UltraNest/contributing.html>`_.
 
 Features
-=========
+---------
 
 * Pythonic
 
@@ -101,7 +102,7 @@ Features
 
 
 TODO
-----
+^^^^
 
 * Documentation:
 
@@ -111,7 +112,7 @@ TODO
   * Example verifying integration with VB+IS
 
 Usage
------
+^^^^^
 
 Read the full documentation at:
 
@@ -119,7 +120,7 @@ https://johannesbuchner.github.io/UltraNest/
 
 
 Licence
--------
+^^^^^^^
 
 GPLv3 (see LICENCE file). If you require another license, please contact me.
 

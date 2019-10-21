@@ -5,15 +5,21 @@ Tour of the features
 
 This tutorial demonstrates:
 
-* How to make a program that uses nested sampling.
+* How to make a program that uses nested sampling
 * How to store and resume runs
-* How to use UltraNest in 100 dimensions.
+* How to use UltraNest in 100 dimensions
 * How to speed up likelihood functions with vectorization
-* How to write a program with UltraNest.
-* How to execute on multiple cores.
+* How to write a program with UltraNest
+* How to execute on multiple cores
 
 Usage in a program
 ===================
+
+Lets write a script simple.py. It defines a problem through prior and likelihood functions,
+and analyses it.
+
+To understand it, have a look first the `Basic usage <usage-spectral-line.ipynb#Basic usage>`_ page.
+Or even `usage-spectral-line:Basic usage`_.
 
 .. code-block:: python3
    :caption: simple.py
@@ -50,8 +56,9 @@ Usage in a program
     sampler.plot()
     sampler.plot_trace()
 
-Running this, you should see outputs like::
+Running this, you should see outputs like:
 
+.. code-block:: none
 
         Mono-modal Volume: ~exp(-9.21) * Expected Volume: exp(-4.83)
 
@@ -64,13 +71,15 @@ Running this, you should see outputs like::
 This reports
 
 1. the current sampling region size and how many clusters it found.
-2. for each parameter, a linear plot where the live points (shown as *) are currently exploring.
+2. for each parameter, a linear plot where the live points (shown as \*) are currently exploring.
 3. Current estimate of logz, percentage of completion, live point log-likelihood values, 
    log-likelihood value range being targeted at the moment
 4. The current iteration, how many likelihood function evaluations have been performed,
    the current efficiency and the number of current live points.
    
-At the end, you should see::
+At the end, you should see:
+
+.. code-block:: none
 
         [ultranest] [INFO] Explored until L=4  ..4.0913]*| it/evals=3440/6029 eff=61.1121% N=400 
         [ultranest] [INFO] Likelihood function evaluations: 6077
@@ -87,7 +96,9 @@ This indicates that all three strategies are satisfied and no further
 improvements are needed.
 
 sampler.print_results() gives a brief summary of logz and its uncertainties,
-and the parameter constraints::
+and the parameter constraints:
+
+.. code-block:: none
 
         logZ = 0.042 +- 0.101
           single instance: logZ = 0.042 +- 0.081
@@ -98,7 +109,7 @@ and the parameter constraints::
             param2              0.500 +- 0.099
             param3              0.602 +- 0.098
 
-In the folder my_gauss you can find useful files::
+In the folder my_gauss you can find useful files:
 
 * **debug.log**: log file of the run. Include when reporting bugs.
 * **results/points.hdf5**: file storing all sampled points. Used for resuming.

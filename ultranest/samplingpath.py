@@ -89,10 +89,10 @@ def box_line_intersection(ray_origin, ray_direction):
 
 
 def linear_steps_with_reflection(ray_origin, ray_direction, t, wrapped_dims=None):
-    """Go *t* steps in direction *ray_direction* from *ray_origin*.
+    """Go `t` steps in direction `ray_direction` from `ray_origin`.
 
     Reflect off the unit cube if encountered, respecting wrapped dimensions.
-    In any case, the distance should be t * ray_direction.
+    In any case, the distance should be ``t * ray_direction``.
 
     Returns
     --------
@@ -186,7 +186,7 @@ def get_sphere_tangents(sphere_center, edge_point):
 
 
 def reflect(v, normal):
-    """Reflect vector *v* off a *normal* vector, return new direction vector."""
+    """Reflect vector ``v`` off a ``normal`` vector, return new direction vector."""
     return v - 2 * (normal * v).sum() * normal
 
 
@@ -205,7 +205,7 @@ def distances(l, o, r=1):
     Returns
     --------
     tpos, tneg: floats
-        the positive and negative coordinate along the l vector where r is intersected.
+        the positive and negative coordinate along the `l` vector where `r` is intersected.
         If no intersection, throws AssertError.
 
     """
@@ -219,12 +219,12 @@ def distances(l, o, r=1):
 
 
 def isunitlength(vec):
-    """Verify that *vec* is of unit length."""
+    """Verify that `vec` is of unit length."""
     assert np.isclose(norm(vec), 1), norm(vec)
 
 
 def angle(a, b):
-    """Compute dot product between vectors a and b.
+    """Compute dot product between vectors `a` and `b`.
 
     The arccos of the return value would give an actual angle.
     """
@@ -234,7 +234,7 @@ def angle(a, b):
 
 
 def extrapolate_ahead(dj, xj, vj, contourpath=None):
-    """Make di steps of size vj from xj.
+    """Make `di` steps of size `vj` from `xj`.
 
     Reflect off unit cube if necessary.
     """
@@ -295,11 +295,11 @@ def extrapolate_ahead(dj, xj, vj, contourpath=None):
 
 
 def interpolate(i, points, fwd_possible, rwd_possible, contourpath=None):
-    """Interpolate a point on the path indicated by *points*.
+    """Interpolate a point on the path indicated by `points`.
 
     Given a sparsely sampled track (stored in .points),
     potentially encountering reflections,
-    extract the corrdinates of the point with index *i*.
+    extract the corrdinates of the point with index `i`.
     That point may not have been evaluated yet.
 
     Parameters
@@ -371,23 +371,23 @@ def interpolate(i, points, fwd_possible, rwd_possible, contourpath=None):
 class SamplingPath(object):
     """Path described by a (potentially sparse) sequence of points.
 
-    Convention of the stored point tuple (i, x, v, L):
-    i: index (0 is starting point)
-    x: point
-    v: direction
-    L: loglikelihood value
+    Convention of the stored point tuple ``(i, x, v, L)``:
+    `i`: index (0 is starting point)
+    `x`: point
+    `v`: direction
+    `L`: loglikelihood value
     """
 
     def __init__(self, x0, v0, L0):
         """Initialise with path starting point.
 
-        Starting point (x0), direction (v0) and
-        loglikelihood value (L0) of the path. Is given index 0.
+        Starting point (`x0`), direction (`v0`) and
+        loglikelihood value (`L0`) of the path. Is given index 0.
         """
         self.reset(x0, v0, L0)
 
     def add(self, i, xi, vi, Li):
-        """Add point *xi*, direction *vi* and value *Li* with index *i* to the path."""
+        """Add point `xi`, direction `vi` and value `Li` with index `i` to the path."""
         assert Li is not None
         assert len(xi.shape) == 1, (xi, xi.shape)
         assert len(vi.shape) == 1, (vi, vi.shape)
@@ -395,7 +395,7 @@ class SamplingPath(object):
         self.points.append((i, xi, vi, Li))
 
     def reset(self, x0, v0, L0):
-        """Reset path, start from x0, v0, L0."""
+        """Reset path, start from ``x0, v0, L0``."""
         self.points = []
         self.add(0, x0, v0, L0)
         self.fwd_possible = True
@@ -415,7 +415,7 @@ class SamplingPath(object):
         plt.plot(x[:,0], x[:,1], 'o-', ms=4, mfc='None', **kwargs)
 
     def interpolate(self, i):
-        """Interpolate point with index *i* on path."""
+        """Interpolate point with index `i` on path."""
         return interpolate(i, self.points, fwd_possible=self.fwd_possible, rwd_possible=self.rwd_possible)
 
     def extrapolate(self, i):
@@ -452,17 +452,17 @@ class ContourSamplingPath(object):
     """
 
     def __init__(self, samplingpath, region):
-        """Initialise with *samplingpath* and *region*."""
+        """Initialise with `samplingpath` and `region`."""
         self.samplingpath = samplingpath
         self.points = self.samplingpath.points
         self.region = region
 
     def add(self, i, x, v, L):
-        """Add point *xi*, direction *vi* and value *Li* with index *i* to the path."""
+        """Add point `xi`, direction `vi` and value `Li` with index `i` to the path."""
         self.samplingpath.add(i, x, v, L)
 
     def interpolate(self, i):
-        """Interpolate point with index *i* on path."""
+        """Interpolate point with index `i` on path."""
         return interpolate(i, self.samplingpath.points,
             fwd_possible=self.samplingpath.fwd_possible,
             rwd_possible=self.samplingpath.rwd_possible,
@@ -497,7 +497,7 @@ class ContourSamplingPath(object):
     def gradient(self, reflpoint, plot=False):
         """Compute gradient approximation.
 
-        Finds spheres enclosing the *reflpoint*, and chooses their mean
+        Finds spheres enclosing the `reflpoint`, and chooses their mean
         as the direction to go towards. If no spheres enclose the
         reflpoint, use nearest sphere.
 

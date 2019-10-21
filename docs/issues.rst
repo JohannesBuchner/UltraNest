@@ -2,7 +2,7 @@
 Frequently Asked Questions
 ===========================
 
-See `contributing`_ for how to report bugs and ask questions.
+See `Contributing <contributing.rst>`_ for how to report bugs and ask questions.
 
 * How do I suppress the output?
 
@@ -18,9 +18,9 @@ See `contributing`_ for how to report bugs and ask questions.
     
     You may want to alter the above to log to a file only.
 
-    To suppress the live point visualisations, set *viz_callback=False* in sampler.run().
+    To suppress the live point visualisations, set ``viz_callback=False`` in ``sampler.run()``.
 
-    To suppress the status line, set *show_status=False* in sampler.run().
+    To suppress the status line, set ``show_status=False`` in ``sampler.run()``.
 
 * How should I choose the number of live points?
 
@@ -86,10 +86,6 @@ See `contributing`_ for how to report bugs and ask questions.
     not make the result incorrect. Increasing the number of live points
     can avoid this (use >100).
 
-* How can I add a question here?
-
-    See `contributing`_ for how to report bugs and ask questions.
-
 * How should I cite UltraNest?
 
     The main method (MLFriends) is described in:
@@ -97,13 +93,19 @@ See `contributing`_ for how to report bugs and ask questions.
     * Buchner, J. (2014): A statistical test for Nested Sampling algorithms
     * Buchner, J. (2019): Collaborative Nested Sampling: Big Data versus Complex Physical Models
     
-    So it is appropriate to write something like::
+    So it is appropriate to write something like
     
-		We derive posterior probability distributions and the Bayesian
-		evidence with the nested sampling Monte Carlo algorithm
-		MLFriends (Buchner, 2014; 2019) using the 
-		UltraNest[johannesbuchner.github.io/UltraNest/] software.
+    .. code-block:: none
+    
+        We derive posterior probability distributions and the Bayesian
+        evidence with the nested sampling Monte Carlo algorithm
+        MLFriends (Buchner, 2014; 2019) using the 
+        UltraNest[https://johannesbuchner.github.io/UltraNest/] software.
 
-	If you use the corner plot, also cite corner.
-	If you use the trace or run plot, also cite dynesty.
+    If you use the corner plot, also cite corner.
+    If you use the trace or run plot, also cite dynesty.
+
+* How can I add a question here?
+
+    See `Contributing <contributing.rst>`_ for how to report bugs and ask questions.
 

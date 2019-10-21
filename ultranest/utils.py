@@ -10,10 +10,10 @@ import errno
 
 def create_logger(module_name, log_dir=None, level=logging.INFO):
     """
-    Set up the logging channel *module_name*.
+    Set up the logging channel `module_name`.
 
-    Append to debug.log in log_dir (if not None).
-    Write to stdout with output level *level*.
+    Append to ``debug.log`` in `log_dir` (if not ``None``).
+    Write to stdout with output level `level`.
 
     If logging handlers are already registered, no new handlers are
     registered.
@@ -33,7 +33,7 @@ def create_logger(module_name, log_dir=None, level=logging.INFO):
         # if it is new, register to write to stdout
         handler = logging.StreamHandler(sys.stdout)
         handler.setLevel(level)
-        formatter = logging.Formatter('[{}] [%(levelname)s] %(message)s'.format(module_name))
+        formatter = logging.Formatter('[{}] %(message)s'.format(module_name))
         handler.setFormatter(formatter)
         logger.addHandler(handler)
 
@@ -55,7 +55,7 @@ def make_run_dir(log_dir, run_num=None, append_run_num=True):
     Returns
     -------
     dictionary of folder paths for different purposes.
-    Keys are run_dir (the path), info, results, chains, plots.
+    Keys are "run_dir" (the path), "info", "results", "chains", "plots".
 
     """
     def makedirs(name):
@@ -220,10 +220,10 @@ def quantile(x, q, weights=None):
 
 
 def vol_prefactor(n):
-    """Volume constant for an *n*-dimensional sphere.
+    """Volume constant for an `n`-dimensional sphere.
 
-    for n even:  $$    (2pi)^(n    /2) / (2 * 4 * ... * n)$$
-    for n odd :  $$2 * (2pi)^((n-1)/2) / (1 * 3 * ... * n)$$
+    for `n` even:  $$    (2pi)^(n    /2) / (2 * 4 * ... * n)$$
+    for `n` odd :  $$2 * (2pi)^((n-1)/2) / (1 * 3 * ... * n)$$
     """
     if n % 2 == 0:
         f = 1.

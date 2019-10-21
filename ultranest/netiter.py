@@ -286,7 +286,7 @@ def find_nodes_before(root, value):
     --------
     list_of_parents: list of nodes
         parents
-    list_of_nforks:
+    list_of_nforks: list of floats
         The list of number of forks experienced is:
         1 if direct descendent of one of the root node's children,
         where no node had more than one child.
@@ -352,7 +352,7 @@ class PointPile(object):
         self.pdim = pdim
 
     def add(self, newpointu, newpointp):
-        """Save point newpointu (cube) / newpointp (parameters)."""
+        """Save point `newpointu` (cube) / `newpointp` (parameters)."""
         if self.nrows >= self.us.shape[0]:
             self.us = np.concatenate((self.us, np.zeros((self.chunksize, self.udim))))
             self.ps = np.concatenate((self.ps, np.zeros((self.chunksize, self.pdim))))
@@ -364,15 +364,15 @@ class PointPile(object):
         return self.nrows - 1
 
     def getu(self, i):
-        """Get cube point(s) with index(indices) i."""
+        """Get cube point(s) with index(indices) `i`."""
         return self.us[i]
 
     def getp(self, i):
-        """Get parameter point(s) with index(indices) i."""
+        """Get parameter point(s) with index(indices) `i`."""
         return self.ps[i]
 
     def make_node(self, value, u, p):
-        """Save point u (cube) / p (parameters), return a tree node."""
+        """Save point `u` (cube) / `p` (parameters), return a tree node."""
         index = self.add(u, p)
         return TreeNode(value=value, id=index)
 
@@ -483,22 +483,22 @@ class SingleCounter(object):
 class MultiCounter(object):
     """Like SingleCounter, but bootstrap capable.
 
-    Properties
-    -----------
-    - logZ, logZerr, logVolremaining: main estimator
-      logZerr is probably not reliable, because it needs nlive
-      to convert H to logZerr.
-    - Lmax: highest loglikelihood currently known
-    - logZ_bs, logZerr_bs: bootstrapped logZ estimate
-    - logZremain, remainder_ratio: weight and fraction of the unexplored remainder
+    **Attributes**:
+    
+    - ``logZ``, ``logZerr``, ``logVolremaining``: main estimator
+      ``logZerr`` is probably not reliable, because it needs ``nlive``
+      to convert ``H`` to ``logZerr``.
+    - ``Lmax``: highest loglikelihood currently known
+    - ``logZ_bs``, ``logZerr_bs``: bootstrapped logZ estimate
+    - ``logZremain``, ``remainder_ratio``: weight and fraction of the unexplored remainder
 
     Each of the following has as many entries as number of iterations:
 
-    - all_H, all_logZ, all_logVolremaining, logweights:
+    - ``all_H``, ``all_logZ``, ``all_logVolremaining``, ``logweights``:
       information for all instances
       first entry is the main estimator, i.e., not bootstrapped
-    - istail: whether that node was a leaf.
-    - nlive: number of parallel arcs ("live points")
+    - ``istail``: whether that node was a leaf.
+    - ``nlive``: number of parallel arcs ("live points")
 
     """
 
@@ -564,20 +564,20 @@ class MultiCounter(object):
     def passing_node(self, rootid, node, rootids, parallel_values):
         """Accumulate node to the integration.
 
-        Breadth-first removed *node* and nodes active next to node (*parallel_nodes*).
+        Breadth-first removed `node` and nodes active next to node (`parallel_nodes`).
         rootid and rootids are needed to identify which bootstrap instance
         should accumulate.
 
         Parameters
         ----------
         rootid: TreeNode
-            root node this *node* is from.
+            root node this `node` is from.
         node: TreeNode
             node being processed.
         rootids: array of ints
             for each parallel node, which root it belongs to.
         parallel_nodes: array of TreeNodes
-            parallel nodes passing *node*.
+            parallel nodes passing `node`.
 
         """
         # node is being consumed
@@ -684,7 +684,7 @@ class MultiCounter(object):
 def logz_sequence(root, pointpile, nbootstraps=12):
     """Run MultiCounter through tree `root`.
 
-    Keeps track of, and returns (logz, logzerr, logv, nlive).
+    Keeps track of, and returns ``(logz, logzerr, logv, nlive)``.
     """
     roots = root.children
 

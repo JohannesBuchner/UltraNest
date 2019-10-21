@@ -79,7 +79,7 @@ def nicelogger(points, info, region, transformLayer, region_fresh=False):
 
     Parameters
     -----------
-    points: dict with keys u, p, logl
+    points: dict with keys "u", "p", "logl"
         live points (u: cube coordinates, p: transformed coordinates,
         logl: loglikelihood values)
     info: dict

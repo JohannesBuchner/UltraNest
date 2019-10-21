@@ -39,6 +39,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
     'sphinx.ext.mathjax',
+    'sphinx.ext.autosectionlabel',
     'nbsphinx',
     'sphinx_rtd_theme',
     'sphinx.ext.napoleon',
@@ -90,6 +91,7 @@ pygments_style = 'sphinx'
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
 
+autosectionlabel_prefix_document = True
 
 # avoid time-out when running the doc
 nbsphinx_timeout = 10 * 60
@@ -106,7 +108,7 @@ autoclass_content = 'both'
 
 edit_on_github_project = 'JohannesBuchner/UltraNest'
 edit_on_github_branch = 'master'
-
+#edit_on_github_url
 edit_on_github_src = 'docs/'  # optional. default: ''
 
 # -- Options for HTML output -------------------------------------------
@@ -128,7 +130,7 @@ html_theme_options = {
     #'only_logo': False,
 }
 html_logo = "static/logo.svg"
-html_show_sourcelink = True
+html_show_sourcelink = False
 html_favicon = "static/icon.ico"
 
 html_show_sphinx = False

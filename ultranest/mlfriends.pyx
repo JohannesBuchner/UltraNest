@@ -17,9 +17,9 @@ def count_nearby(np.ndarray[np.float_t, ndim=2] apts,
     np.float_t radiussq,
     np.ndarray[np.int64_t, ndim=1] nnearby
 ):
-    """Count the number of points in *a* within square radius *radiussq* for each point *b* in *bpts*.
+    """Count the number of points in `a` within square radius `radiussq` for each point `b` in `bpts`.
 
-    The number is written to *nnearby* (of same length as bpts).
+    The number is written to `nnearby` (of same length as bpts).
     """
     cdef int na = apts.shape[0]
     cdef int nb = bpts.shape[0]
@@ -51,9 +51,9 @@ def find_nearby(np.ndarray[np.float_t, ndim=2] apts,
     np.float_t radiussq,
     np.ndarray[np.int64_t, ndim=1] nnearby
 ):
-    """Gets the index of a point in *a* within square radius *radiussq*, for each point *b* in *bpts*.
+    """Gets the index of a point in `a` within square radius `radiussq`, for each point `b` in `bpts`.
 
-    The number is written to *nnearby* (of same length as *bpts*).
+    The number is written to `nnearby` (of same length as `bpts`).
     If none is found, -1 is returned.
     """
     cdef int na = apts.shape[0]
@@ -83,7 +83,7 @@ def find_nearby(np.ndarray[np.float_t, ndim=2] apts,
 @cython.boundscheck(False)
 @cython.wraparound(False)
 cdef float compute_maxradiussq(np.ndarray[np.float_t, ndim=2] apts, np.ndarray[np.float_t, ndim=2] bpts):
-    """Measure shortest euclidean distance to any point in *apts*, for each point *b* in *bpts*.
+    """Measure shortest euclidean distance to any point in `apts`, for each point `b` in `bpts`.
 
     Returns the square of the maximum over these.
     """
@@ -114,12 +114,12 @@ cdef float compute_maxradiussq(np.ndarray[np.float_t, ndim=2] apts, np.ndarray[n
     return maxd
 
 def update_clusters(upoints, tpoints, maxradiussq, clusterids=None):
-    """Clusters *upoints*, so that clusters are distinct if no member pair is within a radius of sqrt(*maxradiussq*)
+    """Clusters `upoints`, so that clusters are distinct if no member pair is within a radius of sqrt(`maxradiussq`)
 
     clusterids are the cluster indices of each point
     clusterids re-uses the existing ids to assign new cluster ids
 
-    clustering is performed on a transformed coordinate space (*tpoints*).
+    clustering is performed on a transformed coordinate space (`tpoints`).
     Returned values are based on upoints.
 
     Returns
@@ -238,6 +238,7 @@ def bounding_ellipsoid(x, minvol=0.):
     Returns
     -------
     mean and covariance of points
+
     """
     # Function taken from nestle, MIT licensed, (C) kbarbary
 
@@ -293,7 +294,7 @@ class ScalingLayer(object):
             |*****           ****|
 
         it would identify the middle, subtract it, so that the new space
-        is
+        is::
 
             |      ********      |
 
@@ -396,6 +397,8 @@ class AffineLayer(ScalingLayer):
     def __init__(self, ctr=0, T=1, invT=1, nclusters=1, wrapped_dims=[], clusterids=None):
         """Initialise layer.
 
+        The parameters are optional and can be learned from points with :meth:`optimize`
+
         Parameters
         ----------
         ctr: vector
@@ -411,7 +414,6 @@ class AffineLayer(ScalingLayer):
         clusterids: array of int
             cluster id for each point
 
-        These can be learned from points with .optimize()
         """
         self.ctr = ctr
         self.T = T
@@ -424,7 +426,7 @@ class AffineLayer(ScalingLayer):
     def optimize(self, points, centered_points, clusterids=None, minvol=0.):
         """Optimize layer.
 
-        Estimates covariance of *centered_points*. *minvol* sets the
+        Estimates covariance of `centered_points`. `minvol` sets the
         smallest allowed size of the covariance to avoid numerical
         collapse.
         """
@@ -504,6 +506,7 @@ class MLFriends(object):
             live points
         transformLayer: ScalingLayer or AffineLayer
             whitenin layer
+
         """
         if not np.logical_and(u > 0, u < 1).all():
             raise ValueError("not all u values are between 0 and 1: %s" % u[~np.logical_and(u > 0, u < 1).all()])
@@ -534,7 +537,7 @@ class MLFriends(object):
         return np.log(self.transformLayer.volscale) + np.log(r) * ndim #+ np.log(vol_prefactor(ndim))
 
     def set_transformLayer(self, transformLayer):
-        """Update transformation layer. Invalidates maxradius."""
+        """Update transformation layer. Invalidates attribute `maxradius`."""
         self.transformLayer = transformLayer
         self.unormed = self.transformLayer.transform(self.u)
         assert np.isfinite(self.unormed).all(), (self.unormed, self.u)
@@ -543,7 +546,7 @@ class MLFriends(object):
         self.maxradiussq = None
 
     def compute_maxradiussq(self, nbootstraps=50):
-        """Return MLFriends radius after *nbootstraps* bootstrapping rounds"""
+        """Return MLFriends radius after `nbootstraps` bootstrapping rounds"""
         N, ndim = self.u.shape
         selected = np.empty(N, dtype=bool)
         maxd = 0
@@ -562,7 +565,7 @@ class MLFriends(object):
         return maxd
 
     def compute_enlargement(self, nbootstraps=50, minvol=0., rng=np.random):
-        """Return MLFriends radius and ellipsoid enlargement after *nbootstraps* bootstrapping rounds.
+        """Return MLFriends radius and ellipsoid enlargement after `nbootstraps` bootstrapping rounds.
 
         The wrapping ellipsoid covariance is determined in each bootstrap round.
         """
@@ -682,7 +685,7 @@ class MLFriends(object):
     def sample(self, nsamples=100):
         """Draw uniformly sampled points from MLFriends region.
 
-        Switches automatically between the *.sampling_methods*.
+        Switches automatically between the `sampling_methods` (attribute).
         """
         samples, idx = self.current_sampling_method(nsamples=nsamples)
         if len(samples) == 0:
@@ -742,7 +745,7 @@ class MLFriends(object):
         Returns
         ---------
         is_inside: array of bools
-            True if inside wrapping ellipsoid, for each point in *pts*.
+            True if inside wrapping ellipsoid, for each point in `pts`.
 
         """
         # to disable wrapping ellipsoid
