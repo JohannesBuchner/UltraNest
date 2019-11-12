@@ -152,7 +152,7 @@ def resample_equal(samples, weights, rstate=None):
 
     """
     if abs(np.sum(weights) - 1.) > SQRTEPS:  # same tol as in np.random.choice.
-        raise ValueError("weights do not sum to 1")
+        raise ValueError("weights do not sum to 1 (%g)" % np.sum(weights))
 
     if rstate is None:
         rstate = np.random

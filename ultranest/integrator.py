@@ -145,8 +145,14 @@ class NestedSampler(object):
         if not vectorized:
             transform = vectorize(transform)
             loglike = vectorize(loglike)
+
+        if transform is None:
+            self.transform = lambda x: x
+        else:
+            self.transform = transform
+
         u = np.random.uniform(size=(2, self.x_dim))
-        p = transform(u)
+        p = self.transform(u)
         assert p.shape == (2, self.num_params), ("Error in transform function: returned shape is %s, expected %s" % (p.shape, (2, self.num_params)))
         logl = loglike(p)
         assert np.logical_and(u > 0, u < 1).all(), ("Error in transform function: u was modified!")
@@ -161,11 +167,6 @@ class NestedSampler(object):
             return logl
 
         self.loglike = safe_loglike
-
-        if transform is None:
-            self.transform = lambda x: x
-        else:
-            self.transform = transform
 
         self.use_mpi = False
         try:
@@ -1194,8 +1195,10 @@ class ReactiveNestedSampler(object):
                 sample_u=u, sample_v=v, sample_logl=logl)
             warnings.warn("Sampling from region seems inefficient. You can try increasing nlive, frac_remain, dlogz, dKL, decrease min_ess). [%d/%d accepted, it=%d]" % (accepted.sum(), ndraw, nit))
             logl_region = self.loglike(self.transform(self.region.u))
+            if (logl_region == Lmin).all():
+                raise ValueError("Region cannot sample a higher point. All remaining live points have the same value.")
             if not (logl_region > Lmin).any():
-                raise ValueError("Region cannot sample a point. Perhaps you are resuming from a different problem? Delete the output files and start again.")
+                raise ValueError("Region cannot sample a higher point. Perhaps you are resuming from a different problem? Delete the output files and start again.")
             self.sampling_slow_warned = True
 
         u = u[accepted,:]
@@ -1512,11 +1515,14 @@ class ReactiveNestedSampler(object):
                     assert not (self.transformLayer.clusterids == 0).any(), (self.transformLayer.clusterids, need_accept, updated)
 
             except Warning as w:
-                self.logger.warning("not updating region", exc_info=True)
+                if self.log:
+                    self.logger.warning("not updating region", exc_info=True)
             except FloatingPointError as e:
-                self.logger.warning("not updating region", exc_info=True)
+                if self.log:
+                    self.logger.warning("not updating region", exc_info=True)
             except np.linalg.LinAlgError as e:
-                self.logger.warning("not updating region", exc_info=True)
+                if self.log:
+                    self.logger.warning("not updating region", exc_info=True)
 
         self.region.create_ellipsoid(minvol=minvol)
         assert len(self.region.u) == len(self.transformLayer.clusterids)
@@ -1846,7 +1852,7 @@ class ReactiveNestedSampler(object):
                 Lmin = node.value
 
                 # if within suggested range, expand
-                if strategy_stale or not (Lmin <= Lhi) or not np.isfinite(Lhi):
+                if strategy_stale or not (Lmin <= Lhi) or not np.isfinite(Lhi) or (active_values == Lmin).all():
                     # check with advisor if we want to expand this node
                     Llo_prev, Lhi_prev = Llo, Lhi
                     Llo, Lhi = self._adaptive_strategy_advice(Lmin, active_values, main_iterator, minimal_widths, frac_remain)
