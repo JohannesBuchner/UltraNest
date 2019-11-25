@@ -666,7 +666,7 @@ class ClockedNUTSSampler(ClockedBisectSampler):
             # make sure the path is prepared for the desired tree
             if rwd:
                 goal = ('expand-to', self.left_state[0] - 2**self.tree_depth)
-            else:   
+            else:
                 goal = ('expand-to', self.right_state[0] + 2**self.tree_depth)
             
             if goal not in self.goals:

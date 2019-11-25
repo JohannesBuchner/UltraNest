@@ -1887,6 +1887,9 @@ class ReactiveNestedSampler(object):
                             nbootstraps=self.num_bootstraps,
                             minvol=exp(main_iterator.logVolremaining))
 
+                        if region_fresh and self.stepsampler is not None:
+                            self.stepsampler.region_changed(active_values, self.region)
+
                         _, cluster_sizes = np.unique(self.region.transformLayer.clusterids, return_counts=True)
                         nclusters = (cluster_sizes > 1).sum()
                         region_sequence.append((Lmin, nlive, nclusters))
