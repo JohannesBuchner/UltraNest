@@ -52,7 +52,7 @@ UltraNest also attempts to provide feature parity compared to other packages
 However, UltraNest is still in beta. You can help by
 testing it and reporting issues. Code contributions for fixes and 
 new features are also welcome.
-See the `Contributing page<https://johannesbuchner.github.io/UltraNest/contributing.html>`_.
+See the `Contributing page <https://johannesbuchner.github.io/UltraNest/contributing.html>`_.
 
 Features
 ---------
