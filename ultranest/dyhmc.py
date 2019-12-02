@@ -66,6 +66,9 @@ def build_tree(theta, r, grad, v, j, epsilon, invmassmatrix, f, joint0):
         else:
             betaprime = alphaprime * np.exp(-logpprime)
         
+        if betaprime == 0.0:
+            sprime = False
+
         nalphaprime = 1
     else:
         # Recursion: Implicitly build the height j-1 left and right subtrees.
@@ -76,9 +79,9 @@ def build_tree(theta, r, grad, v, j, epsilon, invmassmatrix, f, joint0):
                 thetaminus, rminus, gradminus, _, _, _, thetaprime2, gradprime2, logpprime2, extraprime2, rprime2, sprime2, alphaprime2, betaprime2, nalphaprime2 = build_tree(thetaminus, rminus, gradminus, v, j - 1, epsilon, invmassmatrix, f, joint0)
             else:
                 _, _, _, thetaplus, rplus, gradplus, thetaprime2, gradprime2, logpprime2, extraprime2, rprime2, sprime2, alphaprime2, betaprime2, nalphaprime2 = build_tree(thetaplus, rplus, gradplus, v, j - 1, epsilon, invmassmatrix, f, joint0)
-            
+
             # Choose which subtree to propagate a sample up from.
-            if np.random.uniform() < betaprime2 / (betaprime + betaprime2):
+            if betaprime + betaprime2 > 0 and np.random.uniform() < betaprime2 / (betaprime + betaprime2):
                 thetaprime = thetaprime2[:]
                 gradprime = gradprime2[:]
                 logpprime = logpprime2
@@ -104,9 +107,9 @@ def tree_sample(theta, logp, r0, grad, extra, epsilon, invmassmatrix, f, joint, 
     rplus = r0[:]
     gradminus = grad[:]
     gradplus = grad[:]
-    alpha = 0
-    beta = 0
-    nalpha = 0
+    alpha = 1
+    beta = 1
+    nalpha = 1
 
     j = 0  # initial heigth j = 0
     s = True  # Main loop: will keep going until s == 0.
@@ -122,6 +125,9 @@ def tree_sample(theta, logp, r0, grad, extra, epsilon, invmassmatrix, f, joint, 
         else:
             _, _, _, thetaplus, rplus, gradplus, thetaprime, gradprime, logpprime, extraprime, rprime, sprime, alphaprime, betaprime, nalphaprime = build_tree(
                 thetaplus, rplus, gradplus, v, j, epsilon, invmassmatrix, f, joint)
+        
+        assert beta > 0, beta
+        assert betaprime >= 0, betaprime
 
         # Use Metropolis-Hastings to decide whether or not to move to a
         # point from the half-tree we just generated.
@@ -144,8 +150,76 @@ def tree_sample(theta, logp, r0, grad, extra, epsilon, invmassmatrix, f, joint, 
         # Increment depth.
         j += 1
     #print("jumping to:", theta)
-    #print('Tree height: %d, acceptance fraction: %03.2f%%, epsilon=%g' % (j, alpha/nalpha*100, epsilon))
+    #print('Tree height: %d, acceptance fraction: %03.2f%%/%03.2f%%, epsilon=%g' % (j, alpha/nalpha*100, beta/nalpha*100, epsilon))
     return alpha, beta, nalpha, theta, grad, logp, extra, r0, j
+
+
+def find_beta_params_static(d, u10):
+    """ Define auxiliary distribution following naive intuition.
+    Make 50% quantile to be at u=0.1, and very flat at high u. """
+    betas = np.arange(1, 20)
+    z50 = scipy.special.betaincinv(1.0, betas, 0.5)
+    
+    alpha = 1
+    beta = np.interp(u10, z50[::-1], betas[::-1])
+    print("Auxiliary Beta distribution(alpha=%.1f, beta=%.1f)" % (alpha, beta))
+    return alpha, beta
+
+def find_beta_params_dynamic(d, u10):
+    """ Define auxiliary distribution taking into account 
+    kinetic energy of a d-dimensional HMC.
+    Make exp(-d/2) quantile to be at u=0.1, and 95% quantile at u=0.5. """
+    
+    u50 = (u10 + 1) / 2.
+    def minfunc(params):
+        alpha, beta = params
+        q10 = scipy.special.betainc(alpha, beta, u10)
+        q50 = scipy.special.betainc(alpha, beta, u50)
+        return (q10 - np.exp(-d/2))**2 + (q50 - 0.98)**2
+    
+    r = scipy.optimize.minimize(minfunc, [1.0, 10.0])
+    alpha, beta = r.x
+    print("Auxiliary Beta distribution(alpha=%.1f, beta=%.1f)" % (alpha, beta), u10)
+        
+    return alpha, beta
+
+def generate_momentum_normal(d, massmatrix):
+    return np.random.multivariate_normal(np.zeros(d), np.dot(massmatrix, np.eye(d)))
+
+def generate_momentum(d, massmatrix, alpha, beta):
+    # draw from a circle
+    momentum = np.random.multivariate_normal(np.zeros(d), np.dot(massmatrix, np.eye(d)))
+    # generate normalisation from beta distribution
+    # add a bit of noise in the step size
+    #norm *= np.uniform(0.2, 2)
+    auxnorm = -scipy.special.betainc(alpha+1, beta, 1) + scipy.special.betainc(alpha+1, beta, 0) + scipy.special.betainc(alpha, beta, 1)
+    u = np.random.uniform()
+    if u > 0.9:
+        norm = 1.
+    else:
+        u /= 0.9
+        norm = scipy.special.betainc(alpha, beta, u)
+    momnorm = -np.log((norm + 1e-10) / auxnorm)
+    assert momnorm >= 0, (momnorm, norm, auxnorm)
+    
+    momentum *= momnorm / (momentum**2).sum()**0.5
+    
+    return momentum
+
+def generate_momentum_circle(d, massmatrix):
+    # draw from a circle, with a little noise in amplitude
+    momentum = np.random.multivariate_normal(np.zeros(d), np.dot(massmatrix, np.eye(d)))
+    momentum *= 10**np.random.uniform(-0.3, 0.3) / (momentum**2).sum()**0.5
+    return momentum
+
+
+def generate_momentum_flattened(d, massmatrix):
+    # like normal distribution, but make momenta distributed like a single gaussian
+    momentum = np.random.multivariate_normal(np.zeros(d), np.dot(massmatrix, np.eye(d)))
+    norm = (momentum**2).sum()**0.5
+    assert norm > 0
+    momentum *= norm**(1 / d) / norm
+    return momentum
 
 
 class FlattenedProblem(object):
@@ -163,10 +237,7 @@ class FlattenedProblem(object):
     .__call__(x) returns logL, grad on the auxiliary distribution.
     """
     
-    betas = np.arange(1, 20)
-    z50 = scipy.special.betaincinv(1.0, betas, 0.5)
-    
-    def __init__(self, Ls, function, layer):
+    def __init__(self, d, Ls, function, layer):
         self.Lmin = Ls.min()
         self.L90 = np.percentile(Ls, 90)
         self.L10 = np.percentile(Ls, 10)
@@ -175,20 +246,20 @@ class FlattenedProblem(object):
         self.function = function
         self.layer = layer
         
-        self.alpha = 1.0
-        self.beta = np.interp(u10, FlattenedProblem.z50[::-1], FlattenedProblem.betas[::-1])
-        #self.beta = 20.0
+        #self.alpha, self.beta = find_beta_params_static(d, u10)
+        #self.alpha, self.beta = find_beta_params_dynamic(d, u10)
+        self.alpha, self.beta = 1.0, 6.0
 
         self.du_dL = 1 / (self.L90 - self.Lmin)
         # print("du/dL = %g " % du_dL)
-        print("beta:", self.beta, u10, self.z50, self.betas)
         self.C = scipy.special.beta(self.alpha, self.beta)
+        self.d = d
         
         
         if hasattr(self.layer, 'invT'):
             self.invmassmatrix = self.layer.cov
             self.massmatrix = np.linalg.inv(self.invmassmatrix)
-            print("invM:", self.invmassmatrix.shape)
+            #print("invM:", self.invmassmatrix.shape)
         elif hasattr(self.layer, 'std'):
             if np.shape(self.layer.std) == () and self.layer.std == 1:
                 self.massmatrix = 1
@@ -207,12 +278,15 @@ class FlattenedProblem(object):
             logp = -np.inf
             u = 0.0
             dlogp_du = 1.0
+            #print("L <= Lmin", L, self.Lmin)
         elif u > 1:
             u = 1.0
             p = 1.0
-            logp = 0
+            logp = 0.0
+            #print("L > L90", L, L90)
             return logp, 0 * grad
         else:
+            #p = self.rv.cdf(u)
             p = scipy.special.betainc(self.alpha, self.beta, u) 
             logp = np.log(p)
             B = p * self.C
@@ -226,11 +300,17 @@ class FlattenedProblem(object):
     def __call__(self, u):
         if not np.logical_and(u > 0, u < 1).all():
             # outside unit cube, invalid.
+            #print("outside", u)
             return (-np.inf, 0.*u), (None, -np.inf, 0.*u)
         
         p, L, grad_orig = self.function(u)
-        #print("at ", x, "L:", L)
+        #print("at ", u, "L:", L)
         return self.modify_Lgrad(L, grad_orig), (p, L, grad_orig)
+    
+    def generate_momentum(self):
+        return generate_momentum_flattened(self.d, self.massmatrix)
+        return generate_momentum_normal(self.d, self.massmatrix)
+        return generate_momentum(self.d, self.massmatrix, self.alpha, self.beta)
 
 
 
@@ -296,7 +376,7 @@ class DynamicHMCSampler(object):
     rebuilt if the acceptance rate is below(above).
     """
 
-    def __init__(self, nsteps, transform_loglike_gradient, delta=0.90, nudge=1.04):
+    def __init__(self, ndim, nsteps, transform_loglike_gradient, delta=0.90, nudge=1.04):
         """Initialise sampler.
 
         Parameters
@@ -312,7 +392,7 @@ class DynamicHMCSampler(object):
         self.history = []
         self.nsteps = nsteps
         self.nrejects = 0
-        self.scale = 0.1
+        self.scale = 0.1 * ndim**0.5
         self.last = None, None, None, None
         self.transform_loglike_gradient = transform_loglike_gradient
         self.nudge = nudge
@@ -372,10 +452,12 @@ class DynamicHMCSampler(object):
             whether to produce debug plots.
 
         """
-        i = np.random.randint(len(us))
+        #i = np.argsort(Ls)[0]
+        mask = Ls > Lmin
+        i = np.random.randint(mask.sum())
         #print("starting from live point %d" % i)
-        self.starti = i
-        ui = us[i,:]
+        self.starti = np.where(mask)[0][i]
+        ui = us[mask,:][i]
         assert np.logical_and(ui > 0, ui < 1).all(), ui
         
         if self.problem is None:
@@ -386,9 +468,16 @@ class DynamicHMCSampler(object):
         assert np.shape(Lflat) == (), (Lflat, Li, gradi)
         assert np.shape(gradflat) == (len(ui),), (gradi, gradflat)
         
-        for i in range(self.nsteps):
+        nsteps_remaining = self.nsteps
+        while nsteps_remaining > 0:
             unew, pnew, Lnew, gradnew, Lflatnew, gradflatnew, nc, alpha, beta, treeheight = self.move(ui, pi, Li, gradi, 
                 gradflat=gradflat, Lflat=Lflat, region=region, ndraw=ndraw, plot=plot)
+            
+            if treeheight > 1:
+                # do not count failed accepts
+                nsteps_remaining = nsteps_remaining - 1
+            else:
+                print("stuck:", Li, "->", Lnew, "Lmin:", Lmin)
             
             ncalls_total += nc
             #print(" ->", Li, Lnew, unew)
@@ -433,12 +522,14 @@ class DynamicHMCSampler(object):
         """
         
         epsilon = self.scale
-        #epsilon_here = 10**np.random.uniform(-0.2, 0.3) * epsilon
-        #epsilon_here = np.random.uniform(0.2, 2) * epsilon
-        epsilon_here = epsilon
+        #epsilon_here = 10**np.random.normal(0, 0.3) * epsilon
+        epsilon_here = np.random.uniform() * epsilon
+        #epsilon_here = epsilon
         
         problem = self.problem
         d = len(ui)
+        
+        assert Li > problem.Lmin
 
         # get initial likelihood and gradient from auxiliary distribution
         if Lflat is None or gradflat is None:
@@ -447,9 +538,11 @@ class DynamicHMCSampler(object):
         assert np.shape(gradflat) == (d,), (gradi, gradflat)
         
         # draw from momentum
-        momentum = np.random.multivariate_normal(ui * 0, np.dot(problem.massmatrix, np.eye(d)))
+        momentum = problem.generate_momentum()
+        
         # compute current Hamiltonian
         joint0 = Lflat - 0.5 * np.dot(np.dot(momentum, problem.invmassmatrix), momentum.T)
+        assert np.isfinite(joint0), (Lflat, momentum,  - 0.5 * np.dot(np.dot(momentum, problem.invmassmatrix), momentum.T))
         
         # explore and sample from one trajectory
         alpha, beta, nalpha, theta, gradflat, Lflat, (pnew, Lnew, gradnew), rprime, treeheight = tree_sample(
@@ -468,9 +561,16 @@ class DynamicHMCSampler(object):
         region: MLFriends region object
             region.transformLayer is used to obtain mass matrices
         """
-        self.problem = FlattenedProblem(Ls, self.transform_loglike_gradient, region.transformLayer)
+        
+        # problem dimensionality
+        d = len(region.u[0])
+        
+        self.problem = FlattenedProblem(d, Ls, self.transform_loglike_gradient, region.transformLayer)
     
     def adjust_stepsize(self):
+        if len(self.logstat_trajectory) == 0:
+            return
+        
         # log averaged acceptance and trajectory statistics
         self.logstat.append([
             np.mean([alpha for alpha, beta, treeheight in self.logstat_trajectory]),
@@ -479,18 +579,20 @@ class DynamicHMCSampler(object):
             np.mean([treeheight for alpha, beta, treeheight in self.logstat_trajectory])
         ])
         
+        nsteps = len(self.logstat_trajectory)
         # update step size based on collected acceptance rates
-        for alpha, beta, treeheight in self.logstat_trajectory:
-            # focus on short trees
-            if 2**treeheight <= 10:
-                # when acceptance rates are low, decrease step size
-                if alpha < self.delta:
-                    self.scale /= self.nudge
-                else:
-                    self.scale *= self.nudge
-            else:
-                # slowly go towards more efficiency
-                self.scale *= self.nudge**(1./40)
+        if any([treeheight <= 1 for alpha, beta, treeheight in self.logstat_trajectory]):
+            # stuck, no move. Finer steps needed.
+            self.scale /= self.nudge
+        elif all([2**treeheight > 10 for alpha, beta, treeheight in self.logstat_trajectory]):
+            # slowly go towards more efficiency
+            self.scale *= self.nudge**(1./40)
+        else:
+            alphamean, scale, betamean, treeheightmean = self.logstat[-1]
+            if alphamean < self.delta:
+                self.scale /= self.nudge
+            elif alphamean > self.delta:
+                self.scale *= self.nudge
         
         self.logstat_trajectory = []
         print("updating step size: %.4f %g %.4f %.1f" % tuple(self.logstat[-1]), "-->", self.scale)
