@@ -20,12 +20,13 @@ def stop_criterion(thetaminus, thetaplus, rminus, rplus):
         return if the condition is valid
     """
     dtheta = thetaplus - thetaminus
+    #print("stop?", dtheta, rminus, rplus, np.dot(dtheta, rminus.T), np.dot(dtheta, rplus.T))
     return (np.dot(dtheta, rminus.T) >= 0) & (np.dot(dtheta, rplus.T) >= 0)
 
 
-def step_or_reflect(theta, v, epsilon, invmassmatrix, transform, loglike, gradient, Lmin):
+def step_or_reflect(theta, v, epsilon, transform, loglike, gradient, Lmin):
     # step in position:
-    thetaprime = theta + epsilon * np.dot(invmassmatrix, v)
+    thetaprime = theta + epsilon * v
     # check if still inside
     mask = np.logical_and(thetaprime > 0, thetaprime < 1)
     if mask.all():
@@ -46,8 +47,12 @@ def step_or_reflect(theta, v, epsilon, invmassmatrix, transform, loglike, gradie
     # subtract that part
     vnew = v - 2 * np.dot(normal, v) * normal
     
-    # evaluate there
-    thetaprime2 = thetaprime + epsilon * np.dot(invmassmatrix, vnew)
+    # if the reflection is a reverse, it cannot be helpful. Stop.
+    if np.dot(v, vnew) <= 0:
+        return thetaprime, vnew, None, -np.inf, True
+    
+    # get new location, to check if we are back in the constraint
+    thetaprime2 = thetaprime + epsilon * vnew
     
     # check if inside
     mask2 = np.logical_and(thetaprime2 > 0, thetaprime2 < 1)
@@ -66,42 +71,61 @@ def step_or_reflect(theta, v, epsilon, invmassmatrix, transform, loglike, gradie
         return thetaprime2, vnew, None, -np.inf, True
 
 
-def build_tree(theta, v, direction, j, epsilon, invmassmatrix, transform, loglike, gradient, Lmin):
+def build_tree(theta, v, direction, j, epsilon, transform, loglike, gradient, Lmin):
     """The main recursion."""
     if j == 0:
         # Base case: Take a single leapfrog step in the direction v.
         thetaprime, vprime, pprime, logpprime, reflected = step_or_reflect(
-            theta=theta, v=v, epsilon=epsilon, invmassmatrix=invmassmatrix, 
+            theta=theta, v=v * direction, epsilon=epsilon, 
             transform=transform, loglike=loglike, gradient=gradient, Lmin=Lmin)
-        # Is the point acceptable?
-        sprime = logpprime > Lmin
+        
         #if not sprime:
         #    print("stopped trajectory:", direction, logpprime, Lmin, (theta, thetaprime, epsilon))
         # Set the return values---minus=plus for all things here, since the
         # "tree" is of depth 0.
         thetaminus = thetaprime
         thetaplus = thetaprime
-        vminus = vprime
-        vplus = vprime
-        v = vprime
+        
+        if reflected and np.dot(v, vprime) <= 0:
+            # if reversing locally, store that in can_continue, not s
+            sprime = True
+            #print("  reversed locally")
+            can_continue = False
+            vminus = v * direction
+            vplus = v * direction
+            v = v * direction
+        else:
+            # Is the point acceptable?
+            sprime = logpprime > Lmin
+            #if sprime:
+            #    print("  -->")
+            #else:
+            #    print("  stuck")
+            can_continue = True
+            vminus = vprime * direction
+            vplus = vprime * direction
+            v = vprime * direction
+        
         pminus = pprime
         pplus = pprime
+        #print(direction, (theta, thetaprime), (v, vprime))
         
-        alphaprime = 1.0 * sprime
+        # probability is zero if it is an invalid state
+        alphaprime = 1.0 * (sprime and can_continue)
         nalphaprime = 1
         nreflectprime = reflected * 1
     else:
         # Recursion: Implicitly build the height j-1 left and right subtrees.
-        thetaminus, vminus, pminus, thetaplus, vplus, pplus, thetaprime, vprime, pprime, logpprime, sprime, alphaprime, nalphaprime, nreflectprime = \
-            build_tree(theta, v, direction, j - 1, epsilon, invmassmatrix, transform, loglike, gradient, Lmin)
+        thetaminus, vminus, pminus, thetaplus, vplus, pplus, thetaprime, vprime, pprime, logpprime, sprime, can_continue, alphaprime, nalphaprime, nreflectprime = \
+            build_tree(theta, v, direction, j - 1, epsilon, transform, loglike, gradient, Lmin)
         # No need to keep going if the stopping criteria were met in the first subtree.
-        if sprime:
+        if can_continue and sprime:
             if direction == -1:
-                thetaminus, vminus, pminus, _, _, _, thetaprime2, vprime2, pprime2, logpprime2, sprime2, alphaprime2, nalphaprime2, nreflectprime2 = \
-                    build_tree(thetaminus, vminus, direction, j - 1, epsilon, invmassmatrix, transform, loglike, gradient, Lmin)
+                thetaminus, vminus, pminus, _, _, _, thetaprime2, vprime2, pprime2, logpprime2, sprime2, can_continue2, alphaprime2, nalphaprime2, nreflectprime2 = \
+                    build_tree(thetaminus, vminus, direction, j - 1, epsilon, transform, loglike, gradient, Lmin)
             else:
-                _, _, _, thetaplus, vplus, pplus, thetaprime2, vprime2, pprime2, logpprime2, sprime2, alphaprime2, nalphaprime2, nreflectprime2 = \
-                    build_tree(thetaplus, vplus, direction, j - 1, epsilon, invmassmatrix, transform, loglike, gradient, Lmin)
+                _, _, _, thetaplus, vplus, pplus, thetaprime2, vprime2, pprime2, logpprime2, sprime2, can_continue2, alphaprime2, nalphaprime2, nreflectprime2 = \
+                    build_tree(thetaplus, vplus, direction, j - 1, epsilon, transform, loglike, gradient, Lmin)
 
             # Choose which subtree to propagate a sample up from.
             if np.random.uniform() < alphaprime2 / (alphaprime + alphaprime2):
@@ -113,15 +137,18 @@ def build_tree(theta, v, direction, j, epsilon, invmassmatrix, transform, loglik
             # Update the stopping criterion.
             sturn = stop_criterion(thetaminus, thetaplus, vminus, vplus)
             #print(sprime, sprime2, sturn)
+            #if not (sprime and sprime2 and sturn):
+            #    print("sprime stop:", sprime, sprime2, sturn)
             sprime = sprime and sprime2 and sturn
+            can_continue = can_continue and can_continue2
             # Update the acceptance probability statistics.
             alphaprime += alphaprime2
             nalphaprime += nalphaprime2
             nreflectprime += nreflectprime2
 
-    return thetaminus, vminus, pminus, thetaplus, vplus, pplus, thetaprime, vprime, pprime, logpprime, sprime, alphaprime, nalphaprime, nreflectprime
+    return thetaminus, vminus, pminus, thetaplus, vplus, pplus, thetaprime, vprime, pprime, logpprime, sprime, can_continue, alphaprime, nalphaprime, nreflectprime
 
-def tree_sample(theta, p, logL, v, epsilon, invmassmatrix, transform, loglike, gradient, Lmin, maxheight=np.inf):
+def tree_sample(theta, p, logL, v, epsilon, transform, loglike, gradient, Lmin, maxheight=np.inf):
     # initialize the tree
     thetaminus = theta
     thetaplus = theta
@@ -131,23 +158,33 @@ def tree_sample(theta, p, logL, v, epsilon, invmassmatrix, transform, loglike, g
     nalpha = 1
     nreflect = 0
     logp = logL
+    fwd_possible = True
+    rwd_possible = True
 
     j = 0  # initial heigth j = 0
     s = True  # Main loop: will keep going until s == 0.
 
     while s and j < maxheight:
         # Choose a direction. -1 = backwards, 1 = forwards.
-        direction = int(2 * (np.random.uniform() < 0.5) - 1)
+        if fwd_possible and rwd_possible:
+            direction = int(2 * (np.random.uniform() < 0.5) - 1)
+        elif fwd_possible:
+            direction = 1
+        elif rwd_possible:
+            direction = -1
+        else:
+            print("stuck in both ends")
+            break
 
         # Double the size of the tree.
         if direction == -1:
-            thetaminus, vminus, pminus, _, _, _, thetaprime, vprime, pprime, logpprime, sprime, alphaprime, nalphaprime, nreflectprime = \
-                build_tree(thetaminus, vminus, direction, j, epsilon, invmassmatrix, transform, loglike, gradient, Lmin)
+            thetaminus, vminus, pminus, _, _, _, thetaprime, vprime, pprime, logpprime, sprime, can_continue, alphaprime, nalphaprime, nreflectprime = \
+                build_tree(thetaminus, vminus, direction, j, epsilon, transform, loglike, gradient, Lmin)
         else:
-            _, _, _, thetaplus, vplus, pplus, thetaprime, vprime, pprime, logpprime, sprime, alphaprime, nalphaprime, nreflectprime = \
-                build_tree(thetaplus, vplus, direction, j, epsilon, invmassmatrix, transform, loglike, gradient, Lmin)
+            _, _, _, thetaplus, vplus, pplus, thetaprime, vprime, pprime, logpprime, sprime, can_continue, alphaprime, nalphaprime, nreflectprime = \
+                build_tree(thetaplus, vplus, direction, j, epsilon, transform, loglike, gradient, Lmin)
         
-        # Use Metropolis-Hastings to decide whether or not to move to a
+        # Use Bernoulli trial to decide whether or not to move to a
         # point from the half-tree we just generated.
         if sprime and np.random.uniform() < alphaprime / (alpha + alphaprime):
             theta = thetaprime
@@ -163,6 +200,17 @@ def tree_sample(theta, p, logL, v, epsilon, invmassmatrix, transform, loglike, g
         sturn = stop_criterion(thetaminus, thetaplus, vminus, vplus)
         #print(sprime, sturn)
         s = sprime and sturn
+        
+        if not can_continue:
+            if direction == 1:
+                fwd_possible = False
+            if direction == -1:
+                rwd_possible = False
+        
+        #if not s and (fwd_possible or rwd_possible):
+        #    print("U-turn found a:%d r:%d t:%d" % (alpha, nreflect, nalpha), sturn, sprime, (thetaminus, thetaplus), (vminus, vplus))
+            #assert False
+
         # Increment depth.
         j += 1
     
@@ -189,7 +237,7 @@ class DynamicCHMCSampler(object):
     Because of this, the number of steps is dynamic.
     """
 
-    def __init__(self, ndim, nsteps, transform, loglike, gradient, delta=0.90, nudge=1.04):
+    def __init__(self, ndim, nsteps, transform, loglike, gradient, delta=0.9, nudge=1.04):
         """Initialise sampler.
 
         Parameters
@@ -340,7 +388,7 @@ class DynamicCHMCSampler(object):
         
         # explore and sample from one trajectory
         alpha, nreflects, nalpha, theta, pnew, Lnew, treeheight = tree_sample(
-            ui, pi, Li, v, epsilon_here, self.invmassmatrix, 
+            ui, pi, Li, v, epsilon_here, 
             self.transform, self.loglike, self.gradient, Lmin, maxheight=15)
 
         return theta, pnew, Lnew, nalpha, alpha / nalpha, nreflects / nalpha, treeheight
