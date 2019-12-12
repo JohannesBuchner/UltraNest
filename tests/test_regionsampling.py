@@ -109,6 +109,30 @@ def test_region_ellipsoid(plot=False):
     assert_allclose(mask, mask2)
 
 
+def test_region_mean_distances():
+    np.random.seed(1)
+    points = np.random.uniform(0.4, 0.6, size=(1000, 2))
+    points[:,1] *= 0.5
+    
+    transformLayer = AffineLayer(wrapped_dims=[])
+    transformLayer.optimize(points, points)
+    region = MLFriends(points, transformLayer)
+    region.maxradiussq, region.enlarge = region.compute_enlargement(nbootstraps=30)
+    print("enlargement factor:", region.enlarge, 1 / region.enlarge)
+    region.create_ellipsoid()
+    meandistsq = region.compute_mean_pair_distance()
+    
+    t = transformLayer.transform(region.u)
+    sqd = 0
+    N = 0
+    for i in range(len(t)):
+        for j in range(i):
+            sqd += ((t[i] - t[j])**2).sum()
+            N += 1
+    
+    assert np.isclose(meandistsq, sqd / N), (meandistsq, sqd, N)
+
+
 if __name__ == '__main__':
     test_region_sampling_scaling(plot=True)
     test_region_sampling_affine(plot=True)

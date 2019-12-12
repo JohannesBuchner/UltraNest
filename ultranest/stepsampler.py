@@ -7,7 +7,6 @@ do not terminate at the same number of iterations.
 """
 
 import numpy as np
-from numpy import pi
 
 import matplotlib.pyplot as plt
 
@@ -119,13 +118,23 @@ class StepSampler(object):
     Scales proposal towards a 50% acceptance rate.
     """
 
-    def __init__(self, nsteps):
+    def __init__(self, nsteps, adapt_nsteps=False):
         """Initialise sampler.
 
         Parameters
         -----------
         nsteps: int
             number of accepted steps until the sample is considered independent.
+        
+        adapt_nsteps: False, 'proposal-distance', 'move-distance'
+            if not false, allow earlier termination than nsteps.
+            The 'proposal-distance' strategy stops when the sum of 
+            all proposed vectors exceeds the mean distance
+            between pairs of live points.
+            As distance, the Mahalanobis distance is used.
+            The 'move-distance' strategy stops when the distance between
+            start point and current position exceeds the mean distance
+            between pairs of live points.
 
         """
         self.history = []
@@ -134,6 +143,10 @@ class StepSampler(object):
         self.scale = 1.0
         self.last = None, None
         self.nudge = 1.1**(1. / self.nsteps)
+        
+        assert adapt_nsteps in (False, 'proposal-distance', 'move-distance'), \
+            "adapt_nsteps must be either False, 'proposal-distance' or 'move-distance', not '%s'" % adapt_nsteps
+        self.adapt_nsteps = adapt_nsteps
         self.logstat = []
         self.logstat_labels = ['accepted', 'scale']
 
@@ -193,8 +206,28 @@ class StepSampler(object):
     
     def region_changed(self, Ls, region):
         """React to change of region. Stub to be implemented."""
-        pass
+        
+        if self.adapt_nsteps:
+            self.pair_mean_distance = region.compute_pair_mean_distance()
 
+    def is_converged(self, region, u):
+        # check if length exceeds expected maximum
+        if len(self.history) >= self.nsteps:
+            return True
+        
+        # if we do not adapt, we are not done yet
+        if not self.adapt_nsteps:
+            return False
+        elif self.adapt_nsteps == 'proposal-distance':
+            d2 = self.proposal_distance
+            far_enough = d2 > self.pair_mean_distance
+            return far_enough
+        elif self.adapt_nsteps == 'move-distance':
+            d2 = ((region.transform(self.startu) - region.transform(u))**2).sum()
+            far_enough = d2 > self.pair_mean_distance
+            return far_enough
+        assert False
+        
     def __next__(self, region, Lmin, us, Ls, transform, loglike, ndraw=40, plot=False):
         """Get next point.
 
@@ -274,7 +307,7 @@ class StepSampler(object):
                 if plot:
                     plt.plot(unew[0], unew[1], 'o', color='g', ms=4)
                 self.adjust_accept(True, unew, pnew, Lnew, nc)
-                if len(self.history) >= self.nsteps:
+                if self.is_converged(region=region, u=unew):
                     # print("made %d steps" % len(self.history), Lnew, Lmin)
                     self.history = []
                     self.last = None, None
@@ -549,5 +582,4 @@ class SpeedVariableRegionSliceSampler(CubeSliceSampler):
         v = uk - ui
         v *= scale / (v**2).sum()**0.5
         return v
-
 

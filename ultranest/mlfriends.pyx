@@ -113,6 +113,40 @@ cdef float compute_maxradiussq(np.ndarray[np.float_t, ndim=2] apts, np.ndarray[n
 
     return maxd
 
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+def compute_mean_pair_distance(
+    np.ndarray[np.float_t, ndim=2] pts,
+    np.ndarray[np.int64_t, ndim=1] clusterids
+):
+    """Count the number of points in `a` within square radius `radiussq` for each point `b` in `bpts`.
+
+    The number is written to `nnearby` (of same length as bpts).
+    """
+    cdef int na = pts.shape[0]
+    cdef int ndim = pts.shape[1]
+
+    cdef int i, j
+    cdef np.float_t d
+    cdef int Npairs = 0
+
+    # go through the unselected points and find the worst case
+    for j in range(na):
+        # find the nearest selected point
+        for i in range(j):
+            # only consider points in the same cluster
+            if clusterids[j] == 0 or clusterids[i] == 0 or clusterids[j] == clusterids[i]:
+                Npairs += 1
+                for k in range(ndim):
+                    d += (pts[i,k] - pts[j,k])**2
+
+    return d / Npairs
+
+
+
+
+
 def update_clusters(upoints, tpoints, maxradiussq, clusterids=None):
     """Clusters `upoints`, so that clusters are distinct if no member pair is within a radius of sqrt(`maxradiussq`)
 
@@ -758,3 +792,8 @@ class MLFriends(object):
         r = np.einsum('ij,jk,ik->i', d, self.ellipsoid_invcov, d)
         # (r <= 1) means inside
         return r <= self.enlarge
+
+    def compute_mean_pair_distance(self):
+        return compute_mean_pair_distance(self.unormed, self.transformLayer.clusterids)
+        
+        
