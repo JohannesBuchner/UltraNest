@@ -147,6 +147,10 @@ class StepSampler(object):
         assert adapt_nsteps in (False, 'proposal-distance', 'move-distance'), \
             "adapt_nsteps must be either False, 'proposal-distance' or 'move-distance', not '%s'" % adapt_nsteps
         self.adapt_nsteps = adapt_nsteps
+        self.pair_mean_distance = np.nan
+        if self.adapt_nsteps == 'proposal-distance':
+            self.proposal_distance = 0.
+        
         self.logstat = []
         self.logstat_labels = ['accepted', 'scale']
 
@@ -195,14 +199,19 @@ class StepSampler(object):
             self.scale *= self.nudge
             self.last = unew, Lnew
             self.history.append((unew, Lnew))
+            if self.adapt_nsteps == 'proposal-distance':
+                self.proposal_distance += ((u - self.startu)**2).sum()
         else:
             self.scale /= self.nudge**10
             self.nrejects += 1
+            self.history.append(self.history[-1])
         self.logstat.append([accepted, self.scale])
 
     def reset(self):
         """Reset current path statistic."""
         self.nrejects = 0
+        if self.adapt_nsteps == 'proposal-distance':
+            self.proposal_distance = 0.0
     
     def region_changed(self, Ls, region):
         """React to change of region. Stub to be implemented."""
@@ -218,16 +227,29 @@ class StepSampler(object):
         # if we do not adapt, we are not done yet
         if not self.adapt_nsteps:
             return False
-        elif self.adapt_nsteps == 'proposal-distance':
+        elif self.adapt_nsteps == 'proposal-total-distances':
+            # compute mean vector of each proposed jump
+            # compute total distance of all jumps
+            tstart = region.transform(self.startu.reshape((1, -1)))
+            tproposed = region.transform([u for u, _ in self.history])
+            d2 = ((tstart - tproposed).sum(axis=0)**2).sum()
+            far_enough = d2 > self.pair_mean_distance
+            print(self.adapt_nsteps, far_enough, self.pair_mean_distance, d2)
+            return far_enough
+        elif self.adapt_nsteps == 'proposal-summed-distances':
+            # compute sum of distances from each jump
             d2 = self.proposal_distance
             far_enough = d2 > self.pair_mean_distance
+            print(self.adapt_nsteps, far_enough, self.pair_mean_distance, d2)
             return far_enough
         elif self.adapt_nsteps == 'move-distance':
+            # compute distance from start to end
             d2 = ((region.transform(self.startu) - region.transform(u))**2).sum()
             far_enough = d2 > self.pair_mean_distance
+            print(self.adapt_nsteps, far_enough, self.pair_mean_distance, d2)
             return far_enough
         assert False
-        
+    
     def __next__(self, region, Lmin, us, Ls, transform, loglike, ndraw=40, plot=False):
         """Get next point.
 
@@ -395,6 +417,8 @@ class CubeSliceSampler(StepSampler):
 
                 self.last = unew, Lnew
                 self.history.append((unew, Lnew))
+                if self.adapt_nsteps == 'proposal-distance':
+                    self.proposal_distance += ((u - self.startu)**2).sum()
             else:
                 self.nrejects += 1
                 # shrink current interval
