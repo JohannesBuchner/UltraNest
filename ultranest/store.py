@@ -163,6 +163,7 @@ class HDF5PointStore(FilePointStore):
         import h5py
         self.ncols = int(ncols)
         self.stack_empty = True
+        h5_file_args['mode'] = h5_file_args.get('mode', 'a')
         self.fileobj = h5py.File(filepath, **h5_file_args)
         self._load()
 

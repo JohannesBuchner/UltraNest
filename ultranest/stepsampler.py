@@ -100,7 +100,7 @@ def inside_region(region, unew, uold):
 
     always returns True at the moment.
     """
-    return np.ones(len(unew), dtype=bool)
+    #return np.ones(len(unew), dtype=bool)
 
     tnew = region.transformLayer.transform(unew)
     told = region.transformLayer.transform(uold)
@@ -118,15 +118,18 @@ class StepSampler(object):
     Scales proposal towards a 50% acceptance rate.
     """
 
-    def __init__(self, nsteps, adapt_nsteps=False):
+    def __init__(self, nsteps, scale=1.0, adaptive_nsteps=False, region_filter=False):
         """Initialise sampler.
 
         Parameters
         -----------
+        scale: float
+            initial proposal size
+        
         nsteps: int
             number of accepted steps until the sample is considered independent.
         
-        adapt_nsteps: False, 'proposal-distance', 'move-distance'
+        adaptive_nsteps: False, 'proposal-distance', 'move-distance'
             if not false, allow earlier termination than nsteps.
             The 'proposal-distance' strategy stops when the sum of 
             all proposed vectors exceeds the mean distance
@@ -135,28 +138,36 @@ class StepSampler(object):
             The 'move-distance' strategy stops when the distance between
             start point and current position exceeds the mean distance
             between pairs of live points.
+        
+        region_filter: bool
+            if True, use region to check if a proposed point can be inside
+            before calling likelihood.
 
         """
         self.history = []
         self.nsteps = nsteps
         self.nrejects = 0
         self.scale = 1.0
+        self.next_scale = self.scale
         self.last = None, None
         self.nudge = 1.1**(1. / self.nsteps)
+        self.nsteps_nudge = 1.2
         
-        assert adapt_nsteps in (False, 'proposal-distance', 'move-distance'), \
-            "adapt_nsteps must be either False, 'proposal-distance' or 'move-distance', not '%s'" % adapt_nsteps
-        self.adapt_nsteps = adapt_nsteps
+        if adaptive_nsteps not in (False, 'proposal-total-distances', 'proposal-summed-distances', 'move-distance'):
+            raise ValueError("adaptive_nsteps must be either False, 'proposal-total-distances', 'proposal-summed-distances' or 'move-distance', not '%s'" % adaptive_nsteps)
+        self.adaptive_nsteps = adaptive_nsteps
         self.pair_mean_distance = np.nan
-        if self.adapt_nsteps == 'proposal-distance':
-            self.proposal_distance = 0.
+        self.region_filter = region_filter
         
         self.logstat = []
-        self.logstat_labels = ['accepted', 'scale']
+        self.logstat_labels = ['rejection_rate', 'scale', 'steps']
 
     def __str__(self):
         """Get string representation."""
-        return type(self).__name__ + '(nsteps=%d)' % self.nsteps
+        if not self.adaptive_nsteps:
+            return type(self).__name__ + '(nsteps=%d)' % self.nsteps
+        else:
+            return type(self).__name__ + '(adaptive_nsteps=%s)' % self.adaptive_nsteps
 
     def plot(self, filename):
         """Plot sampler statistics."""
@@ -186,71 +197,89 @@ class StepSampler(object):
 
     def adjust_outside_region(self):
         """Adjust proposal given that we landed outside region."""
-        # print("ineffective proposal scale (%e). shrinking..." % self.scale)
+        print("ineffective proposal scale (%g). shrinking..." % self.scale)
+        
+        # Usually the region is very generous.
+        # Being here means that the scale is very wrong and we are probably stuck.
+        # Adjust it and restart the chain
         self.scale /= self.nudge**10
+        self.next_scale /= self.nudge**10
         assert self.scale > 0
+        assert self.next_scale > 0
+        # reset chain
         self.last = None, None
-        self.logstat.append([False, self.scale])
+        self.logstat.append([-1.0, self.scale, self.nsteps])
 
     def adjust_accept(self, accepted, unew, pnew, Lnew, nc):
         """Adjust proposal given that we have been `accepted` at a new point after `nc` calls."""
+        #print("accept: ", accepted)
         if accepted:
-            # if self.scale < 1:
-            self.scale *= self.nudge
+            self.next_scale *= self.nudge
             self.last = unew, Lnew
             self.history.append((unew, Lnew))
-            if self.adapt_nsteps == 'proposal-distance':
-                self.proposal_distance += ((u - self.startu)**2).sum()
         else:
-            self.scale /= self.nudge**10
+            self.next_scale /= self.nudge**10
             self.nrejects += 1
             self.history.append(self.history[-1])
-        self.logstat.append([accepted, self.scale])
 
-    def reset(self):
-        """Reset current path statistic."""
-        self.nrejects = 0
-        if self.adapt_nsteps == 'proposal-distance':
-            self.proposal_distance = 0.0
-    
-    def region_changed(self, Ls, region):
-        """React to change of region. Stub to be implemented."""
+    def adapt_nsteps(self, region):
+        if not self.adaptive_nsteps:
+            return
+        elif len(self.history) < self.nsteps:
+            # incomplete or aborted for some reason
+            print("not adapting, incomplete history", len(self.history), self.nsteps)
+            return
         
-        if self.adapt_nsteps:
-            self.pair_mean_distance = region.compute_pair_mean_distance()
-
-    def is_converged(self, region, u):
-        # check if length exceeds expected maximum
-        if len(self.history) >= self.nsteps:
-            return True
-        
-        # if we do not adapt, we are not done yet
-        if not self.adapt_nsteps:
-            return False
-        elif self.adapt_nsteps == 'proposal-total-distances':
+        if self.adaptive_nsteps == 'proposal-total-distances':
             # compute mean vector of each proposed jump
             # compute total distance of all jumps
-            tstart = region.transform(self.startu.reshape((1, -1)))
-            tproposed = region.transform([u for u, _ in self.history])
-            d2 = ((tstart - tproposed).sum(axis=0)**2).sum()
+            tproposed = region.transformLayer.transform(np.asarray([u for u, _ in self.history]))
+            d2 = ((tproposed[0] - tproposed).sum(axis=0)**2).sum()
             far_enough = d2 > self.pair_mean_distance
-            print(self.adapt_nsteps, far_enough, self.pair_mean_distance, d2)
-            return far_enough
-        elif self.adapt_nsteps == 'proposal-summed-distances':
+            print(self.adaptive_nsteps, self.nsteps, far_enough, self.pair_mean_distance, d2)
+        elif self.adaptive_nsteps == 'proposal-summed-distances':
             # compute sum of distances from each jump
-            d2 = self.proposal_distance
+            tproposed = region.transformLayer.transform(np.asarray([u for u, _ in self.history]))
+            d2 = ((tproposed[1:] - tproposed[:-1]).sum(axis=0)**2).sum()
             far_enough = d2 > self.pair_mean_distance
-            print(self.adapt_nsteps, far_enough, self.pair_mean_distance, d2)
-            return far_enough
-        elif self.adapt_nsteps == 'move-distance':
+            print(self.adaptive_nsteps, self.nsteps, far_enough, self.pair_mean_distance, d2)
+        elif self.adaptive_nsteps == 'move-distance':
             # compute distance from start to end
-            d2 = ((region.transform(self.startu) - region.transform(u))**2).sum()
+            ustart, _ = self.history[0]
+            ufinal, _ = self.history[-1]
+            tstart, tfinal = region.transformLayer.transform(np.vstack((ustart, ufinal)))
+            d2 = ((tstart - tfinal)**2).sum()
             far_enough = d2 > self.pair_mean_distance
-            print(self.adapt_nsteps, far_enough, self.pair_mean_distance, d2)
-            return far_enough
-        assert False
+            print(self.adaptive_nsteps, self.nsteps, far_enough, self.pair_mean_distance, d2)
+        else:
+            assert False, self.adaptive_nsteps
+        
+        # adjust nsteps
+        if far_enough:
+            self.nsteps = max(1, min(self.nsteps - 1, int(self.nsteps / self.nsteps_nudge)))
+        else:
+            self.nsteps = max(1, max(self.nsteps + 1, int(self.nsteps * self.nsteps_nudge)))
+
+    def finalize_chain(self, region=None):
+        """Store chain statistics and adapt proposal."""
+        self.logstat.append([self.nrejects / self.nsteps, self.scale, self.nsteps])
+        if self.adaptive_nsteps:
+            self.adapt_nsteps(region=region)
+        self.scale = self.next_scale
+
+    def new_chain(self, region=None):
+        """Starts a new path, reset statistics."""
+        self.history = []
+        self.last = None, None
+        self.nrejects = 0
     
-    def __next__(self, region, Lmin, us, Ls, transform, loglike, ndraw=40, plot=False):
+    def region_changed(self, Ls, region):
+        """React to change of region. """
+        
+        if self.adaptive_nsteps:
+            self.pair_mean_distance = region.compute_pair_mean_distance()
+
+    def __next__(self, region, Lmin, us, Ls, transform, loglike, ndraw=10, plot=False):
         """Get next point.
 
         Parameters
@@ -279,12 +308,6 @@ class StepSampler(object):
             print("wandered out of L constraint; resetting", ui[0])
             ui, Li = None, None
 
-        # if Li is not None and not region.inside(ui.reshape((1,-1))):
-        #     # region was updated and we are not inside anymore
-        #     # so reset
-        #     print("wandered out of region; resetting", ui[0])
-        #     ui, Li = None, None
-
         if Li is None and self.history:
             # try to resume from a previous point above the current contour
             for uj, Lj in self.history[::-1]:
@@ -295,6 +318,7 @@ class StepSampler(object):
 
         # select starting point
         if Li is None:
+            self.new_chain(region)
             # choose a new random starting point
             mask = region.inside(us)
             assert mask.any(), ("One of the live points does not satisfies the current region!",
@@ -305,19 +329,21 @@ class StepSampler(object):
             # print("starting at", ui[0])
             assert np.logical_and(ui > 0, ui < 1).all(), ui
             Li = Ls[mask][i]
-            self.reset()
             self.history.append((ui, Li))
 
         unew = self.move(ui, region, ndraw=ndraw, plot=plot)
-        # print("proposed", unew)
         if plot:
             plt.plot([ui[0], unew[:,0]], [ui[1], unew[:,1]], '-', color='k', lw=0.5)
             plt.plot(ui[0], ui[1], 'd', color='r', ms=4)
             plt.plot(unew[:,0], unew[:,1], 'x', color='r', ms=4)
         mask = np.logical_and(unew > 0, unew < 1).all(axis=1)
         unew = unew[mask,:]
-        mask = inside_region(region, unew, ui)
+        if self.region_filter:
+            mask = inside_region(region, unew, ui)
+        else:
+            mask = np.ones(len(unew), dtype=bool)
         nc = 0
+        # print("proposed", unew, mask)
 
         if mask.any():
             i = np.where(mask)[0][0]
@@ -329,10 +355,9 @@ class StepSampler(object):
                 if plot:
                     plt.plot(unew[0], unew[1], 'o', color='g', ms=4)
                 self.adjust_accept(True, unew, pnew, Lnew, nc)
-                if self.is_converged(region=region, u=unew):
+                if len(self.history) >= self.nsteps:
                     # print("made %d steps" % len(self.history), Lnew, Lmin)
-                    self.history = []
-                    self.last = None, None
+                    self.finalize_chain(region=region)
                     return unew, pnew, Lnew, nc
             else:
                 self.adjust_accept(False, unew, pnew, Lnew, nc)
@@ -369,24 +394,16 @@ class RegionMHSampler(StepSampler):
 class CubeSliceSampler(StepSampler):
     """Slice sampler, respecting the region."""
 
-    def __init__(self, nsteps):
-        """Initialise sampler.
-
-        Parameters
-        -----------
-        nsteps: int
-            number of accepted steps until the sample is considered independent.
-
-        """
-        StepSampler.__init__(self, nsteps=nsteps)
-        self.reset()
-
-    def reset(self):
-        """Reset current slice."""
+    def new_chain(self, region=None):
+        """Starts a new path, reset slice."""
         self.interval = None
         self.found_left = False
         self.found_right = False
         self.axis_index = 0
+        
+        self.history = []
+        self.last = None, None
+        self.nrejects = 0
 
     def generate_direction(self, ui, region):
         """Start in a new direction, by choosing a random parameter."""
@@ -406,10 +423,11 @@ class CubeSliceSampler(StepSampler):
             else:
                 self.found_right = True
                 # adjust scale
-                if -left > self.scale or right > self.scale:
-                    self.scale *= 1.1
+                if -left > self.next_scale or right > self.next_scale:
+                    self.next_scale *= 1.1
                 else:
-                    self.scale /= 1.1
+                    self.next_scale /= 1.1
+                #print("adjusting after accept...", self.next_scale)
         else:
             if accepted:
                 # start with a new interval next time
@@ -417,9 +435,8 @@ class CubeSliceSampler(StepSampler):
 
                 self.last = unew, Lnew
                 self.history.append((unew, Lnew))
-                if self.adapt_nsteps == 'proposal-distance':
-                    self.proposal_distance += ((u - self.startu)**2).sum()
             else:
+                self.history.append(self.history[-1])
                 self.nrejects += 1
                 # shrink current interval
                 if u == 0:
@@ -430,7 +447,6 @@ class CubeSliceSampler(StepSampler):
                     right = u
 
                 self.interval = (v, left, right, u)
-        self.logstat.append([accepted, self.scale])
 
     def adjust_outside_region(self):
         """Adjust proposal given that we landed outside region."""
@@ -462,7 +478,7 @@ class CubeSliceSampler(StepSampler):
         if not self.found_left:
             xj = ui + v * left
 
-            if inside_region(region, xj.reshape((1, -1)), ui):
+            if not self.region_filter or inside_region(region, xj.reshape((1, -1)), ui):
                 return xj.reshape((1, -1))
             else:
                 self.found_left = True
@@ -470,16 +486,23 @@ class CubeSliceSampler(StepSampler):
         if not self.found_right:
             xj = ui + v * right
 
-            if inside_region(region, xj.reshape((1, -1)), ui):
+            if not self.region_filter or inside_region(region, xj.reshape((1, -1)), ui):
                 return xj.reshape((1, -1))
             else:
                 self.found_right = True
+
+                # adjust scale
+                if -left > self.next_scale or right > self.next_scale:
+                    self.next_scale *= 1.1
+                else:
+                    self.next_scale /= 1.1
+                #print("adjusting scale...", self.next_scale)
 
         while True:
             u = np.random.uniform(left, right)
             xj = ui + v * u
 
-            if inside_region(region, xj.reshape((1, -1)), ui):
+            if not self.region_filter or inside_region(region, xj.reshape((1, -1)), ui):
                 self.interval = (v, left, right, u)
                 return xj.reshape((1, -1))
             else:

@@ -137,65 +137,11 @@ def main(args):
         RegionBallSliceSampler(nsteps=2*ndim), RegionBallSliceSampler(nsteps=ndim), RegionBallSliceSampler(nsteps=max(1, ndim//2)),
         RegionSequentialSliceSampler(nsteps=2*ndim), RegionSequentialSliceSampler(nsteps=ndim), RegionSequentialSliceSampler(nsteps=max(1, ndim//2)),
 
-        SpeedVariableRegionSliceSampler([Ellipsis]*ndim), SpeedVariableRegionSliceSampler([slice(i, ndim) for i in range(ndim)]),
-        SpeedVariableRegionSliceSampler([Ellipsis]*ndim + [slice(1 + ndim//2, None)]*ndim), 
+        #SpeedVariableRegionSliceSampler([Ellipsis]*ndim), SpeedVariableRegionSliceSampler([slice(i, ndim) for i in range(ndim)]),
+        #SpeedVariableRegionSliceSampler([Ellipsis]*ndim + [slice(1 + ndim//2, None)]*ndim), 
         
-        #SamplingPathSliceSampler(nsteps=16), SamplingPathSliceSampler(nsteps=4), SamplingPathSliceSampler(nsteps=1),
-        
-        #SamplingPathStepSampler(nresets=ndim, nsteps=ndim * 2, scale=1, balance=0.95, nudge=1.1),
-        #SamplingPathStepSampler(nresets=ndim, nsteps=ndim, scale=1, balance=0.95, nudge=1.1),
-        #SamplingPathStepSampler(nresets=ndim, nsteps=max(1, ndim//2), scale=1, balance=0.95, nudge=1.1),
-        
-        #GeodesicSliceSampler(nsteps=2, adapt=True),
-        #GeodesicSliceSampler(nsteps=4, adapt=True),
-        #GeodesicSliceSampler(nsteps=max(2, ndim // 2), adapt=True),
-        #GeodesicSliceSampler(nsteps=ndim, adapt=True),
-        #GeodesicSliceSampler(nsteps=ndim * 4, adapt=True),
+        RegionMHSampler(nsteps=2*ndim, adapt_nsteps=''), RegionSequentialSliceSampler(nsteps=ndim), RegionSequentialSliceSampler(nsteps=max(1, ndim//2)),
 
-        #GeodesicSliceSampler(nsteps=2, radial_fraction=1./ndim),
-        #GeodesicSliceSampler(nsteps=4, radial_fraction=1./ndim),
-        #GeodesicSliceSampler(nsteps=max(4, ndim // 2), radial_fraction=1./ndim),
-        #GeodesicSliceSampler(nsteps=ndim, radial_fraction=1./ndim),
-        #GeodesicSliceSampler(nsteps=ndim * 4, radial_fraction=1./ndim),
-
-        #GeodesicSliceSampler(nsteps=ndim * 4, radial_fraction=0.33),
-        #GeodesicSliceSampler(nsteps=ndim, radial_fraction=0.33),
-        ##GeodesicSliceSampler(nsteps=max(4, ndim // 2), radial_fraction=0.33),
-        #GeodesicSliceSampler(nsteps=4, radial_fraction=0.33),
-        #GeodesicSliceSampler(nsteps=2, radial_fraction=0.33),
-
-        #GeodesicSliceSampler(nsteps=2, radial_fraction=1),
-        #GeodesicSliceSampler(nsteps=4, radial_fraction=1),
-        #GeodesicSliceSampler(nsteps=ndim, radial_fraction=1),
-        #GeodesicSliceSampler(nsteps=ndim * 4, radial_fraction=1),
-
-        #RegionGeodesicSliceSampler(nsteps=2, radial_fraction=1/ndim),
-        #RegionGeodesicSliceSampler(nsteps=4, radial_fraction=1/ndim),
-        #RegionGeodesicSliceSampler(nsteps=ndim, radial_fraction=1/ndim),
-        #RegionGeodesicSliceSampler(nsteps=ndim * 4, radial_fraction=1/ndim),
-
-        #RegionGeodesicSliceSampler(nsteps=ndim * 4, radial_fraction=1),
-        #RegionGeodesicSliceSampler(nsteps=ndim, radial_fraction=1),
-        #RegionGeodesicSliceSampler(nsteps=4, radial_fraction=4/ndim),
-        #RegionGeodesicSliceSampler(nsteps=2, radial_fraction=2/ndim),
-
-        #RegionGeodesicSliceSampler(nsteps=ndim * 4, radial_fraction=1),
-        #RegionGeodesicSliceSampler(nsteps=ndim, radial_fraction=1),
-        #RegionGeodesicSliceSampler(nsteps=4, radial_fraction=1),
-        #RegionGeodesicSliceSampler(nsteps=2, radial_fraction=1),
-
-        #OtherSamplerProxy(nnewdirections=ndim * 2, sampler='steps', nsteps=ndim * 2, scale=1, balance=0.9, nudge=1.1, log=False),
-        #OtherSamplerProxy(nnewdirections=ndim * 2, sampler='steps', nsteps=ndim * 2, scale=1, balance=0.6, nudge=1.1, log=False),
-        #OtherSamplerProxy(nnewdirections=ndim, sampler='steps', nsteps=ndim, scale=1, balance=0.9, nudge=1.1, log=False),
-        #OtherSamplerProxy(nnewdirections=ndim * 2, sampler='steps', nsteps=ndim, scale=1, balance=0.9, nudge=1.1, log=False),
-        #OtherSamplerProxy(nnewdirections=max(1, ndim // 2), sampler='steps', nsteps=max(1, ndim // 2), scale=1, balance=0.8, nudge=1.1, log=False),
-        #OtherSamplerProxy(nnewdirections=max(1, ndim // 2), sampler='steps', nsteps=max(1, ndim // 2), scale=1, balance=0.6, nudge=1.1, log=False),
-        #OtherSamplerProxy(nnewdirections=1, sampler='steps', nsteps=max(1, ndim // 2), scale=1, balance=0.9, nudge=1.1, log=False),
-        #OtherSamplerProxy(nnewdirections=max(1, ndim // 2), sampler='steps', nsteps=1, scale=1, balance=0.9, nudge=1.1, log=False),
-        #OtherSamplerProxy(nnewdirections=ndim, sampler='bisect', nsteps=ndim, scale=1, balance=0.6, nudge=1.1, log=False),
-        #OtherSamplerProxy(nnewdirections=ndim * 2, sampler='bisect', nsteps=ndim, scale=1, balance=0.6, nudge=1.1, log=False),
-        #OtherSamplerProxy(nnewdirections=max(1, ndim // 2), sampler='bisect', nsteps=max(1, ndim // 2), scale=1, balance=0.6, nudge=1.1, log=False),
-        #OtherSamplerProxy(nnewdirections=ndim, sampler='steps', nsteps=ndim, scale=1, balance=0.5, nudge=1.1, log=False),
     ]
     if ndim < 14:
         samplers.insert(0, MLFriendsSampler())
