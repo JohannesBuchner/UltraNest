@@ -194,7 +194,7 @@ def get_problem(problemname, ndim):
     elif problemname == 'shell':
         return loglike_shell, gradient_shell, volume_shell, warmup_shell
     
-    raise Exception("Problem '%d' unknown" % problemname)
+    raise Exception("Problem '%s' unknown" % problemname)
 
 
 

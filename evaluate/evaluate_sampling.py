@@ -4,8 +4,8 @@ from ultranest.mlfriends import ScalingLayer, AffineLayer, MLFriends
 from ultranest.stepsampler import RegionMHSampler, CubeMHSampler
 from ultranest.stepsampler import CubeSliceSampler, RegionSliceSampler, RegionBallSliceSampler, RegionSequentialSliceSampler, SpeedVariableRegionSliceSampler
 #from ultranest.stepsampler import DESampler
-from ultranest.stepsampler import OtherSamplerProxy, SamplingPathSliceSampler, SamplingPathStepSampler
-from ultranest.stepsampler import GeodesicSliceSampler, RegionGeodesicSliceSampler
+#from ultranest.stepsampler import OtherSamplerProxy, SamplingPathSliceSampler, SamplingPathStepSampler
+#from ultranest.stepsampler import GeodesicSliceSampler, RegionGeodesicSliceSampler
 import tqdm
 import joblib
 import warnings
@@ -49,6 +49,8 @@ def evaluate_warmed_sampler(problemname, ndim, nlive, nsteps, sampler):
     region = MLFriends(us, transformLayer)
     region.maxradiussq, region.enlarge = region.compute_enlargement(nbootstraps=30)
     region.create_ellipsoid(minvol=vol0)
+    assert region.ellipsoid_center is not None
+    sampler.region_changed(Ls, region)
     
     Lsequence = []
     stepsequence = []
@@ -62,9 +64,11 @@ def evaluate_warmed_sampler(problemname, ndim, nlive, nsteps, sampler):
                     nextregion = MLFriends(us, nextTransformLayer)
                     nextregion.maxradiussq, nextregion.enlarge = nextregion.compute_enlargement(nbootstraps=30)
                     if nextregion.estimate_volume() <= region.estimate_volume():
+                        nextregion.create_ellipsoid(minvol=minvol)
                         region = nextregion
                         transformLayer = region.transformLayer
-                    region.create_ellipsoid(minvol=minvol)
+                        assert region.ellipsoid_center is not None
+                        sampler.region_changed(Ls, region)
                 except Warning as w:
                     print("not updating region because: %s" % w)
                 except FloatingPointError as e:
@@ -99,6 +103,7 @@ class MLFriendsSampler(object):
     def __init__(self):
         self.ndraw = 40
         self.nsteps = -1
+        self.adaptive_nsteps = False
     
     def __next__(self, region, Lmin, us, Ls, transform, loglike):
         u, father = region.sample(nsamples=self.ndraw)
@@ -118,6 +123,8 @@ class MLFriendsSampler(object):
         return 'MLFriends'
     def plot(self, filename):
         pass
+    def region_changed(self, Ls, region):
+        pass
 
 def main(args):
     nlive = args.num_live_points
@@ -133,15 +140,29 @@ def main(args):
         #RegionSliceSampler(nsteps=ndim), RegionSliceSampler(nsteps=max(1, ndim//2)),
         RegionSliceSampler(nsteps=2), RegionSliceSampler(nsteps=4), 
         RegionSliceSampler(nsteps=ndim), RegionSliceSampler(nsteps=4*ndim),
-        #RegionBallSliceSampler(nsteps=16), RegionBallSliceSampler(nsteps=4), RegionBallSliceSampler(nsteps=1),
-        RegionBallSliceSampler(nsteps=2*ndim), RegionBallSliceSampler(nsteps=ndim), RegionBallSliceSampler(nsteps=max(1, ndim//2)),
-        RegionSequentialSliceSampler(nsteps=2*ndim), RegionSequentialSliceSampler(nsteps=ndim), RegionSequentialSliceSampler(nsteps=max(1, ndim//2)),
+        #RegionBallSliceSampler(nsteps=2*ndim), RegionBallSliceSampler(nsteps=ndim), RegionBallSliceSampler(nsteps=max(1, ndim//2)),
+       # RegionSequentialSliceSampler(nsteps=2*ndim), RegionSequentialSliceSampler(nsteps=ndim), RegionSequentialSliceSampler(nsteps=max(1, ndim//2)),
 
         #SpeedVariableRegionSliceSampler([Ellipsis]*ndim), SpeedVariableRegionSliceSampler([slice(i, ndim) for i in range(ndim)]),
         #SpeedVariableRegionSliceSampler([Ellipsis]*ndim + [slice(1 + ndim//2, None)]*ndim), 
         
-        RegionMHSampler(nsteps=2*ndim, adapt_nsteps=''), RegionSequentialSliceSampler(nsteps=ndim), RegionSequentialSliceSampler(nsteps=max(1, ndim//2)),
+        RegionMHSampler(nsteps=2*ndim, adaptive_nsteps='move-distance'),
+        RegionMHSampler(nsteps=2*ndim, adaptive_nsteps='proposal-total-distances'),
+        RegionMHSampler(nsteps=2*ndim, adaptive_nsteps='proposal-total-distances-NN'),
+        RegionMHSampler(nsteps=2*ndim, adaptive_nsteps='proposal-summed-distances'),
+        RegionMHSampler(nsteps=2*ndim, adaptive_nsteps='proposal-summed-distances-NN'),
 
+        RegionSliceSampler(nsteps=2*ndim, adaptive_nsteps='move-distance'),
+        RegionSliceSampler(nsteps=2*ndim, adaptive_nsteps='proposal-total-distances'),
+        RegionSliceSampler(nsteps=2*ndim, adaptive_nsteps='proposal-total-distances-NN'),
+        RegionSliceSampler(nsteps=2*ndim, adaptive_nsteps='proposal-summed-distances'),
+        RegionSliceSampler(nsteps=2*ndim, adaptive_nsteps='proposal-summed-distances-NN'),
+
+        RegionBallSliceSampler(nsteps=2*ndim, adaptive_nsteps='move-distance'),
+        RegionBallSliceSampler(nsteps=2*ndim, adaptive_nsteps='proposal-total-distances'),
+        RegionBallSliceSampler(nsteps=2*ndim, adaptive_nsteps='proposal-total-distances-NN'),
+        RegionBallSliceSampler(nsteps=2*ndim, adaptive_nsteps='proposal-summed-distances'),
+        RegionBallSliceSampler(nsteps=2*ndim, adaptive_nsteps='proposal-summed-distances-NN'),
     ]
     if ndim < 14:
         samplers.insert(0, MLFriendsSampler())
@@ -184,7 +205,7 @@ def main(args):
             color = 'pink'
         else:
             color = colors.get(samplername)
-            ls = linestyles[sampler.nsteps]
+            ls = '-' if sampler.adaptive_nsteps else linestyles[sampler.nsteps]
             l, = axL.plot(Lsequence_ref, Lsequence, label=label, color=color, linestyle=ls, lw=1)
             colors[samplername] = l.get_color()
         
@@ -195,7 +216,7 @@ def main(args):
             label=label, color=color, ls=ls
         )
         print("%s shrunk %.4f, from %d shrinkage samples" % (fullsamplername, cdf_expected.mean(), len(shrinkage)))
-        axspeed.plot(cdf_expected.mean(), ncalls, markers[sampler.nsteps], label=label, color=color)
+        axspeed.plot(cdf_expected.mean(), ncalls, markers[1 if sampler.adaptive_nsteps else sampler.nsteps], label=label, color=color)
         if lastspeed[0] == samplername:
             axspeed.plot([lastspeed[1], cdf_expected.mean()], [lastspeed[2], ncalls], '-', color=color)
         lastspeed = [samplername, cdf_expected.mean(), ncalls]

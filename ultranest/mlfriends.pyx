@@ -128,7 +128,8 @@ def compute_mean_pair_distance(
     cdef int ndim = pts.shape[1]
 
     cdef int i, j
-    cdef np.float_t d
+    cdef np.float_t total_dist = 0.0
+    cdef np.float_t pair_dist
     cdef int Npairs = 0
 
     # go through the unselected points and find the worst case
@@ -137,11 +138,13 @@ def compute_mean_pair_distance(
         for i in range(j):
             # only consider points in the same cluster
             if clusterids[j] == 0 or clusterids[i] == 0 or clusterids[j] == clusterids[i]:
-                Npairs += 1
+                pair_dist = 0.0
                 for k in range(ndim):
-                    d += (pts[i,k] - pts[j,k])**2
+                    pair_dist += (pts[i,k] - pts[j,k])**2
+                total_dist += pair_dist**0.5
+                Npairs += 1
 
-    return d / Npairs
+    return total_dist / Npairs
 
 
 

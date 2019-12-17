@@ -152,6 +152,7 @@ def test_stepsampler_regionmh_adapt(plot=False):
             print()
             stepsampler = sampler_class(nsteps=len(paramnames), adaptive_nsteps=adaptation)
             print(stepsampler)
+            stepsampler.region_changed(Ls, region)
             np.random.seed(23)
             old_scale = stepsampler.scale
             for i in range(5):

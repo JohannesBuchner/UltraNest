@@ -111,8 +111,14 @@ def test_region_ellipsoid(plot=False):
 
 def test_region_mean_distances():
     np.random.seed(1)
-    points = np.random.uniform(0.4, 0.6, size=(1000, 2))
-    points[:,1] *= 0.5
+    points = np.random.uniform(0.4, 0.6, size=(10000, 2))
+    #points[:,1] *= 0.5
+    mask = np.abs((points[:,0]-0.5)**2 + (points[:,1]-0.5)**2 - 0.08**2) < 0.02**2
+    print('circle:', mask.sum())
+    points = points[mask]
+    mask = points[:,0] < 0.5
+    print('half-circle:', mask.sum())
+    points = points[mask]
     
     transformLayer = AffineLayer(wrapped_dims=[])
     transformLayer.optimize(points, points)
@@ -120,17 +126,19 @@ def test_region_mean_distances():
     region.maxradiussq, region.enlarge = region.compute_enlargement(nbootstraps=30)
     print("enlargement factor:", region.enlarge, 1 / region.enlarge)
     region.create_ellipsoid()
-    meandistsq = region.compute_mean_pair_distance()
+    meandist = region.compute_mean_pair_distance()
     
     t = transformLayer.transform(region.u)
-    sqd = 0
+    d = 0
     N = 0
     for i in range(len(t)):
         for j in range(i):
-            sqd += ((t[i] - t[j])**2).sum()
+            d += ((t[i,:] - t[j,:])**2).sum()**0.5
+            #print(i, j, t[i,:], t[j,:], ((t[i,:] - t[j,:])**2).sum())
             N += 1
     
-    assert np.isclose(meandistsq, sqd / N), (meandistsq, sqd, N)
+    print((meandist, d, N, t))
+    assert np.isclose(meandist, d / N), (meandist, d, N)
 
 
 if __name__ == '__main__':
