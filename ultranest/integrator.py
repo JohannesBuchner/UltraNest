@@ -1351,6 +1351,7 @@ class ReactiveNestedSampler(object):
             self.region.enlarge = f
             # if self.log:
             #     self.logger.debug("building first region ... r=%e, f=%e" % (r, f))
+            updated = True
 
             # verify correctness:
             # self.region.create_ellipsoid(minvol=minvol)

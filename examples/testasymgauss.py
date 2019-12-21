@@ -1,7 +1,5 @@
 import argparse
 import numpy as np
-from numpy import log
-import scipy.stats
 
 def main(args):
     ndim = args.x_dim
@@ -10,6 +8,10 @@ def main(args):
     centers = (np.sin(np.arange(ndim)/2.) * width + 1.) / 2.
     #centers = np.ones(ndim) * 0.5
 
+    adaptive_nsteps = args.adapt_steps
+    if adaptive_nsteps is None:
+        adaptive_nsteps = False
+
     def loglike(theta):
         like = -0.5 * (((theta - centers)/sigma)**2).sum(axis=1) - 0.5 * np.log(2 * np.pi * sigma**2) * ndim
         return like
@@ -17,7 +19,6 @@ def main(args):
     def transform(x):
         return x
     
-    import string
     paramnames = ['param%d' % (i+1) for i in range(ndim)]
     
     if args.pymultinest:
@@ -38,29 +39,39 @@ def main(args):
             print('%15s : %.3f +- %.3f' % (name, col.mean(), col.std()))
     
     elif args.reactive:
+        if args.slice:
+            log_dir = args.log_dir + 'RNS-%dd-slice%d' % (ndim, args.slice_steps)
+        elif args.harm:
+            log_dir = args.log_dir + 'RNS-%dd-harm%d' % (ndim, args.slice_steps)
+        elif args.dyhmc:
+            log_dir = args.log_dir + 'RNS-%dd-dyhmc%d' % (ndim, args.slice_steps)
+        elif args.dychmc:
+            log_dir = args.log_dir + 'RNS-%dd-dychmc%d' % (ndim, args.slice_steps)
+        else:
+            log_dir = args.log_dir + 'RNS-%dd' % (ndim)
+        if adaptive_nsteps:
+            log_dir = log_dir + '-adapt%s' % (adaptive_nsteps)
+        
         from ultranest import ReactiveNestedSampler
         sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, 
-            log_dir=args.log_dir + 'RNS-%dd' % ndim,
+            log_dir=log_dir, resume=True,
             vectorized=True)
         if args.slice:
             import ultranest.stepsampler
-            sampler.stepsampler = ultranest.stepsampler.RegionSliceSampler(nsteps=args.slice_steps)
-        sampler.run(frac_remain=0.5, 
-            min_ess=1000 / ndim,
-            dKL=np.inf, dlogz=0.5 + 0.1 * ndim,
-            update_interval_iter_fraction=0.4 if ndim > 20 else 0.2,
-            cluster_num_live_points=40,
-            max_num_improvement_loops=3,
-            min_num_live_points=args.num_live_points)
+            sampler.stepsampler = ultranest.stepsampler.RegionSliceSampler(nsteps=args.slice_steps, adaptive_nsteps=adaptive_nsteps)
+        if args.harm:
+            import ultranest.stepsampler
+            sampler.stepsampler = ultranest.stepsampler.RegionBallSliceSampler(nsteps=args.slice_steps, adaptive_nsteps=adaptive_nsteps)
+        sampler.run(frac_remain=0.5, min_num_live_points=args.num_live_points, max_num_improvement_loops=1)
         sampler.print_results()
-        if args.slice:
-            sampler.stepsampler.plot(filename = args.log_dir + 'RNS-%dd/stepsampler_stats_regionslice.pdf' % ndim)
+        if sampler.stepsampler is not None:
+            sampler.stepsampler.plot(filename = log_dir + '/stepsampler_stats_region.pdf')
         sampler.plot()
     else:
         from ultranest import NestedSampler
         sampler = NestedSampler(paramnames, loglike, transform=transform, 
             num_live_points=args.num_live_points, vectorized=True,
-            log_dir=args.log_dir + '-%dd' % ndim)
+            log_dir=args.log_dir + '-%dd' % ndim, resume=True)
         sampler.run()
         sampler.print_results()
         sampler.plot()
@@ -71,13 +82,17 @@ if __name__ == '__main__':
 
     parser.add_argument('--x_dim', type=int, default=2,
                         help="Dimensionality")
-    parser.add_argument("--num_live_points", type=int, default=1000)
     parser.add_argument('--sigma', type=float, default=0.01)
-    parser.add_argument('--log_dir', type=str, default='logs/loggauss')
+    parser.add_argument("--num_live_points", type=int, default=1000)
+    parser.add_argument('--log_dir', type=str, default='logs/asymgauss')
+    parser.add_argument('--pymultinest', action='store_true')
     parser.add_argument('--reactive', action='store_true')
     parser.add_argument('--slice', action='store_true')
+    parser.add_argument('--harm', action='store_true')
+    parser.add_argument('--dyhmc', action='store_true')
+    parser.add_argument('--dychmc', action='store_true')
     parser.add_argument('--slice_steps', type=int, default=100)
-    parser.add_argument('--pymultinest', action='store_true')
+    parser.add_argument('--adapt_steps', type=str)
 
     args = parser.parse_args()
     main(args)

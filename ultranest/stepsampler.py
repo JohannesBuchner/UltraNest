@@ -153,7 +153,9 @@ class StepSampler(object):
         self.nudge = 1.1**(1. / self.nsteps)
         self.nsteps_nudge = 1.2
         adaptive_nsteps_options = (False, 'proposal-total-distances-NN', 'proposal-summed-distances-NN', 
-            'proposal-total-distances', 'proposal-summed-distances', 'move-distance')
+            'proposal-total-distances', 'proposal-summed-distances', 
+            'move-distance', 'proposal-summed-distances-min-NN',
+            'proposal-variance-min', 'proposal-variance-min-NN')
         
         if adaptive_nsteps not in adaptive_nsteps_options:
             raise ValueError("adaptive_nsteps must be one of: %s, not '%s'" % (adaptive_nsteps_options, adaptive_nsteps))
@@ -163,6 +165,8 @@ class StepSampler(object):
         
         self.logstat = []
         self.logstat_labels = ['rejection_rate', 'scale', 'steps']
+        if adaptive_nsteps_options is not None:
+            self.logstat_labels += ['jump-distance', 'reference-distance']
 
     def __str__(self):
         """Get string representation."""
@@ -176,21 +180,23 @@ class StepSampler(object):
         if len(self.logstat) == 0:
             return
 
-        parts = np.transpose(self.logstat)
-        plt.figure(figsize=(10, 1 + 3 * len(parts)))
-        for i, (label, part) in enumerate(zip(self.logstat_labels, parts)):
-            plt.subplot(len(parts), 1, 1 + i)
+        plt.figure(figsize=(10, 1 + 3 * len(self.logstat_labels)))
+        for i, label in enumerate(self.logstat_labels):
+            part = [entry[i] for entry in self.logstat]
+            plt.subplot(len(self.logstat_labels), 1, 1 + i)
             plt.ylabel(label)
             plt.plot(part)
             x = []
             y = []
             for j in range(0, len(part), 20):
                 x.append(j)
-                y.append(part[j:j + 20].mean())
+                y.append(np.mean(part[j:j + 20]))
             plt.plot(x, y)
             if np.min(part) > 0:
                 plt.yscale('log')
         plt.savefig(filename, bbox_inches='tight')
+        np.savetxt(filename + '.txt.gz', self.logstat, 
+            header=','.join(self.logstat_labels), delimiter=',')
         plt.close()
 
     def move(self, ui, region, ndraw=1, plot=False):
@@ -210,7 +216,10 @@ class StepSampler(object):
         assert self.next_scale > 0
         # reset chain
         self.last = None, None
-        self.logstat.append([-1.0, self.scale, self.nsteps])
+        if self.adaptive_nsteps:
+            self.logstat.append([-1.0, self.scale, self.nsteps, np.nan, np.nan])
+        else:
+            self.logstat.append([-1.0, self.scale, self.nsteps])
 
     def adjust_accept(self, accepted, unew, pnew, Lnew, nc):
         """Adjust proposal given that we have been `accepted` at a new point after `nc` calls."""
@@ -244,7 +253,9 @@ class StepSampler(object):
             assert len(tproposed.sum(axis=1)) == len(tproposed)
             d2 = ((((tproposed[0] - tproposed)**2).sum(axis=1))**0.5).sum()
             far_enough = d2 > self.mean_pair_distance / ndim
-            print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, self.mean_pair_distance, d2)
+            
+            self.logstat[-1] = self.logstat[-1] + [d2, self.mean_pair_distance]
+            #print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, self.mean_pair_distance, d2)
         elif self.adaptive_nsteps == 'proposal-total-distances-NN':
             # compute mean vector of each proposed jump
             # compute total distance of all jumps
@@ -252,19 +263,49 @@ class StepSampler(object):
             assert len(tproposed.sum(axis=1)) == len(tproposed)
             d2 = ((((tproposed[0] - tproposed)**2).sum(axis=1))**0.5).sum()
             far_enough = d2 > region.maxradiussq**0.5 / ndim
-            print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)
+
+            self.logstat[-1] = self.logstat[-1] + [d2, region.maxradiussq**0.5]
+            #print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)
         elif self.adaptive_nsteps == 'proposal-summed-distances':
             # compute sum of distances from each jump
             tproposed = region.transformLayer.transform(np.asarray([u for u, _ in self.history]))
             d2 = (((tproposed[1:,:] - tproposed[:-1,:])**2).sum(axis=1)**0.5).sum()
             far_enough = d2 > self.mean_pair_distance / ndim
-            print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, self.mean_pair_distance, d2)
+            #print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, self.mean_pair_distance, d2)
+
+            self.logstat[-1] = self.logstat[-1] + [d2, self.mean_pair_distance]
         elif self.adaptive_nsteps == 'proposal-summed-distances-NN':
             # compute sum of distances from each jump
             tproposed = region.transformLayer.transform(np.asarray([u for u, _ in self.history]))
             d2 = (((tproposed[1:,:] - tproposed[:-1,:])**2).sum(axis=1)**0.5).sum()
             far_enough = d2 > region.maxradiussq**0.5 / ndim
-            print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)
+            
+            self.logstat[-1] = self.logstat[-1] + [d2, region.maxradiussq**0.5]
+            #print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)
+        elif self.adaptive_nsteps == 'proposal-summed-distances-min-NN':
+            # compute sum of distances from each jump
+            tproposed = region.transformLayer.transform(np.asarray([u for u, _ in self.history]))
+            d2 = (np.abs(tproposed[1:,:] - tproposed[:-1,:]).sum(axis=1)).min()
+            far_enough = d2 > region.maxradiussq**0.5 / ndim
+            
+            self.logstat[-1] = self.logstat[-1] + [d2, region.maxradiussq**0.5]
+            #print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)
+        elif self.adaptive_nsteps == 'proposal-variance-min':
+            # compute sum of distances from each jump
+            tproposed = region.transformLayer.transform(np.asarray([u for u, _ in self.history]))
+            d2 = tproposed.std(axis=0).min()
+            far_enough = d2 > self.mean_pair_distance / ndim
+            
+            self.logstat[-1] = self.logstat[-1] + [d2, self.mean_pair_distance]
+            #print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)
+        elif self.adaptive_nsteps == 'proposal-variance-min-NN':
+            # compute sum of distances from each jump
+            tproposed = region.transformLayer.transform(np.asarray([u for u, _ in self.history]))
+            d2 = tproposed.std(axis=0).min()
+            far_enough = d2 > region.maxradiussq**0.5 / ndim
+
+            self.logstat[-1] = self.logstat[-1] + [d2, region.maxradiussq**0.5]
+            #print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)
         elif self.adaptive_nsteps == 'move-distance':
             # compute distance from start to end
             ustart, _ = self.history[0]
@@ -272,7 +313,9 @@ class StepSampler(object):
             tstart, tfinal = region.transformLayer.transform(np.vstack((ustart, ufinal)))
             d2 = ((tstart - tfinal)**2).sum()
             far_enough = d2 > region.maxradiussq / len(region.u)
-            print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)
+            
+            self.logstat[-1] = self.logstat[-1] + [d2, region.maxradiussq**0.5]
+            #print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)
         else:
             assert False, self.adaptive_nsteps
         
@@ -286,6 +329,7 @@ class StepSampler(object):
     def finalize_chain(self, region=None):
         """Store chain statistics and adapt proposal."""
         self.logstat.append([self.nrejects / self.nsteps, self.scale, self.nsteps])
+        
         if self.adaptive_nsteps:
             self.adapt_nsteps(region=region)
         
@@ -309,7 +353,7 @@ class StepSampler(object):
         
         if self.adaptive_nsteps:
             self.mean_pair_distance = region.compute_mean_pair_distance()
-            print("region changed. new mean_pair_distance: %g" % self.mean_pair_distance)
+            #print("region changed. new mean_pair_distance: %g" % self.mean_pair_distance)
 
     def __next__(self, region, Lmin, us, Ls, transform, loglike, ndraw=10, plot=False):
         """Get next point.
@@ -352,53 +396,59 @@ class StepSampler(object):
         if Li is None:
             self.new_chain(region)
             # choose a new random starting point
-            mask = region.inside(us)
-            assert mask.any(), ("One of the live points does not satisfies the current region!",
-                region.maxradiussq, region.u, region.unormed, us)
-            i = np.random.randint(mask.sum())
+            #mask = region.inside(us)
+            #assert mask.any(), ("One of the live points does not satisfies the current region!",
+            #    region.maxradiussq, region.u, region.unormed, us)
+            i = np.random.randint(len(us))
             self.starti = i
-            ui = us[mask,:][i]
+            ui = us[i,:]
             # print("starting at", ui[0])
-            assert np.logical_and(ui > 0, ui < 1).all(), ui
-            Li = Ls[mask][i]
+            #assert np.logical_and(ui > 0, ui < 1).all(), ui
+            Li = Ls[i]
             self.history.append((ui, Li))
+            del i
 
-        unew = self.move(ui, region, ndraw=ndraw, plot=plot)
-        if plot:
-            plt.plot([ui[0], unew[:,0]], [ui[1], unew[:,1]], '-', color='k', lw=0.5)
-            plt.plot(ui[0], ui[1], 'd', color='r', ms=4)
-            plt.plot(unew[:,0], unew[:,1], 'x', color='r', ms=4)
-        mask = np.logical_and(unew > 0, unew < 1).all(axis=1)
-        unew = unew[mask,:]
-        if self.region_filter:
-            mask = inside_region(region, unew, ui)
-        else:
-            mask = np.ones(len(unew), dtype=bool)
-        nc = 0
-        # print("proposed", unew, mask)
-
-        if mask.any():
-            i = np.where(mask)[0][0]
-            unew = unew[i,:]
-            pnew = transform(unew.reshape((1, -1)))
-            Lnew = loglike(pnew)[0]
-            nc = 1
-            if Lnew > Lmin:
-                if plot:
-                    plt.plot(unew[0], unew[1], 'o', color='g', ms=4)
-                self.adjust_accept(True, unew, pnew, Lnew, nc)
+        while True:
+            unew = self.move(ui, region, ndraw=ndraw, plot=plot)
+            if plot:
+                plt.plot([ui[0], unew[:,0]], [ui[1], unew[:,1]], '-', color='k', lw=0.5)
+                plt.plot(ui[0], ui[1], 'd', color='r', ms=4)
+                plt.plot(unew[:,0], unew[:,1], 'x', color='r', ms=4)
+            mask = np.logical_and(unew > 0, unew < 1).all(axis=1)
+            unew = unew[mask,:]
+            nc = 0
+            if self.region_filter:
+                mask = inside_region(region, unew, ui)
+                if mask.any():
+                    i = np.where(mask)[0][0]
+                else:
+                    self.adjust_outside_region()
+                    continue
             else:
-                self.adjust_accept(False, unew, pnew, Lnew, nc)
-            
-            if len(self.history) > self.nsteps:
-                # print("made %d steps" % len(self.history), Lnew, Lmin)
-                u, L = self.history[-1]
-                p = transform(u.reshape((1, -1)))[0]
-                self.finalize_chain(region=region)
-                return u, p, L, nc
-        else:
-            self.adjust_outside_region()
+                i = 0
 
+            if len(unew) == 0:
+                self.adjust_outside_region()
+                continue
+            break
+        
+        unew = unew[i,:]
+        pnew = transform(unew.reshape((1, -1)))
+        Lnew = loglike(pnew)[0]
+        nc = 1
+        if Lnew > Lmin:
+            if plot:
+                plt.plot(unew[0], unew[1], 'o', color='g', ms=4)
+            self.adjust_accept(True, unew, pnew, Lnew, nc)
+        else:
+            self.adjust_accept(False, unew, pnew, Lnew, nc)
+
+        if len(self.history) > self.nsteps:
+            # print("made %d steps" % len(self.history), Lnew, Lmin)
+            u, L = self.history[-1]
+            p = transform(u.reshape((1, -1)))[0]
+            self.finalize_chain(region=region)
+            return u, p, L, nc
 
         # do not have a independent sample yet
         return None, None, None, nc
@@ -463,7 +513,7 @@ class CubeSliceSampler(StepSampler):
                     self.next_scale *= 1.1
                 else:
                     self.next_scale /= 1.1
-                print("adjusting after accept...", self.next_scale)
+                #print("adjusting after accept...", self.next_scale)
         else:
             if accepted:
                 # start with a new interval next time
