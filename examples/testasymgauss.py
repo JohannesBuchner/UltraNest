@@ -58,15 +58,18 @@ def main(args):
             vectorized=True)
         if args.slice:
             import ultranest.stepsampler
-            sampler.stepsampler = ultranest.stepsampler.RegionSliceSampler(nsteps=args.slice_steps, adaptive_nsteps=adaptive_nsteps)
+            sampler.stepsampler = ultranest.stepsampler.RegionSliceSampler(nsteps=args.slice_steps, adaptive_nsteps=adaptive_nsteps,
+                log=open(log_dir + '/stepsampler.log', 'w'))
         if args.harm:
             import ultranest.stepsampler
-            sampler.stepsampler = ultranest.stepsampler.RegionBallSliceSampler(nsteps=args.slice_steps, adaptive_nsteps=adaptive_nsteps)
+            sampler.stepsampler = ultranest.stepsampler.RegionBallSliceSampler(nsteps=args.slice_steps, adaptive_nsteps=adaptive_nsteps,
+                log=open(log_dir + '/stepsampler.log', 'w'))
         sampler.run(frac_remain=0.5, min_num_live_points=args.num_live_points, max_num_improvement_loops=1)
         sampler.print_results()
         if sampler.stepsampler is not None:
             sampler.stepsampler.plot(filename = log_dir + '/stepsampler_stats_region.pdf')
-        sampler.plot()
+        if ndim <= 20:
+            sampler.plot()
     else:
         from ultranest import NestedSampler
         sampler = NestedSampler(paramnames, loglike, transform=transform, 

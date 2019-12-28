@@ -134,16 +134,19 @@ def compute_mean_pair_distance(
 
     # go through the unselected points and find the worst case
     for j in range(na):
+        if clusterids[j] == 0:
+            continue
         # find the nearest selected point
         for i in range(j):
             # only consider points in the same cluster
-            if clusterids[j] == 0 or clusterids[i] == 0 or clusterids[j] == clusterids[i]:
+            if clusterids[j] == clusterids[i]:
                 pair_dist = 0.0
                 for k in range(ndim):
                     pair_dist += (pts[i,k] - pts[j,k])**2
                 total_dist += pair_dist**0.5
                 Npairs += 1
-
+    
+    assert np.isfinite(total_dist), total_dist
     return total_dist / Npairs
 
 

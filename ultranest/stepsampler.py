@@ -118,7 +118,7 @@ class StepSampler(object):
     Scales proposal towards a 50% acceptance rate.
     """
 
-    def __init__(self, nsteps, scale=1.0, adaptive_nsteps=False, region_filter=False):
+    def __init__(self, nsteps, scale=1.0, adaptive_nsteps=False, region_filter=False, log=False):
         """Initialise sampler.
 
         Parameters
@@ -162,10 +162,11 @@ class StepSampler(object):
         self.adaptive_nsteps = adaptive_nsteps
         self.mean_pair_distance = np.nan
         self.region_filter = region_filter
+        self.log = log
         
         self.logstat = []
         self.logstat_labels = ['rejection_rate', 'scale', 'steps']
-        if adaptive_nsteps_options is not None:
+        if adaptive_nsteps:
             self.logstat_labels += ['jump-distance', 'reference-distance']
 
     def __str__(self):
@@ -262,7 +263,7 @@ class StepSampler(object):
             tproposed = region.transformLayer.transform(np.asarray([u for u, _ in self.history]))
             assert len(tproposed.sum(axis=1)) == len(tproposed)
             d2 = ((((tproposed[0] - tproposed)**2).sum(axis=1))**0.5).sum()
-            far_enough = d2 > region.maxradiussq**0.5 / ndim
+            far_enough = d2 > region.maxradiussq**0.5
 
             self.logstat[-1] = self.logstat[-1] + [d2, region.maxradiussq**0.5]
             #print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)
@@ -278,7 +279,7 @@ class StepSampler(object):
             # compute sum of distances from each jump
             tproposed = region.transformLayer.transform(np.asarray([u for u, _ in self.history]))
             d2 = (((tproposed[1:,:] - tproposed[:-1,:])**2).sum(axis=1)**0.5).sum()
-            far_enough = d2 > region.maxradiussq**0.5 / ndim
+            far_enough = d2 > region.maxradiussq**0.5
             
             self.logstat[-1] = self.logstat[-1] + [d2, region.maxradiussq**0.5]
             #print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)
@@ -286,7 +287,7 @@ class StepSampler(object):
             # compute sum of distances from each jump
             tproposed = region.transformLayer.transform(np.asarray([u for u, _ in self.history]))
             d2 = (np.abs(tproposed[1:,:] - tproposed[:-1,:]).sum(axis=1)).min()
-            far_enough = d2 > region.maxradiussq**0.5 / ndim
+            far_enough = d2 > region.maxradiussq**0.5
             
             self.logstat[-1] = self.logstat[-1] + [d2, region.maxradiussq**0.5]
             #print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)
@@ -302,7 +303,7 @@ class StepSampler(object):
             # compute sum of distances from each jump
             tproposed = region.transformLayer.transform(np.asarray([u for u, _ in self.history]))
             d2 = tproposed.std(axis=0).min()
-            far_enough = d2 > region.maxradiussq**0.5 / ndim
+            far_enough = d2 > region.maxradiussq**0.5
 
             self.logstat[-1] = self.logstat[-1] + [d2, region.maxradiussq**0.5]
             #print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)
@@ -326,9 +327,24 @@ class StepSampler(object):
             self.nsteps = max(self.nsteps + 1, int(self.nsteps * self.nsteps_nudge))
         self.nsteps = max(1, min(1000, self.nsteps))
 
-    def finalize_chain(self, region=None):
+    def finalize_chain(self, region=None, Lmin=None, Ls=None):
         """Store chain statistics and adapt proposal."""
         self.logstat.append([self.nrejects / self.nsteps, self.scale, self.nsteps])
+        if self.log:
+            ustart, Lstart = self.history[0]
+            ufinal, Lfinal = self.history[-1]
+            #mean_pair_distance = region.compute_mean_pair_distance()
+            mean_pair_distance = self.mean_pair_distance
+            tstart, tfinal = region.transformLayer.transform(np.vstack((ustart, ufinal)))
+            # L index of start and end
+            #Ls_sorted = np.sort(Ls)
+            iLstart = np.sum(Ls > Lstart)
+            iLfinal = np.sum(Ls > Lfinal)
+            # nearest neighbor index of start and end
+            itstart = np.argmin((region.unormed - tstart.reshape((1, -1)))**2)
+            itfinal = np.argmin((region.unormed - tfinal.reshape((1, -1)))**2)
+            np.savetxt(self.log, [[Lmin] + list(ustart) + list(ufinal) + list(tstart) + list(tfinal) + \
+                [self.nsteps, region.maxradiussq**0.5, mean_pair_distance, iLstart, iLfinal, itstart, itfinal]])
         
         if self.adaptive_nsteps:
             self.adapt_nsteps(region=region)
@@ -351,7 +367,7 @@ class StepSampler(object):
     def region_changed(self, Ls, region):
         """React to change of region. """
         
-        if self.adaptive_nsteps:
+        if self.adaptive_nsteps or True:
             self.mean_pair_distance = region.compute_mean_pair_distance()
             #print("region changed. new mean_pair_distance: %g" % self.mean_pair_distance)
 
@@ -447,7 +463,7 @@ class StepSampler(object):
             # print("made %d steps" % len(self.history), Lnew, Lmin)
             u, L = self.history[-1]
             p = transform(u.reshape((1, -1)))[0]
-            self.finalize_chain(region=region)
+            self.finalize_chain(region=region, Lmin=Lmin, Ls=Ls)
             return u, p, L, nc
 
         # do not have a independent sample yet

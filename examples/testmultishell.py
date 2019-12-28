@@ -73,6 +73,10 @@ for ndim in [2, 4, 8, 16, 32, 64, 128, 256]:
 
 def main(args):
     ndim = args.x_dim
+    adaptive_nsteps = args.adapt_steps
+    if adaptive_nsteps is None:
+        adaptive_nsteps = False
+
     
     #C = 0.01
     r = 0.2
@@ -151,18 +155,21 @@ def main(args):
             log_dir = args.log_dir + 'RNS-%dd-dychmc%d' % (ndim, args.slice_steps)
         else:
             log_dir = args.log_dir + 'RNS-%dd' % (ndim)
-            assert False
-        print(log_dir)
+        if adaptive_nsteps:
+            log_dir = log_dir + '-adapt%s' % (adaptive_nsteps)
+        
         from ultranest import ReactiveNestedSampler
         sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, 
             log_dir=log_dir, resume=True,
             vectorized=True)
         if args.slice:
             import ultranest.stepsampler
-            sampler.stepsampler = ultranest.stepsampler.RegionSliceSampler(nsteps=args.slice_steps)
+            sampler.stepsampler = ultranest.stepsampler.RegionSliceSampler(nsteps=args.slice_steps, adaptive_nsteps=adaptive_nsteps,
+                log=open(log_dir + '/stepsampler.log', 'w'))
         if args.harm:
             import ultranest.stepsampler
-            sampler.stepsampler = ultranest.stepsampler.RegionBallSliceSampler(nsteps=args.slice_steps)
+            sampler.stepsampler = ultranest.stepsampler.RegionBallSliceSampler(nsteps=args.slice_steps, adaptive_nsteps=adaptive_nsteps,
+                log=open(log_dir + '/stepsampler.log', 'w'))
         if args.dyhmc:
             import ultranest.dyhmc
             verify_gradient(ndim, transform, loglike, transform_loglike_gradient, combination=True)
@@ -177,7 +184,8 @@ def main(args):
         sampler.print_results()
         if sampler.stepsampler is not None:
             sampler.stepsampler.plot(filename = log_dir + '/stepsampler_stats_region.pdf')
-        sampler.plot()
+        if ndim <= 20:
+            sampler.plot()
     else:
         from ultranest import NestedSampler
         sampler = NestedSampler(paramnames, loglike, transform=transform, 
@@ -203,6 +211,7 @@ if __name__ == '__main__':
     parser.add_argument('--dyhmc', action='store_true')
     parser.add_argument('--dychmc', action='store_true')
     parser.add_argument('--slice_steps', type=int, default=100)
+    parser.add_argument('--adapt_steps', type=str)
 
     args = parser.parse_args()
     main(args)
