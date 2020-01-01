@@ -276,7 +276,7 @@ class NestedSampler(object):
         assert num_live_points_missing >= 0
         if num_live_points_missing > 0:
             if self.use_mpi:
-                self.logger.info('Using MPI with rank [%d]', self.mpi_rank)
+                #self.logger.info('Using MPI with rank [%d]', self.mpi_rank)
                 if self.mpi_rank == 0:
                     active_u = np.random.uniform(size=(num_live_points_missing, self.x_dim))
                 else:
@@ -1123,7 +1123,8 @@ class ReactiveNestedSampler(object):
         elif self.log:
             self.logger.info("Evidency uncertainty strategy is satisfied (dlogz=%.2f, need <%s)",
                              deltalogZ.max(), dlogz)
-        self.logger.info('  logZ error budget: single: %.2f bs:%.2f tail:%.2f total:%.2f required:<%.2f',
+        if self.log:
+            self.logger.info('  logZ error budget: single: %.2f bs:%.2f tail:%.2f total:%.2f required:<%.2f',
                          main_iterator.logZerr, main_iterator.logZerr_bs, logzerr_tail,
                          (main_iterator.logZerr_bs**2 + logzerr_tail**2)**0.5, dlogz)
 
@@ -1456,14 +1457,14 @@ class ReactiveNestedSampler(object):
                         self.logger.info("Found a lot of clusters: %d (%d with >1 members)",
                                          nextTransformLayer.nclusters, (cluster_sizes > 1).sum())
 
-                    if not os.path.exists(filename):
-                        self.logger.info("A lot of clusters! writing debug output file '%s'", filename)
-                        np.savez(filename,
-                            u=nextregion.u, unormed=nextregion.unormed,
-                            maxradiussq=nextregion.maxradiussq,
-                            u0=self.region.u, unormed0=self.region.unormed,
-                            maxradiussq0=self.region.maxradiussq)
-                        np.savetxt('overclustered_u_%d.txt' % nextTransformLayer.nclusters, nextregion.u)
+                    #if not os.path.exists(filename):
+                    #    self.logger.info("A lot of clusters! writing debug output file '%s'", filename)
+                    #    np.savez(filename,
+                    #        u=nextregion.u, unormed=nextregion.unormed,
+                    #        maxradiussq=nextregion.maxradiussq,
+                    #        u0=self.region.u, unormed0=self.region.unormed,
+                    #        maxradiussq0=self.region.maxradiussq)
+                    #    np.savetxt('overclustered_u_%d.txt' % nextTransformLayer.nclusters, nextregion.u)
                     # assert nextTransformLayer.nclusters < 20, nextTransformLayer.nclusters
 
                 # if self.log:
@@ -1489,7 +1490,7 @@ class ReactiveNestedSampler(object):
                 # assert nextregion.inside(active_u).all(), ("live points should live in new region, but only %.3f%% do." % (100 * nextregion.inside(active_u).mean()), active_u)
                 good_region = nextregion.inside(active_u).all()
                 # assert good_region
-                if not good_region:
+                if not good_region and self.log:
                     self.logger.warning("constructed region is inconsistent (maxr=%f,enlarge=%f)", r, f)
                     np.savez('inconsistent_region.npz',
                         u=nextregion.u, unormed=nextregion.unormed,
