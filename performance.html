@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Tour of the features &mdash; UltraNest 2.0.0 documentation</title>
+  <title>Tour of the features &mdash; UltraNest 2.0.3 documentation</title>
   
 
   
@@ -70,7 +70,7 @@
             
             
               <div class="version">
-                2.0.0
+                2.0.3
               </div>
             
           
@@ -222,11 +222,10 @@
 </ul>
 <div class="section" id="usage-in-a-program">
 <h2>Usage in a program<a class="headerlink" href="#usage-in-a-program" title="Permalink to this headline">¶</a></h2>
-<p>Lets write a script simple.py.</p>
-<p>It defines a prior and likelihood then analyses it
-To understand this, have a look at the
-<cite>Basic usage &lt;usage-spectral-line.ipynb#Basic usage&gt;</cite> page.
-Or even <cite>usage-spectral-line:Basic usage</cite>.</p>
+<p>Lets write a script simple.py. It defines a problem through prior and likelihood functions,
+and analyses it.</p>
+<p>To understand it, have a look first the Basic usage page.
+Or even <a href="#id2"><span class="problematic" id="id3">`usage-spectral-line:Basic usage`_</span></a>.</p>
 <div class="literal-block-wrapper docutils container" id="simple-py">
 <div class="code-block-caption"><span class="caption-text">simple.py</span><a class="headerlink" href="#simple-py" title="Permalink to this code">¶</a></div>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span> <span class="kn">import</span> <span class="nn">scipy.stats</span>
@@ -262,15 +261,16 @@ Or even <cite>usage-spectral-line:Basic usage</cite>.</p>
 </pre></div>
 </div>
 </div>
-<p>Running this, you should see outputs like:
-.. code-block:: none</p>
-<blockquote>
-<div><p>Mono-modal Volume: ~exp(-9.21) * Expected Volume: exp(-4.83)</p>
-<p>param1:      +0.0|            +0.3  <strong>***********</strong>  +0.5                         |     +1.0
-param2:      +0.0|                   +0.4  <strong>***********</strong>  +0.6                  |     +1.0
-param3:      +0.0|                         +0.5  <strong>***********</strong>  +0.7            |     +1.0</p>
-<p>Z=-0.2(75.84%) | Like=3.59..4.14 [-37.4805..3.8990] | it/evals=2080/3730 eff=62.4625% N=400</p>
-</div></blockquote>
+<p>Running this, you should see outputs like:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Mono-modal Volume: ~exp(-9.21) * Expected Volume: exp(-4.83)
+
+param1:      +0.0|            +0.3  ***************  +0.5                         |     +1.0
+param2:      +0.0|                   +0.4  ***************  +0.6                  |     +1.0
+param3:      +0.0|                         +0.5  ***************  +0.7            |     +1.0
+
+Z=-0.2(75.84%) | Like=3.59..4.14 [-37.4805..3.8990] | it/evals=2080/3730 eff=62.4625% N=400
+</pre></div>
+</div>
 <p>This reports</p>
 <ol class="arabic simple">
 <li><p>the current sampling region size and how many clusters it found.</p></li>
@@ -280,38 +280,33 @@ log-likelihood value range being targeted at the moment</p></li>
 <li><p>The current iteration, how many likelihood function evaluations have been performed,
 the current efficiency and the number of current live points.</p></li>
 </ol>
-<p>At the end, you should see:
-.. code-block:: none</p>
-<blockquote>
-<div><p>[ultranest] [INFO] Explored until L=4  ..4.0913]*| it/evals=3440/6029 eff=61.1121% N=400
+<p>At the end, you should see:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>[ultranest] [INFO] Explored until L=4  ..4.0913]*| it/evals=3440/6029 eff=61.1121% N=400
 [ultranest] [INFO] Likelihood function evaluations: 6077
-[ultranest] [INFO] Writing samples and results to disk …
-[ultranest] [INFO] Writing samples and results to disk … done
+[ultranest] [INFO] Writing samples and results to disk ...
+[ultranest] [INFO] Writing samples and results to disk ... done
 [ultranest] [INFO]   logZ = 0.0331 +- 0.0725
 [ultranest] [INFO] Effective samples strategy satisfied (ESS = 1875.4, need &gt;400)
 [ultranest] [INFO] Posterior uncertainty strategy is satisfied (KL: 0.47+-0.06 nat, need &lt;0.50 nat)
 [ultranest] [INFO] Evidency uncertainty strategy is satisfied (dlogz=0.16, need &lt;0.5)
 [ultranest] [INFO]   logZ error budget: single: 0.08 bs:0.07 tail:0.01 total:0.07 required:&lt;0.50
-[ultranest] [INFO] done iterating.</p>
-</div></blockquote>
+[ultranest] [INFO] done iterating.
+</pre></div>
+</div>
 <p>This indicates that all three strategies are satisfied and no further
 improvements are needed.</p>
 <p>sampler.print_results() gives a brief summary of logz and its uncertainties,
-and the parameter constraints:
-.. code-block:: none</p>
-<blockquote>
-<div><dl>
-<dt>logZ = 0.042 +- 0.101</dt><dd><p>single instance: logZ = 0.042 +- 0.081
-bootstrapped   : logZ = 0.033 +- 0.101
-tail           : logZ = +- 0.010</p>
-<blockquote>
-<div><p>param1              0.40 +- 0.10
-param2              0.500 +- 0.099
-param3              0.602 +- 0.098</p>
-</div></blockquote>
-</dd>
-</dl>
-</div></blockquote>
+and the parameter constraints:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>logZ = 0.042 +- 0.101
+  single instance: logZ = 0.042 +- 0.081
+  bootstrapped   : logZ = 0.033 +- 0.101
+  tail           : logZ = +- 0.010
+
+    param1              0.40 +- 0.10
+    param2              0.500 +- 0.099
+    param3              0.602 +- 0.098
+</pre></div>
+</div>
 <p>In the folder my_gauss you can find useful files:</p>
 <ul class="simple">
 <li><p><strong>debug.log</strong>: log file of the run. Include when reporting bugs.</p></li>
@@ -437,7 +432,7 @@ and allows the user to specify the problem dimension and a few sampler parameter
 <h2>High-dimensional models<a class="headerlink" href="#high-dimensional-models" title="Permalink to this headline">¶</a></h2>
 <p>In high-dimensional spaces, MLFriends by itself is inefficient, so
 we have to use a step sampling technique. There are several implemented
-in <a class="reference internal" href="ultranest.html#module-ultranest.stepsampler" title="ultranest.stepsampler"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ultranest.stepsampler</span></code></a>. Here we are using slice sampling
+in <a class="reference internal" href="modules.html#module-ultranest.stepsampler" title="ultranest.stepsampler"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ultranest.stepsampler</span></code></a>. Here we are using slice sampling
 that learns the direction from the existing live points.
 This is similar to PolyChord, except the region is also used to reject
 distant proposals, and the clustering is better justified (based on MLFriends).</p>

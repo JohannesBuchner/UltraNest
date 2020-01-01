@@ -15,12 +15,11 @@ This tutorial demonstrates:
 Usage in a program
 ===================
 
-Lets write a script simple.py.
+Lets write a script simple.py. It defines a problem through prior and likelihood functions,
+and analyses it.
 
-It defines a prior and likelihood then analyses it
-To understand this, have a look at the
-`Basic usage <usage-spectral-line.ipynb#Basic usage>` page.
-Or even `usage-spectral-line:Basic usage`.
+To understand it, have a look first the `Basic usage <usage-spectral-line.ipynb#Basic usage>`_ page.
+Or even `usage-spectral-line:Basic usage`_.
 
 .. code-block:: python3
    :caption: simple.py
@@ -58,6 +57,7 @@ Or even `usage-spectral-line:Basic usage`.
     sampler.plot_trace()
 
 Running this, you should see outputs like:
+
 .. code-block:: none
 
         Mono-modal Volume: ~exp(-9.21) * Expected Volume: exp(-4.83)
@@ -78,6 +78,7 @@ This reports
    the current efficiency and the number of current live points.
    
 At the end, you should see:
+
 .. code-block:: none
 
         [ultranest] [INFO] Explored until L=4  ..4.0913]*| it/evals=3440/6029 eff=61.1121% N=400 
@@ -96,6 +97,7 @@ improvements are needed.
 
 sampler.print_results() gives a brief summary of logz and its uncertainties,
 and the parameter constraints:
+
 .. code-block:: none
 
         logZ = 0.042 +- 0.101
