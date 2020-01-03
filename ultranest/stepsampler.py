@@ -151,10 +151,10 @@ class StepSampler(object):
         self.next_scale = self.scale
         self.last = None, None
         self.nudge = 1.1**(1. / self.nsteps)
-        self.nsteps_nudge = 1.2
+        self.nsteps_nudge = 1.01
         adaptive_nsteps_options = (False, 'proposal-total-distances-NN', 'proposal-summed-distances-NN', 
             'proposal-total-distances', 'proposal-summed-distances', 
-            'move-distance', 'proposal-summed-distances-min-NN',
+            'move-distance', 'move-distance-midway', 'proposal-summed-distances-min-NN',
             'proposal-variance-min', 'proposal-variance-min-NN')
         
         if adaptive_nsteps not in adaptive_nsteps_options:
@@ -313,7 +313,18 @@ class StepSampler(object):
             ufinal, _ = self.history[-1]
             tstart, tfinal = region.transformLayer.transform(np.vstack((ustart, ufinal)))
             d2 = ((tstart - tfinal)**2).sum()
-            far_enough = d2 > region.maxradiussq / len(region.u)
+            far_enough = d2 > region.maxradiussq
+            
+            self.logstat[-1] = self.logstat[-1] + [d2, region.maxradiussq**0.5]
+            #print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)
+        elif self.adaptive_nsteps == 'move-distance-midway':
+            # compute distance from start to end
+            ustart, _ = self.history[0]
+            middle = max(1, len(self.history) // 2)
+            ufinal, _ = self.history[middle]
+            tstart, tfinal = region.transformLayer.transform(np.vstack((ustart, ufinal)))
+            d2 = ((tstart - tfinal)**2).sum()
+            far_enough = d2 > region.maxradiussq
             
             self.logstat[-1] = self.logstat[-1] + [d2, region.maxradiussq**0.5]
             #print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)
