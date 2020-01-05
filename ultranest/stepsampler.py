@@ -228,7 +228,7 @@ class StepSampler(object):
         if accepted:
             self.next_scale *= self.nudge
             self.last = unew, Lnew
-            self.history.append((unew, Lnew))
+            self.history.append((unew.copy(), Lnew.copy()))
         else:
             self.next_scale /= self.nudge**10
             self.nrejects += 1
@@ -413,9 +413,16 @@ class StepSampler(object):
 
         if Li is None and self.history:
             # try to resume from a previous point above the current contour
-            for uj, Lj in self.history[::-1]:
+            for j, (uj, Lj) in enumerate(self.history[::-1]):
                 if Lj > Lmin and region.inside(uj.reshape((1,-1))):
                     ui, Li = uj, Lj
+                    #print("recovering at point %d/%d " % (j+1, len(self.history)))
+                    self.last = ui, Li
+
+                    #pj = transform(uj.reshape((1, -1)))
+                    #Lj2 = loglike(pj)[0]
+                    #assert Lj2 > Lmin, (Lj2, Lj, uj, pj)
+
                     break
             pass
 
@@ -432,7 +439,7 @@ class StepSampler(object):
             # print("starting at", ui[0])
             #assert np.logical_and(ui > 0, ui < 1).all(), ui
             Li = Ls[i]
-            self.history.append((ui, Li))
+            self.history.append((ui.copy(), Li.copy()))
             del i
 
         while True:
@@ -547,7 +554,7 @@ class CubeSliceSampler(StepSampler):
                 self.interval = None
 
                 self.last = unew, Lnew
-                self.history.append((unew, Lnew))
+                self.history.append((unew.copy(), Lnew.copy()))
             else:
                 self.nrejects += 1
                 # shrink current interval

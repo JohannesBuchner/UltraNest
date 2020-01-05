@@ -936,7 +936,7 @@ class ReactiveNestedSampler(object):
                     self.ncall += num_live_points_missing
                 else:
                     chunks = None
-                data = self.comm.scatter(chunks, root=0)
+                data = np.asarray(self.comm.scatter(chunks, root=0))
                 active_logl = self.loglike(data)
                 assert active_logl.shape == (len(data),), (active_logl.shape, len(data))
                 recv_active_logl = self.comm.gather(active_logl, root=0)
@@ -1826,7 +1826,7 @@ class ReactiveNestedSampler(object):
             if self.use_mpi:
                 self.use_point_stack = self.comm.bcast(self.use_point_stack, root=0)
 
-            if self.log and np.isfinite(Llo) or np.isfinite(Lhi):
+            if self.log and (np.isfinite(Llo) or np.isfinite(Lhi)):
                 self.logger.info("Exploring (in particular: L=%.2f..%.2f) ...", Llo, Lhi)
             # print_tree(roots[:5], title="Tree:")
             region_sequence = []
