@@ -969,7 +969,7 @@ class ReactiveNestedSampler(object):
         roots = [self.pointpile.make_node(logl, u, p) for u, p, logl in zip(active_u, active_v, active_logl)]
         self.root.children += roots
 
-    def _adaptive_strategy_advice(self, Lmin, parallel_values, main_iterator, minimal_widths, frac_remain):
+    def _adaptive_strategy_advice(self, Lmin, parallel_values, main_iterator, minimal_widths, frac_remain, Lepsilon):
         """Check if integration is done.
 
         Returns
@@ -999,7 +999,7 @@ class ReactiveNestedSampler(object):
         Lmin = Ls[0]
 
         # all points the same, stop
-        if Lmax - Lmin < 0.001:
+        if Lmax - Lmin < Lepsilon:
             return np.nan, np.nan
 
         # max remainder contribution is Lmax + weight, to be added to main_iterator.logZ
@@ -1637,6 +1637,7 @@ class ReactiveNestedSampler(object):
             dlogz=0.5,
             dKL=0.5,
             frac_remain=0.01,
+            Lepsilon=0.001,
             min_ess=400,
             max_iters=None,
             max_ncalls=None,
@@ -1680,6 +1681,11 @@ class ReactiveNestedSampler(object):
             Set to a low number (1e-2 ... 1e-5) to make sure peaks are discovered.
             Set to a higher number (0.5) if you know the posterior is simple.
 
+        Lepsilon: float
+            Terminate when live point likelihoods are all the same,
+            within Lepsilon tolerance. Increase this when your likelihood
+            function is inaccurate, to avoid unnecessary search.
+
         min_ess: int
             Target number of effective posterior samples.
 
@@ -1707,7 +1713,8 @@ class ReactiveNestedSampler(object):
             update_interval_iter_fraction=update_interval_iter_fraction,
             update_interval_ncall=update_interval_ncall,
             log_interval=log_interval,
-            dlogz=dlogz, dKL=dKL, frac_remain=frac_remain,
+            dlogz=dlogz, dKL=dKL,
+            Lepsilon=Lepsilon, frac_remain=frac_remain,
             min_ess=min_ess, max_iters=max_iters,
             max_ncalls=max_ncalls, max_num_improvement_loops=max_num_improvement_loops,
             min_num_live_points=min_num_live_points,
@@ -1731,6 +1738,7 @@ class ReactiveNestedSampler(object):
             dlogz=0.5,
             dKL=0.5,
             frac_remain=0.01,
+            Lepsilon=0.001,
             min_ess=400,
             max_iters=None,
             max_ncalls=None,
@@ -1747,7 +1755,7 @@ class ReactiveNestedSampler(object):
             for result in sampler.run_iter(...):
                 print('lnZ = %(logz).2f +- %(logzerr).2f' % result)
 
-        Parameters as described in run() function.
+        Parameters as described in run() method.
         """
         # frac_remain=1  means 1:1 -> dlogz=log(0.5)
         # frac_remain=0.1 means 1:10 -> dlogz=log(0.1)
@@ -1857,7 +1865,9 @@ class ReactiveNestedSampler(object):
                 if strategy_stale or not (Lmin <= Lhi) or not np.isfinite(Lhi) or (active_values == Lmin).all():
                     # check with advisor if we want to expand this node
                     Llo_prev, Lhi_prev = Llo, Lhi
-                    Llo, Lhi = self._adaptive_strategy_advice(Lmin, active_values, main_iterator, minimal_widths, frac_remain)
+                    Llo, Lhi = self._adaptive_strategy_advice(Lmin,
+                        active_values, main_iterator, minimal_widths,
+                        frac_remain, Lepsilon=Lepsilon)
                     if np.isfinite(Lhi):
                         strategy_altered = Llo != Llo_prev or Lhi != Lhi_prev
                     else:
@@ -1869,7 +1879,7 @@ class ReactiveNestedSampler(object):
 
                     # when we are going to the peak, numerical accuracy
                     # can become an issue. We should try not to get stuck there
-                    strategy_stale = Lhi - Llo < 0.01
+                    strategy_stale = Lhi - Llo < max(Lepsilon, 0.01)
 
                 expand_node = self._should_node_be_expanded(it, Llo, Lhi, minimal_widths_sequence, target_min_num_children, node, active_values, max_ncalls, max_iters)
 

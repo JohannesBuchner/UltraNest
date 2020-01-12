@@ -36,6 +36,7 @@ def pymultinest_solve_compat(LogLikelihood, Prior, n_dims,
     assert len(paramnames) == n_dims
     min_ess = kwargs.pop('min_ess', 0)
     frac_remain = kwargs.pop('frac_remain', 0.01)
+    Lepsilon = kwargs.pop('Lepsilon', 0.001)
     outputkwargs = {}
     if not verbose:
         outputkwargs = dict(viz_callback=False, show_status=False)
@@ -53,7 +54,8 @@ def pymultinest_solve_compat(LogLikelihood, Prior, n_dims,
     sampler.run(dlogz=evidence_tolerance,
         max_iters=max_iter if max_iter > 0 else None,
         min_num_live_points=n_live_points,
-        min_ess=min_ess, frac_remain=frac_remain)
+        min_ess=min_ess, frac_remain=frac_remain,
+        Lepsilon=Lepsilon)
     if verbose:
         sampler.print_results()
     results = sampler.results
