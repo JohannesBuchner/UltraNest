@@ -237,13 +237,24 @@ class DynamicCHMCSampler(object):
     Because of this, the number of steps is dynamic.
     """
 
-    def __init__(self, ndim, nsteps, transform, loglike, gradient, delta=0.9, nudge=1.04):
+    def __init__(self, ndim, nsteps, transform, loglike, gradient, adaptive_nsteps=False, delta=0.9, nudge=1.04):
         """Initialise sampler.
 
         Parameters
         -----------
         nsteps: int
             number of accepted steps until the sample is considered independent.
+        
+        adaptive_nsteps: False, 'proposal-distance', 'move-distance'
+            if not false, allow earlier termination than nsteps.
+            The 'proposal-distance' strategy stops when the sum of 
+            all proposed vectors exceeds the mean distance
+            between pairs of live points.
+            As distance, the Mahalanobis distance is used.
+            The 'move-distance' strategy stops when the distance between
+            start point and current position exceeds the mean distance
+            between pairs of live points.
+        
         transform: function
             called with unit cube position vector u, returns
             transformed parameter vector p.
@@ -261,38 +272,55 @@ class DynamicCHMCSampler(object):
         self.loglike = loglike
         self.gradient = transform
         self.nudge = nudge
+        self.nsteps_nudge = 1.01
+        adaptive_nsteps_options = (False, 'proposal-total-distances-NN', 'proposal-summed-distances-NN', 
+            'proposal-total-distances', 'proposal-summed-distances', 
+            'move-distance', 'move-distance-midway', 'proposal-summed-distances-min-NN',
+            'proposal-variance-min', 'proposal-variance-min-NN')
+        
+        if adaptive_nsteps not in adaptive_nsteps_options:
+            raise ValueError("adaptive_nsteps must be one of: %s, not '%s'" % (adaptive_nsteps_options, adaptive_nsteps))
+        self.adaptive_nsteps = adaptive_nsteps
+        self.mean_pair_distance = np.nan
         self.delta = delta
         self.massmatrix = 1
         self.invmassmatrix = 1
         
         self.logstat = []
         self.logstat_labels = ['acceptance_rate', 'reflect_fraction', 'stepsize', 'treeheight']
+        if adaptive_nsteps:
+            self.logstat_labels += ['jump-distance', 'reference-distance']
         self.logstat_trajectory = []
 
     def __str__(self):
         """Get string representation."""
-        return type(self).__name__ + '(nsteps=%d)' % self.nsteps
+        if not self.adaptive_nsteps:
+            return type(self).__name__ + '(nsteps=%d)' % self.nsteps
+        else:
+            return type(self).__name__ + '(adaptive_nsteps=%s)' % self.adaptive_nsteps
 
     def plot(self, filename):
         """Plot sampler statistics."""
         if len(self.logstat) == 0:
             return
 
-        parts = np.transpose(self.logstat)
-        plt.figure(figsize=(10, 1 + 3 * len(parts)))
-        for i, (label, part) in enumerate(zip(self.logstat_labels, parts)):
-            plt.subplot(len(parts), 1, 1 + i)
+        plt.figure(figsize=(10, 1 + 3 * len(self.logstat_labels)))
+        for i, label in enumerate(self.logstat_labels):
+            part = [entry[i] for entry in self.logstat]
+            plt.subplot(len(self.logstat_labels), 1, 1 + i)
             plt.ylabel(label)
             plt.plot(part)
             x = []
             y = []
             for j in range(0, len(part), 20):
                 x.append(j)
-                y.append(part[j:j + 20].mean())
+                y.append(np.mean(part[j:j + 20]))
             plt.plot(x, y)
             if np.min(part) > 0:
                 plt.yscale('log')
         plt.savefig(filename, bbox_inches='tight')
+        np.savetxt(filename + '.txt.gz', self.logstat, 
+            header=','.join(self.logstat_labels), delimiter=',')
         plt.close()
 
     def __next__(self, region, Lmin, us, Ls, transform, loglike, ndraw=40, plot=False):
@@ -327,6 +355,7 @@ class DynamicCHMCSampler(object):
         assert np.logical_and(ui > 0, ui < 1).all(), ui
         
         ncalls_total = 1
+        history = [(ui, Li)]
         
         nsteps_remaining = self.nsteps
         while nsteps_remaining > 0:
@@ -349,10 +378,12 @@ class DynamicCHMCSampler(object):
                 plt.plot(unew[:,0], unew[:,1], 'x', color='r', ms=4)
             
             ui, pi, Li = unew, pnew, Lnew
-        
+            
+            history.append((ui, Li))
             self.logstat_trajectory.append([alpha, fracreflect, treeheight])
         
         self.adjust_stepsize()
+        self.adjust_nsteps(region, history)
         
         return ui, pi, Li, ncalls_total
 
@@ -422,9 +453,10 @@ class DynamicCHMCSampler(object):
                 print(self.invmassmatrix.shape, layer.std)
         
     def adjust_stepsize(self):
+        """Store chain statistics and adapt proposal."""
         if len(self.logstat_trajectory) == 0:
             return
-        
+
         # log averaged acceptance and trajectory statistics
         self.logstat.append([
             np.mean([alpha for alpha, fracreflect, treeheight in self.logstat_trajectory]),
@@ -432,54 +464,133 @@ class DynamicCHMCSampler(object):
             float(self.scale),
             np.mean([2**treeheight for alpha, fracreflect, treeheight in self.logstat_trajectory])
         ])
-        
-        #nsteps = len(self.logstat_trajectory)
-        # update step size based on collected acceptance rates
-        #if any([treeheight <= 1 for alpha, beta, treeheight in self.logstat_trajectory]):
-        #    # stuck, no move. Finer steps needed.
-        #    self.scale /= self.nudge
-        #elif all([2**treeheight > 10 for alpha, beta, treeheight in self.logstat_trajectory]):
-        #    # slowly go towards more efficiency
-        #    self.scale *= self.nudge**(1./40)
-        #else:
-        #    alphamean, scale, betamean, treeheightmean = self.logstat[-1]
-        #    if alphamean < self.delta:
-        #        self.scale /= self.nudge
-        #    elif alphamean > self.delta:
-        #        self.scale *= self.nudge
-        N = int(min(200 // self.nsteps, 1))
-        #alphamean, reflectmean, _, treeheightmean = self.logstat[-1]
-        alphamean = np.mean([alphamean for alphamean, _, _, _ in self.logstat[-N:]])
-        reflectmean = np.mean([reflectmean for _, reflectmean, _, _ in self.logstat[-N:]])
-        treeheightmean = np.mean([treeheightmean for _, _, _, treeheightmean in self.logstat[-N:]])
-        #if treeheightmean < 4:
-        #    self.scale /= self.nudge
-        #elif rejectmean < 1 - self.delta:
-        #    self.scale *= self.nudge
+
+        N = int(max(200 // self.nsteps, 1))
+        alphamean = np.mean([parts[0] for parts in self.logstat[-N:]])
+        reflectmean = np.mean([parts[1] for parts in self.logstat[-N:]])
+        treeheightmean = np.mean([parts[3] for parts in self.logstat[-N:]])
 
         # aim towards an acceptance rate of delta
         if alphamean > self.delta:
             self.scale *= self.nudge**(1./N)
         else:
             self.scale /= self.nudge**(1./N)
-        #if self.scale < 1e-5:
-        #    self.scale = 1e-5
-        
-        """
-        for alpha, fracreflect, treeheight in self.logstat_trajectory:
-            # aim towards delta acceptance rate
-            # but weigh the rates from short trees more
-            if alpha > self.delta:
-                self.scale *= self.nudge * 2**treeheight
-            else:
-                self.scale /= self.nudge * 2**treeheight
-        """
+
         self.logstat_trajectory = []
+
         if len(self.logstat) % N == 0:
-            print("updating step size: %.4f %.4f %.1f" % (alphamean, reflectmean, treeheightmean), "-->", self.scale)
+            print("updating step size: %.4f %.4f %.1f --> %g " % (alphamean, reflectmean, treeheightmean, self.scale))
 
     def region_changed(self, Ls, region):
+        """React to change of region. """
         self.adjust_stepsize()
         self.create_problem(Ls, region)
+
+        if self.adaptive_nsteps or True:
+            self.mean_pair_distance = region.compute_mean_pair_distance()
+            #print("region changed. new mean_pair_distance: %g" % self.mean_pair_distance)
+
+    def adjust_nsteps(self, region, history):
+        if not self.adaptive_nsteps:
+            return
+        elif len(history) < self.nsteps:
+            # incomplete or aborted for some reason
+            print("not adapting, incomplete history", len(history), self.nsteps)
+            return
         
+        #assert self.nrejects < len(history), (self.nsteps, self.nrejects, len(history))
+        #assert self.nrejects <= self.nsteps, (self.nsteps, self.nrejects, len(history))
+        assert np.isfinite(self.mean_pair_distance)
+        nlive, ndim = region.u.shape
+        if self.adaptive_nsteps == 'proposal-total-distances':
+            # compute mean vector of each proposed jump
+            # compute total distance of all jumps
+            tproposed = region.transformLayer.transform(np.asarray([u for u, _ in history]))
+            assert len(tproposed.sum(axis=1)) == len(tproposed)
+            d2 = ((((tproposed[0] - tproposed)**2).sum(axis=1))**0.5).sum()
+            far_enough = d2 > self.mean_pair_distance / ndim
+            
+            self.logstat[-1] = self.logstat[-1] + [d2, self.mean_pair_distance]
+            #print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, self.mean_pair_distance, d2)
+        elif self.adaptive_nsteps == 'proposal-total-distances-NN':
+            # compute mean vector of each proposed jump
+            # compute total distance of all jumps
+            tproposed = region.transformLayer.transform(np.asarray([u for u, _ in history]))
+            assert len(tproposed.sum(axis=1)) == len(tproposed)
+            d2 = ((((tproposed[0] - tproposed)**2).sum(axis=1))**0.5).sum()
+            far_enough = d2 > region.maxradiussq**0.5
+
+            self.logstat[-1] = self.logstat[-1] + [d2, region.maxradiussq**0.5]
+            #print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)
+        elif self.adaptive_nsteps == 'proposal-summed-distances':
+            # compute sum of distances from each jump
+            tproposed = region.transformLayer.transform(np.asarray([u for u, _ in history]))
+            d2 = (((tproposed[1:,:] - tproposed[:-1,:])**2).sum(axis=1)**0.5).sum()
+            far_enough = d2 > self.mean_pair_distance / ndim
+            #print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, self.mean_pair_distance, d2)
+
+            self.logstat[-1] = self.logstat[-1] + [d2, self.mean_pair_distance]
+        elif self.adaptive_nsteps == 'proposal-summed-distances-NN':
+            # compute sum of distances from each jump
+            tproposed = region.transformLayer.transform(np.asarray([u for u, _ in history]))
+            d2 = (((tproposed[1:,:] - tproposed[:-1,:])**2).sum(axis=1)**0.5).sum()
+            far_enough = d2 > region.maxradiussq**0.5
+            
+            self.logstat[-1] = self.logstat[-1] + [d2, region.maxradiussq**0.5]
+            #print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)
+        elif self.adaptive_nsteps == 'proposal-summed-distances-min-NN':
+            # compute sum of distances from each jump
+            tproposed = region.transformLayer.transform(np.asarray([u for u, _ in history]))
+            d2 = (np.abs(tproposed[1:,:] - tproposed[:-1,:]).sum(axis=1)).min()
+            far_enough = d2 > region.maxradiussq**0.5
+            
+            self.logstat[-1] = self.logstat[-1] + [d2, region.maxradiussq**0.5]
+            #print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)
+        elif self.adaptive_nsteps == 'proposal-variance-min':
+            # compute sum of distances from each jump
+            tproposed = region.transformLayer.transform(np.asarray([u for u, _ in history]))
+            d2 = tproposed.std(axis=0).min()
+            far_enough = d2 > self.mean_pair_distance / ndim
+            
+            self.logstat[-1] = self.logstat[-1] + [d2, self.mean_pair_distance]
+            #print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)
+        elif self.adaptive_nsteps == 'proposal-variance-min-NN':
+            # compute sum of distances from each jump
+            tproposed = region.transformLayer.transform(np.asarray([u for u, _ in history]))
+            d2 = tproposed.std(axis=0).min()
+            far_enough = d2 > region.maxradiussq**0.5
+
+            self.logstat[-1] = self.logstat[-1] + [d2, region.maxradiussq**0.5]
+            #print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)
+        elif self.adaptive_nsteps == 'move-distance':
+            # compute distance from start to end
+            ustart, _ = history[0]
+            ufinal, _ = history[-1]
+            tstart, tfinal = region.transformLayer.transform(np.vstack((ustart, ufinal)))
+            d2 = ((tstart - tfinal)**2).sum()
+            far_enough = d2 > region.maxradiussq
+            
+            self.logstat[-1] = self.logstat[-1] + [d2, region.maxradiussq**0.5]
+            #print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)
+        elif self.adaptive_nsteps == 'move-distance-midway':
+            # compute distance from start to end
+            ustart, _ = history[0]
+            middle = max(1, len(history) // 2)
+            ufinal, _ = history[middle]
+            tstart, tfinal = region.transformLayer.transform(np.vstack((ustart, ufinal)))
+            d2 = ((tstart - tfinal)**2).sum()
+            far_enough = d2 > region.maxradiussq
+            
+            self.logstat[-1] = self.logstat[-1] + [d2, region.maxradiussq**0.5]
+            #print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)
+        else:
+            assert False, self.adaptive_nsteps
         
+        # adjust nsteps
+        if far_enough:
+            self.nsteps = min(self.nsteps - 1, int(self.nsteps / self.nsteps_nudge))
+        else:
+            self.nsteps = max(self.nsteps + 1, int(self.nsteps * self.nsteps_nudge))
+        self.nsteps = max(1, min(1000, self.nsteps))
+        if len(self.logstat) % 50 == 0:
+            print("updating number of steps: %d " % (self.nsteps))

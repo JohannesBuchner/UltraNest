@@ -239,3 +239,66 @@ def vol_prefactor(n):
             i += 2
 
     return f
+
+
+def verify_gradient(ndim, transform, loglike, gradient, verbose=False, combination=False):
+    """
+    check with numerical differentiation if the gradient function
+    is plausibly correct. Raises AssertError otherwise.
+
+    All functions are vectorized.
+
+    Parameters
+    ----------
+    ndim : int
+        dimensionality
+    transform : function
+        transform unit cube parameters to physical parameters, vectorized
+    loglike : function
+        loglikelihood function, vectorized
+    gradient : function
+        computes gradient of loglike to unit cube parameters.
+        Takes a single point and returns a single vector.
+    verbose : bool
+        whether to show intermediate test results
+    combination : bool
+        if true, the gradient function should return a tuple of:
+        (transformed parameters, loglikelihood, gradient) for a
+        given unit cube point.
+    """
+    if combination:
+        transform_loglike_gradient = gradient
+    else:
+        def transform_loglike_gradient(u):
+            p = transform(u.reshape((1, -1)))
+            return p[0], loglike(p)[0], gradient(u)
+    
+    eps = 1e-6
+    N = 10
+    for i in range(N):
+        u = np.random.uniform(2*eps, 1-2*eps, size=(1, ndim))
+        theta = transform(u)
+        if verbose:
+            print("---")
+            print()
+            print("starting at:", u, ", theta=", theta)
+        Lref = loglike(theta)[0]
+        if verbose: print("Lref=", Lref)
+        p, L, grad = transform_loglike_gradient(u[0,:])
+        assert np.allclose(p, theta), (p, theta)
+        if verbose: print("gradient function gave: L=", L, "grad=", grad)
+        assert np.allclose(L, Lref), (L, Lref)
+        #step = grad / L
+        # walk so that L increases by 10
+        step = eps * grad / (grad**2).sum()**0.5
+        uprime = u + step
+        thetaprime = transform(uprime)
+        if verbose: print("new position:", uprime, ", theta=", thetaprime)
+        Lprime = loglike(thetaprime)[0]
+        if verbose: print("L=", Lprime)
+        # going a step of eps in the prior, should be a step in L by:
+        #Lexpected = Lref + ((grad / L)**2).sum()**0.5 * eps
+        Lexpected = Lref + np.dot(step, grad)
+        if verbose: print("expectation was L=", Lexpected, ", given", Lref, grad, eps)
+        assert np.allclose(Lprime, Lexpected, atol=0.1 / ndim), (u, uprime, theta, thetaprime, grad, eps*grad/L, L, Lprime, Lexpected)
+    
