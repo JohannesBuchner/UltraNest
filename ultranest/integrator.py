@@ -2168,7 +2168,7 @@ class ReactiveNestedSampler(object):
                 f.write('\n'.join(self.paramnames + self.derivedparamnames) + '\n')
             with open(os.path.join(self.logs['info'], 'results.json'), 'w') as f:
                 json.dump(results, f)
-            with open(os.path.join(self.logs['info'], 'post_summary.csv'), 'w') as f:
+            with open(os.path.join(self.logs['info'], 'post_summary.csv'), 'wb') as f:
                 np.savetxt(f, 
                     [np.hstack([results['posterior'][k] for k in ('means', 'stds', 'median', 'errlo', 'errup')])],
                     header=', '.join(['"{0}_mean", "{0}_std", "{0}_median", "{0}_errlo", "{0}_errup"'.format(k) 
