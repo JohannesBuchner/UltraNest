@@ -32,6 +32,7 @@
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+        <script type="text/javascript" src="https://unpkg.com/@jupyter-widgets/html-manager@^0.18.0/dist/embed-amd.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -182,13 +183,13 @@
 /* CSS overrides for sphinx_rtd_theme */
 
 /* 24px margin */
-.nbinput.nblast,
-.nboutput.nblast {
+.nbinput.nblast.container,
+.nboutput.nblast.container {
     margin-bottom: 19px;  /* padding has already 5px */
 }
 
 /* ... except between code cells! */
-.nblast + .nbinput {
+.nblast.container + .nbinput.container {
     margin-top: -19px;
 }
 
@@ -234,7 +235,7 @@ Therefore, a value above 100 is typically useful.</p>
 </li>
 <li><p>How can I use fast-slow parameters?</p>
 <blockquote>
-<div><p>With the <a class="reference internal" href="modules.html#ultranest.stepsampler.SpeedVariableRegionSliceSampler" title="ultranest.stepsampler.SpeedVariableRegionSliceSampler"><code class="xref py py-class docutils literal notranslate"><span class="pre">ultranest.stepsampler.SpeedVariableRegionSliceSampler</span></code></a>.
+<div><p>With the <code class="xref py py-class docutils literal notranslate"><span class="pre">ultranest.stepsampler.SpeedVariableRegionSliceSampler</span></code>.
 The high-dimensional tutorials show how to use a step sampler.</p>
 </div></blockquote>
 </li>

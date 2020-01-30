@@ -32,6 +32,7 @@
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+        <script type="text/javascript" src="https://unpkg.com/@jupyter-widgets/html-manager@^0.18.0/dist/embed-amd.js"></script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
@@ -182,7 +183,7 @@
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="n">pi</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">pi</span>
 <span class="kn">import</span> <span class="nn">errno</span>
 
 
@@ -417,6 +418,69 @@
             <span class="n">i</span> <span class="o">+=</span> <span class="mi">2</span>
 
     <span class="k">return</span> <span class="n">f</span></div>
+
+
+<div class="viewcode-block" id="verify_gradient"><a class="viewcode-back" href="../../modules.html#ultranest.utils.verify_gradient">[docs]</a><span class="k">def</span> <span class="nf">verify_gradient</span><span class="p">(</span><span class="n">ndim</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">gradient</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">combination</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    check with numerical differentiation if the gradient function</span>
+<span class="sd">    is plausibly correct. Raises AssertError otherwise.</span>
+
+<span class="sd">    All functions are vectorized.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    ndim : int</span>
+<span class="sd">        dimensionality</span>
+<span class="sd">    transform : function</span>
+<span class="sd">        transform unit cube parameters to physical parameters, vectorized</span>
+<span class="sd">    loglike : function</span>
+<span class="sd">        loglikelihood function, vectorized</span>
+<span class="sd">    gradient : function</span>
+<span class="sd">        computes gradient of loglike to unit cube parameters.</span>
+<span class="sd">        Takes a single point and returns a single vector.</span>
+<span class="sd">    verbose : bool</span>
+<span class="sd">        whether to show intermediate test results</span>
+<span class="sd">    combination : bool</span>
+<span class="sd">        if true, the gradient function should return a tuple of:</span>
+<span class="sd">        (transformed parameters, loglikelihood, gradient) for a</span>
+<span class="sd">        given unit cube point.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">combination</span><span class="p">:</span>
+        <span class="n">transform_loglike_gradient</span> <span class="o">=</span> <span class="n">gradient</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">def</span> <span class="nf">transform_loglike_gradient</span><span class="p">(</span><span class="n">u</span><span class="p">):</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)))</span>
+            <span class="k">return</span> <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">loglike</span><span class="p">(</span><span class="n">p</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">gradient</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+    
+    <span class="n">eps</span> <span class="o">=</span> <span class="mf">1e-6</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">eps</span><span class="p">,</span> <span class="mi">1</span><span class="o">-</span><span class="mi">2</span><span class="o">*</span><span class="n">eps</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))</span>
+        <span class="n">theta</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;---&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;starting at:&quot;</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="s2">&quot;, theta=&quot;</span><span class="p">,</span> <span class="n">theta</span><span class="p">)</span>
+        <span class="n">Lref</span> <span class="o">=</span> <span class="n">loglike</span><span class="p">(</span><span class="n">theta</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Lref=&quot;</span><span class="p">,</span> <span class="n">Lref</span><span class="p">)</span>
+        <span class="n">p</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">grad</span> <span class="o">=</span> <span class="n">transform_loglike_gradient</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">,:])</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">theta</span><span class="p">),</span> <span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">theta</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;gradient function gave: L=&quot;</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="s2">&quot;grad=&quot;</span><span class="p">,</span> <span class="n">grad</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">Lref</span><span class="p">),</span> <span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">Lref</span><span class="p">)</span>
+        <span class="c1">#step = grad / L</span>
+        <span class="c1"># walk so that L increases by 10</span>
+        <span class="n">step</span> <span class="o">=</span> <span class="n">eps</span> <span class="o">*</span> <span class="n">grad</span> <span class="o">/</span> <span class="p">(</span><span class="n">grad</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">**</span><span class="mf">0.5</span>
+        <span class="n">uprime</span> <span class="o">=</span> <span class="n">u</span> <span class="o">+</span> <span class="n">step</span>
+        <span class="n">thetaprime</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">uprime</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;new position:&quot;</span><span class="p">,</span> <span class="n">uprime</span><span class="p">,</span> <span class="s2">&quot;, theta=&quot;</span><span class="p">,</span> <span class="n">thetaprime</span><span class="p">)</span>
+        <span class="n">Lprime</span> <span class="o">=</span> <span class="n">loglike</span><span class="p">(</span><span class="n">thetaprime</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;L=&quot;</span><span class="p">,</span> <span class="n">Lprime</span><span class="p">)</span>
+        <span class="c1"># going a step of eps in the prior, should be a step in L by:</span>
+        <span class="c1">#Lexpected = Lref + ((grad / L)**2).sum()**0.5 * eps</span>
+        <span class="n">Lexpected</span> <span class="o">=</span> <span class="n">Lref</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="n">grad</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;expectation was L=&quot;</span><span class="p">,</span> <span class="n">Lexpected</span><span class="p">,</span> <span class="s2">&quot;, given&quot;</span><span class="p">,</span> <span class="n">Lref</span><span class="p">,</span> <span class="n">grad</span><span class="p">,</span> <span class="n">eps</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">Lprime</span><span class="p">,</span> <span class="n">Lexpected</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">0.1</span> <span class="o">/</span> <span class="n">ndim</span><span class="p">),</span> <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">uprime</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">thetaprime</span><span class="p">,</span> <span class="n">grad</span><span class="p">,</span> <span class="n">eps</span><span class="o">*</span><span class="n">grad</span><span class="o">/</span><span class="n">L</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">Lprime</span><span class="p">,</span> <span class="n">Lexpected</span><span class="p">)</span></div>
+    
 </pre></div>
 
            </div>

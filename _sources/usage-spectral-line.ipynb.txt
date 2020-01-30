@@ -82,6 +82,7 @@
     "from unit values (0...1) to the physical range.\n",
     "\n",
     "The next function demonstrates:\n",
+    "\n",
     "* a uniform prior for a location parameter\n",
     "* a log-uniform prior for a scale parameter\n",
     "* a log-normal prior"
@@ -208,17 +209,8 @@
     "        )\n",
     "\n",
     "\n",
-    "[ReactiveNestedSampler](ultranest.rst#ultranest.integrator.ReactiveNestedSampler)\n",
     "\n",
-    "Both `ReactiveNestedSampler <ultranest.html#ultranest.integrator.ReactiveNestedSampler>`_ \n",
-    "and the `run function <ultranest.html#ultranest.integrator.ReactiveNestedSampler.run>`_ \n",
-    "have several options to specify what logging and file output they should produce,\n",
-    "and how they should explore the parameter space.\n",
-    "\n",
-    "\n",
-    "\n",
-    "\n",
-    "\n",
+    "Both [ReactiveNestedSampler](modules.html#ultranest.integrator.ReactiveNestedSampler) and [its .run() function](modules.html#ultranest.integrator.ReactiveNestedSampler.run)  have several options to specify what logging and file output they should produce, and how they should explore the parameter space.\n",
     "\n"
    ]
   },
@@ -251,13 +243,6 @@
     "* Handling high dimensional problems\n",
     "* ..."
    ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "metadata": {},
-   "outputs": [],
-   "source": []
   }
  ],
  "metadata": {
@@ -276,7 +261,7 @@
    "name": "python",
    "nbconvert_exporter": "python",
    "pygments_lexer": "ipython3",
-   "version": "3.6.8"
+   "version": "3.7.4"
   }
  },
  "nbformat": 4,

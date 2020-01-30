@@ -33,6 +33,7 @@
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+        <script type="text/javascript" src="https://unpkg.com/@jupyter-widgets/html-manager@^0.18.0/dist/embed-amd.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -209,12 +210,6 @@
       <li><a href="modules.html#ultranest.netiter.PointPile.add">add() (ultranest.netiter.PointPile method)</a>
 
       <ul>
-        <li><a href="modules.html#ultranest.plot.PredictionBand.add">(ultranest.plot.PredictionBand method)</a>
-</li>
-        <li><a href="modules.html#ultranest.samplingpath.ContourSamplingPath.add">(ultranest.samplingpath.ContourSamplingPath method)</a>
-</li>
-        <li><a href="modules.html#ultranest.samplingpath.SamplingPath.add">(ultranest.samplingpath.SamplingPath method)</a>
-</li>
         <li><a href="modules.html#ultranest.store.HDF5PointStore.add">(ultranest.store.HDF5PointStore method)</a>
 </li>
         <li><a href="modules.html#ultranest.store.NullPointStore.add">(ultranest.store.NullPointStore method)</a>
@@ -224,25 +219,7 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="modules.html#ultranest.stepsampler.CubeSliceSampler.adjust_accept">adjust_accept() (ultranest.stepsampler.CubeSliceSampler method)</a>
-
-      <ul>
-        <li><a href="modules.html#ultranest.stepsampler.GeodesicSliceSampler.adjust_accept">(ultranest.stepsampler.GeodesicSliceSampler method)</a>
-</li>
-        <li><a href="modules.html#ultranest.stepsampler.StepSampler.adjust_accept">(ultranest.stepsampler.StepSampler method)</a>
-</li>
-      </ul></li>
-      <li><a href="modules.html#ultranest.stepsampler.CubeSliceSampler.adjust_outside_region">adjust_outside_region() (ultranest.stepsampler.CubeSliceSampler method)</a>
-
-      <ul>
-        <li><a href="modules.html#ultranest.stepsampler.GeodesicSliceSampler.adjust_outside_region">(ultranest.stepsampler.GeodesicSliceSampler method)</a>
-</li>
-        <li><a href="modules.html#ultranest.stepsampler.StepSampler.adjust_outside_region">(ultranest.stepsampler.StepSampler method)</a>
-</li>
-      </ul></li>
       <li><a href="modules.html#ultranest.mlfriends.AffineLayer">AffineLayer (class in ultranest.mlfriends)</a>
-</li>
-      <li><a href="modules.html#ultranest.samplingpath.angle">angle() (in module ultranest.samplingpath)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -250,14 +227,10 @@
 <h2 id="B">B</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="modules.html#ultranest.stepsampler.BallSliceSampler">BallSliceSampler (class in ultranest.stepsampler)</a>
-</li>
       <li><a href="modules.html#ultranest.mlfriends.bounding_ellipsoid">bounding_ellipsoid() (in module ultranest.mlfriends)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="modules.html#ultranest.samplingpath.box_line_intersection">box_line_intersection() (in module ultranest.samplingpath)</a>
-</li>
       <li><a href="modules.html#ultranest.netiter.BreadthFirstIterator">BreadthFirstIterator (class in ultranest.netiter)</a>
 </li>
   </ul></td>
@@ -276,14 +249,14 @@
 </li>
       <li><a href="modules.html#ultranest.mlfriends.MLFriends.compute_maxradiussq">compute_maxradiussq (ultranest.mlfriends.MLFriends attribute)</a>
 </li>
-      <li><a href="modules.html#ultranest.samplingpath.ContourSamplingPath">ContourSamplingPath (class in ultranest.samplingpath)</a>
+      <li><a href="modules.html#ultranest.mlfriends.MLFriends.compute_mean_pair_distance">compute_mean_pair_distance (ultranest.mlfriends.MLFriends attribute)</a>
 </li>
-      <li><a href="modules.html#ultranest.plot.cornerplot">cornerplot() (in module ultranest.plot)</a>
-</li>
-      <li><a href="modules.html#ultranest.mlfriends.count_nearby">count_nearby() (in module ultranest.mlfriends)</a>
+      <li><a href="modules.html#ultranest.mlfriends.compute_mean_pair_distance">compute_mean_pair_distance() (in module ultranest.mlfriends)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules.html#ultranest.mlfriends.count_nearby">count_nearby() (in module ultranest.mlfriends)</a>
+</li>
       <li><a href="modules.html#ultranest.netiter.count_tree">count_tree() (in module ultranest.netiter)</a>
 </li>
       <li><a href="modules.html#ultranest.netiter.count_tree_between">count_tree_between() (in module ultranest.netiter)</a>
@@ -298,22 +271,16 @@
         <li><a href="modules.html#ultranest.mlfriends.ScalingLayer.create_new">(ultranest.mlfriends.ScalingLayer attribute)</a>
 </li>
       </ul></li>
-      <li><a href="modules.html#ultranest.stepsampler.CubeMHSampler">CubeMHSampler (class in ultranest.stepsampler)</a>
-</li>
-      <li><a href="modules.html#ultranest.stepsampler.CubeSliceSampler">CubeSliceSampler (class in ultranest.stepsampler)</a>
-</li>
   </ul></td>
 </tr></table>
 
 <h2 id="D">D</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="modules.html#ultranest.samplingpath.distances">distances() (in module ultranest.samplingpath)</a>
+      <li><a href="modules.html#ultranest.netiter.BreadthFirstIterator.drop_next_node">drop_next_node() (ultranest.netiter.BreadthFirstIterator method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="modules.html#ultranest.netiter.BreadthFirstIterator.drop_next_node">drop_next_node() (ultranest.netiter.BreadthFirstIterator method)</a>
-</li>
       <li><a href="modules.html#ultranest.netiter.dump_tree">dump_tree() (in module ultranest.netiter)</a>
 </li>
   </ul></td>
@@ -324,17 +291,9 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules.html#ultranest.mlfriends.MLFriends.estimate_volume">estimate_volume (ultranest.mlfriends.MLFriends attribute)</a>
 </li>
-      <li><a href="modules.html#ultranest.netiter.BreadthFirstIterator.expand_children_of">expand_children_of() (ultranest.netiter.BreadthFirstIterator method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="modules.html#ultranest.samplingpath.ContourSamplingPath.extrapolate">extrapolate() (ultranest.samplingpath.ContourSamplingPath method)</a>
-
-      <ul>
-        <li><a href="modules.html#ultranest.samplingpath.SamplingPath.extrapolate">(ultranest.samplingpath.SamplingPath method)</a>
-</li>
-      </ul></li>
-      <li><a href="modules.html#ultranest.samplingpath.extrapolate_ahead">extrapolate_ahead() (in module ultranest.samplingpath)</a>
+      <li><a href="modules.html#ultranest.netiter.BreadthFirstIterator.expand_children_of">expand_children_of() (ultranest.netiter.BreadthFirstIterator method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -362,53 +321,13 @@
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="modules.html#ultranest.stepsampler.generate_cube_oriented_direction">generate_cube_oriented_direction() (in module ultranest.stepsampler)</a>
-</li>
-      <li><a href="modules.html#ultranest.stepsampler.BallSliceSampler.generate_direction">generate_direction() (ultranest.stepsampler.BallSliceSampler method)</a>
-
-      <ul>
-        <li><a href="modules.html#ultranest.stepsampler.CubeSliceSampler.generate_direction">(ultranest.stepsampler.CubeSliceSampler method)</a>
-</li>
-        <li><a href="modules.html#ultranest.stepsampler.GeodesicSliceSampler.generate_direction">(ultranest.stepsampler.GeodesicSliceSampler method)</a>
-</li>
-        <li><a href="modules.html#ultranest.stepsampler.RegionBallSliceSampler.generate_direction">(ultranest.stepsampler.RegionBallSliceSampler method)</a>
-</li>
-        <li><a href="modules.html#ultranest.stepsampler.RegionGeodesicSliceSampler.generate_direction">(ultranest.stepsampler.RegionGeodesicSliceSampler method)</a>
-</li>
-        <li><a href="modules.html#ultranest.stepsampler.RegionSequentialSliceSampler.generate_direction">(ultranest.stepsampler.RegionSequentialSliceSampler method)</a>
-</li>
-        <li><a href="modules.html#ultranest.stepsampler.RegionSliceSampler.generate_direction">(ultranest.stepsampler.RegionSliceSampler method)</a>
-</li>
-        <li><a href="modules.html#ultranest.stepsampler.SpeedVariableRegionSliceSampler.generate_direction">(ultranest.stepsampler.SpeedVariableRegionSliceSampler method)</a>
-</li>
-      </ul></li>
-      <li><a href="modules.html#ultranest.stepsampler.generate_mixture_random_direction">generate_mixture_random_direction() (in module ultranest.stepsampler)</a>
-</li>
-      <li><a href="modules.html#ultranest.stepsampler.generate_random_direction">generate_random_direction() (in module ultranest.stepsampler)</a>
+      <li><a href="modules.html#ultranest.viz.get_default_viz_callback">get_default_viz_callback() (in module ultranest.viz)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="modules.html#ultranest.stepsampler.generate_region_oriented_direction">generate_region_oriented_direction() (in module ultranest.stepsampler)</a>
-</li>
-      <li><a href="modules.html#ultranest.stepsampler.generate_region_random_direction">generate_region_random_direction() (in module ultranest.stepsampler)</a>
-</li>
-      <li><a href="modules.html#ultranest.stepsampler.GeodesicSliceSampler">GeodesicSliceSampler (class in ultranest.stepsampler)</a>
-</li>
-      <li><a href="modules.html#ultranest.stepsampler.GeodesicSliceSampler.get_center">get_center() (ultranest.stepsampler.GeodesicSliceSampler method)</a>
-</li>
-      <li><a href="modules.html#ultranest.viz.get_default_viz_callback">get_default_viz_callback() (in module ultranest.viz)</a>
-</li>
-      <li><a href="modules.html#ultranest.plot.PredictionBand.get_line">get_line() (ultranest.plot.PredictionBand method)</a>
-</li>
-      <li><a href="modules.html#ultranest.samplingpath.get_sphere_tangent">get_sphere_tangent() (in module ultranest.samplingpath)</a>
-</li>
-      <li><a href="modules.html#ultranest.samplingpath.get_sphere_tangents">get_sphere_tangents() (in module ultranest.samplingpath)</a>
-</li>
       <li><a href="modules.html#ultranest.netiter.PointPile.getp">getp() (ultranest.netiter.PointPile method)</a>
 </li>
       <li><a href="modules.html#ultranest.netiter.PointPile.getu">getu() (ultranest.netiter.PointPile method)</a>
-</li>
-      <li><a href="modules.html#ultranest.samplingpath.ContourSamplingPath.gradient">gradient() (ultranest.samplingpath.ContourSamplingPath method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -428,23 +347,11 @@
 </li>
       <li><a href="modules.html#ultranest.mlfriends.MLFriends.inside">inside (ultranest.mlfriends.MLFriends attribute)</a>
 </li>
-      <li><a href="modules.html#ultranest.mlfriends.MLFriends.inside_ellipsoid">inside_ellipsoid (ultranest.mlfriends.MLFriends attribute)</a>
-</li>
-      <li><a href="modules.html#ultranest.stepsampler.inside_region">inside_region() (in module ultranest.stepsampler)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="modules.html#ultranest.samplingpath.interpolate">interpolate() (in module ultranest.samplingpath)</a>
-
-      <ul>
-        <li><a href="modules.html#ultranest.samplingpath.ContourSamplingPath.interpolate">(ultranest.samplingpath.ContourSamplingPath method)</a>
+      <li><a href="modules.html#ultranest.mlfriends.MLFriends.inside_ellipsoid">inside_ellipsoid (ultranest.mlfriends.MLFriends attribute)</a>
 </li>
-        <li><a href="modules.html#ultranest.samplingpath.SamplingPath.interpolate">(ultranest.samplingpath.SamplingPath method)</a>
-</li>
-      </ul></li>
       <li><a href="modules.html#ultranest.viz.isnotebook">isnotebook() (in module ultranest.viz)</a>
-</li>
-      <li><a href="modules.html#ultranest.samplingpath.isunitlength">isunitlength() (in module ultranest.samplingpath)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -452,16 +359,12 @@
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="modules.html#ultranest.plot.PredictionBand.line">line() (ultranest.plot.PredictionBand method)</a>
-</li>
-      <li><a href="modules.html#ultranest.samplingpath.linear_steps_with_reflection">linear_steps_with_reflection() (in module ultranest.samplingpath)</a>
-</li>
       <li><a href="modules.html#ultranest.viz.LivePointsWidget">LivePointsWidget (class in ultranest.viz)</a>
+</li>
+      <li><a href="modules.html#ultranest.netiter.MultiCounter.logZ_bs">logZ_bs() (ultranest.netiter.MultiCounter property)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="modules.html#ultranest.netiter.MultiCounter.logZ_bs">logZ_bs() (ultranest.netiter.MultiCounter property)</a>
-</li>
       <li><a href="modules.html#ultranest.netiter.logz_sequence">logz_sequence() (in module ultranest.netiter)</a>
 </li>
       <li><a href="modules.html#ultranest.netiter.MultiCounter.logZerr_bs">logZerr_bs() (ultranest.netiter.MultiCounter property)</a>
@@ -478,24 +381,12 @@
 </li>
       <li><a href="modules.html#ultranest.netiter.PointPile.make_node">make_node() (ultranest.netiter.PointPile method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules.html#ultranest.utils.make_run_dir">make_run_dir() (in module ultranest.utils)</a>
 </li>
       <li><a href="modules.html#ultranest.mlfriends.MLFriends">MLFriends (class in ultranest.mlfriends)</a>
 </li>
-      <li><a href="modules.html#ultranest.stepsampler.CubeMHSampler.move">move() (ultranest.stepsampler.CubeMHSampler method)</a>
-
-      <ul>
-        <li><a href="modules.html#ultranest.stepsampler.CubeSliceSampler.move">(ultranest.stepsampler.CubeSliceSampler method)</a>
-</li>
-        <li><a href="modules.html#ultranest.stepsampler.GeodesicSliceSampler.move">(ultranest.stepsampler.GeodesicSliceSampler method)</a>
-</li>
-        <li><a href="modules.html#ultranest.stepsampler.RegionMHSampler.move">(ultranest.stepsampler.RegionMHSampler method)</a>
-</li>
-        <li><a href="modules.html#ultranest.stepsampler.StepSampler.move">(ultranest.stepsampler.StepSampler method)</a>
-</li>
-      </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules.html#ultranest.netiter.MultiCounter">MultiCounter (class in ultranest.netiter)</a>
 </li>
   </ul></td>
@@ -504,14 +395,12 @@
 <h2 id="N">N</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="modules.html#ultranest.samplingpath.nearest_box_intersection_line">nearest_box_intersection_line() (in module ultranest.samplingpath)</a>
-</li>
       <li><a href="modules.html#ultranest.integrator.NestedSampler">NestedSampler (class in ultranest.integrator)</a>
+</li>
+      <li><a href="modules.html#ultranest.netiter.BreadthFirstIterator.next_node">next_node() (ultranest.netiter.BreadthFirstIterator method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="modules.html#ultranest.netiter.BreadthFirstIterator.next_node">next_node() (ultranest.netiter.BreadthFirstIterator method)</a>
-</li>
       <li><a href="modules.html#ultranest.viz.nicelogger">nicelogger() (in module ultranest.viz)</a>
 </li>
       <li><a href="modules.html#ultranest.store.NullPointStore">NullPointStore (class in ultranest.store)</a>
@@ -549,19 +438,15 @@
       <ul>
         <li><a href="modules.html#ultranest.integrator.ReactiveNestedSampler.plot">(ultranest.integrator.ReactiveNestedSampler method)</a>
 </li>
-        <li><a href="modules.html#ultranest.samplingpath.SamplingPath.plot">(ultranest.samplingpath.SamplingPath method)</a>
-</li>
-        <li><a href="modules.html#ultranest.stepsampler.StepSampler.plot">(ultranest.stepsampler.StepSampler method)</a>
-</li>
       </ul></li>
       <li><a href="modules.html#ultranest.integrator.ReactiveNestedSampler.plot_corner">plot_corner() (ultranest.integrator.ReactiveNestedSampler method)</a>
 </li>
       <li><a href="modules.html#ultranest.integrator.ReactiveNestedSampler.plot_run">plot_run() (ultranest.integrator.ReactiveNestedSampler method)</a>
 </li>
-      <li><a href="modules.html#ultranest.integrator.ReactiveNestedSampler.plot_trace">plot_trace() (ultranest.integrator.ReactiveNestedSampler method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules.html#ultranest.integrator.ReactiveNestedSampler.plot_trace">plot_trace() (ultranest.integrator.ReactiveNestedSampler method)</a>
+</li>
       <li><a href="modules.html#ultranest.netiter.PointPile">PointPile (class in ultranest.netiter)</a>
 </li>
       <li><a href="modules.html#ultranest.store.FilePointStore.pop">pop() (ultranest.store.FilePointStore method)</a>
@@ -570,8 +455,6 @@
         <li><a href="modules.html#ultranest.store.NullPointStore.pop">(ultranest.store.NullPointStore method)</a>
 </li>
       </ul></li>
-      <li><a href="modules.html#ultranest.plot.PredictionBand">PredictionBand (class in ultranest.plot)</a>
-</li>
       <li><a href="modules.html#ultranest.integrator.NestedSampler.print_results">print_results() (ultranest.integrator.NestedSampler method)</a>
 
       <ul>
@@ -579,10 +462,6 @@
 </li>
       </ul></li>
       <li><a href="modules.html#ultranest.netiter.print_tree">print_tree() (in module ultranest.netiter)</a>
-</li>
-      <li><a href="modules.html#ultranest.solvecompat.pymultinest_solve_compat">pymultinest_solve_compat() (in module ultranest.solvecompat)</a>
-</li>
-      <li><a href="modules.html#ultranest.solvecompat.pypolychord_solve_compat">pypolychord_solve_compat() (in module ultranest.solvecompat)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -600,18 +479,6 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules.html#ultranest.integrator.ReactiveNestedSampler">ReactiveNestedSampler (class in ultranest.integrator)</a>
 </li>
-      <li><a href="modules.html#ultranest.samplingpath.reflect">reflect() (in module ultranest.samplingpath)</a>
-</li>
-      <li><a href="modules.html#ultranest.stepsampler.RegionBallSliceSampler">RegionBallSliceSampler (class in ultranest.stepsampler)</a>
-</li>
-      <li><a href="modules.html#ultranest.stepsampler.RegionGeodesicSliceSampler">RegionGeodesicSliceSampler (class in ultranest.stepsampler)</a>
-</li>
-      <li><a href="modules.html#ultranest.stepsampler.RegionMHSampler">RegionMHSampler (class in ultranest.stepsampler)</a>
-</li>
-      <li><a href="modules.html#ultranest.stepsampler.RegionSequentialSliceSampler">RegionSequentialSliceSampler (class in ultranest.stepsampler)</a>
-</li>
-      <li><a href="modules.html#ultranest.stepsampler.RegionSliceSampler">RegionSliceSampler (class in ultranest.stepsampler)</a>
-</li>
       <li><a href="modules.html#ultranest.utils.resample_equal">resample_equal() (in module ultranest.utils)</a>
 </li>
       <li><a href="modules.html#ultranest.netiter.BreadthFirstIterator.reset">reset() (ultranest.netiter.BreadthFirstIterator method)</a>
@@ -620,14 +487,6 @@
         <li><a href="modules.html#ultranest.netiter.MultiCounter.reset">(ultranest.netiter.MultiCounter method)</a>
 </li>
         <li><a href="modules.html#ultranest.netiter.SingleCounter.reset">(ultranest.netiter.SingleCounter method)</a>
-</li>
-        <li><a href="modules.html#ultranest.samplingpath.SamplingPath.reset">(ultranest.samplingpath.SamplingPath method)</a>
-</li>
-        <li><a href="modules.html#ultranest.stepsampler.CubeSliceSampler.reset">(ultranest.stepsampler.CubeSliceSampler method)</a>
-</li>
-        <li><a href="modules.html#ultranest.stepsampler.GeodesicSliceSampler.reset">(ultranest.stepsampler.GeodesicSliceSampler method)</a>
-</li>
-        <li><a href="modules.html#ultranest.stepsampler.StepSampler.reset">(ultranest.stepsampler.StepSampler method)</a>
 </li>
         <li><a href="modules.html#ultranest.store.FilePointStore.reset">(ultranest.store.FilePointStore method)</a>
 </li>
@@ -646,8 +505,6 @@
       </ul></li>
       <li><a href="modules.html#ultranest.integrator.ReactiveNestedSampler.run_iter">run_iter() (ultranest.integrator.ReactiveNestedSampler method)</a>
 </li>
-      <li><a href="modules.html#ultranest.plot.runplot">runplot() (in module ultranest.plot)</a>
-</li>
   </ul></td>
 </tr></table>
 
@@ -655,10 +512,6 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules.html#ultranest.mlfriends.MLFriends.sample">sample (ultranest.mlfriends.MLFriends attribute)</a>
-</li>
-      <li><a href="modules.html#ultranest.stepsampler.GeodesicSliceSampler.sample_central_ray">sample_central_ray() (ultranest.stepsampler.GeodesicSliceSampler method)</a>
-</li>
-      <li><a href="modules.html#ultranest.stepsampler.GeodesicSliceSampler.sample_circle">sample_circle() (ultranest.stepsampler.GeodesicSliceSampler method)</a>
 </li>
       <li><a href="modules.html#ultranest.mlfriends.MLFriends.sample_from_boundingbox">sample_from_boundingbox (ultranest.mlfriends.MLFriends attribute)</a>
 </li>
@@ -668,27 +521,15 @@
 </li>
       <li><a href="modules.html#ultranest.mlfriends.MLFriends.sample_from_wrapping_ellipsoid">sample_from_wrapping_ellipsoid (ultranest.mlfriends.MLFriends attribute)</a>
 </li>
-      <li><a href="modules.html#ultranest.samplingpath.SamplingPath">SamplingPath (class in ultranest.samplingpath)</a>
-</li>
-      <li><a href="modules.html#ultranest.mlfriends.ScalingLayer">ScalingLayer (class in ultranest.mlfriends)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules.html#ultranest.mlfriends.ScalingLayer">ScalingLayer (class in ultranest.mlfriends)</a>
+</li>
       <li><a href="modules.html#ultranest.mlfriends.ScalingLayer.set_clusterids">set_clusterids (ultranest.mlfriends.ScalingLayer attribute)</a>
-</li>
-      <li><a href="modules.html#ultranest.plot.PredictionBand.set_lineargs">set_lineargs() (ultranest.plot.PredictionBand method)</a>
-</li>
-      <li><a href="modules.html#ultranest.plot.PredictionBand.set_shadeargs">set_shadeargs() (ultranest.plot.PredictionBand method)</a>
 </li>
       <li><a href="modules.html#ultranest.mlfriends.MLFriends.set_transformLayer">set_transformLayer (ultranest.mlfriends.MLFriends attribute)</a>
 </li>
-      <li><a href="modules.html#ultranest.plot.PredictionBand.shade">shade() (ultranest.plot.PredictionBand method)</a>
-</li>
       <li><a href="modules.html#ultranest.netiter.SingleCounter">SingleCounter (class in ultranest.netiter)</a>
-</li>
-      <li><a href="modules.html#ultranest.stepsampler.SpeedVariableRegionSliceSampler">SpeedVariableRegionSliceSampler (class in ultranest.stepsampler)</a>
-</li>
-      <li><a href="modules.html#ultranest.stepsampler.StepSampler">StepSampler (class in ultranest.stepsampler)</a>
 </li>
       <li><a href="modules.html#ultranest.integrator.ReactiveNestedSampler.store_tree">store_tree() (ultranest.integrator.ReactiveNestedSampler method)</a>
 </li>
@@ -700,16 +541,14 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules.html#ultranest.store.TextPointStore">TextPointStore (class in ultranest.store)</a>
 </li>
-      <li><a href="modules.html#ultranest.plot.traceplot">traceplot() (in module ultranest.plot)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules.html#ultranest.mlfriends.AffineLayer.transform">transform (ultranest.mlfriends.AffineLayer attribute)</a>
 
       <ul>
         <li><a href="modules.html#ultranest.mlfriends.ScalingLayer.transform">(ultranest.mlfriends.ScalingLayer attribute)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="modules.html#ultranest.netiter.TreeNode">TreeNode (class in ultranest.netiter)</a>
 </li>
   </ul></td>
@@ -726,18 +565,10 @@
 </li>
       <li><a href="modules.html#module-ultranest.netiter">ultranest.netiter (module)</a>
 </li>
-      <li><a href="modules.html#module-ultranest.plot">ultranest.plot (module)</a>
-</li>
-      <li><a href="modules.html#module-ultranest.samplingpath">ultranest.samplingpath (module)</a>
-</li>
-      <li><a href="modules.html#module-ultranest.solvecompat">ultranest.solvecompat (module)</a>
+      <li><a href="modules.html#module-ultranest.store">ultranest.store (module)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="modules.html#module-ultranest.stepsampler">ultranest.stepsampler (module)</a>
-</li>
-      <li><a href="modules.html#module-ultranest.store">ultranest.store (module)</a>
-</li>
       <li><a href="modules.html#module-ultranest.utils">ultranest.utils (module)</a>
 </li>
       <li><a href="modules.html#module-ultranest.viz">ultranest.viz (module)</a>
@@ -762,6 +593,8 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="modules.html#ultranest.utils.verify_gradient">verify_gradient() (in module ultranest.utils)</a>
+</li>
       <li><a href="modules.html#ultranest.utils.vol_prefactor">vol_prefactor() (in module ultranest.utils)</a>
 </li>
   </ul></td>

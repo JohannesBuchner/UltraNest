@@ -32,6 +32,7 @@
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+        <script type="text/javascript" src="https://unpkg.com/@jupyter-widgets/html-manager@^0.18.0/dist/embed-amd.js"></script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
@@ -181,8 +182,8 @@
 <span class="c1"># Some parts are from the Nestle library by Kyle Barbary (https://github.com/kbarbary/nestle)</span>
 <span class="c1"># Some parts are from the nnest library by Adam Moss (https://github.com/adammoss/nnest)</span>
 
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">sys</span>
@@ -192,15 +193,15 @@
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
 
-<span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="n">log</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">logaddexp</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">log</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">logaddexp</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
-<span class="kn">from</span> <span class="nn">.utils</span> <span class="k">import</span> <span class="n">create_logger</span><span class="p">,</span> <span class="n">make_run_dir</span><span class="p">,</span> <span class="n">resample_equal</span><span class="p">,</span> <span class="n">vol_prefactor</span><span class="p">,</span> <span class="n">vectorize</span>
-<span class="kn">from</span> <span class="nn">ultranest.mlfriends</span> <span class="k">import</span> <span class="n">MLFriends</span><span class="p">,</span> <span class="n">AffineLayer</span><span class="p">,</span> <span class="n">ScalingLayer</span><span class="p">,</span> <span class="n">find_nearby</span>
-<span class="kn">from</span> <span class="nn">.store</span> <span class="k">import</span> <span class="n">HDF5PointStore</span><span class="p">,</span> <span class="n">NullPointStore</span>
-<span class="kn">from</span> <span class="nn">.viz</span> <span class="k">import</span> <span class="n">get_default_viz_callback</span><span class="p">,</span> <span class="n">nicelogger</span>
-<span class="kn">from</span> <span class="nn">.netiter</span> <span class="k">import</span> <span class="n">PointPile</span><span class="p">,</span> <span class="n">MultiCounter</span><span class="p">,</span> <span class="n">BreadthFirstIterator</span><span class="p">,</span> <span class="n">TreeNode</span><span class="p">,</span> <span class="n">count_tree_between</span><span class="p">,</span> <span class="n">find_nodes_before</span><span class="p">,</span> <span class="n">logz_sequence</span>
-<span class="kn">from</span> <span class="nn">.netiter</span> <span class="k">import</span> <span class="n">dump_tree</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">create_logger</span><span class="p">,</span> <span class="n">make_run_dir</span><span class="p">,</span> <span class="n">resample_equal</span><span class="p">,</span> <span class="n">vol_prefactor</span><span class="p">,</span> <span class="n">vectorize</span>
+<span class="kn">from</span> <span class="nn">ultranest.mlfriends</span> <span class="kn">import</span> <span class="n">MLFriends</span><span class="p">,</span> <span class="n">AffineLayer</span><span class="p">,</span> <span class="n">ScalingLayer</span><span class="p">,</span> <span class="n">find_nearby</span>
+<span class="kn">from</span> <span class="nn">.store</span> <span class="kn">import</span> <span class="n">HDF5PointStore</span><span class="p">,</span> <span class="n">NullPointStore</span>
+<span class="kn">from</span> <span class="nn">.viz</span> <span class="kn">import</span> <span class="n">get_default_viz_callback</span><span class="p">,</span> <span class="n">nicelogger</span>
+<span class="kn">from</span> <span class="nn">.netiter</span> <span class="kn">import</span> <span class="n">PointPile</span><span class="p">,</span> <span class="n">MultiCounter</span><span class="p">,</span> <span class="n">BreadthFirstIterator</span><span class="p">,</span> <span class="n">TreeNode</span><span class="p">,</span> <span class="n">count_tree_between</span><span class="p">,</span> <span class="n">find_nodes_before</span><span class="p">,</span> <span class="n">logz_sequence</span>
+<span class="kn">from</span> <span class="nn">.netiter</span> <span class="kn">import</span> <span class="n">dump_tree</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ReactiveNestedSampler&#39;</span><span class="p">,</span> <span class="s1">&#39;NestedSampler&#39;</span><span class="p">]</span>
 
@@ -261,7 +262,7 @@
 <div class="viewcode-block" id="NestedSampler"><a class="viewcode-back" href="../../modules.html#ultranest.integrator.NestedSampler">[docs]</a><span class="k">class</span> <span class="nc">NestedSampler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Simple Nested sampler for reference.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">param_names</span><span class="p">,</span>
                  <span class="n">loglike</span><span class="p">,</span>
                  <span class="n">transform</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -348,7 +349,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">use_mpi</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="kn">from</span> <span class="nn">mpi4py</span> <span class="k">import</span> <span class="n">MPI</span>
+            <span class="kn">from</span> <span class="nn">mpi4py</span> <span class="kn">import</span> <span class="n">MPI</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">comm</span> <span class="o">=</span> <span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">mpi_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">Get_size</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">mpi_rank</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">Get_rank</span><span class="p">()</span>
@@ -777,7 +778,7 @@
 <span class="sd">    Storage &amp; resume capable, optionally MPI parallelised.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">param_names</span><span class="p">,</span>
                  <span class="n">loglike</span><span class="p">,</span>
                  <span class="n">transform</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -852,7 +853,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">use_mpi</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="kn">from</span> <span class="nn">mpi4py</span> <span class="k">import</span> <span class="n">MPI</span>
+            <span class="kn">from</span> <span class="nn">mpi4py</span> <span class="kn">import</span> <span class="n">MPI</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">comm</span> <span class="o">=</span> <span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">mpi_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">Get_size</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">mpi_rank</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">Get_rank</span><span class="p">()</span>
@@ -1114,7 +1115,7 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">ncall</span> <span class="o">+=</span> <span class="n">num_live_points_missing</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">chunks</span> <span class="o">=</span> <span class="kc">None</span>
-                <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">chunks</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">chunks</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
                 <span class="n">active_logl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loglike</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
                 <span class="k">assert</span> <span class="n">active_logl</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">),),</span> <span class="p">(</span><span class="n">active_logl</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
                 <span class="n">recv_active_logl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="n">active_logl</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
@@ -1147,7 +1148,7 @@
         <span class="n">roots</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">pointpile</span><span class="o">.</span><span class="n">make_node</span><span class="p">(</span><span class="n">logl</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">logl</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">active_u</span><span class="p">,</span> <span class="n">active_v</span><span class="p">,</span> <span class="n">active_logl</span><span class="p">)]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">children</span> <span class="o">+=</span> <span class="n">roots</span>
 
-    <span class="k">def</span> <span class="nf">_adaptive_strategy_advice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">,</span> <span class="n">parallel_values</span><span class="p">,</span> <span class="n">main_iterator</span><span class="p">,</span> <span class="n">minimal_widths</span><span class="p">,</span> <span class="n">frac_remain</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_adaptive_strategy_advice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">,</span> <span class="n">parallel_values</span><span class="p">,</span> <span class="n">main_iterator</span><span class="p">,</span> <span class="n">minimal_widths</span><span class="p">,</span> <span class="n">frac_remain</span><span class="p">,</span> <span class="n">Lepsilon</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Check if integration is done.</span>
 
 <span class="sd">        Returns</span>
@@ -1177,7 +1178,7 @@
         <span class="n">Lmin</span> <span class="o">=</span> <span class="n">Ls</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="c1"># all points the same, stop</span>
-        <span class="k">if</span> <span class="n">Lmax</span> <span class="o">-</span> <span class="n">Lmin</span> <span class="o">&lt;</span> <span class="mf">0.001</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">Lmax</span> <span class="o">-</span> <span class="n">Lmin</span> <span class="o">&lt;</span> <span class="n">Lepsilon</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 
         <span class="c1"># max remainder contribution is Lmax + weight, to be added to main_iterator.logZ</span>
@@ -1530,6 +1531,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">enlarge</span> <span class="o">=</span> <span class="n">f</span>
             <span class="c1"># if self.log:</span>
             <span class="c1">#     self.logger.debug(&quot;building first region ... r=%e, f=%e&quot; % (r, f))</span>
+            <span class="n">updated</span> <span class="o">=</span> <span class="kc">True</span>
 
             <span class="c1"># verify correctness:</span>
             <span class="c1"># self.region.create_ellipsoid(minvol=minvol)</span>
@@ -1814,6 +1816,7 @@
             <span class="n">dlogz</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
             <span class="n">dKL</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
             <span class="n">frac_remain</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+            <span class="n">Lepsilon</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
             <span class="n">min_ess</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span>
             <span class="n">max_iters</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">max_ncalls</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -1857,6 +1860,11 @@
 <span class="sd">            Set to a low number (1e-2 ... 1e-5) to make sure peaks are discovered.</span>
 <span class="sd">            Set to a higher number (0.5) if you know the posterior is simple.</span>
 
+<span class="sd">        Lepsilon: float</span>
+<span class="sd">            Terminate when live point likelihoods are all the same,</span>
+<span class="sd">            within Lepsilon tolerance. Increase this when your likelihood</span>
+<span class="sd">            function is inaccurate, to avoid unnecessary search.</span>
+
 <span class="sd">        min_ess: int</span>
 <span class="sd">            Target number of effective posterior samples.</span>
 
@@ -1884,7 +1892,8 @@
             <span class="n">update_interval_iter_fraction</span><span class="o">=</span><span class="n">update_interval_iter_fraction</span><span class="p">,</span>
             <span class="n">update_interval_ncall</span><span class="o">=</span><span class="n">update_interval_ncall</span><span class="p">,</span>
             <span class="n">log_interval</span><span class="o">=</span><span class="n">log_interval</span><span class="p">,</span>
-            <span class="n">dlogz</span><span class="o">=</span><span class="n">dlogz</span><span class="p">,</span> <span class="n">dKL</span><span class="o">=</span><span class="n">dKL</span><span class="p">,</span> <span class="n">frac_remain</span><span class="o">=</span><span class="n">frac_remain</span><span class="p">,</span>
+            <span class="n">dlogz</span><span class="o">=</span><span class="n">dlogz</span><span class="p">,</span> <span class="n">dKL</span><span class="o">=</span><span class="n">dKL</span><span class="p">,</span>
+            <span class="n">Lepsilon</span><span class="o">=</span><span class="n">Lepsilon</span><span class="p">,</span> <span class="n">frac_remain</span><span class="o">=</span><span class="n">frac_remain</span><span class="p">,</span>
             <span class="n">min_ess</span><span class="o">=</span><span class="n">min_ess</span><span class="p">,</span> <span class="n">max_iters</span><span class="o">=</span><span class="n">max_iters</span><span class="p">,</span>
             <span class="n">max_ncalls</span><span class="o">=</span><span class="n">max_ncalls</span><span class="p">,</span> <span class="n">max_num_improvement_loops</span><span class="o">=</span><span class="n">max_num_improvement_loops</span><span class="p">,</span>
             <span class="n">min_num_live_points</span><span class="o">=</span><span class="n">min_num_live_points</span><span class="p">,</span>
@@ -1908,6 +1917,7 @@
             <span class="n">dlogz</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
             <span class="n">dKL</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
             <span class="n">frac_remain</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+            <span class="n">Lepsilon</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
             <span class="n">min_ess</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span>
             <span class="n">max_iters</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">max_ncalls</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -1924,7 +1934,7 @@
 <span class="sd">            for result in sampler.run_iter(...):</span>
 <span class="sd">                print(&#39;lnZ = %(logz).2f +- %(logzerr).2f&#39; % result)</span>
 
-<span class="sd">        Parameters as described in run() function.</span>
+<span class="sd">        Parameters as described in run() method.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># frac_remain=1  means 1:1 -&gt; dlogz=log(0.5)</span>
         <span class="c1"># frac_remain=0.1 means 1:10 -&gt; dlogz=log(0.1)</span>
@@ -2003,7 +2013,7 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_mpi</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">use_point_stack</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">bcast</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">use_point_stack</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">Llo</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">Lhi</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="ow">and</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">Llo</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">Lhi</span><span class="p">)):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Exploring (in particular: L=</span><span class="si">%.2f</span><span class="s2">..</span><span class="si">%.2f</span><span class="s2">) ...&quot;</span><span class="p">,</span> <span class="n">Llo</span><span class="p">,</span> <span class="n">Lhi</span><span class="p">)</span>
             <span class="c1"># print_tree(roots[:5], title=&quot;Tree:&quot;)</span>
             <span class="n">region_sequence</span> <span class="o">=</span> <span class="p">[]</span>
@@ -2034,7 +2044,9 @@
                 <span class="k">if</span> <span class="n">strategy_stale</span> <span class="ow">or</span> <span class="ow">not</span> <span class="p">(</span><span class="n">Lmin</span> <span class="o">&lt;=</span> <span class="n">Lhi</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">Lhi</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">active_values</span> <span class="o">==</span> <span class="n">Lmin</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
                     <span class="c1"># check with advisor if we want to expand this node</span>
                     <span class="n">Llo_prev</span><span class="p">,</span> <span class="n">Lhi_prev</span> <span class="o">=</span> <span class="n">Llo</span><span class="p">,</span> <span class="n">Lhi</span>
-                    <span class="n">Llo</span><span class="p">,</span> <span class="n">Lhi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_adaptive_strategy_advice</span><span class="p">(</span><span class="n">Lmin</span><span class="p">,</span> <span class="n">active_values</span><span class="p">,</span> <span class="n">main_iterator</span><span class="p">,</span> <span class="n">minimal_widths</span><span class="p">,</span> <span class="n">frac_remain</span><span class="p">)</span>
+                    <span class="n">Llo</span><span class="p">,</span> <span class="n">Lhi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_adaptive_strategy_advice</span><span class="p">(</span><span class="n">Lmin</span><span class="p">,</span>
+                        <span class="n">active_values</span><span class="p">,</span> <span class="n">main_iterator</span><span class="p">,</span> <span class="n">minimal_widths</span><span class="p">,</span>
+                        <span class="n">frac_remain</span><span class="p">,</span> <span class="n">Lepsilon</span><span class="o">=</span><span class="n">Lepsilon</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">Lhi</span><span class="p">):</span>
                         <span class="n">strategy_altered</span> <span class="o">=</span> <span class="n">Llo</span> <span class="o">!=</span> <span class="n">Llo_prev</span> <span class="ow">or</span> <span class="n">Lhi</span> <span class="o">!=</span> <span class="n">Lhi_prev</span>
                     <span class="k">else</span><span class="p">:</span>
@@ -2046,7 +2058,7 @@
 
                     <span class="c1"># when we are going to the peak, numerical accuracy</span>
                     <span class="c1"># can become an issue. We should try not to get stuck there</span>
-                    <span class="n">strategy_stale</span> <span class="o">=</span> <span class="n">Lhi</span> <span class="o">-</span> <span class="n">Llo</span> <span class="o">&lt;</span> <span class="mf">0.01</span>
+                    <span class="n">strategy_stale</span> <span class="o">=</span> <span class="n">Lhi</span> <span class="o">-</span> <span class="n">Llo</span> <span class="o">&lt;</span> <span class="nb">max</span><span class="p">(</span><span class="n">Lepsilon</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">)</span>
 
                 <span class="n">expand_node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_should_node_be_expanded</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="n">Llo</span><span class="p">,</span> <span class="n">Lhi</span><span class="p">,</span> <span class="n">minimal_widths_sequence</span><span class="p">,</span> <span class="n">target_min_num_children</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">active_values</span><span class="p">,</span> <span class="n">max_ncalls</span><span class="p">,</span> <span class="n">max_iters</span><span class="p">)</span>
 
@@ -2065,6 +2077,9 @@
                             <span class="n">bootstrap_rootids</span><span class="o">=</span><span class="n">main_iterator</span><span class="o">.</span><span class="n">rootids</span><span class="p">[</span><span class="mi">1</span><span class="p">:,],</span>
                             <span class="n">nbootstraps</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_bootstraps</span><span class="p">,</span>
                             <span class="n">minvol</span><span class="o">=</span><span class="n">exp</span><span class="p">(</span><span class="n">main_iterator</span><span class="o">.</span><span class="n">logVolremaining</span><span class="p">))</span>
+
+                        <span class="k">if</span> <span class="n">region_fresh</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">stepsampler</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="n">region_changed</span><span class="p">(</span><span class="n">active_values</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">)</span>
 
                         <span class="n">_</span><span class="p">,</span> <span class="n">cluster_sizes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">clusterids</span><span class="p">,</span> <span class="n">return_counts</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
                         <span class="n">nclusters</span> <span class="o">=</span> <span class="p">(</span><span class="n">cluster_sizes</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
@@ -2332,7 +2347,7 @@
                 <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">paramnames</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">derivedparamnames</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logs</span><span class="p">[</span><span class="s1">&#39;info&#39;</span><span class="p">],</span> <span class="s1">&#39;results.json&#39;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                 <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
-            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logs</span><span class="p">[</span><span class="s1">&#39;info&#39;</span><span class="p">],</span> <span class="s1">&#39;post_summary.csv&#39;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logs</span><span class="p">[</span><span class="s1">&#39;info&#39;</span><span class="p">],</span> <span class="s1">&#39;post_summary.csv&#39;</span><span class="p">),</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                 <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> 
                     <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;posterior&#39;</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;means&#39;</span><span class="p">,</span> <span class="s1">&#39;stds&#39;</span><span class="p">,</span> <span class="s1">&#39;median&#39;</span><span class="p">,</span> <span class="s1">&#39;errlo&#39;</span><span class="p">,</span> <span class="s1">&#39;errup&#39;</span><span class="p">)])],</span>
                     <span class="n">header</span><span class="o">=</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;&quot;</span><span class="si">{0}</span><span class="s1">_mean&quot;, &quot;</span><span class="si">{0}</span><span class="s1">_std&quot;, &quot;</span><span class="si">{0}</span><span class="s1">_median&quot;, &quot;</span><span class="si">{0}</span><span class="s1">_errlo&quot;, &quot;</span><span class="si">{0}</span><span class="s1">_errup&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> 
@@ -2396,7 +2411,7 @@
 <span class="sd">            cornerplot(results)</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">.plot</span> <span class="k">import</span> <span class="n">cornerplot</span>
+        <span class="kn">from</span> <span class="nn">.plot</span> <span class="kn">import</span> <span class="n">cornerplot</span>
         <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Making corner plot ...&#39;</span><span class="p">)</span>
@@ -2418,7 +2433,7 @@
 <span class="sd">            traceplot(results=results, labels=paramnames + derivedparamnames)</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">.plot</span> <span class="k">import</span> <span class="n">traceplot</span>
+        <span class="kn">from</span> <span class="nn">.plot</span> <span class="kn">import</span> <span class="n">traceplot</span>
         <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Making trace plot ... &#39;</span><span class="p">)</span>
@@ -2443,7 +2458,7 @@
 <span class="sd">            runplot(results=results)</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">.plot</span> <span class="k">import</span> <span class="n">runplot</span>
+        <span class="kn">from</span> <span class="nn">.plot</span> <span class="kn">import</span> <span class="n">runplot</span>
         <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Making run plot ... &#39;</span><span class="p">)</span>
