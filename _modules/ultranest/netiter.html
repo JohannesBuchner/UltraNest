@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ultranest.netiter &mdash; UltraNest 2.0.4 documentation</title>
+  <title>ultranest.netiter &mdash; UltraNest 2.1.0 documentation</title>
   
 
   
@@ -69,7 +69,7 @@
             
             
               <div class="version">
-                2.0.4
+                2.1.0
               </div>
             
           
@@ -204,7 +204,7 @@
 <span class="kn">import</span> <span class="nn">sys</span>
 
 
-<div class="viewcode-block" id="TreeNode"><a class="viewcode-back" href="../../modules.html#ultranest.netiter.TreeNode">[docs]</a><span class="k">class</span> <span class="nc">TreeNode</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="TreeNode"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.TreeNode">[docs]</a><span class="k">class</span> <span class="nc">TreeNode</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Simple tree node.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">children</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -240,7 +240,7 @@
 <span class="n">multitree_sort_key</span> <span class="o">=</span> <span class="n">operator</span><span class="o">.</span><span class="n">itemgetter</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="BreadthFirstIterator"><a class="viewcode-back" href="../../modules.html#ultranest.netiter.BreadthFirstIterator">[docs]</a><span class="k">class</span> <span class="nc">BreadthFirstIterator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="BreadthFirstIterator"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.BreadthFirstIterator">[docs]</a><span class="k">class</span> <span class="nc">BreadthFirstIterator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Generator exploring the tree.</span>
 
 <span class="sd">    Nodes are ordered by value and expanded in order.</span>
@@ -252,7 +252,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">roots</span> <span class="o">=</span> <span class="n">roots</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
 
-<div class="viewcode-block" id="BreadthFirstIterator.reset"><a class="viewcode-back" href="../../modules.html#ultranest.netiter.BreadthFirstIterator.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="BreadthFirstIterator.reset"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.BreadthFirstIterator.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;(Re)start exploration from the top.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">active_nodes</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">roots</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">active_root_ids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active_nodes</span><span class="p">))</span>
@@ -262,7 +262,7 @@
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active_nodes</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active_node_values</span><span class="p">)</span></div>
         <span class="c1"># print(&quot;starting live points from %d roots&quot; % len(self.roots), len(self.active_nodes))</span>
 
-<div class="viewcode-block" id="BreadthFirstIterator.next_node"><a class="viewcode-back" href="../../modules.html#ultranest.netiter.BreadthFirstIterator.next_node">[docs]</a>    <span class="k">def</span> <span class="nf">next_node</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="BreadthFirstIterator.next_node"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.BreadthFirstIterator.next_node">[docs]</a>    <span class="k">def</span> <span class="nf">next_node</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get next node in order.</span>
 
 <span class="sd">        Does not remove the node from active set.</span>
@@ -286,7 +286,7 @@
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active_nodes</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active_node_values</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">rootid</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active_nodes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">active_root_ids</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">active_node_values</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">active_node_ids</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="BreadthFirstIterator.drop_next_node"><a class="viewcode-back" href="../../modules.html#ultranest.netiter.BreadthFirstIterator.drop_next_node">[docs]</a>    <span class="k">def</span> <span class="nf">drop_next_node</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="BreadthFirstIterator.drop_next_node"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.BreadthFirstIterator.drop_next_node">[docs]</a>    <span class="k">def</span> <span class="nf">drop_next_node</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Forget the current node.&quot;&quot;&quot;</span>
         <span class="n">i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_index</span>
         <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active_nodes</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
@@ -298,7 +298,7 @@
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active_nodes</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active_root_ids</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active_nodes</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active_node_values</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="BreadthFirstIterator.expand_children_of"><a class="viewcode-back" href="../../modules.html#ultranest.netiter.BreadthFirstIterator.expand_children_of">[docs]</a>    <span class="k">def</span> <span class="nf">expand_children_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rootid</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
+<div class="viewcode-block" id="BreadthFirstIterator.expand_children_of"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.BreadthFirstIterator.expand_children_of">[docs]</a>    <span class="k">def</span> <span class="nf">expand_children_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rootid</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Replace the current node with its children.</span>
 
 <span class="sd">        rootid and node have to come from the most recent call to next_node.</span>
@@ -335,7 +335,7 @@
         <span class="k">assert</span> <span class="n">newnnodes</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active_node_ids</span><span class="p">),</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active_node_ids</span><span class="p">),</span> <span class="n">newnnodes</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">))</span></div></div>
 
 
-<div class="viewcode-block" id="print_tree"><a class="viewcode-back" href="../../modules.html#ultranest.netiter.print_tree">[docs]</a><span class="k">def</span> <span class="nf">print_tree</span><span class="p">(</span><span class="n">roots</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Tree:&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="print_tree"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.print_tree">[docs]</a><span class="k">def</span> <span class="nf">print_tree</span><span class="p">(</span><span class="n">roots</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Tree:&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Print a pretty yet compact graphic of the tree.&quot;&quot;&quot;</span>
     <span class="nb">print</span><span class="p">()</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
@@ -378,7 +378,7 @@
         <span class="n">lastlane</span> <span class="o">=</span> <span class="n">laneid</span></div>
 
 
-<div class="viewcode-block" id="dump_tree"><a class="viewcode-back" href="../../modules.html#ultranest.netiter.dump_tree">[docs]</a><span class="k">def</span> <span class="nf">dump_tree</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">roots</span><span class="p">,</span> <span class="n">pointpile</span><span class="p">):</span>
+<div class="viewcode-block" id="dump_tree"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.dump_tree">[docs]</a><span class="k">def</span> <span class="nf">dump_tree</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">roots</span><span class="p">,</span> <span class="n">pointpile</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Write a copy of the tree to a HDF5 file.&quot;&quot;&quot;</span>
     <span class="kn">import</span> <span class="nn">h5py</span>
 
@@ -407,7 +407,7 @@
         <span class="n">f</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s1">&#39;nodes_child_logl&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">nodes_values</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="s1">&#39;gzip&#39;</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="count_tree"><a class="viewcode-back" href="../../modules.html#ultranest.netiter.count_tree">[docs]</a><span class="k">def</span> <span class="nf">count_tree</span><span class="p">(</span><span class="n">roots</span><span class="p">):</span>
+<div class="viewcode-block" id="count_tree"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.count_tree">[docs]</a><span class="k">def</span> <span class="nf">count_tree</span><span class="p">(</span><span class="n">roots</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Return the maximum number of parallel edges and the total number of nodes.&quot;&quot;&quot;</span>
     <span class="n">explorer</span> <span class="o">=</span> <span class="n">BreadthFirstIterator</span><span class="p">(</span><span class="n">roots</span><span class="p">)</span>
     <span class="n">nnodes</span> <span class="o">=</span> <span class="mi">0</span>
@@ -423,7 +423,7 @@
         <span class="n">explorer</span><span class="o">.</span><span class="n">expand_children_of</span><span class="p">(</span><span class="n">rootid</span><span class="p">,</span> <span class="n">node</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="count_tree_between"><a class="viewcode-back" href="../../modules.html#ultranest.netiter.count_tree_between">[docs]</a><span class="k">def</span> <span class="nf">count_tree_between</span><span class="p">(</span><span class="n">roots</span><span class="p">,</span> <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span><span class="p">):</span>
+<div class="viewcode-block" id="count_tree_between"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.count_tree_between">[docs]</a><span class="k">def</span> <span class="nf">count_tree_between</span><span class="p">(</span><span class="n">roots</span><span class="p">,</span> <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Build basic tree statistics.</span>
 
 <span class="sd">    Returns</span>
@@ -456,7 +456,7 @@
         <span class="n">explorer</span><span class="o">.</span><span class="n">expand_children_of</span><span class="p">(</span><span class="n">rootid</span><span class="p">,</span> <span class="n">node</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="find_nodes_before"><a class="viewcode-back" href="../../modules.html#ultranest.netiter.find_nodes_before">[docs]</a><span class="k">def</span> <span class="nf">find_nodes_before</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<div class="viewcode-block" id="find_nodes_before"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.find_nodes_before">[docs]</a><span class="k">def</span> <span class="nf">find_nodes_before</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Identify all nodes that have children above value.</span>
 
 <span class="sd">    If a root child is above the value, its parent (root) is the leaf returned.</span>
@@ -502,7 +502,7 @@
     <span class="k">return</span> <span class="n">parents</span><span class="p">,</span> <span class="n">parent_weights</span></div>
 
 
-<div class="viewcode-block" id="PointPile"><a class="viewcode-back" href="../../modules.html#ultranest.netiter.PointPile">[docs]</a><span class="k">class</span> <span class="nc">PointPile</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="PointPile"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.PointPile">[docs]</a><span class="k">class</span> <span class="nc">PointPile</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;A in-memory linearized storage of point coordinates.</span>
 
 <span class="sd">    TreeNodes only store the logL value and id,</span>
@@ -530,7 +530,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">udim</span> <span class="o">=</span> <span class="n">udim</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pdim</span> <span class="o">=</span> <span class="n">pdim</span>
 
-<div class="viewcode-block" id="PointPile.add"><a class="viewcode-back" href="../../modules.html#ultranest.netiter.PointPile.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">newpointu</span><span class="p">,</span> <span class="n">newpointp</span><span class="p">):</span>
+<div class="viewcode-block" id="PointPile.add"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.PointPile.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">newpointu</span><span class="p">,</span> <span class="n">newpointp</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Save point `newpointu` (cube) / `newpointp` (parameters).&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nrows</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">us</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">us</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">us</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">chunksize</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">udim</span><span class="p">))))</span>
@@ -542,21 +542,21 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">nrows</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">nrows</span> <span class="o">-</span> <span class="mi">1</span></div>
 
-<div class="viewcode-block" id="PointPile.getu"><a class="viewcode-back" href="../../modules.html#ultranest.netiter.PointPile.getu">[docs]</a>    <span class="k">def</span> <span class="nf">getu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+<div class="viewcode-block" id="PointPile.getu"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.PointPile.getu">[docs]</a>    <span class="k">def</span> <span class="nf">getu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get cube point(s) with index(indices) `i`.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">us</span><span class="p">[</span><span class="n">i</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="PointPile.getp"><a class="viewcode-back" href="../../modules.html#ultranest.netiter.PointPile.getp">[docs]</a>    <span class="k">def</span> <span class="nf">getp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+<div class="viewcode-block" id="PointPile.getp"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.PointPile.getp">[docs]</a>    <span class="k">def</span> <span class="nf">getp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get parameter point(s) with index(indices) `i`.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ps</span><span class="p">[</span><span class="n">i</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="PointPile.make_node"><a class="viewcode-back" href="../../modules.html#ultranest.netiter.PointPile.make_node">[docs]</a>    <span class="k">def</span> <span class="nf">make_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+<div class="viewcode-block" id="PointPile.make_node"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.PointPile.make_node">[docs]</a>    <span class="k">def</span> <span class="nf">make_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Save point `u` (cube) / `p` (parameters), return a tree node.&quot;&quot;&quot;</span>
         <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">TreeNode</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="n">index</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="SingleCounter"><a class="viewcode-back" href="../../modules.html#ultranest.netiter.SingleCounter">[docs]</a><span class="k">class</span> <span class="nc">SingleCounter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="SingleCounter"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.SingleCounter">[docs]</a><span class="k">class</span> <span class="nc">SingleCounter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Evidence log(Z) and posterior weight summation for a Nested Sampling tree.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">random</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
@@ -572,7 +572,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">random</span> <span class="o">=</span> <span class="n">random</span>
 
-<div class="viewcode-block" id="SingleCounter.reset"><a class="viewcode-back" href="../../modules.html#ultranest.netiter.SingleCounter.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="SingleCounter.reset"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.SingleCounter.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Reset counters and integration.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logweights</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">H</span> <span class="o">=</span> <span class="kc">None</span>
@@ -588,7 +588,7 @@
         <span class="sd">&quot;&quot;&quot;Estimate conservatively the logZ of the current tail (un-opened nodes).&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">Lmax</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">logVolremaining</span>
 
-<div class="viewcode-block" id="SingleCounter.passing_node"><a class="viewcode-back" href="../../modules.html#ultranest.netiter.SingleCounter.passing_node">[docs]</a>    <span class="k">def</span> <span class="nf">passing_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">parallel_nodes</span><span class="p">):</span>
+<div class="viewcode-block" id="SingleCounter.passing_node"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.SingleCounter.passing_node">[docs]</a>    <span class="k">def</span> <span class="nf">passing_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">parallel_nodes</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Accumulate node to the integration.</span>
 
 <span class="sd">        Parameters</span>
@@ -659,7 +659,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">logVolremaining</span> <span class="o">+=</span> <span class="n">log1p</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">nlive</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="MultiCounter"><a class="viewcode-back" href="../../modules.html#ultranest.netiter.MultiCounter">[docs]</a><span class="k">class</span> <span class="nc">MultiCounter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="MultiCounter"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.MultiCounter">[docs]</a><span class="k">class</span> <span class="nc">MultiCounter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Like SingleCounter, but bootstrap capable.</span>
 
 <span class="sd">    **Attributes**:</span>
@@ -712,7 +712,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rootids</span><span class="p">))</span>
 
-<div class="viewcode-block" id="MultiCounter.reset"><a class="viewcode-back" href="../../modules.html#ultranest.netiter.MultiCounter.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nentries</span><span class="p">):</span>
+<div class="viewcode-block" id="MultiCounter.reset"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.MultiCounter.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nentries</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Reset counters/integrator.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logweights</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">istail</span> <span class="o">=</span> <span class="p">[]</span>
@@ -740,7 +740,7 @@
         <span class="sd">&quot;&quot;&quot;Estimate logZ error from the bootstrap ensemble.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_logZ</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
 
-<div class="viewcode-block" id="MultiCounter.passing_node"><a class="viewcode-back" href="../../modules.html#ultranest.netiter.MultiCounter.passing_node">[docs]</a>    <span class="k">def</span> <span class="nf">passing_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rootid</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">rootids</span><span class="p">,</span> <span class="n">parallel_values</span><span class="p">):</span>
+<div class="viewcode-block" id="MultiCounter.passing_node"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.MultiCounter.passing_node">[docs]</a>    <span class="k">def</span> <span class="nf">passing_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rootid</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">rootids</span><span class="p">,</span> <span class="n">parallel_values</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Accumulate node to the integration.</span>
 
 <span class="sd">        Breadth-first removed `node` and nodes active next to node (`parallel_nodes`).</span>
@@ -860,7 +860,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">remainder_fraction</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">exp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logZ</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">logZremain</span><span class="p">))</span></div></div>
 
 
-<div class="viewcode-block" id="logz_sequence"><a class="viewcode-back" href="../../modules.html#ultranest.netiter.logz_sequence">[docs]</a><span class="k">def</span> <span class="nf">logz_sequence</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">pointpile</span><span class="p">,</span> <span class="n">nbootstraps</span><span class="o">=</span><span class="mi">12</span><span class="p">):</span>
+<div class="viewcode-block" id="logz_sequence"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.logz_sequence">[docs]</a><span class="k">def</span> <span class="nf">logz_sequence</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">pointpile</span><span class="p">,</span> <span class="n">nbootstraps</span><span class="o">=</span><span class="mi">12</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Run MultiCounter through tree `root`.</span>
 
 <span class="sd">    Keeps track of, and returns ``(logz, logzerr, logv, nlive)``.</span>

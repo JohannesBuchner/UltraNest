@@ -1,13 +1,40 @@
 ultranest package
 =================
 
-.. automodule:: ultranest
+Submodules
+----------
+
+ultranest.decimator module
+--------------------------
+
+.. automodule:: ultranest.decimator
    :members:
    :undoc-members:
    :show-inheritance:
 
-Submodules
-----------
+ultranest.dychmc module
+-----------------------
+
+.. automodule:: ultranest.dychmc
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ultranest.dyhmc module
+----------------------
+
+.. automodule:: ultranest.dyhmc
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ultranest.flatnuts module
+-------------------------
+
+.. automodule:: ultranest.flatnuts
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 ultranest.integrator module
 ---------------------------
@@ -29,6 +56,14 @@ ultranest.netiter module
 ------------------------
 
 .. automodule:: ultranest.netiter
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ultranest.pathsampler module
+----------------------------
+
+.. automodule:: ultranest.pathsampler
    :members:
    :undoc-members:
    :show-inheritance:
@@ -89,3 +124,11 @@ ultranest.viz module
    :undoc-members:
    :show-inheritance:
 
+
+Module contents
+---------------
+
+.. automodule:: ultranest
+   :members:
+   :undoc-members:
+   :show-inheritance:

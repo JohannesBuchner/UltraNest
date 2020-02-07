@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ultranest.integrator &mdash; UltraNest 2.0.4 documentation</title>
+  <title>ultranest.integrator &mdash; UltraNest 2.1.0 documentation</title>
   
 
   
@@ -69,7 +69,7 @@
             
             
               <div class="version">
-                2.0.4
+                2.1.0
               </div>
             
           
@@ -259,7 +259,7 @@
     <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">Lpoints</span><span class="p">,</span> <span class="n">widths</span><span class="p">))</span>
 
 
-<div class="viewcode-block" id="NestedSampler"><a class="viewcode-back" href="../../modules.html#ultranest.integrator.NestedSampler">[docs]</a><span class="k">class</span> <span class="nc">NestedSampler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="NestedSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.integrator.NestedSampler">[docs]</a><span class="k">class</span> <span class="nc">NestedSampler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Simple Nested sampler for reference.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -380,7 +380,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">pointstore</span> <span class="o">=</span> <span class="n">NullPointStore</span><span class="p">(</span><span class="mi">3</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_dim</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_params</span><span class="p">)</span>
 
-<div class="viewcode-block" id="NestedSampler.run"><a class="viewcode-back" href="../../modules.html#ultranest.integrator.NestedSampler.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span>
+<div class="viewcode-block" id="NestedSampler.run"><a class="viewcode-back" href="../../ultranest.html#ultranest.integrator.NestedSampler.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">update_interval_iter</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">update_interval_ncall</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -736,7 +736,7 @@
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span></div>
 
-<div class="viewcode-block" id="NestedSampler.print_results"><a class="viewcode-back" href="../../modules.html#ultranest.integrator.NestedSampler.print_results">[docs]</a>    <span class="k">def</span> <span class="nf">print_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logZ</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">posterior</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="NestedSampler.print_results"><a class="viewcode-back" href="../../ultranest.html#ultranest.integrator.NestedSampler.print_results">[docs]</a>    <span class="k">def</span> <span class="nf">print_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logZ</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">posterior</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Give summary of marginal likelihood and parameters.&quot;&quot;&quot;</span>
         <span class="nb">print</span><span class="p">()</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;logZ = </span><span class="si">%(logz).3f</span><span class="s1"> +- </span><span class="si">%(logzerr).3f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)</span>
@@ -754,7 +754,7 @@
             <span class="n">fmts</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;    </span><span class="si">%-20s</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="n">fmt</span> <span class="o">+</span> <span class="s2">&quot; +- &quot;</span> <span class="o">+</span> <span class="n">fmt</span><span class="p">])</span>
             <span class="nb">print</span><span class="p">(</span><span class="n">fmts</span> <span class="o">%</span> <span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">med</span><span class="p">,</span> <span class="n">sigma</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="NestedSampler.plot"><a class="viewcode-back" href="../../modules.html#ultranest.integrator.NestedSampler.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="NestedSampler.plot"><a class="viewcode-back" href="../../ultranest.html#ultranest.integrator.NestedSampler.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Make corner plot.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_to_disk</span><span class="p">:</span>
             <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
@@ -772,7 +772,7 @@
             <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div></div>
 
 
-<div class="viewcode-block" id="ReactiveNestedSampler"><a class="viewcode-back" href="../../modules.html#ultranest.integrator.ReactiveNestedSampler">[docs]</a><span class="k">class</span> <span class="nc">ReactiveNestedSampler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="ReactiveNestedSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.integrator.ReactiveNestedSampler">[docs]</a><span class="k">class</span> <span class="nc">ReactiveNestedSampler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Nested sampler with reactive exploration strategy.</span>
 
 <span class="sd">    Storage &amp; resume capable, optionally MPI parallelised.</span>
@@ -1806,7 +1806,7 @@
 
         <span class="k">return</span> <span class="n">expand_node</span>
 
-<div class="viewcode-block" id="ReactiveNestedSampler.run"><a class="viewcode-back" href="../../modules.html#ultranest.integrator.ReactiveNestedSampler.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span>
+<div class="viewcode-block" id="ReactiveNestedSampler.run"><a class="viewcode-back" href="../../ultranest.html#ultranest.integrator.ReactiveNestedSampler.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">update_interval_iter_fraction</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
             <span class="n">update_interval_ncall</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -1909,7 +1909,7 @@
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span></div>
 
-<div class="viewcode-block" id="ReactiveNestedSampler.run_iter"><a class="viewcode-back" href="../../modules.html#ultranest.integrator.ReactiveNestedSampler.run_iter">[docs]</a>    <span class="k">def</span> <span class="nf">run_iter</span><span class="p">(</span>
+<div class="viewcode-block" id="ReactiveNestedSampler.run_iter"><a class="viewcode-back" href="../../ultranest.html#ultranest.integrator.ReactiveNestedSampler.run_iter">[docs]</a>    <span class="k">def</span> <span class="nf">run_iter</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">update_interval_iter_fraction</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
             <span class="n">update_interval_ncall</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -2322,11 +2322,11 @@
             <span class="n">paramnames</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">paramnames</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">derivedparamnames</span><span class="p">,</span>
             <span class="n">ncall</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ncall</span><span class="p">),</span>
             <span class="n">posterior</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
-                <span class="n">means</span><span class="o">=</span><span class="n">samples</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
-                <span class="n">stds</span><span class="o">=</span><span class="n">samples</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
-                <span class="n">median</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
-                <span class="n">errlo</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="mf">0.158655</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
-                <span class="n">errup</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="mf">0.841345</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+                <span class="n">mean</span><span class="o">=</span><span class="n">samples</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+                <span class="n">stdev</span><span class="o">=</span><span class="n">samples</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+                <span class="n">median</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+                <span class="n">errlo</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="mf">15.8655</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+                <span class="n">errup</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="mf">84.1345</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
             <span class="p">),</span>
         <span class="p">)</span>
         
@@ -2349,8 +2349,8 @@
                 <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logs</span><span class="p">[</span><span class="s1">&#39;info&#39;</span><span class="p">],</span> <span class="s1">&#39;post_summary.csv&#39;</span><span class="p">),</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                 <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> 
-                    <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;posterior&#39;</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;means&#39;</span><span class="p">,</span> <span class="s1">&#39;stds&#39;</span><span class="p">,</span> <span class="s1">&#39;median&#39;</span><span class="p">,</span> <span class="s1">&#39;errlo&#39;</span><span class="p">,</span> <span class="s1">&#39;errup&#39;</span><span class="p">)])],</span>
-                    <span class="n">header</span><span class="o">=</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;&quot;</span><span class="si">{0}</span><span class="s1">_mean&quot;, &quot;</span><span class="si">{0}</span><span class="s1">_std&quot;, &quot;</span><span class="si">{0}</span><span class="s1">_median&quot;, &quot;</span><span class="si">{0}</span><span class="s1">_errlo&quot;, &quot;</span><span class="si">{0}</span><span class="s1">_errup&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> 
+                    <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;posterior&#39;</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="s1">&#39;stdev&#39;</span><span class="p">,</span> <span class="s1">&#39;median&#39;</span><span class="p">,</span> <span class="s1">&#39;errlo&#39;</span><span class="p">,</span> <span class="s1">&#39;errup&#39;</span><span class="p">)])],</span>
+                    <span class="n">header</span><span class="o">=</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;&quot;</span><span class="si">{0}</span><span class="s1">_mean&quot;, &quot;</span><span class="si">{0}</span><span class="s1">_stdev&quot;, &quot;</span><span class="si">{0}</span><span class="s1">_median&quot;, &quot;</span><span class="si">{0}</span><span class="s1">_errlo&quot;, &quot;</span><span class="si">{0}</span><span class="s1">_errup&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> 
                         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">paramnames</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">derivedparamnames</span><span class="p">]),</span>
                     <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="n">comments</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
                     <span class="p">)</span>
@@ -2365,13 +2365,13 @@
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">results</span> <span class="o">=</span> <span class="n">results</span>
 
-<div class="viewcode-block" id="ReactiveNestedSampler.store_tree"><a class="viewcode-back" href="../../modules.html#ultranest.integrator.ReactiveNestedSampler.store_tree">[docs]</a>    <span class="k">def</span> <span class="nf">store_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ReactiveNestedSampler.store_tree"><a class="viewcode-back" href="../../ultranest.html#ultranest.integrator.ReactiveNestedSampler.store_tree">[docs]</a>    <span class="k">def</span> <span class="nf">store_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Store tree to disk (results/tree.hdf5).&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_to_disk</span><span class="p">:</span>
             <span class="n">dump_tree</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logs</span><span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">],</span> <span class="s1">&#39;tree.hdf5&#39;</span><span class="p">),</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">children</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pointpile</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="ReactiveNestedSampler.print_results"><a class="viewcode-back" href="../../modules.html#ultranest.integrator.ReactiveNestedSampler.print_results">[docs]</a>    <span class="k">def</span> <span class="nf">print_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logZ</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">posterior</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="ReactiveNestedSampler.print_results"><a class="viewcode-back" href="../../ultranest.html#ultranest.integrator.ReactiveNestedSampler.print_results">[docs]</a>    <span class="k">def</span> <span class="nf">print_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logZ</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">posterior</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Give summary of marginal likelihood and parameters.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">()</span>
@@ -2393,13 +2393,13 @@
                 <span class="n">fmts</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;    </span><span class="si">%-20s</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="n">fmt</span> <span class="o">+</span> <span class="s2">&quot; +- &quot;</span> <span class="o">+</span> <span class="n">fmt</span><span class="p">])</span>
                 <span class="nb">print</span><span class="p">(</span><span class="n">fmts</span> <span class="o">%</span> <span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">med</span><span class="p">,</span> <span class="n">sigma</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="ReactiveNestedSampler.plot"><a class="viewcode-back" href="../../modules.html#ultranest.integrator.ReactiveNestedSampler.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ReactiveNestedSampler.plot"><a class="viewcode-back" href="../../ultranest.html#ultranest.integrator.ReactiveNestedSampler.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Make corner, run and trace plots.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">plot_corner</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">plot_run</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">plot_trace</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="ReactiveNestedSampler.plot_corner"><a class="viewcode-back" href="../../modules.html#ultranest.integrator.ReactiveNestedSampler.plot_corner">[docs]</a>    <span class="k">def</span> <span class="nf">plot_corner</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ReactiveNestedSampler.plot_corner"><a class="viewcode-back" href="../../ultranest.html#ultranest.integrator.ReactiveNestedSampler.plot_corner">[docs]</a>    <span class="k">def</span> <span class="nf">plot_corner</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Make corner plot.</span>
 
 <span class="sd">        Writes corner plot to plots/ directory if log directory was</span>
@@ -2421,7 +2421,7 @@
             <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Making corner plot ... done&#39;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="ReactiveNestedSampler.plot_trace"><a class="viewcode-back" href="../../modules.html#ultranest.integrator.ReactiveNestedSampler.plot_trace">[docs]</a>    <span class="k">def</span> <span class="nf">plot_trace</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ReactiveNestedSampler.plot_trace"><a class="viewcode-back" href="../../ultranest.html#ultranest.integrator.ReactiveNestedSampler.plot_trace">[docs]</a>    <span class="k">def</span> <span class="nf">plot_trace</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Make trace plot.</span>
 
 <span class="sd">        Write parameter trace diagnostic plots to plots/ directory</span>
@@ -2446,7 +2446,7 @@
             <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Making trace plot ... done&#39;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="ReactiveNestedSampler.plot_run"><a class="viewcode-back" href="../../modules.html#ultranest.integrator.ReactiveNestedSampler.plot_run">[docs]</a>    <span class="k">def</span> <span class="nf">plot_run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ReactiveNestedSampler.plot_run"><a class="viewcode-back" href="../../ultranest.html#ultranest.integrator.ReactiveNestedSampler.plot_run">[docs]</a>    <span class="k">def</span> <span class="nf">plot_run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Make run plot.</span>
 
 <span class="sd">        Write run diagnostic plots to plots/ directory</span>

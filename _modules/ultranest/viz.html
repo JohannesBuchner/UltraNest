@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ultranest.viz &mdash; UltraNest 2.0.4 documentation</title>
+  <title>ultranest.viz &mdash; UltraNest 2.1.0 documentation</title>
   
 
   
@@ -69,7 +69,7 @@
             
             
               <div class="version">
-                2.0.4
+                2.1.0
               </div>
             
           
@@ -201,7 +201,7 @@
     <span class="k">pass</span>
 
 
-<div class="viewcode-block" id="round_parameterlimits"><a class="viewcode-back" href="../../modules.html#ultranest.viz.round_parameterlimits">[docs]</a><span class="k">def</span> <span class="nf">round_parameterlimits</span><span class="p">(</span><span class="n">plo</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">paramlimitguess</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="round_parameterlimits"><a class="viewcode-back" href="../../ultranest.html#ultranest.viz.round_parameterlimits">[docs]</a><span class="k">def</span> <span class="nf">round_parameterlimits</span><span class="p">(</span><span class="n">plo</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">paramlimitguess</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Guess the current parameter range.</span>
 
 <span class="sd">    Parameters</span>
@@ -253,7 +253,7 @@
     <span class="k">return</span> <span class="n">plo_rounded</span><span class="p">,</span> <span class="n">phi_rounded</span><span class="p">,</span> <span class="n">formats</span></div>
 
 
-<div class="viewcode-block" id="nicelogger"><a class="viewcode-back" href="../../modules.html#ultranest.viz.nicelogger">[docs]</a><span class="k">def</span> <span class="nf">nicelogger</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">transformLayer</span><span class="p">,</span> <span class="n">region_fresh</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="nicelogger"><a class="viewcode-back" href="../../ultranest.html#ultranest.viz.nicelogger">[docs]</a><span class="k">def</span> <span class="nf">nicelogger</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">transformLayer</span><span class="p">,</span> <span class="n">region_fresh</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Log current live points and integration progress to stdout.</span>
 
 <span class="sd">    Parameters</span>
@@ -368,7 +368,7 @@
     <span class="nb">print</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="isnotebook"><a class="viewcode-back" href="../../modules.html#ultranest.viz.isnotebook">[docs]</a><span class="k">def</span> <span class="nf">isnotebook</span><span class="p">():</span>
+<div class="viewcode-block" id="isnotebook"><a class="viewcode-back" href="../../ultranest.html#ultranest.viz.isnotebook">[docs]</a><span class="k">def</span> <span class="nf">isnotebook</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Check if running in a Jupyter notebook.&quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">shell</span> <span class="o">=</span> <span class="n">get_ipython</span><span class="p">()</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
@@ -382,7 +382,7 @@
         <span class="k">return</span> <span class="kc">False</span>      <span class="c1"># Probably standard Python interpreter</span></div>
 
 
-<div class="viewcode-block" id="LivePointsWidget"><a class="viewcode-back" href="../../modules.html#ultranest.viz.LivePointsWidget">[docs]</a><span class="k">class</span> <span class="nc">LivePointsWidget</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="LivePointsWidget"><a class="viewcode-back" href="../../ultranest.html#ultranest.viz.LivePointsWidget">[docs]</a><span class="k">class</span> <span class="nc">LivePointsWidget</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Widget for ipython and jupyter notebooks.</span>
 
@@ -395,7 +395,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">laststatus</span> <span class="o">=</span> <span class="kc">None</span>
 
-<div class="viewcode-block" id="LivePointsWidget.initialize"><a class="viewcode-back" href="../../modules.html#ultranest.viz.LivePointsWidget.initialize">[docs]</a>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">paramnames</span><span class="p">,</span> <span class="n">width</span><span class="p">):</span>
+<div class="viewcode-block" id="LivePointsWidget.initialize"><a class="viewcode-back" href="../../ultranest.html#ultranest.viz.LivePointsWidget.initialize">[docs]</a>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">paramnames</span><span class="p">,</span> <span class="n">width</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Set up and display widget.</span>
 
 <span class="sd">        Parameters</span>
@@ -533,7 +533,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">labeltext</span></div>
 
 
-<div class="viewcode-block" id="get_default_viz_callback"><a class="viewcode-back" href="../../modules.html#ultranest.viz.get_default_viz_callback">[docs]</a><span class="k">def</span> <span class="nf">get_default_viz_callback</span><span class="p">():</span>
+<div class="viewcode-block" id="get_default_viz_callback"><a class="viewcode-back" href="../../ultranest.html#ultranest.viz.get_default_viz_callback">[docs]</a><span class="k">def</span> <span class="nf">get_default_viz_callback</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Get default callback.</span>
 
 <span class="sd">    LivePointsWidget for Jupyter notebook, nicelogger otherwise.</span>

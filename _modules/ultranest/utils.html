@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ultranest.utils &mdash; UltraNest 2.0.4 documentation</title>
+  <title>ultranest.utils &mdash; UltraNest 2.1.0 documentation</title>
   
 
   
@@ -69,7 +69,7 @@
             
             
               <div class="version">
-                2.0.4
+                2.1.0
               </div>
             
           
@@ -187,7 +187,7 @@
 <span class="kn">import</span> <span class="nn">errno</span>
 
 
-<div class="viewcode-block" id="create_logger"><a class="viewcode-back" href="../../modules.html#ultranest.utils.create_logger">[docs]</a><span class="k">def</span> <span class="nf">create_logger</span><span class="p">(</span><span class="n">module_name</span><span class="p">,</span> <span class="n">log_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">):</span>
+<div class="viewcode-block" id="create_logger"><a class="viewcode-back" href="../../ultranest.html#ultranest.utils.create_logger">[docs]</a><span class="k">def</span> <span class="nf">create_logger</span><span class="p">(</span><span class="n">module_name</span><span class="p">,</span> <span class="n">log_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Set up the logging channel `module_name`.</span>
 
@@ -219,7 +219,7 @@
     <span class="k">return</span> <span class="n">logger</span></div>
 
 
-<div class="viewcode-block" id="make_run_dir"><a class="viewcode-back" href="../../modules.html#ultranest.utils.make_run_dir">[docs]</a><span class="k">def</span> <span class="nf">make_run_dir</span><span class="p">(</span><span class="n">log_dir</span><span class="p">,</span> <span class="n">run_num</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">append_run_num</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="make_run_dir"><a class="viewcode-back" href="../../ultranest.html#ultranest.utils.make_run_dir">[docs]</a><span class="k">def</span> <span class="nf">make_run_dir</span><span class="p">(</span><span class="n">log_dir</span><span class="p">,</span> <span class="n">run_num</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">append_run_num</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Generate a new numbered directory for this run to store output.</span>
 
 <span class="sd">    Parameters</span>
@@ -275,7 +275,7 @@
             <span class="p">}</span></div>
 
 
-<div class="viewcode-block" id="vectorize"><a class="viewcode-back" href="../../modules.html#ultranest.utils.vectorize">[docs]</a><span class="k">def</span> <span class="nf">vectorize</span><span class="p">(</span><span class="n">function</span><span class="p">):</span>
+<div class="viewcode-block" id="vectorize"><a class="viewcode-back" href="../../ultranest.html#ultranest.utils.vectorize">[docs]</a><span class="k">def</span> <span class="nf">vectorize</span><span class="p">(</span><span class="n">function</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Vectorize likelihood or prior_transform function.&quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">vectorized</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">function</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">])</span>
@@ -288,7 +288,7 @@
 <span class="n">SQRTEPS</span> <span class="o">=</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">))</span><span class="o">**</span><span class="mf">0.5</span>
 
 
-<div class="viewcode-block" id="resample_equal"><a class="viewcode-back" href="../../modules.html#ultranest.utils.resample_equal">[docs]</a><span class="k">def</span> <span class="nf">resample_equal</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">rstate</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="resample_equal"><a class="viewcode-back" href="../../ultranest.html#ultranest.utils.resample_equal">[docs]</a><span class="k">def</span> <span class="nf">resample_equal</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">rstate</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Resample the samples so that the final samples all have equal weight.</span>
 
 <span class="sd">    Each input sample appears in the output array either</span>
@@ -355,7 +355,7 @@
     <span class="k">return</span> <span class="n">samples</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span></div>
 
 
-<div class="viewcode-block" id="quantile"><a class="viewcode-back" href="../../modules.html#ultranest.utils.quantile">[docs]</a><span class="k">def</span> <span class="nf">quantile</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="quantile"><a class="viewcode-back" href="../../ultranest.html#ultranest.utils.quantile">[docs]</a><span class="k">def</span> <span class="nf">quantile</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Compute (weighted) quantiles from an input set of samples.</span>
 
 <span class="sd">    Parameters</span>
@@ -398,7 +398,7 @@
         <span class="k">return</span> <span class="n">quantiles</span></div>
 
 
-<div class="viewcode-block" id="vol_prefactor"><a class="viewcode-back" href="../../modules.html#ultranest.utils.vol_prefactor">[docs]</a><span class="k">def</span> <span class="nf">vol_prefactor</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+<div class="viewcode-block" id="vol_prefactor"><a class="viewcode-back" href="../../ultranest.html#ultranest.utils.vol_prefactor">[docs]</a><span class="k">def</span> <span class="nf">vol_prefactor</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Volume constant for an `n`-dimensional sphere.</span>
 
 <span class="sd">    for `n` even:  $$    (2pi)^(n    /2) / (2 * 4 * ... * n)$$</span>
@@ -420,7 +420,7 @@
     <span class="k">return</span> <span class="n">f</span></div>
 
 
-<div class="viewcode-block" id="verify_gradient"><a class="viewcode-back" href="../../modules.html#ultranest.utils.verify_gradient">[docs]</a><span class="k">def</span> <span class="nf">verify_gradient</span><span class="p">(</span><span class="n">ndim</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">gradient</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">combination</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="verify_gradient"><a class="viewcode-back" href="../../ultranest.html#ultranest.utils.verify_gradient">[docs]</a><span class="k">def</span> <span class="nf">verify_gradient</span><span class="p">(</span><span class="n">ndim</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">gradient</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">combination</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    check with numerical differentiation if the gradient function</span>
 <span class="sd">    is plausibly correct. Raises AssertError otherwise.</span>
