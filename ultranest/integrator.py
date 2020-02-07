@@ -2145,9 +2145,9 @@ class ReactiveNestedSampler(object):
             posterior=dict(
                 means=samples.mean(axis=0).tolist(),
                 stds=samples.std(axis=0).tolist(),
-                median=np.percentile(samples, 0.5, axis=0).tolist(),
-                errlo=np.percentile(samples, 0.158655, axis=0).tolist(),
-                errup=np.percentile(samples, 0.841345, axis=0).tolist(),
+                median=np.percentile(samples, 50, axis=0).tolist(),
+                errlo=np.percentile(samples, 15.8655, axis=0).tolist(),
+                errup=np.percentile(samples, 84.1345, axis=0).tolist(),
             ),
         )
         

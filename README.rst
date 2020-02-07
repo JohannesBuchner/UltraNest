@@ -37,7 +37,8 @@ better fits while respecting the priors
 (constrained likelihood prior sampling techniques), and whether it is 
 allowed to go back to worse fits and explore the parameter space more.
 
-This package develops novel, advanced techniques for both (See How it works).
+This package develops novel, advanced techniques for both (See 
+`How it works <https://johannesbuchner.github.io/UltraNest/method.html>`_).
 They are especially remarkable for being free of tuning parameters 
 and theoretically justified. Beyond that, UltraNest has support for 
 Big Data sets and high-performance computing applications.
@@ -49,9 +50,7 @@ nested sampling and dynamic nested sampling with more rigorous methods.
 UltraNest also attempts to provide feature parity compared to other packages
 (such as MultiNest).
 
-However, UltraNest is still in beta. You can help by
-testing it and reporting issues. Code contributions for fixes and 
-new features are also welcome.
+You can help by testing UltraNest and reporting issues. Code contributions are welcome.
 See the `Contributing page <https://johannesbuchner.github.io/UltraNest/contributing.html>`_.
 
 Features
