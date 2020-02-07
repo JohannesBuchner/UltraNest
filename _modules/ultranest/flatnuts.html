@@ -1,0 +1,988 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>ultranest.flatnuts &mdash; UltraNest 2.1.0 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/icon.ico"/>
+  
+  
+  
+    <link rel="canonical" href="https://johannesbuchner.github.io/UltraNest/_modules/ultranest/flatnuts.html"/>
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> UltraNest
+          
+
+          
+            
+            <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../readme.html">UltraNest</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../method.html">How it works</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage-spectral-line.html">Basic usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../performance.html">Tour of the features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../issues.html">Frequently Asked Questions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../history.html">Release Notes</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../example-sine-line.html">Time series fitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-sine-modelcomparison.html">Model comparison</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-sine-highd.html">Higher-dimensional fitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-intrinsic-distribution.html">Tutorial: intrinsic distribution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-line.html">Tutorial: fitting a line</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-outliers.html">Tutorial: distribution with outliers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-sine-bayesian-workflow.html">Bayesian workflow</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">UltraNest</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content style-external-links">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>ultranest.flatnuts</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for ultranest.flatnuts</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">FLATNUTS</span>
+<span class="sd">=========</span>
+
+<span class="sd">Experimental.</span>
+
+<span class="sd">Directional sampling within regions.</span>
+
+<span class="sd">Work in unit cube space. assume a step size.</span>
+
+<span class="sd">1. starting from a live point</span>
+<span class="sd">2. choose a random direction based on whitened space metric</span>
+<span class="sd">3. for forward and backward direction:</span>
+
+<span class="sd">  1. find distance where leaving spheres (surely outside)</span>
+<span class="sd">  2. bisect the step that leads out of the likelihood threshold</span>
+<span class="sd">  3. can we scatter forward?</span>
+
+<span class="sd">     - if we stepped outside the unit cube, use normal to the parameter(s) we stepped out from</span>
+<span class="sd">     - if gradient available, use it at first outside point</span>
+<span class="sd">     - for each sphere that contains the last inside point:</span>
+
+<span class="sd">       - resize so that first outside point is on the surface, get tangential vector there</span>
+<span class="sd">         (this vector is just the difference between sphere center and last inside point)</span>
+<span class="sd">       - compute reflection of direction vector with tangential plane</span>
+<span class="sd">     - choose a forward reflection at random (if any)</span>
+<span class="sd">  3.4) test if next point is inside again. If yes, continue NUTS</span>
+
+<span class="sd">NUTS: </span>
+<span class="sd">  - alternatingly double the number of steps to the forward or backward side</span>
+<span class="sd">  - build a tree; terminate when start and end directions are not forward any more</span>
+<span class="sd">  - choose a end point at random out of the sequence</span>
+
+<span class="sd">If the number of steps on any straight line is &lt;10 steps, make step size smaller</span>
+<span class="sd">If the number of steps on any straight line is &gt;100 steps, make step size slightly bigger</span>
+
+<span class="sd">Parameters:</span>
+<span class="sd"> - Number of NUTS tracks (has to be user-tuned to ensure sufficiently independent samples; starting from 1, look when Z does not change anymore)</span>
+<span class="sd"> - Step size (self-adjusting)</span>
+
+<span class="sd">Benefit of this algorithm:</span>
+<span class="sd"> - insensitive to step size</span>
+<span class="sd"> - insensitive to dimensionality (sqrt scaling), better than slice sampling</span>
+<span class="sd"> - takes advantage of region information, can accelerate low-d problems as well</span>
+<span class="sd">Drawbacks:</span>
+<span class="sd"> - inaccurate reflections degrade dimensionality scaling</span>
+<span class="sd"> - more complex to implement than slice sampling</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">numpy.linalg</span> <span class="k">import</span> <span class="n">norm</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">.samplingpath</span> <span class="k">import</span> <span class="n">angle</span><span class="p">,</span> <span class="n">extrapolate_ahead</span>
+
+
+<div class="viewcode-block" id="SingleJumper"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.SingleJumper">[docs]</a><span class="k">class</span> <span class="nc">SingleJumper</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Jump on step at a time. If unsuccessful, reverse direction. &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stepsampler</span><span class="p">,</span> <span class="n">nsteps</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stepsampler</span> <span class="o">=</span> <span class="n">stepsampler</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">=</span> <span class="o">+</span><span class="mi">1</span>
+        <span class="k">assert</span> <span class="n">nsteps</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">=</span> <span class="n">nsteps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">isteps</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">currenti</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">naccepts</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nrejects</span> <span class="o">=</span> <span class="mi">0</span>
+    
+<div class="viewcode-block" id="SingleJumper.prepare_jump"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.SingleJumper.prepare_jump">[docs]</a>    <span class="k">def</span> <span class="nf">prepare_jump</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">currenti</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">direction</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="n">set_nsteps</span><span class="p">(</span><span class="n">target</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="SingleJumper.check_gaps"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.SingleJumper.check_gaps">[docs]</a>    <span class="k">def</span> <span class="nf">check_gaps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gaps</span><span class="p">):</span>
+        <span class="c1"># gaps cannot happen, because we make each jump explicitly</span>
+        <span class="k">pass</span></div>
+    <span class="c1"># then user runs stepsampler until it is done</span>
+    
+<div class="viewcode-block" id="SingleJumper.make_jump"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.SingleJumper.make_jump">[docs]</a>    <span class="k">def</span> <span class="nf">make_jump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gaps</span><span class="o">=</span><span class="p">{}):</span>
+        <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">currenti</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">direction</span>
+        <span class="n">pointi</span> <span class="o">=</span> <span class="p">[(</span><span class="n">j</span><span class="p">,</span> <span class="n">xj</span><span class="p">,</span> <span class="n">vj</span><span class="p">,</span> <span class="n">Lj</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">xj</span><span class="p">,</span> <span class="n">vj</span><span class="p">,</span> <span class="n">Lj</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="n">points</span> <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="n">target</span><span class="p">]</span>
+        <span class="n">accept</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">pointi</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">accept</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">currenti</span> <span class="o">=</span> <span class="n">target</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">naccepts</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">pointi</span> <span class="o">=</span> <span class="p">[(</span><span class="n">j</span><span class="p">,</span> <span class="n">xj</span><span class="p">,</span> <span class="n">vj</span><span class="p">,</span> <span class="n">Lj</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">xj</span><span class="p">,</span> <span class="n">vj</span><span class="p">,</span> <span class="n">Lj</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="n">points</span> <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">currenti</span><span class="p">]</span>
+            <span class="c1"># reverse</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nrejects</span> <span class="o">+=</span> <span class="mi">1</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">isteps</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">pointi</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">pointi</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span></div></div>
+
+
+<div class="viewcode-block" id="DirectJumper"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.DirectJumper">[docs]</a><span class="k">class</span> <span class="nc">DirectJumper</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Jump to n steps immediately. If unsuccessful, takes rest in other direction. &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stepsampler</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stepsampler</span> <span class="o">=</span> <span class="n">stepsampler</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">=</span> <span class="o">+</span><span class="mi">1</span>
+        <span class="k">assert</span> <span class="n">nsteps</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">=</span> <span class="n">nsteps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">isteps</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">currenti</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">naccepts</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nrejects</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="o">=</span> <span class="n">log</span>
+    
+<div class="viewcode-block" id="DirectJumper.prepare_jump"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.DirectJumper.prepare_jump">[docs]</a>    <span class="k">def</span> <span class="nf">prepare_jump</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">currenti</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="n">set_nsteps</span><span class="p">(</span><span class="n">target</span><span class="p">)</span></div>
+    
+    <span class="c1"># then user runs stepsampler until it is done</span>
+<div class="viewcode-block" id="DirectJumper.check_gaps"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.DirectJumper.check_gaps">[docs]</a>    <span class="k">def</span> <span class="nf">check_gaps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gaps</span><span class="p">):</span>
+        <span class="n">pointi</span> <span class="o">=</span> <span class="p">{</span><span class="n">j</span><span class="p">:</span> <span class="p">(</span><span class="n">xj</span><span class="p">,</span> <span class="n">Lj</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">xj</span><span class="p">,</span> <span class="n">vj</span><span class="p">,</span> <span class="n">Lj</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="n">points</span><span class="p">}</span>
+        <span class="n">ilo</span><span class="p">,</span> <span class="n">ihi</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">pointi</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span> <span class="nb">max</span><span class="p">(</span><span class="n">pointi</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">currenti</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">currenti</span>
+        <span class="n">direction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">direction</span>
+        <span class="k">for</span> <span class="n">isteps</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">):</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="n">currenti</span> <span class="o">+</span> <span class="n">direction</span>
+            <span class="n">accept</span> <span class="o">=</span> <span class="n">ilo</span> <span class="o">&lt;=</span> <span class="n">target</span> <span class="o">&lt;=</span> <span class="n">ihi</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">gaps</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">accept</span><span class="p">:</span>
+                <span class="n">currenti</span> <span class="o">=</span> <span class="n">target</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;accepted jump </span><span class="si">%d</span><span class="s2">-&gt;</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">currenti</span><span class="p">,</span> <span class="n">target</span><span class="p">),</span> <span class="s1">&#39;fwd&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="s1">&#39;rwd&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># reverse</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;rejected jump </span><span class="si">%d</span><span class="s2">-&gt;</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">currenti</span><span class="p">,</span> <span class="n">target</span><span class="p">),</span> <span class="s1">&#39;fwd&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="s1">&#39;rwd&#39;</span><span class="p">)</span>
+                <span class="n">direction</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;--&gt; </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">currenti</span><span class="p">)</span>
+        <span class="c1"># double-check that final point is OK:</span>
+        <span class="c1"># if we already evaluated it, it is OK</span>
+        <span class="k">if</span> <span class="n">currenti</span> <span class="ow">in</span> <span class="n">pointi</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        
+        <span class="k">if</span> <span class="n">currenti</span> <span class="ow">in</span> <span class="n">gaps</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">gaps</span><span class="p">[</span><span class="n">currenti</span><span class="p">]</span> <span class="o">==</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;could not have jumped into a known gap&quot;</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        
+        <span class="n">xj</span><span class="p">,</span> <span class="n">vj</span><span class="p">,</span> <span class="n">Lj</span><span class="p">,</span> <span class="n">onpath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="n">contourpath</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">currenti</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">Lj</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;    checking for gap ...&quot;</span><span class="p">)</span>
+        <span class="c1"># otherwise ask caller to verify it and call us again with</span>
+        <span class="c1"># gaps[i] = True if outside, gaps[i] = False if OK</span>
+        <span class="k">return</span> <span class="n">xj</span><span class="p">,</span> <span class="n">currenti</span></div>
+    
+<div class="viewcode-block" id="DirectJumper.make_jump"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.DirectJumper.make_jump">[docs]</a>    <span class="k">def</span> <span class="nf">make_jump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gaps</span><span class="o">=</span><span class="p">{}):</span>
+        <span class="n">pointi</span> <span class="o">=</span> <span class="p">{</span><span class="n">j</span><span class="p">:</span> <span class="p">(</span><span class="n">xj</span><span class="p">,</span> <span class="n">Lj</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">xj</span><span class="p">,</span> <span class="n">vj</span><span class="p">,</span> <span class="n">Lj</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="n">points</span><span class="p">}</span>
+        <span class="n">ilo</span><span class="p">,</span> <span class="n">ihi</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">pointi</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span> <span class="nb">max</span><span class="p">(</span><span class="n">pointi</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        
+        <span class="k">for</span> <span class="bp">self</span><span class="o">.</span><span class="n">isteps</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">):</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">currenti</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">direction</span>
+            <span class="n">accept</span> <span class="o">=</span> <span class="n">ilo</span> <span class="o">&lt;=</span> <span class="n">target</span> <span class="o">&lt;=</span> <span class="n">ihi</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">gaps</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">accept</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;accepted jump </span><span class="si">%d</span><span class="s2">-&gt;</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">currenti</span><span class="p">,</span> <span class="n">target</span><span class="p">),</span> <span class="s1">&#39;fwd&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="s1">&#39;rwd&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">currenti</span> <span class="o">=</span> <span class="n">target</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">naccepts</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;rejected jump </span><span class="si">%d</span><span class="s2">-&gt;</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">currenti</span><span class="p">,</span> <span class="n">target</span><span class="p">),</span> <span class="s1">&#39;fwd&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="s1">&#39;rwd&#39;</span><span class="p">)</span>
+                <span class="c1"># reverse</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">nrejects</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">isteps</span> <span class="o">+=</span> <span class="mi">1</span>
+        
+        <span class="k">return</span> <span class="n">pointi</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">currenti</span><span class="p">]</span></div></div>
+
+
+<div class="viewcode-block" id="IntervalJumper"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.IntervalJumper">[docs]</a><span class="k">class</span> <span class="nc">IntervalJumper</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Use interval to choose final point randomly &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stepsampler</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stepsampler</span> <span class="o">=</span> <span class="n">stepsampler</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">=</span> <span class="o">+</span><span class="mi">1</span>
+        <span class="k">assert</span> <span class="n">nsteps</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">=</span> <span class="n">nsteps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">isteps</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">currenti</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">naccepts</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nrejects</span> <span class="o">=</span> <span class="mi">0</span>
+    
+<div class="viewcode-block" id="IntervalJumper.prepare_jump"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.IntervalJumper.prepare_jump">[docs]</a>    <span class="k">def</span> <span class="nf">prepare_jump</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">currenti</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="n">set_nsteps</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="n">set_nsteps</span><span class="p">(</span><span class="o">-</span><span class="n">target</span><span class="p">)</span></div>
+    
+    <span class="c1"># then user runs stepsampler until it is done</span>
+    
+<div class="viewcode-block" id="IntervalJumper.make_jump"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.IntervalJumper.make_jump">[docs]</a>    <span class="k">def</span> <span class="nf">make_jump</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">pointi</span> <span class="o">=</span> <span class="p">{</span><span class="n">j</span><span class="p">:</span> <span class="p">(</span><span class="n">xj</span><span class="p">,</span> <span class="n">Lj</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">xj</span><span class="p">,</span> <span class="n">vj</span><span class="p">,</span> <span class="n">Lj</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="n">points</span><span class="p">}</span>
+        <span class="n">ilo</span><span class="p">,</span> <span class="n">ihi</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">pointi</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span> <span class="nb">max</span><span class="p">(</span><span class="n">pointi</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nutssampler</span><span class="o">.</span><span class="n">validrange</span>
+        <span class="n">nused</span> <span class="o">=</span> <span class="n">b</span> <span class="o">-</span> <span class="n">a</span>
+        <span class="c1"># these were not used:</span>
+        <span class="n">ntotal</span> <span class="o">=</span> <span class="n">ihi</span> <span class="o">-</span> <span class="n">ilo</span>
+        
+        <span class="c1"># count the number of accepts and rejects</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">naccepts</span> <span class="o">=</span> <span class="n">nused</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nrejects</span> <span class="o">=</span> <span class="n">ntotal</span> <span class="o">-</span> <span class="n">nused</span>
+        
+        <span class="k">return</span> <span class="kc">None</span></div></div>
+
+<div class="viewcode-block" id="ClockedSimpleStepSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedSimpleStepSampler">[docs]</a><span class="k">class</span> <span class="nc">ClockedSimpleStepSampler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Find a new point with a series of small steps</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">contourpath</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Starts a sampling track from x in direction v.</span>
+<span class="sd">        is_inside is a function that returns true when a given point is inside the volume</span>
+<span class="sd">        </span>
+<span class="sd">        epsilon gives the step size in direction v.</span>
+<span class="sd">        samples, if given, helps choose the gradient -- To be removed</span>
+<span class="sd">        plot: if set to true, make some debug plots</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">contourpath</span> <span class="o">=</span> <span class="n">contourpath</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">points</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">contourpath</span><span class="o">.</span><span class="n">points</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nreflections</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nreverses</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">plot</span> <span class="o">=</span> <span class="n">plot</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="o">=</span> <span class="n">log</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+    
+<div class="viewcode-block" id="ClockedSimpleStepSampler.reset"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedSimpleStepSampler.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">goals</span> <span class="o">=</span> <span class="p">[]</span></div>
+    
+<div class="viewcode-block" id="ClockedSimpleStepSampler.reverse"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedSimpleStepSampler.reverse">[docs]</a>    <span class="k">def</span> <span class="nf">reverse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reflpoint</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reflect off the surface at reflpoint going in direction v</span>
+<span class="sd">        </span>
+<span class="sd">        returns the new direction.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">normal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">contourpath</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">reflpoint</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="n">plot</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">normal</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1">#assert False</span>
+            <span class="k">return</span> <span class="o">-</span><span class="n">v</span>
+        
+        <span class="n">vnew</span> <span class="o">=</span> <span class="n">v</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">angle</span><span class="p">(</span><span class="n">normal</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="o">*</span> <span class="n">normal</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;    new direction:&quot;</span><span class="p">,</span> <span class="n">vnew</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">vnew</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">v</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="p">(</span><span class="n">vnew</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">norm</span><span class="p">(</span><span class="n">vnew</span><span class="p">),</span> <span class="n">norm</span><span class="p">(</span><span class="n">v</span><span class="p">)),</span> <span class="p">(</span><span class="n">vnew</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">norm</span><span class="p">(</span><span class="n">vnew</span><span class="p">),</span> <span class="n">norm</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+        <span class="c1">#isunitlength(vnew)</span>
+        <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="n">reflpoint</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">(</span><span class="o">-</span><span class="n">v</span> <span class="o">+</span> <span class="n">reflpoint</span><span class="p">)[</span><span class="mi">0</span><span class="p">]],</span> <span class="p">[</span><span class="n">reflpoint</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">(</span><span class="o">-</span><span class="n">v</span> <span class="o">+</span> <span class="n">reflpoint</span><span class="p">)[</span><span class="mi">1</span><span class="p">]],</span> <span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="n">reflpoint</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">(</span><span class="n">vnew</span> <span class="o">+</span> <span class="n">reflpoint</span><span class="p">)[</span><span class="mi">0</span><span class="p">]],</span> <span class="p">[</span><span class="n">reflpoint</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">(</span><span class="n">vnew</span> <span class="o">+</span> <span class="n">reflpoint</span><span class="p">)[</span><span class="mi">1</span><span class="p">]],</span> <span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">vnew</span></div>
+    
+<div class="viewcode-block" id="ClockedSimpleStepSampler.set_nsteps"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedSimpleStepSampler.set_nsteps">[docs]</a>    <span class="k">def</span> <span class="nf">set_nsteps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">goals</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;sample-at&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span></div>
+    
+<div class="viewcode-block" id="ClockedSimpleStepSampler.is_done"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedSimpleStepSampler.is_done">[docs]</a>    <span class="k">def</span> <span class="nf">is_done</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">goals</span> <span class="o">==</span> <span class="p">[]</span></div>
+    
+<div class="viewcode-block" id="ClockedSimpleStepSampler.expand_onestep"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedSimpleStepSampler.expand_onestep">[docs]</a>    <span class="k">def</span> <span class="nf">expand_onestep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fwd</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Helper interface, make one step (forward fwd=True or backward fwd=False) &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">fwd</span><span class="p">:</span>
+            <span class="n">starti</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">starti</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">starti</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">starti</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">expand_to_step</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ClockedSimpleStepSampler.expand_to_step"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedSimpleStepSampler.expand_to_step">[docs]</a>    <span class="k">def</span> <span class="nf">expand_to_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Helper interface, go to step nstep &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_nsteps</span><span class="p">(</span><span class="n">nsteps</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_independent_sample</span><span class="p">(</span><span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ClockedSimpleStepSampler.get_independent_sample"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedSimpleStepSampler.get_independent_sample">[docs]</a>    <span class="k">def</span> <span class="nf">get_independent_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Helper interface, call next() until a independent sample is returned &quot;&quot;&quot;</span>
+        <span class="n">Llast</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">sample</span><span class="p">,</span> <span class="n">is_independent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">next</span><span class="p">(</span><span class="n">Llast</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">sample</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">is_independent</span><span class="p">:</span>
+                <span class="n">unew</span><span class="p">,</span> <span class="n">Lnew</span> <span class="o">=</span> <span class="n">sample</span>
+                <span class="k">return</span> <span class="n">unew</span><span class="p">,</span> <span class="n">Lnew</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">unew</span> <span class="o">=</span> <span class="n">sample</span>
+                <span class="n">xnew</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">unew</span><span class="p">)</span>
+                <span class="n">Llast</span> <span class="o">=</span> <span class="n">loglike</span><span class="p">(</span><span class="n">xnew</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">Llast</span> <span class="o">&lt;</span> <span class="n">Lmin</span><span class="p">:</span>
+                    <span class="n">Llast</span> <span class="o">=</span> <span class="kc">None</span></div></div>
+
+
+<div class="viewcode-block" id="ClockedStepSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedStepSampler">[docs]</a><span class="k">class</span> <span class="nc">ClockedStepSampler</span><span class="p">(</span><span class="n">ClockedSimpleStepSampler</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Find a new point with a series of small steps</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ClockedStepSampler.continue_sampling"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedStepSampler.continue_sampling">[docs]</a>    <span class="k">def</span> <span class="nf">continue_sampling</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">contourpath</span><span class="o">.</span><span class="n">samplingpath</span><span class="o">.</span><span class="n">fwd_possible</span> \
+        <span class="ow">or</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">contourpath</span><span class="o">.</span><span class="n">samplingpath</span><span class="o">.</span><span class="n">rwd_possible</span><span class="p">:</span>
+            <span class="c1"># we are not done:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">goals</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;expand-to&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">goals</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;sample-at&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># we are not done, but cannot reach the goal.</span>
+            <span class="c1"># reverse. Find position from where to reverse</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">starti</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+                <span class="n">reversei</span> <span class="o">=</span> <span class="n">starti</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">starti</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+                <span class="n">reversei</span> <span class="o">=</span> <span class="n">starti</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;reversing at </span><span class="si">%d</span><span class="s2">...&quot;</span> <span class="o">%</span> <span class="n">starti</span><span class="p">)</span>
+            <span class="c1"># how many steps are missing?</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nreverses</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">deltai</span> <span class="o">=</span> <span class="n">i</span> <span class="o">-</span> <span class="n">starti</span>
+            <span class="c1"># request one less because one step is spent on</span>
+            <span class="c1"># the outside try</span>
+            <span class="c1">#if self.log: print(&quot;   %d steps to do at %d -&gt; [from %d, delta=%d] targeting %d.&quot; % (</span>
+            <span class="c1">#    i - starti, starti, reversei, deltai, reversei - deltai))</span>
+            <span class="c1"># make this many steps in the other direction</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">goals</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;sample-at&#39;</span><span class="p">,</span> <span class="n">reversei</span> <span class="o">-</span> <span class="n">deltai</span><span class="p">))</span></div>
+    
+<div class="viewcode-block" id="ClockedStepSampler.expand_to"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedStepSampler.expand_to">[docs]</a>    <span class="k">def</span> <span class="nf">expand_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">contourpath</span><span class="o">.</span><span class="n">samplingpath</span><span class="o">.</span><span class="n">fwd_possible</span><span class="p">:</span>
+            <span class="n">starti</span><span class="p">,</span> <span class="n">startx</span><span class="p">,</span> <span class="n">startv</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="n">starti</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;going forward...&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">starti</span><span class="p">)</span>
+                <span class="n">j</span> <span class="o">=</span> <span class="n">starti</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="n">xj</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">contourpath</span><span class="o">.</span><span class="n">extrapolate</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">j</span> <span class="o">!=</span> <span class="n">i</span><span class="p">:</span> <span class="c1"># ultimate goal not reached yet</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">goals</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;expand-to&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">goals</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;eval-at&#39;</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">xj</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+                <span class="k">return</span> <span class="n">xj</span><span class="p">,</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;already done...&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">starti</span><span class="p">)</span>
+                <span class="c1"># we are already done</span>
+                <span class="k">pass</span>
+        <span class="k">elif</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">contourpath</span><span class="o">.</span><span class="n">samplingpath</span><span class="o">.</span><span class="n">rwd_possible</span><span class="p">:</span>
+            <span class="n">starti</span><span class="p">,</span> <span class="n">startx</span><span class="p">,</span> <span class="n">startv</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">starti</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;going backwards...&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">starti</span><span class="p">)</span>
+                <span class="n">j</span> <span class="o">=</span> <span class="n">starti</span> <span class="o">-</span> <span class="mi">1</span>
+                <span class="n">xj</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">contourpath</span><span class="o">.</span><span class="n">extrapolate</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">j</span> <span class="o">!=</span> <span class="n">i</span><span class="p">:</span> <span class="c1"># ultimate goal not reached yet</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">goals</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;expand-to&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">goals</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;eval-at&#39;</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">xj</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+                <span class="k">return</span> <span class="n">xj</span><span class="p">,</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;already done...&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">starti</span><span class="p">)</span>
+                <span class="c1"># we are already done</span>
+                <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># we are trying to go somewhere we cannot.</span>
+            <span class="c1"># skip to other goals</span>
+            <span class="k">pass</span></div>
+    
+<div class="viewcode-block" id="ClockedStepSampler.eval_at"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedStepSampler.eval_at">[docs]</a>    <span class="k">def</span> <span class="nf">eval_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">xj</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">sign</span><span class="p">,</span> <span class="n">Llast</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">Llast</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># we can go about our merry way.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">contourpath</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">xj</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">Llast</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># We stepped outside, so now we need to reflect</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nreflections</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;reflecting:&quot;</span><span class="p">,</span> <span class="n">xj</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot</span><span class="p">:</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xj</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">xj</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;xr&#39;</span><span class="p">)</span>
+            <span class="n">vk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reverse</span><span class="p">(</span><span class="n">xj</span><span class="p">,</span> <span class="n">v</span> <span class="o">*</span> <span class="n">sign</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">plot</span><span class="p">)</span> <span class="o">*</span> <span class="n">sign</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;new direction:&quot;</span><span class="p">,</span> <span class="n">vk</span><span class="p">)</span>
+            <span class="n">xk</span><span class="p">,</span> <span class="n">vk</span> <span class="o">=</span> <span class="n">extrapolate_ahead</span><span class="p">(</span><span class="n">sign</span><span class="p">,</span> <span class="n">xj</span><span class="p">,</span> <span class="n">vk</span><span class="p">,</span> <span class="n">contourpath</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">contourpath</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;reflection point:&quot;</span><span class="p">,</span> <span class="n">xk</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">goals</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;reflect-at&#39;</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">xk</span><span class="p">,</span> <span class="n">vk</span><span class="p">,</span> <span class="n">sign</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">xk</span><span class="p">,</span> <span class="kc">False</span></div>
+    
+<div class="viewcode-block" id="ClockedStepSampler.reflect_at"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedStepSampler.reflect_at">[docs]</a>    <span class="k">def</span> <span class="nf">reflect_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">xk</span><span class="p">,</span> <span class="n">vk</span><span class="p">,</span> <span class="n">sign</span><span class="p">,</span> <span class="n">Llast</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nreflections</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">Llast</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># we can go about our merry way.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">contourpath</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">xk</span><span class="p">,</span> <span class="n">vk</span><span class="p">,</span> <span class="n">Llast</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># we are stuck and have to give up this direction</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot</span><span class="p">:</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xk</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">xk</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;s&#39;</span><span class="p">,</span> <span class="n">mfc</span><span class="o">=</span><span class="s1">&#39;None&#39;</span><span class="p">,</span> <span class="n">mec</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">sign</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">contourpath</span><span class="o">.</span><span class="n">samplingpath</span><span class="o">.</span><span class="n">fwd_possible</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">contourpath</span><span class="o">.</span><span class="n">samplingpath</span><span class="o">.</span><span class="n">rwd_possible</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+    
+<div class="viewcode-block" id="ClockedStepSampler.next"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedStepSampler.next">[docs]</a>    <span class="k">def</span> <span class="nf">next</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Llast</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Run steps forward or backward to step i (can be positive or </span>
+<span class="sd">        negative, 0 is the starting point) </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;next() call&quot;</span><span class="p">,</span> <span class="n">Llast</span><span class="p">)</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">goals</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;goals: &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">goals</span><span class="p">)</span>
+            <span class="n">goal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">goals</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">goal</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;sample-at&#39;</span><span class="p">:</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="n">goal</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="k">assert</span> <span class="n">Llast</span> <span class="ow">is</span> <span class="kc">None</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">contourpath</span><span class="o">.</span><span class="n">samplingpath</span><span class="o">.</span><span class="n">fwd_possible</span> \
+                <span class="ow">and</span>  <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">contourpath</span><span class="o">.</span><span class="n">samplingpath</span><span class="o">.</span><span class="n">rwd_possible</span> \
+                <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="c1"># we are stuck and cannot move.</span>
+                    <span class="c1"># return the starting point as our best effort</span>
+                    <span class="n">starti</span><span class="p">,</span> <span class="n">startx</span><span class="p">,</span> <span class="n">startv</span><span class="p">,</span> <span class="n">startL</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;stuck! returning start point&quot;</span><span class="p">,</span> <span class="n">starti</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="p">(</span><span class="n">startx</span><span class="p">,</span> <span class="n">startL</span><span class="p">),</span> <span class="kc">True</span>
+
+                <span class="c1"># find point</span>
+                <span class="c1"># here we assume all intermediate points have been sampled</span>
+                <span class="n">pointi</span> <span class="o">=</span> <span class="p">[(</span><span class="n">j</span><span class="p">,</span> <span class="n">xj</span><span class="p">,</span> <span class="n">vj</span><span class="p">,</span> <span class="n">Lj</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">xj</span><span class="p">,</span> <span class="n">vj</span><span class="p">,</span> <span class="n">Lj</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">points</span> <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="n">i</span><span class="p">]</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pointi</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="c1"># return the previously sampled point</span>
+                    <span class="n">_</span><span class="p">,</span> <span class="n">xj</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">Lj</span> <span class="o">=</span> <span class="n">pointi</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;returning point&quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="p">(</span><span class="n">xj</span><span class="p">,</span> <span class="n">Lj</span><span class="p">),</span> <span class="kc">True</span>
+                
+                <span class="bp">self</span><span class="o">.</span><span class="n">continue_sampling</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            
+            <span class="k">elif</span> <span class="n">goal</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;expand-to&#39;</span><span class="p">:</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="n">goal</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">expand_to</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">ret</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">ret</span>
+            
+            <span class="k">elif</span> <span class="n">goal</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;eval-at&#39;</span><span class="p">:</span>
+                <span class="n">_</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">xj</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">sign</span> <span class="o">=</span> <span class="n">goal</span>
+                <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval_at</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">xj</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">sign</span><span class="p">,</span> <span class="n">Llast</span><span class="p">)</span>
+                <span class="n">Llast</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="n">ret</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">ret</span>
+            
+            <span class="k">elif</span> <span class="n">goal</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;reflect-at&#39;</span><span class="p">:</span>
+                <span class="n">_</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">xk</span><span class="p">,</span> <span class="n">vk</span><span class="p">,</span> <span class="n">sign</span> <span class="o">=</span> <span class="n">goal</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">reflect_at</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">xk</span><span class="p">,</span> <span class="n">vk</span><span class="p">,</span> <span class="n">sign</span><span class="p">,</span> <span class="n">Llast</span><span class="p">)</span>
+                <span class="n">Llast</span> <span class="o">=</span> <span class="kc">None</span>
+            
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="n">goal</span>
+        
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span></div></div>
+
+<div class="viewcode-block" id="ClockedBisectSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedBisectSampler">[docs]</a><span class="k">class</span> <span class="nc">ClockedBisectSampler</span><span class="p">(</span><span class="n">ClockedStepSampler</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Step sampler that does not require each step to be evaluated</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+<div class="viewcode-block" id="ClockedBisectSampler.continue_sampling"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedBisectSampler.continue_sampling">[docs]</a>    <span class="k">def</span> <span class="nf">continue_sampling</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">starti</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+            <span class="c1">#fwd = True</span>
+            <span class="n">inside</span> <span class="o">=</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">starti</span>
+            <span class="n">more_possible</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">contourpath</span><span class="o">.</span><span class="n">samplingpath</span><span class="o">.</span><span class="n">fwd_possible</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">starti</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+            <span class="c1">#fwd = False</span>
+            <span class="n">inside</span> <span class="o">=</span> <span class="n">starti</span> <span class="o">&lt;</span> <span class="n">i</span>
+            <span class="n">more_possible</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">contourpath</span><span class="o">.</span><span class="n">samplingpath</span><span class="o">.</span><span class="n">rwd_possible</span>
+        
+        <span class="k">if</span> <span class="n">inside</span><span class="p">:</span>
+            <span class="c1"># interpolate point on track</span>
+            <span class="n">xj</span><span class="p">,</span> <span class="n">vj</span><span class="p">,</span> <span class="n">Lj</span><span class="p">,</span> <span class="n">onpath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">contourpath</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;target is on track, returning interpolation at </span><span class="si">%d</span><span class="s2">...&quot;</span> <span class="o">%</span> <span class="n">i</span><span class="p">,</span> <span class="n">xj</span><span class="p">,</span> <span class="n">Lj</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">xj</span><span class="p">,</span> <span class="n">Lj</span><span class="p">),</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="n">more_possible</span><span class="p">:</span>
+            <span class="c1"># we are not done:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">goals</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;expand-to&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;not done yet, continue expanding to </span><span class="si">%d</span><span class="s2">...&quot;</span> <span class="o">%</span> <span class="n">i</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">goals</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;sample-at&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># we are not done, but cannot reach the goal.</span>
+            <span class="c1"># reverse. Find position from where to reverse</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">starti</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+                <span class="n">reversei</span> <span class="o">=</span> <span class="n">starti</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">starti</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+                <span class="n">reversei</span> <span class="o">=</span> <span class="n">starti</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;reversing at </span><span class="si">%d</span><span class="s2">...&quot;</span> <span class="o">%</span> <span class="n">starti</span><span class="p">)</span>
+            <span class="c1"># how many steps are missing?</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nreverses</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">deltai</span> <span class="o">=</span> <span class="n">i</span> <span class="o">-</span> <span class="n">starti</span>
+            <span class="c1"># request one less because one step is spent on</span>
+            <span class="c1"># the outside try</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   </span><span class="si">%d</span><span class="s2"> steps to do at </span><span class="si">%d</span><span class="s2"> -&gt; [from </span><span class="si">%d</span><span class="s2">, delta=</span><span class="si">%d</span><span class="s2">] targeting </span><span class="si">%d</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="n">i</span> <span class="o">-</span> <span class="n">starti</span><span class="p">,</span> <span class="n">starti</span><span class="p">,</span> <span class="n">reversei</span><span class="p">,</span> <span class="n">deltai</span><span class="p">,</span> <span class="n">reversei</span> <span class="o">-</span> <span class="n">deltai</span><span class="p">))</span>
+            <span class="c1"># make this many steps in the other direction</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">goals</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;sample-at&#39;</span><span class="p">,</span> <span class="n">reversei</span> <span class="o">-</span> <span class="n">deltai</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="ClockedBisectSampler.expand_to"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedBisectSampler.expand_to">[docs]</a>    <span class="k">def</span> <span class="nf">expand_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">j</span><span class="p">):</span>
+        <span class="c1"># check if we already tried </span>
+        
+        <span class="k">if</span> <span class="n">j</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">contourpath</span><span class="o">.</span><span class="n">samplingpath</span><span class="o">.</span><span class="n">fwd_possible</span><span class="p">:</span>
+            <span class="c1">#print(&quot;going forward...&quot;, j)</span>
+            <span class="n">starti</span><span class="p">,</span> <span class="n">startx</span><span class="p">,</span> <span class="n">startv</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">j</span> <span class="o">&gt;</span> <span class="n">starti</span><span class="p">:</span>
+                <span class="n">xj</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">contourpath</span><span class="o">.</span><span class="n">extrapolate</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">goals</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;bisect&#39;</span><span class="p">,</span> <span class="n">starti</span><span class="p">,</span> <span class="n">startx</span><span class="p">,</span> <span class="n">startv</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">xj</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+                <span class="c1">#self.goals.append(goal)</span>
+                <span class="k">return</span> <span class="n">xj</span><span class="p">,</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># we are already done</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;done going to&quot;</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">starti</span><span class="p">)</span>
+                <span class="k">pass</span>
+        <span class="k">elif</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">contourpath</span><span class="o">.</span><span class="n">samplingpath</span><span class="o">.</span><span class="n">rwd_possible</span><span class="p">:</span>
+            <span class="c1">#print(&quot;going backward...&quot;, j)</span>
+            <span class="n">starti</span><span class="p">,</span> <span class="n">startx</span><span class="p">,</span> <span class="n">startv</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">starti</span><span class="p">:</span>
+                <span class="n">xj</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">contourpath</span><span class="o">.</span><span class="n">extrapolate</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">goals</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;bisect&#39;</span><span class="p">,</span> <span class="n">starti</span><span class="p">,</span> <span class="n">startx</span><span class="p">,</span> <span class="n">startv</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">xj</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+                <span class="c1">#self.goals.append(goal)</span>
+                <span class="k">return</span> <span class="n">xj</span><span class="p">,</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># we are already done</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;done going to&quot;</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
+                <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># we are trying to go somewhere we cannot.</span>
+            <span class="c1"># skip to other goals</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;cannot go there&quot;</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
+            <span class="k">pass</span></div>
+    
+<div class="viewcode-block" id="ClockedBisectSampler.bisect_at"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedBisectSampler.bisect_at">[docs]</a>    <span class="k">def</span> <span class="nf">bisect_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lefti</span><span class="p">,</span> <span class="n">leftx</span><span class="p">,</span> <span class="n">leftv</span><span class="p">,</span> <span class="n">midi</span><span class="p">,</span> <span class="n">midx</span><span class="p">,</span> <span class="n">midv</span><span class="p">,</span> <span class="n">righti</span><span class="p">,</span> <span class="n">rightx</span><span class="p">,</span> <span class="n">rightv</span><span class="p">,</span> <span class="n">sign</span><span class="p">,</span> <span class="n">Llast</span><span class="p">):</span>
+        <span class="c1"># Bisect to find first point outside</span>
+        
+        <span class="c1"># left is inside (i: index, x: coordinate, v: direction)</span>
+        <span class="c1"># mid is the middle just evaluated (if not None)</span>
+        <span class="c1"># right is outside</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;bisecting ...&quot;</span><span class="p">,</span> <span class="n">lefti</span><span class="p">,</span> <span class="n">midi</span><span class="p">,</span> <span class="n">righti</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">midi</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># check if right is actually outside</span>
+            <span class="k">if</span> <span class="n">Llast</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># yes it is. continue below</span>
+                <span class="k">pass</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># right is actually inside</span>
+                <span class="c1"># so we successfully jumped all the way successfully</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;successfully went all the way in one jump!&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">contourpath</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">righti</span><span class="p">,</span> <span class="n">rightx</span><span class="p">,</span> <span class="n">rightv</span><span class="p">,</span> <span class="n">Llast</span><span class="p">)</span>
+                <span class="n">Llast</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">return</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># shrink interval based on previous evaluation point</span>
+            <span class="k">if</span> <span class="n">Llast</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1">#print(&quot;   inside.  updating interval %d-%d&quot; % (midi, righti))</span>
+                <span class="n">lefti</span><span class="p">,</span> <span class="n">leftx</span><span class="p">,</span> <span class="n">leftv</span> <span class="o">=</span> <span class="n">midi</span><span class="p">,</span> <span class="n">midx</span><span class="p">,</span> <span class="n">midv</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">contourpath</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">midi</span><span class="p">,</span> <span class="n">midx</span><span class="p">,</span> <span class="n">midv</span><span class="p">,</span> <span class="n">Llast</span><span class="p">)</span>
+                <span class="n">Llast</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1">#print(&quot;   outside. updating interval %d-%d&quot; % (lefti, midi))</span>
+                <span class="n">righti</span><span class="p">,</span> <span class="n">rightx</span><span class="p">,</span> <span class="n">rightv</span> <span class="o">=</span> <span class="n">midi</span><span class="p">,</span> <span class="n">midx</span><span class="p">,</span> <span class="n">midv</span>
+        
+        <span class="c1"># we need to bisect. righti was outside</span>
+        <span class="n">midi</span> <span class="o">=</span> <span class="p">(</span><span class="n">righti</span> <span class="o">+</span> <span class="n">lefti</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
+        <span class="k">if</span> <span class="n">midi</span> <span class="o">==</span> <span class="n">lefti</span> <span class="ow">or</span> <span class="n">midi</span> <span class="o">==</span> <span class="n">righti</span><span class="p">:</span>
+            <span class="c1"># we are done bisecting. right is the first point outside</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  bisecting gave reflection point&quot;</span><span class="p">,</span> <span class="n">righti</span><span class="p">,</span> <span class="n">rightx</span><span class="p">,</span> <span class="n">rightv</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot</span><span class="p">:</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">rightx</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">rightx</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;xr&#39;</span><span class="p">)</span>
+            <span class="c1"># compute reflected direction</span>
+            <span class="n">vk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reverse</span><span class="p">(</span><span class="n">rightx</span><span class="p">,</span> <span class="n">rightv</span> <span class="o">*</span> <span class="n">sign</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">plot</span><span class="p">)</span> <span class="o">*</span> <span class="n">sign</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  reversing there&quot;</span><span class="p">,</span> <span class="n">rightv</span><span class="p">)</span>
+            <span class="c1"># go from reflection point one step in that direction</span>
+            <span class="c1"># that is our new point</span>
+            <span class="n">xk</span><span class="p">,</span> <span class="n">vk</span> <span class="o">=</span> <span class="n">extrapolate_ahead</span><span class="p">(</span><span class="n">sign</span><span class="p">,</span> <span class="n">rightx</span><span class="p">,</span> <span class="n">vk</span><span class="p">,</span> <span class="n">contourpath</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">contourpath</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  making one step from&quot;</span><span class="p">,</span> <span class="n">rightx</span><span class="p">,</span> <span class="n">rightv</span><span class="p">,</span> <span class="s1">&#39;--&gt;&#39;</span><span class="p">,</span> <span class="n">xk</span><span class="p">,</span> <span class="n">vk</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nreflections</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  trying new point,&quot;</span><span class="p">,</span> <span class="n">xk</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">goals</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;reflect-at&#39;</span><span class="p">,</span> <span class="n">righti</span><span class="p">,</span> <span class="n">xk</span><span class="p">,</span> <span class="n">vk</span><span class="p">,</span> <span class="n">sign</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">xk</span><span class="p">,</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  continue bisect at&quot;</span><span class="p">,</span> <span class="n">midi</span><span class="p">)</span>
+            <span class="c1"># we should evaluate the middle point</span>
+            <span class="n">midx</span><span class="p">,</span> <span class="n">midv</span> <span class="o">=</span> <span class="n">extrapolate_ahead</span><span class="p">(</span><span class="n">midi</span> <span class="o">-</span> <span class="n">lefti</span><span class="p">,</span> <span class="n">leftx</span><span class="p">,</span> <span class="n">leftv</span><span class="p">,</span> <span class="n">contourpath</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">contourpath</span><span class="p">)</span>
+            <span class="c1"># continue bisecting</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">goals</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;bisect&#39;</span><span class="p">,</span> <span class="n">lefti</span><span class="p">,</span> <span class="n">leftx</span><span class="p">,</span> <span class="n">leftv</span><span class="p">,</span> <span class="n">midi</span><span class="p">,</span> <span class="n">midx</span><span class="p">,</span> <span class="n">midv</span><span class="p">,</span> <span class="n">righti</span><span class="p">,</span> <span class="n">rightx</span><span class="p">,</span> <span class="n">rightv</span><span class="p">,</span> <span class="n">sign</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">midx</span><span class="p">,</span> <span class="kc">False</span></div>
+    
+    
+<div class="viewcode-block" id="ClockedBisectSampler.next"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedBisectSampler.next">[docs]</a>    <span class="k">def</span> <span class="nf">next</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Llast</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Run steps forward or backward to step i (can be positive or </span>
+<span class="sd">        negative, 0 is the starting point) </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span> <span class="nb">print</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;next() call&quot;</span><span class="p">,</span> <span class="n">Llast</span><span class="p">)</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">goals</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;goals: &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">goals</span><span class="p">)</span>
+            <span class="n">goal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">goals</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">goal</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;sample-at&#39;</span><span class="p">:</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="n">goal</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="k">assert</span> <span class="n">Llast</span> <span class="ow">is</span> <span class="kc">None</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">contourpath</span><span class="o">.</span><span class="n">samplingpath</span><span class="o">.</span><span class="n">fwd_possible</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">contourpath</span><span class="o">.</span><span class="n">samplingpath</span><span class="o">.</span><span class="n">rwd_possible</span> \
+                    <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="c1"># we are stuck and cannot move.</span>
+                    <span class="c1"># return the starting point as our best effort</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;stuck! returning start point.&quot;</span><span class="p">)</span>
+                    <span class="n">starti</span><span class="p">,</span> <span class="n">startx</span><span class="p">,</span> <span class="n">startv</span><span class="p">,</span> <span class="n">startL</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="k">return</span> <span class="p">(</span><span class="n">startx</span><span class="p">,</span> <span class="n">startL</span><span class="p">),</span> <span class="kc">True</span>
+
+                <span class="c1"># check if point already sampled</span>
+                <span class="n">pointi</span> <span class="o">=</span> <span class="p">[(</span><span class="n">j</span><span class="p">,</span> <span class="n">xj</span><span class="p">,</span> <span class="n">vj</span><span class="p">,</span> <span class="n">Lj</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">xj</span><span class="p">,</span> <span class="n">vj</span><span class="p">,</span> <span class="n">Lj</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">points</span> <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="n">i</span><span class="p">]</span>
+
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pointi</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="c1"># return the previously sampled point</span>
+                    <span class="n">_</span><span class="p">,</span> <span class="n">xj</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">Lj</span> <span class="o">=</span> <span class="n">pointi</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="k">return</span> <span class="p">(</span><span class="n">xj</span><span class="p">,</span> <span class="n">Lj</span><span class="p">),</span> <span class="kc">True</span>
+                
+                <span class="bp">self</span><span class="o">.</span><span class="n">continue_sampling</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            
+            <span class="k">elif</span> <span class="n">goal</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;expand-to&#39;</span><span class="p">:</span>
+                <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">expand_to</span><span class="p">(</span><span class="n">goal</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">ret</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">ret</span>
+
+            <span class="k">elif</span> <span class="n">goal</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;bisect&#39;</span><span class="p">:</span>
+                <span class="n">_</span><span class="p">,</span> <span class="n">lefti</span><span class="p">,</span> <span class="n">leftx</span><span class="p">,</span> <span class="n">leftv</span><span class="p">,</span> <span class="n">midi</span><span class="p">,</span> <span class="n">midx</span><span class="p">,</span> <span class="n">midv</span><span class="p">,</span> <span class="n">righti</span><span class="p">,</span> <span class="n">rightx</span><span class="p">,</span> <span class="n">rightv</span><span class="p">,</span> <span class="n">sign</span> <span class="o">=</span> <span class="n">goal</span>
+                <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bisect_at</span><span class="p">(</span><span class="n">lefti</span><span class="p">,</span> <span class="n">leftx</span><span class="p">,</span> <span class="n">leftv</span><span class="p">,</span> <span class="n">midi</span><span class="p">,</span> <span class="n">midx</span><span class="p">,</span> <span class="n">midv</span><span class="p">,</span> <span class="n">righti</span><span class="p">,</span> <span class="n">rightx</span><span class="p">,</span> <span class="n">rightv</span><span class="p">,</span> <span class="n">sign</span><span class="p">,</span> <span class="n">Llast</span><span class="p">)</span>
+                <span class="n">Llast</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="n">ret</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">ret</span>
+            
+            <span class="k">elif</span> <span class="n">goal</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;reflect-at&#39;</span><span class="p">:</span>
+                <span class="n">_</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">xk</span><span class="p">,</span> <span class="n">vk</span><span class="p">,</span> <span class="n">sign</span> <span class="o">=</span> <span class="n">goal</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">reflect_at</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">xk</span><span class="p">,</span> <span class="n">vk</span><span class="p">,</span> <span class="n">sign</span><span class="p">,</span> <span class="n">Llast</span><span class="p">)</span>
+                <span class="n">Llast</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="n">goal</span>
+            
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span></div></div>
+
+<div class="viewcode-block" id="ClockedNUTSSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedNUTSSampler">[docs]</a><span class="k">class</span> <span class="nc">ClockedNUTSSampler</span><span class="p">(</span><span class="n">ClockedBisectSampler</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    No-U-turn sampler (NUTS) on flat surfaces.</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+<div class="viewcode-block" id="ClockedNUTSSampler.reset"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedNUTSSampler.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">goals</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">left_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">][:</span><span class="mi">3</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">right_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">][:</span><span class="mi">3</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">left_warmed_up</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">right_warmed_up</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tree_built</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validrange</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tree_depth</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_direction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span></div>
+    
+<div class="viewcode-block" id="ClockedNUTSSampler.next"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedNUTSSampler.next">[docs]</a>    <span class="k">def</span> <span class="nf">next</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Llast</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Alternatingly doubles the number of steps to forward and backward </span>
+<span class="sd">        direction (which may include reflections, see StepSampler and</span>
+<span class="sd">        BisectSampler).</span>
+<span class="sd">        When track returns (start and end of tree point toward each other),</span>
+<span class="sd">        terminates and returns a random point on that track.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">tree_built</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;continue building tree&quot;</span><span class="p">)</span>
+            <span class="n">rwd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_direction</span>
+            
+            <span class="k">if</span> <span class="kc">True</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">tree_depth</span> <span class="o">&gt;</span> <span class="mi">7</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;NUTS step: tree depth </span><span class="si">%d</span><span class="s2">, </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tree_depth</span><span class="p">,</span> <span class="s2">&quot;rwd&quot;</span> <span class="k">if</span> <span class="n">rwd</span> <span class="k">else</span> <span class="s2">&quot;fwd&quot;</span><span class="p">))</span>
+            
+            
+            <span class="c1"># make sure the path is prepared for the desired tree</span>
+            <span class="k">if</span> <span class="n">rwd</span><span class="p">:</span>
+                <span class="n">goal</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;expand-to&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">left_state</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tree_depth</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">goal</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;expand-to&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">right_state</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">tree_depth</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">goal</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">goals</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">goals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">goal</span><span class="p">)</span>
+            
+            <span class="c1"># work down any open tasks</span>
+            <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">goals</span><span class="p">:</span>
+                <span class="n">sample</span><span class="p">,</span> <span class="n">is_independent</span> <span class="o">=</span> <span class="n">ClockedBisectSampler</span><span class="o">.</span><span class="n">next</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Llast</span><span class="o">=</span><span class="n">Llast</span><span class="p">)</span>
+                <span class="n">Llast</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="n">sample</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">sample</span><span class="p">,</span> <span class="n">is_independent</span>
+            
+            <span class="c1"># now check if terminating</span>
+            <span class="k">if</span> <span class="n">rwd</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">left_state</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">newrange</span><span class="p">,</span> <span class="n">newstop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_tree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">left_state</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tree_depth</span><span class="p">,</span> <span class="n">rwd</span><span class="o">=</span><span class="n">rwd</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>   
+                <span class="n">_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">right_state</span><span class="p">,</span> <span class="n">newrange</span><span class="p">,</span> <span class="n">newstop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_tree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">right_state</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tree_depth</span><span class="p">,</span> <span class="n">rwd</span><span class="o">=</span><span class="n">rwd</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">newstop</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">validrange</span> <span class="o">=</span> <span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">validrange</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">newrange</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">validrange</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">newrange</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  new NUTS range: </span><span class="si">%d</span><span class="s2">..</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">validrange</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">validrange</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+            
+            <span class="n">ileft</span><span class="p">,</span> <span class="n">xleft</span><span class="p">,</span> <span class="n">vleft</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">left_state</span>
+            <span class="n">iright</span><span class="p">,</span> <span class="n">xright</span><span class="p">,</span> <span class="n">vright</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">right_state</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot</span><span class="p">:</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="n">xleft</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">xright</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="p">[</span><span class="n">xleft</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tree_depth</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="mf">0.02</span><span class="p">,</span> <span class="n">xright</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tree_depth</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="mf">0.02</span><span class="p">],</span> <span class="s1">&#39;--&#39;</span><span class="p">)</span>
+            <span class="c1">#if j &gt; 5:</span>
+            <span class="c1">#   print(&quot;  first-to-last arrow&quot;, ileft, iright, xleft, xright, xright-xleft, &quot; velocities:&quot;, vright, vleft)</span>
+            <span class="c1">#   print(&quot;  stopping criteria: &quot;, newstop, angle(xright-xleft, vleft), angle(xright-xleft, vright))</span>
+            
+            <span class="c1"># avoid U-turns:</span>
+            <span class="n">stop</span> <span class="o">=</span> <span class="n">newstop</span> <span class="ow">or</span> <span class="n">angle</span><span class="p">(</span><span class="n">xright</span> <span class="o">-</span> <span class="n">xleft</span><span class="p">,</span> <span class="n">vleft</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">angle</span><span class="p">(</span><span class="n">xright</span> <span class="o">-</span> <span class="n">xleft</span><span class="p">,</span> <span class="n">vright</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span>
+            
+            <span class="c1"># stop when we cannot continue in any direction</span>
+            <span class="n">stop</span> <span class="o">=</span> <span class="n">stop</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">contourpath</span><span class="o">.</span><span class="n">samplingpath</span><span class="o">.</span><span class="n">fwd_possible</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">contourpath</span><span class="o">.</span><span class="n">samplingpath</span><span class="o">.</span><span class="n">rwd_possible</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">stop</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">tree_built</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">tree_depth</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tree_depth</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">current_direction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+        
+        <span class="c1"># Tree was built, we only need to sample from it</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;sampling between&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">validrange</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_chain_point</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">validrange</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">validrange</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span></div>
+    
+<div class="viewcode-block" id="ClockedNUTSSampler.sample_chain_point"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedNUTSSampler.sample_chain_point">[docs]</a>    <span class="k">def</span> <span class="nf">sample_chain_point</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets a point on the track between a and b (inclusive)</span>
+<span class="sd">        returns tuple ((point coordinates, likelihood), is_independent)</span>
+<span class="sd">            where is_independent is always True</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot</span><span class="p">:</span> 
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+                <span class="n">xi</span><span class="p">,</span> <span class="n">vi</span><span class="p">,</span> <span class="n">Li</span><span class="p">,</span> <span class="n">onpath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">contourpath</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xi</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">xi</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;_ &#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">mew</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">xi</span><span class="p">,</span> <span class="n">vi</span><span class="p">,</span> <span class="n">Li</span><span class="p">,</span> <span class="n">onpath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">contourpath</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">onpath</span><span class="p">:</span> 
+                <span class="k">continue</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">xi</span><span class="p">,</span> <span class="n">Li</span><span class="p">),</span> <span class="kc">True</span></div>
+    
+<div class="viewcode-block" id="ClockedNUTSSampler.build_tree"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedNUTSSampler.build_tree">[docs]</a>    <span class="k">def</span> <span class="nf">build_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">startstate</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">rwd</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Build sub-trees of depth j in direction rwd</span>
+<span class="sd">        </span>
+<span class="sd">        startstate: (i, x, v) state information of first node</span>
+<span class="sd">        j: int height of the tree</span>
+<span class="sd">        rwd: bool whether we go backward</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># base case: go forward one step</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">startstate</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="k">if</span> <span class="n">rwd</span> <span class="k">else</span> <span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+            <span class="c1">#self.expand_to_step(i)</span>
+            <span class="c1">#print(&quot;  build_tree@%d&quot; % i, rwd, self.contourpath.samplingpath.fwd_possible, self.contourpath.samplingpath.rwd_possible)</span>
+            <span class="n">xi</span><span class="p">,</span> <span class="n">vi</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">contourpath</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot</span><span class="p">:</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xi</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">xi</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">)</span>
+            <span class="c1"># this is a good state, so return it</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="n">vi</span><span class="p">),</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="n">vi</span><span class="p">),</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">i</span><span class="p">),</span> <span class="kc">False</span>
+        
+        <span class="c1"># recursion-build the left and right subtrees</span>
+        <span class="p">(</span><span class="n">ileft</span><span class="p">,</span> <span class="n">xleft</span><span class="p">,</span> <span class="n">vleft</span><span class="p">),</span> <span class="p">(</span><span class="n">iright</span><span class="p">,</span> <span class="n">xright</span><span class="p">,</span> <span class="n">vright</span><span class="p">),</span> <span class="n">rangea</span><span class="p">,</span> <span class="n">stopa</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_tree</span><span class="p">(</span><span class="n">startstate</span><span class="p">,</span> <span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">rwd</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">stopa</span><span class="p">:</span>
+            <span class="c1">#print(&quot;  one subtree already terminated; returning&quot;)</span>
+            <span class="c1">#plt.plot([xright[0], xleft[0]], [xright[1], xleft[1]], &#39;:&#39;, color=&#39;navy&#39;)</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">ileft</span><span class="p">,</span> <span class="n">xleft</span><span class="p">,</span> <span class="n">vleft</span><span class="p">),</span> <span class="p">(</span><span class="n">iright</span><span class="p">,</span> <span class="n">xright</span><span class="p">,</span> <span class="n">vright</span><span class="p">),</span> <span class="p">(</span><span class="n">ileft</span><span class="p">,</span><span class="n">iright</span><span class="p">),</span> <span class="n">stopa</span>
+        <span class="k">if</span> <span class="n">rwd</span><span class="p">:</span>
+            <span class="c1"># go back</span>
+            <span class="p">(</span><span class="n">ileft</span><span class="p">,</span> <span class="n">xleft</span><span class="p">,</span> <span class="n">vleft</span><span class="p">),</span> <span class="n">_</span><span class="p">,</span> <span class="n">rangeb</span><span class="p">,</span> <span class="n">stopb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_tree</span><span class="p">((</span><span class="n">ileft</span><span class="p">,</span> <span class="n">xleft</span><span class="p">,</span> <span class="n">vleft</span><span class="p">),</span> <span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">rwd</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_</span><span class="p">,</span> <span class="p">(</span><span class="n">iright</span><span class="p">,</span> <span class="n">xright</span><span class="p">,</span> <span class="n">vright</span><span class="p">),</span> <span class="n">rangeb</span><span class="p">,</span> <span class="n">stopb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">build_tree</span><span class="p">((</span><span class="n">iright</span><span class="p">,</span> <span class="n">xright</span><span class="p">,</span> <span class="n">vright</span><span class="p">),</span> <span class="n">j</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">rwd</span><span class="p">)</span>
+        <span class="c1">#print(&quot;  subtree termination at %d&quot; % j, stopa, stopb, angle(xright-xleft, vleft), angle(xright-xleft, vright), angle(vleft, vright))</span>
+        <span class="c1">#plt.plot([xright[0], xleft[0]], [xright[1], xleft[1]], &#39;:&#39;, color=&#39;gray&#39;)</span>
+        <span class="c1"># NUTS criterion: start to end vector must point in the same direction as velocity at end-point</span>
+        <span class="c1"># additional criterion: start and end velocities must point in opposite directions</span>
+        <span class="n">stop</span> <span class="o">=</span> <span class="n">stopa</span> <span class="ow">or</span> <span class="n">stopb</span> <span class="ow">or</span> <span class="n">angle</span><span class="p">(</span><span class="n">xright</span><span class="o">-</span><span class="n">xleft</span><span class="p">,</span> <span class="n">vleft</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">angle</span><span class="p">(</span><span class="n">xright</span><span class="o">-</span><span class="n">xleft</span><span class="p">,</span> <span class="n">vright</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">angle</span><span class="p">(</span><span class="n">vleft</span><span class="p">,</span> <span class="n">vright</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">ileft</span><span class="p">,</span> <span class="n">xleft</span><span class="p">,</span> <span class="n">vleft</span><span class="p">),</span> <span class="p">(</span><span class="n">iright</span><span class="p">,</span> <span class="n">xright</span><span class="p">,</span> <span class="n">vright</span><span class="p">),</span> <span class="p">(</span><span class="n">ileft</span><span class="p">,</span><span class="n">iright</span><span class="p">),</span> <span class="n">stop</span></div></div>
+
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014-2019, Johannes Buchner
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

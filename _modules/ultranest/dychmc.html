@@ -1,0 +1,815 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>ultranest.dychmc &mdash; UltraNest 2.1.0 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/icon.ico"/>
+  
+  
+  
+    <link rel="canonical" href="https://johannesbuchner.github.io/UltraNest/_modules/ultranest/dychmc.html"/>
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> UltraNest
+          
+
+          
+            
+            <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../readme.html">UltraNest</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../method.html">How it works</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage-spectral-line.html">Basic usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../performance.html">Tour of the features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../issues.html">Frequently Asked Questions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../history.html">Release Notes</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../example-sine-line.html">Time series fitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-sine-modelcomparison.html">Model comparison</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-sine-highd.html">Higher-dimensional fitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-intrinsic-distribution.html">Tutorial: intrinsic distribution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-line.html">Tutorial: fitting a line</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-outliers.html">Tutorial: distribution with outliers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-sine-bayesian-workflow.html">Bayesian workflow</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">UltraNest</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content style-external-links">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>ultranest.dychmc</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for ultranest.dychmc</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="c1">#from numpy.linalg import norm</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="c1">#import scipy.special, scipy.stats</span>
+
+<div class="viewcode-block" id="stop_criterion"><a class="viewcode-back" href="../../ultranest.html#ultranest.dychmc.stop_criterion">[docs]</a><span class="k">def</span> <span class="nf">stop_criterion</span><span class="p">(</span><span class="n">thetaminus</span><span class="p">,</span> <span class="n">thetaplus</span><span class="p">,</span> <span class="n">rminus</span><span class="p">,</span> <span class="n">rplus</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Compute the stop condition in the main loop</span>
+<span class="sd">    dot(dtheta, rminus) &gt;= 0 &amp; dot(dtheta, rplus &gt;= 0)</span>
+
+<span class="sd">    INPUTS</span>
+<span class="sd">    ------</span>
+<span class="sd">    thetaminus, thetaplus: ndarray[float, ndim=1]</span>
+<span class="sd">        under and above position</span>
+<span class="sd">    rminus, rplus: ndarray[float, ndim=1]</span>
+<span class="sd">        under and above momentum</span>
+
+<span class="sd">    OUTPUTS</span>
+<span class="sd">    -------</span>
+<span class="sd">    criterion: bool</span>
+<span class="sd">        return if the condition is valid</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dtheta</span> <span class="o">=</span> <span class="n">thetaplus</span> <span class="o">-</span> <span class="n">thetaminus</span>
+    <span class="c1">#print(&quot;stop?&quot;, dtheta, rminus, rplus, np.dot(dtheta, rminus.T), np.dot(dtheta, rplus.T))</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dtheta</span><span class="p">,</span> <span class="n">rminus</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dtheta</span><span class="p">,</span> <span class="n">rplus</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="step_or_reflect"><a class="viewcode-back" href="../../ultranest.html#ultranest.dychmc.step_or_reflect">[docs]</a><span class="k">def</span> <span class="nf">step_or_reflect</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">gradient</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">):</span>
+    <span class="c1"># step in position:</span>
+    <span class="n">thetaprime</span> <span class="o">=</span> <span class="n">theta</span> <span class="o">+</span> <span class="n">epsilon</span> <span class="o">*</span> <span class="n">v</span>
+    <span class="c1"># check if still inside</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">thetaprime</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">thetaprime</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mask</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">thetaprime</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)))</span>
+        <span class="n">logL</span> <span class="o">=</span> <span class="n">loglike</span><span class="p">(</span><span class="n">p</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">logL</span> <span class="o">&gt;</span> <span class="n">Lmin</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">thetaprime</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">logL</span><span class="p">,</span> <span class="kc">False</span>
+    
+        <span class="c1"># outside, need to reflect</span>
+        <span class="n">normal</span> <span class="o">=</span> <span class="n">gradient</span><span class="p">(</span><span class="n">thetaprime</span><span class="p">)</span>
+        <span class="c1">#print(&quot;reflecting with gradient&quot;, normal)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># make a unit vector pointing inwards</span>
+        <span class="n">normal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">thetaprime</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">thetaprime</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+        <span class="c1">#print(&quot;reflecting to inside&quot;, mask, normal)</span>
+    
+    <span class="c1"># project outside gradient onto our current velocity</span>
+    <span class="c1"># subtract that part</span>
+    <span class="n">vnew</span> <span class="o">=</span> <span class="n">v</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">normal</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="o">*</span> <span class="n">normal</span>
+    
+    <span class="c1"># if the reflection is a reverse, it cannot be helpful. Stop.</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">vnew</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">thetaprime</span><span class="p">,</span> <span class="n">vnew</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="kc">True</span>
+    
+    <span class="c1"># get new location, to check if we are back in the constraint</span>
+    <span class="n">thetaprime2</span> <span class="o">=</span> <span class="n">thetaprime</span> <span class="o">+</span> <span class="n">epsilon</span> <span class="o">*</span> <span class="n">vnew</span>
+    
+    <span class="c1"># check if inside</span>
+    <span class="n">mask2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">thetaprime2</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">thetaprime2</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">mask2</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+        <span class="n">p2</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">thetaprime2</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)))</span>
+        <span class="n">logL2</span> <span class="o">=</span> <span class="n">loglike</span><span class="p">(</span><span class="n">p2</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="c1">#if logL2 &lt; Lmin:</span>
+        <span class="c1">#    #print(&quot;new point is also outside&quot;, (theta, thetaprime, thetaprime2), (v, vnew), (Lmin, logL2))</span>
+        <span class="c1">#else:</span>
+        <span class="c1">#    #print(&quot;recovered to inside&quot;, (theta, thetaprime, thetaprime2), (v, vnew), (Lmin, logL2))</span>
+        
+        <span class="c1"># caller needs to figure out if this is ok</span>
+        <span class="k">return</span> <span class="n">thetaprime2</span><span class="p">,</span> <span class="n">vnew</span><span class="p">,</span> <span class="n">p2</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">logL2</span><span class="p">,</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1">#print(&quot;new point is also outside cube&quot;, (theta, thetaprime, thetaprime2), (v, vnew))</span>
+        <span class="k">return</span> <span class="n">thetaprime2</span><span class="p">,</span> <span class="n">vnew</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="build_tree"><a class="viewcode-back" href="../../ultranest.html#ultranest.dychmc.build_tree">[docs]</a><span class="k">def</span> <span class="nf">build_tree</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">direction</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">gradient</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The main recursion.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># Base case: Take a single leapfrog step in the direction v.</span>
+        <span class="n">thetaprime</span><span class="p">,</span> <span class="n">vprime</span><span class="p">,</span> <span class="n">pprime</span><span class="p">,</span> <span class="n">logpprime</span><span class="p">,</span> <span class="n">reflected</span> <span class="o">=</span> <span class="n">step_or_reflect</span><span class="p">(</span>
+            <span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="n">v</span> <span class="o">*</span> <span class="n">direction</span><span class="p">,</span> <span class="n">epsilon</span><span class="o">=</span><span class="n">epsilon</span><span class="p">,</span> 
+            <span class="n">transform</span><span class="o">=</span><span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="o">=</span><span class="n">loglike</span><span class="p">,</span> <span class="n">gradient</span><span class="o">=</span><span class="n">gradient</span><span class="p">,</span> <span class="n">Lmin</span><span class="o">=</span><span class="n">Lmin</span><span class="p">)</span>
+        
+        <span class="c1">#if not sprime:</span>
+        <span class="c1">#    print(&quot;stopped trajectory:&quot;, direction, logpprime, Lmin, (theta, thetaprime, epsilon))</span>
+        <span class="c1"># Set the return values---minus=plus for all things here, since the</span>
+        <span class="c1"># &quot;tree&quot; is of depth 0.</span>
+        <span class="n">thetaminus</span> <span class="o">=</span> <span class="n">thetaprime</span>
+        <span class="n">thetaplus</span> <span class="o">=</span> <span class="n">thetaprime</span>
+        
+        <span class="k">if</span> <span class="n">reflected</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">vprime</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># if reversing locally, store that in can_continue, not s</span>
+            <span class="n">sprime</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="c1">#print(&quot;  reversed locally&quot;)</span>
+            <span class="n">can_continue</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">vminus</span> <span class="o">=</span> <span class="n">v</span> <span class="o">*</span> <span class="n">direction</span>
+            <span class="n">vplus</span> <span class="o">=</span> <span class="n">v</span> <span class="o">*</span> <span class="n">direction</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">v</span> <span class="o">*</span> <span class="n">direction</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Is the point acceptable?</span>
+            <span class="n">sprime</span> <span class="o">=</span> <span class="n">logpprime</span> <span class="o">&gt;</span> <span class="n">Lmin</span>
+            <span class="c1">#if sprime:</span>
+            <span class="c1">#    print(&quot;  --&gt;&quot;)</span>
+            <span class="c1">#else:</span>
+            <span class="c1">#    print(&quot;  stuck&quot;)</span>
+            <span class="n">can_continue</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">vminus</span> <span class="o">=</span> <span class="n">vprime</span> <span class="o">*</span> <span class="n">direction</span>
+            <span class="n">vplus</span> <span class="o">=</span> <span class="n">vprime</span> <span class="o">*</span> <span class="n">direction</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">vprime</span> <span class="o">*</span> <span class="n">direction</span>
+        
+        <span class="n">pminus</span> <span class="o">=</span> <span class="n">pprime</span>
+        <span class="n">pplus</span> <span class="o">=</span> <span class="n">pprime</span>
+        <span class="c1">#print(direction, (theta, thetaprime), (v, vprime))</span>
+        
+        <span class="c1"># probability is zero if it is an invalid state</span>
+        <span class="n">alphaprime</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">sprime</span> <span class="ow">and</span> <span class="n">can_continue</span><span class="p">)</span>
+        <span class="n">nalphaprime</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">nreflectprime</span> <span class="o">=</span> <span class="n">reflected</span> <span class="o">*</span> <span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Recursion: Implicitly build the height j-1 left and right subtrees.</span>
+        <span class="n">thetaminus</span><span class="p">,</span> <span class="n">vminus</span><span class="p">,</span> <span class="n">pminus</span><span class="p">,</span> <span class="n">thetaplus</span><span class="p">,</span> <span class="n">vplus</span><span class="p">,</span> <span class="n">pplus</span><span class="p">,</span> <span class="n">thetaprime</span><span class="p">,</span> <span class="n">vprime</span><span class="p">,</span> <span class="n">pprime</span><span class="p">,</span> <span class="n">logpprime</span><span class="p">,</span> <span class="n">sprime</span><span class="p">,</span> <span class="n">can_continue</span><span class="p">,</span> <span class="n">alphaprime</span><span class="p">,</span> <span class="n">nalphaprime</span><span class="p">,</span> <span class="n">nreflectprime</span> <span class="o">=</span> \
+            <span class="n">build_tree</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">direction</span><span class="p">,</span> <span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">gradient</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">)</span>
+        <span class="c1"># No need to keep going if the stopping criteria were met in the first subtree.</span>
+        <span class="k">if</span> <span class="n">can_continue</span> <span class="ow">and</span> <span class="n">sprime</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="n">thetaminus</span><span class="p">,</span> <span class="n">vminus</span><span class="p">,</span> <span class="n">pminus</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">thetaprime2</span><span class="p">,</span> <span class="n">vprime2</span><span class="p">,</span> <span class="n">pprime2</span><span class="p">,</span> <span class="n">logpprime2</span><span class="p">,</span> <span class="n">sprime2</span><span class="p">,</span> <span class="n">can_continue2</span><span class="p">,</span> <span class="n">alphaprime2</span><span class="p">,</span> <span class="n">nalphaprime2</span><span class="p">,</span> <span class="n">nreflectprime2</span> <span class="o">=</span> \
+                    <span class="n">build_tree</span><span class="p">(</span><span class="n">thetaminus</span><span class="p">,</span> <span class="n">vminus</span><span class="p">,</span> <span class="n">direction</span><span class="p">,</span> <span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">gradient</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">thetaplus</span><span class="p">,</span> <span class="n">vplus</span><span class="p">,</span> <span class="n">pplus</span><span class="p">,</span> <span class="n">thetaprime2</span><span class="p">,</span> <span class="n">vprime2</span><span class="p">,</span> <span class="n">pprime2</span><span class="p">,</span> <span class="n">logpprime2</span><span class="p">,</span> <span class="n">sprime2</span><span class="p">,</span> <span class="n">can_continue2</span><span class="p">,</span> <span class="n">alphaprime2</span><span class="p">,</span> <span class="n">nalphaprime2</span><span class="p">,</span> <span class="n">nreflectprime2</span> <span class="o">=</span> \
+                    <span class="n">build_tree</span><span class="p">(</span><span class="n">thetaplus</span><span class="p">,</span> <span class="n">vplus</span><span class="p">,</span> <span class="n">direction</span><span class="p">,</span> <span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">gradient</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">)</span>
+
+            <span class="c1"># Choose which subtree to propagate a sample up from.</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">alphaprime2</span> <span class="o">/</span> <span class="p">(</span><span class="n">alphaprime</span> <span class="o">+</span> <span class="n">alphaprime2</span><span class="p">):</span>
+                <span class="n">thetaprime</span> <span class="o">=</span> <span class="n">thetaprime2</span><span class="p">[:]</span>
+                <span class="n">vprime</span> <span class="o">=</span> <span class="n">vprime2</span><span class="p">[:]</span>
+                <span class="n">pprime</span> <span class="o">=</span> <span class="n">pprime2</span><span class="p">[:]</span>
+                <span class="n">logpprime</span> <span class="o">=</span> <span class="n">logpprime2</span>
+            
+            <span class="c1"># Update the stopping criterion.</span>
+            <span class="n">sturn</span> <span class="o">=</span> <span class="n">stop_criterion</span><span class="p">(</span><span class="n">thetaminus</span><span class="p">,</span> <span class="n">thetaplus</span><span class="p">,</span> <span class="n">vminus</span><span class="p">,</span> <span class="n">vplus</span><span class="p">)</span>
+            <span class="c1">#print(sprime, sprime2, sturn)</span>
+            <span class="c1">#if not (sprime and sprime2 and sturn):</span>
+            <span class="c1">#    print(&quot;sprime stop:&quot;, sprime, sprime2, sturn)</span>
+            <span class="n">sprime</span> <span class="o">=</span> <span class="n">sprime</span> <span class="ow">and</span> <span class="n">sprime2</span> <span class="ow">and</span> <span class="n">sturn</span>
+            <span class="n">can_continue</span> <span class="o">=</span> <span class="n">can_continue</span> <span class="ow">and</span> <span class="n">can_continue2</span>
+            <span class="c1"># Update the acceptance probability statistics.</span>
+            <span class="n">alphaprime</span> <span class="o">+=</span> <span class="n">alphaprime2</span>
+            <span class="n">nalphaprime</span> <span class="o">+=</span> <span class="n">nalphaprime2</span>
+            <span class="n">nreflectprime</span> <span class="o">+=</span> <span class="n">nreflectprime2</span>
+
+    <span class="k">return</span> <span class="n">thetaminus</span><span class="p">,</span> <span class="n">vminus</span><span class="p">,</span> <span class="n">pminus</span><span class="p">,</span> <span class="n">thetaplus</span><span class="p">,</span> <span class="n">vplus</span><span class="p">,</span> <span class="n">pplus</span><span class="p">,</span> <span class="n">thetaprime</span><span class="p">,</span> <span class="n">vprime</span><span class="p">,</span> <span class="n">pprime</span><span class="p">,</span> <span class="n">logpprime</span><span class="p">,</span> <span class="n">sprime</span><span class="p">,</span> <span class="n">can_continue</span><span class="p">,</span> <span class="n">alphaprime</span><span class="p">,</span> <span class="n">nalphaprime</span><span class="p">,</span> <span class="n">nreflectprime</span></div>
+
+<div class="viewcode-block" id="tree_sample"><a class="viewcode-back" href="../../ultranest.html#ultranest.dychmc.tree_sample">[docs]</a><span class="k">def</span> <span class="nf">tree_sample</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">logL</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">gradient</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">,</span> <span class="n">maxheight</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">):</span>
+    <span class="c1"># initialize the tree</span>
+    <span class="n">thetaminus</span> <span class="o">=</span> <span class="n">theta</span>
+    <span class="n">thetaplus</span> <span class="o">=</span> <span class="n">theta</span>
+    <span class="n">vminus</span> <span class="o">=</span> <span class="n">v</span><span class="p">[:]</span>
+    <span class="n">vplus</span> <span class="o">=</span> <span class="n">v</span><span class="p">[:]</span>
+    <span class="n">alpha</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">nalpha</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">nreflect</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">logp</span> <span class="o">=</span> <span class="n">logL</span>
+    <span class="n">fwd_possible</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">rwd_possible</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># initial heigth j = 0</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># Main loop: will keep going until s == 0.</span>
+
+    <span class="k">while</span> <span class="n">s</span> <span class="ow">and</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">maxheight</span><span class="p">:</span>
+        <span class="c1"># Choose a direction. -1 = backwards, 1 = forwards.</span>
+        <span class="k">if</span> <span class="n">fwd_possible</span> <span class="ow">and</span> <span class="n">rwd_possible</span><span class="p">:</span>
+            <span class="n">direction</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">fwd_possible</span><span class="p">:</span>
+            <span class="n">direction</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">elif</span> <span class="n">rwd_possible</span><span class="p">:</span>
+            <span class="n">direction</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;stuck in both ends&quot;</span><span class="p">)</span>
+            <span class="k">break</span>
+
+        <span class="c1"># Double the size of the tree.</span>
+        <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">thetaminus</span><span class="p">,</span> <span class="n">vminus</span><span class="p">,</span> <span class="n">pminus</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">thetaprime</span><span class="p">,</span> <span class="n">vprime</span><span class="p">,</span> <span class="n">pprime</span><span class="p">,</span> <span class="n">logpprime</span><span class="p">,</span> <span class="n">sprime</span><span class="p">,</span> <span class="n">can_continue</span><span class="p">,</span> <span class="n">alphaprime</span><span class="p">,</span> <span class="n">nalphaprime</span><span class="p">,</span> <span class="n">nreflectprime</span> <span class="o">=</span> \
+                <span class="n">build_tree</span><span class="p">(</span><span class="n">thetaminus</span><span class="p">,</span> <span class="n">vminus</span><span class="p">,</span> <span class="n">direction</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">gradient</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">thetaplus</span><span class="p">,</span> <span class="n">vplus</span><span class="p">,</span> <span class="n">pplus</span><span class="p">,</span> <span class="n">thetaprime</span><span class="p">,</span> <span class="n">vprime</span><span class="p">,</span> <span class="n">pprime</span><span class="p">,</span> <span class="n">logpprime</span><span class="p">,</span> <span class="n">sprime</span><span class="p">,</span> <span class="n">can_continue</span><span class="p">,</span> <span class="n">alphaprime</span><span class="p">,</span> <span class="n">nalphaprime</span><span class="p">,</span> <span class="n">nreflectprime</span> <span class="o">=</span> \
+                <span class="n">build_tree</span><span class="p">(</span><span class="n">thetaplus</span><span class="p">,</span> <span class="n">vplus</span><span class="p">,</span> <span class="n">direction</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">gradient</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">)</span>
+        
+        <span class="c1"># Use Bernoulli trial to decide whether or not to move to a</span>
+        <span class="c1"># point from the half-tree we just generated.</span>
+        <span class="k">if</span> <span class="n">sprime</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">alphaprime</span> <span class="o">/</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">+</span> <span class="n">alphaprime</span><span class="p">):</span>
+            <span class="n">theta</span> <span class="o">=</span> <span class="n">thetaprime</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">pprime</span>
+            <span class="n">logp</span> <span class="o">=</span> <span class="n">logpprime</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="n">vprime</span>
+        
+        <span class="n">alpha</span> <span class="o">+=</span> <span class="n">alphaprime</span>
+        <span class="n">nalpha</span> <span class="o">+=</span> <span class="n">nalphaprime</span>
+        <span class="n">nreflect</span> <span class="o">+=</span> <span class="n">nreflectprime</span>
+        
+        <span class="c1"># Decide if it&#39;s time to stop.</span>
+        <span class="n">sturn</span> <span class="o">=</span> <span class="n">stop_criterion</span><span class="p">(</span><span class="n">thetaminus</span><span class="p">,</span> <span class="n">thetaplus</span><span class="p">,</span> <span class="n">vminus</span><span class="p">,</span> <span class="n">vplus</span><span class="p">)</span>
+        <span class="c1">#print(sprime, sturn)</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">sprime</span> <span class="ow">and</span> <span class="n">sturn</span>
+        
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">can_continue</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">fwd_possible</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="n">direction</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="n">rwd_possible</span> <span class="o">=</span> <span class="kc">False</span>
+        
+        <span class="c1">#if not s and (fwd_possible or rwd_possible):</span>
+        <span class="c1">#    print(&quot;U-turn found a:%d r:%d t:%d&quot; % (alpha, nreflect, nalpha), sturn, sprime, (thetaminus, thetaplus), (vminus, vplus))</span>
+            <span class="c1">#assert False</span>
+
+        <span class="c1"># Increment depth.</span>
+        <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
+    
+    <span class="c1">#print(&quot;jumping to:&quot;, theta)</span>
+    <span class="c1">#print(&#39;Tree height: %d, accepts: %03.2f%%, reflects: %03.2f%%, epsilon=%g&#39; % (j, alpha/nalpha*100, nreflect/nalpha*100, epsilon))</span>
+    <span class="k">return</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">nreflect</span><span class="p">,</span> <span class="n">nalpha</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">logp</span><span class="p">,</span> <span class="n">j</span></div>
+
+<div class="viewcode-block" id="generate_uniform_direction"><a class="viewcode-back" href="../../ultranest.html#ultranest.dychmc.generate_uniform_direction">[docs]</a><span class="k">def</span> <span class="nf">generate_uniform_direction</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">massmatrix</span><span class="p">):</span>
+    <span class="c1"># draw from a circle, with a little noise in amplitude</span>
+    <span class="n">momentum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">multivariate_normal</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">d</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">massmatrix</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">d</span><span class="p">)))</span>
+    <span class="n">momentum</span> <span class="o">/=</span> <span class="p">(</span><span class="n">momentum</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">**</span><span class="mf">0.5</span>
+    <span class="k">return</span> <span class="n">momentum</span></div>
+
+
+<div class="viewcode-block" id="DynamicCHMCSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.dychmc.DynamicCHMCSampler">[docs]</a><span class="k">class</span> <span class="nc">DynamicCHMCSampler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Dynamic Constrained Hamiltonian/Hybrid Monte Carlo technique</span>
+<span class="sd">    </span>
+<span class="sd">    Run a billiard ball inside the likelihood constrained. </span>
+<span class="sd">    The ball reflects off the constraint.</span>
+<span class="sd">    </span>
+<span class="sd">    The trajectory is explored in steps of stepsize epsilon.</span>
+<span class="sd">    A No-U-turn criterion and randomized doubling of forward or backward</span>
+<span class="sd">    steps is used to avoid repeating circular trajectories.</span>
+<span class="sd">    Because of this, the number of steps is dynamic.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ndim</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">gradient</span><span class="p">,</span> <span class="n">adaptive_nsteps</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">nudge</span><span class="o">=</span><span class="mf">1.04</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialise sampler.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        -----------</span>
+<span class="sd">        nsteps: int</span>
+<span class="sd">            number of accepted steps until the sample is considered independent.</span>
+<span class="sd">        </span>
+<span class="sd">        adaptive_nsteps: False, &#39;proposal-distance&#39;, &#39;move-distance&#39;</span>
+<span class="sd">            if not false, allow earlier termination than nsteps.</span>
+<span class="sd">            The &#39;proposal-distance&#39; strategy stops when the sum of </span>
+<span class="sd">            all proposed vectors exceeds the mean distance</span>
+<span class="sd">            between pairs of live points.</span>
+<span class="sd">            As distance, the Mahalanobis distance is used.</span>
+<span class="sd">            The &#39;move-distance&#39; strategy stops when the distance between</span>
+<span class="sd">            start point and current position exceeds the mean distance</span>
+<span class="sd">            between pairs of live points.</span>
+<span class="sd">        </span>
+<span class="sd">        transform: function</span>
+<span class="sd">            called with unit cube position vector u, returns</span>
+<span class="sd">            transformed parameter vector p.</span>
+<span class="sd">        loglike: function</span>
+<span class="sd">            called with transformed parameters p, returns loglikelihood</span>
+<span class="sd">        gradient: function</span>
+<span class="sd">            called with unit cube position vector u, returns</span>
+<span class="sd">            gradient (dlogL/du, not just dlogL/dp)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">=</span> <span class="n">nsteps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">ndim</span><span class="o">**</span><span class="mf">0.5</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transform</span> <span class="o">=</span> <span class="n">transform</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loglike</span> <span class="o">=</span> <span class="n">loglike</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gradient</span> <span class="o">=</span> <span class="n">transform</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nudge</span> <span class="o">=</span> <span class="n">nudge</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_nudge</span> <span class="o">=</span> <span class="mf">1.01</span>
+        <span class="n">adaptive_nsteps_options</span> <span class="o">=</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;proposal-total-distances-NN&#39;</span><span class="p">,</span> <span class="s1">&#39;proposal-summed-distances-NN&#39;</span><span class="p">,</span> 
+            <span class="s1">&#39;proposal-total-distances&#39;</span><span class="p">,</span> <span class="s1">&#39;proposal-summed-distances&#39;</span><span class="p">,</span> 
+            <span class="s1">&#39;move-distance&#39;</span><span class="p">,</span> <span class="s1">&#39;move-distance-midway&#39;</span><span class="p">,</span> <span class="s1">&#39;proposal-summed-distances-min-NN&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;proposal-variance-min&#39;</span><span class="p">,</span> <span class="s1">&#39;proposal-variance-min-NN&#39;</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">adaptive_nsteps</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">adaptive_nsteps_options</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;adaptive_nsteps must be one of: </span><span class="si">%s</span><span class="s2">, not &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">adaptive_nsteps_options</span><span class="p">,</span> <span class="n">adaptive_nsteps</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="o">=</span> <span class="n">adaptive_nsteps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mean_pair_distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delta</span> <span class="o">=</span> <span class="n">delta</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">massmatrix</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">invmassmatrix</span> <span class="o">=</span> <span class="mi">1</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;acceptance_rate&#39;</span><span class="p">,</span> <span class="s1">&#39;reflect_fraction&#39;</span><span class="p">,</span> <span class="s1">&#39;stepsize&#39;</span><span class="p">,</span> <span class="s1">&#39;treeheight&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">adaptive_nsteps</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;jump-distance&#39;</span><span class="p">,</span> <span class="s1">&#39;reference-distance&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logstat_trajectory</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get string representation.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s1">&#39;(nsteps=</span><span class="si">%d</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s1">&#39;(adaptive_nsteps=</span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span>
+
+<div class="viewcode-block" id="DynamicCHMCSampler.plot"><a class="viewcode-back" href="../../ultranest.html#ultranest.dychmc.DynamicCHMCSampler.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Plot sampler statistics.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">3</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span><span class="p">)))</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span><span class="p">):</span>
+            <span class="n">part</span> <span class="o">=</span> <span class="p">[</span><span class="n">entry</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">]</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">i</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">part</span><span class="p">)</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">part</span><span class="p">),</span> <span class="mi">20</span><span class="p">):</span>
+                <span class="n">x</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+                <span class="n">y</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">part</span><span class="p">[</span><span class="n">j</span><span class="p">:</span><span class="n">j</span> <span class="o">+</span> <span class="mi">20</span><span class="p">]))</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">part</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">filename</span> <span class="o">+</span> <span class="s1">&#39;.txt.gz&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">,</span> 
+            <span class="n">header</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span><span class="p">),</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">,</span> <span class="n">us</span><span class="p">,</span> <span class="n">Ls</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a new point.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        region: MLFriends</span>
+<span class="sd">            region.</span>
+<span class="sd">        Lmin: float</span>
+<span class="sd">            loglikelihood threshold</span>
+<span class="sd">        us: array of vectors</span>
+<span class="sd">            current live points</span>
+<span class="sd">        Ls: array of floats</span>
+<span class="sd">            current live point likelihoods</span>
+<span class="sd">        transform: function</span>
+<span class="sd">            transform function</span>
+<span class="sd">        loglike: function</span>
+<span class="sd">            loglikelihood function</span>
+<span class="sd">        ndraw: int</span>
+<span class="sd">            number of draws to attempt simultaneously.</span>
+<span class="sd">        plot: bool</span>
+<span class="sd">            whether to produce debug plots.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">Ls</span><span class="p">))</span>
+        <span class="c1">#print(&quot;starting from live point %d&quot; % i)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">starti</span> <span class="o">=</span> <span class="n">i</span>
+        <span class="n">ui</span> <span class="o">=</span> <span class="n">us</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span>
+        <span class="n">Li</span> <span class="o">=</span> <span class="n">Ls</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">pi</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">ui</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">ui</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">ui</span>
+        
+        <span class="n">ncalls_total</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">history</span> <span class="o">=</span> <span class="p">[(</span><span class="n">ui</span><span class="p">,</span> <span class="n">Li</span><span class="p">)]</span>
+        
+        <span class="n">nsteps_remaining</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span>
+        <span class="k">while</span> <span class="n">nsteps_remaining</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">unew</span><span class="p">,</span> <span class="n">pnew</span><span class="p">,</span> <span class="n">Lnew</span><span class="p">,</span> <span class="n">nc</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">fracreflect</span><span class="p">,</span> <span class="n">treeheight</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">pi</span><span class="p">,</span> <span class="n">Li</span><span class="p">,</span>
+                <span class="n">region</span><span class="o">=</span><span class="n">region</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="n">ndraw</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="n">plot</span><span class="p">,</span> <span class="n">Lmin</span><span class="o">=</span><span class="n">Lmin</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">pnew</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># do not count failed accepts</span>
+                <span class="n">nsteps_remaining</span> <span class="o">=</span> <span class="n">nsteps_remaining</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="c1">#else:</span>
+            <span class="c1">#    print(&quot;stuck:&quot;, Li, &quot;-&gt;&quot;, Lnew, &quot;Lmin:&quot;, Lmin, nsteps_remaining)</span>
+            
+            <span class="n">ncalls_total</span> <span class="o">+=</span> <span class="n">nc</span>
+            <span class="c1">#print(&quot; -&gt;&quot;, Li, Lnew, unew, pnew)</span>
+            <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">unew</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">unew</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">unew</span>
+            
+            <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="n">ui</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">unew</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]],</span> <span class="p">[</span><span class="n">ui</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">unew</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]],</span> <span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ui</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ui</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;d&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">unew</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">unew</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+            
+            <span class="n">ui</span><span class="p">,</span> <span class="n">pi</span><span class="p">,</span> <span class="n">Li</span> <span class="o">=</span> <span class="n">unew</span><span class="p">,</span> <span class="n">pnew</span><span class="p">,</span> <span class="n">Lnew</span>
+            
+            <span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">ui</span><span class="p">,</span> <span class="n">Li</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logstat_trajectory</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">alpha</span><span class="p">,</span> <span class="n">fracreflect</span><span class="p">,</span> <span class="n">treeheight</span><span class="p">])</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">adjust_stepsize</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">adjust_nsteps</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">history</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">ui</span><span class="p">,</span> <span class="n">pi</span><span class="p">,</span> <span class="n">Li</span><span class="p">,</span> <span class="n">ncalls_total</span>
+
+<div class="viewcode-block" id="DynamicCHMCSampler.move"><a class="viewcode-back" href="../../ultranest.html#ultranest.dychmc.DynamicCHMCSampler.move">[docs]</a>    <span class="k">def</span> <span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ui</span><span class="p">,</span> <span class="n">pi</span><span class="p">,</span> <span class="n">Li</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Move from position ui, Li, gradi with a HMC trajectory.</span>
+<span class="sd">        </span>
+<span class="sd">        Return</span>
+<span class="sd">        ------</span>
+<span class="sd">        unew: vector</span>
+<span class="sd">            new position in cube space</span>
+<span class="sd">        pnew: vector</span>
+<span class="sd">            new position in physical parameter space</span>
+<span class="sd">        Lnew: float</span>
+<span class="sd">            new likelihood</span>
+<span class="sd">        nc: int</span>
+<span class="sd">            number of likelihood evaluations</span>
+<span class="sd">        alpha: float</span>
+<span class="sd">            acceptance rate of trajectory</span>
+<span class="sd">        treeheight: int</span>
+<span class="sd">            height of NUTS tree</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="n">epsilon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span>
+        <span class="n">epsilon_here</span> <span class="o">=</span> <span class="mi">10</span><span class="o">**</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">)</span> <span class="o">*</span> <span class="n">epsilon</span>
+        <span class="c1">#epsilon_here = np.random.uniform() * epsilon</span>
+        <span class="c1">#epsilon_here = epsilon</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ui</span><span class="p">)</span>
+        
+        <span class="k">assert</span> <span class="n">Li</span> <span class="o">&gt;=</span> <span class="n">Lmin</span>
+
+        <span class="c1"># draw from momentum</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">generate_uniform_direction</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">massmatrix</span><span class="p">)</span>
+        
+        <span class="c1"># explore and sample from one trajectory</span>
+        <span class="n">alpha</span><span class="p">,</span> <span class="n">nreflects</span><span class="p">,</span> <span class="n">nalpha</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">pnew</span><span class="p">,</span> <span class="n">Lnew</span><span class="p">,</span> <span class="n">treeheight</span> <span class="o">=</span> <span class="n">tree_sample</span><span class="p">(</span>
+            <span class="n">ui</span><span class="p">,</span> <span class="n">pi</span><span class="p">,</span> <span class="n">Li</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">epsilon_here</span><span class="p">,</span> 
+            <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">loglike</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gradient</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">,</span> <span class="n">maxheight</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">theta</span><span class="p">,</span> <span class="n">pnew</span><span class="p">,</span> <span class="n">Lnew</span><span class="p">,</span> <span class="n">nalpha</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">/</span> <span class="n">nalpha</span><span class="p">,</span> <span class="n">nreflects</span> <span class="o">/</span> <span class="n">nalpha</span><span class="p">,</span> <span class="n">treeheight</span></div>
+
+    
+<div class="viewcode-block" id="DynamicCHMCSampler.create_problem"><a class="viewcode-back" href="../../ultranest.html#ultranest.dychmc.DynamicCHMCSampler.create_problem">[docs]</a>    <span class="k">def</span> <span class="nf">create_problem</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Ls</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set up auxiliary distribution.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        Ls: array of floats</span>
+<span class="sd">            live point likelihoods</span>
+<span class="sd">        region: MLFriends region object</span>
+<span class="sd">            region.transformLayer is used to obtain mass matrices</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="c1"># problem dimensionality</span>
+        <span class="n">layer</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s1">&#39;invT&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">invmassmatrix</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">cov</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">massmatrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">invmassmatrix</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s1">&#39;std&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">std</span><span class="p">)</span> <span class="o">==</span> <span class="p">()</span> <span class="ow">and</span> <span class="n">layer</span><span class="o">.</span><span class="n">std</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">massmatrix</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">invmassmatrix</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># invmassmatrix: covariance</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">invmassmatrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">std</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">massmatrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">std</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**-</span><span class="mi">2</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">invmassmatrix</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">layer</span><span class="o">.</span><span class="n">std</span><span class="p">)</span></div>
+        
+<div class="viewcode-block" id="DynamicCHMCSampler.adjust_stepsize"><a class="viewcode-back" href="../../ultranest.html#ultranest.dychmc.DynamicCHMCSampler.adjust_stepsize">[docs]</a>    <span class="k">def</span> <span class="nf">adjust_stepsize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Store chain statistics and adapt proposal.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat_trajectory</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="c1"># log averaged acceptance and trajectory statistics</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="o">.</span><span class="n">append</span><span class="p">([</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">([</span><span class="n">alpha</span> <span class="k">for</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">fracreflect</span><span class="p">,</span> <span class="n">treeheight</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat_trajectory</span><span class="p">]),</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">([</span><span class="n">fracreflect</span> <span class="k">for</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">fracreflect</span><span class="p">,</span> <span class="n">treeheight</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat_trajectory</span><span class="p">]),</span>
+            <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">),</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">([</span><span class="mi">2</span><span class="o">**</span><span class="n">treeheight</span> <span class="k">for</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">fracreflect</span><span class="p">,</span> <span class="n">treeheight</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat_trajectory</span><span class="p">])</span>
+        <span class="p">])</span>
+
+        <span class="n">N</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">200</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">alphamean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">([</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">parts</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="n">N</span><span class="p">:]])</span>
+        <span class="n">reflectmean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">([</span><span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">parts</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="n">N</span><span class="p">:]])</span>
+        <span class="n">treeheightmean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">([</span><span class="n">parts</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="k">for</span> <span class="n">parts</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="n">N</span><span class="p">:]])</span>
+
+        <span class="c1"># aim towards an acceptance rate of delta</span>
+        <span class="k">if</span> <span class="n">alphamean</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nudge</span><span class="o">**</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="n">N</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">/=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nudge</span><span class="o">**</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="n">N</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logstat_trajectory</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">)</span> <span class="o">%</span> <span class="n">N</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;updating step size: </span><span class="si">%.4f</span><span class="s2"> </span><span class="si">%.4f</span><span class="s2"> </span><span class="si">%.1f</span><span class="s2"> --&gt; </span><span class="si">%g</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">alphamean</span><span class="p">,</span> <span class="n">reflectmean</span><span class="p">,</span> <span class="n">treeheightmean</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="DynamicCHMCSampler.region_changed"><a class="viewcode-back" href="../../ultranest.html#ultranest.dychmc.DynamicCHMCSampler.region_changed">[docs]</a>    <span class="k">def</span> <span class="nf">region_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Ls</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;React to change of region. &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">adjust_stepsize</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_problem</span><span class="p">(</span><span class="n">Ls</span><span class="p">,</span> <span class="n">region</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="ow">or</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mean_pair_distance</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">compute_mean_pair_distance</span><span class="p">()</span></div>
+            <span class="c1">#print(&quot;region changed. new mean_pair_distance: %g&quot; % self.mean_pair_distance)</span>
+
+<div class="viewcode-block" id="DynamicCHMCSampler.adjust_nsteps"><a class="viewcode-back" href="../../ultranest.html#ultranest.dychmc.DynamicCHMCSampler.adjust_nsteps">[docs]</a>    <span class="k">def</span> <span class="nf">adjust_nsteps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">history</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">history</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">:</span>
+            <span class="c1"># incomplete or aborted for some reason</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;not adapting, incomplete history&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">history</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">)</span>
+            <span class="k">return</span>
+        
+        <span class="c1">#assert self.nrejects &lt; len(history), (self.nsteps, self.nrejects, len(history))</span>
+        <span class="c1">#assert self.nrejects &lt;= self.nsteps, (self.nsteps, self.nrejects, len(history))</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mean_pair_distance</span><span class="p">)</span>
+        <span class="n">nlive</span><span class="p">,</span> <span class="n">ndim</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="o">==</span> <span class="s1">&#39;proposal-total-distances&#39;</span><span class="p">:</span>
+            <span class="c1"># compute mean vector of each proposed jump</span>
+            <span class="c1"># compute total distance of all jumps</span>
+            <span class="n">tproposed</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">u</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">history</span><span class="p">]))</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">tproposed</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">tproposed</span><span class="p">)</span>
+            <span class="n">d2</span> <span class="o">=</span> <span class="p">((((</span><span class="n">tproposed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">tproposed</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">**</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+            <span class="n">far_enough</span> <span class="o">=</span> <span class="n">d2</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_pair_distance</span> <span class="o">/</span> <span class="n">ndim</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_pair_distance</span><span class="p">]</span>
+            <span class="c1">#print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, self.mean_pair_distance, d2)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="o">==</span> <span class="s1">&#39;proposal-total-distances-NN&#39;</span><span class="p">:</span>
+            <span class="c1"># compute mean vector of each proposed jump</span>
+            <span class="c1"># compute total distance of all jumps</span>
+            <span class="n">tproposed</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">u</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">history</span><span class="p">]))</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">tproposed</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">tproposed</span><span class="p">)</span>
+            <span class="n">d2</span> <span class="o">=</span> <span class="p">((((</span><span class="n">tproposed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">tproposed</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">**</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+            <span class="n">far_enough</span> <span class="o">=</span> <span class="n">d2</span> <span class="o">&gt;</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span><span class="p">]</span>
+            <span class="c1">#print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="o">==</span> <span class="s1">&#39;proposal-summed-distances&#39;</span><span class="p">:</span>
+            <span class="c1"># compute sum of distances from each jump</span>
+            <span class="n">tproposed</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">u</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">history</span><span class="p">]))</span>
+            <span class="n">d2</span> <span class="o">=</span> <span class="p">(((</span><span class="n">tproposed</span><span class="p">[</span><span class="mi">1</span><span class="p">:,:]</span> <span class="o">-</span> <span class="n">tproposed</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,:])</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+            <span class="n">far_enough</span> <span class="o">=</span> <span class="n">d2</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_pair_distance</span> <span class="o">/</span> <span class="n">ndim</span>
+            <span class="c1">#print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, self.mean_pair_distance, d2)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_pair_distance</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="o">==</span> <span class="s1">&#39;proposal-summed-distances-NN&#39;</span><span class="p">:</span>
+            <span class="c1"># compute sum of distances from each jump</span>
+            <span class="n">tproposed</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">u</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">history</span><span class="p">]))</span>
+            <span class="n">d2</span> <span class="o">=</span> <span class="p">(((</span><span class="n">tproposed</span><span class="p">[</span><span class="mi">1</span><span class="p">:,:]</span> <span class="o">-</span> <span class="n">tproposed</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,:])</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+            <span class="n">far_enough</span> <span class="o">=</span> <span class="n">d2</span> <span class="o">&gt;</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span><span class="p">]</span>
+            <span class="c1">#print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="o">==</span> <span class="s1">&#39;proposal-summed-distances-min-NN&#39;</span><span class="p">:</span>
+            <span class="c1"># compute sum of distances from each jump</span>
+            <span class="n">tproposed</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">u</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">history</span><span class="p">]))</span>
+            <span class="n">d2</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">tproposed</span><span class="p">[</span><span class="mi">1</span><span class="p">:,:]</span> <span class="o">-</span> <span class="n">tproposed</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,:])</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+            <span class="n">far_enough</span> <span class="o">=</span> <span class="n">d2</span> <span class="o">&gt;</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span><span class="p">]</span>
+            <span class="c1">#print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="o">==</span> <span class="s1">&#39;proposal-variance-min&#39;</span><span class="p">:</span>
+            <span class="c1"># compute sum of distances from each jump</span>
+            <span class="n">tproposed</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">u</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">history</span><span class="p">]))</span>
+            <span class="n">d2</span> <span class="o">=</span> <span class="n">tproposed</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+            <span class="n">far_enough</span> <span class="o">=</span> <span class="n">d2</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_pair_distance</span> <span class="o">/</span> <span class="n">ndim</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_pair_distance</span><span class="p">]</span>
+            <span class="c1">#print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="o">==</span> <span class="s1">&#39;proposal-variance-min-NN&#39;</span><span class="p">:</span>
+            <span class="c1"># compute sum of distances from each jump</span>
+            <span class="n">tproposed</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">u</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">history</span><span class="p">]))</span>
+            <span class="n">d2</span> <span class="o">=</span> <span class="n">tproposed</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+            <span class="n">far_enough</span> <span class="o">=</span> <span class="n">d2</span> <span class="o">&gt;</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span><span class="p">]</span>
+            <span class="c1">#print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="o">==</span> <span class="s1">&#39;move-distance&#39;</span><span class="p">:</span>
+            <span class="c1"># compute distance from start to end</span>
+            <span class="n">ustart</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">history</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">ufinal</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">tstart</span><span class="p">,</span> <span class="n">tfinal</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">ustart</span><span class="p">,</span> <span class="n">ufinal</span><span class="p">)))</span>
+            <span class="n">d2</span> <span class="o">=</span> <span class="p">((</span><span class="n">tstart</span> <span class="o">-</span> <span class="n">tfinal</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+            <span class="n">far_enough</span> <span class="o">=</span> <span class="n">d2</span> <span class="o">&gt;</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span><span class="p">]</span>
+            <span class="c1">#print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="o">==</span> <span class="s1">&#39;move-distance-midway&#39;</span><span class="p">:</span>
+            <span class="c1"># compute distance from start to end</span>
+            <span class="n">ustart</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">history</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">middle</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">history</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">ufinal</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">history</span><span class="p">[</span><span class="n">middle</span><span class="p">]</span>
+            <span class="n">tstart</span><span class="p">,</span> <span class="n">tfinal</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">ustart</span><span class="p">,</span> <span class="n">ufinal</span><span class="p">)))</span>
+            <span class="n">d2</span> <span class="o">=</span> <span class="p">((</span><span class="n">tstart</span> <span class="o">-</span> <span class="n">tfinal</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+            <span class="n">far_enough</span> <span class="o">=</span> <span class="n">d2</span> <span class="o">&gt;</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span>
+            
+            <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span><span class="p">]</span>
+            <span class="c1">#print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span>
+        
+        <span class="c1"># adjust nsteps</span>
+        <span class="k">if</span> <span class="n">far_enough</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_nudge</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_nudge</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">)</span> <span class="o">%</span> <span class="mi">50</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;updating number of steps: </span><span class="si">%d</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">))</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014-2019, Johannes Buchner
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

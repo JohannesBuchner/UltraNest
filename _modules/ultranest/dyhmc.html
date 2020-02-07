@@ -1,0 +1,823 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>ultranest.dyhmc &mdash; UltraNest 2.1.0 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/icon.ico"/>
+  
+  
+  
+    <link rel="canonical" href="https://johannesbuchner.github.io/UltraNest/_modules/ultranest/dyhmc.html"/>
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> UltraNest
+          
+
+          
+            
+            <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../readme.html">UltraNest</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../method.html">How it works</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage-spectral-line.html">Basic usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../performance.html">Tour of the features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../issues.html">Frequently Asked Questions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../history.html">Release Notes</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../example-sine-line.html">Time series fitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-sine-modelcomparison.html">Model comparison</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-sine-highd.html">Higher-dimensional fitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-intrinsic-distribution.html">Tutorial: intrinsic distribution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-line.html">Tutorial: fitting a line</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-outliers.html">Tutorial: distribution with outliers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-sine-bayesian-workflow.html">Bayesian workflow</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">UltraNest</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content style-external-links">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>ultranest.dyhmc</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for ultranest.dyhmc</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="c1">#from numpy.linalg import norm</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">scipy.special</span><span class="o">,</span> <span class="nn">scipy.stats</span>
+
+<div class="viewcode-block" id="stop_criterion"><a class="viewcode-back" href="../../ultranest.html#ultranest.dyhmc.stop_criterion">[docs]</a><span class="k">def</span> <span class="nf">stop_criterion</span><span class="p">(</span><span class="n">thetaminus</span><span class="p">,</span> <span class="n">thetaplus</span><span class="p">,</span> <span class="n">rminus</span><span class="p">,</span> <span class="n">rplus</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Compute the stop condition in the main loop</span>
+<span class="sd">    dot(dtheta, rminus) &gt;= 0 &amp; dot(dtheta, rplus &gt;= 0)</span>
+
+<span class="sd">    INPUTS</span>
+<span class="sd">    ------</span>
+<span class="sd">    thetaminus, thetaplus: ndarray[float, ndim=1]</span>
+<span class="sd">        under and above position</span>
+<span class="sd">    rminus, rplus: ndarray[float, ndim=1]</span>
+<span class="sd">        under and above momentum</span>
+
+<span class="sd">    OUTPUTS</span>
+<span class="sd">    -------</span>
+<span class="sd">    criterion: bool</span>
+<span class="sd">        return if the condition is valid</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dtheta</span> <span class="o">=</span> <span class="n">thetaplus</span> <span class="o">-</span> <span class="n">thetaminus</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dtheta</span><span class="p">,</span> <span class="n">rminus</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dtheta</span><span class="p">,</span> <span class="n">rplus</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="leapfrog"><a class="viewcode-back" href="../../ultranest.html#ultranest.dyhmc.leapfrog">[docs]</a><span class="k">def</span> <span class="nf">leapfrog</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">grad</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">invmassmatrix</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
+    <span class="c1"># make half step in r</span>
+    <span class="n">rprime</span> <span class="o">=</span> <span class="n">r</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">epsilon</span> <span class="o">*</span> <span class="n">grad</span>
+    <span class="c1"># make new step in theta</span>
+    <span class="n">thetaprime</span> <span class="o">=</span> <span class="n">theta</span> <span class="o">+</span> <span class="n">epsilon</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">invmassmatrix</span><span class="p">,</span> <span class="n">rprime</span><span class="p">)</span>
+    <span class="c1">#compute new gradient</span>
+    <span class="p">(</span><span class="n">logpprime</span><span class="p">,</span> <span class="n">gradprime</span><span class="p">),</span> <span class="n">extra</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">thetaprime</span><span class="p">)</span>
+    <span class="c1"># make half step in r again</span>
+    <span class="n">rprime</span> <span class="o">=</span> <span class="n">rprime</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">epsilon</span> <span class="o">*</span> <span class="n">gradprime</span>
+    <span class="k">return</span> <span class="n">thetaprime</span><span class="p">,</span> <span class="n">rprime</span><span class="p">,</span> <span class="n">gradprime</span><span class="p">,</span> <span class="n">logpprime</span><span class="p">,</span> <span class="n">extra</span></div>
+
+
+<div class="viewcode-block" id="build_tree"><a class="viewcode-back" href="../../ultranest.html#ultranest.dyhmc.build_tree">[docs]</a><span class="k">def</span> <span class="nf">build_tree</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">grad</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">invmassmatrix</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">joint0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The main recursion.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># Base case: Take a single leapfrog step in the direction v.</span>
+        <span class="n">thetaprime</span><span class="p">,</span> <span class="n">rprime</span><span class="p">,</span> <span class="n">gradprime</span><span class="p">,</span> <span class="n">logpprime</span><span class="p">,</span> <span class="n">extraprime</span> <span class="o">=</span> <span class="n">leapfrog</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">grad</span><span class="p">,</span> <span class="n">v</span> <span class="o">*</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">invmassmatrix</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+        <span class="n">joint</span> <span class="o">=</span> <span class="n">logpprime</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">rprime</span><span class="p">,</span> <span class="n">invmassmatrix</span><span class="p">),</span> <span class="n">rprime</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="c1"># Is the simulation wildly inaccurate?</span>
+        <span class="n">sprime</span> <span class="o">=</span> <span class="n">joint0</span> <span class="o">-</span> <span class="mf">1000.</span> <span class="o">&lt;</span> <span class="n">joint</span> <span class="c1"># and logpprime &gt; Lmin</span>
+        <span class="c1"># Set the return values---minus=plus for all things here, since the</span>
+        <span class="c1"># &quot;tree&quot; is of depth 0.</span>
+        <span class="n">thetaminus</span> <span class="o">=</span> <span class="n">thetaprime</span><span class="p">[:]</span>
+        <span class="n">thetaplus</span> <span class="o">=</span> <span class="n">thetaprime</span><span class="p">[:]</span>
+        <span class="n">rminus</span> <span class="o">=</span> <span class="n">rprime</span><span class="p">[:]</span>
+        <span class="n">rplus</span> <span class="o">=</span> <span class="n">rprime</span><span class="p">[:]</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">rprime</span><span class="p">[:]</span>
+        <span class="n">gradminus</span> <span class="o">=</span> <span class="n">gradprime</span><span class="p">[:]</span>
+        <span class="n">gradplus</span> <span class="o">=</span> <span class="n">gradprime</span><span class="p">[:]</span>
+        <span class="c1"># Compute the acceptance probability.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sprime</span><span class="p">:</span>
+            <span class="c1">#print(&quot;stopped trajectory:&quot;, joint0, joint, logpprime, gradprime)</span>
+            <span class="n">alphaprime</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">alphaprime</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mf">1.</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">joint</span> <span class="o">-</span> <span class="n">joint0</span><span class="p">))</span>
+        
+        <span class="k">if</span> <span class="n">logpprime</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mi">300</span><span class="p">:</span>
+            <span class="c1">#if alphaprime &gt; 0:</span>
+            <span class="c1">#    print(&quot;stopping at very low probability:&quot;, joint0, joint, logpprime, gradprime)</span>
+            <span class="n">betaprime</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">betaprime</span> <span class="o">=</span> <span class="n">alphaprime</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">logpprime</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="n">betaprime</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="n">sprime</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="n">nalphaprime</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Recursion: Implicitly build the height j-1 left and right subtrees.</span>
+        <span class="n">thetaminus</span><span class="p">,</span> <span class="n">rminus</span><span class="p">,</span> <span class="n">gradminus</span><span class="p">,</span> <span class="n">thetaplus</span><span class="p">,</span> <span class="n">rplus</span><span class="p">,</span> <span class="n">gradplus</span><span class="p">,</span> <span class="n">thetaprime</span><span class="p">,</span> <span class="n">gradprime</span><span class="p">,</span> <span class="n">logpprime</span><span class="p">,</span> <span class="n">extraprime</span><span class="p">,</span> <span class="n">rprime</span><span class="p">,</span> <span class="n">sprime</span><span class="p">,</span> <span class="n">alphaprime</span><span class="p">,</span> <span class="n">betaprime</span><span class="p">,</span> <span class="n">nalphaprime</span> <span class="o">=</span> <span class="n">build_tree</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">grad</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">invmassmatrix</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">joint0</span><span class="p">)</span>
+        <span class="c1"># No need to keep going if the stopping criteria were met in the first subtree.</span>
+        <span class="k">if</span> <span class="n">sprime</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">v</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="n">thetaminus</span><span class="p">,</span> <span class="n">rminus</span><span class="p">,</span> <span class="n">gradminus</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">thetaprime2</span><span class="p">,</span> <span class="n">gradprime2</span><span class="p">,</span> <span class="n">logpprime2</span><span class="p">,</span> <span class="n">extraprime2</span><span class="p">,</span> <span class="n">rprime2</span><span class="p">,</span> <span class="n">sprime2</span><span class="p">,</span> <span class="n">alphaprime2</span><span class="p">,</span> <span class="n">betaprime2</span><span class="p">,</span> <span class="n">nalphaprime2</span> <span class="o">=</span> <span class="n">build_tree</span><span class="p">(</span><span class="n">thetaminus</span><span class="p">,</span> <span class="n">rminus</span><span class="p">,</span> <span class="n">gradminus</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">invmassmatrix</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">joint0</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">thetaplus</span><span class="p">,</span> <span class="n">rplus</span><span class="p">,</span> <span class="n">gradplus</span><span class="p">,</span> <span class="n">thetaprime2</span><span class="p">,</span> <span class="n">gradprime2</span><span class="p">,</span> <span class="n">logpprime2</span><span class="p">,</span> <span class="n">extraprime2</span><span class="p">,</span> <span class="n">rprime2</span><span class="p">,</span> <span class="n">sprime2</span><span class="p">,</span> <span class="n">alphaprime2</span><span class="p">,</span> <span class="n">betaprime2</span><span class="p">,</span> <span class="n">nalphaprime2</span> <span class="o">=</span> <span class="n">build_tree</span><span class="p">(</span><span class="n">thetaplus</span><span class="p">,</span> <span class="n">rplus</span><span class="p">,</span> <span class="n">gradplus</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">j</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">invmassmatrix</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">joint0</span><span class="p">)</span>
+
+            <span class="c1"># Choose which subtree to propagate a sample up from.</span>
+            <span class="k">if</span> <span class="n">betaprime</span> <span class="o">+</span> <span class="n">betaprime2</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">betaprime2</span> <span class="o">/</span> <span class="p">(</span><span class="n">betaprime</span> <span class="o">+</span> <span class="n">betaprime2</span><span class="p">):</span>
+                <span class="n">thetaprime</span> <span class="o">=</span> <span class="n">thetaprime2</span><span class="p">[:]</span>
+                <span class="n">gradprime</span> <span class="o">=</span> <span class="n">gradprime2</span><span class="p">[:]</span>
+                <span class="n">logpprime</span> <span class="o">=</span> <span class="n">logpprime2</span>
+                <span class="n">extraprime</span> <span class="o">=</span> <span class="n">extraprime2</span>
+                <span class="n">rprime</span> <span class="o">=</span> <span class="n">rprime2</span>
+            
+            <span class="c1"># Update the stopping criterion.</span>
+            <span class="n">sturn</span> <span class="o">=</span> <span class="n">stop_criterion</span><span class="p">(</span><span class="n">thetaminus</span><span class="p">,</span> <span class="n">thetaplus</span><span class="p">,</span> <span class="n">rminus</span><span class="p">,</span> <span class="n">rplus</span><span class="p">)</span>
+            <span class="c1">#print(sprime, sprime2, sturn)</span>
+            <span class="n">sprime</span> <span class="o">=</span> <span class="n">sprime</span> <span class="ow">and</span> <span class="n">sprime2</span> <span class="ow">and</span> <span class="n">sturn</span>
+            <span class="c1"># Update the acceptance probability statistics.</span>
+            <span class="n">alphaprime</span> <span class="o">+=</span> <span class="n">alphaprime2</span>
+            <span class="n">betaprime</span> <span class="o">+=</span> <span class="n">betaprime2</span>
+            <span class="n">nalphaprime</span> <span class="o">+=</span> <span class="n">nalphaprime2</span>
+
+    <span class="k">return</span> <span class="n">thetaminus</span><span class="p">,</span> <span class="n">rminus</span><span class="p">,</span> <span class="n">gradminus</span><span class="p">,</span> <span class="n">thetaplus</span><span class="p">,</span> <span class="n">rplus</span><span class="p">,</span> <span class="n">gradplus</span><span class="p">,</span> <span class="n">thetaprime</span><span class="p">,</span> <span class="n">gradprime</span><span class="p">,</span> <span class="n">logpprime</span><span class="p">,</span> <span class="n">extraprime</span><span class="p">,</span> <span class="n">rprime</span><span class="p">,</span> <span class="n">sprime</span><span class="p">,</span> <span class="n">alphaprime</span><span class="p">,</span> <span class="n">betaprime</span><span class="p">,</span> <span class="n">nalphaprime</span></div>
+
+<div class="viewcode-block" id="tree_sample"><a class="viewcode-back" href="../../ultranest.html#ultranest.dyhmc.tree_sample">[docs]</a><span class="k">def</span> <span class="nf">tree_sample</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">logp</span><span class="p">,</span> <span class="n">r0</span><span class="p">,</span> <span class="n">grad</span><span class="p">,</span> <span class="n">extra</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">invmassmatrix</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">joint</span><span class="p">,</span> <span class="n">maxheight</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">):</span>
+    <span class="c1"># initialize the tree</span>
+    <span class="n">thetaminus</span> <span class="o">=</span> <span class="n">theta</span>
+    <span class="n">thetaplus</span> <span class="o">=</span> <span class="n">theta</span>
+    <span class="n">rminus</span> <span class="o">=</span> <span class="n">r0</span><span class="p">[:]</span>
+    <span class="n">rplus</span> <span class="o">=</span> <span class="n">r0</span><span class="p">[:]</span>
+    <span class="n">gradminus</span> <span class="o">=</span> <span class="n">grad</span><span class="p">[:]</span>
+    <span class="n">gradplus</span> <span class="o">=</span> <span class="n">grad</span><span class="p">[:]</span>
+    <span class="n">alpha</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">beta</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">nalpha</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># initial heigth j = 0</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># Main loop: will keep going until s == 0.</span>
+
+    <span class="k">while</span> <span class="n">s</span> <span class="ow">and</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">maxheight</span><span class="p">:</span>
+        <span class="c1"># Choose a direction. -1 = backwards, 1 = forwards.</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Double the size of the tree.</span>
+        <span class="k">if</span> <span class="n">v</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">thetaminus</span><span class="p">,</span> <span class="n">rminus</span><span class="p">,</span> <span class="n">gradminus</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">thetaprime</span><span class="p">,</span> <span class="n">gradprime</span><span class="p">,</span> <span class="n">logpprime</span><span class="p">,</span> <span class="n">extraprime</span><span class="p">,</span> <span class="n">rprime</span><span class="p">,</span> <span class="n">sprime</span><span class="p">,</span> <span class="n">alphaprime</span><span class="p">,</span> <span class="n">betaprime</span><span class="p">,</span> <span class="n">nalphaprime</span> <span class="o">=</span> <span class="n">build_tree</span><span class="p">(</span>
+                <span class="n">thetaminus</span><span class="p">,</span> <span class="n">rminus</span><span class="p">,</span> <span class="n">gradminus</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">invmassmatrix</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">joint</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">thetaplus</span><span class="p">,</span> <span class="n">rplus</span><span class="p">,</span> <span class="n">gradplus</span><span class="p">,</span> <span class="n">thetaprime</span><span class="p">,</span> <span class="n">gradprime</span><span class="p">,</span> <span class="n">logpprime</span><span class="p">,</span> <span class="n">extraprime</span><span class="p">,</span> <span class="n">rprime</span><span class="p">,</span> <span class="n">sprime</span><span class="p">,</span> <span class="n">alphaprime</span><span class="p">,</span> <span class="n">betaprime</span><span class="p">,</span> <span class="n">nalphaprime</span> <span class="o">=</span> <span class="n">build_tree</span><span class="p">(</span>
+                <span class="n">thetaplus</span><span class="p">,</span> <span class="n">rplus</span><span class="p">,</span> <span class="n">gradplus</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">invmassmatrix</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">joint</span><span class="p">)</span>
+        
+        <span class="k">assert</span> <span class="n">beta</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">beta</span>
+        <span class="k">assert</span> <span class="n">betaprime</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">betaprime</span>
+
+        <span class="c1"># Use Metropolis-Hastings to decide whether or not to move to a</span>
+        <span class="c1"># point from the half-tree we just generated.</span>
+        <span class="k">if</span> <span class="n">sprime</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">betaprime</span> <span class="o">/</span> <span class="p">(</span><span class="n">beta</span> <span class="o">+</span> <span class="n">betaprime</span><span class="p">):</span>
+            <span class="n">logp</span> <span class="o">=</span> <span class="n">logpprime</span>
+            <span class="n">grad</span> <span class="o">=</span> <span class="n">gradprime</span><span class="p">[:]</span>
+            <span class="n">theta</span> <span class="o">=</span> <span class="n">thetaprime</span>
+            <span class="n">extra</span> <span class="o">=</span> <span class="n">extraprime</span>
+            <span class="n">r0</span> <span class="o">=</span> <span class="n">rprime</span>
+            <span class="c1">#print(&quot;accepting&quot;, theta, logp)</span>
+        
+        <span class="n">alpha</span> <span class="o">+=</span> <span class="n">alphaprime</span>
+        <span class="n">beta</span> <span class="o">+=</span> <span class="n">betaprime</span>
+        <span class="n">nalpha</span> <span class="o">+=</span> <span class="n">nalphaprime</span>
+        
+        <span class="c1"># Decide if it&#39;s time to stop.</span>
+        <span class="n">sturn</span> <span class="o">=</span> <span class="n">stop_criterion</span><span class="p">(</span><span class="n">thetaminus</span><span class="p">,</span> <span class="n">thetaplus</span><span class="p">,</span> <span class="n">rminus</span><span class="p">,</span> <span class="n">rplus</span><span class="p">)</span>
+        <span class="c1">#print(sprime, sturn)</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">sprime</span> <span class="ow">and</span> <span class="n">sturn</span>
+        <span class="c1"># Increment depth.</span>
+        <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="c1">#print(&quot;jumping to:&quot;, theta)</span>
+    <span class="c1">#print(&#39;Tree height: %d, acceptance fraction: %03.2f%%/%03.2f%%, epsilon=%g&#39; % (j, alpha/nalpha*100, beta/nalpha*100, epsilon))</span>
+    <span class="k">return</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">nalpha</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">grad</span><span class="p">,</span> <span class="n">logp</span><span class="p">,</span> <span class="n">extra</span><span class="p">,</span> <span class="n">r0</span><span class="p">,</span> <span class="n">j</span></div>
+
+
+<div class="viewcode-block" id="find_beta_params_static"><a class="viewcode-back" href="../../ultranest.html#ultranest.dyhmc.find_beta_params_static">[docs]</a><span class="k">def</span> <span class="nf">find_beta_params_static</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">u10</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Define auxiliary distribution following naive intuition.</span>
+<span class="sd">    Make 50% quantile to be at u=0.1, and very flat at high u. &quot;&quot;&quot;</span>
+    <span class="n">betas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+    <span class="n">z50</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">special</span><span class="o">.</span><span class="n">betaincinv</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">betas</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+    
+    <span class="n">alpha</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">beta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">u10</span><span class="p">,</span> <span class="n">z50</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">betas</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Auxiliary Beta distribution(alpha=</span><span class="si">%.1f</span><span class="s2">, beta=</span><span class="si">%.1f</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span></div>
+
+<div class="viewcode-block" id="find_beta_params_dynamic"><a class="viewcode-back" href="../../ultranest.html#ultranest.dyhmc.find_beta_params_dynamic">[docs]</a><span class="k">def</span> <span class="nf">find_beta_params_dynamic</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">u10</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Define auxiliary distribution taking into account </span>
+<span class="sd">    kinetic energy of a d-dimensional HMC.</span>
+<span class="sd">    Make exp(-d/2) quantile to be at u=0.1, and 95% quantile at u=0.5. &quot;&quot;&quot;</span>
+    
+    <span class="n">u50</span> <span class="o">=</span> <span class="p">(</span><span class="n">u10</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.</span>
+    <span class="k">def</span> <span class="nf">minfunc</span><span class="p">(</span><span class="n">params</span><span class="p">):</span>
+        <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span> <span class="o">=</span> <span class="n">params</span>
+        <span class="n">q10</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">special</span><span class="o">.</span><span class="n">betainc</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">u10</span><span class="p">)</span>
+        <span class="n">q50</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">special</span><span class="o">.</span><span class="n">betainc</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">u50</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">q10</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">d</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">q50</span> <span class="o">-</span> <span class="mf">0.98</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+    
+    <span class="n">r</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">optimize</span><span class="o">.</span><span class="n">minimize</span><span class="p">(</span><span class="n">minfunc</span><span class="p">,</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">])</span>
+    <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">x</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Auxiliary Beta distribution(alpha=</span><span class="si">%.1f</span><span class="s2">, beta=</span><span class="si">%.1f</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">),</span> <span class="n">u10</span><span class="p">)</span>
+        
+    <span class="k">return</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span></div>
+
+<div class="viewcode-block" id="generate_momentum_normal"><a class="viewcode-back" href="../../ultranest.html#ultranest.dyhmc.generate_momentum_normal">[docs]</a><span class="k">def</span> <span class="nf">generate_momentum_normal</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">massmatrix</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">multivariate_normal</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">d</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">massmatrix</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">d</span><span class="p">)))</span></div>
+
+<div class="viewcode-block" id="generate_momentum"><a class="viewcode-back" href="../../ultranest.html#ultranest.dyhmc.generate_momentum">[docs]</a><span class="k">def</span> <span class="nf">generate_momentum</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">massmatrix</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">):</span>
+    <span class="c1"># draw from a circle</span>
+    <span class="n">momentum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">multivariate_normal</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">d</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">massmatrix</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">d</span><span class="p">)))</span>
+    <span class="c1"># generate normalisation from beta distribution</span>
+    <span class="c1"># add a bit of noise in the step size</span>
+    <span class="c1">#norm *= np.uniform(0.2, 2)</span>
+    <span class="n">auxnorm</span> <span class="o">=</span> <span class="o">-</span><span class="n">scipy</span><span class="o">.</span><span class="n">special</span><span class="o">.</span><span class="n">betainc</span><span class="p">(</span><span class="n">alpha</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">scipy</span><span class="o">.</span><span class="n">special</span><span class="o">.</span><span class="n">betainc</span><span class="p">(</span><span class="n">alpha</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="n">scipy</span><span class="o">.</span><span class="n">special</span><span class="o">.</span><span class="n">betainc</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">u</span> <span class="o">&gt;</span> <span class="mf">0.9</span><span class="p">:</span>
+        <span class="n">norm</span> <span class="o">=</span> <span class="mf">1.</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">u</span> <span class="o">/=</span> <span class="mf">0.9</span>
+        <span class="n">norm</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">special</span><span class="o">.</span><span class="n">betainc</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
+    <span class="n">momnorm</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">((</span><span class="n">norm</span> <span class="o">+</span> <span class="mf">1e-10</span><span class="p">)</span> <span class="o">/</span> <span class="n">auxnorm</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">momnorm</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="n">momnorm</span><span class="p">,</span> <span class="n">norm</span><span class="p">,</span> <span class="n">auxnorm</span><span class="p">)</span>
+    
+    <span class="n">momentum</span> <span class="o">*=</span> <span class="n">momnorm</span> <span class="o">/</span> <span class="p">(</span><span class="n">momentum</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">**</span><span class="mf">0.5</span>
+    
+    <span class="k">return</span> <span class="n">momentum</span></div>
+
+<div class="viewcode-block" id="generate_momentum_circle"><a class="viewcode-back" href="../../ultranest.html#ultranest.dyhmc.generate_momentum_circle">[docs]</a><span class="k">def</span> <span class="nf">generate_momentum_circle</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">massmatrix</span><span class="p">):</span>
+    <span class="c1"># draw from a circle, with a little noise in amplitude</span>
+    <span class="n">momentum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">multivariate_normal</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">d</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">massmatrix</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">d</span><span class="p">)))</span>
+    <span class="n">momentum</span> <span class="o">*=</span> <span class="mi">10</span><span class="o">**</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">momentum</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">**</span><span class="mf">0.5</span>
+    <span class="k">return</span> <span class="n">momentum</span></div>
+
+
+<div class="viewcode-block" id="generate_momentum_flattened"><a class="viewcode-back" href="../../ultranest.html#ultranest.dyhmc.generate_momentum_flattened">[docs]</a><span class="k">def</span> <span class="nf">generate_momentum_flattened</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">massmatrix</span><span class="p">):</span>
+    <span class="c1"># like normal distribution, but make momenta distributed like a single gaussian</span>
+    <span class="n">momentum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">multivariate_normal</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">d</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">massmatrix</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">d</span><span class="p">)))</span>
+    <span class="n">norm</span> <span class="o">=</span> <span class="p">(</span><span class="n">momentum</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">**</span><span class="mf">0.5</span>
+    <span class="k">assert</span> <span class="n">norm</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="n">momentum</span> <span class="o">*=</span> <span class="n">norm</span><span class="o">**</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">d</span><span class="p">)</span> <span class="o">/</span> <span class="n">norm</span>
+    <span class="k">return</span> <span class="n">momentum</span></div>
+
+
+<div class="viewcode-block" id="FlattenedProblem"><a class="viewcode-back" href="../../ultranest.html#ultranest.dyhmc.FlattenedProblem">[docs]</a><span class="k">class</span> <span class="nc">FlattenedProblem</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates a suitable auxiliary distribution from samples of likelihood values</span>
+<span class="sd">    </span>
+<span class="sd">    The distribution is the CDF of a beta distribution, with</span>
+<span class="sd">    0 -&gt; logLmin</span>
+<span class="sd">    1 -&gt; 90% quantile of logLs</span>
+<span class="sd">    0.5 -&gt; 10% quantile of logLs</span>
+<span class="sd">    </span>
+<span class="sd">    .modify_Lgrad() returns the conversion from logL, grad to the</span>
+<span class="sd">    equivalents on the auxiliary distribution.</span>
+<span class="sd">    </span>
+<span class="sd">    .__call__(x) returns logL, grad on the auxiliary distribution.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">Ls</span><span class="p">,</span> <span class="n">function</span><span class="p">,</span> <span class="n">layer</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Lmin</span> <span class="o">=</span> <span class="n">Ls</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">L90</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">Ls</span><span class="p">,</span> <span class="mi">90</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">L10</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">Ls</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+        <span class="n">u10</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">L10</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">Lmin</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">L90</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">Lmin</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">function</span> <span class="o">=</span> <span class="n">function</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layer</span> <span class="o">=</span> <span class="n">layer</span>
+        
+        <span class="c1">#self.alpha, self.beta = find_beta_params_static(d, u10)</span>
+        <span class="c1">#self.alpha, self.beta = find_beta_params_dynamic(d, u10)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">6.0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">du_dL</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">L90</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">Lmin</span><span class="p">)</span>
+        <span class="c1"># print(&quot;du/dL = %g &quot; % du_dL)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">C</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">special</span><span class="o">.</span><span class="n">beta</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">d</span> <span class="o">=</span> <span class="n">d</span>
+        
+        
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layer</span><span class="p">,</span> <span class="s1">&#39;invT&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">invmassmatrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">layer</span><span class="o">.</span><span class="n">cov</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">massmatrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">invmassmatrix</span><span class="p">)</span>
+            <span class="c1">#print(&quot;invM:&quot;, self.invmassmatrix.shape)</span>
+        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layer</span><span class="p">,</span> <span class="s1">&#39;std&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layer</span><span class="o">.</span><span class="n">std</span><span class="p">)</span> <span class="o">==</span> <span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">layer</span><span class="o">.</span><span class="n">std</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">massmatrix</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">invmassmatrix</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># invmassmatrix: covariance</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">invmassmatrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layer</span><span class="o">.</span><span class="n">std</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">massmatrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layer</span><span class="o">.</span><span class="n">std</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**-</span><span class="mi">2</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">invmassmatrix</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">layer</span><span class="o">.</span><span class="n">std</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="kc">False</span>
+
+<div class="viewcode-block" id="FlattenedProblem.modify_Lgrad"><a class="viewcode-back" href="../../ultranest.html#ultranest.dyhmc.FlattenedProblem.modify_Lgrad">[docs]</a>    <span class="k">def</span> <span class="nf">modify_Lgrad</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">grad</span><span class="p">):</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="p">(</span><span class="n">L</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">Lmin</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">L90</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">Lmin</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">u</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logp</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+            <span class="n">u</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="n">dlogp_du</span> <span class="o">=</span> <span class="mf">1.0</span>
+            <span class="c1">#print(&quot;L &lt;= Lmin&quot;, L, self.Lmin)</span>
+        <span class="k">elif</span> <span class="n">u</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">u</span> <span class="o">=</span> <span class="mf">1.0</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="mf">1.0</span>
+            <span class="n">logp</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="c1">#print(&quot;L &gt; L90&quot;, L, L90)</span>
+            <span class="k">return</span> <span class="n">logp</span><span class="p">,</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">grad</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1">#p = self.rv.cdf(u)</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">special</span><span class="o">.</span><span class="n">betainc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span> 
+            <span class="n">logp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+            <span class="n">B</span> <span class="o">=</span> <span class="n">p</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">C</span>
+            <span class="n">dlogp_du</span> <span class="o">=</span> <span class="n">u</span><span class="o">**</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">u</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">B</span>
+        
+        <span class="c1"># convert gradient to flattened space</span>
+        <span class="n">tgrad</span> <span class="o">=</span> <span class="n">grad</span> <span class="o">*</span> <span class="n">dlogp_du</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">du_dL</span>
+        
+        <span class="k">return</span> <span class="n">logp</span><span class="p">,</span> <span class="n">tgrad</span></div>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">u</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">u</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+            <span class="c1"># outside unit cube, invalid.</span>
+            <span class="c1">#print(&quot;outside&quot;, u)</span>
+            <span class="k">return</span> <span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="mf">0.</span><span class="o">*</span><span class="n">u</span><span class="p">),</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="mf">0.</span><span class="o">*</span><span class="n">u</span><span class="p">)</span>
+        
+        <span class="n">p</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">grad_orig</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">function</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+        <span class="c1">#print(&quot;at &quot;, u, &quot;L:&quot;, L)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">modify_Lgrad</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">grad_orig</span><span class="p">),</span> <span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">grad_orig</span><span class="p">)</span>
+    
+<div class="viewcode-block" id="FlattenedProblem.generate_momentum"><a class="viewcode-back" href="../../ultranest.html#ultranest.dyhmc.FlattenedProblem.generate_momentum">[docs]</a>    <span class="k">def</span> <span class="nf">generate_momentum</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">generate_momentum_flattened</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">d</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">massmatrix</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">generate_momentum_normal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">d</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">massmatrix</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">generate_momentum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">d</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">massmatrix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="p">)</span></div></div>
+
+
+
+<div class="viewcode-block" id="DynamicHMCSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.dyhmc.DynamicHMCSampler">[docs]</a><span class="k">class</span> <span class="nc">DynamicHMCSampler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Dynamic Hamiltonian/Hybrid Monte Carlo technique</span>
+<span class="sd">    </span>
+<span class="sd">    Typically, HMC operates on the posterior. It has the benefit</span>
+<span class="sd">    of producing &quot;orbit&quot; trajectories, that can follow the guidance</span>
+<span class="sd">    of gradients.</span>
+<span class="sd">    </span>
+<span class="sd">    In nested sampling, we need to sample the prior subject to the </span>
+<span class="sd">    likelihood constraint. This means a HMC would most of the time</span>
+<span class="sd">    go in straight lines, until it steps outside the boundary.    </span>
+<span class="sd">    Techniques such as Constrained HMC and Galilean MC use the </span>
+<span class="sd">    gradient outside to select the reflection direction.</span>
+<span class="sd">    </span>
+<span class="sd">    However, it would be beneficial to be repelled by the likelihood</span>
+<span class="sd">    boundary, and to take advantage of gradient guidance.</span>
+<span class="sd">    This implements a new technique that does this.</span>
+<span class="sd">    </span>
+<span class="sd">    The trick is to define a auxiliary distribution from the likelihood,</span>
+<span class="sd">    generate HMC trajectories from it, and draw points from the </span>
+<span class="sd">    trajectory with inverse the probability of the auxiliary distribution</span>
+<span class="sd">    to sample from the prior. Thus, the auxiliary distribution should be</span>
+<span class="sd">    mostly flat, and go to zero at the boundaries to repell the HMC.</span>
+<span class="sd">    </span>
+<span class="sd">    Given Lmin and Lmax from the live points, </span>
+<span class="sd">    use a beta approximation of log-likelihood</span>
+
+<span class="sd">    p=1 if L&gt;Lmin</span>
+<span class="sd">    u = (L - Lmin) / (Lmax - Lmin)</span>
+<span class="sd">    p = Beta_PDF(u; alpha, beta)</span>
+
+<span class="sd">    then define</span>
+<span class="sd">     d log(p) / dx = dlog(p_orig)/dlog(p) * dlog(p_orig) / dx</span>
+<span class="sd">     new gradient  = conversion           * original gradient</span>
+
+<span class="sd">    with conversion</span>
+<span class="sd">     dlogp/du = 0 if u&gt;1; otherwise:</span>
+<span class="sd">     dlogp/du =  u**(1-alpha) * (1-u)**(1-beta) / Ic(u; alpha, beta) / Beta_PDF(u, alpha, beta)</span>
+<span class="sd">     du/dL = 1 / (Lmax - Lmin)</span>
+
+<span class="sd">    The beta distribution achieves:</span>
+<span class="sd">    * a flattening of the loglikelihood to avoid seeing only &quot;walls&quot;</span>
+<span class="sd">    * using the gradient to identify how to orbit the likelihood contour</span>
+<span class="sd">    * at higher, unseen likelihoods, the exploration is in straight lines</span>
+<span class="sd">    * trajectory do not have the energy to go below Lmin.</span>
+<span class="sd">    * alpha and beta parameters allow flexible choice of &quot;contour avoidance&quot;</span>
+
+<span class="sd">    Run HMC trajectory on p</span>
+<span class="sd">    This will draw samples proportional to p</span>
+<span class="sd">    Modify multinomial acceptance by 1/p to get uniform samples.</span>
+<span class="sd">    and  reject porig &lt; p_1 </span>
+<span class="sd">    </span>
+<span class="sd">    The remaining choices for HMC are how long the trajectories should</span>
+<span class="sd">    run (number of steps) and the step size. The former is solved</span>
+<span class="sd">    by No-U-Turn Sampler or dynamic HMC, which randomly build </span>
+<span class="sd">    forward and backward paths until the trajectory turns around.</span>
+<span class="sd">    Then, a random point from the trajectory is chosen.</span>
+<span class="sd">    </span>
+<span class="sd">    The step size is chosen by targeting an acceptance rate of</span>
+<span class="sd">    delta~0.95, and decreasing(increasing) every time the region is</span>
+<span class="sd">    rebuilt if the acceptance rate is below(above).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ndim</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">,</span> <span class="n">transform_loglike_gradient</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="mf">0.90</span><span class="p">,</span> <span class="n">nudge</span><span class="o">=</span><span class="mf">1.04</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialise sampler.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        -----------</span>
+<span class="sd">        nsteps: int</span>
+<span class="sd">            number of accepted steps until the sample is considered independent.</span>
+<span class="sd">        transform_loglike_gradient: function</span>
+<span class="sd">            called with unit cube position vector u, returns</span>
+<span class="sd">            transformed parameter vector p, </span>
+<span class="sd">            loglikelihood and gradient (dlogL/du, not just dlogL/dp)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">=</span> <span class="n">nsteps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nrejects</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">ndim</span><span class="o">**</span><span class="mf">0.5</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transform_loglike_gradient</span> <span class="o">=</span> <span class="n">transform_loglike_gradient</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nudge</span> <span class="o">=</span> <span class="n">nudge</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delta</span> <span class="o">=</span> <span class="n">delta</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">problem</span> <span class="o">=</span> <span class="kc">None</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;acceptance_rate&#39;</span><span class="p">,</span> <span class="s1">&#39;acceptance_rate_bias&#39;</span><span class="p">,</span> <span class="s1">&#39;stepsize&#39;</span><span class="p">,</span> <span class="s1">&#39;treeheight&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logstat_trajectory</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get string representation.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s1">&#39;(nsteps=</span><span class="si">%d</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span>
+
+<div class="viewcode-block" id="DynamicHMCSampler.plot"><a class="viewcode-back" href="../../ultranest.html#ultranest.dyhmc.DynamicHMCSampler.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Plot sampler statistics.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">parts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">3</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)))</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">part</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span><span class="p">,</span> <span class="n">parts</span><span class="p">)):</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">i</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">part</span><span class="p">)</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">part</span><span class="p">),</span> <span class="mi">20</span><span class="p">):</span>
+                <span class="n">x</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+                <span class="n">y</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">part</span><span class="p">[</span><span class="n">j</span><span class="p">:</span><span class="n">j</span> <span class="o">+</span> <span class="mi">20</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">part</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">,</span> <span class="n">us</span><span class="p">,</span> <span class="n">Ls</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a new point.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        region: MLFriends</span>
+<span class="sd">            region.</span>
+<span class="sd">        Lmin: float</span>
+<span class="sd">            loglikelihood threshold</span>
+<span class="sd">        us: array of vectors</span>
+<span class="sd">            current live points</span>
+<span class="sd">        Ls: array of floats</span>
+<span class="sd">            current live point likelihoods</span>
+<span class="sd">        transform: function</span>
+<span class="sd">            transform function</span>
+<span class="sd">        loglike: function</span>
+<span class="sd">            loglikelihood function</span>
+<span class="sd">        ndraw: int</span>
+<span class="sd">            number of draws to attempt simultaneously.</span>
+<span class="sd">        plot: bool</span>
+<span class="sd">            whether to produce debug plots.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1">#i = np.argsort(Ls)[0]</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">Ls</span> <span class="o">&gt;</span> <span class="n">Lmin</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">mask</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+        <span class="c1">#print(&quot;starting from live point %d&quot; % i)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">starti</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">mask</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">ui</span> <span class="o">=</span> <span class="n">us</span><span class="p">[</span><span class="n">mask</span><span class="p">,:][</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">ui</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">ui</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">ui</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">create_problem</span><span class="p">(</span><span class="n">Ls</span><span class="p">,</span> <span class="n">region</span><span class="p">)</span>
+        
+        <span class="n">ncalls_total</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="p">(</span><span class="n">Lflat</span><span class="p">,</span> <span class="n">gradflat</span><span class="p">),</span> <span class="p">(</span><span class="n">pi</span><span class="p">,</span> <span class="n">Li</span><span class="p">,</span> <span class="n">gradi</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="p">(</span><span class="n">ui</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">Lflat</span><span class="p">)</span> <span class="o">==</span> <span class="p">(),</span> <span class="p">(</span><span class="n">Lflat</span><span class="p">,</span> <span class="n">Li</span><span class="p">,</span> <span class="n">gradi</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">gradflat</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ui</span><span class="p">),),</span> <span class="p">(</span><span class="n">gradi</span><span class="p">,</span> <span class="n">gradflat</span><span class="p">)</span>
+        
+        <span class="n">nsteps_remaining</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span>
+        <span class="k">while</span> <span class="n">nsteps_remaining</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">unew</span><span class="p">,</span> <span class="n">pnew</span><span class="p">,</span> <span class="n">Lnew</span><span class="p">,</span> <span class="n">gradnew</span><span class="p">,</span> <span class="n">Lflatnew</span><span class="p">,</span> <span class="n">gradflatnew</span><span class="p">,</span> <span class="n">nc</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">treeheight</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">pi</span><span class="p">,</span> <span class="n">Li</span><span class="p">,</span> <span class="n">gradi</span><span class="p">,</span> 
+                <span class="n">gradflat</span><span class="o">=</span><span class="n">gradflat</span><span class="p">,</span> <span class="n">Lflat</span><span class="o">=</span><span class="n">Lflat</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="n">region</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="n">ndraw</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="n">plot</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">treeheight</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="c1"># do not count failed accepts</span>
+                <span class="n">nsteps_remaining</span> <span class="o">=</span> <span class="n">nsteps_remaining</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;stuck:&quot;</span><span class="p">,</span> <span class="n">Li</span><span class="p">,</span> <span class="s2">&quot;-&gt;&quot;</span><span class="p">,</span> <span class="n">Lnew</span><span class="p">,</span> <span class="s2">&quot;Lmin:&quot;</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">)</span>
+            
+            <span class="n">ncalls_total</span> <span class="o">+=</span> <span class="n">nc</span>
+            <span class="c1">#print(&quot; -&gt;&quot;, Li, Lnew, unew)</span>
+            <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">unew</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">unew</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">unew</span>
+            
+            <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="n">ui</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">unew</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]],</span> <span class="p">[</span><span class="n">ui</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">unew</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]],</span> <span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ui</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ui</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;d&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">unew</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">unew</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+            
+            <span class="n">ui</span><span class="p">,</span> <span class="n">pi</span><span class="p">,</span> <span class="n">Li</span><span class="p">,</span> <span class="n">gradi</span><span class="p">,</span> <span class="n">Lflat</span><span class="p">,</span> <span class="n">gradflat</span> <span class="o">=</span> <span class="n">unew</span><span class="p">,</span> <span class="n">pnew</span><span class="p">,</span> <span class="n">Lnew</span><span class="p">,</span> <span class="n">gradnew</span><span class="p">,</span> <span class="n">Lflatnew</span><span class="p">,</span> <span class="n">gradflatnew</span>
+        
+            <span class="bp">self</span><span class="o">.</span><span class="n">logstat_trajectory</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">treeheight</span><span class="p">])</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">adjust_stepsize</span><span class="p">()</span>
+        
+        <span class="k">return</span> <span class="n">unew</span><span class="p">,</span> <span class="n">pnew</span><span class="p">,</span> <span class="n">Lnew</span><span class="p">,</span> <span class="n">nc</span>
+
+<div class="viewcode-block" id="DynamicHMCSampler.move"><a class="viewcode-back" href="../../ultranest.html#ultranest.dyhmc.DynamicHMCSampler.move">[docs]</a>    <span class="k">def</span> <span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ui</span><span class="p">,</span> <span class="n">pi</span><span class="p">,</span> <span class="n">Li</span><span class="p">,</span> <span class="n">gradi</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">Lflat</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gradflat</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Move from position ui, Li, gradi with a HMC trajectory.</span>
+<span class="sd">        </span>
+<span class="sd">        Return</span>
+<span class="sd">        ------</span>
+<span class="sd">        unew: vector</span>
+<span class="sd">            new position in cube space</span>
+<span class="sd">        pnew: vector</span>
+<span class="sd">            new position in physical parameter space</span>
+<span class="sd">        Lnew: float</span>
+<span class="sd">            new likelihood</span>
+<span class="sd">        gradnew: vector</span>
+<span class="sd">            new gradient</span>
+<span class="sd">        Lflat: float</span>
+<span class="sd">            new likelihood on auxiliary distribution</span>
+<span class="sd">        gradflat: vector</span>
+<span class="sd">            new gradient on auxiliary distribution</span>
+<span class="sd">        nc: int</span>
+<span class="sd">            number of likelihood evaluations</span>
+<span class="sd">        alpha: float</span>
+<span class="sd">            acceptance rate of HMC trajectory</span>
+<span class="sd">        beta: float</span>
+<span class="sd">            acceptance rate of inverse-beta-biased HMC trajectory</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="n">epsilon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span>
+        <span class="c1">#epsilon_here = 10**np.random.normal(0, 0.3) * epsilon</span>
+        <span class="n">epsilon_here</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">()</span> <span class="o">*</span> <span class="n">epsilon</span>
+        <span class="c1">#epsilon_here = epsilon</span>
+        
+        <span class="n">problem</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ui</span><span class="p">)</span>
+        
+        <span class="k">assert</span> <span class="n">Li</span> <span class="o">&gt;</span> <span class="n">problem</span><span class="o">.</span><span class="n">Lmin</span>
+
+        <span class="c1"># get initial likelihood and gradient from auxiliary distribution</span>
+        <span class="k">if</span> <span class="n">Lflat</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">gradflat</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">Lflat</span><span class="p">,</span> <span class="n">gradflat</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">modify_Lgrad</span><span class="p">(</span><span class="n">Li</span><span class="p">,</span> <span class="n">gradi</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">Lflat</span><span class="p">)</span> <span class="o">==</span> <span class="p">(),</span> <span class="p">(</span><span class="n">Lflat</span><span class="p">,</span> <span class="n">Li</span><span class="p">,</span> <span class="n">gradi</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">gradflat</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="n">d</span><span class="p">,),</span> <span class="p">(</span><span class="n">gradi</span><span class="p">,</span> <span class="n">gradflat</span><span class="p">)</span>
+        
+        <span class="c1"># draw from momentum</span>
+        <span class="n">momentum</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">generate_momentum</span><span class="p">()</span>
+        
+        <span class="c1"># compute current Hamiltonian</span>
+        <span class="n">joint0</span> <span class="o">=</span> <span class="n">Lflat</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">momentum</span><span class="p">,</span> <span class="n">problem</span><span class="o">.</span><span class="n">invmassmatrix</span><span class="p">),</span> <span class="n">momentum</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">joint0</span><span class="p">),</span> <span class="p">(</span><span class="n">Lflat</span><span class="p">,</span> <span class="n">momentum</span><span class="p">,</span>  <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">momentum</span><span class="p">,</span> <span class="n">problem</span><span class="o">.</span><span class="n">invmassmatrix</span><span class="p">),</span> <span class="n">momentum</span><span class="o">.</span><span class="n">T</span><span class="p">))</span>
+        
+        <span class="c1"># explore and sample from one trajectory</span>
+        <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">nalpha</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">gradflat</span><span class="p">,</span> <span class="n">Lflat</span><span class="p">,</span> <span class="p">(</span><span class="n">pnew</span><span class="p">,</span> <span class="n">Lnew</span><span class="p">,</span> <span class="n">gradnew</span><span class="p">),</span> <span class="n">rprime</span><span class="p">,</span> <span class="n">treeheight</span> <span class="o">=</span> <span class="n">tree_sample</span><span class="p">(</span>
+            <span class="n">ui</span><span class="p">,</span> <span class="n">Lflat</span><span class="p">,</span> <span class="n">momentum</span><span class="p">,</span> <span class="n">gradflat</span><span class="p">,</span> <span class="p">(</span><span class="n">pi</span><span class="p">,</span> <span class="n">Li</span><span class="p">,</span> <span class="n">gradi</span><span class="p">),</span> <span class="n">epsilon_here</span><span class="p">,</span> <span class="n">problem</span><span class="o">.</span><span class="n">invmassmatrix</span><span class="p">,</span> <span class="n">problem</span><span class="p">,</span> <span class="n">joint0</span><span class="p">,</span> <span class="n">maxheight</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">theta</span><span class="p">,</span> <span class="n">pnew</span><span class="p">,</span> <span class="n">Lnew</span><span class="p">,</span> <span class="n">gradnew</span><span class="p">,</span> <span class="n">Lflat</span><span class="p">,</span> <span class="n">gradflat</span><span class="p">,</span> <span class="n">nalpha</span><span class="p">,</span> <span class="n">alpha</span> <span class="o">/</span> <span class="n">nalpha</span><span class="p">,</span> <span class="n">beta</span> <span class="o">/</span> <span class="n">nalpha</span><span class="p">,</span> <span class="n">treeheight</span></div>
+
+    
+<div class="viewcode-block" id="DynamicHMCSampler.create_problem"><a class="viewcode-back" href="../../ultranest.html#ultranest.dyhmc.DynamicHMCSampler.create_problem">[docs]</a>    <span class="k">def</span> <span class="nf">create_problem</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Ls</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Set up auxiliary distribution.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        Ls: array of floats</span>
+<span class="sd">            live point likelihoods</span>
+<span class="sd">        region: MLFriends region object</span>
+<span class="sd">            region.transformLayer is used to obtain mass matrices</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="c1"># problem dimensionality</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">problem</span> <span class="o">=</span> <span class="n">FlattenedProblem</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">Ls</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform_loglike_gradient</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="DynamicHMCSampler.adjust_stepsize"><a class="viewcode-back" href="../../ultranest.html#ultranest.dyhmc.DynamicHMCSampler.adjust_stepsize">[docs]</a>    <span class="k">def</span> <span class="nf">adjust_stepsize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat_trajectory</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span>
+        
+        <span class="c1"># log averaged acceptance and trajectory statistics</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="o">.</span><span class="n">append</span><span class="p">([</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">([</span><span class="n">alpha</span> <span class="k">for</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">treeheight</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat_trajectory</span><span class="p">]),</span>
+            <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">),</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">([</span><span class="n">beta</span> <span class="k">for</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">treeheight</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat_trajectory</span><span class="p">]),</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">([</span><span class="n">treeheight</span> <span class="k">for</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">treeheight</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat_trajectory</span><span class="p">])</span>
+        <span class="p">])</span>
+        
+        <span class="n">nsteps</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat_trajectory</span><span class="p">)</span>
+        <span class="c1"># update step size based on collected acceptance rates</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="n">treeheight</span> <span class="o">&lt;=</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">treeheight</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat_trajectory</span><span class="p">]):</span>
+            <span class="c1"># stuck, no move. Finer steps needed.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">/=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nudge</span>
+        <span class="k">elif</span> <span class="nb">all</span><span class="p">([</span><span class="mi">2</span><span class="o">**</span><span class="n">treeheight</span> <span class="o">&gt;</span> <span class="mi">10</span> <span class="k">for</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">treeheight</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat_trajectory</span><span class="p">]):</span>
+            <span class="c1"># slowly go towards more efficiency</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nudge</span><span class="o">**</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="mi">40</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">alphamean</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="n">betamean</span><span class="p">,</span> <span class="n">treeheightmean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">alphamean</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">/=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nudge</span>
+            <span class="k">elif</span> <span class="n">alphamean</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nudge</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">logstat_trajectory</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;updating step size: </span><span class="si">%.4f</span><span class="s2"> </span><span class="si">%g</span><span class="s2"> </span><span class="si">%.4f</span><span class="s2"> </span><span class="si">%.1f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="s2">&quot;--&gt;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DynamicHMCSampler.region_changed"><a class="viewcode-back" href="../../ultranest.html#ultranest.dyhmc.DynamicHMCSampler.region_changed">[docs]</a>    <span class="k">def</span> <span class="nf">region_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Ls</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">adjust_stepsize</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_problem</span><span class="p">(</span><span class="n">Ls</span><span class="p">,</span> <span class="n">region</span><span class="p">)</span></div></div>
+        
+        
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014-2019, Johannes Buchner
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

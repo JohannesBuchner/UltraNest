@@ -32,7 +32,6 @@
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
-        <script type="text/javascript" src="https://unpkg.com/@jupyter-widgets/html-manager@^0.18.0/dist/embed-amd.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -191,13 +190,13 @@
 /* CSS overrides for sphinx_rtd_theme */
 
 /* 24px margin */
-.nbinput.nblast.container,
-.nboutput.nblast.container {
+.nbinput.nblast,
+.nboutput.nblast {
     margin-bottom: 19px;  /* padding has already 5px */
 }
 
 /* ... except between code cells! */
-.nblast.container + .nbinput.container {
+.nblast + .nbinput {
     margin-top: -19px;
 }
 
@@ -241,7 +240,7 @@ Or even <a href="#id2"><span class="problematic" id="id3">`usage-spectral-line:B
  <span class="k">def</span> <span class="nf">loglike</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
      <span class="k">return</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">centers</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span><span class="o">.</span><span class="n">logpdf</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
 
- <span class="kn">from</span> <span class="nn">ultranest</span> <span class="kn">import</span> <span class="n">ReactiveNestedSampler</span>
+ <span class="kn">from</span> <span class="nn">ultranest</span> <span class="k">import</span> <span class="n">ReactiveNestedSampler</span>
  <span class="n">sampler</span> <span class="o">=</span> <span class="n">ReactiveNestedSampler</span><span class="p">(</span><span class="n">paramnames</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">transform</span><span class="p">,</span>
      <span class="n">log_dir</span><span class="o">=</span><span class="s1">&#39;my_gauss&#39;</span><span class="p">,</span> <span class="c1"># folder where to store files</span>
      <span class="n">resume</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="c1"># whether to resume from there (otherwise start from scratch)</span>
@@ -367,7 +366,7 @@ and allows the user to specify the problem dimension and a few sampler parameter
 <div class="code-block-caption"><span class="caption-text">gauss.py</span><a class="headerlink" href="#gauss-py" title="Permalink to this code">¶</a></div>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span> <span class="kn">import</span> <span class="nn">argparse</span>
  <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
- <span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">log</span>
+ <span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="n">log</span>
 
  <span class="c1"># define command line arguments:</span>
  <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">()</span>
@@ -400,7 +399,7 @@ and allows the user to specify the problem dimension and a few sampler parameter
 
  <span class="c1"># set up nested sampler:</span>
 
- <span class="kn">from</span> <span class="nn">ultranest</span> <span class="kn">import</span> <span class="n">ReactiveNestedSampler</span>
+ <span class="kn">from</span> <span class="nn">ultranest</span> <span class="k">import</span> <span class="n">ReactiveNestedSampler</span>
 
  <span class="n">sampler</span> <span class="o">=</span> <span class="n">ReactiveNestedSampler</span><span class="p">(</span><span class="n">paramnames</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">transform</span><span class="p">,</span>
      <span class="n">log_dir</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">log_dir</span> <span class="o">+</span> <span class="s1">&#39;RNS-</span><span class="si">%d</span><span class="s1">d&#39;</span> <span class="o">%</span> <span class="n">ndim</span><span class="p">,</span> <span class="n">resume</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -433,7 +432,7 @@ and allows the user to specify the problem dimension and a few sampler parameter
 <h2>High-dimensional models<a class="headerlink" href="#high-dimensional-models" title="Permalink to this headline">¶</a></h2>
 <p>In high-dimensional spaces, MLFriends by itself is inefficient, so
 we have to use a step sampling technique. There are several implemented
-in <code class="xref py py-mod docutils literal notranslate"><span class="pre">ultranest.stepsampler</span></code>. Here we are using slice sampling
+in <a class="reference internal" href="ultranest.html#module-ultranest.stepsampler" title="ultranest.stepsampler"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ultranest.stepsampler</span></code></a>. Here we are using slice sampling
 that learns the direction from the existing live points.
 This is similar to PolyChord, except the region is also used to reject
 distant proposals, and the clustering is better justified (based on MLFriends).</p>

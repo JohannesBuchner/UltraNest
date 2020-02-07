@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ultranest.solvecompat &mdash; UltraNest 2.0.3 documentation</title>
+  <title>ultranest.solvecompat &mdash; UltraNest 2.1.0 documentation</title>
   
 
   
@@ -68,7 +68,7 @@
             
             
               <div class="version">
-                2.0.3
+                2.1.0
               </div>
             
           
@@ -196,11 +196,12 @@
 <span class="kn">from</span> <span class="nn">.stepsampler</span> <span class="k">import</span> <span class="n">RegionBallSliceSampler</span>
 
 
-<div class="viewcode-block" id="pymultinest_solve_compat"><a class="viewcode-back" href="../../modules.html#ultranest.solvecompat.pymultinest_solve_compat">[docs]</a><span class="k">def</span> <span class="nf">pymultinest_solve_compat</span><span class="p">(</span><span class="n">LogLikelihood</span><span class="p">,</span> <span class="n">Prior</span><span class="p">,</span> <span class="n">n_dims</span><span class="p">,</span>
+<div class="viewcode-block" id="pymultinest_solve_compat"><a class="viewcode-back" href="../../ultranest.html#ultranest.solvecompat.pymultinest_solve_compat">[docs]</a><span class="k">def</span> <span class="nf">pymultinest_solve_compat</span><span class="p">(</span><span class="n">LogLikelihood</span><span class="p">,</span> <span class="n">Prior</span><span class="p">,</span> <span class="n">n_dims</span><span class="p">,</span>
         <span class="n">paramnames</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">outputfiles_basename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">resume</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">n_live_points</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">evidence_tolerance</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
         <span class="n">seed</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">wrapped_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">speed</span><span class="o">=</span><span class="s2">&quot;safe&quot;</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span>
 <span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Run nested sampling analysis.</span>
@@ -214,6 +215,7 @@
     <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">paramnames</span><span class="p">)</span> <span class="o">==</span> <span class="n">n_dims</span>
     <span class="n">min_ess</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;min_ess&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
     <span class="n">frac_remain</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;frac_remain&#39;</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">)</span>
+    <span class="n">Lepsilon</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;Lepsilon&#39;</span><span class="p">,</span> <span class="mf">0.001</span><span class="p">)</span>
     <span class="n">outputkwargs</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">verbose</span><span class="p">:</span>
         <span class="n">outputkwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">viz_callback</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">show_status</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -228,10 +230,27 @@
         <span class="n">vectorized</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="o">**</span><span class="n">outputkwargs</span>
     <span class="p">)</span>
+    <span class="k">if</span> <span class="n">speed</span> <span class="o">==</span> <span class="s2">&quot;safe&quot;</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">elif</span> <span class="n">speed</span> <span class="o">==</span> <span class="s2">&quot;auto&quot;</span><span class="p">:</span>
+        <span class="n">sampler</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">dlogz</span><span class="o">=</span><span class="n">evidence_tolerance</span><span class="p">,</span>
+            <span class="n">max_iters</span><span class="o">=</span><span class="n">max_iter</span> <span class="k">if</span> <span class="n">max_iter</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">min_num_live_points</span><span class="o">=</span><span class="n">n_live_points</span><span class="p">,</span>
+            <span class="n">min_ess</span><span class="o">=</span><span class="n">min_ess</span><span class="p">,</span> <span class="n">frac_remain</span><span class="o">=</span><span class="n">frac_remain</span><span class="p">,</span>
+            <span class="n">Lepsilon</span><span class="o">=</span><span class="n">Lepsilon</span><span class="p">,</span> <span class="n">max_ncalls</span><span class="o">=</span><span class="mi">40000</span><span class="p">)</span>
+        
+        <span class="n">sampler</span><span class="o">.</span><span class="n">stepsampler</span> <span class="o">=</span> <span class="n">RegionBallSliceSampler</span><span class="p">(</span><span class="n">nsteps</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+            <span class="n">adaptive_nsteps</span><span class="o">=</span><span class="s1">&#39;move-distance&#39;</span><span class="p">,</span> <span class="n">region_filter</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">sampler</span><span class="o">.</span><span class="n">stepsampler</span> <span class="o">=</span> <span class="n">RegionBallSliceSampler</span><span class="p">(</span><span class="n">nsteps</span><span class="o">=</span><span class="n">speed</span><span class="p">,</span>
+            <span class="n">adaptive_nsteps</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">region_filter</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    
     <span class="n">sampler</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">dlogz</span><span class="o">=</span><span class="n">evidence_tolerance</span><span class="p">,</span>
         <span class="n">max_iters</span><span class="o">=</span><span class="n">max_iter</span> <span class="k">if</span> <span class="n">max_iter</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">min_num_live_points</span><span class="o">=</span><span class="n">n_live_points</span><span class="p">,</span>
-        <span class="n">min_ess</span><span class="o">=</span><span class="n">min_ess</span><span class="p">,</span> <span class="n">frac_remain</span><span class="o">=</span><span class="n">frac_remain</span><span class="p">)</span>
+        <span class="n">min_ess</span><span class="o">=</span><span class="n">min_ess</span><span class="p">,</span> <span class="n">frac_remain</span><span class="o">=</span><span class="n">frac_remain</span><span class="p">,</span>
+        <span class="n">Lepsilon</span><span class="o">=</span><span class="n">Lepsilon</span><span class="p">)</span>
+    
     <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
         <span class="n">sampler</span><span class="o">.</span><span class="n">print_results</span><span class="p">()</span>
     <span class="n">results</span> <span class="o">=</span> <span class="n">sampler</span><span class="o">.</span><span class="n">results</span>
@@ -244,54 +263,6 @@
 
 
 
-
-<div class="viewcode-block" id="pypolychord_solve_compat"><a class="viewcode-back" href="../../modules.html#ultranest.solvecompat.pypolychord_solve_compat">[docs]</a><span class="k">def</span> <span class="nf">pypolychord_solve_compat</span><span class="p">(</span><span class="n">LogLikelihood</span><span class="p">,</span> <span class="n">Prior</span><span class="p">,</span> <span class="n">n_dims</span><span class="p">,</span>
-        <span class="n">nsteps</span><span class="p">,</span>
-        <span class="n">paramnames</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">outputfiles_basename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">resume</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">n_live_points</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">evidence_tolerance</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
-        <span class="n">seed</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">wrapped_params</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">kwargs</span>
-<span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Run nested sampling analysis.</span>
-
-<span class="sd">    Disadvantages compared to using ReactiveNestedSampler directly:</span>
-<span class="sd">    cannot resume easily, cannot plot interactively.</span>
-<span class="sd">    Limited results.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">paramnames</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">paramnames</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">ascii_lowercase</span><span class="p">)[:</span><span class="n">n_dims</span><span class="p">]</span>
-    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">paramnames</span><span class="p">)</span> <span class="o">==</span> <span class="n">n_dims</span>
-    <span class="n">min_ess</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;min_ess&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="n">frac_remain</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;frac_remain&#39;</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">)</span>
-    <span class="n">outputkwargs</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">verbose</span><span class="p">:</span>
-        <span class="n">outputkwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">viz_callback</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">show_status</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-
-    <span class="n">sampler</span> <span class="o">=</span> <span class="n">ReactiveNestedSampler</span><span class="p">(</span><span class="n">paramnames</span><span class="p">,</span>
-        <span class="n">LogLikelihood</span><span class="p">,</span>
-        <span class="n">transform</span><span class="o">=</span><span class="n">Prior</span><span class="p">,</span>
-        <span class="n">log_dir</span><span class="o">=</span><span class="n">outputfiles_basename</span><span class="p">,</span>
-        <span class="n">resume</span><span class="o">=</span><span class="s1">&#39;resume&#39;</span> <span class="k">if</span> <span class="n">resume</span> <span class="k">else</span> <span class="s1">&#39;overwrite&#39;</span><span class="p">,</span>
-        <span class="n">wrapped_params</span><span class="o">=</span><span class="n">wrapped_params</span><span class="p">,</span>
-        <span class="n">draw_multiple</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">vectorized</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="o">**</span><span class="n">outputkwargs</span>
-    <span class="p">)</span>
-    <span class="n">sampler</span><span class="o">.</span><span class="n">stepsampler</span> <span class="o">=</span> <span class="n">RegionBallSliceSampler</span><span class="p">(</span><span class="n">nsteps</span><span class="o">=</span><span class="n">nsteps</span><span class="p">)</span>
-    <span class="n">sampler</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">dlogz</span><span class="o">=</span><span class="n">evidence_tolerance</span><span class="p">,</span>
-        <span class="n">max_iters</span><span class="o">=</span><span class="n">max_iter</span> <span class="k">if</span> <span class="n">max_iter</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">min_num_live_points</span><span class="o">=</span><span class="n">n_live_points</span><span class="p">,</span>
-        <span class="n">min_ess</span><span class="o">=</span><span class="n">min_ess</span><span class="p">,</span> <span class="n">frac_remain</span><span class="o">=</span><span class="n">frac_remain</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-        <span class="n">sampler</span><span class="o">.</span><span class="n">print_results</span><span class="p">()</span>
-    <span class="n">results</span> <span class="o">=</span> <span class="n">sampler</span><span class="o">.</span><span class="n">results</span>
-    <span class="n">sampler</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
-
-    <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">logZ</span><span class="o">=</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;logz&#39;</span><span class="p">],</span>
-        <span class="n">logZerr</span><span class="o">=</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;logzerr&#39;</span><span class="p">],</span>
-        <span class="n">samples</span><span class="o">=</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;samples&#39;</span><span class="p">],</span>
-        <span class="n">weighted_samples</span><span class="o">=</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;weighted_samples&#39;</span><span class="p">])</span></div>
 </pre></div>
 
            </div>
