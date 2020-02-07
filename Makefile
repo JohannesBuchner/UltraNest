@@ -74,10 +74,10 @@ coverage: ## check code coverage quickly with the default Python
 	$(BROWSER) htmlcov/index.html
 
 docs: ## generate Sphinx HTML documentation, including API docs
-	#rm -f docs/ultranest.rst
-	#rm -f docs/modules.rst
+	rm -f docs/ultranest.rst
+	rm -f docs/modules.rst
 	#nbstripout docs/*.ipynb
-	#sphinx-apidoc -H API -o docs/ ultranest
+	sphinx-apidoc -H API -o docs/ ultranest
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html
 	$(BROWSER) docs/build/html/index.html

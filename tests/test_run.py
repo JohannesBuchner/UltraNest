@@ -54,6 +54,9 @@ def test_reactive_run():
     sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, 
         draw_multiple=False, vectorized=True)
     r = sampler.run(log_interval=50, min_num_live_points=400)
+    
+    # test that the number of likelihood calls is correct
+    
     ncalls = loglike.ncalls
     nunique = len(evals)
     if sampler.mpi_size > 1:
@@ -77,7 +80,62 @@ def test_reactive_run():
     assert ncalls == nunique, (ncalls, nunique)
     if sampler.mpi_rank == 0:
         open('nestedsampling_reactive_results.txt', 'a').write("%.3f\n" % r['logz'])
+    
+    print(r)
+    assert r['niter'] > 100
+    assert -10 < r['logz'] < 10
+    assert 0.01 < r['logzerr'] < 0.5
+    assert 1 < r['ess'] < 10000
+    
+    
     sampler.plot()
+
+def test_return_summary():
+    from ultranest import ReactiveNestedSampler
+    sigma = np.array([0.1, 0.01])
+    centers = np.array([0.5, 0.75])
+    paramnames = ['a', 'b']
+    ndim = len(paramnames)
+
+    def loglike(theta):
+        like = -0.5 * (((theta - centers)/sigma)**2) - 0.5 * np.log(2 * np.pi * sigma**2) * ndim
+        return like.sum()
+
+    def transform(x):
+        return x
+    
+    sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform)
+    r = sampler.run()
+
+    print(r)
+    assert r['paramnames'] == paramnames
+    assert r['niter'] > 100
+    assert -10 < r['logz'] < 10
+    assert 0.01 < r['logzerr'] < 0.5
+    assert 1 < r['ess'] < 10000
+    assert 0.4 < r['posterior']['mean'][0] < 0.6
+    assert 0.74 < r['posterior']['mean'][1] < 0.76
+    assert 0.4 < r['posterior']['median'][0] < 0.6
+    assert 0.74 < r['posterior']['median'][1] < 0.76
+    assert 0.05 < r['posterior']['stdev'][0] < 0.2
+    assert 0.005 < r['posterior']['stdev'][1] < 0.02
+    
+    assert 0.35 < r['posterior']['errlo'][0] < 0.45
+    assert 0.72 < r['posterior']['errlo'][1] < 0.75
+    assert 0.55 < r['posterior']['errup'][0] < 0.65
+    assert 0.75 < r['posterior']['errup'][1] < 0.78
+    
+    N, ndim2 = r['samples'].shape
+    assert ndim2 == ndim
+    assert N > 10
+    N, ndim2 = r['weighted_samples']['v'].shape
+    assert ndim2 == ndim
+    assert N > 10
+    
+    assert r['weighted_samples']['logw'].shape == (N,)
+    assert r['weighted_samples']['w'].shape == (N,)
+    assert r['weighted_samples']['bs_w'].shape[0] == N
+    assert r['weighted_samples']['L'].shape == (N,)
 
 @pytest.mark.parametrize("dlogz", [2.0, 0.5, 0.1])
 def test_run_resume(dlogz):
