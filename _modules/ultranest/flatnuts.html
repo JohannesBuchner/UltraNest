@@ -96,7 +96,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../readme.html">UltraNest</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../method.html">How it works</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../method.html">Method</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../usage-spectral-line.html">Basic usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../performance.html">Tour of the features</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../modules.html">API</a></li>
@@ -202,6 +202,7 @@
 <span class="sd">         (this vector is just the difference between sphere center and last inside point)</span>
 <span class="sd">       - compute reflection of direction vector with tangential plane</span>
 <span class="sd">     - choose a forward reflection at random (if any)</span>
+
 <span class="sd">  3.4) test if next point is inside again. If yes, continue NUTS</span>
 
 <span class="sd">NUTS: </span>
@@ -390,7 +391,7 @@
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Starts a sampling track from x in direction v.</span>
 <span class="sd">        is_inside is a function that returns true when a given point is inside the volume</span>
-<span class="sd">        </span>
+
 <span class="sd">        epsilon gives the step size in direction v.</span>
 <span class="sd">        samples, if given, helps choose the gradient -- To be removed</span>
 <span class="sd">        plot: if set to true, make some debug plots</span>

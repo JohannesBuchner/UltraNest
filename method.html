@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>How it works &mdash; UltraNest 2.1.0 documentation</title>
+  <title>Method &mdash; UltraNest 2.1.0 documentation</title>
   
 
   
@@ -98,9 +98,16 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="readme.html">UltraNest</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">How it works</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#literature">Literature</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#code-concepts">Code Concepts</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Method</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#visualisation">Visualisation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#literature">Literature</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#code-concepts">Code Concepts</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#spaces">Spaces</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#nested-sampler-integrator">Nested sampler &amp; integrator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#constructing-mlfriends-regions">Constructing MLFriends regions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#sampling-from-regions">Sampling from regions</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="usage-spectral-line.html">Basic usage</a></li>
@@ -164,7 +171,7 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>How it works</li>
+      <li>Method</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -205,11 +212,41 @@
     text-align: unset;
 }
 </style>
-<div class="section" id="how-it-works">
-<h1>How it works<a class="headerlink" href="#how-it-works" title="Permalink to this headline">¶</a></h1>
-<p>UltraNest combines several methods, and will be described in detail
-in a future paper.</p>
-<p>The animation below gives an idea how the algorithm proceeds through visualisation.
+<div class="section" id="method">
+<h1>Method<a class="headerlink" href="#method" title="Permalink to this headline">¶</a></h1>
+<p>UltraNest combines several methods to improve nested sampling,
+and will be described in detail in a future paper. The key elements are:</p>
+<ol class="arabic">
+<li><p>constrained-likelihood sampling algorithm</p>
+<p>For sampling a new, independent point, primarily implements MLFriends.
+MLFriends places ellipsoids around each live point and draws from them.
+The ellipsoid shape is determined by the live point distribution (Mahalanobis distance),
+the ellipsoid size is determined by cross-validation.
+For high-dimensional inference, parameter-free algorithms such as HARM and DyCHMC are available.</p>
+</li>
+<li><p>nested sampler</p>
+<p>This component manages the live point population, and can add or remove points.
+UltraNest supports several advanced strategies for injecting more points
+when needed to populated clusters, to reach the effective sample size,
+integration uncertainty or posterior accuracy.</p>
+</li>
+<li><p>nested integrator</p>
+<p>This component assigns weights to the sampled points. UltraNest implements
+a bootstrapping scheme that simulates other runs with fewer live points.
+This gives robust and realistic uncertainties.</p>
+</li>
+<li><p>termination criterion</p>
+<p>In principle, termination can occur when the dead, removed points have more
+weight than the live points. However, in practice, very small peaks can be discovered
+on relatively flat likelihood surfaces,
+for example when fitting multiple components to a data series.
+Therefore, UltraNest integrates until the live point weights are insignificant (<em>frac_remain=0.01</em>).
+For noisy likelihoods, termination when the live points are within a tolerance of <em>Lepsilon</em> can be requested.</p>
+</li>
+</ol>
+<div class="section" id="visualisation">
+<h2>Visualisation<a class="headerlink" href="#visualisation" title="Permalink to this headline">¶</a></h2>
+<p>The animation below gives an idea how the algorithm proceeds.
 Choose different 2d target distributions to explore, and compare to a
 simple MCMC algorithm.</p>
 <iframe src="_static/mcmc-demo/app.html" style="width:100%; height:400px;"></iframe><ol class="arabic simple">
@@ -233,6 +270,7 @@ represent. These are the posterior samples (histograms).</p></li>
 problems. UltraNest provides MCMC-based methods to find a new point.</p>
 <p>The animation is based on work by Chi Feng <a class="reference external" href="https://chi-feng.github.io/mcmc-demo/">https://chi-feng.github.io/mcmc-demo/</a>
 and is MIT licenced. The RadFriends implementation was contributed by Johannes Buchner.</p>
+</div>
 <div class="section" id="literature">
 <h2>Literature<a class="headerlink" href="#literature" title="Permalink to this headline">¶</a></h2>
 <p>On the theory behind nested sampling:</p>
@@ -252,10 +290,13 @@ and is MIT licenced. The RadFriends implementation was contributed by Johannes B
 <ul class="simple">
 <li><p>Buchner, J. (2019): Collaborative Nested Sampling: Big Data versus Complex Physical Models</p></li>
 </ul>
-</div>
 <div class="section" id="code-concepts">
-<h2>Code Concepts<a class="headerlink" href="#code-concepts" title="Permalink to this headline">¶</a></h2>
+<h3>Code Concepts<a class="headerlink" href="#code-concepts" title="Permalink to this headline">¶</a></h3>
 <p>This content gives some hints for those who want to dive into the codebase.</p>
+</div>
+</div>
+<div class="section" id="spaces">
+<h2>Spaces<a class="headerlink" href="#spaces" title="Permalink to this headline">¶</a></h2>
 <p>UltraNest maps four spaces:</p>
 <ul class="simple">
 <li><p>u: The unit cube space</p></li>
@@ -269,10 +310,13 @@ and is MIT licenced. The RadFriends implementation was contributed by Johannes B
 <li><p>unit cube -&gt; physical parameter space: user-provided prior transform function</p></li>
 <li><p>physical parameter space -&gt; likelihood values: user-provided likelihood function</p></li>
 </ul>
-<p>The tree-based concept envisions the full prior volume as the root of a tree.
+</div>
+<div class="section" id="nested-sampler-integrator">
+<h2>Nested sampler &amp; integrator<a class="headerlink" href="#nested-sampler-integrator" title="Permalink to this headline">¶</a></h2>
+<p>A tree-based concept envisions the full prior volume as the root of a tree.
 Branches indicate divisions. The first children of the tree root are
 sampled directly from the prior, and are called <em>roots</em> in the code (although
-they are the first branches).</p>
+they are in reality the first branches).</p>
 <p>The nested sampling algorithm is a breadth-first search of this tree,
 with nodes expanded as needed. Replacements of a node by its children
 is a nested sampling shrinkage. When children are added to nodes is
@@ -294,7 +338,12 @@ computes logz and adds uncertainty contributions from:</p>
 <li><p>The noise in shrinkage estimates (by sampling it a binomial distribution in each bootstrap realisation)</p></li>
 </ul>
 <p>The combination makes UltraNest’s logz uncertainties very reliable.</p>
-<p>MLFriends (2019 paper) is a substantial improvement upon the original RadFriends algorithm (2014 paper).
+</div>
+<div class="section" id="constructing-mlfriends-regions">
+<h2>Constructing MLFriends regions<a class="headerlink" href="#constructing-mlfriends-regions" title="Permalink to this headline">¶</a></h2>
+<p>Robust likelihood-constrained prior sampling (LCPS) is achieved with the
+parameter-free <strong>MLFriends</strong> algorithm.</p>
+<p>MLFriends (Buchner 2019) is a substantial improvement upon the original RadFriends algorithm (2014 paper).
 RadFriends obtains regions by leaving some points out, and testing how
 large spheres around the live points have to be to be able to recover them.
 This bootstrapping is repeated many times (bootstrapping), to be robust.
@@ -302,21 +351,33 @@ This way, RadFriends learns automatically about multiple modes.
 RadFriends is slow, because it does not learn the relative sizes of different parameters,
 nor the correlation between them. MLFriends (2019 paper) improves by obtaining the covariance
 of the live points, and thus uses a Mahalanobis distance.
-This learned metric helps reduce the region, and accelerates sampling.
-At the same time, MLFriends provides natural agglomerate clustering – points within each others
-ellipsoids belong to the same cluster.</p>
-<p>UltraNest improves MLFriends further by iteratively
-1) using metric for getting MLFriends ellipsoid radius
-2) using radius to identify clusters.
-3) shift clusters on top of each other and learn a new metric.
-Another improvement is that in MPI-parallelised runs, UltraNest
-distributes the RadFriends bootstraps. This makes clustering very fast
-(MultiNest has to stop for clustering on the master).</p>
+This learned metric helps reduce the region, and accelerates sampling.</p>
+<p>At the same time, MLFriends provides natural agglomerate clustering – points within each others
+ellipsoids belong to the same cluster.
+UltraNest improves MLFriends further by iteratively</p>
+<ol class="arabic simple">
+<li><p>compute MLFriends ellipsoid radius with a metric (euclidean initially)</p></li>
+<li><p>Identify clusters with that radius</p></li>
+<li><p>Shift clusters on top of each other and learn a new metric from the covariance.</p></li>
+</ol>
+<p>This scheme iteratively improves the metric, and is robust when clusters appear (
+otherwise the metric may be primarily measuring the distance between clusters).</p>
+<p>Finally, UltraNest only accepts new regions when they reduce the size of the sampling space.
+This is necessary because when a cluster disappears, it has few points and would
+be merged back into the bulk, increasing the radius drastically. Requiring shrinkage
+avoids this problem. By starting the bootstrapping always with the same random numbers,
+over-shrinkage by repeated invocations is avoided.</p>
 <p>UltraNest also adds a enveloping ellipsoid. This can help in
 mono-modal gaussian problems. Contrary to Mukherjee, Parkinson &amp; Liddle (2006),
 the ellipsoid enlargement is learned by bootstrapping, and is thus robust and
-well-justified. Both regions are used as filters.
-UltraNest samples in four region sampling schemes:</p>
+well-justified. Both regions are used as filters.</p>
+<p>Another improvement is that in MPI-parallelised runs, UltraNest
+distributes the RadFriends bootstraps. This makes clustering very fast
+(MultiNest has to stop for clustering on the master node).</p>
+</div>
+<div class="section" id="sampling-from-regions">
+<h2>Sampling from regions<a class="headerlink" href="#sampling-from-regions" title="Permalink to this headline">¶</a></h2>
+<p>UltraNest samples in four region sampling schemes:</p>
 <ul class="simple">
 <li><p>Sample from unit cube, filter with MLFriends &amp; ellipsoid</p></li>
 <li><p>Sample from MLFriends points, filter with unit cube &amp; ellipsoid</p></li>

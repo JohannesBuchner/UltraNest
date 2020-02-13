@@ -98,11 +98,22 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="readme.html">UltraNest</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="method.html">How it works</a></li>
+<li class="toctree-l1"><a class="reference internal" href="method.html">Method</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usage-spectral-line.html">Basic usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="performance.html">Tour of the features</a></li>
 <li class="toctree-l1"><a class="reference internal" href="modules.html">API</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Frequently Asked Questions</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Frequently Asked Questions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#how-can-i-add-a-question-here">How can I add a question here?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-suppress-the-output">How do I suppress the output?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-should-i-choose-the-number-of-live-points">How should I choose the number of live points?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-can-i-use-fast-slow-parameters">How can I use fast-slow parameters?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-can-i-speed-up-my-problem">How can I speed up my problem?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-can-i-verify-that-the-step-sampler-is-correct">How can I verify that the step sampler is correct?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#what-does-the-status-line-mean">What does the status line mean?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#what-does-the-live-point-display-mean">What does the live point display mean?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-should-i-cite-ultranest">How should I cite UltraNest?</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="history.html">Release Notes</a></li>
 </ul>
@@ -202,12 +213,27 @@
 }
 </style>
 <div class="section" id="frequently-asked-questions">
-<h1>Frequently Asked Questions<a class="headerlink" href="#frequently-asked-questions" title="Permalink to this headline">¶</a></h1>
-<p>See <a class="reference internal" href="contributing.html"><span class="doc">Contributing</span></a> for how to report bugs and ask questions.</p>
-<ul>
-<li><p>How do I suppress the output?</p>
-<blockquote>
-<div><p>To suppress the logging to stdout, you can set your own logger:</p>
+<span id="faq"></span><h1>Frequently Asked Questions<a class="headerlink" href="#frequently-asked-questions" title="Permalink to this headline">¶</a></h1>
+<div class="contents local topic" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#how-can-i-add-a-question-here" id="id1">How can I add a question here?</a></p></li>
+<li><p><a class="reference internal" href="#how-do-i-suppress-the-output" id="id2">How do I suppress the output?</a></p></li>
+<li><p><a class="reference internal" href="#how-should-i-choose-the-number-of-live-points" id="id3">How should I choose the number of live points?</a></p></li>
+<li><p><a class="reference internal" href="#how-can-i-use-fast-slow-parameters" id="id4">How can I use fast-slow parameters?</a></p></li>
+<li><p><a class="reference internal" href="#how-can-i-speed-up-my-problem" id="id5">How can I speed up my problem?</a></p></li>
+<li><p><a class="reference internal" href="#how-can-i-verify-that-the-step-sampler-is-correct" id="id6">How can I verify that the step sampler is correct?</a></p></li>
+<li><p><a class="reference internal" href="#what-does-the-status-line-mean" id="id7">What does the status line mean?</a></p></li>
+<li><p><a class="reference internal" href="#what-does-the-live-point-display-mean" id="id8">What does the live point display mean?</a></p></li>
+<li><p><a class="reference internal" href="#how-should-i-cite-ultranest" id="id9">How should I cite UltraNest?</a></p></li>
+</ul>
+</div>
+<div class="section" id="how-can-i-add-a-question-here">
+<h2><a class="toc-backref" href="#id1">How can I add a question here?</a><a class="headerlink" href="#how-can-i-add-a-question-here" title="Permalink to this headline">¶</a></h2>
+<p>See <a class="reference internal" href="contributing.html"><span class="doc">Contributing</span></a> for how to report bugs and ask questions. (hint: open a github issue)</p>
+</div>
+<div class="section" id="how-do-i-suppress-the-output">
+<h2><a class="toc-backref" href="#id2">How do I suppress the output?</a><a class="headerlink" href="#how-do-i-suppress-the-output" title="Permalink to this headline">¶</a></h2>
+<p>To suppress the logging to stdout, you can set your own logger:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">module_name</span><span class="p">))</span>
 <span class="n">handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
@@ -220,40 +246,56 @@
 <p>You may want to alter the above to log to a file only.</p>
 <p>To suppress the live point visualisations, set <code class="docutils literal notranslate"><span class="pre">viz_callback=False</span></code> in <code class="docutils literal notranslate"><span class="pre">sampler.run()</span></code>.</p>
 <p>To suppress the status line, set <code class="docutils literal notranslate"><span class="pre">show_status=False</span></code> in <code class="docutils literal notranslate"><span class="pre">sampler.run()</span></code>.</p>
-</div></blockquote>
-</li>
-<li><p>How should I choose the number of live points?</p>
-<blockquote>
-<div><p>Try with 400 first.</p>
+</div>
+<div class="section" id="how-should-i-choose-the-number-of-live-points">
+<h2><a class="toc-backref" href="#id3">How should I choose the number of live points?</a><a class="headerlink" href="#how-should-i-choose-the-number-of-live-points" title="Permalink to this headline">¶</a></h2>
+<p>Try with 400 first.</p>
 <p>In principle, choosing a very low number allows nested sampling to
 make very few iterations and go to the peak quickly. However,
 the space will be poorly sampled, giving a large region and thus
 low efficiency, and potentially not seeing interesting modes.
 Therefore, a value above 100 is typically useful.</p>
-</div></blockquote>
-</li>
-<li><p>How can I use fast-slow parameters?</p>
-<blockquote>
-<div><p>With the <a class="reference internal" href="ultranest.html#ultranest.stepsampler.SpeedVariableRegionSliceSampler" title="ultranest.stepsampler.SpeedVariableRegionSliceSampler"><code class="xref py py-class docutils literal notranslate"><span class="pre">ultranest.stepsampler.SpeedVariableRegionSliceSampler</span></code></a>.
-The high-dimensional tutorials show how to use a step sampler.</p>
-</div></blockquote>
-</li>
-<li><p>How can I speed up my problem?</p>
+</div>
+<div class="section" id="how-can-i-use-fast-slow-parameters">
+<h2><a class="toc-backref" href="#id4">How can I use fast-slow parameters?</a><a class="headerlink" href="#how-can-i-use-fast-slow-parameters" title="Permalink to this headline">¶</a></h2>
+<p>If you want some parameters to be updated less frequently than others
+in the search for a new point,
+use the <a class="reference internal" href="ultranest.html#ultranest.stepsampler.SpeedVariableRegionSliceSampler" title="ultranest.stepsampler.SpeedVariableRegionSliceSampler"><code class="xref py py-class docutils literal notranslate"><span class="pre">ultranest.stepsampler.SpeedVariableRegionSliceSampler</span></code></a>.
+The <a class="reference external" href="example-sine-highd.html">high-dimensional tutorials</a> shows how to use a step sampler.</p>
+</div>
+<div class="section" id="how-can-i-speed-up-my-problem">
+<h2><a class="toc-backref" href="#id5">How can I speed up my problem?</a><a class="headerlink" href="#how-can-i-speed-up-my-problem" title="Permalink to this headline">¶</a></h2>
+<p>Computationally:</p>
 <blockquote>
 <div><ul class="simple">
-<li><p>Speed up the likelihood</p></li>
-<li><p>Vectorize the likelihood</p></li>
-<li><p>Use a step sampler.</p></li>
+<li><p>Speed up the likelihood function</p></li>
+<li><p>Vectorize the likelihood function (see <a class="reference internal" href="performance.html"><span class="doc">Tour of the features</span></a>).</p></li>
 </ul>
 </div></blockquote>
-</li>
-<li><p>How can I verify that the step sampler is correct?</p>
+<p>Algorithimically:</p>
 <blockquote>
-<div><p>Increase (double) the number of steps. If the logz remains the same,
-chances are good that the result is reliable.</p>
+<div><ul class="simple">
+<li><p>Use a step sampler (see <cite>the high-d tutorial example &lt;example-sine-highd.html&gt;</cite>)</p></li>
+<li><p>Try to alter your model</p></li>
+</ul>
 </div></blockquote>
-</li>
-<li><p>What does the status line mean?:</p>
+</div>
+<div class="section" id="how-can-i-verify-that-the-step-sampler-is-correct">
+<h2><a class="toc-backref" href="#id6">How can I verify that the step sampler is correct?</a><a class="headerlink" href="#how-can-i-verify-that-the-step-sampler-is-correct" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><ul class="simple">
+<li><p>Increase (double) the number of steps. If the logz remains the same,
+chances are good that the result is reliable.</p></li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="what-does-the-status-line-mean">
+<h2><a class="toc-backref" href="#id7">What does the status line mean?</a><a class="headerlink" href="#what-does-the-status-line-mean" title="Permalink to this headline">¶</a></h2>
+<p>You may see lines like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Z</span><span class="o">=</span><span class="mf">0.3</span><span class="p">(</span><span class="mf">43.44</span><span class="o">%</span><span class="p">)</span> <span class="o">|</span> <span class="n">Like</span><span class="o">=</span><span class="mf">89.39</span><span class="o">..</span><span class="mf">96.29</span> <span class="p">[</span><span class="mf">89.3916</span><span class="o">..</span><span class="mf">89.3936</span><span class="p">]</span><span class="o">*|</span> <span class="n">it</span><span class="o">/</span><span class="n">evals</span><span class="o">=</span><span class="mi">39671</span><span class="o">/</span><span class="mi">11660719</span> <span class="n">eff</span><span class="o">=</span><span class="mf">0.2939</span><span class="o">%</span> <span class="n">N</span><span class="o">=</span><span class="mi">400</span>
+</pre></div>
+</div>
+<p>Here is what the parts mean:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>                                                                         <span class="n">total</span> <span class="n">number</span>       <span class="n">number</span>
                                                                <span class="n">current</span>   <span class="n">of</span> <span class="n">likelihood</span>      <span class="n">of</span> <span class="n">live</span>
                                                               <span class="n">iteration</span>  <span class="n">evaluations</span>        <span class="n">points</span>
@@ -271,8 +313,18 @@ chances are good that the result is reliable.</p>
    <span class="o">+-</span> <span class="n">current</span> <span class="n">logz</span> <span class="n">estimate</span>
 </pre></div>
 </div>
-</li>
-<li><p>What does the live point display mean?</p>
+</div>
+<div class="section" id="what-does-the-live-point-display-mean">
+<h2><a class="toc-backref" href="#id8">What does the live point display mean?</a><a class="headerlink" href="#what-does-the-live-point-display-mean" title="Permalink to this headline">¶</a></h2>
+<p>You may see displays like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Mono</span><span class="o">-</span><span class="n">modal</span> <span class="n">Volume</span><span class="p">:</span> <span class="o">~</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">5.89</span><span class="p">)</span> <span class="o">*</span> <span class="n">Expected</span> <span class="n">Volume</span><span class="p">:</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">2.02</span><span class="p">)</span>
+
+<span class="n">param1</span><span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>         <span class="o">*********************************</span>         <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="n">param2</span><span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>         <span class="o">*********************************</span>         <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
+<span class="o">...</span>
+</pre></div>
+</div>
+<p>They are very useful if you understand them. Here is what the parts mean:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>   <span class="n">how</span> <span class="n">many</span>         <span class="n">how</span> <span class="n">large</span> <span class="n">the</span>                  <span class="n">ow</span> <span class="n">large</span> <span class="n">the</span>
    <span class="n">clusters</span>        <span class="n">volume</span> <span class="n">should</span> <span class="n">be</span>               <span class="n">MLFriends</span> <span class="n">region</span>
      <span class="o">|</span>            <span class="n">based</span> <span class="n">on</span> <span class="n">iteration</span>              <span class="ow">is</span> <span class="p">(</span><span class="ow">not</span> <span class="n">subtracting</span> <span class="n">overlaps</span><span class="p">)</span>
@@ -292,10 +344,10 @@ chances are good that the result is reliable.</p>
 <span class="n">can</span> <span class="n">avoid</span> <span class="n">this</span> <span class="p">(</span><span class="n">use</span> <span class="o">&gt;</span><span class="mi">100</span><span class="p">)</span><span class="o">.</span>
 </pre></div>
 </div>
-</li>
-<li><p>How should I cite UltraNest?</p>
-<blockquote>
-<div><p>The main method (MLFriends) is described in:</p>
+</div>
+<div class="section" id="how-should-i-cite-ultranest">
+<h2><a class="toc-backref" href="#id9">How should I cite UltraNest?</a><a class="headerlink" href="#how-should-i-cite-ultranest" title="Permalink to this headline">¶</a></h2>
+<p>The main method (MLFriends) is described in:</p>
 <ul class="simple">
 <li><p>Buchner, J. (2014): A statistical test for Nested Sampling algorithms</p></li>
 <li><p>Buchner, J. (2019): Collaborative Nested Sampling: Big Data versus Complex Physical Models</p></li>
@@ -307,16 +359,9 @@ MLFriends (Buchner, 2014; 2019) using the
 UltraNest[https://johannesbuchner.github.io/UltraNest/] software.
 </pre></div>
 </div>
-<p>If you use the corner plot, also cite corner.
-If you use the trace or run plot, also cite dynesty.</p>
-</div></blockquote>
-</li>
-<li><p>How can I add a question here?</p>
-<blockquote>
-<div><p>See <a class="reference internal" href="contributing.html"><span class="doc">Contributing</span></a> for how to report bugs and ask questions.</p>
-</div></blockquote>
-</li>
-</ul>
+<p>If you use the corner plot, also cite <code class="docutils literal notranslate"><span class="pre">corner</span></code>.
+If you use the trace or run plot, also cite <code class="docutils literal notranslate"><span class="pre">dynesty</span></code>.</p>
+</div>
 </div>
 
 
