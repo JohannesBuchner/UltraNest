@@ -2,6 +2,9 @@ version: 2
 
 
 jobs:
+  branches:
+    ignore:
+      - gh-pages
   
   build:
     

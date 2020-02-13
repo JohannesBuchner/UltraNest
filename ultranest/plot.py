@@ -416,7 +416,9 @@ def traceplot(results, span=None, quantiles=[0.025, 0.5, 0.975], smooth=0.02,
         lower and upper bounds or a float from `(0., 1.]` giving the
         fraction of (weighted) samples to include. If a fraction is provided,
         the bounds are chosen to be equal-tailed. An example would be::
+
             span = [(0., 10.), 0.95, (5., 6.)]
+
         Default is `0.999999426697` (5-sigma credible interval) for each
         parameter.
     quantiles : iterable, optional

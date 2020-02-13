@@ -24,6 +24,7 @@ Work in unit cube space. assume a step size.
          (this vector is just the difference between sphere center and last inside point)
        - compute reflection of direction vector with tangential plane
      - choose a forward reflection at random (if any)
+
   3.4) test if next point is inside again. If yes, continue NUTS
 
 NUTS: 
@@ -212,7 +213,7 @@ class ClockedSimpleStepSampler(object):
         """
         Starts a sampling track from x in direction v.
         is_inside is a function that returns true when a given point is inside the volume
-        
+
         epsilon gives the step size in direction v.
         samples, if given, helps choose the gradient -- To be removed
         plot: if set to true, make some debug plots
