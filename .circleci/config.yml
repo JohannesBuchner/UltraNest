@@ -2,11 +2,11 @@ version: 2
 
 
 jobs:
-  branches:
-    ignore:
-      - gh-pages
   
   build:
+    branches:
+      ignore:
+        - gh-pages
     
     docker:
       - image: circleci/python:3.7.0
