@@ -60,7 +60,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'UltraNest'
-copyright = u"2014-2019, Johannes Buchner"
+copyright = u"2014-2020, Johannes Buchner"
 author = u"Johannes Buchner"
 
 # The version info for the project you're documenting, acts as replacement
