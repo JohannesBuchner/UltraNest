@@ -16,7 +16,7 @@ Welcome to UltraNest's documentation!
    history
 
 .. toctree::
-   :maxdepth: 0
+   :maxdepth: 1
    :caption: Tutorials:
 
    example-sine-line.ipynb

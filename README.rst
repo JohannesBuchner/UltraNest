@@ -7,8 +7,8 @@ Fit and compare complex models reliably and rapidly with advanced sampling techn
 .. image:: https://img.shields.io/pypi/v/ultranest.svg
         :target: https://pypi.python.org/pypi/ultranest
 
-.. image:: https://img.shields.io/travis/JohannesBuchner/ultranest.svg
-        :target: https://travis-ci.org/JohannesBuchner/ultranest
+.. image:: https://circleci.com/gh/JohannesBuchner/UltraNest/tree/master.svg?style=svg
+        :target: https://circleci.com/gh/JohannesBuchner/UltraNest
 
 .. image:: https://img.shields.io/badge/docs-published-ok.svg
         :target: https://johannesbuchner.github.io/UltraNest/

@@ -171,8 +171,8 @@ This reduces function calls.
 To use this function, pass ``vectorized=True`` to ReactiveNestedSampler.
 Lets see how this looks like in a full program.
 
-Usage in a program
-==================
+Vectorized full program
+================================
 
 Below is a Python program that implements a gaussian likelihood,
 and allows the user to specify the problem dimension and a few sampler parameters.
@@ -378,7 +378,7 @@ This result is close to the analytic value (0) on infinite bounds
 (the prior boundaries slightly increase the result).
 
 We can test whether the slice sampler is good enough by halving 
-``slice_steps``. the logZ estimate should ideally be consistent.
+``slice_steps``. The logZ estimate should ideally be consistent.
 
 Using multiple cores
 ====================
