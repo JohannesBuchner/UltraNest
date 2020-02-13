@@ -1,2 +1,20 @@
 version: 2
 
+
+jobs:
+  branches:
+    ignore:
+      - gh-pages
+  
+  build:
+    
+    docker:
+      - image: circleci/python:3.7.0
+    
+    steps: 
+      
+      - checkout
+      - run: sudo apt-get install linkchecker
+      - run: ls
+      - run: linkchecker --ignore-url '.*fonts.*.eot' *.html
+
