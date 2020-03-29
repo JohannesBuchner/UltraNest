@@ -1,7 +1,6 @@
 import argparse
 import numpy as np
 from numpy import log
-import scipy.stats
 
 def main(args):
     ndim = args.x_dim
@@ -11,7 +10,7 @@ def main(args):
     centers = np.ones(ndim) * 0.5
 
     def flat_loglike(theta):
-        like = -0.5 * (((theta - centers)/sigma)**2).sum(axis=1) - 0.5 * np.log(2 * np.pi * sigma**2) * ndim
+        like = -0.5 * (((theta - centers)/sigma)**2).sum() - 0.5 * log(2 * np.pi * sigma**2) * ndim
         return like
 
     def flat_transform(x):
@@ -23,7 +22,7 @@ def main(args):
     if args.pymultinest:
         from pymultinest.solve import solve
         
-        result = solve(LogLikelihood=flat_loglike, Prior=transform, 
+        result = solve(LogLikelihood=flat_loglike, Prior=flat_transform,
             n_dims=ndim, outputfiles_basename=args.log_dir + 'MN-%dd' % ndim,
             verbose=True, resume=True, importance_nested_sampling=False)
         
@@ -36,7 +35,7 @@ def main(args):
     
     elif args.reactive:
         from ultranest.solvecompat import pymultinest_solve_compat as solve
-        result = solve(LogLikelihood=flat_loglike, Prior=transform, 
+        result = solve(LogLikelihood=flat_loglike, Prior=flat_transform,
             n_dims=ndim, outputfiles_basename=args.log_dir + 'MN-%dd' % ndim,
             verbose=True, resume=True, importance_nested_sampling=False)
         

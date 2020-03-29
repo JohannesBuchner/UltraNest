@@ -36,6 +36,7 @@ jobs:
       - run: coverage3 combine
       - run: coverage3 report --include="$PWD/*" --omit="$PWD/.eggs/*"
       - run: coverage3 html --include="$PWD/*" --omit="$PWD/.eggs/*" && mv htmlcov test-reports
+      - run: for i in examples/test*.py; do python3 $i --help; done
       
       - store_test_results:
           path: test-reports

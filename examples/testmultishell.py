@@ -131,12 +131,12 @@ def main(args):
             import ultranest.stepsampler
             sampler.stepsampler = ultranest.stepsampler.RegionBallSliceSampler(nsteps=args.slice_steps, adaptive_nsteps=adaptive_nsteps,
                 log=open(log_dir + '/stepsampler.log', 'w'))
-        if args.dyhmc:
-            import ultranest.dyhmc
-            from ultranest.utils import verify_gradient
-            verify_gradient(ndim, transform, loglike, transform_loglike_gradient, combination=True)
-            sampler.stepsampler = ultranest.dyhmc.DynamicHMCSampler(ndim=ndim, nsteps=args.slice_steps, 
-                transform_loglike_gradient=transform_loglike_gradient)
+        #if args.dyhmc:
+        #    import ultranest.dyhmc
+        #    from ultranest.utils import verify_gradient
+        #    verify_gradient(ndim, transform, loglike, transform_loglike_gradient, combination=True)
+        #    sampler.stepsampler = ultranest.dyhmc.DynamicHMCSampler(ndim=ndim, nsteps=args.slice_steps, 
+        #        transform_loglike_gradient=transform_loglike_gradient)
         if args.dychmc:
             import ultranest.dychmc
             from ultranest.utils import verify_gradient
