@@ -62,7 +62,7 @@ def pymultinest_solve_compat(LogLikelihood, Prior, n_dims,
             Lepsilon=Lepsilon, max_ncalls=40000)
         
         sampler.stepsampler = RegionBallSliceSampler(nsteps=1000,
-            adaptive_nsteps='move-distance', region_filter=True)
+            adaptive_nsteps='move-distance', region_filter=kwargs.get('region_filter', True))
     else:
         sampler.stepsampler = RegionBallSliceSampler(nsteps=speed,
             adaptive_nsteps=False, region_filter=False)

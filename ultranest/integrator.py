@@ -1873,9 +1873,9 @@ class ReactiveNestedSampler(object):
                     else:
                         strategy_altered = np.isfinite(Llo_prev) != np.isfinite(Llo) or np.isfinite(Lhi_prev) != np.isfinite(Lhi)
 
-                    if self.log and strategy_altered:
-                        self.logger.debug("strategy update: L range to expand: %.3f-%.3f have: %.2f logZ=%.2f logZremain=%.2f",
-                                          Llo, Lhi, Lmin, main_iterator.logZ, main_iterator.logZremain)
+                    #if self.log and strategy_altered:
+                    #    self.logger.debug("strategy update: L range to expand: %.3f-%.3f have: %.2f logZ=%.2f logZremain=%.2f",
+                    #                      Llo, Lhi, Lmin, main_iterator.logZ, main_iterator.logZremain)
 
                     # when we are going to the peak, numerical accuracy
                     # can become an issue. We should try not to get stuck there
@@ -2140,6 +2140,7 @@ class ReactiveNestedSampler(object):
             logzerr_tail=logzerr_tail,
             logzerr_single=(main_iterator.all_H[0] / self.min_num_live_points)**0.5,
             ess=ess,
+            H=main_iterator.all_H[0], Herr=main_iterator.all_H.std(),
             paramnames=self.paramnames + self.derivedparamnames,
             ncall=int(self.ncall),
             posterior=dict(
@@ -2159,7 +2160,7 @@ class ReactiveNestedSampler(object):
                 header=' '.join(self.paramnames + self.derivedparamnames),
                 comments='')
             np.savetxt(os.path.join(self.logs['chains'], 'weighted_post.txt'),
-                np.hstack((saved_wt0.reshape((-1, 1)), -saved_logl.reshape((-1, 1)), saved_v)),
+                np.hstack((saved_wt0.reshape((-1, 1)), saved_logl.reshape((-1, 1)), saved_v)),
                 comments='#')
             np.savetxt(os.path.join(self.logs['chains'], 'weighted_post_untransformed.txt'),
                 np.hstack((saved_wt0.reshape((-1, 1)), saved_logl.reshape((-1, 1)), saved_u)),
