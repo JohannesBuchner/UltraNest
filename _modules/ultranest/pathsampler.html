@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ultranest.pathsampler &mdash; UltraNest 2.1.0 documentation</title>
+  <title>ultranest.pathsampler &mdash; UltraNest 2.1.1 documentation</title>
   
 
   
@@ -32,6 +32,7 @@
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+        <script type="text/javascript" src="https://unpkg.com/@jupyter-widgets/html-manager@^0.18.0/dist/embed-amd.js"></script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
@@ -68,7 +69,7 @@
             
             
               <div class="version">
-                2.1.0
+                2.1.1
               </div>
             
           
@@ -182,16 +183,16 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="n">pi</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">pi</span>
 
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
-<span class="kn">from</span> <span class="nn">ultranest.samplingpath</span> <span class="k">import</span> <span class="n">SamplingPath</span><span class="p">,</span> <span class="n">ContourSamplingPath</span><span class="p">,</span> <span class="n">extrapolate_ahead</span>
-<span class="kn">from</span> <span class="nn">ultranest.stepsampler</span> <span class="k">import</span> <span class="n">StepSampler</span>
-<span class="kn">from</span> <span class="nn">ultranest.stepsampler</span> <span class="k">import</span> <span class="n">generate_region_oriented_direction</span><span class="p">,</span> <span class="n">generate_region_random_direction</span><span class="p">,</span> <span class="n">generate_random_direction</span>
+<span class="kn">from</span> <span class="nn">ultranest.samplingpath</span> <span class="kn">import</span> <span class="n">SamplingPath</span><span class="p">,</span> <span class="n">ContourSamplingPath</span><span class="p">,</span> <span class="n">extrapolate_ahead</span>
+<span class="kn">from</span> <span class="nn">ultranest.stepsampler</span> <span class="kn">import</span> <span class="n">StepSampler</span>
+<span class="kn">from</span> <span class="nn">ultranest.stepsampler</span> <span class="kn">import</span> <span class="n">generate_region_oriented_direction</span><span class="p">,</span> <span class="n">generate_region_random_direction</span><span class="p">,</span> <span class="n">generate_random_direction</span>
 
-<span class="kn">from</span> <span class="nn">ultranest.flatnuts</span> <span class="k">import</span> <span class="n">ClockedStepSampler</span><span class="p">,</span> <span class="n">ClockedBisectSampler</span><span class="p">,</span> <span class="n">ClockedNUTSSampler</span>
-<span class="kn">from</span> <span class="nn">ultranest.flatnuts</span> <span class="k">import</span> <span class="n">SingleJumper</span><span class="p">,</span> <span class="n">DirectJumper</span><span class="p">,</span> <span class="n">IntervalJumper</span>
+<span class="kn">from</span> <span class="nn">ultranest.flatnuts</span> <span class="kn">import</span> <span class="n">ClockedStepSampler</span><span class="p">,</span> <span class="n">ClockedBisectSampler</span><span class="p">,</span> <span class="n">ClockedNUTSSampler</span>
+<span class="kn">from</span> <span class="nn">ultranest.flatnuts</span> <span class="kn">import</span> <span class="n">SingleJumper</span><span class="p">,</span> <span class="n">DirectJumper</span><span class="p">,</span> <span class="n">IntervalJumper</span>
 
 
 <div class="viewcode-block" id="SamplingPathSliceSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.pathsampler.SamplingPathSliceSampler">[docs]</a><span class="k">class</span> <span class="nc">SamplingPathSliceSampler</span><span class="p">(</span><span class="n">StepSampler</span><span class="p">):</span>
@@ -205,7 +206,7 @@
 <span class="sd">    attempted with the gradient (either provided or region-based estimate).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Initialise sampler.</span>
 
 <span class="sd">        Parameters</span>
@@ -311,7 +312,7 @@
 <div class="viewcode-block" id="SamplingPathStepSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.pathsampler.SamplingPathStepSampler">[docs]</a><span class="k">class</span> <span class="nc">SamplingPathStepSampler</span><span class="p">(</span><span class="n">StepSampler</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Step sampler on a sampling path.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nresets</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">balance</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">nudge</span><span class="o">=</span><span class="mf">1.1</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nresets</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">balance</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">nudge</span><span class="o">=</span><span class="mf">1.1</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Initialise sampler.</span>
 
 <span class="sd">        Parameters</span>
@@ -349,7 +350,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">terminate_path</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;acceptance rate&#39;</span><span class="p">,</span> <span class="s1">&#39;reflection rate&#39;</span><span class="p">,</span> <span class="s1">&#39;scale&#39;</span><span class="p">,</span> <span class="s1">&#39;nstuck&#39;</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get string representation.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="s1">&#39;(nsteps=</span><span class="si">%d</span><span class="s1">, nresets=</span><span class="si">%d</span><span class="s1">, AR=</span><span class="si">%d%%</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nresets</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">balance</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
@@ -514,7 +515,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">ipoints</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
 
-    <span class="k">def</span> <span class="nf">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">,</span> <span class="n">us</span><span class="p">,</span> <span class="n">Ls</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">,</span> <span class="n">us</span><span class="p">,</span> <span class="n">Ls</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get next point.</span>
 
 <span class="sd">        Parameters</span>
@@ -712,7 +713,7 @@
 <div class="viewcode-block" id="OtherSamplerProxy"><a class="viewcode-back" href="../../ultranest.html#ultranest.pathsampler.OtherSamplerProxy">[docs]</a><span class="k">class</span> <span class="nc">OtherSamplerProxy</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Proxy for ClockedSamplers.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nnewdirections</span><span class="p">,</span> <span class="n">sampler</span><span class="o">=</span><span class="s1">&#39;steps&#39;</span><span class="p">,</span> <span class="n">nsteps</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nnewdirections</span><span class="p">,</span> <span class="n">sampler</span><span class="o">=</span><span class="s1">&#39;steps&#39;</span><span class="p">,</span> <span class="n">nsteps</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
             <span class="n">balance</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">nudge</span><span class="o">=</span><span class="mf">1.1</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Initialise sampler.</span>
 
@@ -755,7 +756,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;accepted&#39;</span><span class="p">,</span> <span class="s1">&#39;scale&#39;</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get string representation.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="s1">&#39;Proxy[</span><span class="si">%s</span><span class="s1">](</span><span class="si">%d</span><span class="s1">x</span><span class="si">%d</span><span class="s1"> steps, AR=</span><span class="si">%d%%</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">samplername</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">nnewdirections</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">balance</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
@@ -845,7 +846,7 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">assert</span> <span class="kc">False</span></div>
 
-    <span class="k">def</span> <span class="nf">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">,</span> <span class="n">us</span><span class="p">,</span> <span class="n">Ls</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">,</span> <span class="n">us</span><span class="p">,</span> <span class="n">Ls</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get next point.</span>
 
 <span class="sd">        Parameters</span>

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ultranest.integrator &mdash; UltraNest 2.1.0 documentation</title>
+  <title>ultranest.integrator &mdash; UltraNest 2.1.1 documentation</title>
   
 
   
@@ -32,6 +32,7 @@
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+        <script type="text/javascript" src="https://unpkg.com/@jupyter-widgets/html-manager@^0.18.0/dist/embed-amd.js"></script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
@@ -68,7 +69,7 @@
             
             
               <div class="version">
-                2.1.0
+                2.1.1
               </div>
             
           
@@ -181,8 +182,8 @@
 <span class="c1"># Some parts are from the Nestle library by Kyle Barbary (https://github.com/kbarbary/nestle)</span>
 <span class="c1"># Some parts are from the nnest library by Adam Moss (https://github.com/adammoss/nnest)</span>
 
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">sys</span>
@@ -192,15 +193,15 @@
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
 
-<span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="n">log</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">logaddexp</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">log</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">logaddexp</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
-<span class="kn">from</span> <span class="nn">.utils</span> <span class="k">import</span> <span class="n">create_logger</span><span class="p">,</span> <span class="n">make_run_dir</span><span class="p">,</span> <span class="n">resample_equal</span><span class="p">,</span> <span class="n">vol_prefactor</span><span class="p">,</span> <span class="n">vectorize</span>
-<span class="kn">from</span> <span class="nn">ultranest.mlfriends</span> <span class="k">import</span> <span class="n">MLFriends</span><span class="p">,</span> <span class="n">AffineLayer</span><span class="p">,</span> <span class="n">ScalingLayer</span><span class="p">,</span> <span class="n">find_nearby</span>
-<span class="kn">from</span> <span class="nn">.store</span> <span class="k">import</span> <span class="n">HDF5PointStore</span><span class="p">,</span> <span class="n">NullPointStore</span>
-<span class="kn">from</span> <span class="nn">.viz</span> <span class="k">import</span> <span class="n">get_default_viz_callback</span><span class="p">,</span> <span class="n">nicelogger</span>
-<span class="kn">from</span> <span class="nn">.netiter</span> <span class="k">import</span> <span class="n">PointPile</span><span class="p">,</span> <span class="n">MultiCounter</span><span class="p">,</span> <span class="n">BreadthFirstIterator</span><span class="p">,</span> <span class="n">TreeNode</span><span class="p">,</span> <span class="n">count_tree_between</span><span class="p">,</span> <span class="n">find_nodes_before</span><span class="p">,</span> <span class="n">logz_sequence</span>
-<span class="kn">from</span> <span class="nn">.netiter</span> <span class="k">import</span> <span class="n">dump_tree</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">create_logger</span><span class="p">,</span> <span class="n">make_run_dir</span><span class="p">,</span> <span class="n">resample_equal</span><span class="p">,</span> <span class="n">vol_prefactor</span><span class="p">,</span> <span class="n">vectorize</span>
+<span class="kn">from</span> <span class="nn">ultranest.mlfriends</span> <span class="kn">import</span> <span class="n">MLFriends</span><span class="p">,</span> <span class="n">AffineLayer</span><span class="p">,</span> <span class="n">ScalingLayer</span><span class="p">,</span> <span class="n">find_nearby</span>
+<span class="kn">from</span> <span class="nn">.store</span> <span class="kn">import</span> <span class="n">HDF5PointStore</span><span class="p">,</span> <span class="n">NullPointStore</span>
+<span class="kn">from</span> <span class="nn">.viz</span> <span class="kn">import</span> <span class="n">get_default_viz_callback</span><span class="p">,</span> <span class="n">nicelogger</span>
+<span class="kn">from</span> <span class="nn">.netiter</span> <span class="kn">import</span> <span class="n">PointPile</span><span class="p">,</span> <span class="n">MultiCounter</span><span class="p">,</span> <span class="n">BreadthFirstIterator</span><span class="p">,</span> <span class="n">TreeNode</span><span class="p">,</span> <span class="n">count_tree_between</span><span class="p">,</span> <span class="n">find_nodes_before</span><span class="p">,</span> <span class="n">logz_sequence</span>
+<span class="kn">from</span> <span class="nn">.netiter</span> <span class="kn">import</span> <span class="n">dump_tree</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ReactiveNestedSampler&#39;</span><span class="p">,</span> <span class="s1">&#39;NestedSampler&#39;</span><span class="p">]</span>
 
@@ -261,7 +262,7 @@
 <div class="viewcode-block" id="NestedSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.integrator.NestedSampler">[docs]</a><span class="k">class</span> <span class="nc">NestedSampler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Simple Nested sampler for reference.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">param_names</span><span class="p">,</span>
                  <span class="n">loglike</span><span class="p">,</span>
                  <span class="n">transform</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -348,7 +349,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">use_mpi</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="kn">from</span> <span class="nn">mpi4py</span> <span class="k">import</span> <span class="n">MPI</span>
+            <span class="kn">from</span> <span class="nn">mpi4py</span> <span class="kn">import</span> <span class="n">MPI</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">comm</span> <span class="o">=</span> <span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">mpi_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">Get_size</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">mpi_rank</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">Get_rank</span><span class="p">()</span>
@@ -777,7 +778,7 @@
 <span class="sd">    Storage &amp; resume capable, optionally MPI parallelised.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">param_names</span><span class="p">,</span>
                  <span class="n">loglike</span><span class="p">,</span>
                  <span class="n">transform</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -852,7 +853,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">use_mpi</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="kn">from</span> <span class="nn">mpi4py</span> <span class="k">import</span> <span class="n">MPI</span>
+            <span class="kn">from</span> <span class="nn">mpi4py</span> <span class="kn">import</span> <span class="n">MPI</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">comm</span> <span class="o">=</span> <span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">mpi_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">Get_size</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">mpi_rank</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">Get_rank</span><span class="p">()</span>
@@ -2051,9 +2052,9 @@
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">strategy_altered</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">Llo_prev</span><span class="p">)</span> <span class="o">!=</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">Llo</span><span class="p">)</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">Lhi_prev</span><span class="p">)</span> <span class="o">!=</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">Lhi</span><span class="p">)</span>
 
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="ow">and</span> <span class="n">strategy_altered</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;strategy update: L range to expand: </span><span class="si">%.3f</span><span class="s2">-</span><span class="si">%.3f</span><span class="s2"> have: </span><span class="si">%.2f</span><span class="s2"> logZ=</span><span class="si">%.2f</span><span class="s2"> logZremain=</span><span class="si">%.2f</span><span class="s2">&quot;</span><span class="p">,</span>
-                                          <span class="n">Llo</span><span class="p">,</span> <span class="n">Lhi</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">,</span> <span class="n">main_iterator</span><span class="o">.</span><span class="n">logZ</span><span class="p">,</span> <span class="n">main_iterator</span><span class="o">.</span><span class="n">logZremain</span><span class="p">)</span>
+                    <span class="c1">#if self.log and strategy_altered:</span>
+                    <span class="c1">#    self.logger.debug(&quot;strategy update: L range to expand: %.3f-%.3f have: %.2f logZ=%.2f logZremain=%.2f&quot;,</span>
+                    <span class="c1">#                      Llo, Lhi, Lmin, main_iterator.logZ, main_iterator.logZremain)</span>
 
                     <span class="c1"># when we are going to the peak, numerical accuracy</span>
                     <span class="c1"># can become an issue. We should try not to get stuck there</span>
@@ -2318,6 +2319,7 @@
             <span class="n">logzerr_tail</span><span class="o">=</span><span class="n">logzerr_tail</span><span class="p">,</span>
             <span class="n">logzerr_single</span><span class="o">=</span><span class="p">(</span><span class="n">main_iterator</span><span class="o">.</span><span class="n">all_H</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_num_live_points</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span><span class="p">,</span>
             <span class="n">ess</span><span class="o">=</span><span class="n">ess</span><span class="p">,</span>
+            <span class="n">H</span><span class="o">=</span><span class="n">main_iterator</span><span class="o">.</span><span class="n">all_H</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Herr</span><span class="o">=</span><span class="n">main_iterator</span><span class="o">.</span><span class="n">all_H</span><span class="o">.</span><span class="n">std</span><span class="p">(),</span>
             <span class="n">paramnames</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">paramnames</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">derivedparamnames</span><span class="p">,</span>
             <span class="n">ncall</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ncall</span><span class="p">),</span>
             <span class="n">posterior</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
@@ -2337,7 +2339,7 @@
                 <span class="n">header</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">paramnames</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">derivedparamnames</span><span class="p">),</span>
                 <span class="n">comments</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
             <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logs</span><span class="p">[</span><span class="s1">&#39;chains&#39;</span><span class="p">],</span> <span class="s1">&#39;weighted_post.txt&#39;</span><span class="p">),</span>
-                <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">saved_wt0</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="o">-</span><span class="n">saved_logl</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="n">saved_v</span><span class="p">)),</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">saved_wt0</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="n">saved_logl</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="n">saved_v</span><span class="p">)),</span>
                 <span class="n">comments</span><span class="o">=</span><span class="s1">&#39;#&#39;</span><span class="p">)</span>
             <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logs</span><span class="p">[</span><span class="s1">&#39;chains&#39;</span><span class="p">],</span> <span class="s1">&#39;weighted_post_untransformed.txt&#39;</span><span class="p">),</span>
                 <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">saved_wt0</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="n">saved_logl</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="n">saved_u</span><span class="p">)),</span>
@@ -2410,7 +2412,7 @@
 <span class="sd">            cornerplot(results)</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">.plot</span> <span class="k">import</span> <span class="n">cornerplot</span>
+        <span class="kn">from</span> <span class="nn">.plot</span> <span class="kn">import</span> <span class="n">cornerplot</span>
         <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Making corner plot ...&#39;</span><span class="p">)</span>
@@ -2432,7 +2434,7 @@
 <span class="sd">            traceplot(results=results, labels=paramnames + derivedparamnames)</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">.plot</span> <span class="k">import</span> <span class="n">traceplot</span>
+        <span class="kn">from</span> <span class="nn">.plot</span> <span class="kn">import</span> <span class="n">traceplot</span>
         <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Making trace plot ... &#39;</span><span class="p">)</span>
@@ -2457,7 +2459,7 @@
 <span class="sd">            runplot(results=results)</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">.plot</span> <span class="k">import</span> <span class="n">runplot</span>
+        <span class="kn">from</span> <span class="nn">.plot</span> <span class="kn">import</span> <span class="n">runplot</span>
         <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Making run plot ... &#39;</span><span class="p">)</span>

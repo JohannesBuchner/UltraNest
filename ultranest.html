@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ultranest package &mdash; UltraNest 2.1.0 documentation</title>
+  <title>ultranest package &mdash; UltraNest 2.1.1 documentation</title>
   
 
   
@@ -32,6 +32,7 @@
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+        <script type="text/javascript" src="https://unpkg.com/@jupyter-widgets/html-manager@^0.18.0/dist/embed-amd.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -70,7 +71,7 @@
             
             
               <div class="version">
-                2.1.0
+                2.1.1
               </div>
             
           
@@ -208,13 +209,13 @@
 /* CSS overrides for sphinx_rtd_theme */
 
 /* 24px margin */
-.nbinput.nblast,
-.nboutput.nblast {
+.nbinput.nblast.container,
+.nboutput.nblast.container {
     margin-bottom: 19px;  /* padding has already 5px */
 }
 
 /* ... except between code cells! */
-.nblast + .nbinput {
+.nblast.container + .nbinput.container {
     margin-top: -19px;
 }
 
@@ -1045,7 +1046,7 @@ This number limits the number of improvement loops.</p></li>
 <p>Writes corner plot to plots/ directory if log directory was
 specified, otherwise show interactively.</p>
 <p>This does essentially:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ultranest.plot</span> <span class="k">import</span> <span class="n">cornerplot</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ultranest.plot</span> <span class="kn">import</span> <span class="n">cornerplot</span>
 <span class="n">cornerplot</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -1058,7 +1059,7 @@ specified, otherwise show interactively.</p>
 <p>Write parameter trace diagnostic plots to plots/ directory
 if log directory specified, otherwise show interactively.</p>
 <p>This does essentially:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ultranest.plot</span> <span class="k">import</span> <span class="n">traceplot</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ultranest.plot</span> <span class="kn">import</span> <span class="n">traceplot</span>
 <span class="n">traceplot</span><span class="p">(</span><span class="n">results</span><span class="o">=</span><span class="n">results</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">paramnames</span> <span class="o">+</span> <span class="n">derivedparamnames</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -1071,7 +1072,7 @@ if log directory specified, otherwise show interactively.</p>
 <p>Write run diagnostic plots to plots/ directory
 if log directory specified, otherwise show interactively.</p>
 <p>This does essentially:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ultranest.plot</span> <span class="k">import</span> <span class="n">runplot</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ultranest.plot</span> <span class="kn">import</span> <span class="n">runplot</span>
 <span class="n">runplot</span><span class="p">(</span><span class="n">results</span><span class="o">=</span><span class="n">results</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -2432,11 +2433,11 @@ will be very stochastic.</p></li>
 <span id="ultranest-solvecompat-module"></span><h2>ultranest.solvecompat module<a class="headerlink" href="#module-ultranest.solvecompat" title="Permalink to this headline">¶</a></h2>
 <p>Drop-in replacement for pymultinest.solve.</p>
 <p>Example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ultranest.solvecompat</span> <span class="k">import</span> <span class="n">pymultinest_solve_compat</span> <span class="k">as</span> <span class="n">solve</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ultranest.solvecompat</span> <span class="kn">import</span> <span class="n">pymultinest_solve_compat</span> <span class="k">as</span> <span class="n">solve</span>
 
 <span class="c1"># is a drop-in replacement for</span>
 
-<span class="kn">from</span> <span class="nn">pymultinest.solve</span> <span class="k">import</span> <span class="n">solve</span>
+<span class="kn">from</span> <span class="nn">pymultinest.solve</span> <span class="kn">import</span> <span class="n">solve</span>
 </pre></div>
 </div>
 <dl class="function">
