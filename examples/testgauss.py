@@ -36,7 +36,7 @@ def main(args):
     elif args.reactive:
         from ultranest.solvecompat import pymultinest_solve_compat as solve
         result = solve(LogLikelihood=flat_loglike, Prior=flat_transform,
-            n_dims=ndim, outputfiles_basename=args.log_dir + 'MN-%dd' % ndim,
+            n_dims=ndim, outputfiles_basename=args.log_dir + 'RNS-%dd' % ndim,
             verbose=True, resume=True, importance_nested_sampling=False)
         
         print()

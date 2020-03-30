@@ -81,6 +81,9 @@ def main(args):
             log_dir=args.log_dir, vectorized=True,
             derived_param_names=derivednames, wrapped_params=wrapped_params,
             resume='overwrite')
+        if args.harm:
+            import ultranest.stepsampler
+            sampler.stepsampler = ultranest.stepsampler.RegionBallSliceSampler(nsteps=args.slice_steps, adaptive_nsteps=adaptive_nsteps)
     else:
         from ultranest import NestedSampler
         sampler = NestedSampler(paramnames, loglike, transform=transform, 
@@ -106,10 +109,11 @@ if __name__ == '__main__':
     parser.add_argument('--ndata', type=int, default=40,
                         help="Number of simulated data points")
     parser.add_argument("--num_live_points", type=int, default=1000)
-    parser.add_argument('--num_layers', type=int, default=1)
     parser.add_argument('--log_dir', type=str, default='logs/testsine')
     parser.add_argument('--reactive', action='store_true', default=False)
     parser.add_argument('--pymultinest', action='store_true')
+    parser.add_argument('--slice_steps', type=int, default=100)
+    parser.add_argument('--adapt_steps', type=str)
 
     args = parser.parse_args()
     main(args)

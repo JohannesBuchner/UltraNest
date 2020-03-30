@@ -4,7 +4,9 @@ import numpy as np
 def main(args):
     ndim = args.x_dim
     sigma = args.sigma
-    width = max(0, 1 - 5 * sigma)
+    sigma = np.logspace(-1, np.log10(args.sigma), ndim)
+    width = 1 - 5 * sigma
+    width[width < 1e-20] = 1e-20
     centers = (np.sin(np.arange(ndim)/2.) * width + 1.) / 2.
     #centers = np.ones(ndim) * 0.5
 
@@ -13,7 +15,7 @@ def main(args):
         adaptive_nsteps = False
 
     def loglike(theta):
-        like = -0.5 * (((theta - centers)/sigma)**2).sum(axis=1) - 0.5 * np.log(2 * np.pi * sigma**2) * ndim
+        like = -0.5 * (((theta - centers)/sigma)**2).sum(axis=1) - 0.5 * np.log(2 * np.pi * sigma**2).sum()
         return like
 
     def transform(x):
@@ -21,7 +23,7 @@ def main(args):
     
     def transform_loglike_gradient(u):
         theta = u
-        like = -0.5 * (((theta - centers)/sigma)**2).sum(axis=1) - 0.5 * np.log(2 * np.pi * sigma**2) * ndim
+        like = -0.5 * (((theta - centers)/sigma)**2).sum(axis=1) - 0.5 * np.log(2 * np.pi * sigma**2).sum()
         grad = (theta - centers)/sigma
         return u, like, grad
 
