@@ -761,7 +761,7 @@ class ReactiveNestedSampler(object):
             assert p.shape == (num_test_samples, self.num_params), ("Error in transform function: returned shape is %s, expected %s" % (p.shape, (num_test_samples, self.num_params)))
             logl = loglike(p)
             assert np.logical_and(u > 0, u < 1).all(), ("Error in transform function: u was modified!")
-            assert logl.shape == (num_test_samples,), ("Error in loglikelihood function: returned shape is %s, expected %s" % (p.shape, (num_test_samples, self.num_params)))
+            assert logl.shape == (num_test_samples,), ("Error in loglikelihood function: returned shape is %s, expected %s" % (p.shape, (num_test_samples,)))
             assert np.isfinite(logl).all(), ("Error in loglikelihood function: returned non-finite number: %s for input u=%s p=%s" % (logl, u, p))
 
         if not self.pointstore.stack_empty and num_resume_test_samples > 0:
@@ -1966,6 +1966,8 @@ class ReactiveNestedSampler(object):
                         if show_status:
                             if Lmin < -1e8:
                                 txt = 'Z=%.1g(%.2f%%) | Like=%.2g..%.2g [%.4g..%.4g]%s| it/evals=%d/%d eff=%.4f%% N=%d \r'
+                            elif Llo < -1e8:
+                                txt = 'Z=%.1f(%.2f%%) | Like=%.2f..%.2f [%.4g..%.4g]%s| it/evals=%d/%d eff=%.4f%% N=%d \r'
                             else:
                                 txt = 'Z=%.1f(%.2f%%) | Like=%.2f..%.2f [%.4f..%.4f]%s| it/evals=%d/%d eff=%.4f%% N=%d \r'
                             sys.stdout.write(txt % (
