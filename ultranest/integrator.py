@@ -24,7 +24,7 @@ from .viz import get_default_viz_callback, nicelogger
 from .netiter import PointPile, MultiCounter, BreadthFirstIterator, TreeNode, count_tree_between, find_nodes_before, logz_sequence
 from .netiter import dump_tree
 
-__all__ = ['ReactiveNestedSampler', 'NestedSampler']
+__all__ = ['ReactiveNestedSampler', 'NestedSampler', 'read_file']
 
 
 def _get_cumsum_range(pi, dp):
@@ -1452,11 +1452,11 @@ class ReactiveNestedSampler(object):
                     # return updated
 
                 if not nextTransformLayer.nclusters < 20:
-                    filename = 'overclustered_%d.npz' % nextTransformLayer.nclusters
                     if self.log:
                         self.logger.info("Found a lot of clusters: %d (%d with >1 members)",
                                          nextTransformLayer.nclusters, (cluster_sizes > 1).sum())
 
+                    #filename = 'overclustered_%d.npz' % nextTransformLayer.nclusters
                     #if not os.path.exists(filename):
                     #    self.logger.info("A lot of clusters! writing debug output file '%s'", filename)
                     #    np.savez(filename,
@@ -1864,14 +1864,14 @@ class ReactiveNestedSampler(object):
                 # if within suggested range, expand
                 if strategy_stale or not (Lmin <= Lhi) or not np.isfinite(Lhi) or (active_values == Lmin).all():
                     # check with advisor if we want to expand this node
-                    Llo_prev, Lhi_prev = Llo, Lhi
+                    #Llo_prev, Lhi_prev = Llo, Lhi
                     Llo, Lhi = self._adaptive_strategy_advice(Lmin,
                         active_values, main_iterator, minimal_widths,
                         frac_remain, Lepsilon=Lepsilon)
-                    if np.isfinite(Lhi):
-                        strategy_altered = Llo != Llo_prev or Lhi != Lhi_prev
-                    else:
-                        strategy_altered = np.isfinite(Llo_prev) != np.isfinite(Llo) or np.isfinite(Lhi_prev) != np.isfinite(Lhi)
+                    #if np.isfinite(Lhi):
+                    #    strategy_altered = Llo != Llo_prev or Lhi != Lhi_prev
+                    #else:
+                    #    strategy_altered = np.isfinite(Llo_prev) != np.isfinite(Llo) or np.isfinite(Lhi_prev) != np.isfinite(Lhi)
 
                     #if self.log and strategy_altered:
                     #    self.logger.debug("strategy update: L range to expand: %.3f-%.3f have: %.2f logZ=%.2f logZremain=%.2f",
@@ -2293,3 +2293,128 @@ class ReactiveNestedSampler(object):
             plt.savefig(os.path.join(self.logs['plots'], 'run.pdf'), bbox_inches='tight')
             plt.close()
             self.logger.debug('Making run plot ... done')
+
+
+def read_file(log_dir, x_dim, num_bootstraps=20, random=True):
+    import h5py
+    filepath = os.path.join(log_dir, 'results', 'points.hdf5')
+    fileobj = h5py.File(filepath, 'r')
+    nrows, ncols = fileobj['points'].shape
+    num_params = ncols - 3 - x_dim
+    
+    points = fileobj['points'][:]
+    stack = list(enumerate(points))
+
+    pointpile = PointPile(x_dim, num_params)
+    
+    def pop(Lmin):
+        # look forward to see if there is an exact match
+        # if we do not use the exact matches
+        #   this causes a shift in the loglikelihoods
+        for i, (idx, next_row) in enumerate(stack):
+            row_Lmin = next_row[0]
+            L = next_row[1]
+            if row_Lmin <= Lmin and L > Lmin:
+                idx, row = stack.pop(i)
+                return idx, row
+        return None, None
+
+    roots = []
+    while True:
+        _, row = pop(-np.inf)
+        if row is None:
+            break
+        logl = row[1]
+        u = row[3:3 + x_dim]
+        v = row[3 + x_dim:3 + x_dim + num_params]
+        roots.append(pointpile.make_node(logl, u, v))
+
+    root = TreeNode(id=-1, value=-np.inf)
+    root.children = roots
+    Lmax = -np.inf
+
+    explorer = BreadthFirstIterator(roots)
+    # Integrating thing
+    main_iterator = MultiCounter(nroots=len(roots),
+        nbootstraps=max(1, num_bootstraps),
+        random=random)
+    main_iterator.Lmax = max(Lmax, max(n.value for n in roots))
+
+    logz = []
+    logzerr = []
+    nlive = []
+    logvol = []
+    niter = 0
+
+    saved_nodeids = []
+    saved_logl = []
+    # we go through each live point (regardless of root) by likelihood value
+    while True:
+        next_node = explorer.next_node()
+        if next_node is None:
+            break
+        rootid, node, (active_nodes, active_rootids, active_values, active_node_ids) = next_node
+        # this is the likelihood level we have to improve upon
+        Lmin = node.value
+
+        _, row = pop(Lmin)
+        if row is not None:
+            logl = row[1]
+            u = row[3:3 + x_dim]
+            v = row[3 + x_dim:3 + x_dim + num_params]
+            child = pointpile.make_node(logl, u, v)
+            main_iterator.Lmax = max(main_iterator.Lmax, logl)
+            node.children.append(child)
+
+        logz.append(main_iterator.logZ)
+        with np.errstate(invalid='ignore'):
+            # first time they are all the same
+            logzerr.append(main_iterator.logZerr_bs)
+        nlive.append(len(active_values))
+        logvol.append(main_iterator.logVolremaining)
+
+        niter += 1
+
+        saved_logl.append(Lmin)
+        saved_nodeids.append(node.id)
+        # inform iterators (if it is their business) about the arc
+        main_iterator.passing_node(rootid, node, active_rootids, active_values)
+        explorer.expand_children_of(rootid, node)
+        print("%d ..." % niter, end='\r')
+
+    #self._update_results(main_iterator, saved_logl, saved_nodeids)
+
+    saved_logl = np.array(saved_logl)
+    saved_u = pointpile.getu(saved_nodeids)
+    saved_v = pointpile.getp(saved_nodeids)
+    saved_logwt = np.array(main_iterator.logweights)
+    #saved_logwt0 = saved_logwt[:,0]
+    #saved_logwt_bs = saved_logwt[:,1:]
+    #logZ_bs = main_iterator.all_logZ[1:]
+
+    logwt = np.asarray(logl) + np.asarray(main_iterator.logweights)[:,0]
+    logvol[-1] = logvol[-2]
+
+    saved_logwt0 = saved_logwt[:,0]
+    saved_wt0 = exp(saved_logwt0 + saved_logl - main_iterator.all_logZ[0])
+    w = saved_wt0 / saved_wt0.sum()
+
+    return dict(logz=np.asarray(logz),
+        logzerr=np.asarray(logzerr),
+        logvol=np.asarray(logvol),
+        samples_n=np.asarray(nlive),
+        logwt=logwt,
+        niter=niter,
+        logl=saved_logl,
+        logvols=saved_logwt[:,0],
+        normalised_weights=w,
+        samples=saved_v,
+        samples_untransformed=saved_u,
+        bootstrapped=dict(
+            logZ=main_iterator.all_logZ,
+            logVolremaining=main_iterator.all_logVolremaining,
+            H=main_iterator.all_H,
+            remainder_fraction=main_iterator.remainder_fraction,
+            logvols=saved_logwt,
+        )
+    )

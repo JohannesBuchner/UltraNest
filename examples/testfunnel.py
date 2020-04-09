@@ -26,7 +26,7 @@ def main(args):
         from ultranest import ReactiveNestedSampler
         sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, 
             log_dir=args.log_dir + 'RNS-%dd' % ndim, vectorized=True,
-            resume=True, viz_callback = False, show_status = False)
+            resume=True)
         sampler.run(log_interval=20, min_num_live_points=args.num_live_points)
         sampler.plot()
     else:
