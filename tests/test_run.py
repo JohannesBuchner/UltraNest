@@ -2,6 +2,7 @@ import numpy as np
 import shutil
 import tempfile
 import pytest
+from numpy.testing import assert_allclose
 
 def test_run():
     from ultranest import NestedSampler
@@ -182,6 +183,7 @@ def test_run_resume(dlogz):
 
 def test_reactive_run_resume_eggbox():
     from ultranest import ReactiveNestedSampler
+    from ultranest import read_file
 
     def loglike(z):
         chi = (np.cos(z / 2.)).prod(axis=1)
@@ -193,6 +195,7 @@ def test_reactive_run_resume_eggbox():
         return x * 10 * np.pi
 
     paramnames = ['a', 'b']
+    ndim = len(paramnames)
     
     #last_results = None
     folder = tempfile.mkdtemp()
@@ -204,14 +207,16 @@ def test_reactive_run_resume_eggbox():
             print()
             sampler = ReactiveNestedSampler(paramnames, 
                 loglike, transform=transform,
-                log_dir=folder, resume=True, vectorized=True)
+                log_dir=folder, resume=True, vectorized=True, draw_multiple=False)
             initial_ncalls = int(sampler.ncall)
+            num_live_points = 100
             loglike.ncalls = 0
             r = sampler.run(max_iters=200 + i*200, 
-                max_num_improvement_loops=1, 
-                min_num_live_points=100, 
+                max_num_improvement_loops=0, 
+                min_num_live_points=num_live_points, 
                 cluster_num_live_points=0)
             sampler.print_results()
+            print("pointstore:", sampler.pointstore.fileobj['points'].shape)
             sampler.pointstore.close()
             print(loglike.ncalls, r['ncall'], initial_ncalls)
 
@@ -223,7 +228,61 @@ def test_reactive_run_resume_eggbox():
                 ncalls = sum(sampler.comm.bcast(ncalls, root=0))
             ncalls = ncalls + initial_ncalls
             assert abs(r['ncall'] - ncalls) <= 2 * sampler.mpi_size, (i, r['ncall'], ncalls, r['ncall'] - ncalls)
-            #last_results = r
+            assert paramnames == r['paramnames'], 'paramnames should be in results'
+        
+        # the results are not exactly the same, because the sampling adds 
+        #ncalls = loglike.ncalls
+        #sampler = ReactiveNestedSampler(paramnames, 
+        #    loglike, transform=transform,
+        #    log_dir=folder, resume=True, vectorized=True, num_test_samples=0)
+        #print("pointstore:", sampler.pointstore.fileobj['points'].shape)
+        #assert ncalls == loglike.ncalls, (ncalls, loglike.ncalls)
+        sequence, results = read_file(folder, ndim, random=False, num_bootstraps=0)
+
+        print("sampler results: ********************")
+        print({k:v for k, v in r.items() if np.asarray(v).size < 20 and k != 'weighted_samples'})
+        print("reader results: ********************")
+        print({k:v for k, v in results.items() if np.asarray(v).size < 20 and k != 'weighted_samples'})
+        for k, v in results.items():
+            if k == 'posterior' or k == 'samples':
+                pass
+            elif k == 'weighted_samples':
+                for k2, v2 in results[k].items():
+                    if k2 == 'bs_w': continue
+                    print("  ", k, "::", k2, np.shape(v2))
+                    assert_allclose(r[k][k2], v2)
+            elif k.startswith('logzerr') or '_bs' in k or 'Herr' in k:
+                print("   skipping", k, np.shape(v))
+                #assert_allclose(r[k], v, atol=0.5)
+            else:
+                print("  ", k, np.shape(v))
+                assert_allclose(r[k], v)
+
+        logw = r['weighted_samples']['logw']
+        v = r['weighted_samples']['v']
+        L = r['weighted_samples']['L']
+
+        assert sequence['logz'][-1] - r['logz'] < 0.5, (results['logz'][-1], r['logz'])
+        assert sequence['logzerr'][-1] <= r['logzerr_single'], (results['logzerr'][-1], r['logzerr'])
+        #assert_allclose(sequence['logz_final'], r['logz_single'], atol=0.3)
+        #assert_allclose(sequence['logzerr_final'], r['logzerr_single'], atol=0.1)
+        assert r['niter'] <= sequence['niter'] <= r['niter'], (sequence['niter'], r['niter'])
+        assert results['niter'] == len(sequence['logz']) == len(sequence['logzerr']) == len(sequence['logvol']) == len(sequence['logwt'])
+        assert results['niter'] == len(results['samples'])
+        data = np.loadtxt(folder + '/chains/weighted_post.txt')
+        assert_allclose(data[:,0], results['weighted_samples']['w'])
+        assert_allclose(data[:,1], results['weighted_samples']['L'])
+        assert_allclose(v, results['weighted_samples']['v'])
+        assert_allclose(logw, results['weighted_samples']['logw'])
+        assert_allclose(L, results['weighted_samples']['L'])
+
+        assert_allclose(L, sequence['logl'])
+        #assert_allclose(logw + L, sequence['logwt'])
+        assert sequence['logvol'].shape == logw.shape == (len(L),), (sequence['logvol'].shape, logw.shape)
+        assert sequence['logwt'].shape == logw.shape == (len(L),), (sequence['logwt'].shape, logw.shape)
+        #assert_allclose(logw, sequence['logvols'])
+        #assert results['samples_untransformed'].shape == v.shape == (len(L), ndim), (results['samples_untransformed'].shape, v.shape)
+        
     finally:
         shutil.rmtree(folder, ignore_errors=True)
 

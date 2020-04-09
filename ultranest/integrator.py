@@ -2183,8 +2183,8 @@ class ReactiveNestedSampler(object):
                 self.logger.info("Writing samples and results to disk ... done")
 
         results.update(
-            weighted_samples=dict(v=saved_v, w=saved_wt0, logw=saved_logwt0,
-                bs_w=saved_wt_bs, L=saved_logl),
+            weighted_samples=dict(v=saved_v, L=saved_logl, w=saved_wt0,
+                logw=saved_logwt0, bs_w=saved_wt_bs, u=saved_u),
             samples=samples,
         )
         self.results = results
@@ -2296,6 +2296,37 @@ class ReactiveNestedSampler(object):
 
 
 def read_file(log_dir, x_dim, num_bootstraps=20, random=True):
+    """
+    Read the output HDF5 file of UltraNest.
+
+    Parameters
+    ----------
+    log_dir: str
+        Folder containing results
+    x_dim: int
+        number of dimensions
+    num_bootstraps: int
+        number of bootstraps to use for estimating logZ.
+    random: bool
+        use randomization for volume estimation.
+
+    Returns
+    ----------
+    sequence: dict
+        contains arrays storing for each iteration estimates of:
+
+            * logz: log evidence estimate
+            * logzerr: log evidence uncertainty estimate
+            * logvol: log volume estimate
+            * samples_n: number of live points
+            * logwt: log weight
+            * logl: log likelihood
+
+    final: dict
+        same as ReactiveNestedSampler.results and 
+        ReactiveNestedSampler.run return values
+
+    """
     import h5py
     filepath = os.path.join(log_dir, 'results', 'points.hdf5')
     fileobj = h5py.File(filepath, 'r')
@@ -2380,7 +2411,6 @@ def read_file(log_dir, x_dim, num_bootstraps=20, random=True):
         # inform iterators (if it is their business) about the arc
         main_iterator.passing_node(rootid, node, active_rootids, active_values)
         explorer.expand_children_of(rootid, node)
-        print("%d ..." % niter, end='\r')
 
     #self._update_results(main_iterator, saved_logl, saved_nodeids)
 
@@ -2399,22 +2429,51 @@ def read_file(log_dir, x_dim, num_bootstraps=20, random=True):
     saved_wt0 = exp(saved_logwt0 + saved_logl - main_iterator.all_logZ[0])
     w = saved_wt0 / saved_wt0.sum()
 
-    return dict(logz=np.asarray(logz),
+    saved_logwt_bs = saved_logwt[:,1:]
+    logZ_bs = main_iterator.all_logZ[1:]
+    saved_wt_bs = exp(saved_logwt_bs + saved_logl.reshape((-1, 1)) - logZ_bs)
+    saved_wt0 = exp(saved_logwt0 + saved_logl - main_iterator.all_logZ[0])
+
+    # compute fraction in tail
+    w = saved_wt0 / saved_wt0.sum()
+    ess = len(w) / (1.0 + ((len(w) * w - 1)**2).sum() / len(w))
+    tail_fraction = w[np.asarray(main_iterator.istail)].sum()
+    if tail_fraction != 0:
+        logzerr_tail = logaddexp(log(tail_fraction) + main_iterator.logZ, main_iterator.logZ) - main_iterator.logZ
+    else:
+        logzerr_tail = 0
+
+    logzerr_bs = (logZ_bs - main_iterator.logZ).max()
+    logzerr_total = (logzerr_tail**2 + logzerr_bs**2)**0.5
+    samples = resample_equal(saved_v, w)
+    
+    results = dict(niter=len(saved_logl),
+        logz=main_iterator.logZ, logzerr=logzerr_total,
+        logz_bs=logZ_bs.mean(),
+        logzerr_bs=logzerr_bs,
+        logz_single=main_iterator.logZ,
+        logzerr_tail=logzerr_tail,
+        ess=ess,
+        H=main_iterator.all_H[0], Herr=main_iterator.all_H.std(),
+        posterior=dict(
+            mean=samples.mean(axis=0).tolist(),
+            stdev=samples.std(axis=0).tolist(),
+            median=np.percentile(samples, 50, axis=0).tolist(),
+            errlo=np.percentile(samples, 15.8655, axis=0).tolist(),
+            errup=np.percentile(samples, 84.1345, axis=0).tolist(),
+        ),
+        weighted_samples=dict(u=saved_u, v=saved_v, w=saved_wt0, logw=saved_logwt0,
+            bs_w=saved_wt_bs, L=saved_logl),
+        samples=samples,
+    )
+    sequence = dict(
+        logz=np.asarray(logz),
         logzerr=np.asarray(logzerr),
         logvol=np.asarray(logvol),
         samples_n=np.asarray(nlive),
         logwt=logwt,
         niter=niter,
         logl=saved_logl,
-        logvols=saved_logwt[:,0],
-        normalised_weights=w,
-        samples=saved_v,
-        samples_untransformed=saved_u,
-        bootstrapped=dict(
-            logZ=main_iterator.all_logZ,
-            logVolremaining=main_iterator.all_logVolremaining,
-            H=main_iterator.all_H,
-            remainder_fraction=main_iterator.remainder_fraction,
-            logvols=saved_logwt,
-        )
     )
+
+    return sequence, results
