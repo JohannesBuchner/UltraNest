@@ -2024,6 +2024,8 @@ class ReactiveNestedSampler(object):
                     # then the region follows the live points even if maxradius is not updated
                     self.region.u[worst] = u
                     self.region.unormed[worst] = self.region.transformLayer.transform(u)
+                    # move also the ellipsoid
+                    self.region.ellipsoid_center = np.mean(self.region.u, axis=0)
 
                     # if we track the cluster assignment, then in the next round
                     # the ids with the same members are likely to have the same id
