@@ -21,6 +21,7 @@ class NullPointStore(object):
         self.ncols = int(ncols)
         self.nrows = 0
         self.stack_empty = True
+        self.ncalls = 0
 
     def reset(self):
         """Do nothing."""
@@ -34,9 +35,10 @@ class NullPointStore(object):
         """Do nothing."""
         pass
 
-    def add(self, row):
+    def add(self, row, ncalls):
         """Increases the number of "stored" points."""
         self.nrows += 1
+        self.ncalls = ncalls
         return self.nrows - 1
 
     def pop(self, Lmin):
@@ -134,14 +136,16 @@ class TextPointStore(FilePointStore):
                 pass
 
         self.stack = list(enumerate(stack))
+        self.ncalls = len(self.stack)
         self.reset()
 
-    def add(self, row):
+    def add(self, row, ncalls):
         r"""Add data point *row* = [Lmin, L, \*otherinfo] to storage."""
         if len(row) != self.ncols:
             raise ValueError("expected %d values, got %d in %s" % (self.ncols, len(row), row))
         np.savetxt(self.fileobj, [row], fmt=self.fmt, delimiter=self.delimiter)
         self.nrows += 1
+        self.ncalls = ncalls
         return self.nrows - 1
 
 
@@ -179,9 +183,10 @@ class HDF5PointStore(FilePointStore):
             raise IOError("Tried to resume from file '%s', which has a different number of columns!" % (self.fileobj))
         points = self.fileobj['points'][:]
         self.stack = list(enumerate(points))
+        self.ncalls = self.fileobj.attrs.get('ncalls', len(self.stack))
         self.reset()
 
-    def add(self, row):
+    def add(self, row, ncalls):
         """Add data point row = [Lmin, L, *otherinfo* to storage."""
         if len(row) != self.ncols:
             raise ValueError("expected %d values, got %d in %s" % (self.ncols, len(row), row))
@@ -190,5 +195,7 @@ class HDF5PointStore(FilePointStore):
         self.fileobj['points'].resize(self.nrows + 1, axis=0)
         # insert:
         self.fileobj['points'][self.nrows,:] = row
+        if self.ncalls != ncalls:
+            self.ncalls = self.fileobj.attrs['ncalls'] = ncalls
         self.nrows += 1
         return self.nrows - 1

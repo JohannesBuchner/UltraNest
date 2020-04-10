@@ -23,14 +23,14 @@ def test_text_store():
 
 		ptst = PointStore(filepath, 4)
 		try:
-			ptst.add([-np.inf, 123, 4])
+			ptst.add([-np.inf, 123, 4], 1)
 			assert False, "should not allow adding wrong length"
 		except ValueError:
 			pass
 		
 		ptst = PointStore(filepath, 4)
 		assert ptst.stack_empty
-		ptst.add([-np.inf, 123, 413, 213])
+		ptst.add([-np.inf, 123, 413, 213], 2)
 		assert ptst.stack_empty
 		ptst.close()
 		
@@ -41,7 +41,7 @@ def test_text_store():
 		assert entry[1] == 123,  ("retrieving entry should succeed", entry)
 		assert ptst.pop(100)[1] is None, "other queries should return None"
 		assert ptst.stack_empty
-		ptst.add([101, 155, 413, 213])
+		ptst.add([101, 155, 413, 213], 3)
 		assert ptst.stack_empty
 		ptst.close()
 
@@ -49,7 +49,7 @@ def test_text_store():
 		assert ptst.pop(-np.inf)[1] is not None, "retrieving entry should succeed"
 		assert ptst.pop(-np.inf)[1] is None, "retrieving unknown entry should fail"
 		assert ptst.pop(100)[1] is None, "retrieving unknown entry should fail"
-		ptst.add([99, 156, 413, 213])
+		ptst.add([99, 156, 413, 213], 4)
 		ptst.close()
 
 		ptst = PointStore(filepath, 4)
@@ -95,14 +95,14 @@ def test_hdf5_store():
 
 		ptst = PointStore(filepath, 4)
 		try:
-			ptst.add([-np.inf, 123, 4])
+			ptst.add([-np.inf, 123, 4], 1)
 			assert False, "should not allow adding wrong length"
 		except ValueError:
 			pass
 		
 		ptst = PointStore(filepath, 4)
 		assert ptst.stack_empty
-		ptst.add([-np.inf, 123, 413, 213])
+		ptst.add([-np.inf, 123, 413, 213], 2)
 		assert ptst.stack_empty
 		ptst.close()
 		
@@ -113,18 +113,21 @@ def test_hdf5_store():
 		assert entry[1] == 123,  ("retrieving entry should succeed", entry)
 		assert ptst.pop(100)[1] is None, "other queries should return None"
 		assert ptst.stack_empty
-		ptst.add([101, 155, 413, 213])
+		ptst.add([101, 155, 413, 213], 3)
+		assert ptst.ncalls == 3, (ptst.ncalls)
 		assert ptst.stack_empty
 		ptst.close()
 
 		ptst = PointStore(filepath, 4)
+		assert ptst.ncalls == 3, (ptst.ncalls)
 		assert ptst.pop(-np.inf)[1] is not None, "retrieving entry should succeed"
 		assert ptst.pop(-np.inf)[1] is None, "retrieving unknown entry should fail"
 		assert ptst.pop(100)[1] is None, "retrieving unknown entry should fail"
-		ptst.add([99, 156, 413, 213])
+		ptst.add([99, 156, 413, 213], 4)
 		ptst.close()
 
 		ptst = PointStore(filepath, 4)
+		assert ptst.ncalls == 4, (ptst.ncalls)
 		assert ptst.pop(-np.inf)[1] is not None, "retrieving entry should succeed"
 		assert ptst.pop(-np.inf)[1] is None, "retrieving unknown entry should fail"
 		print(ptst.stack)
@@ -144,6 +147,7 @@ def test_hdf5_store():
 			pass
 
 		ptst = PointStore(filepath, 4, mode='w')
+		assert ptst.ncalls == 0, (ptst.ncalls)
 		assert ptst.pop(-np.inf)[1] is None, "overwritten store should be empty"
 		assert ptst.pop(100)[1] is None, "overwritten store should not return anything"
 		ptst.close()
@@ -168,10 +172,10 @@ def test_nullstore():
 	ptst = NullPointStore(4)
 	assert ptst.stack_empty
 	# no errors even if we give rubbish input
-	ptst.add([-np.inf, 123, 413, 213])
-	ptst.add([10, 123, 413, 213])
-	ptst.add([10, 123, 413, 213, 123])
-	ptst.add([99, 123, 413])
+	ptst.add([-np.inf, 123, 413, 213], 1)
+	ptst.add([10, 123, 413, 213], 2)
+	ptst.add([10, 123, 413, 213, 123], 3)
+	ptst.add([99, 123, 413], 4)
 	assert ptst.stack_empty
 	ptst.close()
 	
@@ -195,20 +199,21 @@ def test_storemany():
 				print("writing...")
 				ptst = PointStore(filepath, 3)
 				for i in range(N):
-					ptst.add([-np.inf, i-0.1, i-0.1])
+					ptst.add([-np.inf, i-0.1, i-0.1], i)
 				for i in range(N):
-					ptst.add([i, i+1, i+1])
+					ptst.add([i, i+1, i+1], i+N)
 					print(i, i+1, "storing:", [i, i+0.1, i+.1])
 				for i in range(N):
-					ptst.add([-np.inf, i-0.1, i-0.1])
+					ptst.add([-np.inf, i-0.1, i-0.1], i+2*N)
 				for i in range(N-1,-1,-1):
-					ptst.add([N-i, N-i+.5, N-i+.5])
+					ptst.add([N-i, N-i+.5, N-i+.5], (N-i)+3*N)
 					print(N-i, N-i+1, "storing:", [N-i, N-i+.5, N-i+.5])
 				ptst.close()
 				
 				print("reading...")
 
 				ptst = PointStore(filepath, 3)
+				assert ptst.ncalls == 4*N, (ptst.ncalls, N, 4*N)
 				print('stack[0]:', ptst.stack)
 				assert len(ptst.stack) == 4 * N
 				for i in range(N):

@@ -303,7 +303,9 @@ class NestedSampler(object):
 
             if self.log_to_disk:
                 for i in range(num_live_points_missing):
-                    self.pointstore.add([-np.inf, active_logl[i], 0.] + active_u[i,:].tolist() + active_v[i,:].tolist())
+                    self.pointstore.add([-np.inf, active_logl[i], 0.] + \
+                        active_u[i,:].tolist() + active_v[i,:].tolist(),
+                        num_live_points_missing)
 
             if len(prev_u) > 0:
                 active_u = np.concatenate((prev_u, active_u))
@@ -478,7 +480,8 @@ class NestedSampler(object):
 
                     if self.log:
                         for ui, vi, logli in zip(samples, samplesv, likes):
-                            self.pointstore.add([loglstar, logli, 0.0] + ui.tolist() + vi.tolist())
+                            self.pointstore.add([loglstar, logli, 0.0] + \
+                                ui.tolist() + vi.tolist(), ncall)
 
                 if likes[ib] > loglstar:
                     active_u[worst] = samples[ib, :]
@@ -703,8 +706,6 @@ class ReactiveNestedSampler(object):
         self.root = TreeNode(id=-1, value=-np.inf)
 
         self.pointpile = PointPile(self.x_dim, self.num_params)
-        self.ncall = 0
-        self.ncall_region = 0
         if self.log_to_disk:
             # self.pointstore = TextPointStore(os.path.join(self.logs['results'], 'points.tsv'), 2 + self.x_dim + self.num_params)
             self.pointstore = HDF5PointStore(os.path.join(self.logs['results'], 'points.hdf5'),
@@ -712,6 +713,8 @@ class ReactiveNestedSampler(object):
             self.ncall = len(self.pointstore.stack)
         else:
             self.pointstore = NullPointStore(3 + self.x_dim + self.num_params)
+        self.ncall = self.pointstore.ncalls
+        self.ncall_region = 0
 
         if not vectorized:
             if transform is not None:
@@ -952,7 +955,9 @@ class ReactiveNestedSampler(object):
 
             if self.log_to_disk:
                 for i in range(num_live_points_missing):
-                    rowid = self.pointstore.add([-np.inf, active_logl[i], 0.0] + active_u[i,:].tolist() + active_v[i,:].tolist())
+                    rowid = self.pointstore.add([-np.inf, 
+                        active_logl[i], 0.0] + active_u[i,:].tolist() + \
+                        active_v[i,:].tolist(), self.ncall)
 
             if len(prev_u) > 0:
                 active_u = np.concatenate((prev_u, active_u))
@@ -1170,7 +1175,8 @@ class ReactiveNestedSampler(object):
         if self.log:
             quality = self.stepsampler.nsteps
             for ui, vi, logli in zip(self.samples, self.samplesv, self.likes):
-                self.pointstore.add([Lmin, logli, quality] + ui.tolist() + vi.tolist())
+                self.pointstore.add([Lmin, logli, quality] + \
+                    ui.tolist() + vi.tolist(), self.ncall)
 
     def _refill_samples(self, Lmin, ndraw, nit):
         """Get new samples from region."""
@@ -1228,7 +1234,8 @@ class ReactiveNestedSampler(object):
 
         if self.log:
             for ui, vi, logli in zip(self.samples, self.samplesv, self.likes):
-                self.pointstore.add([Lmin, logli, 0.0] + ui.tolist() + vi.tolist())
+                self.pointstore.add([Lmin, logli, 0.0] + ui.tolist() + \
+                    vi.tolist(), self.ncall)
 
     def _create_point(self, Lmin, ndraw, active_u, active_values):
         """Draw a new point above likelihood threshold `Lmin`.
