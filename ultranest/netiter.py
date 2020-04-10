@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """Functions and classes for treating nested sampling exploration as a tree.
 
 The root represents the prior volume, branches and sub-branches split the volume.
@@ -17,7 +19,7 @@ can ignore the rootids it does not know about.
 
 """
 
-
+from __future__ import print_function, division
 import numpy as np
 from numpy import log, log1p, exp, logaddexp
 import math
@@ -810,7 +812,7 @@ def logz_sequence(root, pointpile, nbootstraps=12, random=True, onNode=None, ver
 
         niter += 1
         if verbose:
-            print("%d..." % niter, end='\r')
+            sys.stderr.write("%d...\r" % niter)
 
         saved_logl.append(Lmin)
         saved_nodeids.append(node.id)

@@ -6,8 +6,8 @@ samplers that have the same execution time per call, even if they
 do not terminate at the same number of iterations.
 """
 
+from __future__ import print_function, division
 import numpy as np
-
 import matplotlib.pyplot as plt
 
 
