@@ -256,7 +256,7 @@ def runplot(results, span=None, logplot=False, kde=True, nkde=1000,
     # Determine plotting bounds for each subplot.
     data = [nlive, np.exp(logl), weights, logz if logplot else np.exp(logz)]
 
-    if kde and (weights > 0).sum() > 1:
+    if kde and (weights * len(logvol) > 0.1).sum() > 1:
         try:
             # from scipy.ndimage import gaussian_filter as norm_kde
             from scipy.stats import gaussian_kde
@@ -547,7 +547,7 @@ def traceplot(results, span=None, quantiles=[0.025, 0.5, 0.975], smooth=0.02,
     weights = results['weights']
 
     wts = weights
-    if kde and (weights > 0).sum() > 1:
+    if kde and (weights * len(logvol) > 0.1).sum() > 1:
         try:
             from scipy.ndimage import gaussian_filter as norm_kde
             from scipy.stats import gaussian_kde
