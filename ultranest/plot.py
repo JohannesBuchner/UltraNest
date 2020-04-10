@@ -58,7 +58,7 @@ def cornerplot(results, logger=None):
     oldfunc = logging.warning
     logging.warning = lambda *args, **kwargs: None
     corner.corner(data[mask,:], weights=weights[mask],
-            labels=paramnames, show_titles=True)
+                  labels=paramnames, show_titles=True)
     logging.warning = oldfunc
 
 
@@ -137,7 +137,7 @@ def runplot(results, span=None, logplot=False, kde=True, nkde=1000,
             lnz_truth=None, truth_color='red', truth_kwargs=None,
             max_x_ticks=8, max_y_ticks=3, use_math_text=True,
             mark_final_live=True, fig=None
-):
+            ):
     """Plot live points, ln(likelihood), ln(weight), and ln(evidence) vs. ln(prior volume).
 
     Parameters
@@ -568,8 +568,7 @@ def traceplot(results, span=None, quantiles=[0.025, 0.5, 0.975], smooth=0.02,
     else:
         assert len(samples.shape) == 2, "Samples must be 1- or 2-D."
         samples = samples.T
-    assert samples.shape[0] <= samples.shape[1], "There are more " \
-                                                 "dimensions than samples!"
+    assert samples.shape[0] <= samples.shape[1], "There are more dimensions than samples!"
     ndim, nsamps = samples.shape
 
     # Check weights.
@@ -612,7 +611,7 @@ def traceplot(results, span=None, quantiles=[0.025, 0.5, 0.975], smooth=0.02,
 
     # Setting up labels.
     if labels is None:
-        labels = [r"$x_{"+str(i+1)+"}$" for i in range(ndim)]
+        labels = [r"$x_{%d}$" % (i + 1) for i in range(ndim)]
 
     # Setting up smoothing.
     if (isinstance(smooth, int_type) or isinstance(smooth, float_type)):
@@ -620,7 +619,7 @@ def traceplot(results, span=None, quantiles=[0.025, 0.5, 0.975], smooth=0.02,
 
     # Setting up default plot layout.
     if fig is None:
-        fig, axes = pl.subplots(ndim, 2, figsize=(12, 3*ndim))
+        fig, axes = pl.subplots(ndim, 2, figsize=(12, 3 * ndim))
     else:
         fig, axes = fig
         try:

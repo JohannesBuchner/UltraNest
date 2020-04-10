@@ -23,8 +23,9 @@ def create_logger(module_name, log_dir=None, level=logging.INFO):
     if log_dir is not None and first_logger:
         # create file handler which logs even debug messages
         handler = logging.FileHandler(os.path.join(log_dir, 'debug.log'))
-        formatter = logging.Formatter('%(asctime)s [{}] [%(levelname)s] %(message)s'.format(module_name),
-            datefmt='%H:%M:%S')
+        msgformat = '%(asctime)s [{}] [%(levelname)s] %(message)s'
+        formatter = logging.Formatter(
+            msgformat.format(module_name), datefmt='%H:%M:%S')
         handler.setLevel(logging.DEBUG)
         handler.setFormatter(formatter)
         logger.addHandler(handler)
@@ -38,6 +39,18 @@ def create_logger(module_name, log_dir=None, level=logging.INFO):
         logger.addHandler(handler)
 
     return logger
+
+
+def _makedirs(name):
+    """python2-compatible makedir """
+    # for Python2 compatibility:
+    try:
+        os.makedirs(name)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise e
+    # Python 3:
+    # os.makedirs(name, exist_ok=True)
 
 
 def make_run_dir(log_dir, run_num=None, append_run_num=True):
@@ -58,35 +71,24 @@ def make_run_dir(log_dir, run_num=None, append_run_num=True):
     Keys are "run_dir" (the path), "info", "results", "chains", "plots".
 
     """
-    def makedirs(name):
-        """python2-compatible makedir """
-        # for Python2 compatibility:
-        try:
-            os.makedirs(name)
-        except OSError as e:
-            if e.errno != errno.EEXIST:
-                raise
-        # Python 3:
-        #os.makedirs(name, exist_ok=True)
-
-    makedirs(log_dir)
+    _makedirs(log_dir)
 
     if run_num is None or run_num == '':
         run_num = (sum(os.path.isdir(os.path.join(log_dir,i))
-                      for i in os.listdir(log_dir)) + 1)
+                       for i in os.listdir(log_dir)) + 1)
     if append_run_num:
         run_dir = os.path.join(log_dir, 'run%s' % run_num)
     else:
         run_dir = log_dir
     if not os.path.isdir(run_dir):
         print('Creating directory for new run %s' % run_dir)
-        makedirs(run_dir)
+        _makedirs(run_dir)
     if not os.path.isdir(os.path.join(run_dir, 'info')):
-        makedirs(os.path.join(run_dir, 'info'))
-        makedirs(os.path.join(run_dir, 'results'))
-        makedirs(os.path.join(run_dir, 'chains'))
-        makedirs(os.path.join(run_dir, 'extra'))
-        makedirs(os.path.join(run_dir, 'plots'))
+        _makedirs(os.path.join(run_dir, 'info'))
+        _makedirs(os.path.join(run_dir, 'results'))
+        _makedirs(os.path.join(run_dir, 'chains'))
+        _makedirs(os.path.join(run_dir, 'extra'))
+        _makedirs(os.path.join(run_dir, 'plots'))
 
     return {'run_dir': run_dir,
             'info': os.path.join(run_dir, 'info'),
@@ -230,17 +232,23 @@ def vol_prefactor(n):
     if n % 2 == 0:
         f = 1.
         i = 2
-        while i <= n:
-            f *= (2. / i * pi)
-            i += 2
     else:
         f = 2.
         i = 3
-        while i <= n:
-            f *= (2. / i * pi)
-            i += 2
+
+    while i <= n:
+        f *= 2. / i * pi
+        i += 2
 
     return f
+
+
+def _merge_transform_loglike_gradient_function(transform, loglike, gradient):
+    def transform_loglike_gradient(u):
+        """combine transform, likelihood and gradient function"""
+        p = transform(u.reshape((1, -1)))
+        return p[0], loglike(p)[0], gradient(u)
+    return transform_loglike_gradient
 
 
 def verify_gradient(ndim, transform, loglike, gradient, verbose=False, combination=False):
@@ -271,37 +279,37 @@ def verify_gradient(ndim, transform, loglike, gradient, verbose=False, combinati
     if combination:
         transform_loglike_gradient = gradient
     else:
-        def transform_loglike_gradient(u):
-            """combine transform, likelihood and gradient function"""
-            p = transform(u.reshape((1, -1)))
-            return p[0], loglike(p)[0], gradient(u)
-    
+        transform_loglike_gradient = _merge_transform_loglike_gradient_function(transform, loglike, gradient)
+
     eps = 1e-6
     N = 10
     for i in range(N):
-        u = np.random.uniform(2*eps, 1-2*eps, size=(1, ndim))
+        u = np.random.uniform(2 * eps, 1 - 2 * eps, size=(1, ndim))
         theta = transform(u)
         if verbose:
             print("---")
             print()
             print("starting at:", u, ", theta=", theta)
         Lref = loglike(theta)[0]
-        if verbose: print("Lref=", Lref)
+        if verbose:
+            print("Lref=", Lref)
         p, L, grad = transform_loglike_gradient(u[0,:])
         assert np.allclose(p, theta), (p, theta)
-        if verbose: print("gradient function gave: L=", L, "grad=", grad)
+        if verbose:
+            print("gradient function gave: L=", L, "grad=", grad)
         assert np.allclose(L, Lref), (L, Lref)
-        #step = grad / L
         # walk so that L increases by 10
         step = eps * grad / (grad**2).sum()**0.5
         uprime = u + step
         thetaprime = transform(uprime)
-        if verbose: print("new position:", uprime, ", theta=", thetaprime)
+        if verbose:
+            print("new position:", uprime, ", theta=", thetaprime)
         Lprime = loglike(thetaprime)[0]
-        if verbose: print("L=", Lprime)
+        if verbose:
+            print("L=", Lprime)
         # going a step of eps in the prior, should be a step in L by:
-        #Lexpected = Lref + ((grad / L)**2).sum()**0.5 * eps
         Lexpected = Lref + np.dot(step, grad)
-        if verbose: print("expectation was L=", Lexpected, ", given", Lref, grad, eps)
-        assert np.allclose(Lprime, Lexpected, atol=0.1 / ndim), (u, uprime, theta, thetaprime, grad, eps*grad/L, L, Lprime, Lexpected)
-    
+        if verbose:
+            print("expectation was L=", Lexpected, ", given", Lref, grad, eps)
+        assert np.allclose(Lprime, Lexpected, atol=0.1 / ndim), \
+            (u, uprime, theta, thetaprime, grad, eps * grad / L, L, Lprime, Lexpected)

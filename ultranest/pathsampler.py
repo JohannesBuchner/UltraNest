@@ -66,8 +66,8 @@ class SamplingPathSliceSampler(StepSampler):
         """Advance by slice sampling on the path."""
         if self.interval is None:
             v = self.generate_direction(ui, region, scale=self.scale)
-            self.path = ContourSamplingPath(SamplingPath(ui, v, 0.0),
-                region)
+            self.path = ContourSamplingPath(
+                SamplingPath(ui, v, 0.0), region)
 
             if not (ui > 0).all() or not (ui < 1).all() or not region.inside(ui.reshape((1, -1))):
                 assert False, ui
@@ -173,13 +173,15 @@ class SamplingPathStepSampler(StepSampler):
 
     def __str__(self):
         """Get string representation."""
-        return '(nsteps=%d, nresets=%d, AR=%d%%)' % (type(self).__name__,
-                self.nsteps, self.nresets, (1 - self.balance) * 100)
+        return '(nsteps=%d, nresets=%d, AR=%d%%)' % (
+            type(self).__name__, self.nsteps, self.nresets, (1 - self.balance) * 100)
 
     def start(self):
         """Start sampler, reset all counters."""
         if hasattr(self, 'naccepts') and self.nrejects + self.naccepts > 0:
-            self.logstat.append([self.naccepts / (self.nrejects + self.naccepts),
+            nr, na = self.nrejects, self.naccepts
+            self.logstat.append([
+                self.naccepts / (self.nrejects + self.naccepts),
                 self.nreflects / (self.nreflects + self.nrejects + self.naccepts),
                 self.scale, self.nstuck])
         self.nrejects = 0
@@ -246,7 +248,8 @@ class SamplingPathStepSampler(StepSampler):
             v = grad_function(x)
             if plot:
                 plt.plot(x[0], x[1], '+ ', color='k', ms=10)
-                plt.plot([x[0], v[0] * 1e-2 + x[0]], [x[1], v[1] * 1e-2 + x[1]], color='gray')
+                plt.plot([x[0], v[0] * 1e-2 + x[0]],
+                         [x[1], v[1] * 1e-2 + x[1]], color='gray')
             return v
         self.grad_function = plot_gradient_wrapper
 
@@ -280,17 +283,16 @@ class SamplingPathStepSampler(StepSampler):
         # print("%2d | %2d | %2d | %2d %2d %2d %2d | %f"  % (self.iresets, self.istep,
         #     len(self.history), self.naccepts, self.nrejects,
         #     self.noutside_regions, self.nstuck, self.scale))
-        log = self.log
         assert len(self.history) > 1
 
         if self.naccepts < (self.nrejects + self.naccepts) * self.balance:
-            if log:
+            if self.log:
                 print("adjusting scale %f down: istep=%d inside=%d outside=%d region=%d nstuck=%d" % (
                     self.scale, len(self.history), self.naccepts, self.nrejects, self.noutside_regions, self.nstuck))
             self.scale /= self.nudge
         else:
             if self.scale < maxlength or True:
-                if log:
+                if self.log:
                     print("adjusting scale %f up: istep=%d inside=%d outside=%d region=%d nstuck=%d" % (
                         self.scale, len(self.history), self.naccepts, self.nrejects, self.noutside_regions, self.nstuck))
                 self.scale *= self.nudge
@@ -307,7 +309,8 @@ class SamplingPathStepSampler(StepSampler):
         if self.path is None:
             self.start_path(ui, region)
 
-        assert not (self.lasti - 1 in self.deadends and self.lasti + 1 in self.deadends), (self.deadends, self.lasti)
+        assert not (self.lasti - 1 in self.deadends and self.lasti + 1 in self.deadends), \
+            (self.deadends, self.lasti)
         if self.lasti + self.direction in self.deadends:
             self.direction *= -1
 
@@ -387,7 +390,8 @@ class SamplingPathStepSampler(StepSampler):
         if Li is None:
             # choose a new random starting point
             mask = region.inside(us)
-            assert mask.any(), ("None of the live points satisfies the current region!",
+            assert mask.any(), (
+                "None of the live points satisfies the current region!",
                 region.maxradiussq, region.u, region.unormed, us)
             i = np.random.randint(mask.sum())
             self.starti = i
@@ -536,7 +540,7 @@ class OtherSamplerProxy(object):
     """Proxy for ClockedSamplers."""
 
     def __init__(self, nnewdirections, sampler='steps', nsteps=0,
-            balance=0.9, scale=0.1, nudge=1.1, log=False):
+                 balance=0.9, scale=0.1, nudge=1.1, log=False):
         """Initialise sampler.
 
         Parameters
@@ -580,8 +584,8 @@ class OtherSamplerProxy(object):
 
     def __str__(self):
         """Get string representation."""
-        return 'Proxy[%s](%dx%d steps, AR=%d%%)' % (self.samplername,
-            self.nnewdirections, self.nsteps, self.balance * 100)
+        return 'Proxy[%s](%dx%d steps, AR=%d%%)' % (
+            self.samplername, self.nnewdirections, self.nsteps, self.balance * 100)
 
     def accumulate_statistics(self):
         """Accumulate statistics at end of step sequence."""
@@ -604,7 +608,7 @@ class OtherSamplerProxy(object):
         log = self.log
         if log:
             print("%2d | %2d %2d %2d | %f" % (self.nrestarts,
-                self.naccepts, self.nrejects, self.nreflections, self.scale))
+                  self.naccepts, self.nrejects, self.nreflections, self.scale))
         self.logstat.append([self.naccepts / (self.naccepts + self.nrejects), self.scale])
 
         if self.naccepts < (self.nrejects + self.naccepts) * self.balance:
@@ -623,7 +627,8 @@ class OtherSamplerProxy(object):
         if self.log:
             print("starting from scratch...")
         mask = region.inside(us)
-        assert mask.any(), ("Not all of the live points satisfy the current region!",
+        assert mask.any(), (
+            "Not all of the live points satisfy the current region!",
             region.maxradiussq, region.u[~mask,:], region.unormed[~mask,:], us[~mask,:])
         i = np.random.randint(mask.sum())
         self.starti = i

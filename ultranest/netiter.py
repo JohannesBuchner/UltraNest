@@ -25,6 +25,7 @@ import operator
 import sys
 from .utils import resample_equal
 
+
 class TreeNode(object):
     """Simple tree node."""
 
@@ -50,8 +51,8 @@ class TreeNode(object):
 
     def __str__(self, indent=0):
         """Visual representation of the node and its children (recursive)."""
-        return '\n'.join([' ' * indent + '- Node: %s' % self.value] +
-                         [c.__str__(indent=indent + 2) for c in self.children])
+        return ' ' * indent + '- Node: %s\n' % self.value + '\n'.join(
+            [c.__str__(indent=indent + 2) for c in self.children])
 
     def __lt__(self, other):
         """Define order of node based on value attribute."""
@@ -156,6 +157,11 @@ class BreadthFirstIterator(object):
         assert newnnodes == len(self.active_node_ids), (len(self.active_node_ids), newnnodes, len(node.children))
 
 
+def _stringify_lanes(lanes, char='║'):
+    """ unicode-draw lanes, fill with vertical stripes or spaces """
+    return ''.join([' ' if n is None else char for n in lanes])
+
+
 def print_tree(roots, title='Tree:'):
     """Print a pretty yet compact graphic of the tree."""
     print()
@@ -172,8 +178,8 @@ def print_tree(roots, title='Tree:'):
         rootid, node, (active_nodes, active_rootids, active_values, active_nodeids) = next_node
         laneid = lanes.index(node)
         nchildren = len(node.children)
-        leftstr = ''.join([' ' if n is None else '║' for n in lanes[:laneid]])
-        rightstr = ''.join([' ' if n is None else '║' for n in lanes[laneid + 1:]])
+        leftstr = _stringify_lanes(lanes[:laneid])
+        rightstr = _stringify_lanes(lanes[laneid + 1:])
 
         if lastlane == laneid:
             sys.stdout.write(leftstr + '║' + rightstr + "\n")
@@ -187,7 +193,7 @@ def print_tree(roots, title='Tree:'):
         else:
             # expand width:
             for j, child in enumerate(node.children):
-                rightstr2 = ''.join([' ' if n is None else '\\' for n in lanes[laneid + 1:]])
+                rightstr2 = _stringify_lanes(lanes[laneid + 1:], char='\\')
                 if len(rightstr2) != 0:
                     sys.stdout.write(leftstr + '║' + ' ' * j + rightstr2 + "\n")
             sys.stdout.write(leftstr + '╠' + '╦' * (nchildren - 2) + '╗' + rightstr + "\n")
@@ -318,7 +324,7 @@ def find_nodes_before(root, value):
             # continue exploring
             explorer.expand_children_of(rootid, node)
             weights.update({n.id: weights[node.id] * len(node.children)
-                for n in node.children})
+                            for n in node.children})
         del weights[node.id]
     return parents, parent_weights
 
@@ -484,7 +490,7 @@ class MultiCounter(object):
     """Like SingleCounter, but bootstrap capable.
 
     **Attributes**:
-    
+
     - ``logZ``, ``logZerr``, ``logVolremaining``: main estimator
       ``logZerr`` is probably not reliable, because it needs ``nlive``
       to convert ``H`` to ``logZerr``.
@@ -635,9 +641,12 @@ class MultiCounter(object):
             self.logZ = self.all_logZ[0]
 
             # self.Lmax = max((n.value for n in parallel_nodes))
-            # print("L=%.1f N=%d V=%.2e logw=%.2e logZ=%.1f logZremain=%.1f" % (Li, nlive[0], self.logVolremaining, wi[0], self.logZ, logZremain))
-            # print("L=%.1f N=%d V=%.2e logw=%.2e logZ=%.1f logZremain=%.1f" % (Li, nlive[0], self.all_logVolremaining[0], (logwidth + Li)[0], self.all_logZ[0], logZremain))
-            # print("L=%.1f N=%d V=%.2e logw=%.2e logZ=<%.1f logZremain=%.1f" % (Li, nlive[1], self.all_logVolremaining[1], (logwidth + Li)[1], self.all_logZ[1], logZremain))
+            # print("L=%.1f N=%d V=%.2e logw=%.2e logZ=%.1f logZremain=%.1f" % (
+            #  Li, nlive[0], self.logVolremaining, wi[0], self.logZ, logZremain))
+            # print("L=%.1f N=%d V=%.2e logw=%.2e logZ=%.1f logZremain=%.1f" % (
+            #  Li, nlive[0], self.all_logVolremaining[0], (logwidth + Li)[0], self.all_logZ[0], logZremain))
+            # print("L=%.1f N=%d V=%.2e logw=%.2e logZ=<%.1f logZremain=%.1f" % (
+            #  Li, nlive[1], self.all_logVolremaining[1], (logwidth + Li)[1], self.all_logZ[1], logZremain))
 
             if self.all_H[0] > 0:
                 # TODO: this needs to change if nlive varies
@@ -683,11 +692,12 @@ class MultiCounter(object):
 
 def combine_results(saved_logl, saved_nodeids, pointpile, main_iterator, mpi_comm=None):
     """Combine a sequence of likelihoods and nodes into a summary dictionary."""
-    #self._update_results(main_iterator, saved_logl, saved_nodeids)
+
     assert np.shape(main_iterator.logweights) == (len(saved_logl), len(main_iterator.all_logZ)), (
         np.shape(main_iterator.logweights),
         np.shape(saved_logl),
         np.shape(main_iterator.all_logZ))
+
     saved_logl = np.array(saved_logl)
     saved_u = pointpile.getu(saved_nodeids)
     saved_v = pointpile.getp(saved_nodeids)
@@ -726,8 +736,9 @@ def combine_results(saved_logl, saved_nodeids, pointpile, main_iterator, mpi_com
     samples = resample_equal(saved_v, w)
 
     j = saved_logl.argmax()
-    
-    results = dict(niter=len(saved_logl),
+
+    results = dict(
+        niter=len(saved_logl),
         logz=main_iterator.logZ, logzerr=logzerr_total,
         logz_bs=logZ_bs.mean(),
         logz_single=main_iterator.logZ,
@@ -742,7 +753,8 @@ def combine_results(saved_logl, saved_nodeids, pointpile, main_iterator, mpi_com
             errlo=np.percentile(samples, 15.8655, axis=0).tolist(),
             errup=np.percentile(samples, 84.1345, axis=0).tolist(),
         ),
-        weighted_samples=dict(upoints=saved_u, points=saved_v, weights=saved_wt0, logw=saved_logwt0,
+        weighted_samples=dict(
+            upoints=saved_u, points=saved_v, weights=saved_wt0, logw=saved_logwt0,
             bootstrapped_weights=saved_wt_bs, logl=saved_logl),
         samples=samples,
         maximum_likelihood=dict(
@@ -752,6 +764,7 @@ def combine_results(saved_logl, saved_nodeids, pointpile, main_iterator, mpi_com
         ),
     )
     return results
+
 
 def logz_sequence(root, pointpile, nbootstraps=12, random=True, onNode=None, verbose=False):
     """Run MultiCounter through tree `root`.
@@ -764,9 +777,8 @@ def logz_sequence(root, pointpile, nbootstraps=12, random=True, onNode=None, ver
 
     explorer = BreadthFirstIterator(roots)
     # Integrating thing
-    main_iterator = MultiCounter(nroots=len(roots),
-        nbootstraps=max(1, nbootstraps),
-        random=random)
+    main_iterator = MultiCounter(
+        nroots=len(roots), nbootstraps=max(1, nbootstraps), random=random)
     main_iterator.Lmax = max(Lmax, max(n.value for n in roots))
 
     logz = []
@@ -805,7 +817,7 @@ def logz_sequence(root, pointpile, nbootstraps=12, random=True, onNode=None, ver
         # inform iterators (if it is their business) about the arc
         main_iterator.passing_node(rootid, node, active_rootids, active_values)
         explorer.expand_children_of(rootid, node)
-    
+
     logwt = np.asarray(saved_logl) + np.asarray(main_iterator.logweights)[:,0]
     logvol[-1] = logvol[-2]
 
@@ -822,9 +834,5 @@ def logz_sequence(root, pointpile, nbootstraps=12, random=True, onNode=None, ver
         weights=results['weighted_samples']['weights'],
         samples=results['weighted_samples']['points'],
     )
-    
+
     return sequence, results
-    
-
-
-

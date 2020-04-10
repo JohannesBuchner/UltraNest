@@ -38,7 +38,7 @@ def step_or_reflect(theta, v, epsilon, transform, loglike, gradient, Lmin):
         logL = loglike(p)[0]
         if logL > Lmin:
             return thetaprime, v, p[0], logL, False
-    
+
         # outside, need to reflect
         normal = gradient(thetaprime)
         #print("reflecting with gradient", normal)
@@ -46,18 +46,18 @@ def step_or_reflect(theta, v, epsilon, transform, loglike, gradient, Lmin):
         # make a unit vector pointing inwards
         normal = np.where(thetaprime <= 0, 1, np.where(thetaprime >= 1, -1, 0))
         #print("reflecting to inside", mask, normal)
-    
+
     # project outside gradient onto our current velocity
     # subtract that part
     vnew = v - 2 * np.dot(normal, v) * normal
-    
+
     # if the reflection is a reverse, it cannot be helpful. Stop.
     if np.dot(v, vnew) <= 0:
         return thetaprime, vnew, None, -np.inf, True
-    
+
     # get new location, to check if we are back in the constraint
     thetaprime2 = thetaprime + epsilon * vnew
-    
+
     # check if inside
     mask2 = np.logical_and(thetaprime2 > 0, thetaprime2 < 1)
     if mask2.all():
@@ -67,7 +67,7 @@ def step_or_reflect(theta, v, epsilon, transform, loglike, gradient, Lmin):
         #    #print("new point is also outside", (theta, thetaprime, thetaprime2), (v, vnew), (Lmin, logL2))
         #else:
         #    #print("recovered to inside", (theta, thetaprime, thetaprime2), (v, vnew), (Lmin, logL2))
-        
+
         # caller needs to figure out if this is ok
         return thetaprime2, vnew, p2[0], logL2, True
     else:
@@ -80,16 +80,16 @@ def build_tree(theta, v, direction, j, epsilon, transform, loglike, gradient, Lm
     if j == 0:
         # Base case: Take a single leapfrog step in the direction v.
         thetaprime, vprime, pprime, logpprime, reflected = step_or_reflect(
-            theta=theta, v=v * direction, epsilon=epsilon, 
+            theta=theta, v=v * direction, epsilon=epsilon,
             transform=transform, loglike=loglike, gradient=gradient, Lmin=Lmin)
-        
+
         #if not sprime:
         #    print("stopped trajectory:", direction, logpprime, Lmin, (theta, thetaprime, epsilon))
         # Set the return values---minus=plus for all things here, since the
         # "tree" is of depth 0.
         thetaminus = thetaprime
         thetaplus = thetaprime
-        
+
         if reflected and np.dot(v, vprime) <= 0:
             # if reversing locally, store that in can_continue, not s
             sprime = True
@@ -109,11 +109,11 @@ def build_tree(theta, v, direction, j, epsilon, transform, loglike, gradient, Lm
             vminus = vprime * direction
             vplus = vprime * direction
             v = vprime * direction
-        
+
         pminus = pprime
         pplus = pprime
         #print(direction, (theta, thetaprime), (v, vprime))
-        
+
         # probability is zero if it is an invalid state
         alphaprime = 1.0 * (sprime and can_continue)
         nalphaprime = 1
@@ -137,7 +137,7 @@ def build_tree(theta, v, direction, j, epsilon, transform, loglike, gradient, Lm
                 vprime = vprime2[:]
                 pprime = pprime2[:]
                 logpprime = logpprime2
-            
+
             # Update the stopping criterion.
             sturn = stop_criterion(thetaminus, thetaplus, vminus, vplus)
             #print(sprime, sprime2, sturn)
@@ -188,7 +188,7 @@ def tree_sample(theta, p, logL, v, epsilon, transform, loglike, gradient, Lmin, 
         else:
             _, _, _, thetaplus, vplus, pplus, thetaprime, vprime, pprime, logpprime, sprime, can_continue, alphaprime, nalphaprime, nreflectprime = \
                 build_tree(thetaplus, vplus, direction, j, epsilon, transform, loglike, gradient, Lmin)
-        
+
         # Use Bernoulli trial to decide whether or not to move to a
         # point from the half-tree we just generated.
         if sprime and np.random.uniform() < alphaprime / (alpha + alphaprime):
@@ -196,29 +196,29 @@ def tree_sample(theta, p, logL, v, epsilon, transform, loglike, gradient, Lmin, 
             p = pprime
             logp = logpprime
             v = vprime
-        
+
         alpha += alphaprime
         nalpha += nalphaprime
         nreflect += nreflectprime
-        
+
         # Decide if it's time to stop.
         sturn = stop_criterion(thetaminus, thetaplus, vminus, vplus)
         #print(sprime, sturn)
         s = sprime and sturn
-        
+
         if not can_continue:
             if direction == 1:
                 fwd_possible = False
             if direction == -1:
                 rwd_possible = False
-        
+
         #if not s and (fwd_possible or rwd_possible):
         #    print("U-turn found a:%d r:%d t:%d" % (alpha, nreflect, nalpha), sturn, sprime, (thetaminus, thetaplus), (vminus, vplus))
             #assert False
 
         # Increment depth.
         j += 1
-    
+
     #print("jumping to:", theta)
     #print('Tree height: %d, accepts: %03.2f%%, reflects: %03.2f%%, epsilon=%g' % (j, alpha/nalpha*100, nreflect/nalpha*100, epsilon))
     return alpha, nreflect, nalpha, theta, p, logp, j
@@ -232,10 +232,10 @@ def generate_uniform_direction(d, massmatrix):
 
 class DynamicCHMCSampler(object):
     """Dynamic Constrained Hamiltonian/Hybrid Monte Carlo technique
-    
-    Run a billiard ball inside the likelihood constrained. 
+
+    Run a billiard ball inside the likelihood constrained.
     The ball reflects off the constraint.
-    
+
     The trajectory is explored in steps of stepsize epsilon.
     A No-U-turn criterion and randomized doubling of forward or backward
     steps is used to avoid repeating circular trajectories.
@@ -249,17 +249,17 @@ class DynamicCHMCSampler(object):
         -----------
         nsteps: int
             number of accepted steps until the sample is considered independent.
-        
+
         adaptive_nsteps: False, 'proposal-distance', 'move-distance'
             if not false, allow earlier termination than nsteps.
-            The 'proposal-distance' strategy stops when the sum of 
+            The 'proposal-distance' strategy stops when the sum of
             all proposed vectors exceeds the mean distance
             between pairs of live points.
             As distance, the Mahalanobis distance is used.
             The 'move-distance' strategy stops when the distance between
             start point and current position exceeds the mean distance
             between pairs of live points.
-        
+
         transform: function
             called with unit cube position vector u, returns
             transformed parameter vector p.
@@ -278,11 +278,11 @@ class DynamicCHMCSampler(object):
         self.gradient = transform
         self.nudge = nudge
         self.nsteps_nudge = 1.01
-        adaptive_nsteps_options = (False, 'proposal-total-distances-NN', 'proposal-summed-distances-NN', 
-            'proposal-total-distances', 'proposal-summed-distances', 
+        adaptive_nsteps_options = (False, 'proposal-total-distances-NN', 'proposal-summed-distances-NN',
+            'proposal-total-distances', 'proposal-summed-distances',
             'move-distance', 'move-distance-midway', 'proposal-summed-distances-min-NN',
             'proposal-variance-min', 'proposal-variance-min-NN')
-        
+
         if adaptive_nsteps not in adaptive_nsteps_options:
             raise ValueError("adaptive_nsteps must be one of: %s, not '%s'" % (adaptive_nsteps_options, adaptive_nsteps))
         self.adaptive_nsteps = adaptive_nsteps
@@ -290,7 +290,7 @@ class DynamicCHMCSampler(object):
         self.delta = delta
         self.massmatrix = 1
         self.invmassmatrix = 1
-        
+
         self.logstat = []
         self.logstat_labels = ['acceptance_rate', 'reflect_fraction', 'stepsize', 'treeheight']
         if adaptive_nsteps:
@@ -324,7 +324,7 @@ class DynamicCHMCSampler(object):
             if np.min(part) > 0:
                 plt.yscale('log')
         plt.savefig(filename, bbox_inches='tight')
-        np.savetxt(filename + '.txt.gz', self.logstat, 
+        np.savetxt(filename + '.txt.gz', self.logstat,
             header=','.join(self.logstat_labels), delimiter=',')
         plt.close()
 
@@ -358,43 +358,43 @@ class DynamicCHMCSampler(object):
         Li = Ls[i]
         pi = None
         assert np.logical_and(ui > 0, ui < 1).all(), ui
-        
+
         ncalls_total = 1
         history = [(ui, Li)]
-        
+
         nsteps_remaining = self.nsteps
         while nsteps_remaining > 0:
             unew, pnew, Lnew, nc, alpha, fracreflect, treeheight = self.move(ui, pi, Li,
                 region=region, ndraw=ndraw, plot=plot, Lmin=Lmin)
-            
+
             if pnew is not None:
                 # do not count failed accepts
                 nsteps_remaining = nsteps_remaining - 1
             #else:
             #    print("stuck:", Li, "->", Lnew, "Lmin:", Lmin, nsteps_remaining)
-            
+
             ncalls_total += nc
             #print(" ->", Li, Lnew, unew, pnew)
             assert np.logical_and(unew > 0, unew < 1).all(), unew
-            
+
             if plot:
                 plt.plot([ui[0], unew[:,0]], [ui[1], unew[:,1]], '-', color='k', lw=0.5)
                 plt.plot(ui[0], ui[1], 'd', color='r', ms=4)
                 plt.plot(unew[:,0], unew[:,1], 'x', color='r', ms=4)
-            
+
             ui, pi, Li = unew, pnew, Lnew
-            
+
             history.append((ui, Li))
             self.logstat_trajectory.append([alpha, fracreflect, treeheight])
-        
+
         self.adjust_stepsize()
         self.adjust_nsteps(region, history)
-        
+
         return ui, pi, Li, ncalls_total
 
     def move(self, ui, pi, Li, region, Lmin, ndraw=1, plot=False):
         """Move from position ui, Li, gradi with a HMC trajectory.
-        
+
         Return
         ------
         unew: vector
@@ -410,29 +410,29 @@ class DynamicCHMCSampler(object):
         treeheight: int
             height of NUTS tree
         """
-        
+
         epsilon = self.scale
         epsilon_here = 10**np.random.normal(0, 0.3) * epsilon
         #epsilon_here = np.random.uniform() * epsilon
         #epsilon_here = epsilon
         d = len(ui)
-        
+
         assert Li >= Lmin
 
         # draw from momentum
         v = generate_uniform_direction(d, self.massmatrix)
-        
+
         # explore and sample from one trajectory
         alpha, nreflects, nalpha, theta, pnew, Lnew, treeheight = tree_sample(
-            ui, pi, Li, v, epsilon_here, 
+            ui, pi, Li, v, epsilon_here,
             self.transform, self.loglike, self.gradient, Lmin, maxheight=15)
 
         return theta, pnew, Lnew, nalpha, alpha / nalpha, nreflects / nalpha, treeheight
 
-    
+
     def create_problem(self, Ls, region):
         """ Set up auxiliary distribution.
-        
+
         Parameters
         ----------
         Ls: array of floats
@@ -440,7 +440,7 @@ class DynamicCHMCSampler(object):
         region: MLFriends region object
             region.transformLayer is used to obtain mass matrices
         """
-        
+
         # problem dimensionality
         layer = region.transformLayer
 
@@ -456,7 +456,7 @@ class DynamicCHMCSampler(object):
                 self.invmassmatrix = np.diag(layer.std[0]**2)
                 self.massmatrix = np.diag(layer.std[0]**-2)
                 print(self.invmassmatrix.shape, layer.std)
-        
+
     def adjust_stepsize(self):
         """Store chain statistics and adapt proposal."""
         if len(self.logstat_trajectory) == 0:
@@ -502,7 +502,7 @@ class DynamicCHMCSampler(object):
             # incomplete or aborted for some reason
             print("not adapting, incomplete history", len(history), self.nsteps)
             return
-        
+
         #assert self.nrejects < len(history), (self.nsteps, self.nrejects, len(history))
         #assert self.nrejects <= self.nsteps, (self.nsteps, self.nrejects, len(history))
         assert np.isfinite(self.mean_pair_distance)
@@ -514,7 +514,7 @@ class DynamicCHMCSampler(object):
             assert len(tproposed.sum(axis=1)) == len(tproposed)
             d2 = ((((tproposed[0] - tproposed)**2).sum(axis=1))**0.5).sum()
             far_enough = d2 > self.mean_pair_distance / ndim
-            
+
             self.logstat[-1] = self.logstat[-1] + [d2, self.mean_pair_distance]
             #print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, self.mean_pair_distance, d2)
         elif self.adaptive_nsteps == 'proposal-total-distances-NN':
@@ -540,7 +540,7 @@ class DynamicCHMCSampler(object):
             tproposed = region.transformLayer.transform(np.asarray([u for u, _ in history]))
             d2 = (((tproposed[1:,:] - tproposed[:-1,:])**2).sum(axis=1)**0.5).sum()
             far_enough = d2 > region.maxradiussq**0.5
-            
+
             self.logstat[-1] = self.logstat[-1] + [d2, region.maxradiussq**0.5]
             #print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)
         elif self.adaptive_nsteps == 'proposal-summed-distances-min-NN':
@@ -548,7 +548,7 @@ class DynamicCHMCSampler(object):
             tproposed = region.transformLayer.transform(np.asarray([u for u, _ in history]))
             d2 = (np.abs(tproposed[1:,:] - tproposed[:-1,:]).sum(axis=1)).min()
             far_enough = d2 > region.maxradiussq**0.5
-            
+
             self.logstat[-1] = self.logstat[-1] + [d2, region.maxradiussq**0.5]
             #print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)
         elif self.adaptive_nsteps == 'proposal-variance-min':
@@ -556,7 +556,7 @@ class DynamicCHMCSampler(object):
             tproposed = region.transformLayer.transform(np.asarray([u for u, _ in history]))
             d2 = tproposed.std(axis=0).min()
             far_enough = d2 > self.mean_pair_distance / ndim
-            
+
             self.logstat[-1] = self.logstat[-1] + [d2, self.mean_pair_distance]
             #print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)
         elif self.adaptive_nsteps == 'proposal-variance-min-NN':
@@ -574,7 +574,7 @@ class DynamicCHMCSampler(object):
             tstart, tfinal = region.transformLayer.transform(np.vstack((ustart, ufinal)))
             d2 = ((tstart - tfinal)**2).sum()
             far_enough = d2 > region.maxradiussq
-            
+
             self.logstat[-1] = self.logstat[-1] + [d2, region.maxradiussq**0.5]
             #print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)
         elif self.adaptive_nsteps == 'move-distance-midway':
@@ -585,12 +585,12 @@ class DynamicCHMCSampler(object):
             tstart, tfinal = region.transformLayer.transform(np.vstack((ustart, ufinal)))
             d2 = ((tstart - tfinal)**2).sum()
             far_enough = d2 > region.maxradiussq
-            
+
             self.logstat[-1] = self.logstat[-1] + [d2, region.maxradiussq**0.5]
             #print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)
         else:
             assert False, self.adaptive_nsteps
-        
+
         # adjust nsteps
         if far_enough:
             self.nsteps = min(self.nsteps - 1, int(self.nsteps / self.nsteps_nudge))

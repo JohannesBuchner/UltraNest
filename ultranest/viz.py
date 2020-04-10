@@ -4,8 +4,6 @@ from __future__ import print_function, division
 
 import sys
 import shutil
-
-
 from numpy import log10
 import numpy as np
 import string
@@ -124,8 +122,8 @@ def nicelogger(points, info, region, transformLayer, region_fresh=False):
     clusterids = transformLayer.clusterids % len(clusteridstrings)
     nmodes = transformLayer.nclusters
     print("Mono-modal" if nmodes == 1 else "Have %d modes" % nmodes,
-        "Volume: ~exp(%.2f)" % region.estimate_volume(), '*' if region_fresh else ' ',
-        "Expected Volume: exp(%.2f)" % info['logvol'])
+          "Volume: ~exp(%.2f)" % region.estimate_volume(), '*' if region_fresh else ' ',
+          "Expected Volume: exp(%.2f)" % info['logvol'])
 
     print()
     if ndim == 1:
@@ -141,13 +139,11 @@ def nicelogger(points, info, region, transformLayer, region_fresh=False):
         for i, param in enumerate(paramnames):
             for j, param2 in enumerate(paramnames[:i]):
                 if pval[i,j] < 0.01 and abs(rho[i,j]) > 0.99:
-                    print("   perfect %s between %s and %s" % (
-                        'positive relation' if rho[i,j] > 0 else 'negative relation',
-                        param2, param))
+                    s = 'positive relation' if rho[i,j] > 0 else 'negative relation'
+                    print("   perfect %s between %s and %s" % (s, param2, param))
                 elif pval[i,j] < 0.01 and abs(rho[i,j]) > 0.75:
-                    print("   %s between %s and %s: rho=%.2f" % (
-                        'positive degeneracy' if rho[i,j] > 0 else 'negative degeneracy',
-                        param2, param, rho[i,j]))
+                    s = 'positive degeneracy' if rho[i,j] > 0 else 'negative degeneracy'
+                    print("   %s between %s and %s: rho=%.2f" % (s, param2, param, rho[i,j]))
 
     for i, (param, fmt) in enumerate(zip(paramnames, paramformats)):
         if nmodes == 1:
@@ -233,9 +229,11 @@ class LivePointsWidget(object):
         self.laststatus = []
         for a, paramname in enumerate(paramnames):
             self.laststatus.append('*' * width)
+            htmlcode = "<div style='background-color:#6E6BF4;'>&nbsp;</div>"
             for b in range(width):
-                grid[a, b + 2] = HTML("<div style='background-color:#6E6BF4;'>&nbsp;</div>", layout=Layout(margin="0"))
-            grid[a, 0] = HTML("<div style='background-color:#FFB858; font-weight:bold; padding-right: 2em;'>%s</div>" % html_escape(paramname), layout=Layout(margin="0"))
+                grid[a, b + 2] = HTML(htmlcode, layout=Layout(margin="0"))
+            htmlcode = "<div style='background-color:#FFB858; font-weight:bold; padding-right: 2em;'>%s</div>"
+            grid[a, 0] = HTML(htmlcode % html_escape(paramname), layout=Layout(margin="0"))
             grid[a, 1] = HTML("...", layout=Layout(margin="0"))
             grid[a,-1] = HTML("...", layout=Layout(margin="0"))
         self.grid = grid

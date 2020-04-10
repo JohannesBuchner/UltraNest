@@ -18,13 +18,13 @@ from .integrator import ReactiveNestedSampler
 from .stepsampler import RegionBallSliceSampler
 
 
-def pymultinest_solve_compat(LogLikelihood, Prior, n_dims,
-        paramnames=None,
-        outputfiles_basename=None, resume=False,
-        n_live_points=400, evidence_tolerance=0.5,
-        seed=-1, max_iter=0, wrapped_params=None, verbose=True,
-        speed="safe",
-        **kwargs
+def pymultinest_solve_compat(
+    LogLikelihood, Prior, n_dims, paramnames=None,
+    outputfiles_basename=None, resume=False,
+    n_live_points=400, evidence_tolerance=0.5,
+    seed=-1, max_iter=0, wrapped_params=None, verbose=True,
+    speed="safe",
+    **kwargs
 ):
     """Run nested sampling analysis.
 
@@ -44,46 +44,41 @@ def pymultinest_solve_compat(LogLikelihood, Prior, n_dims,
     if not verbose:
         outputkwargs = dict(viz_callback=False, show_status=False)
 
-    sampler = ReactiveNestedSampler(paramnames,
-        LogLikelihood,
-        transform=Prior,
-        log_dir=outputfiles_basename,
-        resume='resume' if resume else 'overwrite',
-        wrapped_params=wrapped_params,
-        draw_multiple=False,
-        vectorized=False,
-        **outputkwargs
-    )
+    sampler = ReactiveNestedSampler(
+        paramnames, LogLikelihood, transform=Prior,
+        log_dir=outputfiles_basename, resume='resume' if resume else 'overwrite',
+        wrapped_params=wrapped_params, draw_multiple=False, vectorized=False,
+        **outputkwargs)
+
     if speed == "safe":
         pass
     elif speed == "auto":
-        sampler.run(dlogz=evidence_tolerance,
+        sampler.run(
+            dlogz=evidence_tolerance,
             max_iters=max_iter if max_iter > 0 else None,
             min_num_live_points=n_live_points,
             min_ess=min_ess, frac_remain=frac_remain,
             Lepsilon=Lepsilon, max_ncalls=40000)
-        
-        sampler.stepsampler = RegionBallSliceSampler(nsteps=1000,
-            adaptive_nsteps='move-distance', region_filter=kwargs.get('region_filter', True))
+
+        sampler.stepsampler = RegionBallSliceSampler(
+            nsteps=1000, adaptive_nsteps='move-distance',
+            region_filter=kwargs.get('region_filter', True))
     else:
-        sampler.stepsampler = RegionBallSliceSampler(nsteps=speed,
-            adaptive_nsteps=False, region_filter=False)
-    
+        sampler.stepsampler = RegionBallSliceSampler(
+            nsteps=speed, adaptive_nsteps=False, region_filter=False)
+
     sampler.run(dlogz=evidence_tolerance,
-        max_iters=max_iter if max_iter > 0 else None,
-        min_num_live_points=n_live_points,
-        min_ess=min_ess, frac_remain=frac_remain,
-        Lepsilon=Lepsilon)
-    
+                max_iters=max_iter if max_iter > 0 else None,
+                min_num_live_points=n_live_points,
+                min_ess=min_ess, frac_remain=frac_remain,
+                Lepsilon=Lepsilon)
+
     if verbose:
         sampler.print_results()
     results = sampler.results
     sampler.plot()
 
     return dict(logZ=results['logz'],
-        logZerr=results['logzerr'],
-        samples=results['samples'],
-        weighted_samples=results['weighted_samples'])
-
-
-
+                logZerr=results['logzerr'],
+                samples=results['samples'],
+                weighted_samples=results['weighted_samples'])

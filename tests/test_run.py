@@ -16,12 +16,12 @@ def test_run():
 
     def transform(x):
         return 10. * x - 5.
-    
+
     paramnames = ['Hinz', 'Kunz']
 
     sampler = NestedSampler(paramnames, loglike, transform=transform, num_live_points=400, vectorized=True)
     r = sampler.run(log_interval=50)
-    
+
     ncalls = loglike.ncalls
     if sampler.mpi_size > 1:
         ncalls = sampler.comm.gather(ncalls, root=0)
@@ -49,15 +49,15 @@ def test_reactive_run():
 
     def transform(x):
         return 10. * x - 5.
-    
+
     paramnames = ['Hinz', 'Kunz']
 
-    sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, 
+    sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform,
         draw_multiple=False, vectorized=True)
     r = sampler.run(log_interval=50, min_num_live_points=400)
-    
+
     # test that the number of likelihood calls is correct
-    
+
     ncalls = loglike.ncalls
     nunique = len(evals)
     if sampler.mpi_size > 1:
@@ -73,22 +73,22 @@ def test_reactive_run():
         else:
             allevals = None
         nunique = sampler.comm.bcast(allevals, root=0)
-    
+
     if sampler.mpi_rank == 0:
         print('ncalls:', ncalls, 'nunique:', nunique)
-    
+
     assert abs(r['ncall'] - ncalls) <= 2 * sampler.mpi_size, (r['ncall'], ncalls)
     assert ncalls == nunique, (ncalls, nunique)
     if sampler.mpi_rank == 0:
         open('nestedsampling_reactive_results.txt', 'a').write("%.3f\n" % r['logz'])
-    
+
     print(r)
     assert r['niter'] > 100
     assert -10 < r['logz'] < 10
     assert 0.01 < r['logzerr'] < 0.5
     assert 1 < r['ess'] < 10000
-    
-    
+
+
     sampler.plot()
 
 def test_return_summary():
@@ -104,7 +104,7 @@ def test_return_summary():
 
     def transform(x):
         return x
-    
+
     sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform)
     r = sampler.run()
 
@@ -120,19 +120,19 @@ def test_return_summary():
     assert 0.74 < r['posterior']['median'][1] < 0.76
     assert 0.05 < r['posterior']['stdev'][0] < 0.2
     assert 0.005 < r['posterior']['stdev'][1] < 0.02
-    
+
     assert 0.35 < r['posterior']['errlo'][0] < 0.45
     assert 0.72 < r['posterior']['errlo'][1] < 0.75
     assert 0.55 < r['posterior']['errup'][0] < 0.65
     assert 0.75 < r['posterior']['errup'][1] < 0.78
-    
+
     N, ndim2 = r['samples'].shape
     assert ndim2 == ndim
     assert N > 10
     N, ndim2 = r['weighted_samples']['points'].shape
     assert ndim2 == ndim
     assert N > 10
-    
+
     assert r['weighted_samples']['logw'].shape == (N,)
     assert r['weighted_samples']['weights'].shape == (N,)
     assert r['weighted_samples']['bootstrapped_weights'].shape[0] == N
@@ -150,7 +150,7 @@ def test_run_resume(dlogz):
 
     def transform(x):
         return x
-    
+
     paramnames = ['a']
     def myadd(row):
         assert False, (row, 'should not need to add more points in resume')
@@ -161,7 +161,7 @@ def test_run_resume(dlogz):
     folder = tempfile.mkdtemp()
     try:
         for i in range(2):
-            sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, 
+            sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform,
                 log_dir=folder, resume=True, vectorized=True)
             r = sampler.run(log_interval=50, dlogz=dlogz, min_num_live_points=400)
             sampler.print_results()
@@ -190,13 +190,13 @@ def test_reactive_run_resume_eggbox():
         loglike.ncalls += len(z)
         return (2. + chi)**5
     loglike.ncalls = 0
-    
+
     def transform(x):
         return x * 10 * np.pi
 
     paramnames = ['a', 'b']
     ndim = len(paramnames)
-    
+
     #last_results = None
     folder = tempfile.mkdtemp()
     np.random.seed(1)
@@ -205,15 +205,15 @@ def test_reactive_run_resume_eggbox():
             print()
             print("====== Running Eggbox problem [%d] =====" % (i+1))
             print()
-            sampler = ReactiveNestedSampler(paramnames, 
+            sampler = ReactiveNestedSampler(paramnames,
                 loglike, transform=transform,
                 log_dir=folder, resume=True, vectorized=True, draw_multiple=False)
             initial_ncalls = int(sampler.ncall)
             num_live_points = 100
             loglike.ncalls = 0
-            r = sampler.run(max_iters=200 + i*200, 
-                max_num_improvement_loops=0, 
-                min_num_live_points=num_live_points, 
+            r = sampler.run(max_iters=200 + i*200,
+                max_num_improvement_loops=0,
+                min_num_live_points=num_live_points,
                 cluster_num_live_points=0)
             sampler.print_results()
             print("pointstore:", sampler.pointstore.fileobj['points'].shape)
@@ -229,10 +229,10 @@ def test_reactive_run_resume_eggbox():
             ncalls = ncalls + initial_ncalls
             assert abs(r['ncall'] - ncalls) <= 2 * sampler.mpi_size, (i, r['ncall'], ncalls, r['ncall'] - ncalls)
             assert paramnames == r['paramnames'], 'paramnames should be in results'
-        
-        # the results are not exactly the same, because the sampling adds 
+
+        # the results are not exactly the same, because the sampling adds
         #ncalls = loglike.ncalls
-        #sampler = ReactiveNestedSampler(paramnames, 
+        #sampler = ReactiveNestedSampler(paramnames,
         #    loglike, transform=transform,
         #    log_dir=folder, resume=True, vectorized=True, num_test_samples=0)
         #print("pointstore:", sampler.pointstore.fileobj['points'].shape)
@@ -282,13 +282,13 @@ def test_reactive_run_resume_eggbox():
         assert sequence['logwt'].shape == logw.shape == (len(L),), (sequence['logwt'].shape, logw.shape)
         #assert_allclose(logw, sequence['logvols'])
         #assert results['samples_untransformed'].shape == v.shape == (len(L), ndim), (results['samples_untransformed'].shape, v.shape)
-        
+
     finally:
         shutil.rmtree(folder, ignore_errors=True)
 
 def test_run_compat():
     from ultranest.solvecompat import pymultinest_solve_compat as solve
-    
+
     ndim = 2
     sigma = 0.01
     centers = 0.5
@@ -301,17 +301,17 @@ def test_run_compat():
     def transform(x):
         return 10 * x - 5.
 
-    result = solve(LogLikelihood=loglike, Prior=transform, 
+    result = solve(LogLikelihood=loglike, Prior=transform,
         n_dims=ndim, outputfiles_basename=None,
         verbose=True, resume='resume', importance_nested_sampling=False)
-    
+
     print()
     print('evidence: %(logZ).1f +- %(logZerr).1f' % result)
     print()
     print('parameter values:')
     for name, col in zip(paramnames, result['samples'].transpose()):
         print('%15s : %.3f +- %.3f' % (name, col.mean(), col.std()))
-    
+
 if __name__ == '__main__':
     #test_run_compat()
     #test_run_resume(dlogz=0.5)

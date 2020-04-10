@@ -145,7 +145,7 @@ def compute_mean_pair_distance(
                     pair_dist += (pts[i,k] - pts[j,k])**2
                 total_dist += pair_dist**0.5
                 Npairs += 1
-    
+
     assert np.isfinite(total_dist), total_dist
     return total_dist / Npairs
 
@@ -801,5 +801,5 @@ class MLFriends(object):
 
     def compute_mean_pair_distance(self):
         return compute_mean_pair_distance(self.unormed, self.transformLayer.clusterids)
-        
-        
+
+
