@@ -2295,7 +2295,7 @@ class ReactiveNestedSampler(object):
             self.logger.debug('Making run plot ... done')
 
 
-def read_file(log_dir, x_dim, num_bootstraps=20, random=True):
+def read_file(log_dir, x_dim, num_bootstraps=20, random=True, verbose=False):
     """
     Read the output HDF5 file of UltraNest.
 
@@ -2309,6 +2309,8 @@ def read_file(log_dir, x_dim, num_bootstraps=20, random=True):
         number of bootstraps to use for estimating logZ.
     random: bool
         use randomization for volume estimation.
+    verbose: bool
+        show progress
 
     Returns
     ----------
@@ -2405,6 +2407,8 @@ def read_file(log_dir, x_dim, num_bootstraps=20, random=True):
         logvol.append(main_iterator.logVolremaining)
 
         niter += 1
+        if verbose:
+            print("%d..." % niter, end='\r')
 
         saved_logl.append(Lmin)
         saved_nodeids.append(node.id)
@@ -2474,6 +2478,7 @@ def read_file(log_dir, x_dim, num_bootstraps=20, random=True):
         logwt=logwt,
         niter=niter,
         logl=saved_logl,
+        normalised_weights=saved_wt0,
     )
 
     return sequence, results
