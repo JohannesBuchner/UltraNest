@@ -59,6 +59,7 @@ def make_run_dir(log_dir, run_num=None, append_run_num=True):
 
     """
     def makedirs(name):
+        """python2-compatible makedir """
         # for Python2 compatibility:
         try:
             os.makedirs(name)
@@ -66,7 +67,7 @@ def make_run_dir(log_dir, run_num=None, append_run_num=True):
             if e.errno != errno.EEXIST:
                 raise
         # Python 3:
-        # os.makedirs(name, exist_ok=True)
+        #os.makedirs(name, exist_ok=True)
 
     makedirs(log_dir)
 
@@ -99,6 +100,7 @@ def make_run_dir(log_dir, run_num=None, append_run_num=True):
 def vectorize(function):
     """Vectorize likelihood or prior_transform function."""
     def vectorized(args):
+        """ vectorized version of function"""
         return np.asarray([function(arg) for arg in args])
 
     vectorized.__name__ = function.__name__
@@ -270,6 +272,7 @@ def verify_gradient(ndim, transform, loglike, gradient, verbose=False, combinati
         transform_loglike_gradient = gradient
     else:
         def transform_loglike_gradient(u):
+            """combine transform, likelihood and gradient function"""
             p = transform(u.reshape((1, -1)))
             return p[0], loglike(p)[0], gradient(u)
     

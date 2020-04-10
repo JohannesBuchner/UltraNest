@@ -37,9 +37,8 @@ __all__ = ["runplot", "cornerplot", "traceplot", "PredictionBand"]
 def cornerplot(results, logger=None):
     """Make a corner plot with corner."""
     paramnames = results['paramnames']
-    data = np.array(results['weighted_samples']['v'])
-    weights = np.array(results['weighted_samples']['w'])
-    weights /= weights.sum()
+    data = np.array(results['weighted_samples']['points'])
+    weights = np.array(results['weighted_samples']['weights'])
     cumsumweights = np.cumsum(weights)
 
     mask = cumsumweights > 1e-4
@@ -230,6 +229,7 @@ def runplot(results, span=None, logplot=False, kde=True, nkde=1000,
     logwt = results['logwt'] - results['logz'][-1]  # ln(importance weight)
     logz = results['logz']  # ln(evidence)
     logzerr = results['logzerr']  # error in ln(evidence)
+    weights = results['weights']
     logzerr[~np.isfinite(logzerr)] = 0.
     nsamps = len(logwt)  # number of samples
 
@@ -254,14 +254,14 @@ def runplot(results, span=None, logplot=False, kde=True, nkde=1000,
             mark_final_live = False
 
     # Determine plotting bounds for each subplot.
-    data = [nlive, np.exp(logl), np.exp(logwt), logz if logplot else np.exp(logz)]
+    data = [nlive, np.exp(logl), weights, logz if logplot else np.exp(logz)]
 
     if kde:
         try:
             # from scipy.ndimage import gaussian_filter as norm_kde
             from scipy.stats import gaussian_kde
             # Derive kernel density estimate.
-            wt_kde = gaussian_kde(resample_equal(-logvol, data[2]))  # KDE
+            wt_kde = gaussian_kde(resample_equal(-logvol, weights))  # KDE
             logvol_new = np.linspace(logvol[0], logvol[-1], nkde)  # resample
             data[2] = wt_kde.pdf(-logvol_new)  # evaluate KDE PDF
         except ImportError:
@@ -544,10 +544,7 @@ def traceplot(results, span=None, quantiles=[0.025, 0.5, 0.975], smooth=0.02,
     # Extract weighted samples.
     samples = results['samples']
     logvol = results['logvol']
-    try:
-        weights = np.exp(results['logwt'] - results['logz'][-1])
-    except:
-        weights = results['weights']
+    weights = results['weights']
 
     wts = weights
     if kde:

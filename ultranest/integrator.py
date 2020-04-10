@@ -22,7 +22,7 @@ from ultranest.mlfriends import MLFriends, AffineLayer, ScalingLayer, find_nearb
 from .store import HDF5PointStore, NullPointStore
 from .viz import get_default_viz_callback, nicelogger
 from .netiter import PointPile, MultiCounter, BreadthFirstIterator, TreeNode, count_tree_between, find_nodes_before, logz_sequence
-from .netiter import dump_tree
+from .netiter import dump_tree, combine_results
 
 __all__ = ['ReactiveNestedSampler', 'NestedSampler', 'read_file']
 
@@ -160,10 +160,11 @@ class NestedSampler(object):
         assert np.isfinite(logl).all(), ("Error in loglikelihood function: returned non-finite number: %s for input u=%s p=%s" % (logl, u, p))
 
         def safe_loglike(x):
+            """ wrapped likelihood function """
             x = np.asarray(x)
             logl = loglike(x)
-            assert np.isfinite(logl).all(), ('loglikelihood returned non-finite value:',
-                   logl[~np.isfinite(logl)], x[~np.isfinite(logl),:])
+            assert np.isfinite(logl).all(), ('User-provided loglikelihood returned non-finite value:',
+                   logl[~np.isfinite(logl)][0], "for input value:", x[~np.isfinite(logl),:][0,:])
             return logl
 
         self.loglike = safe_loglike
@@ -555,7 +556,7 @@ class NestedSampler(object):
 
         self.results = dict(samples=resample_equal(saved_v, saved_wt / saved_wt.sum()),
             ncall=ncall, niter=it, logz=logz, logzerr=logzerr,
-            weighted_samples=dict(u=saved_u, v=saved_v, w=saved_wt, logw=saved_logwt, L=saved_logl),
+            weighted_samples=dict(upoints=saved_u, points=saved_v, weights=saved_wt, logweights=saved_logwt, logl=saved_logl),
         )
 
         return self.results
@@ -583,9 +584,8 @@ class NestedSampler(object):
         if self.log_to_disk:
             import matplotlib.pyplot as plt
             import corner
-            data = np.array(self.results['weighted_samples']['v'])
-            weights = np.array(self.results['weighted_samples']['w'])
-            weights /= weights.sum()
+            data = np.array(self.results['weighted_samples']['points'])
+            weights = np.array(self.results['weighted_samples']['weights'])
             cumsumweights = np.cumsum(weights)
 
             mask = cumsumweights > 1e-4
@@ -787,6 +787,7 @@ class ReactiveNestedSampler(object):
             assert np.isclose(logl, lastL), "Cannot resume because loglikelihood function changed. To start from scratch, delete '%s'." % (self.logs['run_dir'])
 
         def safe_loglike(x):
+            """ safe wrapper of likelihood function """
             x = np.asarray(x)
             if len(x.shape) == 1:
                 assert x.shape[0] == self.x_dim
@@ -806,6 +807,7 @@ class ReactiveNestedSampler(object):
             self.transform = lambda x: x
         elif make_safe:
             def safe_transform(x):
+                """ safe wrapper of transform function """
                 x = np.asarray(x)
                 if len(x.shape) == 1:
                     assert x.shape[0] == self.x_dim
@@ -2099,67 +2101,19 @@ class ReactiveNestedSampler(object):
             self.logger.info('Likelihood function evaluations: %d', self.ncall)
             # self.logger.info('Tree size: height=%d width=%d' % count_tree(self.root.children))
 
-        # points with weights
-        # saved_u = np.array([pp[nodeid].u for nodeid in saved_nodeids])
-        assert np.shape(main_iterator.logweights) == (len(saved_logl), len(main_iterator.all_logZ)), (
-            np.shape(main_iterator.logweights),
-            np.shape(saved_logl),
-            np.shape(main_iterator.all_logZ))
+        results = combine_results(saved_logl, saved_nodeids, self.pointpile,
+            main_iterator, mpi_comm=self.comm if self.use_mpi else None)
 
-        saved_logl = np.array(saved_logl)
-        saved_u = self.pointpile.getu(saved_nodeids)
-        saved_v = self.pointpile.getp(saved_nodeids)
-        saved_logwt = np.array(main_iterator.logweights)
-        saved_logwt0 = saved_logwt[:,0]
-        saved_logwt_bs = saved_logwt[:,1:]
-        logZ_bs = main_iterator.all_logZ[1:]
-        assert len(saved_logwt_bs) == len(saved_nodeids), (saved_logwt_bs.shape, len(saved_nodeids))
+        results['ncall'] = int(self.ncall)
+        results['paramnames'] = self.paramnames
+        results['logzerr_single'] = (main_iterator.all_H[0] / self.min_num_live_points)**0.5
 
-        if self.use_mpi:
-            # spread logZ_bs, saved_logwt_bs
-            recv_saved_logwt_bs = self.comm.gather(saved_logwt_bs, root=0)
-            recv_saved_logwt_bs = self.comm.bcast(recv_saved_logwt_bs, root=0)
-            saved_logwt_bs = np.concatenate(recv_saved_logwt_bs, axis=1)
-
-            recv_logZ_bs = self.comm.gather(logZ_bs, root=0)
-            recv_logZ_bs = self.comm.bcast(recv_logZ_bs, root=0)
-            logZ_bs = np.concatenate(recv_logZ_bs)
-
-        saved_wt_bs = exp(saved_logwt_bs + saved_logl.reshape((-1, 1)) - logZ_bs)
-        saved_wt0 = exp(saved_logwt0 + saved_logl - main_iterator.all_logZ[0])
-
-        # compute fraction in tail
-        w = saved_wt0 / saved_wt0.sum()
-        ess = len(w) / (1.0 + ((len(w) * w - 1)**2).sum() / len(w))
-        tail_fraction = w[np.asarray(main_iterator.istail)].sum()
-        if tail_fraction != 0:
-            logzerr_tail = logaddexp(log(tail_fraction) + main_iterator.logZ, main_iterator.logZ) - main_iterator.logZ
-        else:
-            logzerr_tail = 0
-
-        logzerr_bs = (logZ_bs - main_iterator.logZ).max()
-        logzerr_total = (logzerr_tail**2 + logzerr_bs**2)**0.5
-        samples = resample_equal(saved_v, w)
-        
-        results = dict(niter=len(saved_logl),
-            logz=main_iterator.logZ, logzerr=logzerr_total,
-            logz_bs=logZ_bs.mean(),
-            logzerr_bs=logzerr_bs,
-            logz_single=main_iterator.logZ,
-            logzerr_tail=logzerr_tail,
-            logzerr_single=(main_iterator.all_H[0] / self.min_num_live_points)**0.5,
-            ess=ess,
-            H=main_iterator.all_H[0], Herr=main_iterator.all_H.std(),
-            paramnames=self.paramnames + self.derivedparamnames,
-            ncall=int(self.ncall),
-            posterior=dict(
-                mean=samples.mean(axis=0).tolist(),
-                stdev=samples.std(axis=0).tolist(),
-                median=np.percentile(samples, 50, axis=0).tolist(),
-                errlo=np.percentile(samples, 15.8655, axis=0).tolist(),
-                errup=np.percentile(samples, 84.1345, axis=0).tolist(),
-            ),
-        )
+        results_simple = dict(results)
+        weighted_samples = results_simple.pop('weighted_samples')
+        samples = results_simple.pop('samples')
+        saved_wt0 = weighted_samples['weights']
+        saved_u = weighted_samples['upoints']
+        saved_v = weighted_samples['points']
         
         if self.log_to_disk:
             if self.log:
@@ -2169,15 +2123,17 @@ class ReactiveNestedSampler(object):
                 header=' '.join(self.paramnames + self.derivedparamnames),
                 comments='')
             np.savetxt(os.path.join(self.logs['chains'], 'weighted_post.txt'),
-                np.hstack((saved_wt0.reshape((-1, 1)), saved_logl.reshape((-1, 1)), saved_v)),
-                comments='#')
-            np.savetxt(os.path.join(self.logs['chains'], 'weighted_post_untransformed.txt'),
-                np.hstack((saved_wt0.reshape((-1, 1)), saved_logl.reshape((-1, 1)), saved_u)),
+                np.hstack((saved_wt0.reshape((-1, 1)), np.reshape(saved_logl, (-1, 1)), saved_v)),
+                header=' '.join(['weight', 'logl'] + self.paramnames + self.derivedparamnames),
                 comments='')
-            with open(os.path.join(self.logs['chains'], 'weighted_post.paramnames'), 'w') as f:
-                f.write('\n'.join(self.paramnames + self.derivedparamnames) + '\n')
+            np.savetxt(os.path.join(self.logs['chains'], 'weighted_post_untransformed.txt'),
+                np.hstack((saved_wt0.reshape((-1, 1)), np.reshape(saved_logl, (-1, 1)), saved_u)),
+                header=' '.join(['weight', 'logl'] + self.paramnames + self.derivedparamnames),
+                comments='')
+
             with open(os.path.join(self.logs['info'], 'results.json'), 'w') as f:
-                json.dump(results, f)
+                json.dump(results_simple, f, indent=4)
+
             with open(os.path.join(self.logs['info'], 'post_summary.csv'), 'wb') as f:
                 np.savetxt(f, 
                     [np.hstack([results['posterior'][k] for k in ('mean', 'stdev', 'median', 'errlo', 'errup')])],
@@ -2186,15 +2142,19 @@ class ReactiveNestedSampler(object):
                     delimiter=',', comments='',
                     )
 
+        sequence, _ = logz_sequence(self.root, self.pointpile)
+
+        if self.log_to_disk:
+            keys = 'logz', 'logzerr', 'logvol', 'nlive', 'logl', 'logwt'
+            np.savetxt(os.path.join(self.logs['chains'], 'run.txt'),
+                np.hstack(tuple([np.reshape(sequence[k], (-1, 1)) for k in keys])),
+                header=' '.join(keys),
+                comments='')
             if self.log:
                 self.logger.info("Writing samples and results to disk ... done")
 
-        results.update(
-            weighted_samples=dict(v=saved_v, L=saved_logl, w=saved_wt0,
-                logw=saved_logwt0, bs_w=saved_wt_bs, u=saved_u),
-            samples=samples,
-        )
         self.results = results
+        self.run_sequence = sequence
 
     def store_tree(self):
         """Store tree to disk (results/tree.hdf5)."""
@@ -2270,8 +2230,7 @@ class ReactiveNestedSampler(object):
             self.logger.debug('Making trace plot ... ')
         paramnames = self.paramnames + self.derivedparamnames
         # get dynesty-compatible sequences
-        results = logz_sequence(self.root, self.pointpile)
-        traceplot(results=results, labels=paramnames)
+        traceplot(results=self.run_sequence, labels=paramnames)
         if self.log_to_disk:
             plt.savefig(os.path.join(self.logs['plots'], 'trace.pdf'), bbox_inches='tight')
             plt.close()
@@ -2294,8 +2253,7 @@ class ReactiveNestedSampler(object):
         if self.log:
             self.logger.debug('Making run plot ... ')
         # get dynesty-compatible sequences
-        results = logz_sequence(self.root, self.pointpile)
-        runplot(results=results, logplot=True)
+        runplot(results=self.run_sequence, logplot=True)
         if self.log_to_disk:
             plt.savefig(os.path.join(self.logs['plots'], 'run.pdf'), bbox_inches='tight')
             plt.close()
@@ -2348,6 +2306,7 @@ def read_file(log_dir, x_dim, num_bootstraps=20, random=True, verbose=False):
     pointpile = PointPile(x_dim, num_params)
     
     def pop(Lmin):
+        """ find matching sample from points file """
         # look forward to see if there is an exact match
         # if we do not use the exact matches
         #   this causes a shift in the loglikelihoods
@@ -2369,35 +2328,10 @@ def read_file(log_dir, x_dim, num_bootstraps=20, random=True, verbose=False):
         v = row[3 + x_dim:3 + x_dim + num_params]
         roots.append(pointpile.make_node(logl, u, v))
 
-    root = TreeNode(id=-1, value=-np.inf)
-    root.children = roots
-    Lmax = -np.inf
-
-    explorer = BreadthFirstIterator(roots)
-    # Integrating thing
-    main_iterator = MultiCounter(nroots=len(roots),
-        nbootstraps=max(1, num_bootstraps),
-        random=random)
-    main_iterator.Lmax = max(Lmax, max(n.value for n in roots))
-
-    logz = []
-    logzerr = []
-    nlive = []
-    logvol = []
-    niter = 0
-
-    saved_nodeids = []
-    saved_logl = []
-    # we go through each live point (regardless of root) by likelihood value
-    while True:
-        next_node = explorer.next_node()
-        if next_node is None:
-            break
-        rootid, node, (active_nodes, active_rootids, active_values, active_node_ids) = next_node
-        # this is the likelihood level we have to improve upon
-        Lmin = node.value
-
-        _, row = pop(Lmin)
+    root = TreeNode(id=-1, value=-np.inf, children = roots)
+    def onNode(node, main_iterator):
+        """ insert (single) child of node if available """
+        _, row = pop(node.value)
         if row is not None:
             logl = row[1]
             u = row[3:3 + x_dim]
@@ -2406,86 +2340,5 @@ def read_file(log_dir, x_dim, num_bootstraps=20, random=True, verbose=False):
             main_iterator.Lmax = max(main_iterator.Lmax, logl)
             node.children.append(child)
 
-        logz.append(main_iterator.logZ)
-        with np.errstate(invalid='ignore'):
-            # first time they are all the same
-            logzerr.append(main_iterator.logZerr_bs)
-        nlive.append(len(active_values))
-        logvol.append(main_iterator.logVolremaining)
-
-        niter += 1
-        if verbose:
-            print("%d..." % niter, end='\r')
-
-        saved_logl.append(Lmin)
-        saved_nodeids.append(node.id)
-        # inform iterators (if it is their business) about the arc
-        main_iterator.passing_node(rootid, node, active_rootids, active_values)
-        explorer.expand_children_of(rootid, node)
-
-    #self._update_results(main_iterator, saved_logl, saved_nodeids)
-
-    saved_logl = np.array(saved_logl)
-    saved_u = pointpile.getu(saved_nodeids)
-    saved_v = pointpile.getp(saved_nodeids)
-    saved_logwt = np.array(main_iterator.logweights)
-    #saved_logwt0 = saved_logwt[:,0]
-    #saved_logwt_bs = saved_logwt[:,1:]
-    #logZ_bs = main_iterator.all_logZ[1:]
-
-    logwt = np.asarray(logl) + np.asarray(main_iterator.logweights)[:,0]
-    logvol[-1] = logvol[-2]
-
-    saved_logwt0 = saved_logwt[:,0]
-    saved_wt0 = exp(saved_logwt0 + saved_logl - main_iterator.all_logZ[0])
-    w = saved_wt0 / saved_wt0.sum()
-
-    saved_logwt_bs = saved_logwt[:,1:]
-    logZ_bs = main_iterator.all_logZ[1:]
-    saved_wt_bs = exp(saved_logwt_bs + saved_logl.reshape((-1, 1)) - logZ_bs)
-    saved_wt0 = exp(saved_logwt0 + saved_logl - main_iterator.all_logZ[0])
-
-    # compute fraction in tail
-    w = saved_wt0 / saved_wt0.sum()
-    ess = len(w) / (1.0 + ((len(w) * w - 1)**2).sum() / len(w))
-    tail_fraction = w[np.asarray(main_iterator.istail)].sum()
-    if tail_fraction != 0:
-        logzerr_tail = logaddexp(log(tail_fraction) + main_iterator.logZ, main_iterator.logZ) - main_iterator.logZ
-    else:
-        logzerr_tail = 0
-
-    logzerr_bs = (logZ_bs - main_iterator.logZ).max()
-    logzerr_total = (logzerr_tail**2 + logzerr_bs**2)**0.5
-    samples = resample_equal(saved_v, w)
-    
-    results = dict(niter=len(saved_logl),
-        logz=main_iterator.logZ, logzerr=logzerr_total,
-        logz_bs=logZ_bs.mean(),
-        logzerr_bs=logzerr_bs,
-        logz_single=main_iterator.logZ,
-        logzerr_tail=logzerr_tail,
-        ess=ess,
-        H=main_iterator.all_H[0], Herr=main_iterator.all_H.std(),
-        posterior=dict(
-            mean=samples.mean(axis=0).tolist(),
-            stdev=samples.std(axis=0).tolist(),
-            median=np.percentile(samples, 50, axis=0).tolist(),
-            errlo=np.percentile(samples, 15.8655, axis=0).tolist(),
-            errup=np.percentile(samples, 84.1345, axis=0).tolist(),
-        ),
-        weighted_samples=dict(u=saved_u, v=saved_v, w=saved_wt0, logw=saved_logwt0,
-            bs_w=saved_wt_bs, L=saved_logl),
-        samples=samples,
-    )
-    sequence = dict(
-        logz=np.asarray(logz),
-        logzerr=np.asarray(logzerr),
-        logvol=np.asarray(logvol),
-        samples_n=np.asarray(nlive),
-        logwt=logwt,
-        niter=niter,
-        logl=saved_logl,
-        normalised_weights=saved_wt0,
-    )
-
-    return sequence, results
+    return logz_sequence(root, pointpile, nbootstraps=num_bootstraps,
+        random=random, onNode=onNode, verbose=verbose)

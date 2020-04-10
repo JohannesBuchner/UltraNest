@@ -1,3 +1,9 @@
+"""Experimental constrained Hamiltanean Monte Carlo step sampling
+
+Contrary to CHMC, this uses the likelihood gradients throughout the path.
+A helper surface is created using the live points.
+"""
+
 import numpy as np
 #from numpy.linalg import norm
 import matplotlib.pyplot as plt
@@ -24,6 +30,8 @@ def stop_criterion(thetaminus, thetaplus, rminus, rplus):
 
 
 def leapfrog(theta, r, grad, epsilon, invmassmatrix, f):
+    """Leap frog step from theta with momentum r and stepsize epsilon.
+    The local gradient grad is updated with function f"""
     # make half step in r
     rprime = r + 0.5 * epsilon * grad
     # make new step in theta
@@ -100,6 +108,7 @@ def build_tree(theta, r, grad, v, j, epsilon, invmassmatrix, f, joint0):
     return thetaminus, rminus, gradminus, thetaplus, rplus, gradplus, thetaprime, gradprime, logpprime, extraprime, rprime, sprime, alphaprime, betaprime, nalphaprime
 
 def tree_sample(theta, logp, r0, grad, extra, epsilon, invmassmatrix, f, joint, maxheight=np.inf):
+    """Build NUTS-like tree of sampling path from theta towards p with stepsize epsilon."""
     # initialize the tree
     thetaminus = theta
     thetaplus = theta
@@ -157,6 +166,7 @@ def tree_sample(theta, logp, r0, grad, extra, epsilon, invmassmatrix, f, joint, 
 def find_beta_params_static(d, u10):
     """ Define auxiliary distribution following naive intuition.
     Make 50% quantile to be at u=0.1, and very flat at high u. """
+    del d
     betas = np.arange(1, 20)
     z50 = scipy.special.betaincinv(1.0, betas, 0.5)
     
@@ -169,9 +179,11 @@ def find_beta_params_dynamic(d, u10):
     """ Define auxiliary distribution taking into account 
     kinetic energy of a d-dimensional HMC.
     Make exp(-d/2) quantile to be at u=0.1, and 95% quantile at u=0.5. """
+    del d
     
     u50 = (u10 + 1) / 2.
     def minfunc(params):
+        """ minimization function """
         alpha, beta = params
         q10 = scipy.special.betainc(alpha, beta, u10)
         q50 = scipy.special.betainc(alpha, beta, u50)
@@ -184,10 +196,11 @@ def find_beta_params_dynamic(d, u10):
     return alpha, beta
 
 def generate_momentum_normal(d, massmatrix):
+    """ draw direction vector according to mass matrix """
     return np.random.multivariate_normal(np.zeros(d), np.dot(massmatrix, np.eye(d)))
 
 def generate_momentum(d, massmatrix, alpha, beta):
-    # draw from a circle
+    """ draw momentum from a circle, with amplitude following the beta distribution """
     momentum = np.random.multivariate_normal(np.zeros(d), np.dot(massmatrix, np.eye(d)))
     # generate normalisation from beta distribution
     # add a bit of noise in the step size
@@ -207,14 +220,15 @@ def generate_momentum(d, massmatrix, alpha, beta):
     return momentum
 
 def generate_momentum_circle(d, massmatrix):
-    # draw from a circle, with a little noise in amplitude
+    """ draw from a circle, with a little noise in amplitude """
     momentum = np.random.multivariate_normal(np.zeros(d), np.dot(massmatrix, np.eye(d)))
     momentum *= 10**np.random.uniform(-0.3, 0.3) / (momentum**2).sum()**0.5
     return momentum
 
 
 def generate_momentum_flattened(d, massmatrix):
-    # like normal distribution, but make momenta distributed like a single gaussian
+    """ like normal distribution, but make momenta distributed like a single gaussian.
+    **this is the one being used** """
     momentum = np.random.multivariate_normal(np.zeros(d), np.dot(massmatrix, np.eye(d)))
     norm = (momentum**2).sum()**0.5
     assert norm > 0

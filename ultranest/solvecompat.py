@@ -34,6 +34,8 @@ def pymultinest_solve_compat(LogLikelihood, Prior, n_dims,
     """
     if paramnames is None:
         paramnames = list(string.ascii_lowercase)[:n_dims]
+    if seed >= 0:
+        np.random.seed(seed)
     assert len(paramnames) == n_dims
     min_ess = kwargs.pop('min_ess', 0)
     frac_remain = kwargs.pop('frac_remain', 0.01)

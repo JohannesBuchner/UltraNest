@@ -96,7 +96,6 @@ def nicelogger(points, info, region, transformLayer, region_fresh=False):
         Whether the region was just updated.
 
     """
-    # u, p, logl = points['u'], points['p'], points['logl']
     p = points['p']
     paramnames = info['paramnames']
     # print()

@@ -1,7 +1,10 @@
+"""Constrained Hamiltanean Monte Carlo step sampling.
+
+Uses gradient to reflect at nested sampling boundaries.
+"""
+
 import numpy as np
-#from numpy.linalg import norm
 import matplotlib.pyplot as plt
-#import scipy.special, scipy.stats
 
 def stop_criterion(thetaminus, thetaplus, rminus, rplus):
     """ Compute the stop condition in the main loop
@@ -25,6 +28,7 @@ def stop_criterion(thetaminus, thetaplus, rminus, rplus):
 
 
 def step_or_reflect(theta, v, epsilon, transform, loglike, gradient, Lmin):
+    """Make a step from theta towards v with stepsize epsilon. """
     # step in position:
     thetaprime = theta + epsilon * v
     # check if still inside
@@ -149,6 +153,7 @@ def build_tree(theta, v, direction, j, epsilon, transform, loglike, gradient, Lm
     return thetaminus, vminus, pminus, thetaplus, vplus, pplus, thetaprime, vprime, pprime, logpprime, sprime, can_continue, alphaprime, nalphaprime, nreflectprime
 
 def tree_sample(theta, p, logL, v, epsilon, transform, loglike, gradient, Lmin, maxheight=np.inf):
+    """Build NUTS-like tree of sampling path from theta towards p with stepsize epsilon."""
     # initialize the tree
     thetaminus = theta
     thetaplus = theta
@@ -219,7 +224,7 @@ def tree_sample(theta, p, logL, v, epsilon, transform, loglike, gradient, Lmin, 
     return alpha, nreflect, nalpha, theta, p, logp, j
 
 def generate_uniform_direction(d, massmatrix):
-    # draw from a circle, with a little noise in amplitude
+    """ draw unit direction vector according to mass matrix """
     momentum = np.random.multivariate_normal(np.zeros(d), np.dot(massmatrix, np.eye(d)))
     momentum /= (momentum**2).sum()**0.5
     return momentum

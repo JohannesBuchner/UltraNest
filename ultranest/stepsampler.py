@@ -16,6 +16,7 @@ def generate_random_direction(ui, region, scale=1):
 
     Region is not used.
     """
+    del region
     v = np.random.normal(0, 1, size=len(ui))
     v *= scale / (v**2).sum()**0.5
     return v
@@ -26,6 +27,7 @@ def generate_cube_oriented_direction(ui, region):
 
     `region` is not used.
     """
+    del region
     ndim = len(ui)
     # choose axis
     j = np.random.randint(ndim)

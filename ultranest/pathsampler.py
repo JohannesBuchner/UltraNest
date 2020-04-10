@@ -242,6 +242,7 @@ class SamplingPathStepSampler(StepSampler):
         print("set gradient function to %s" % grad_function.__name__)
 
         def plot_gradient_wrapper(x, plot=False):
+            """wrapper that makes plots (when desired)"""
             v = grad_function(x)
             if plot:
                 plt.plot(x[0], x[1], '+ ', color='k', ms=10)

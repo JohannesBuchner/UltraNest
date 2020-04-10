@@ -23,7 +23,7 @@ from numpy import log, log1p, exp, logaddexp
 import math
 import operator
 import sys
-
+from .utils import resample_equal
 
 class TreeNode(object):
     """Simple tree node."""
@@ -681,31 +681,113 @@ class MultiCounter(object):
             self.remainder_fraction = 1.0 / (1 + exp(self.logZ - self.logZremain))
 
 
-def logz_sequence(root, pointpile, nbootstraps=12):
+def combine_results(saved_logl, saved_nodeids, pointpile, main_iterator, mpi_comm=None):
+    """Combine a sequence of likelihoods and nodes into a summary dictionary."""
+    #self._update_results(main_iterator, saved_logl, saved_nodeids)
+    assert np.shape(main_iterator.logweights) == (len(saved_logl), len(main_iterator.all_logZ)), (
+        np.shape(main_iterator.logweights),
+        np.shape(saved_logl),
+        np.shape(main_iterator.all_logZ))
+    saved_logl = np.array(saved_logl)
+    saved_u = pointpile.getu(saved_nodeids)
+    saved_v = pointpile.getp(saved_nodeids)
+    saved_logwt = np.array(main_iterator.logweights)
+    saved_logwt0 = saved_logwt[:,0]
+    saved_logwt_bs = saved_logwt[:,1:]
+    logZ_bs = main_iterator.all_logZ[1:]
+    assert len(saved_logwt_bs) == len(saved_nodeids), (saved_logwt_bs.shape, len(saved_nodeids))
+
+    if mpi_comm is not None:
+        # spread logZ_bs, saved_logwt_bs
+        recv_saved_logwt_bs = mpi_comm.gather(saved_logwt_bs, root=0)
+        recv_saved_logwt_bs = mpi_comm.bcast(recv_saved_logwt_bs, root=0)
+        saved_logwt_bs = np.concatenate(recv_saved_logwt_bs, axis=1)
+
+        recv_logZ_bs = mpi_comm.gather(logZ_bs, root=0)
+        recv_logZ_bs = mpi_comm.bcast(recv_logZ_bs, root=0)
+        logZ_bs = np.concatenate(recv_logZ_bs)
+
+    saved_wt_bs = exp(saved_logwt_bs + saved_logl.reshape((-1, 1)) - logZ_bs)
+    saved_wt0 = exp(saved_logwt0 + saved_logl - main_iterator.all_logZ[0])
+
+    # compute fraction in tail
+    w = saved_wt0 / saved_wt0.sum()
+    print(w.dtype, w.sum())
+    assert np.isclose(w.sum() - 1, 0), w.sum()
+    ess = len(w) / (1.0 + ((len(w) * w - 1)**2).sum() / len(w))
+    tail_fraction = w[np.asarray(main_iterator.istail)].sum()
+    if tail_fraction != 0:
+        logzerr_tail = logaddexp(log(tail_fraction) + main_iterator.logZ, main_iterator.logZ) - main_iterator.logZ
+    else:
+        logzerr_tail = 0
+
+    logzerr_bs = (logZ_bs - main_iterator.logZ).max()
+    logzerr_total = (logzerr_tail**2 + logzerr_bs**2)**0.5
+    samples = resample_equal(saved_v, w)
+
+    j = saved_logl.argmax()
+    
+    results = dict(niter=len(saved_logl),
+        logz=main_iterator.logZ, logzerr=logzerr_total,
+        logz_bs=logZ_bs.mean(),
+        logz_single=main_iterator.logZ,
+        logzerr_tail=logzerr_tail,
+        logzerr_bs=logzerr_bs,
+        ess=ess,
+        H=main_iterator.all_H[0], Herr=main_iterator.all_H.std(),
+        posterior=dict(
+            mean=samples.mean(axis=0).tolist(),
+            stdev=samples.std(axis=0).tolist(),
+            median=np.percentile(samples, 50, axis=0).tolist(),
+            errlo=np.percentile(samples, 15.8655, axis=0).tolist(),
+            errup=np.percentile(samples, 84.1345, axis=0).tolist(),
+        ),
+        weighted_samples=dict(upoints=saved_u, points=saved_v, weights=saved_wt0, logw=saved_logwt0,
+            bootstrapped_weights=saved_wt_bs, logl=saved_logl),
+        samples=samples,
+        maximum_likelihood=dict(
+            logl=saved_logl[j],
+            point=saved_v[j,:].tolist(),
+            point_untransformed=saved_u[j,:].tolist(),
+        ),
+    )
+    return results
+
+def logz_sequence(root, pointpile, nbootstraps=12, random=True, onNode=None, verbose=False):
     """Run MultiCounter through tree `root`.
 
     Keeps track of, and returns ``(logz, logzerr, logv, nlive)``.
     """
     roots = root.children
 
+    Lmax = -np.inf
+
     explorer = BreadthFirstIterator(roots)
-    main_iterator = MultiCounter(nroots=len(roots), nbootstraps=nbootstraps, random=True)
-    main_iterator.Lmax = max(n.value for n in roots)
+    # Integrating thing
+    main_iterator = MultiCounter(nroots=len(roots),
+        nbootstraps=max(1, nbootstraps),
+        random=random)
+    main_iterator.Lmax = max(Lmax, max(n.value for n in roots))
+
     logz = []
     logzerr = []
     nlive = []
-    nodeids = []
     logvol = []
-    logl = []
     niter = 0
 
+    saved_nodeids = []
+    saved_logl = []
+    # we go through each live point (regardless of root) by likelihood value
     while True:
         next_node = explorer.next_node()
         if next_node is None:
             break
         rootid, node, (active_nodes, active_rootids, active_values, active_node_ids) = next_node
+        # this is the likelihood level we have to improve upon
+        Lmin = node.value
 
-        main_iterator.passing_node(rootid, node, active_rootids, active_values)
+        if onNode:
+            onNode(node, main_iterator)
 
         logz.append(main_iterator.logZ)
         with np.errstate(invalid='ignore'):
@@ -713,23 +795,36 @@ def logz_sequence(root, pointpile, nbootstraps=12):
             logzerr.append(main_iterator.logZerr_bs)
         nlive.append(len(active_values))
         logvol.append(main_iterator.logVolremaining)
-        nodeids.append(node.id)
-        logl.append(node.value)
 
-        if node.children:
-            main_iterator.Lmax = max(main_iterator.Lmax, max(n.value for n in node.children))
-        explorer.expand_children_of(rootid, node)
         niter += 1
+        if verbose:
+            print("%d..." % niter, end='\r')
 
-    logwt = np.asarray(logl) + np.asarray(main_iterator.logweights)[:,0]
+        saved_logl.append(Lmin)
+        saved_nodeids.append(node.id)
+        # inform iterators (if it is their business) about the arc
+        main_iterator.passing_node(rootid, node, active_rootids, active_values)
+        explorer.expand_children_of(rootid, node)
+    
+    logwt = np.asarray(saved_logl) + np.asarray(main_iterator.logweights)[:,0]
     logvol[-1] = logvol[-2]
 
-    return dict(logz=np.asarray(logz),
+    results = combine_results(saved_logl, saved_nodeids, pointpile, main_iterator)
+    sequence = dict(
+        logz=np.asarray(logz),
         logzerr=np.asarray(logzerr),
         logvol=np.asarray(logvol),
         samples_n=np.asarray(nlive),
+        nlive=np.asarray(nlive),
         logwt=logwt,
         niter=niter,
-        logl=np.asarray(logl),
-        samples=pointpile.getp(nodeids),
+        logl=saved_logl,
+        weights=results['weighted_samples']['weights'],
+        samples=results['weighted_samples']['points'],
     )
+    
+    return sequence, results
+    
+
+
+
