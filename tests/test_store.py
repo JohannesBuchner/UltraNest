@@ -1,3 +1,4 @@
+from __future__ import print_function, division
 import numpy as np
 import tempfile
 import os
@@ -22,11 +23,9 @@ def test_text_store():
 		ptst.close()
 
 		ptst = PointStore(filepath, 4)
-		try:
+		with pytest.raises(ValueError):
 			ptst.add([-np.inf, 123, 4], 1)
 			assert False, "should not allow adding wrong length"
-		except ValueError:
-			pass
 		
 		ptst = PointStore(filepath, 4)
 		assert ptst.stack_empty
@@ -94,11 +93,9 @@ def test_hdf5_store():
 		ptst.close()
 
 		ptst = PointStore(filepath, 4)
-		try:
+		with pytest.raises(ValueError):
 			ptst.add([-np.inf, 123, 4], 1)
 			assert False, "should not allow adding wrong length"
-		except ValueError:
-			pass
 		
 		ptst = PointStore(filepath, 4)
 		assert ptst.stack_empty
@@ -136,15 +133,11 @@ def test_hdf5_store():
 		assert entry[1] == 156, ("retrieving entry should return correct value", entry)
 		ptst.close()
 		
-		try:
+		with pytest.raises(IOError):
 			ptst = PointStore(filepath, 3)
-		except IOError:
-			pass
 		
-		try:
+		with pytest.raises(IOError):
 			ptst = PointStore(filepath, 5)
-		except IOError:
-			pass
 
 		ptst = PointStore(filepath, 4, mode='w')
 		assert ptst.ncalls == 0, (ptst.ncalls)

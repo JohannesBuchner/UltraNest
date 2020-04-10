@@ -1,13 +1,17 @@
+from __future__ import print_function, division
 import numpy as np
 import os
 import matplotlib.pyplot as plt
+from ultranest.utils import create_logger
+from ultranest import ReactiveNestedSampler
 
 here = os.path.dirname(__file__)
+
 
 def test_clustering():
     from ultranest.mlfriends import update_clusters
     for i in range(5):
-        np.random.seed(i*100)
+        np.random.seed(i * 100)
 
         points = np.random.uniform(size=(100,2))
 
@@ -29,17 +33,19 @@ def test_clustering():
         plt.close()
         assert 1 <= nclusters < 2
 
+
 def test_clusteringcase():
     from ultranest.mlfriends import update_clusters
     here = os.path.dirname(__file__)
     points = np.loadtxt(os.path.join(here, "clusters2.txt"))
     maxr = np.loadtxt(os.path.join(here, "clusters2_radius.txt"))
-    #transformLayer = ScalingLayer()
-    #transformLayer.optimize(points)
-    #region = MLFriends(points, transformLayer)
-    #maxr = region.compute_maxradiussq(nbootstraps=30)
+    # transformLayer = ScalingLayer()
+    # transformLayer.optimize(points)
+    # region = MLFriends(points, transformLayer)
+    # maxr = region.compute_maxradiussq(nbootstraps=30)
     print('maxradius:', maxr)
     nclusters, clusteridxs, overlapped_points = update_clusters(points, points, maxr)
+
     plt.title('nclusters: %d' % nclusters)
     for i in np.unique(clusteridxs):
         x, y = points[clusteridxs == i].transpose()
@@ -58,16 +64,16 @@ def test_clusteringcase_eggbox():
     assert 1e-10 < maxr < 5e-10
     print('maxradius:', maxr)
     nclusters, clusteridxs, overlapped_points = update_clusters(points, points, maxr)
-    #plt.title('nclusters: %d' % nclusters)
-    #for i in np.unique(clusteridxs):
-    #   x, y = points[clusteridxs == i].transpose()
-    #   plt.scatter(x, y)
-    #plt.savefig('testclustering_eggbox.pdf', bbox_inches='tight')
-    #plt.close()
+    # plt.title('nclusters: %d' % nclusters)
+    # for i in np.unique(clusteridxs):
+    #    x, y = points[clusteridxs == i].transpose()
+    #    plt.scatter(x, y)
+    # plt.savefig('testclustering_eggbox.pdf', bbox_inches='tight')
+    # plt.close()
     assert 14 < nclusters < 20, nclusters
 
-from ultranest.utils import create_logger
-class MockIntegrator(object):
+
+class MockIntegrator(ReactiveNestedSampler):
     def __init__(self):
         self.use_mpi = False
         self.mpi_size = 1
@@ -77,6 +83,7 @@ class MockIntegrator(object):
         self.wrapped_axes = []
         self.log = True
         self.logger = create_logger("mock")
+
 
 def test_overclustering_eggbox_txt():
     from ultranest.mlfriends import update_clusters, ScalingLayer, MLFriends
@@ -96,7 +103,7 @@ def test_overclustering_eggbox_txt():
             nclusters = transformLayer.nclusters
 
             print("manual: r=%e nc=%d" % (region.maxradiussq, nclusters))
-            #assert 1e-10 < maxr < 5e-10
+            # assert 1e-10 < maxr < 5e-10
             nclusters, clusteridxs, overlapped_points = update_clusters(points, points, maxr)
             print("reclustered: nc=%d" % (nclusters))
 
@@ -113,8 +120,8 @@ def test_overclustering_eggbox_txt():
             nclusters, clusteridxs, overlapped_points = update_clusters(points, points, maxr)
             assert 14 < nclusters < 20, (nclusters, i)
 
+
 def test_overclustering_eggbox_update():
-    from ultranest import ReactiveNestedSampler
     np.random.seed(1)
     for i in [20, 23, 24, 27, 42]:
         print()
@@ -132,10 +139,12 @@ def test_overclustering_eggbox_update():
             noverlap += (u1 == data['u0']).all(axis=1).sum()
         print("u0:%d -> u:%d : %d points are common" % (nsamples, nsamples, noverlap))
 
-        ReactiveNestedSampler._update_region(mock, data['u0'], data['u0'])
+        mock._update_region(data['u0'], data['u0'])
         nclusters = mock.transformLayer.nclusters
         print("initialised with: r=%e nc=%d" % (mock.region.maxradiussq, nclusters))
-        smallest_cluster = min((mock.transformLayer.clusterids == i).sum() for i in np.unique(mock.transformLayer.clusterids))
+        smallest_cluster = min(
+            (mock.transformLayer.clusterids == i).sum()
+            for i in np.unique(mock.transformLayer.clusterids))
         if smallest_cluster == 1:
             print("found lonely points")
 
@@ -167,7 +176,7 @@ def test_overclustering_eggbox_update():
             print("setting maxradiussq to None")
             mock.region.maxradiussq = None
 
-        updated = ReactiveNestedSampler._update_region(mock, data['u'], data['u'])
+        updated = mock._update_region(data['u'], data['u'])
         nclusters = mock.transformLayer.nclusters
         print("transitioned to : r=%e nc=%d %s" % (mock.region.maxradiussq, nclusters, updated))
         smallest_cluster = min((mock.transformLayer.clusterids == i).sum() for i in np.unique(mock.transformLayer.clusterids))
@@ -188,7 +197,6 @@ def test_overclustering_eggbox_update():
         assert smallest_cluster > 1, (i, nclusters, np.unique(mock.transformLayer.clusterids, return_counts=True))
 
 
-
 if __name__ == '__main__':
-    #test_clustering()
+    # test_clustering()
     test_clusteringcase()
