@@ -724,7 +724,6 @@ def combine_results(saved_logl, saved_nodeids, pointpile, main_iterator, mpi_com
 
     # compute fraction in tail
     w = saved_wt0 / saved_wt0.sum()
-    print(w.dtype, w.sum())
     assert np.isclose(w.sum() - 1, 0), w.sum()
     ess = len(w) / (1.0 + ((len(w) * w - 1)**2).sum() / len(w))
     tail_fraction = w[np.asarray(main_iterator.istail)].sum()
