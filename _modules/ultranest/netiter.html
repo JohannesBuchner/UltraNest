@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ultranest.netiter &mdash; UltraNest 2.1.1 documentation</title>
+  <title>ultranest.netiter &mdash; UltraNest 2.2.0 documentation</title>
   
 
   
@@ -25,14 +25,14 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../../_static/jquery.js"></script>
-        <script type="text/javascript" src="../../_static/underscore.js"></script>
-        <script type="text/javascript" src="../../_static/doctools.js"></script>
-        <script type="text/javascript" src="../../_static/language_data.js"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
-        <script type="text/javascript" src="https://unpkg.com/@jupyter-widgets/html-manager@^0.18.0/dist/embed-amd.js"></script>
+        <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.18.0/dist/embed-amd.js"></script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
@@ -69,7 +69,7 @@
             
             
               <div class="version">
-                2.1.1
+                2.2.0
               </div>
             
           
@@ -177,7 +177,9 @@
            <div itemprop="articleBody">
             
   <h1>Source code for ultranest.netiter</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Functions and classes for treating nested sampling exploration as a tree.</span>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;Functions and classes for treating nested sampling exploration as a tree.</span>
 
 <span class="sd">The root represents the prior volume, branches and sub-branches split the volume.</span>
 <span class="sd">The leaves of the tree are the integration tail.</span>
@@ -196,12 +198,13 @@
 
 <span class="sd">&quot;&quot;&quot;</span>
 
-
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span><span class="p">,</span> <span class="n">division</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">log</span><span class="p">,</span> <span class="n">log1p</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">logaddexp</span>
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">operator</span>
 <span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">resample_equal</span>
 
 
 <div class="viewcode-block" id="TreeNode"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.TreeNode">[docs]</a><span class="k">class</span> <span class="nc">TreeNode</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -229,8 +232,8 @@
 
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Visual representation of the node and its children (recursive).&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39; &#39;</span> <span class="o">*</span> <span class="n">indent</span> <span class="o">+</span> <span class="s1">&#39;- Node: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">]</span> <span class="o">+</span>
-                         <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="fm">__str__</span><span class="p">(</span><span class="n">indent</span><span class="o">=</span><span class="n">indent</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">])</span>
+        <span class="k">return</span> <span class="s1">&#39; &#39;</span> <span class="o">*</span> <span class="n">indent</span> <span class="o">+</span> <span class="s1">&#39;- Node: </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="fm">__str__</span><span class="p">(</span><span class="n">indent</span><span class="o">=</span><span class="n">indent</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">])</span>
 
     <span class="k">def</span> <span class="fm">__lt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Define order of node based on value attribute.&quot;&quot;&quot;</span>
@@ -335,6 +338,11 @@
         <span class="k">assert</span> <span class="n">newnnodes</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active_node_ids</span><span class="p">),</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active_node_ids</span><span class="p">),</span> <span class="n">newnnodes</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">))</span></div></div>
 
 
+<span class="k">def</span> <span class="nf">_stringify_lanes</span><span class="p">(</span><span class="n">lanes</span><span class="p">,</span> <span class="n">char</span><span class="o">=</span><span class="s1">&#39;║&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; unicode-draw lanes, fill with vertical stripes or spaces &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39; &#39;</span> <span class="k">if</span> <span class="n">n</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">char</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">lanes</span><span class="p">])</span>
+
+
 <div class="viewcode-block" id="print_tree"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.print_tree">[docs]</a><span class="k">def</span> <span class="nf">print_tree</span><span class="p">(</span><span class="n">roots</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Tree:&#39;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Print a pretty yet compact graphic of the tree.&quot;&quot;&quot;</span>
     <span class="nb">print</span><span class="p">()</span>
@@ -351,8 +359,8 @@
         <span class="n">rootid</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="p">(</span><span class="n">active_nodes</span><span class="p">,</span> <span class="n">active_rootids</span><span class="p">,</span> <span class="n">active_values</span><span class="p">,</span> <span class="n">active_nodeids</span><span class="p">)</span> <span class="o">=</span> <span class="n">next_node</span>
         <span class="n">laneid</span> <span class="o">=</span> <span class="n">lanes</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
         <span class="n">nchildren</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">)</span>
-        <span class="n">leftstr</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39; &#39;</span> <span class="k">if</span> <span class="n">n</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="s1">&#39;║&#39;</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">lanes</span><span class="p">[:</span><span class="n">laneid</span><span class="p">]])</span>
-        <span class="n">rightstr</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39; &#39;</span> <span class="k">if</span> <span class="n">n</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="s1">&#39;║&#39;</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">lanes</span><span class="p">[</span><span class="n">laneid</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:]])</span>
+        <span class="n">leftstr</span> <span class="o">=</span> <span class="n">_stringify_lanes</span><span class="p">(</span><span class="n">lanes</span><span class="p">[:</span><span class="n">laneid</span><span class="p">])</span>
+        <span class="n">rightstr</span> <span class="o">=</span> <span class="n">_stringify_lanes</span><span class="p">(</span><span class="n">lanes</span><span class="p">[</span><span class="n">laneid</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:])</span>
 
         <span class="k">if</span> <span class="n">lastlane</span> <span class="o">==</span> <span class="n">laneid</span><span class="p">:</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">leftstr</span> <span class="o">+</span> <span class="s1">&#39;║&#39;</span> <span class="o">+</span> <span class="n">rightstr</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -366,7 +374,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># expand width:</span>
             <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">child</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">):</span>
-                <span class="n">rightstr2</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39; &#39;</span> <span class="k">if</span> <span class="n">n</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">lanes</span><span class="p">[</span><span class="n">laneid</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:]])</span>
+                <span class="n">rightstr2</span> <span class="o">=</span> <span class="n">_stringify_lanes</span><span class="p">(</span><span class="n">lanes</span><span class="p">[</span><span class="n">laneid</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:],</span> <span class="n">char</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&#39;</span><span class="p">)</span>
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rightstr2</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">leftstr</span> <span class="o">+</span> <span class="s1">&#39;║&#39;</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">*</span> <span class="n">j</span> <span class="o">+</span> <span class="n">rightstr2</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">leftstr</span> <span class="o">+</span> <span class="s1">&#39;╠&#39;</span> <span class="o">+</span> <span class="s1">&#39;╦&#39;</span> <span class="o">*</span> <span class="p">(</span><span class="n">nchildren</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;╗&#39;</span> <span class="o">+</span> <span class="n">rightstr</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -497,7 +505,7 @@
             <span class="c1"># continue exploring</span>
             <span class="n">explorer</span><span class="o">.</span><span class="n">expand_children_of</span><span class="p">(</span><span class="n">rootid</span><span class="p">,</span> <span class="n">node</span><span class="p">)</span>
             <span class="n">weights</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">n</span><span class="o">.</span><span class="n">id</span><span class="p">:</span> <span class="n">weights</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">})</span>
+                            <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">})</span>
         <span class="k">del</span> <span class="n">weights</span><span class="p">[</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">parents</span><span class="p">,</span> <span class="n">parent_weights</span></div>
 
@@ -663,7 +671,7 @@
     <span class="sd">&quot;&quot;&quot;Like SingleCounter, but bootstrap capable.</span>
 
 <span class="sd">    **Attributes**:</span>
-<span class="sd">    </span>
+
 <span class="sd">    - ``logZ``, ``logZerr``, ``logVolremaining``: main estimator</span>
 <span class="sd">      ``logZerr`` is probably not reliable, because it needs ``nlive``</span>
 <span class="sd">      to convert ``H`` to ``logZerr``.</span>
@@ -814,9 +822,12 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">logZ</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_logZ</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
             <span class="c1"># self.Lmax = max((n.value for n in parallel_nodes))</span>
-            <span class="c1"># print(&quot;L=%.1f N=%d V=%.2e logw=%.2e logZ=%.1f logZremain=%.1f&quot; % (Li, nlive[0], self.logVolremaining, wi[0], self.logZ, logZremain))</span>
-            <span class="c1"># print(&quot;L=%.1f N=%d V=%.2e logw=%.2e logZ=%.1f logZremain=%.1f&quot; % (Li, nlive[0], self.all_logVolremaining[0], (logwidth + Li)[0], self.all_logZ[0], logZremain))</span>
-            <span class="c1"># print(&quot;L=%.1f N=%d V=%.2e logw=%.2e logZ=&lt;%.1f logZremain=%.1f&quot; % (Li, nlive[1], self.all_logVolremaining[1], (logwidth + Li)[1], self.all_logZ[1], logZremain))</span>
+            <span class="c1"># print(&quot;L=%.1f N=%d V=%.2e logw=%.2e logZ=%.1f logZremain=%.1f&quot; % (</span>
+            <span class="c1">#  Li, nlive[0], self.logVolremaining, wi[0], self.logZ, logZremain))</span>
+            <span class="c1"># print(&quot;L=%.1f N=%d V=%.2e logw=%.2e logZ=%.1f logZremain=%.1f&quot; % (</span>
+            <span class="c1">#  Li, nlive[0], self.all_logVolremaining[0], (logwidth + Li)[0], self.all_logZ[0], logZremain))</span>
+            <span class="c1"># print(&quot;L=%.1f N=%d V=%.2e logw=%.2e logZ=&lt;%.1f logZremain=%.1f&quot; % (</span>
+            <span class="c1">#  Li, nlive[1], self.all_logVolremaining[1], (logwidth + Li)[1], self.all_logZ[1], logZremain))</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_H</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="c1"># TODO: this needs to change if nlive varies</span>
@@ -860,31 +871,115 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">remainder_fraction</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">exp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logZ</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">logZremain</span><span class="p">))</span></div></div>
 
 
-<div class="viewcode-block" id="logz_sequence"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.logz_sequence">[docs]</a><span class="k">def</span> <span class="nf">logz_sequence</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">pointpile</span><span class="p">,</span> <span class="n">nbootstraps</span><span class="o">=</span><span class="mi">12</span><span class="p">):</span>
+<div class="viewcode-block" id="combine_results"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.combine_results">[docs]</a><span class="k">def</span> <span class="nf">combine_results</span><span class="p">(</span><span class="n">saved_logl</span><span class="p">,</span> <span class="n">saved_nodeids</span><span class="p">,</span> <span class="n">pointpile</span><span class="p">,</span> <span class="n">main_iterator</span><span class="p">,</span> <span class="n">mpi_comm</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Combine a sequence of likelihoods and nodes into a summary dictionary.&quot;&quot;&quot;</span>
+
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">main_iterator</span><span class="o">.</span><span class="n">logweights</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">saved_logl</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">main_iterator</span><span class="o">.</span><span class="n">all_logZ</span><span class="p">)),</span> <span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">main_iterator</span><span class="o">.</span><span class="n">logweights</span><span class="p">),</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">saved_logl</span><span class="p">),</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">main_iterator</span><span class="o">.</span><span class="n">all_logZ</span><span class="p">))</span>
+
+    <span class="n">saved_logl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">saved_logl</span><span class="p">)</span>
+    <span class="n">saved_u</span> <span class="o">=</span> <span class="n">pointpile</span><span class="o">.</span><span class="n">getu</span><span class="p">(</span><span class="n">saved_nodeids</span><span class="p">)</span>
+    <span class="n">saved_v</span> <span class="o">=</span> <span class="n">pointpile</span><span class="o">.</span><span class="n">getp</span><span class="p">(</span><span class="n">saved_nodeids</span><span class="p">)</span>
+    <span class="n">saved_logwt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">main_iterator</span><span class="o">.</span><span class="n">logweights</span><span class="p">)</span>
+    <span class="n">saved_logwt0</span> <span class="o">=</span> <span class="n">saved_logwt</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">saved_logwt_bs</span> <span class="o">=</span> <span class="n">saved_logwt</span><span class="p">[:,</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="n">logZ_bs</span> <span class="o">=</span> <span class="n">main_iterator</span><span class="o">.</span><span class="n">all_logZ</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">saved_logwt_bs</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">saved_nodeids</span><span class="p">),</span> <span class="p">(</span><span class="n">saved_logwt_bs</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">saved_nodeids</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">mpi_comm</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># spread logZ_bs, saved_logwt_bs</span>
+        <span class="n">recv_saved_logwt_bs</span> <span class="o">=</span> <span class="n">mpi_comm</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="n">saved_logwt_bs</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">recv_saved_logwt_bs</span> <span class="o">=</span> <span class="n">mpi_comm</span><span class="o">.</span><span class="n">bcast</span><span class="p">(</span><span class="n">recv_saved_logwt_bs</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">saved_logwt_bs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">recv_saved_logwt_bs</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">recv_logZ_bs</span> <span class="o">=</span> <span class="n">mpi_comm</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="n">logZ_bs</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">recv_logZ_bs</span> <span class="o">=</span> <span class="n">mpi_comm</span><span class="o">.</span><span class="n">bcast</span><span class="p">(</span><span class="n">recv_logZ_bs</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">logZ_bs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">recv_logZ_bs</span><span class="p">)</span>
+
+    <span class="n">saved_wt_bs</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="n">saved_logwt_bs</span> <span class="o">+</span> <span class="n">saved_logl</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="o">-</span> <span class="n">logZ_bs</span><span class="p">)</span>
+    <span class="n">saved_wt0</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="n">saved_logwt0</span> <span class="o">+</span> <span class="n">saved_logl</span> <span class="o">-</span> <span class="n">main_iterator</span><span class="o">.</span><span class="n">all_logZ</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="c1"># compute fraction in tail</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">saved_wt0</span> <span class="o">/</span> <span class="n">saved_wt0</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">w</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">ess</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">w</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">w</span><span class="p">)</span> <span class="o">*</span> <span class="n">w</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">w</span><span class="p">))</span>
+    <span class="n">tail_fraction</span> <span class="o">=</span> <span class="n">w</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">main_iterator</span><span class="o">.</span><span class="n">istail</span><span class="p">)]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">tail_fraction</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">logzerr_tail</span> <span class="o">=</span> <span class="n">logaddexp</span><span class="p">(</span><span class="n">log</span><span class="p">(</span><span class="n">tail_fraction</span><span class="p">)</span> <span class="o">+</span> <span class="n">main_iterator</span><span class="o">.</span><span class="n">logZ</span><span class="p">,</span> <span class="n">main_iterator</span><span class="o">.</span><span class="n">logZ</span><span class="p">)</span> <span class="o">-</span> <span class="n">main_iterator</span><span class="o">.</span><span class="n">logZ</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logzerr_tail</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="n">logzerr_bs</span> <span class="o">=</span> <span class="p">(</span><span class="n">logZ_bs</span> <span class="o">-</span> <span class="n">main_iterator</span><span class="o">.</span><span class="n">logZ</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    <span class="n">logzerr_total</span> <span class="o">=</span> <span class="p">(</span><span class="n">logzerr_tail</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">logzerr_bs</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span>
+    <span class="n">samples</span> <span class="o">=</span> <span class="n">resample_equal</span><span class="p">(</span><span class="n">saved_v</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+
+    <span class="n">j</span> <span class="o">=</span> <span class="n">saved_logl</span><span class="o">.</span><span class="n">argmax</span><span class="p">()</span>
+
+    <span class="n">results</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+        <span class="n">niter</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">saved_logl</span><span class="p">),</span>
+        <span class="n">logz</span><span class="o">=</span><span class="n">main_iterator</span><span class="o">.</span><span class="n">logZ</span><span class="p">,</span> <span class="n">logzerr</span><span class="o">=</span><span class="n">logzerr_total</span><span class="p">,</span>
+        <span class="n">logz_bs</span><span class="o">=</span><span class="n">logZ_bs</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span>
+        <span class="n">logz_single</span><span class="o">=</span><span class="n">main_iterator</span><span class="o">.</span><span class="n">logZ</span><span class="p">,</span>
+        <span class="n">logzerr_tail</span><span class="o">=</span><span class="n">logzerr_tail</span><span class="p">,</span>
+        <span class="n">logzerr_bs</span><span class="o">=</span><span class="n">logzerr_bs</span><span class="p">,</span>
+        <span class="n">ess</span><span class="o">=</span><span class="n">ess</span><span class="p">,</span>
+        <span class="n">H</span><span class="o">=</span><span class="n">main_iterator</span><span class="o">.</span><span class="n">all_H</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Herr</span><span class="o">=</span><span class="n">main_iterator</span><span class="o">.</span><span class="n">all_H</span><span class="o">.</span><span class="n">std</span><span class="p">(),</span>
+        <span class="n">posterior</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+            <span class="n">mean</span><span class="o">=</span><span class="n">samples</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+            <span class="n">stdev</span><span class="o">=</span><span class="n">samples</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+            <span class="n">median</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+            <span class="n">errlo</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="mf">15.8655</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+            <span class="n">errup</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="mf">84.1345</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+        <span class="p">),</span>
+        <span class="n">weighted_samples</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+            <span class="n">upoints</span><span class="o">=</span><span class="n">saved_u</span><span class="p">,</span> <span class="n">points</span><span class="o">=</span><span class="n">saved_v</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">saved_wt0</span><span class="p">,</span> <span class="n">logw</span><span class="o">=</span><span class="n">saved_logwt0</span><span class="p">,</span>
+            <span class="n">bootstrapped_weights</span><span class="o">=</span><span class="n">saved_wt_bs</span><span class="p">,</span> <span class="n">logl</span><span class="o">=</span><span class="n">saved_logl</span><span class="p">),</span>
+        <span class="n">samples</span><span class="o">=</span><span class="n">samples</span><span class="p">,</span>
+        <span class="n">maximum_likelihood</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+            <span class="n">logl</span><span class="o">=</span><span class="n">saved_logl</span><span class="p">[</span><span class="n">j</span><span class="p">],</span>
+            <span class="n">point</span><span class="o">=</span><span class="n">saved_v</span><span class="p">[</span><span class="n">j</span><span class="p">,:]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+            <span class="n">point_untransformed</span><span class="o">=</span><span class="n">saved_u</span><span class="p">[</span><span class="n">j</span><span class="p">,:]</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">results</span></div>
+
+
+<div class="viewcode-block" id="logz_sequence"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.logz_sequence">[docs]</a><span class="k">def</span> <span class="nf">logz_sequence</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">pointpile</span><span class="p">,</span> <span class="n">nbootstraps</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">random</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">onNode</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Run MultiCounter through tree `root`.</span>
 
 <span class="sd">    Keeps track of, and returns ``(logz, logzerr, logv, nlive)``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">roots</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">children</span>
 
+    <span class="n">Lmax</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+
     <span class="n">explorer</span> <span class="o">=</span> <span class="n">BreadthFirstIterator</span><span class="p">(</span><span class="n">roots</span><span class="p">)</span>
-    <span class="n">main_iterator</span> <span class="o">=</span> <span class="n">MultiCounter</span><span class="p">(</span><span class="n">nroots</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">roots</span><span class="p">),</span> <span class="n">nbootstraps</span><span class="o">=</span><span class="n">nbootstraps</span><span class="p">,</span> <span class="n">random</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">main_iterator</span><span class="o">.</span><span class="n">Lmax</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">roots</span><span class="p">)</span>
+    <span class="c1"># Integrating thing</span>
+    <span class="n">main_iterator</span> <span class="o">=</span> <span class="n">MultiCounter</span><span class="p">(</span>
+        <span class="n">nroots</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">roots</span><span class="p">),</span> <span class="n">nbootstraps</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nbootstraps</span><span class="p">),</span> <span class="n">random</span><span class="o">=</span><span class="n">random</span><span class="p">)</span>
+    <span class="n">main_iterator</span><span class="o">.</span><span class="n">Lmax</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">Lmax</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">roots</span><span class="p">))</span>
+
     <span class="n">logz</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">logzerr</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">nlive</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">nodeids</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">logvol</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">logl</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">niter</span> <span class="o">=</span> <span class="mi">0</span>
 
+    <span class="n">saved_nodeids</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">saved_logl</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1"># we go through each live point (regardless of root) by likelihood value</span>
     <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
         <span class="n">next_node</span> <span class="o">=</span> <span class="n">explorer</span><span class="o">.</span><span class="n">next_node</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">next_node</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">break</span>
         <span class="n">rootid</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="p">(</span><span class="n">active_nodes</span><span class="p">,</span> <span class="n">active_rootids</span><span class="p">,</span> <span class="n">active_values</span><span class="p">,</span> <span class="n">active_node_ids</span><span class="p">)</span> <span class="o">=</span> <span class="n">next_node</span>
+        <span class="c1"># this is the likelihood level we have to improve upon</span>
+        <span class="n">Lmin</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">value</span>
 
-        <span class="n">main_iterator</span><span class="o">.</span><span class="n">passing_node</span><span class="p">(</span><span class="n">rootid</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">active_rootids</span><span class="p">,</span> <span class="n">active_values</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">onNode</span><span class="p">:</span>
+            <span class="n">onNode</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">main_iterator</span><span class="p">)</span>
 
         <span class="n">logz</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">main_iterator</span><span class="o">.</span><span class="n">logZ</span><span class="p">)</span>
         <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">invalid</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">):</span>
@@ -892,26 +987,35 @@
             <span class="n">logzerr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">main_iterator</span><span class="o">.</span><span class="n">logZerr_bs</span><span class="p">)</span>
         <span class="n">nlive</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">active_values</span><span class="p">))</span>
         <span class="n">logvol</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">main_iterator</span><span class="o">.</span><span class="n">logVolremaining</span><span class="p">)</span>
-        <span class="n">nodeids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
-        <span class="n">logl</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
-            <span class="n">main_iterator</span><span class="o">.</span><span class="n">Lmax</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">main_iterator</span><span class="o">.</span><span class="n">Lmax</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">))</span>
-        <span class="n">explorer</span><span class="o">.</span><span class="n">expand_children_of</span><span class="p">(</span><span class="n">rootid</span><span class="p">,</span> <span class="n">node</span><span class="p">)</span>
         <span class="n">niter</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">...</span><span class="se">\r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">niter</span><span class="p">)</span>
 
-    <span class="n">logwt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">logl</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">main_iterator</span><span class="o">.</span><span class="n">logweights</span><span class="p">)[:,</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">saved_logl</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Lmin</span><span class="p">)</span>
+        <span class="n">saved_nodeids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="c1"># inform iterators (if it is their business) about the arc</span>
+        <span class="n">main_iterator</span><span class="o">.</span><span class="n">passing_node</span><span class="p">(</span><span class="n">rootid</span><span class="p">,</span> <span class="n">node</span><span class="p">,</span> <span class="n">active_rootids</span><span class="p">,</span> <span class="n">active_values</span><span class="p">)</span>
+        <span class="n">explorer</span><span class="o">.</span><span class="n">expand_children_of</span><span class="p">(</span><span class="n">rootid</span><span class="p">,</span> <span class="n">node</span><span class="p">)</span>
+
+    <span class="n">logwt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">saved_logl</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">main_iterator</span><span class="o">.</span><span class="n">logweights</span><span class="p">)[:,</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">logvol</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">logvol</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
 
-    <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">logz</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">logz</span><span class="p">),</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">combine_results</span><span class="p">(</span><span class="n">saved_logl</span><span class="p">,</span> <span class="n">saved_nodeids</span><span class="p">,</span> <span class="n">pointpile</span><span class="p">,</span> <span class="n">main_iterator</span><span class="p">)</span>
+    <span class="n">sequence</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+        <span class="n">logz</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">logz</span><span class="p">),</span>
         <span class="n">logzerr</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">logzerr</span><span class="p">),</span>
         <span class="n">logvol</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">logvol</span><span class="p">),</span>
         <span class="n">samples_n</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">nlive</span><span class="p">),</span>
+        <span class="n">nlive</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">nlive</span><span class="p">),</span>
         <span class="n">logwt</span><span class="o">=</span><span class="n">logwt</span><span class="p">,</span>
         <span class="n">niter</span><span class="o">=</span><span class="n">niter</span><span class="p">,</span>
-        <span class="n">logl</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">logl</span><span class="p">),</span>
-        <span class="n">samples</span><span class="o">=</span><span class="n">pointpile</span><span class="o">.</span><span class="n">getp</span><span class="p">(</span><span class="n">nodeids</span><span class="p">),</span>
-    <span class="p">)</span></div>
+        <span class="n">logl</span><span class="o">=</span><span class="n">saved_logl</span><span class="p">,</span>
+        <span class="n">weights</span><span class="o">=</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;weighted_samples&#39;</span><span class="p">][</span><span class="s1">&#39;weights&#39;</span><span class="p">],</span>
+        <span class="n">samples</span><span class="o">=</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;weighted_samples&#39;</span><span class="p">][</span><span class="s1">&#39;points&#39;</span><span class="p">],</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">sequence</span><span class="p">,</span> <span class="n">results</span></div>
 </pre></div>
 
            </div>

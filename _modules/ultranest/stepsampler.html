@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ultranest.stepsampler &mdash; UltraNest 2.1.1 documentation</title>
+  <title>ultranest.stepsampler &mdash; UltraNest 2.2.0 documentation</title>
   
 
   
@@ -25,14 +25,14 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../../_static/jquery.js"></script>
-        <script type="text/javascript" src="../../_static/underscore.js"></script>
-        <script type="text/javascript" src="../../_static/doctools.js"></script>
-        <script type="text/javascript" src="../../_static/language_data.js"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
-        <script type="text/javascript" src="https://unpkg.com/@jupyter-widgets/html-manager@^0.18.0/dist/embed-amd.js"></script>
+        <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.18.0/dist/embed-amd.js"></script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
@@ -69,7 +69,7 @@
             
             
               <div class="version">
-                2.1.1
+                2.2.0
               </div>
             
           
@@ -185,8 +185,8 @@
 <span class="sd">do not terminate at the same number of iterations.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span><span class="p">,</span> <span class="n">division</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
 
@@ -195,6 +195,7 @@
 
 <span class="sd">    Region is not used.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">del</span> <span class="n">region</span>
     <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">ui</span><span class="p">))</span>
     <span class="n">v</span> <span class="o">*=</span> <span class="n">scale</span> <span class="o">/</span> <span class="p">(</span><span class="n">v</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">**</span><span class="mf">0.5</span>
     <span class="k">return</span> <span class="n">v</span></div>
@@ -205,6 +206,7 @@
 
 <span class="sd">    `region` is not used.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">del</span> <span class="n">region</span>
     <span class="n">ndim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ui</span><span class="p">)</span>
     <span class="c1"># choose axis</span>
     <span class="n">j</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">ndim</span><span class="p">)</span>
@@ -279,8 +281,6 @@
 
 <span class="sd">    always returns True at the moment.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1">#return np.ones(len(unew), dtype=bool)</span>
-
     <span class="n">tnew</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">unew</span><span class="p">)</span>
     <span class="n">told</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">uold</span><span class="p">)</span>
     <span class="n">mask2</span> <span class="o">=</span> <span class="p">((</span><span class="n">told</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span> <span class="o">-</span> <span class="n">tnew</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span>
@@ -304,20 +304,20 @@
 <span class="sd">        -----------</span>
 <span class="sd">        scale: float</span>
 <span class="sd">            initial proposal size</span>
-<span class="sd">        </span>
+
 <span class="sd">        nsteps: int</span>
 <span class="sd">            number of accepted steps until the sample is considered independent.</span>
-<span class="sd">        </span>
+
 <span class="sd">        adaptive_nsteps: False, &#39;proposal-distance&#39;, &#39;move-distance&#39;</span>
 <span class="sd">            if not false, allow earlier termination than nsteps.</span>
-<span class="sd">            The &#39;proposal-distance&#39; strategy stops when the sum of </span>
+<span class="sd">            The &#39;proposal-distance&#39; strategy stops when the sum of</span>
 <span class="sd">            all proposed vectors exceeds the mean distance</span>
 <span class="sd">            between pairs of live points.</span>
 <span class="sd">            As distance, the Mahalanobis distance is used.</span>
 <span class="sd">            The &#39;move-distance&#39; strategy stops when the distance between</span>
 <span class="sd">            start point and current position exceeds the mean distance</span>
 <span class="sd">            between pairs of live points.</span>
-<span class="sd">        </span>
+
 <span class="sd">        region_filter: bool</span>
 <span class="sd">            if True, use region to check if a proposed point can be inside</span>
 <span class="sd">            before calling likelihood.</span>
@@ -331,18 +331,21 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">last</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nudge</span> <span class="o">=</span> <span class="mf">1.1</span><span class="o">**</span><span class="p">(</span><span class="mf">1.</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_nudge</span> <span class="o">=</span> <span class="mf">1.01</span>
-        <span class="n">adaptive_nsteps_options</span> <span class="o">=</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;proposal-total-distances-NN&#39;</span><span class="p">,</span> <span class="s1">&#39;proposal-summed-distances-NN&#39;</span><span class="p">,</span> 
-            <span class="s1">&#39;proposal-total-distances&#39;</span><span class="p">,</span> <span class="s1">&#39;proposal-summed-distances&#39;</span><span class="p">,</span> 
+        <span class="n">adaptive_nsteps_options</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="kc">False</span><span class="p">,</span>
+            <span class="s1">&#39;proposal-total-distances-NN&#39;</span><span class="p">,</span> <span class="s1">&#39;proposal-summed-distances-NN&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;proposal-total-distances&#39;</span><span class="p">,</span> <span class="s1">&#39;proposal-summed-distances&#39;</span><span class="p">,</span>
             <span class="s1">&#39;move-distance&#39;</span><span class="p">,</span> <span class="s1">&#39;move-distance-midway&#39;</span><span class="p">,</span> <span class="s1">&#39;proposal-summed-distances-min-NN&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;proposal-variance-min&#39;</span><span class="p">,</span> <span class="s1">&#39;proposal-variance-min-NN&#39;</span><span class="p">)</span>
-        
+            <span class="s1">&#39;proposal-variance-min&#39;</span><span class="p">,</span> <span class="s1">&#39;proposal-variance-min-NN&#39;</span>
+        <span class="p">]</span>
+
         <span class="k">if</span> <span class="n">adaptive_nsteps</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">adaptive_nsteps_options</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;adaptive_nsteps must be one of: </span><span class="si">%s</span><span class="s2">, not &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">adaptive_nsteps_options</span><span class="p">,</span> <span class="n">adaptive_nsteps</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="o">=</span> <span class="n">adaptive_nsteps</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mean_pair_distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">region_filter</span> <span class="o">=</span> <span class="n">region_filter</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="o">=</span> <span class="n">log</span>
-        
+
         <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;rejection_rate&#39;</span><span class="p">,</span> <span class="s1">&#39;scale&#39;</span><span class="p">,</span> <span class="s1">&#39;steps&#39;</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">adaptive_nsteps</span><span class="p">:</span>
@@ -375,8 +378,8 @@
             <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">part</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span>
-        <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">filename</span> <span class="o">+</span> <span class="s1">&#39;.txt.gz&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">,</span> 
-            <span class="n">header</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span><span class="p">),</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">filename</span> <span class="o">+</span> <span class="s1">&#39;.txt.gz&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">,</span>
+                   <span class="n">header</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span><span class="p">),</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="StepSampler.move"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.StepSampler.move">[docs]</a>    <span class="k">def</span> <span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
@@ -386,7 +389,7 @@
 <div class="viewcode-block" id="StepSampler.adjust_outside_region"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.StepSampler.adjust_outside_region">[docs]</a>    <span class="k">def</span> <span class="nf">adjust_outside_region</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Adjust proposal given that we landed outside region.&quot;&quot;&quot;</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ineffective proposal scale (</span><span class="si">%g</span><span class="s2">). shrinking...&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">)</span>
-        
+
         <span class="c1"># Usually the region is very generous.</span>
         <span class="c1"># Being here means that the scale is very wrong and we are probably stuck.</span>
         <span class="c1"># Adjust it and restart the chain</span>
@@ -403,7 +406,6 @@
 
 <div class="viewcode-block" id="StepSampler.adjust_accept"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.StepSampler.adjust_accept">[docs]</a>    <span class="k">def</span> <span class="nf">adjust_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">accepted</span><span class="p">,</span> <span class="n">unew</span><span class="p">,</span> <span class="n">pnew</span><span class="p">,</span> <span class="n">Lnew</span><span class="p">,</span> <span class="n">nc</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Adjust proposal given that we have been `accepted` at a new point after `nc` calls.&quot;&quot;&quot;</span>
-        <span class="c1">#print(&quot;accept: &quot;, accepted)</span>
         <span class="k">if</span> <span class="n">accepted</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">next_scale</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nudge</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">last</span> <span class="o">=</span> <span class="n">unew</span><span class="p">,</span> <span class="n">Lnew</span>
@@ -415,15 +417,16 @@
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_scale</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_scale</span></div>
 
 <div class="viewcode-block" id="StepSampler.adapt_nsteps"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.StepSampler.adapt_nsteps">[docs]</a>    <span class="k">def</span> <span class="nf">adapt_nsteps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; change nsteps &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span><span class="p">:</span>
             <span class="k">return</span>
         <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">:</span>
             <span class="c1"># incomplete or aborted for some reason</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;not adapting, incomplete history&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">)</span>
             <span class="k">return</span>
-        
-        <span class="c1">#assert self.nrejects &lt; len(self.history), (self.nsteps, self.nrejects, len(self.history))</span>
-        <span class="c1">#assert self.nrejects &lt;= self.nsteps, (self.nsteps, self.nrejects, len(self.history))</span>
+
+        <span class="c1"># assert self.nrejects &lt; len(self.history), (self.nsteps, self.nrejects, len(self.history))</span>
+        <span class="c1"># assert self.nrejects &lt;= self.nsteps, (self.nsteps, self.nrejects, len(self.history))</span>
         <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mean_pair_distance</span><span class="p">)</span>
         <span class="n">nlive</span><span class="p">,</span> <span class="n">ndim</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="o">.</span><span class="n">shape</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="o">==</span> <span class="s1">&#39;proposal-total-distances&#39;</span><span class="p">:</span>
@@ -433,9 +436,9 @@
             <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">tproposed</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">tproposed</span><span class="p">)</span>
             <span class="n">d2</span> <span class="o">=</span> <span class="p">((((</span><span class="n">tproposed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">tproposed</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">**</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
             <span class="n">far_enough</span> <span class="o">=</span> <span class="n">d2</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_pair_distance</span> <span class="o">/</span> <span class="n">ndim</span>
-            
+
             <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_pair_distance</span><span class="p">]</span>
-            <span class="c1">#print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, self.mean_pair_distance, d2)</span>
+            <span class="c1"># print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, self.mean_pair_distance, d2)</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="o">==</span> <span class="s1">&#39;proposal-total-distances-NN&#39;</span><span class="p">:</span>
             <span class="c1"># compute mean vector of each proposed jump</span>
             <span class="c1"># compute total distance of all jumps</span>
@@ -445,13 +448,13 @@
             <span class="n">far_enough</span> <span class="o">=</span> <span class="n">d2</span> <span class="o">&gt;</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span><span class="p">]</span>
-            <span class="c1">#print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)</span>
+            <span class="c1"># print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="o">==</span> <span class="s1">&#39;proposal-summed-distances&#39;</span><span class="p">:</span>
             <span class="c1"># compute sum of distances from each jump</span>
             <span class="n">tproposed</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">u</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">]))</span>
             <span class="n">d2</span> <span class="o">=</span> <span class="p">(((</span><span class="n">tproposed</span><span class="p">[</span><span class="mi">1</span><span class="p">:,:]</span> <span class="o">-</span> <span class="n">tproposed</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,:])</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
             <span class="n">far_enough</span> <span class="o">=</span> <span class="n">d2</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_pair_distance</span> <span class="o">/</span> <span class="n">ndim</span>
-            <span class="c1">#print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, self.mean_pair_distance, d2)</span>
+            <span class="c1"># print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, self.mean_pair_distance, d2)</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_pair_distance</span><span class="p">]</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="o">==</span> <span class="s1">&#39;proposal-summed-distances-NN&#39;</span><span class="p">:</span>
@@ -459,25 +462,25 @@
             <span class="n">tproposed</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">u</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">]))</span>
             <span class="n">d2</span> <span class="o">=</span> <span class="p">(((</span><span class="n">tproposed</span><span class="p">[</span><span class="mi">1</span><span class="p">:,:]</span> <span class="o">-</span> <span class="n">tproposed</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,:])</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
             <span class="n">far_enough</span> <span class="o">=</span> <span class="n">d2</span> <span class="o">&gt;</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span>
-            
+
             <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span><span class="p">]</span>
-            <span class="c1">#print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)</span>
+            <span class="c1"># print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="o">==</span> <span class="s1">&#39;proposal-summed-distances-min-NN&#39;</span><span class="p">:</span>
             <span class="c1"># compute sum of distances from each jump</span>
             <span class="n">tproposed</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">u</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">]))</span>
             <span class="n">d2</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">tproposed</span><span class="p">[</span><span class="mi">1</span><span class="p">:,:]</span> <span class="o">-</span> <span class="n">tproposed</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,:])</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
             <span class="n">far_enough</span> <span class="o">=</span> <span class="n">d2</span> <span class="o">&gt;</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span>
-            
+
             <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span><span class="p">]</span>
-            <span class="c1">#print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)</span>
+            <span class="c1"># print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="o">==</span> <span class="s1">&#39;proposal-variance-min&#39;</span><span class="p">:</span>
             <span class="c1"># compute sum of distances from each jump</span>
             <span class="n">tproposed</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">u</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">]))</span>
             <span class="n">d2</span> <span class="o">=</span> <span class="n">tproposed</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
             <span class="n">far_enough</span> <span class="o">=</span> <span class="n">d2</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_pair_distance</span> <span class="o">/</span> <span class="n">ndim</span>
-            
+
             <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_pair_distance</span><span class="p">]</span>
-            <span class="c1">#print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)</span>
+            <span class="c1"># print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="o">==</span> <span class="s1">&#39;proposal-variance-min-NN&#39;</span><span class="p">:</span>
             <span class="c1"># compute sum of distances from each jump</span>
             <span class="n">tproposed</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">u</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">]))</span>
@@ -485,7 +488,7 @@
             <span class="n">far_enough</span> <span class="o">=</span> <span class="n">d2</span> <span class="o">&gt;</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span><span class="p">]</span>
-            <span class="c1">#print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)</span>
+            <span class="c1"># print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="o">==</span> <span class="s1">&#39;move-distance&#39;</span><span class="p">:</span>
             <span class="c1"># compute distance from start to end</span>
             <span class="n">ustart</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -493,9 +496,9 @@
             <span class="n">tstart</span><span class="p">,</span> <span class="n">tfinal</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">ustart</span><span class="p">,</span> <span class="n">ufinal</span><span class="p">)))</span>
             <span class="n">d2</span> <span class="o">=</span> <span class="p">((</span><span class="n">tstart</span> <span class="o">-</span> <span class="n">tfinal</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
             <span class="n">far_enough</span> <span class="o">=</span> <span class="n">d2</span> <span class="o">&gt;</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span>
-            
+
             <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span><span class="p">]</span>
-            <span class="c1">#print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)</span>
+            <span class="c1"># print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="o">==</span> <span class="s1">&#39;move-distance-midway&#39;</span><span class="p">:</span>
             <span class="c1"># compute distance from start to end</span>
             <span class="n">ustart</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -504,12 +507,12 @@
             <span class="n">tstart</span><span class="p">,</span> <span class="n">tfinal</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">ustart</span><span class="p">,</span> <span class="n">ufinal</span><span class="p">)))</span>
             <span class="n">d2</span> <span class="o">=</span> <span class="p">((</span><span class="n">tstart</span> <span class="o">-</span> <span class="n">tfinal</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
             <span class="n">far_enough</span> <span class="o">=</span> <span class="n">d2</span> <span class="o">&gt;</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span>
-            
+
             <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span><span class="p">]</span>
-            <span class="c1">#print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)</span>
+            <span class="c1"># print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span>
-        
+
         <span class="c1"># adjust nsteps</span>
         <span class="k">if</span> <span class="n">far_enough</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_nudge</span><span class="p">))</span>
@@ -523,27 +526,29 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
             <span class="n">ustart</span><span class="p">,</span> <span class="n">Lstart</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="n">ufinal</span><span class="p">,</span> <span class="n">Lfinal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-            <span class="c1">#mean_pair_distance = region.compute_mean_pair_distance()</span>
+            <span class="c1"># mean_pair_distance = region.compute_mean_pair_distance()</span>
             <span class="n">mean_pair_distance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_pair_distance</span>
             <span class="n">tstart</span><span class="p">,</span> <span class="n">tfinal</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">ustart</span><span class="p">,</span> <span class="n">ufinal</span><span class="p">)))</span>
             <span class="c1"># L index of start and end</span>
-            <span class="c1">#Ls_sorted = np.sort(Ls)</span>
+            <span class="c1"># Ls_sorted = np.sort(Ls)</span>
             <span class="n">iLstart</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Ls</span> <span class="o">&gt;</span> <span class="n">Lstart</span><span class="p">)</span>
             <span class="n">iLfinal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Ls</span> <span class="o">&gt;</span> <span class="n">Lfinal</span><span class="p">)</span>
             <span class="c1"># nearest neighbor index of start and end</span>
             <span class="n">itstart</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">((</span><span class="n">region</span><span class="o">.</span><span class="n">unormed</span> <span class="o">-</span> <span class="n">tstart</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)))</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
             <span class="n">itfinal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">((</span><span class="n">region</span><span class="o">.</span><span class="n">unormed</span> <span class="o">-</span> <span class="n">tfinal</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)))</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">,</span> <span class="p">[[</span><span class="n">Lmin</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">ustart</span><span class="p">)</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">ufinal</span><span class="p">)</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">tstart</span><span class="p">)</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">tfinal</span><span class="p">)</span> <span class="o">+</span> \
-                <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">,</span> <span class="n">iLstart</span><span class="p">,</span> <span class="n">iLfinal</span><span class="p">,</span> <span class="n">itstart</span><span class="p">,</span> <span class="n">itfinal</span><span class="p">]])</span>
-        
+            <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">,</span> <span class="p">[</span><span class="n">_listify</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">Lmin</span><span class="p">],</span> <span class="n">ustart</span><span class="p">,</span> <span class="n">ufinal</span><span class="p">,</span> <span class="n">tstart</span><span class="p">,</span> <span class="n">tfinal</span><span class="p">,</span>
+                <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">,</span>
+                 <span class="n">iLstart</span><span class="p">,</span> <span class="n">iLfinal</span><span class="p">,</span> <span class="n">itstart</span><span class="p">,</span> <span class="n">itfinal</span><span class="p">])])</span>
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">adapt_nsteps</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="n">region</span><span class="p">)</span>
-        
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_scale</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nudge</span><span class="o">**</span><span class="mi">10</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">next_scale</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nudge</span><span class="o">**</span><span class="mi">10</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_scale</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">nudge</span><span class="o">**</span><span class="mi">10</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">next_scale</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">nudge</span><span class="o">**</span><span class="mi">10</span>
-        <span class="c1">#print(&quot;updating scale: %g -&gt; %g&quot; % (self.scale, self.next_scale))</span>
+        <span class="c1"># print(&quot;updating scale: %g -&gt; %g&quot; % (self.scale, self.next_scale))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_scale</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">last</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="p">[]</span>
@@ -553,13 +558,13 @@
         <span class="sd">&quot;&quot;&quot;Starts a new path, reset statistics.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nrejects</span> <span class="o">=</span> <span class="mi">0</span></div>
-    
+
 <div class="viewcode-block" id="StepSampler.region_changed"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.StepSampler.region_changed">[docs]</a>    <span class="k">def</span> <span class="nf">region_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Ls</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;React to change of region. &quot;&quot;&quot;</span>
-        
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="ow">or</span> <span class="kc">True</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">mean_pair_distance</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">compute_mean_pair_distance</span><span class="p">()</span></div>
-            <span class="c1">#print(&quot;region changed. new mean_pair_distance: %g&quot; % self.mean_pair_distance)</span>
+            <span class="c1"># print(&quot;region changed. new mean_pair_distance: %g&quot; % self.mean_pair_distance)</span>
 
     <span class="k">def</span> <span class="fm">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">,</span> <span class="n">us</span><span class="p">,</span> <span class="n">Ls</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get next point.</span>
@@ -595,12 +600,12 @@
             <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="p">(</span><span class="n">uj</span><span class="p">,</span> <span class="n">Lj</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
                 <span class="k">if</span> <span class="n">Lj</span> <span class="o">&gt;</span> <span class="n">Lmin</span> <span class="ow">and</span> <span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">uj</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">))):</span>
                     <span class="n">ui</span><span class="p">,</span> <span class="n">Li</span> <span class="o">=</span> <span class="n">uj</span><span class="p">,</span> <span class="n">Lj</span>
-                    <span class="c1">#print(&quot;recovering at point %d/%d &quot; % (j+1, len(self.history)))</span>
+                    <span class="c1"># print(&quot;recovering at point %d/%d &quot; % (j+1, len(self.history)))</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">last</span> <span class="o">=</span> <span class="n">ui</span><span class="p">,</span> <span class="n">Li</span>
 
-                    <span class="c1">#pj = transform(uj.reshape((1, -1)))</span>
-                    <span class="c1">#Lj2 = loglike(pj)[0]</span>
-                    <span class="c1">#assert Lj2 &gt; Lmin, (Lj2, Lj, uj, pj)</span>
+                    <span class="c1"># pj = transform(uj.reshape((1, -1)))</span>
+                    <span class="c1"># Lj2 = loglike(pj)[0]</span>
+                    <span class="c1"># assert Lj2 &gt; Lmin, (Lj2, Lj, uj, pj)</span>
 
                     <span class="k">break</span>
             <span class="k">pass</span>
@@ -609,14 +614,14 @@
         <span class="k">if</span> <span class="n">Li</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">new_chain</span><span class="p">(</span><span class="n">region</span><span class="p">)</span>
             <span class="c1"># choose a new random starting point</span>
-            <span class="c1">#mask = region.inside(us)</span>
-            <span class="c1">#assert mask.any(), (&quot;One of the live points does not satisfies the current region!&quot;,</span>
+            <span class="c1"># mask = region.inside(us)</span>
+            <span class="c1"># assert mask.any(), (&quot;One of the live points does not satisfies the current region!&quot;,</span>
             <span class="c1">#    region.maxradiussq, region.u, region.unormed, us)</span>
             <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">us</span><span class="p">))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">starti</span> <span class="o">=</span> <span class="n">i</span>
             <span class="n">ui</span> <span class="o">=</span> <span class="n">us</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span>
             <span class="c1"># print(&quot;starting at&quot;, ui[0])</span>
-            <span class="c1">#assert np.logical_and(ui &gt; 0, ui &lt; 1).all(), ui</span>
+            <span class="c1"># assert np.logical_and(ui &gt; 0, ui &lt; 1).all(), ui</span>
             <span class="n">Li</span> <span class="o">=</span> <span class="n">Ls</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">ui</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">Li</span><span class="o">.</span><span class="n">copy</span><span class="p">()))</span>
             <span class="k">del</span> <span class="n">i</span>
@@ -644,7 +649,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">adjust_outside_region</span><span class="p">()</span>
                 <span class="k">continue</span>
             <span class="k">break</span>
-        
+
         <span class="n">unew</span> <span class="o">=</span> <span class="n">unew</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span>
         <span class="n">pnew</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">unew</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)))</span>
         <span class="n">Lnew</span> <span class="o">=</span> <span class="n">loglike</span><span class="p">(</span><span class="n">pnew</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
@@ -699,7 +704,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">found_left</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">found_right</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">axis_index</span> <span class="o">=</span> <span class="mi">0</span>
-        
+
         <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">last</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nrejects</span> <span class="o">=</span> <span class="mi">0</span></div>
@@ -726,7 +731,7 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">next_scale</span> <span class="o">*=</span> <span class="mf">1.1</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">next_scale</span> <span class="o">/=</span> <span class="mf">1.1</span>
-                <span class="c1">#print(&quot;adjusting after accept...&quot;, self.next_scale)</span>
+                <span class="c1"># print(&quot;adjusting after accept...&quot;, self.next_scale)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">accepted</span><span class="p">:</span>
                 <span class="c1"># start with a new interval next time</span>
@@ -769,8 +774,8 @@
 
         <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">([(</span><span class="n">ui</span> <span class="o">+</span> <span class="n">v</span> <span class="o">*</span> <span class="n">left</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="p">(</span><span class="n">ui</span> <span class="o">+</span> <span class="n">v</span> <span class="o">*</span> <span class="n">right</span><span class="p">)[</span><span class="mi">0</span><span class="p">]],</span>
-                <span class="p">[(</span><span class="n">ui</span> <span class="o">+</span> <span class="n">v</span> <span class="o">*</span> <span class="n">left</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span> <span class="p">(</span><span class="n">ui</span> <span class="o">+</span> <span class="n">v</span> <span class="o">*</span> <span class="n">right</span><span class="p">)[</span><span class="mi">1</span><span class="p">]],</span>
-                <span class="s1">&#39;:o&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+                     <span class="p">[(</span><span class="n">ui</span> <span class="o">+</span> <span class="n">v</span> <span class="o">*</span> <span class="n">left</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span> <span class="p">(</span><span class="n">ui</span> <span class="o">+</span> <span class="n">v</span> <span class="o">*</span> <span class="n">right</span><span class="p">)[</span><span class="mi">1</span><span class="p">]],</span>
+                     <span class="s1">&#39;:o&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
 
         <span class="c1"># shrink direction if outside</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">found_left</span><span class="p">:</span>
@@ -794,7 +799,7 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">next_scale</span> <span class="o">*=</span> <span class="mf">1.1</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">next_scale</span> <span class="o">/=</span> <span class="mf">1.1</span>
-                <span class="c1">#print(&quot;adjusting scale...&quot;, self.next_scale)</span>
+                <span class="c1"># print(&quot;adjusting scale...&quot;, self.next_scale)</span>
 
         <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
             <span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">)</span>
@@ -927,7 +932,6 @@
         <span class="n">v</span> <span class="o">=</span> <span class="n">uk</span> <span class="o">-</span> <span class="n">ui</span>
         <span class="n">v</span> <span class="o">*=</span> <span class="n">scale</span> <span class="o">/</span> <span class="p">(</span><span class="n">v</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">**</span><span class="mf">0.5</span>
         <span class="k">return</span> <span class="n">v</span></div></div>
-
 </pre></div>
 
            </div>
