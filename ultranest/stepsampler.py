@@ -9,7 +9,7 @@ do not terminate at the same number of iterations.
 from __future__ import print_function, division
 import numpy as np
 import matplotlib.pyplot as plt
-
+from .utils import listify as _listify
 
 def generate_random_direction(ui, region, scale=1):
     """Draw uniform direction vector in unit cube space of length `scale`.
@@ -118,7 +118,10 @@ class StepSampler(object):
     Scales proposal towards a 50% acceptance rate.
     """
 
-    def __init__(self, nsteps, scale=1.0, adaptive_nsteps=False, region_filter=False, log=False):
+    def __init__(
+        self, nsteps, scale=1.0, adaptive_nsteps=False, max_nsteps=1000,
+        region_filter=False, log=False
+    ):
         """Initialise sampler.
 
         Parameters
@@ -130,24 +133,46 @@ class StepSampler(object):
             number of accepted steps until the sample is considered independent.
 
         adaptive_nsteps: False, 'proposal-distance', 'move-distance'
-            if not false, allow earlier termination than nsteps.
-            The 'proposal-distance' strategy stops when the sum of
-            all proposed vectors exceeds the mean distance
-            between pairs of live points.
-            As distance, the Mahalanobis distance is used.
-            The 'move-distance' strategy stops when the distance between
-            start point and current position exceeds the mean distance
-            between pairs of live points.
+            Select a strategy to adapt the number of steps. The strategies
+            make sure that:
+
+            * 'move-distance' (recommended): distance between
+              start point and final position exceeds the mean distance
+              between pairs of live points.
+            * 'move-distance-midway': distance between
+              start point and position in the middle of the chain
+              exceeds the mean distance between pairs of live points.
+            * 'proposal-distance': mean square distance of
+              proposed vectors exceeds the mean distance
+              between pairs of live points.
+            * 'proposal-total-distances-NN': mean distance
+              of chain points from starting point exceeds mean distance
+              between pairs of live points.
+            * 'proposal-summed-distances-NN': summed distances
+              between chain points exceeds mean distance
+              between pairs of live points.
+            * 'proposal-summed-distances-min-NN': smallest distance
+              between chain points exceeds mean distance
+              between pairs of live points.
+
+        max_nsteps: int
+            Maximum number of steps the adaptive_nsteps can reach.
 
         region_filter: bool
             if True, use region to check if a proposed point can be inside
             before calling likelihood.
+
+        log: file
+            log file for sampler statistics, such as acceptance rate,
+            proposal scale, number of steps, jump distance and distance
+            between live points
 
         """
         self.history = []
         self.nsteps = nsteps
         self.nrejects = 0
         self.scale = 1.0
+        self.max_nsteps = max_nsteps
         self.next_scale = self.scale
         self.last = None, None
         self.nudge = 1.1**(1. / self.nsteps)
@@ -163,6 +188,9 @@ class StepSampler(object):
         if adaptive_nsteps not in adaptive_nsteps_options:
             raise ValueError("adaptive_nsteps must be one of: %s, not '%s'" % (adaptive_nsteps_options, adaptive_nsteps))
         self.adaptive_nsteps = adaptive_nsteps
+        self.adaptive_nsteps_needs_mean_pair_distance = self.adaptive_nsteps in (
+            'proposal-total-distances', 'proposal-summed-distances', 'proposal-variance-min'
+            )
         self.mean_pair_distance = np.nan
         self.region_filter = region_filter
         self.log = log
@@ -248,7 +276,8 @@ class StepSampler(object):
 
         # assert self.nrejects < len(self.history), (self.nsteps, self.nrejects, len(self.history))
         # assert self.nrejects <= self.nsteps, (self.nsteps, self.nrejects, len(self.history))
-        assert np.isfinite(self.mean_pair_distance)
+        if self.adaptive_nsteps_needs_mean_pair_distance:
+            assert np.isfinite(self.mean_pair_distance)
         nlive, ndim = region.u.shape
         if self.adaptive_nsteps == 'proposal-total-distances':
             # compute mean vector of each proposed jump
@@ -339,7 +368,7 @@ class StepSampler(object):
             self.nsteps = min(self.nsteps - 1, int(self.nsteps / self.nsteps_nudge))
         else:
             self.nsteps = max(self.nsteps + 1, int(self.nsteps * self.nsteps_nudge))
-        self.nsteps = max(1, min(1000, self.nsteps))
+        self.nsteps = max(1, min(self.max_nsteps, self.nsteps))
 
     def finalize_chain(self, region=None, Lmin=None, Ls=None):
         """Store chain statistics and adapt proposal."""
@@ -383,7 +412,7 @@ class StepSampler(object):
     def region_changed(self, Ls, region):
         """React to change of region. """
 
-        if self.adaptive_nsteps or True:
+        if self.adaptive_nsteps_needs_mean_pair_distance:
             self.mean_pair_distance = region.compute_mean_pair_distance()
             # print("region changed. new mean_pair_distance: %g" % self.mean_pair_distance)
 

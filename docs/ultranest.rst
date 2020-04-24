@@ -44,6 +44,30 @@ ultranest.mlfriends module
    :undoc-members:
    :show-inheritance:
 
+ultranest.mlfriends module
+--------------------------
+
+.. automodule:: ultranest.mlfriends
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ultranest.mlfriends module
+--------------------------
+
+.. automodule:: ultranest.mlfriends
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+ultranest.mlfriends module
+--------------------------
+
+.. automodule:: ultranest.mlfriends
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 ultranest.netiter module
 ------------------------
 

@@ -625,7 +625,7 @@ class MultiCounter(object):
             logZ = self.all_logZ[active]
             logZnew = logaddexp(logZ, wi)
             H = exp(wi - logZnew) * Li + exp(logZ - logZnew) * (self.all_H[active] + logZ) - logZnew
-            first_setting = np.isinf(logZ)
+            first_setting = np.isnan(H)
             # print()
             # print("Hnext:", H[0], first_setting[0])
             assert np.isfinite(H[~first_setting]).all(), (first_setting, self.all_H[active][~first_setting], H, wi, logZnew, Li, logZ)
@@ -637,10 +637,11 @@ class MultiCounter(object):
                 assert np.isfinite(self.all_H[0]), self.all_H[0]
                 assert np.isfinite(H[0]), (first_setting[0], H[0], self.all_H[0], wi[0], logZnew[0], Li, logZ[0])
             self.all_H[active] = np.where(first_setting, -logwidth[active], H)
-            # print("H:", self.all_H[0])
+            # print("H:", self.all_H)
             assert np.isfinite(self.all_H[active]).all(), (self.all_H[active], first_setting[0], H[0], self.all_H[0], wi[0], logZnew[0], Li, logZ[0])
             # assert np.all(np.isfinite(self.all_H[active])), (H, self.all_H[active], wi, logZnew, Li, logZ)
             self.logZ = self.all_logZ[0]
+            assert np.all(np.isfinite(self.all_logZ[active])), (self.all_logZ[active])
 
             # self.Lmax = max((n.value for n in parallel_nodes))
             # print("L=%.1f N=%d V=%.2e logw=%.2e logZ=%.1f logZremain=%.1f" % (

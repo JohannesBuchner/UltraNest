@@ -16,7 +16,7 @@ import warnings
 from numpy import log, exp, logaddexp
 import numpy as np
 
-from .utils import create_logger, make_run_dir, resample_equal, vol_prefactor, vectorize
+from .utils import create_logger, make_run_dir, resample_equal, vol_prefactor, vectorize, listify as _listify
 from ultranest.mlfriends import MLFriends, AffineLayer, ScalingLayer, find_nearby
 from .store import HDF5PointStore, NullPointStore
 from .viz import get_default_viz_callback, nicelogger
@@ -25,13 +25,6 @@ from .netiter import dump_tree, combine_results
 
 __all__ = ['ReactiveNestedSampler', 'NestedSampler', 'read_file']
 
-
-def _listify(*args):
-    """ concatenate args, which are (made to be) lists """
-    out = []
-    for a in args:
-        out += list(a)
-    return out
 
 
 def _get_cumsum_range(pi, dp):
@@ -1410,6 +1403,7 @@ class ReactiveNestedSampler(object):
 
             self.region.maxradiussq = r
             self.region.enlarge = f
+            self.region.create_ellipsoid(minvol=minvol)
             # if self.log:
             #     self.logger.debug("building first region ... r=%e, f=%e" % (r, f))
             updated = True
@@ -1486,7 +1480,7 @@ class ReactiveNestedSampler(object):
             assert len(self.region.u) == len(self.transformLayer.clusterids)
 
             # verify correctness:
-            # self.region.create_ellipsoid(minvol=minvol)
+            self.region.create_ellipsoid(minvol=minvol)
             # assert self.region.inside(active_u).all(), self.region.inside(active_u).mean()
 
         assert len(self.region.u) == len(self.transformLayer.clusterids)
@@ -1568,12 +1562,19 @@ class ReactiveNestedSampler(object):
 
                 # good_region = good_region and region.transformLayer.nclusters * 5 < len(active_u)
 
+                # avoid cases where every point is its own cluster,
+                # and even the largest cluster has fewer than x_dim points
+                sensible_clustering = nextTransformLayer.nclusters < len(nextregion.u) \
+                    and cluster_sizes.max() >= nextregion.u.shape[1]
+
                 # if self.log:
                 #     self.logger.debug("building new region ... r=%e, f=%e" % (r, f))
                 # print("MLFriends computed: r=%e nc=%d" % (r, nextTransformLayer.nclusters))
                 # force shrinkage of volume
                 # this is to avoid re-connection of dying out nodes
-                if good_region and (need_accept or nextregion.estimate_volume() <= self.region.estimate_volume()):
+                if good_region and \
+                    (need_accept or nextregion.estimate_volume() <= self.region.estimate_volume()) \
+                    and sensible_clustering:
                     self.region = nextregion
                     self.transformLayer = self.region.transformLayer
                     self.region_nodes = active_node_ids.copy()
@@ -1593,7 +1594,6 @@ class ReactiveNestedSampler(object):
                 if self.log:
                     self.logger.warning("not updating region", exc_info=True)
 
-        self.region.create_ellipsoid(minvol=minvol)
         assert len(self.region.u) == len(self.transformLayer.clusterids)
         return updated
 

@@ -276,7 +276,7 @@ class DynamicCHMCSampler(object):
         self.scale = 0.1 * ndim**0.5
         self.transform = transform
         self.loglike = loglike
-        self.gradient = transform
+        self.gradient = gradient
         self.nudge = nudge
         self.nsteps_nudge = 1.01
         adaptive_nsteps_options = (False, 'proposal-total-distances-NN', 'proposal-summed-distances-NN',

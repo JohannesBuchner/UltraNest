@@ -181,6 +181,13 @@ def resample_equal(samples, weights, rstate=None):
     return samples[idx]
 
 
+def listify(*args):
+    """ concatenate args, which are (made to be) lists """
+    out = []
+    for a in args:
+        out += list(a)
+    return out
+
 def quantile(x, q, weights=None):
     """Compute (weighted) quantiles from an input set of samples.
 

@@ -65,7 +65,9 @@ def round_parameterlimits(plo, phi, paramlimitguess=None):
             fmt = '%+.1f'
         if -4 <= expolo[i] <= 0 and -4 <= expohi[i] <= 0:
             fmt = '%%+.%df' % (-min(expolo[i], expohi[i]))
-        if fmt % plo[i] == fmt % phi[i]:
+        if phi[i] == plo[i]:
+            fmt = '%+.1f'
+        elif fmt % plo[i] == fmt % phi[i]:
             fmt = '%%+.%df' % (-int(np.floor(log10(phi[i] - plo[i]))))
         formats.append(fmt)
 
