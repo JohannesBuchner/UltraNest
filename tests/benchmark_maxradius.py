@@ -45,7 +45,7 @@ def benchmark_transform():
 			points = np.random.uniform(0.4, 0.6, size=(npts,ndim))
 			transformLayer = ScalingLayer() if layer == 'scale' else AffineLayer() 
 			region = MLFriends(points, transformLayer)
-			region.maxradiussq, region.enlarge = region.compute_enlargement(nbootstraps=30)
+			region.apply_enlargement(nbootstraps=30)
 			region.create_ellipsoid()
 			
 			niter = 0

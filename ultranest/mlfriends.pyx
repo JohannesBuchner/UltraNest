@@ -1,5 +1,4 @@
-# cython: language_level=3
-# ,profile=True
+# cython: language_level=3,annotate=True,profile=True,fast_fail=True,warning_errors=True
 """Construct and sample from region.
 
 Implements MLFriends efficiently, with transformation layers and clustering.
@@ -21,13 +20,13 @@ def count_nearby(np.ndarray[np.float_t, ndim=2] apts,
 
     The number is written to `nnearby` (of same length as bpts).
     """
-    cdef int na = apts.shape[0]
-    cdef int nb = bpts.shape[0]
-    cdef int ndim = apts.shape[1]
+    cdef size_t na = apts.shape[0]
+    cdef size_t nb = bpts.shape[0]
+    cdef size_t ndim = apts.shape[1]
     #assert ndim == bpts.shape[1]
     #assert nnearby.shape[0] == nb
 
-    cdef int i, j
+    cdef unsigned long i, j
     cdef np.float_t d
 
     # go through the unselected points and find the worst case
@@ -56,13 +55,13 @@ def find_nearby(np.ndarray[np.float_t, ndim=2] apts,
     The number is written to `nnearby` (of same length as `bpts`).
     If none is found, -1 is returned.
     """
-    cdef int na = apts.shape[0]
-    cdef int nb = bpts.shape[0]
-    cdef int ndim = apts.shape[1]
+    cdef size_t na = apts.shape[0]
+    cdef size_t nb = bpts.shape[0]
+    cdef size_t ndim = apts.shape[1]
     #assert ndim == bpts.shape[1]
     #assert nnearby.shape[0] == nb
 
-    cdef int i, j
+    cdef unsigned long i, j
     cdef np.float_t d
 
     # go through the unselected points and find the worst case
@@ -87,13 +86,13 @@ cdef float compute_maxradiussq(np.ndarray[np.float_t, ndim=2] apts, np.ndarray[n
 
     Returns the square of the maximum over these.
     """
-    cdef int na = apts.shape[0]
-    cdef int nb = bpts.shape[0]
-    cdef int ndim = apts.shape[1]
+    cdef size_t na = apts.shape[0]
+    cdef size_t nb = bpts.shape[0]
+    cdef size_t ndim = apts.shape[1]
     #assert ndim == bpts.shape[1]
     #assert f.dtype == np.float_t and g.dtype == np.float_t
 
-    cdef int i, j
+    cdef unsigned long i, j
     cdef np.float_t d
     cdef np.float_t mind = 1e300
     cdef np.float_t maxd = 0
@@ -124,10 +123,10 @@ def compute_mean_pair_distance(
 
     The number is written to `nnearby` (of same length as bpts).
     """
-    cdef int na = pts.shape[0]
-    cdef int ndim = pts.shape[1]
+    cdef size_t na = pts.shape[0]
+    cdef size_t ndim = pts.shape[1]
 
-    cdef int i, j
+    cdef unsigned long i, j
     cdef np.float_t total_dist = 0.0
     cdef np.float_t pair_dist
     cdef int Npairs = 0
@@ -313,6 +312,114 @@ def bounding_ellipsoid(x, minvol=0.):
 
     return ctr, cov
 
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+cdef pareto_front_filter_(
+    np.ndarray[np.float_t, ndim=1] x, 
+    np.ndarray[np.float_t, ndim=1] y,
+    np.ndarray[np.npy_bool, ndim=1] at_front,
+):
+    """Compute at_front, which indicates points at the pareto frontier,
+    i.e. there are no j where x[j] < x[i] and y[j] > y[i]."""
+    cdef size_t N = x.shape[0]
+    cdef unsigned long i, j
+    # pareto filtering:
+    for i in range(N-1):
+        if not at_front[i]:
+            continue
+        for j in range(i+1, N):
+            if at_front[j] and y[j] <= y[i]:
+                at_front[j] = False
+
+def pareto_front_filter(x, y):
+    assert len(x) == len(y)
+    indicator = np.ones(len(x), dtype=bool)
+    pareto_front_filter_(x, y, indicator)
+    return indicator
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+cdef (double, double, double, double) find_slope_(
+    np.ndarray[np.float_t, ndim=1] xin, 
+    np.ndarray[np.float_t, ndim=1] yin,
+    np.ndarray[np.npy_bool, ndim=1] mask,
+):
+    """Calculate minimum-area bounding line
+
+    Parameters
+    ----------
+    x : (npoints) ndarray
+        x coordinates of points
+    y : (npoints) ndarray
+        y coordinates of points
+
+    Returns
+    -------
+    ymin, ymax, xmin, xmax: coordinates of line at x.min() and x.max().
+
+    """
+
+    cdef double xmin = np.min(xin)
+    cdef double xmax = np.max(xin)
+    mask[:] = True
+    pareto_front_filter_(xin, yin, mask)
+    cdef np.ndarray[np.float_t, ndim=1] x = xin[mask]
+    cdef np.ndarray[np.float_t, ndim=1] y = yin[mask]
+    cdef size_t N = x.shape[0]
+    if N == 1:
+        return y[0], y[0], xmin, xmax
+    
+    cdef double yminopt = np.nan
+    cdef double ymaxopt = np.nan
+    cdef double Aopt = np.inf
+    cdef double ymin, ymax, A
+    cdef int enclosed
+    cdef unsigned long i, j
+    
+    for j in range(N):
+        for i in range(j):
+            # i is left of j
+            assert x[i] <= x[j]
+            # make interpolation
+            enclosed = True
+            for k in range(N):
+                if k != j and k != i and not (y[k] <= ((x[k] - x[i]) / (x[j] - x[i]) * (y[j] - y[i]) + y[i]) * (1 + 1e-10)):
+                    enclosed = False
+                    break
+            if not enclosed:
+                continue
+
+            ymin = (xmin - x[i]) * (y[j] - y[i]) / (x[j] - x[i]) + y[i]
+            ymax = (xmax - x[i]) * (y[j] - y[i]) / (x[j] - x[i]) + y[i]
+            A = (ymax + ymin) / 2
+            # check if all points are contained
+            if A >= 0 and A < Aopt:
+                yminopt, ymaxopt, Aopt = ymin, ymax, A
+    
+    #assert np.isfinite(yminopt), (yminopt, x, y)
+    #assert np.isfinite(ymaxopt), (ymaxopt, x, y)
+    return yminopt, ymaxopt, xmin, xmax
+
+def find_slope(x, y, mask=None):
+    """Calculate minimum-area bounding line
+
+    Parameters
+    ----------
+    x : (npoints) ndarray
+        x coordinates of points
+    y : (npoints) ndarray
+        y coordinates of points
+
+    Returns
+    -------
+    ymin, ymax: y coordinates of line at x.min() and x.max().
+
+    """
+    if mask is None:
+        mask = np.ones(len(x), dtype=bool)
+    ymin, ymax, xmin, xmax = find_slope_(x, y, mask)
+    return ymin, ymax, xmin, xmax
 
 class ScalingLayer(object):
     """Simple transformation layer that only shifts and scales each axis."""
@@ -537,7 +644,7 @@ class MLFriends(object):
     Learns geometry of region from existing live points.
     """
 
-    def __init__(self, u, transformLayer):
+    def __init__(self, u, transformLayer, sigma_dims=[]):
         """Initialise region.
 
         Parameters
@@ -553,6 +660,8 @@ class MLFriends(object):
 
         self.u = u
         self.set_transformLayer(transformLayer)
+        self.sigma_dims = sigma_dims
+        self.has_cones = len(self.sigma_dims) > 0
 
         self.sampling_methods = [
             self.sample_from_transformed_boundingbox,
@@ -604,16 +713,18 @@ class MLFriends(object):
         assert maxd > 0, (maxd, self.u)
         return maxd
 
-    def compute_enlargement(self, nbootstraps=50, minvol=0., rng=np.random):
+    def apply_enlargement(self, nbootstraps=50, minvol=0., rng=np.random):
         """Return MLFriends radius and ellipsoid enlargement after `nbootstraps` bootstrapping rounds.
 
         The wrapping ellipsoid covariance is determined in each bootstrap round.
+        The wrapping cone is determined for each parameter in sigmadims.
         """
         N, ndim = self.u.shape
         assert np.isfinite(self.unormed).all(), self.unormed
         selected = np.empty(N, dtype=bool)
         maxd = 0.0
         maxf = 0.0
+        pads = [None for i in self.sigma_dims]
 
         for i in range(nbootstraps):
             idx = rng.randint(N, size=N)
@@ -635,10 +746,41 @@ class MLFriends(object):
             f = np.einsum('...i, ...i', np.tensordot(delta, a, axes=1), delta).max()
             assert np.isfinite(f), (ctr, cov, self.unormed, f, delta, a)
             maxf = max(maxf, f)
+            
+            for j in self.sigma_dims:
+                sigma_train = ua[:,j]
+                sigma_test = ub[:,j]
+                indices = sigma_train.argsort()
+                sigma_train = ua[indices,j]
+                pads_here = np.empty(ndim-1)
+                for k in range(ndim):
+                    if j == k: continue
+                    other_train = ua[indices,k]
+                    z_train = np.log((other_train - other_train.mean())**2) - sigma_train
+                    other_test = ub[:,k]
+                    ymin, ymax, xmin, xmax = find_slope(sigma_train, z_train)
+                    z_test = np.log((other_test - other_train.mean())**2) - sigma_test
+                    predict_test = (sigma_test - xmin) * (ymax - ymin) / (xmax - xmin) + ymin
+                    pad = max(0, (predict_test - other_test).max())
+                    if k < j:
+                        pads_here[k] = pad
+                    else:
+                        pads_here[k-1] = pad
+                
+                if i == 0:
+                    pads[j] = pads_here
+                else:
+                    pads[j] = np.max([pads_here, pads[j]], axis=0)
+                
+                assert pads[j].shape == (ndim-1,), (pads[j].shape, ndim)
+                assert (pads[j] >= 0).all(), pads[j]
 
         assert maxd > 0, (maxd, self.u, self.unormed)
         assert maxf > 0, (maxf, self.u, self.unormed)
-        return maxd, maxf
+        self.maxradiussq = maxd
+        self.enlarge = maxf
+        self.cone_pads = pads
+        return maxd, maxf, pads
 
     def sample_from_points(self, nsamples=100):
         """Draw uniformly sampled points from MLFriends region.
@@ -772,8 +914,7 @@ class MLFriends(object):
         l, v = np.linalg.eigh(a)
         self.ellipsoid_axlens = 1. / np.sqrt(l)
         self.ellipsoid_axes = np.dot(v, np.diag(self.ellipsoid_axlens))
-
-
+    
     def inside_ellipsoid(self, u):
         """Check if inside wrapping ellipsoid.
 
@@ -798,6 +939,57 @@ class MLFriends(object):
         r = np.einsum('ij,jk,ik->i', d, self.ellipsoid_invcov, d)
         # (r <= 1) means inside
         return r <= self.enlarge
+
+
+    def create_cones(self):
+        """Create wrapping cones and store center and slopes."""
+        assert self.cone_pads is not None
+        N, ndim = self.u.shape
+        self.cones = []
+        for j, pads in zip(self.sigma_dims, self.cone_pads):
+            mask = np.ones(ndim, dtype=bool)
+            mask[j] = False
+            means = self.u[:,mask].mean(axis=1)
+            self.cone_centers.append(means)
+            sigma = self.u[:,j]
+            indices = sigma.argsort()
+            sigma = self.u[indices,j]
+
+            for k in range(ndim):
+                if j == k: continue
+                other = self.u[indices,k]
+                mean = other.mean()
+                z = np.log((other - mean)**2) - sigma
+                ymin, ymax, xmin, xmax = find_slope(sigma, z)
+                # self.cones.append((j, k, xmin, xmax, ymin, ymax, mean, pads[k]))
+                # if ymin / ymax < 0.5:
+                self.cones.append((j, k, xmin, (ymax - ymin) / (xmax - xmin), ymin + pads[k]))
+    
+    def inside_cones(self, u):
+        """Check if inside wrapping ellipsoid.
+
+        Parameters
+        ----------
+        u: array of vectors
+            Points to check
+
+        Returns
+        ---------
+        is_inside: array of bools
+            True if inside wrapping ellipsoid, for each point in `pts`.
+
+        """
+        mask = np.ones(len(u), dtype=bool)
+        for j, k, xmin, slope, ymin in self.cones:
+            sigma = u[:,j]
+            mean = self.ellipsoid_center[k]
+            other = u[:,k]
+            z = np.log((other - mean)**2) - sigma
+            predict = (sigma - xmin) * slope + ymin
+            mask = np.logical_and(mask, z < predict)
+        return mask
+            
+        
 
     def compute_mean_pair_distance(self):
         return compute_mean_pair_distance(self.unormed, self.transformLayer.clusterids)

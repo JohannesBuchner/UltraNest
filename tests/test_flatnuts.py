@@ -58,7 +58,7 @@ def test_detailed_balance():
         transformLayer = AffineLayer(wrapped_dims=[])
         transformLayer.optimize(points, points)
         region = MLFriends(points, transformLayer)
-        region.maxradiussq, region.enlarge = region.compute_enlargement(nbootstraps=30)
+        region.apply_enlargement(nbootstraps=30)
         region.create_ellipsoid()
         nclusters = transformLayer.nclusters
         assert nclusters == 1
@@ -182,7 +182,7 @@ def make_region(ndim):
         transformLayer = ScalingLayer()
     transformLayer.optimize(us, us)
     region = MLFriends(us, transformLayer)
-    region.maxradiussq, region.enlarge = region.compute_enlargement(nbootstraps=30)
+    region.apply_enlargement(nbootstraps=30)
     region.create_ellipsoid(minvol=1.0)
     return region
 

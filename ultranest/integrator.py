@@ -386,7 +386,7 @@ class NestedSampler(object):
                     nextregion = MLFriends(active_u, nextTransformLayer)
 
                 # print("computing maxradius...")
-                r, f = nextregion.compute_enlargement(nbootstraps=max(1, 30 // self.mpi_size))
+                r, f, pads = nextregion.apply_enlargement(nbootstraps=max(1, 30 // self.mpi_size))
                 # print("MLFriends built. r=%f" % r**0.5)
                 if self.use_mpi:
                     recv_maxradii = self.comm.gather(r, root=0)
@@ -395,9 +395,14 @@ class NestedSampler(object):
                     recv_enlarge = self.comm.gather(f, root=0)
                     recv_enlarge = self.comm.bcast(recv_enlarge, root=0)
                     f = np.max(recv_enlarge)
+                    if nextregion.has_cones:
+                        recv_pads = self.comm.gather(pads, root=0)
+                        recv_pads = self.comm.bcast(recv_pads, root=0)
+                        pads = np.max(recv_pads, axis=0)
 
                 nextregion.maxradiussq = r
                 nextregion.enlarge = f
+                nextregion.cone_pads = pads
                 # force shrinkage of volume
                 # this is to avoid re-connection of dying out nodes
                 if nextregion.estimate_volume() < region.estimate_volume():
@@ -1389,7 +1394,7 @@ class ReactiveNestedSampler(object):
             self.region_nodes = active_node_ids.copy()
             assert self.region.maxradiussq is None
 
-            r, f = self.region.compute_enlargement(
+            r, f, pads = self.region.apply_enlargement(
                 minvol=minvol, nbootstraps=max(1, nbootstraps // self.mpi_size))
             # rng=np.random.RandomState(self.mpi_rank))
             # print("MLFriends built. r=%f" % r**0.5)
@@ -1400,9 +1405,14 @@ class ReactiveNestedSampler(object):
                 recv_enlarge = self.comm.gather(f, root=0)
                 recv_enlarge = self.comm.bcast(recv_enlarge, root=0)
                 f = np.max(recv_enlarge)
+                if self.region.has_cones:
+                    recv_pads = self.comm.gather(pads, root=0)
+                    recv_pads = self.comm.bcast(recv_pads, root=0)
+                    pads = np.max(recv_pads, axis=0)
 
             self.region.maxradiussq = r
             self.region.enlarge = f
+            self.region.cone_pads = pads
             self.region.create_ellipsoid(minvol=minvol)
             # if self.log:
             #     self.logger.debug("building first region ... r=%e, f=%e" % (r, f))
@@ -1423,7 +1433,7 @@ class ReactiveNestedSampler(object):
             oldu = self.region.u
             self.region.u = active_u
             self.region.set_transformLayer(self.transformLayer)
-            r, f = self.region.compute_enlargement(
+            r, f, pads = self.region.apply_enlargement(
                 minvol=minvol,
                 nbootstraps=max(1, nbootstraps // self.mpi_size))
             # rng=np.random.RandomState(self.mpi_rank))
@@ -1435,9 +1445,14 @@ class ReactiveNestedSampler(object):
                 recv_enlarge = self.comm.gather(f, root=0)
                 recv_enlarge = self.comm.bcast(recv_enlarge, root=0)
                 f = np.max(recv_enlarge)
+                if self.region.has_cones:
+                    recv_pads = self.comm.gather(pads, root=0)
+                    recv_pads = self.comm.bcast(recv_pads, root=0)
+                    pads = np.max(recv_pads, axis=0)
 
             self.region.maxradiussq = r
             self.region.enlarge = f
+            self.region.cone_pads = pads
 
             # print("made first region, r=%e" % (r))
 
@@ -1528,7 +1543,7 @@ class ReactiveNestedSampler(object):
 
                 # if self.log:
                 #     self.logger.info("computing maxradius...")
-                r, f = nextregion.compute_enlargement(
+                r, f, pads = nextregion.apply_enlargement(
                     minvol=minvol,
                     nbootstraps=max(1, nbootstraps // self.mpi_size))
                 # rng=np.random.RandomState(self.mpi_rank))
@@ -1540,9 +1555,14 @@ class ReactiveNestedSampler(object):
                     recv_enlarge = self.comm.gather(f, root=0)
                     recv_enlarge = self.comm.bcast(recv_enlarge, root=0)
                     f = np.max(recv_enlarge)
+                    if nextregion.has_cones:
+                        recv_pads = self.comm.gather(pads, root=0)
+                        recv_pads = self.comm.bcast(recv_pads, root=0)
+                        pads = np.max(recv_pads, axis=0)
 
                 nextregion.maxradiussq = r
                 nextregion.enlarge = f
+                nextregion.cone_pads = pads
                 # verify correctness:
                 nextregion.create_ellipsoid(minvol=minvol)
                 assert (nextregion.u == active_u).all()

@@ -249,7 +249,7 @@ def test_reversible_gradient(plot=False):
         transformLayer = AffineLayer(wrapped_dims=[])
         transformLayer.optimize(points, points)
         region = MLFriends(points, transformLayer)
-        region.maxradiussq, region.enlarge = region.compute_enlargement(nbootstraps=30)
+        region.apply_enlargement(nbootstraps=30)
         region.create_ellipsoid()
         nclusters = transformLayer.nclusters
         assert nclusters == 1

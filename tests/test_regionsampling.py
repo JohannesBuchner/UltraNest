@@ -15,7 +15,7 @@ def test_region_sampling_scaling(plot=False):
     transformLayer = ScalingLayer(wrapped_dims=[])
     transformLayer.optimize(upoints, upoints)
     region = MLFriends(upoints, transformLayer)
-    region.maxradiussq, region.enlarge = region.compute_enlargement(nbootstraps=30)
+    region.apply_enlargement(nbootstraps=30)
     print("enlargement factor:", region.enlarge, 1 / region.enlarge)
     region.create_ellipsoid()
     nclusters = transformLayer.nclusters
@@ -55,7 +55,7 @@ def test_region_sampling_affine(plot=False):
     transformLayer = AffineLayer(wrapped_dims=[])
     transformLayer.optimize(upoints, upoints)
     region = MLFriends(upoints, transformLayer)
-    region.maxradiussq, region.enlarge = region.compute_enlargement(nbootstraps=30)
+    region.apply_enlargement(nbootstraps=30)
     print("enlargement factor:", region.enlarge, 1 / region.enlarge)
     region.create_ellipsoid()
     nclusters = transformLayer.nclusters
@@ -94,7 +94,7 @@ def test_region_ellipsoid(plot=False):
     transformLayer = AffineLayer(wrapped_dims=[])
     transformLayer.optimize(points, points)
     region = MLFriends(points, transformLayer)
-    region.maxradiussq, region.enlarge = region.compute_enlargement(nbootstraps=30)
+    region.apply_enlargement(nbootstraps=30)
     print("enlargement factor:", region.enlarge, 1 / region.enlarge)
     region.create_ellipsoid()
     nclusters = transformLayer.nclusters
@@ -123,7 +123,7 @@ def test_region_mean_distances():
     transformLayer = AffineLayer(wrapped_dims=[])
     transformLayer.optimize(points, points)
     region = MLFriends(points, transformLayer)
-    region.maxradiussq, region.enlarge = region.compute_enlargement(nbootstraps=30)
+    region.apply_enlargement(nbootstraps=30)
     print("enlargement factor:", region.enlarge, 1 / region.enlarge)
     region.create_ellipsoid()
     meandist = region.compute_mean_pair_distance()

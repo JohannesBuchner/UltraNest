@@ -21,7 +21,7 @@ def prepare_problem(problemname, ndim, nlive, sampler):
         transformLayer = ScalingLayer()
     transformLayer.optimize(us, us)
     region = MLFriends(us, transformLayer)
-    region.maxradiussq, region.enlarge = region.compute_enlargement(nbootstraps=30)
+    region.apply_enlargement(nbootstraps=30)
     region.create_ellipsoid(minvol=1.0)
     
     Ls = np.array([loglike(u) for u in us])
@@ -33,7 +33,7 @@ def prepare_problem(problemname, ndim, nlive, sampler):
             minvol = (1 - 1./nlive)**i
             nextTransformLayer = transformLayer.create_new(us, region.maxradiussq, minvol=minvol)
             nextregion = MLFriends(us, nextTransformLayer)
-            nextregion.maxradiussq, nextregion.enlarge = nextregion.compute_enlargement(nbootstraps=30)
+            nextregion.apply_enlargement(nbootstraps=30)
             if nextregion.estimate_volume() <= region.estimate_volume():
                 region = nextregion
                 transformLayer = region.transformLayer

@@ -72,7 +72,7 @@ def make_region(ndim, us=None):
         transformLayer = ScalingLayer()
     transformLayer.optimize(us, us)
     region = MLFriends(us, transformLayer)
-    region.maxradiussq, region.enlarge = region.compute_enlargement(nbootstraps=30)
+    region.apply_enlargement(nbootstraps=30)
     region.create_ellipsoid(minvol=1.0)
     return region
 

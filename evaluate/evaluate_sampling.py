@@ -47,7 +47,7 @@ def evaluate_warmed_sampler(problemname, ndim, nlive, nsteps, sampler):
         transformLayer = ScalingLayer()
     transformLayer.optimize(us, us)
     region = MLFriends(us, transformLayer)
-    region.maxradiussq, region.enlarge = region.compute_enlargement(nbootstraps=30)
+    region.apply_enlargement(nbootstraps=30)
     region.create_ellipsoid(minvol=vol0)
     assert region.ellipsoid_center is not None
     sampler.region_changed(Ls, region)
@@ -62,7 +62,7 @@ def evaluate_warmed_sampler(problemname, ndim, nlive, nsteps, sampler):
                 try:
                     nextTransformLayer = transformLayer.create_new(us, region.maxradiussq, minvol=minvol)
                     nextregion = MLFriends(us, nextTransformLayer)
-                    nextregion.maxradiussq, nextregion.enlarge = nextregion.compute_enlargement(nbootstraps=30)
+                    nextregion.apply_enlargement(nbootstraps=30)
                     if nextregion.estimate_volume() <= region.estimate_volume():
                         nextregion.create_ellipsoid(minvol=minvol)
                         region = nextregion
