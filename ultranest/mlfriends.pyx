@@ -313,8 +313,8 @@ def bounding_ellipsoid(x, minvol=0.):
     return ctr, cov
 
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
+#@cython.boundscheck(False)
+#@cython.wraparound(False)
 cdef pareto_front_filter_(
     np.ndarray[np.float_t, ndim=1] x, 
     np.ndarray[np.float_t, ndim=1] y,
@@ -338,9 +338,9 @@ def pareto_front_filter(x, y):
     pareto_front_filter_(x, y, indicator)
     return indicator
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
-cdef (double, double, double, double) find_slope_(
+#@cython.boundscheck(False)
+#@cython.wraparound(False)
+cdef (double, double, double, double, size_t) find_slope_(
     np.ndarray[np.float_t, ndim=1] xin, 
     np.ndarray[np.float_t, ndim=1] yin,
     np.ndarray[np.npy_bool, ndim=1] mask,
@@ -368,7 +368,7 @@ cdef (double, double, double, double) find_slope_(
     cdef np.ndarray[np.float_t, ndim=1] y = yin[mask]
     cdef size_t N = x.shape[0]
     if N == 1:
-        return y[0], y[0], xmin, xmax
+        return y[0], y[0], xmin, xmax, N
     
     cdef double yminopt = np.nan
     cdef double ymaxopt = np.nan
@@ -394,12 +394,12 @@ cdef (double, double, double, double) find_slope_(
             ymax = (xmax - x[i]) * (y[j] - y[i]) / (x[j] - x[i]) + y[i]
             A = (ymax + ymin) / 2
             # check if all points are contained
-            if A >= 0 and A < Aopt:
+            if A < Aopt:
                 yminopt, ymaxopt, Aopt = ymin, ymax, A
     
     #assert np.isfinite(yminopt), (yminopt, x, y)
     #assert np.isfinite(ymaxopt), (ymaxopt, x, y)
-    return yminopt, ymaxopt, xmin, xmax
+    return yminopt, ymaxopt, xmin, xmax, N
 
 def find_slope(x, y, mask=None):
     """Calculate minimum-area bounding line
@@ -418,8 +418,13 @@ def find_slope(x, y, mask=None):
     """
     if mask is None:
         mask = np.ones(len(x), dtype=bool)
-    ymin, ymax, xmin, xmax = find_slope_(x, y, mask)
-    return ymin, ymax, xmin, xmax
+    assert x.shape == y.shape == mask.shape, (x.shape, y.shape, mask.shape)
+    assert np.isfinite(x).all(), x
+    assert np.isfinite(y).all(), y
+    assert (x > 0).all(), x
+    #assert (y > 0).all(), y
+    ymin, ymax, xmin, xmax, N = find_slope_(x, y, mask)
+    return ymin, ymax, xmin, xmax, N
 
 class ScalingLayer(object):
     """Simple transformation layer that only shifts and scales each axis."""
@@ -725,6 +730,7 @@ class MLFriends(object):
         maxd = 0.0
         maxf = 0.0
         pads = [None for i in self.sigma_dims]
+        cone_useful = [None for i in self.sigma_dims]
 
         for i in range(nbootstraps):
             idx = rng.randint(N, size=N)
@@ -752,34 +758,48 @@ class MLFriends(object):
                 sigma_test = ub[:,j]
                 indices = sigma_train.argsort()
                 sigma_train = ua[indices,j]
-                pads_here = np.empty(ndim-1)
+                pads_here = np.empty(ndim)
+                cone_useful_here = np.empty(ndim)
+                pads_here[j] = np.nan
+                cone_useful_here[j] = np.nan
+                
                 for k in range(ndim):
                     if j == k: continue
                     other_train = ua[indices,k]
-                    z_train = np.log((other_train - other_train.mean())**2) - sigma_train
+                    center = other_train.mean()
+                    z_train = np.log((other_train - center)**2)
                     other_test = ub[:,k]
-                    ymin, ymax, xmin, xmax = find_slope(sigma_train, z_train)
-                    z_test = np.log((other_test - other_train.mean())**2) - sigma_test
-                    predict_test = (sigma_test - xmin) * (ymax - ymin) / (xmax - xmin) + ymin
-                    pad = max(0, (predict_test - other_test).max())
-                    if k < j:
-                        pads_here[k] = pad
-                    else:
-                        pads_here[k-1] = pad
-                
+                    ymin, ymax, xmin, xmax, M = find_slope(sigma_train, z_train)
+                    assert np.isfinite([ymin, ymax, xmin, xmax]).all(), [ymin, ymax, xmin, xmax]
+                    z_test = np.log((other_test - center)**2)
+                    slope = (ymax - ymin) / (xmax - xmin)
+                    predict_test = (sigma_test - xmin) * slope + ymin
+                    # compute how far left out points are above prediction
+                    pad = max(0, (z_test - predict_test).max())
+                    #pad = 0
+                    # mark as useful when a proper slope appears (N>>1)
+                    print("  M=%d" % M, xmin, xmax, np.exp(ymin)**0.5, np.exp(ymax)**0.5, np.exp(pad)**0.5)
+                    pads_here[k] = pad
+                    cone_useful_here[k] = M
+
                 if i == 0:
                     pads[j] = pads_here
+                    cone_useful[j] = cone_useful_here
                 else:
+                    # combine
                     pads[j] = np.max([pads_here, pads[j]], axis=0)
-                
-                assert pads[j].shape == (ndim-1,), (pads[j].shape, ndim)
-                assert (pads[j] >= 0).all(), pads[j]
+                    cone_useful[j] = np.min([cone_useful_here, cone_useful[j]], axis=0)
+
+                assert pads[j].shape == (ndim,), (pads[j].shape, ndim)
+                assert (pads[j][:j] >= 0).all() and (pads[j][j+1:] >= 0).all(), pads[j]
 
         assert maxd > 0, (maxd, self.u, self.unormed)
         assert maxf > 0, (maxf, self.u, self.unormed)
         self.maxradiussq = maxd
         self.enlarge = maxf
         self.cone_pads = pads
+        self.cone_useful = cone_useful
+
         return maxd, maxf, pads
 
     def sample_from_points(self, nsamples=100):
@@ -801,6 +821,8 @@ class MLFriends(object):
         w = self.transformLayer.untransform(v[vmask,:])
         wmask = np.logical_and(w > 0, w < 1).all(axis=1)
         wmask[wmask] = self.inside_ellipsoid(w[wmask])
+        if self.has_cones and wmask.any():
+            wmask[wmask] = self.inside_cones(w[wmask,:])
 
         return w[wmask,:], idx[vmask][wmask]
 
@@ -818,6 +840,10 @@ class MLFriends(object):
         idnearby = np.empty(len(v), dtype=int)
         find_nearby(self.unormed, v, self.maxradiussq, idnearby)
         vmask = idnearby >= 0
+        
+        if self.has_cones and vmask.any():
+            vmask[vmask] = self.inside_cones(u[wmask,:][vmask,:])
+        
         return u[wmask,:][vmask,:], idnearby[vmask]
 
     def sample_from_transformed_boundingbox(self, nsamples=100):
@@ -836,6 +862,9 @@ class MLFriends(object):
         w = self.transformLayer.untransform(v[vmask,:])
         wmask = np.logical_and(w > 0, w < 1).all(axis=1)
         wmask[wmask] = self.inside_ellipsoid(w[wmask])
+        
+        if self.has_cones and wmask.any():
+            wmask[wmask] = self.inside_cones(w[wmask,:])
 
         return w[wmask,:], idnearby[vmask][wmask]
 
@@ -861,6 +890,9 @@ class MLFriends(object):
         idnearby = np.empty(len(v), dtype=int)
         find_nearby(self.unormed, v, self.maxradiussq, idnearby)
         vmask = idnearby >= 0
+
+        if self.has_cones and vmask.any():
+            vmask[vmask] = self.inside_cones(u[wmask,:][vmask,:])
 
         return w[wmask,:][vmask,:], idnearby[vmask]
 
@@ -898,9 +930,12 @@ class MLFriends(object):
 
         # additionally require points to be inside bounding ellipsoid
         mask[mask] = self.inside_ellipsoid(pts[mask,:])
+        if self.has_cones and mask.any():
+            mask[mask] = self.inside_cones(pts[mask,:])
         return mask
 
-    def create_ellipsoid(self, minvol=0.0):
+        
+    def create_wrapping_geometry(self, minvol=0.0):
         """Create wrapping ellipsoid and store its center and covariance."""
         assert self.enlarge is not None
         # compute enlargement of bounding ellipsoid
@@ -914,7 +949,11 @@ class MLFriends(object):
         l, v = np.linalg.eigh(a)
         self.ellipsoid_axlens = 1. / np.sqrt(l)
         self.ellipsoid_axes = np.dot(v, np.diag(self.ellipsoid_axlens))
-    
+        
+        if self.has_cones:
+            self.create_cones()
+
+
     def inside_ellipsoid(self, u):
         """Check if inside wrapping ellipsoid.
 
@@ -940,30 +979,27 @@ class MLFriends(object):
         # (r <= 1) means inside
         return r <= self.enlarge
 
-
     def create_cones(self):
         """Create wrapping cones and store center and slopes."""
         assert self.cone_pads is not None
         N, ndim = self.u.shape
         self.cones = []
-        for j, pads in zip(self.sigma_dims, self.cone_pads):
-            mask = np.ones(ndim, dtype=bool)
-            mask[j] = False
-            means = self.u[:,mask].mean(axis=1)
-            self.cone_centers.append(means)
-            sigma = self.u[:,j]
-            indices = sigma.argsort()
+        for j, pads, cone_useful in zip(self.sigma_dims, self.cone_pads, self.cone_useful):
+            lnsigma = self.u[:,j]
+            indices = lnsigma.argsort()
             sigma = self.u[indices,j]
 
             for k in range(ndim):
                 if j == k: continue
                 other = self.u[indices,k]
                 mean = other.mean()
-                z = np.log((other - mean)**2) - sigma
-                ymin, ymax, xmin, xmax = find_slope(sigma, z)
-                # self.cones.append((j, k, xmin, xmax, ymin, ymax, mean, pads[k]))
-                # if ymin / ymax < 0.5:
-                self.cones.append((j, k, xmin, (ymax - ymin) / (xmax - xmin), ymin + pads[k]))
+                z = np.log((other - mean)**2)
+                ymin, ymax, xmin, xmax, M = find_slope(sigma, z)
+                print("new slope info:", ymin, ymax, xmin, xmax, M, pads[k])
+                assert np.isfinite([ymin, ymax, xmin, xmax]).all(), [ymin, ymax, xmin, xmax]
+                slope = (ymax - ymin) / (xmax - xmin)
+                # use some usefulness criterion here
+                self.cones.append((j, k, xmin, slope, ymin + pads[k]))
     
     def inside_cones(self, u):
         """Check if inside wrapping ellipsoid.
@@ -981,15 +1017,15 @@ class MLFriends(object):
         """
         mask = np.ones(len(u), dtype=bool)
         for j, k, xmin, slope, ymin in self.cones:
+            if not mask.any():
+                break
             sigma = u[:,j]
             mean = self.ellipsoid_center[k]
             other = u[:,k]
-            z = np.log((other - mean)**2) - sigma
+            z = np.log((other - mean)**2)
             predict = (sigma - xmin) * slope + ymin
             mask = np.logical_and(mask, z < predict)
         return mask
-            
-        
 
     def compute_mean_pair_distance(self):
         return compute_mean_pair_distance(self.unormed, self.transformLayer.clusterids)

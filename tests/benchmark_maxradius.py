@@ -46,7 +46,7 @@ def benchmark_transform():
 			transformLayer = ScalingLayer() if layer == 'scale' else AffineLayer() 
 			region = MLFriends(points, transformLayer)
 			region.apply_enlargement(nbootstraps=30)
-			region.create_ellipsoid()
+			region.create_wrapping_geometry()
 			
 			niter = 0
 			total_duration = 0

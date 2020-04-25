@@ -326,7 +326,7 @@ def speedtest_bounding_line():
                 sorted_x = points[indices,0]
                 sorted_y = points[indices,1]
                 find_slope(sorted_x, sorted_y, indicator)
-            results5.append(find_slope(sorted_x, sorted_y, indicator))
+            results5.append(find_slope(sorted_x, sorted_y, indicator)[:-1])
         tparetoc = time.time() - t0
         print("%d %.3fs %.3fs %.3fs %.3fs %.3fs (find_slope)" % (N, texhaustive, tpareto, tparetov, tparetov2, tparetoc / 10))
         for input, k, r1, r2 in zip(inputs, slopes, results, results2):
@@ -385,7 +385,7 @@ def speedtest_bounding_line_multid():
         for _ in range(10):
             for points in inputs:
                 for i in range(d):
-                    results4.append(find_slope(points[:,0], points[:,i+1], indicator[:len(points)]))
+                    results4.append(find_slope(points[:,0], points[:,i+1], indicator[:len(points)])[:-1])
         tparetoc = time.time() - t0
         print("%d %.3fs %.3fs %.3fs %.3fs (find_slope multiple%s)" % (N, tpareto, tparetov, tparetov2, tparetoc / 10, ', assuming sorted' if use_sorted else ''))
         for input, k, r1, r2 in zip(inputs, slopes, results, results2):
@@ -449,7 +449,8 @@ def orig_test_bounding_linep(N, k, r, plot):
 
     np.testing.assert_allclose(list(r1), list(r3))
     np.testing.assert_allclose(list(r1), list(r4))
-    np.testing.assert_allclose(list(r1), list(r5))
+    np.testing.assert_allclose(list(r1), list(r5)[:-1])
+    assert r5[-1] == len(pspoints)
 
 @h.settings(deadline=10000.0, max_examples=3, verbosity=h.Verbosity.verbose)
 @given(st.integers(min_value=2, max_value=1000), st.floats(min_value=0.0, max_value=1e100), st.random_module())

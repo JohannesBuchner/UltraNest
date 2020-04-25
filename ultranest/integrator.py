@@ -408,7 +408,7 @@ class NestedSampler(object):
                 if nextregion.estimate_volume() < region.estimate_volume():
                     region = nextregion
                     transformLayer = region.transformLayer
-                region.create_ellipsoid(minvol=exp(-it / self.num_live_points) * self.volfactor)
+                region.create_wrapping_geometry(minvol=exp(-it / self.num_live_points) * self.volfactor)
 
                 if self.log:
                     viz_callback(
@@ -1413,13 +1413,13 @@ class ReactiveNestedSampler(object):
             self.region.maxradiussq = r
             self.region.enlarge = f
             self.region.cone_pads = pads
-            self.region.create_ellipsoid(minvol=minvol)
+            self.region.create_wrapping_geometry(minvol=minvol)
             # if self.log:
             #     self.logger.debug("building first region ... r=%e, f=%e" % (r, f))
             updated = True
 
             # verify correctness:
-            # self.region.create_ellipsoid(minvol=minvol)
+            # self.region.create_wrapping_geometry(minvol=minvol)
             # assert self.region.inside(active_u).all(), self.region.inside(active_u).mean()
 
         assert self.transformLayer is not None
@@ -1495,7 +1495,7 @@ class ReactiveNestedSampler(object):
             assert len(self.region.u) == len(self.transformLayer.clusterids)
 
             # verify correctness:
-            self.region.create_ellipsoid(minvol=minvol)
+            self.region.create_wrapping_geometry(minvol=minvol)
             # assert self.region.inside(active_u).all(), self.region.inside(active_u).mean()
 
         assert len(self.region.u) == len(self.transformLayer.clusterids)
@@ -1521,7 +1521,7 @@ class ReactiveNestedSampler(object):
                 if not np.isfinite(nextregion.unormed).all():
                     assert False
                     # self.logger.warn("not updating region because new transform gave inf/nans")
-                    # self.region.create_ellipsoid(minvol=minvol)
+                    # self.region.create_wrapping_geometry(minvol=minvol)
                     # return updated
 
                 if not nextTransformLayer.nclusters < 20:
@@ -1564,7 +1564,7 @@ class ReactiveNestedSampler(object):
                 nextregion.enlarge = f
                 nextregion.cone_pads = pads
                 # verify correctness:
-                nextregion.create_ellipsoid(minvol=minvol)
+                nextregion.create_wrapping_geometry(minvol=minvol)
                 assert (nextregion.u == active_u).all()
                 assert np.allclose(nextregion.unormed, nextregion.transformLayer.transform(active_u))
                 # assert nextregion.inside(active_u).all(),

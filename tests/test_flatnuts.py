@@ -59,7 +59,7 @@ def test_detailed_balance():
         transformLayer.optimize(points, points)
         region = MLFriends(points, transformLayer)
         region.apply_enlargement(nbootstraps=30)
-        region.create_ellipsoid()
+        region.create_wrapping_geometry()
         nclusters = transformLayer.nclusters
         assert nclusters == 1
         assert np.allclose(region.unormed, region.transformLayer.transform(points)), "transform should be reproducible"
@@ -183,7 +183,7 @@ def make_region(ndim):
     transformLayer.optimize(us, us)
     region = MLFriends(us, transformLayer)
     region.apply_enlargement(nbootstraps=30)
-    region.create_ellipsoid(minvol=1.0)
+    region.create_wrapping_geometry(minvol=1.0)
     return region
 
 def test_singlejumper():

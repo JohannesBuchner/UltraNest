@@ -250,7 +250,7 @@ def test_reversible_gradient(plot=False):
         transformLayer.optimize(points, points)
         region = MLFriends(points, transformLayer)
         region.apply_enlargement(nbootstraps=30)
-        region.create_ellipsoid()
+        region.create_wrapping_geometry()
         nclusters = transformLayer.nclusters
         assert nclusters == 1
         assert np.allclose(region.unormed, region.transformLayer.transform(points)), "transform should be reproducible"

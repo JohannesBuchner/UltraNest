@@ -22,7 +22,7 @@ def prepare_problem(problemname, ndim, nlive, sampler):
     transformLayer.optimize(us, us)
     region = MLFriends(us, transformLayer)
     region.apply_enlargement(nbootstraps=30)
-    region.create_ellipsoid(minvol=1.0)
+    region.create_wrapping_geometry(minvol=1.0)
     
     Ls = np.array([loglike(u) for u in us])
     ncalls = 0
@@ -37,7 +37,7 @@ def prepare_problem(problemname, ndim, nlive, sampler):
             if nextregion.estimate_volume() <= region.estimate_volume():
                 region = nextregion
                 transformLayer = region.transformLayer
-            region.create_ellipsoid(minvol=minvol)
+            region.create_wrapping_geometry(minvol=minvol)
         
         # replace lowest likelihood point
         j = np.argmin(Ls)

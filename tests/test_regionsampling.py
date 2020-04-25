@@ -17,7 +17,7 @@ def test_region_sampling_scaling(plot=False):
     region = MLFriends(upoints, transformLayer)
     region.apply_enlargement(nbootstraps=30)
     print("enlargement factor:", region.enlarge, 1 / region.enlarge)
-    region.create_ellipsoid()
+    region.create_wrapping_geometry()
     nclusters = transformLayer.nclusters
     assert nclusters == 1
     assert np.allclose(region.unormed, region.transformLayer.transform(upoints)), "transform should be reproducible"
@@ -57,7 +57,7 @@ def test_region_sampling_affine(plot=False):
     region = MLFriends(upoints, transformLayer)
     region.apply_enlargement(nbootstraps=30)
     print("enlargement factor:", region.enlarge, 1 / region.enlarge)
-    region.create_ellipsoid()
+    region.create_wrapping_geometry()
     nclusters = transformLayer.nclusters
     assert nclusters == 1
     assert np.allclose(region.unormed, region.transformLayer.transform(upoints)), "transform should be reproducible"
@@ -96,7 +96,7 @@ def test_region_ellipsoid(plot=False):
     region = MLFriends(points, transformLayer)
     region.apply_enlargement(nbootstraps=30)
     print("enlargement factor:", region.enlarge, 1 / region.enlarge)
-    region.create_ellipsoid()
+    region.create_wrapping_geometry()
     nclusters = transformLayer.nclusters
     assert nclusters == 1
     
@@ -107,7 +107,6 @@ def test_region_ellipsoid(plot=False):
     mask2 = np.einsum('ij,jk,ik->i', d, region.ellipsoid_invcov, d) <= region.enlarge
     
     assert_allclose(mask, mask2)
-
 
 def test_region_mean_distances():
     np.random.seed(1)
@@ -125,7 +124,7 @@ def test_region_mean_distances():
     region = MLFriends(points, transformLayer)
     region.apply_enlargement(nbootstraps=30)
     print("enlargement factor:", region.enlarge, 1 / region.enlarge)
-    region.create_ellipsoid()
+    region.create_wrapping_geometry()
     meandist = region.compute_mean_pair_distance()
     
     t = transformLayer.transform(region.u)
@@ -140,7 +139,93 @@ def test_region_mean_distances():
     print((meandist, d, N, t))
     assert np.isclose(meandist, d / N), (meandist, d, N)
 
+def loglike_funnel(theta):
+    sigma = np.exp((theta[:,0] * 10 - 10) * 0.5)
+    print(sigma.min(), sigma.max())
+    like = -0.5 * (((theta[:,1] - 0.5)/sigma)**2 + np.log(2 * np.pi * sigma**2))
+    return like
+
+def test_region_funnel(plot=False):
+    np.random.seed(3)
+    points = np.transpose([
+        np.random.uniform(0., 1., size=4000),
+        np.random.uniform(0., 1., size=4000),
+    ])
+    logp = loglike_funnel(points)
+    print(logp.shape)
+    indices = np.argsort(logp)
+    points = points[indices[-1000:], :]
+    points = points[::4, :]
+    
+    
+    transformLayer = AffineLayer(wrapped_dims=[])
+    transformLayer.optimize(points, points)
+    region = MLFriends(points, transformLayer)
+    region.apply_enlargement(nbootstraps=30)
+    region.create_wrapping_geometry()
+    samples, idx = region.sample(1000)
+
+    cregion = MLFriends(points, transformLayer, sigma_dims=[0])
+    cregion.apply_enlargement(nbootstraps=30)
+    assert cregion.has_cones
+    print('pads:', cregion.cone_pads)
+    print('number of cones:', cregion.cone_useful)
+    cregion.create_wrapping_geometry()
+    print('cone info:', cregion.cones)
+    print(cregion.current_sampling_method)
+    j, k, xmin, slope, ymin = cregion.cones[0]
+    assert j == 0
+    assert k == 1
+    print('xmin:', xmin, points[:,0].min())
+    np.testing.assert_allclose(xmin, points[:,0].min())
+    #print('ymin:', ymin, points[points[:,0].argmin(),1]**2)
+    #np.testing.assert_allclose(ymin, points[points[:,0].argmin(),1])
+    mask = cregion.inside(samples)
+    csamples, cidx = cregion.sample(400)
+    print('cone throughput:', mask.mean())
+    assert mask.mean() < 0.85, mask.mean()
+
+    if plot:
+        plt.plot(points[:,0], points[:,1], 'o ')
+        plt.plot(samples[:,0], samples[:,1], 'x ')
+        plt.plot(samples[mask,0], samples[mask,1], '^ ')
+        
+        mean = cregion.ellipsoid_center[1]
+        sigma = np.linspace(0, 1, 4000)
+        predict = ((sigma - xmin) * slope + ymin)
+        plt.plot(sigma, mean + np.exp(predict)**0.5)
+        plt.plot(sigma, mean + 0*sigma, '--')
+        plt.plot(sigma, mean - np.exp(predict)**0.5)
+        
+        plt.ylim(points[:,1].min(), points[:,1].max())
+        plt.savefig('test_region_funnel_filter.pdf', bbox_inches='tight')
+        plt.close()
+
+    if plot:
+        plt.plot(points[:,0], points[:,1], 'o ')
+        plt.plot(samples[:,0], samples[:,1], 'x ')
+        plt.plot(csamples[:,0], csamples[:,1], '^ ')
+        plt.savefig('test_region_funnel_sample.pdf', bbox_inches='tight')
+        plt.close()
+    
+    """
+    print("enlargement factor:", region.enlarge, 1 / region.enlarge)
+    meandist = region.compute_mean_pair_distance()
+    
+    t = transformLayer.transform(region.u)
+    d = 0
+    N = 0
+    for i in range(len(t)):
+        for j in range(i):
+            d += ((t[i,:] - t[j,:])**2).sum()**0.5
+            #print(i, j, t[i,:], t[j,:], ((t[i,:] - t[j,:])**2).sum())
+            N += 1
+    
+    print((meandist, d, N, t))
+    assert np.isclose(meandist, d / N), (meandist, d, N)
+    """
 
 if __name__ == '__main__':
-    test_region_sampling_scaling(plot=True)
-    test_region_sampling_affine(plot=True)
+    test_region_funnel(plot=True)
+    #test_region_sampling_scaling(plot=True)
+    #test_region_sampling_affine(plot=True)

@@ -73,7 +73,7 @@ def make_region(ndim, us=None):
     transformLayer.optimize(us, us)
     region = MLFriends(us, transformLayer)
     region.apply_enlargement(nbootstraps=30)
-    region.create_ellipsoid(minvol=1.0)
+    region.create_wrapping_geometry(minvol=1.0)
     return region
 
 
