@@ -776,8 +776,6 @@ class MLFriends(object):
                     predict_test = (sigma_test - xmin) * slope + ymin
                     # compute how far left out points are above prediction
                     pad = max(0, (z_test - predict_test).max())
-                    #pad = 0
-                    # mark as useful when a proper slope appears (N>>1)
                     print("  M=%d" % M, xmin, xmax, np.exp(ymin)**0.5, np.exp(ymax)**0.5, np.exp(pad)**0.5)
                     pads_here[k] = pad
                     cone_useful_here[k] = M
@@ -995,11 +993,12 @@ class MLFriends(object):
                 mean = other.mean()
                 z = np.log((other - mean)**2)
                 ymin, ymax, xmin, xmax, M = find_slope(sigma, z)
-                print("new slope info:", ymin, ymax, xmin, xmax, M, pads[k])
+                print("new slope info:", ymin, ymax, xmin, xmax, M, cone_useful[k], N, (2/3.) * (N)**0.5, pads[k])
                 assert np.isfinite([ymin, ymax, xmin, xmax]).all(), [ymin, ymax, xmin, xmax]
                 slope = (ymax - ymin) / (xmax - xmin)
                 # use some usefulness criterion here
-                self.cones.append((j, k, xmin, slope, ymin + pads[k]))
+                if cone_useful[k] > (N * (2/3.))**0.5:
+                    self.cones.append((j, k, xmin, slope, ymin + pads[k]))
     
     def inside_cones(self, u):
         """Check if inside wrapping ellipsoid.

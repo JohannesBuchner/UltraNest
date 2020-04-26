@@ -139,9 +139,8 @@ def test_region_mean_distances():
     print((meandist, d, N, t))
     assert np.isclose(meandist, d / N), (meandist, d, N)
 
-def loglike_funnel(theta):
+def loglike_funnel2d(theta):
     sigma = np.exp((theta[:,0] * 10 - 10) * 0.5)
-    print(sigma.min(), sigma.max())
     like = -0.5 * (((theta[:,1] - 0.5)/sigma)**2 + np.log(2 * np.pi * sigma**2))
     return like
 
@@ -151,12 +150,10 @@ def test_region_funnel(plot=False):
         np.random.uniform(0., 1., size=4000),
         np.random.uniform(0., 1., size=4000),
     ])
-    logp = loglike_funnel(points)
-    print(logp.shape)
+    logp = loglike_funnel2d(points)
     indices = np.argsort(logp)
     points = points[indices[-1000:], :]
-    points = points[::4, :]
-    
+    points = points[::10, :]
     
     transformLayer = AffineLayer(wrapped_dims=[])
     transformLayer.optimize(points, points)
@@ -182,8 +179,6 @@ def test_region_funnel(plot=False):
     #np.testing.assert_allclose(ymin, points[points[:,0].argmin(),1])
     mask = cregion.inside(samples)
     csamples, cidx = cregion.sample(400)
-    print('cone throughput:', mask.mean())
-    assert mask.mean() < 0.85, mask.mean()
 
     if plot:
         plt.plot(points[:,0], points[:,1], 'o ')
@@ -208,24 +203,70 @@ def test_region_funnel(plot=False):
         plt.savefig('test_region_funnel_sample.pdf', bbox_inches='tight')
         plt.close()
     
-    """
-    print("enlargement factor:", region.enlarge, 1 / region.enlarge)
-    meandist = region.compute_mean_pair_distance()
+    print('cone throughput:', mask.mean())
+    assert mask.mean() < 0.85, mask.mean()
+
+def loglike_funnelnd(theta):
+    sigma = np.exp((theta[:,0].reshape((-1, 1)) * 10 - 10) * 0.5)
+    like = -0.5 * (((theta[:,1:] - 0.5)/sigma)**2 + np.log(2 * np.pi * sigma**2)).sum(axis=1)
+    return like
+
+def get_cones(points):
+    print("get_cones of:", points.shape)
+    transformLayer = AffineLayer(wrapped_dims=[])
+    transformLayer.optimize(points, points)
+    cregion = MLFriends(points, transformLayer, sigma_dims=[0])
+    cregion.apply_enlargement(nbootstraps=30)
+    assert cregion.has_cones
+    print('pads:', cregion.cone_pads)
+    print('number of cones:', cregion.cone_useful)
+    cregion.create_wrapping_geometry()
+    print('cone info:', cregion.cones)
+    return cregion.cones
+
+def test_region_cone_activation(plot=False):
+    np.random.seed(1)
+    nsamples = 1000
+    points = np.random.uniform(0., 1., size=(4000, 2))
+    logp = loglike_funnel2d(points)
+    assert logp.shape == (len(points),), (logp.shape, (len(points),))
+    indices = np.argsort(logp)
+    points = points[indices[-nsamples:], :]
+    points_funnel2d = points
     
-    t = transformLayer.transform(region.u)
-    d = 0
-    N = 0
-    for i in range(len(t)):
-        for j in range(i):
-            d += ((t[i,:] - t[j,:])**2).sum()**0.5
-            #print(i, j, t[i,:], t[j,:], ((t[i,:] - t[j,:])**2).sum())
-            N += 1
+    points = np.random.uniform(0., 1., size=(4000000, 5))
+    logp = loglike_funnelnd(points)
+    assert logp.shape == (len(points),), (logp.shape, (len(points),))
+    indices = np.argsort(logp)
+    points = points[indices[-nsamples:], :]
+    points_funnel5d = points
+    #plt.plot(points_funnel5d[:,0], points_funnel5d[:,1], 'o ')
+    #plt.show()
     
-    print((meandist, d, N, t))
-    assert np.isclose(meandist, d / N), (meandist, d, N)
-    """
+    points_uniform2d = np.random.uniform(0.4, 0.6, size=(nsamples, 2))
+    points_uniform5d = np.random.uniform(0.4, 0.6, size=(nsamples, 5))
+    points = np.random.uniform(0.4, 0.6, size=(10000, 2))
+    mask = (points[:,0]-0.5)**2 + (points[:,1]-0.5)**2 < 0.1**2
+    points_circle2d = points[mask,:][:nsamples,:]
+    points = np.random.uniform(0.4, 0.6, size=(100000, 5))
+    mask = (points[:,0]-0.5)**2 + (points[:,1]-0.5)**2 < 0.1**2
+    points_circle5d = points[mask,:][:nsamples,:]
+    
+    ndim = 2
+    v = np.random.multivariate_normal(np.zeros(2), [[0.01, 0.005], [0.005, 0.01]], size=nsamples)
+    points_ellipse2d = v + 0.5
+    
+    assert get_cones(points_uniform2d) == []
+    assert get_cones(points_uniform5d) == []
+    assert get_cones(points_circle2d) == []
+    assert get_cones(points_circle5d) == []
+    assert get_cones(points_ellipse2d) == []
+    assert get_cones(points_funnel2d) != []
+    #assert get_cones(points_funnel5d) != []
+    
 
 if __name__ == '__main__':
-    test_region_funnel(plot=True)
+    #test_region_funnel(plot=True)
+    test_region_cone_activation()
     #test_region_sampling_scaling(plot=True)
     #test_region_sampling_affine(plot=True)
