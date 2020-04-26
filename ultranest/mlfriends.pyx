@@ -667,6 +667,7 @@ class MLFriends(object):
         self.set_transformLayer(transformLayer)
         self.sigma_dims = sigma_dims
         self.has_cones = len(self.sigma_dims) > 0
+        self.cones = []
 
         self.sampling_methods = [
             self.sample_from_transformed_boundingbox,
@@ -729,7 +730,12 @@ class MLFriends(object):
         selected = np.empty(N, dtype=bool)
         maxd = 0.0
         maxf = 0.0
-        sqoffsets = np.zeros(len(self.sigma_dims))
+        if self.has_cones:
+            sqoffsets = np.zeros(len(self.sigma_dims))
+            cone_efficiencies = np.ones((len(self.sigma_dims), ndim)) * np.inf
+        else:
+            sqoffsets = None
+            cone_efficiencies = None
 
         for i in range(nbootstraps):
             idx = rng.randint(N, size=N)
@@ -757,12 +763,9 @@ class MLFriends(object):
                 sigma_test = ub[:,j]
                 indices = sigma_train.argsort()
                 sigma_train = ua[indices,j]
+                sigma_train_shuffled = ua[:,j]
                 sigma_test = sigma_test - sigma_train[0]
                 sigma_train = sigma_train - sigma_train[0]
-                pads_here = np.empty(ndim)
-                cone_useful_here = np.empty(ndim)
-                #pads_here[j] = np.nan
-                #cone_useful_here[j] = np.nan
                 slopes = np.empty(ndim)
                 slopes[j] = 0
                 ymins = np.empty(ndim)
@@ -782,6 +785,18 @@ class MLFriends(object):
                     slope = (ymax - ymin) / (xmax - xmin)
                     slopes[k] = slope
                     ymins[k] = ymin
+                    
+                    # compute volume saved:
+                    # Vcone = integrate(sqrt(exp((x - x0) * (y1 - y0) / (x1 - x0) + y0)), x, x0, x1);
+                    # is:
+                    #       = 2 * (x1 - x0) * (exp(y1/2) - exp(y0/2)) / (y1 - y0)
+                    # Vcylinder is ymax * (x1 - x0)
+                    
+                    volratio = 0.5 / (np.exp(ymax/2) - np.exp(ymin/2)) * (ymax - ymin) * np.abs(other_train[1:] - centers[k]).max()
+                    
+                    # update to store worst case
+                    if volratio < cone_efficiencies[j,k]:
+                        cone_efficiencies[j,k] = volratio
                 
                 # predict the y values of the test data
                 sigma0 = sigma_train[0]
@@ -794,7 +809,9 @@ class MLFriends(object):
                 # or how much larger it is than expectations
                 sqoffset = zs_test.sum(axis=1) / predict_test.sum(axis=1)
                 assert sqoffset.shape == (len(zs_test),)
-                print("  cone:", 'x-range:', xmin, xmax, 'slope:', slopes, 'offset0:', np.exp(ymins)**0.5, 'padding:', sqoffset.max()**0.5)
+                # print("  cone:", 'x-range:', xmin, xmax, 'slope:', slopes, 'offset0:', np.exp(ymins)**0.5, 'padding:', sqoffset.max()**0.5, 'vol:', conevol)
+                
+                # update cone stats from this bootstrap round
                 sqoffsets[j] = max(sqoffset.max(), sqoffsets[j])
 
         assert maxd > 0, (maxd, self.u, self.unormed)
@@ -802,6 +819,7 @@ class MLFriends(object):
         self.maxradiussq = maxd
         self.enlarge = maxf
         self.cone_radiisq = sqoffsets
+        self.cone_efficiencies = cone_efficiencies
 
         return maxd, maxf, sqoffsets
 
@@ -824,7 +842,7 @@ class MLFriends(object):
         w = self.transformLayer.untransform(v[vmask,:])
         wmask = np.logical_and(w > 0, w < 1).all(axis=1)
         wmask[wmask] = self.inside_ellipsoid(w[wmask])
-        if self.has_cones and wmask.any():
+        if self.cones and wmask.any():
             wmask[wmask] = self.inside_cones(w[wmask,:])
 
         return w[wmask,:], idx[vmask][wmask]
@@ -844,7 +862,7 @@ class MLFriends(object):
         find_nearby(self.unormed, v, self.maxradiussq, idnearby)
         vmask = idnearby >= 0
         
-        if self.has_cones and vmask.any():
+        if self.cones and vmask.any():
             vmask[vmask] = self.inside_cones(u[wmask,:][vmask,:])
         
         return u[wmask,:][vmask,:], idnearby[vmask]
@@ -866,7 +884,7 @@ class MLFriends(object):
         wmask = np.logical_and(w > 0, w < 1).all(axis=1)
         wmask[wmask] = self.inside_ellipsoid(w[wmask])
         
-        if self.has_cones and wmask.any():
+        if self.cones and wmask.any():
             wmask[wmask] = self.inside_cones(w[wmask,:])
 
         return w[wmask,:], idnearby[vmask][wmask]
@@ -894,7 +912,7 @@ class MLFriends(object):
         find_nearby(self.unormed, v, self.maxradiussq, idnearby)
         vmask = idnearby >= 0
 
-        if self.has_cones and vmask.any():
+        if self.cones and vmask.any():
             vmask[vmask] = self.inside_cones(u[wmask,:][vmask,:])
 
         return w[wmask,:][vmask,:], idnearby[vmask]
@@ -933,7 +951,7 @@ class MLFriends(object):
 
         # additionally require points to be inside bounding ellipsoid
         mask[mask] = self.inside_ellipsoid(pts[mask,:])
-        if self.has_cones and mask.any():
+        if self.cones and mask.any():
             mask[mask] = self.inside_cones(pts[mask,:])
         return mask
 
@@ -987,7 +1005,11 @@ class MLFriends(object):
         assert self.cone_radiisq is not None
         N, ndim = self.u.shape
         self.cones = []
-        for j, cone_radiussq in zip(self.sigma_dims, self.cone_radiisq):
+        for j, cone_radiussq, cone_efficiency in zip(self.sigma_dims, self.cone_radiisq, self.cone_efficiencies):
+            if cone_efficiency.min() <= 1:
+                # a cylinder is more efficient in all axes
+                # so lets not use a cone.
+                continue
             lnsigma = self.u[:,j]
             indices = lnsigma.argsort()
             sigma = self.u[indices,j]

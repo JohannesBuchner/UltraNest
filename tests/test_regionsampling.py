@@ -221,13 +221,11 @@ def get_cones(points):
     cregion = MLFriends(points, transformLayer, sigma_dims=[0])
     cregion.apply_enlargement(nbootstraps=30)
     assert cregion.has_cones
-    print('pads:', cregion.cone_pads)
-    print('number of cones:', cregion.cone_useful)
     cregion.create_wrapping_geometry()
     print('cone info:', cregion.cones)
     return cregion.cones
 
-def __est_region_cone_activation(plot=False):
+def test_region_cone_activation(plot=False):
     np.random.seed(1)
     nsamples = 1000
     points = np.random.uniform(0., 1., size=(4000, 2))
@@ -255,21 +253,27 @@ def __est_region_cone_activation(plot=False):
     mask = (points[:,0]-0.5)**2 + (points[:,1]-0.5)**2 < 0.1**2
     points_circle5d = points[mask,:][:nsamples,:]
     
-    ndim = 2
     v = np.random.multivariate_normal(np.zeros(2), [[0.01, 0.005], [0.005, 0.01]], size=nsamples)
     points_ellipse2d = v + 0.5
     
+    print("Uniform 2d" + "*"*50)
     assert get_cones(points_uniform2d) == []
+    print("Uniform 5d" + "*"*50)
     assert get_cones(points_uniform5d) == []
+    print("Circle 2d" + "*"*50)
     assert get_cones(points_circle2d) == []
+    print("Circle 5d" + "*"*50)
     assert get_cones(points_circle5d) == []
+    print("Ellipse 2d" + "*"*50)
     assert get_cones(points_ellipse2d) == []
+    print("Funnel 2d" + "*"*50)
     assert get_cones(points_funnel2d) != []
-    #assert get_cones(points_funnel5d) != []
+    print("Funnel 5d" + "*"*50)
+    assert get_cones(points_funnel5d) != []
     
 
 if __name__ == '__main__':
-    #test_region_funnel(plot=True)
+    test_region_funnel(plot=True)
     test_region_cone_activation()
     #test_region_sampling_scaling(plot=True)
     #test_region_sampling_affine(plot=True)
