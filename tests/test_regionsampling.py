@@ -165,16 +165,16 @@ def test_region_funnel(plot=False):
     cregion = MLFriends(points, transformLayer, sigma_dims=[0])
     cregion.apply_enlargement(nbootstraps=30)
     assert cregion.has_cones
-    print('pads:', cregion.cone_pads)
-    print('number of cones:', cregion.cone_useful)
+    print('pads:', cregion.cone_radiisq)
+    #print('number of cones:', cregion.cone_useful)
     cregion.create_wrapping_geometry()
     print('cone info:', cregion.cones)
     print(cregion.current_sampling_method)
-    j, k, xmin, slope, ymin = cregion.cones[0]
+    j, centers, sigma0, ymins, slopes, cone_radiussq = cregion.cones[0]
+    print('xmin:', sigma0, 'slope:', slopes, 'offset0', np.exp(ymins)**0.5, 'padding:', cone_radiussq**0.5)
     assert j == 0
-    assert k == 1
-    print('xmin:', xmin, points[:,0].min())
-    np.testing.assert_allclose(xmin, points[:,0].min())
+    #print('xmin:', xmin, points[:,0].min())
+    np.testing.assert_allclose(sigma0, points[:,0].min())
     #print('ymin:', ymin, points[points[:,0].argmin(),1]**2)
     #np.testing.assert_allclose(ymin, points[points[:,0].argmin(),1])
     mask = cregion.inside(samples)
@@ -183,14 +183,17 @@ def test_region_funnel(plot=False):
     if plot:
         plt.plot(points[:,0], points[:,1], 'o ')
         plt.plot(samples[:,0], samples[:,1], 'x ')
-        plt.plot(samples[mask,0], samples[mask,1], '^ ')
-        
-        mean = cregion.ellipsoid_center[1]
+        plt.plot(samples[mask,0], samples[mask,1], 's ', mew=1, mfc='None')
+
         sigma = np.linspace(0, 1, 4000)
-        predict = ((sigma - xmin) * slope + ymin)
-        plt.plot(sigma, mean + np.exp(predict)**0.5)
-        plt.plot(sigma, mean + 0*sigma, '--')
-        plt.plot(sigma, mean - np.exp(predict)**0.5)
+        
+        # predict the y values
+        predict = np.exp((sigma.reshape((-1, 1)) - sigma0) * slopes.reshape((1, -1)) + ymins.reshape((1, -1)))
+        predict[:,j] = 0
+        z = (predict * cone_radiussq)**0.5
+        plt.plot(sigma, (centers + z)[:,1])
+        plt.plot(sigma, centers[1] + 0*sigma, '--')
+        plt.plot(sigma, (centers - z)[:,1])
         
         plt.ylim(points[:,1].min(), points[:,1].max())
         plt.savefig('test_region_funnel_filter.pdf', bbox_inches='tight')
@@ -224,7 +227,7 @@ def get_cones(points):
     print('cone info:', cregion.cones)
     return cregion.cones
 
-def test_region_cone_activation(plot=False):
+def __est_region_cone_activation(plot=False):
     np.random.seed(1)
     nsamples = 1000
     points = np.random.uniform(0., 1., size=(4000, 2))

@@ -729,8 +729,7 @@ class MLFriends(object):
         selected = np.empty(N, dtype=bool)
         maxd = 0.0
         maxf = 0.0
-        pads = [None for i in self.sigma_dims]
-        cone_useful = [None for i in self.sigma_dims]
+        sqoffsets = np.zeros(len(self.sigma_dims))
 
         for i in range(nbootstraps):
             idx = rng.randint(N, size=N)
@@ -758,47 +757,53 @@ class MLFriends(object):
                 sigma_test = ub[:,j]
                 indices = sigma_train.argsort()
                 sigma_train = ua[indices,j]
+                sigma_test = sigma_test - sigma_train[0]
+                sigma_train = sigma_train - sigma_train[0]
                 pads_here = np.empty(ndim)
                 cone_useful_here = np.empty(ndim)
-                pads_here[j] = np.nan
-                cone_useful_here[j] = np.nan
+                #pads_here[j] = np.nan
+                #cone_useful_here[j] = np.nan
+                slopes = np.empty(ndim)
+                slopes[j] = 0
+                ymins = np.empty(ndim)
+                ymins[j] = 0
+                # use the one with the lowest sigma as cone tip
+                centers = ua[indices[0],:]
+                assert centers.shape == (ndim,), (centers.shape, ndim,)
                 
                 for k in range(ndim):
                     if j == k: continue
                     other_train = ua[indices,k]
-                    center = other_train.mean()
-                    z_train = np.log((other_train - center)**2)
-                    other_test = ub[:,k]
-                    ymin, ymax, xmin, xmax, M = find_slope(sigma_train, z_train)
+                    z_train = np.log((other_train[1:] - centers[k])**2)
+                    # compute the enveloping slopes
+                    #print("training slope on", sigma_train[1:], z_train)
+                    ymin, ymax, xmin, xmax, _ = find_slope(sigma_train[1:], z_train)
                     assert np.isfinite([ymin, ymax, xmin, xmax]).all(), [ymin, ymax, xmin, xmax]
-                    z_test = np.log((other_test - center)**2)
                     slope = (ymax - ymin) / (xmax - xmin)
-                    predict_test = (sigma_test - xmin) * slope + ymin
-                    # compute how far left out points are above prediction
-                    pad = max(0, (z_test - predict_test).max())
-                    print("  M=%d" % M, xmin, xmax, np.exp(ymin)**0.5, np.exp(ymax)**0.5, np.exp(pad)**0.5)
-                    pads_here[k] = pad
-                    cone_useful_here[k] = M
-
-                if i == 0:
-                    pads[j] = pads_here
-                    cone_useful[j] = cone_useful_here
-                else:
-                    # combine
-                    pads[j] = np.max([pads_here, pads[j]], axis=0)
-                    cone_useful[j] = np.min([cone_useful_here, cone_useful[j]], axis=0)
-
-                assert pads[j].shape == (ndim,), (pads[j].shape, ndim)
-                assert (pads[j][:j] >= 0).all() and (pads[j][j+1:] >= 0).all(), pads[j]
+                    slopes[k] = slope
+                    ymins[k] = ymin
+                
+                # predict the y values of the test data
+                sigma0 = sigma_train[0]
+                predict_test = np.exp((sigma_test.reshape((-1, 1)) - sigma0) * slopes.reshape((1, -1)) + ymins.reshape((1, -1)))
+                predict_test[:,j] = 0
+                # compute the actual y values of the test data
+                zs_test = (ub - centers.reshape((1, -1)))**2
+                zs_test[:,j] = 0
+                # compute offset, which corresponds to the radius of the cone,
+                # or how much larger it is than expectations
+                sqoffset = zs_test.sum(axis=1) / predict_test.sum(axis=1)
+                assert sqoffset.shape == (len(zs_test),)
+                print("  cone:", 'x-range:', xmin, xmax, 'slope:', slopes, 'offset0:', np.exp(ymins)**0.5, 'padding:', sqoffset.max()**0.5)
+                sqoffsets[j] = max(sqoffset.max(), sqoffsets[j])
 
         assert maxd > 0, (maxd, self.u, self.unormed)
         assert maxf > 0, (maxf, self.u, self.unormed)
         self.maxradiussq = maxd
         self.enlarge = maxf
-        self.cone_pads = pads
-        self.cone_useful = cone_useful
+        self.cone_radiisq = sqoffsets
 
-        return maxd, maxf, pads
+        return maxd, maxf, sqoffsets
 
     def sample_from_points(self, nsamples=100):
         """Draw uniformly sampled points from MLFriends region.
@@ -979,26 +984,37 @@ class MLFriends(object):
 
     def create_cones(self):
         """Create wrapping cones and store center and slopes."""
-        assert self.cone_pads is not None
+        assert self.cone_radiisq is not None
         N, ndim = self.u.shape
         self.cones = []
-        for j, pads, cone_useful in zip(self.sigma_dims, self.cone_pads, self.cone_useful):
+        for j, cone_radiussq in zip(self.sigma_dims, self.cone_radiisq):
             lnsigma = self.u[:,j]
             indices = lnsigma.argsort()
             sigma = self.u[indices,j]
+            sigma0 = sigma[0]
+            sigma = sigma - sigma0
+            
+            slopes = np.empty(ndim)
+            slopes[j] = 0
+            ymins = np.empty(ndim)
+            ymins[j] = 0
+            # use lowest sigma point as cone tip
+            centers = self.u[indices[0],:]
 
             for k in range(ndim):
                 if j == k: continue
                 other = self.u[indices,k]
-                mean = other.mean()
-                z = np.log((other - mean)**2)
-                ymin, ymax, xmin, xmax, M = find_slope(sigma, z)
-                print("new slope info:", ymin, ymax, xmin, xmax, M, cone_useful[k], N, (2/3.) * (N)**0.5, pads[k])
+                z = np.log((other[1:] - centers[k])**2)
+                # compute the enveloping slopes
+                #print("training slope on", sigma[1:], z)
+                ymin, ymax, xmin, xmax, M = find_slope(sigma[1:], z)
+                print("new slope info:", ymin, ymax, xmin, xmax, M, N)
                 assert np.isfinite([ymin, ymax, xmin, xmax]).all(), [ymin, ymax, xmin, xmax]
                 slope = (ymax - ymin) / (xmax - xmin)
-                # use some usefulness criterion here
-                if cone_useful[k] > (N * (2/3.))**0.5:
-                    self.cones.append((j, k, xmin, slope, ymin + pads[k]))
+                slopes[k] = slope
+                ymins[k] = ymin
+
+            self.cones.append((j, centers, sigma0, ymins, slopes, cone_radiussq))
     
     def inside_cones(self, u):
         """Check if inside wrapping ellipsoid.
@@ -1015,15 +1031,25 @@ class MLFriends(object):
 
         """
         mask = np.ones(len(u), dtype=bool)
-        for j, k, xmin, slope, ymin in self.cones:
+        for j, centers, sigma0, ymins, slopes, cone_radiussq in self.cones:
             if not mask.any():
                 break
             sigma = u[:,j]
-            mean = self.ellipsoid_center[k]
-            other = u[:,k]
-            z = np.log((other - mean)**2)
-            predict = (sigma - xmin) * slope + ymin
-            mask = np.logical_and(mask, z < predict)
+            # predict the y values
+            predict = np.exp((sigma.reshape((-1, 1)) - sigma0) * slopes.reshape((1, -1)) + ymins.reshape((1, -1)))
+            predict[:,j] = 0
+            
+            # compute the actual deviation of the points
+            zs = (u - centers)**2
+            zs[:,j] = 0
+
+            # compute offset, which corresponds to the radius of the cone,
+            # or how much larger it is than expectations
+            print(predict[:10,1], zs[:10,1], cone_radiussq)
+            sqr = zs.sum(axis=1) / predict.sum(axis=1)
+            assert sqr.shape == (len(u),)
+            mask = np.logical_and(mask, sqr <= cone_radiussq)
+
         return mask
 
     def compute_mean_pair_distance(self):
