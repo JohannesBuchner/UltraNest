@@ -391,8 +391,12 @@ cdef (double, double, double, double, size_t) find_slope_(
             if not allenclosed:
                 continue
 
-            ymin = (xmin - x[i]) * (y[j] - y[i]) / (x[j] - x[i]) + y[i]
-            ymax = (xmax - x[i]) * (y[j] - y[i]) / (x[j] - x[i]) + y[i]
+            if x[j] == x[i]:
+                ymin = y[i]
+                ymax = y[i]
+            else:
+                ymin = (xmin - x[i]) * (y[j] - y[i]) / (x[j] - x[i]) + y[i]
+                ymax = (xmax - x[i]) * (y[j] - y[i]) / (x[j] - x[i]) + y[i]
             A = (ymax + ymin) / 2
             # check if all points are contained
             if A < Aopt:
