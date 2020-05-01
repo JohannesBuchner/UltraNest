@@ -316,7 +316,7 @@ def bounding_ellipsoid(x, minvol=0.):
 #@cython.boundscheck(False)
 #@cython.wraparound(False)
 cdef pareto_front_filter_(
-    np.ndarray[np.float_t, ndim=1] x, 
+    np.ndarray[np.float_t, ndim=1] x,
     np.ndarray[np.float_t, ndim=1] y,
     np.ndarray[np.npy_bool, ndim=1] at_front,
 ):
@@ -341,9 +341,9 @@ def pareto_front_filter(x, y):
 #@cython.boundscheck(False)
 #@cython.wraparound(False)
 cdef (double, double, double, double, size_t) find_slope_(
-    np.ndarray[np.float_t, ndim=1] xin, 
-    np.ndarray[np.float_t, ndim=1] yin,
-    np.ndarray[np.npy_bool, ndim=1] mask,
+    np.ndarray[np.float_t, ndim=1, cast=True] xin,
+    np.ndarray[np.float_t, ndim=1, cast=True] yin,
+    np.ndarray[np.npy_uint8, ndim=1, cast=True] mask,
 ):
     """Calculate minimum-area bounding line
 
@@ -374,7 +374,8 @@ cdef (double, double, double, double, size_t) find_slope_(
     cdef double ymaxopt = np.nan
     cdef double Aopt = np.inf
     cdef double ymin, ymax, A
-    cdef int enclosed
+    cdef double slope
+    cdef int allenclosed
     cdef unsigned long i, j
     
     for j in range(N):
@@ -382,12 +383,12 @@ cdef (double, double, double, double, size_t) find_slope_(
             # i is left of j
             assert x[i] <= x[j]
             # make interpolation
-            enclosed = True
+            allenclosed = True
             for k in range(N):
-                if k != j and k != i and not (y[k] <= ((x[k] - x[i]) / (x[j] - x[i]) * (y[j] - y[i]) + y[i]) * (1 + 1e-10)):
-                    enclosed = False
+                if k != j and k != i and x[j] != x[i] and not (y[k] <= ((x[k] - x[i]) * (y[j] - y[i]) / (x[j] - x[i]) + y[i]) * (1 + 1e-10)):
+                    allenclosed = False
                     break
-            if not enclosed:
+            if not allenclosed:
                 continue
 
             ymin = (xmin - x[i]) * (y[j] - y[i]) / (x[j] - x[i]) + y[i]

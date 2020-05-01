@@ -95,6 +95,7 @@ class NestedSampler(object):
                  num_live_points=1000,
                  vectorized=False,
                  wrapped_params=[],
+                 sigma_dims=[],
                  ):
         """Set up nested sampler.
 
@@ -124,6 +125,9 @@ class NestedSampler(object):
             If true, loglike and transform function can receive arrays
             of points.
 
+        sigma_dims: list
+            parameters
+
         """
         self.paramnames = param_names
         x_dim = len(self.paramnames)
@@ -138,6 +142,11 @@ class NestedSampler(object):
             self.wrapped_axes = []
         else:
             self.wrapped_axes = np.where(wrapped_params)[0]
+        if sigma_dims == 'auto':
+            sigma_dims = np.array([i for i, paramname in enumerate(paramnames) 
+                if 'std' in paramname.lower() or 'sigma' in paramname.lower() 
+                or 'lnvar' in paramname.lower() or 'logvar' in paramname.lower()])
+        self.sigma_dims = sigma_dims
 
         assert resume or resume in ('overwrite', 'subfolder', 'resume'), "resume should be one of 'overwrite' 'subfolder' or 'resume'"
         append_run_num = resume == 'subfolder'
@@ -679,6 +688,9 @@ class ReactiveNestedSampler(object):
         vectorized: bool
             If true, loglike and transform function can receive arrays
             of points.
+
+        sigma_dims: list
+            parameters
 
         sigma_dims: list
             parameters
@@ -2056,6 +2068,28 @@ class ReactiveNestedSampler(object):
                     self.region.unormed[worst] = self.region.transformLayer.transform(u)
                     # move also the ellipsoid
                     self.region.ellipsoid_center = np.mean(self.region.u, axis=0)
+                    # update cones if there are any
+                    if self.region.has_cones and any((u[j] < sigma0 for j, _, sigma0, _, _, _ in self.region.cones)):
+                        newcones = []
+                        for cone in self.region.cones:
+                            j, centers, sigma0, ymins, slopes, cone_radiussq = cone
+                            if u[j] < sigma0:
+                                if False:
+                                    ymins_predict = (u[j] - sigma0) * slopes + ymins
+                                    # choose a ymins that is the maximum of ymins_predict and u
+                                    deltaymin = np.log((u - centers)**2)
+                                    ymins = np.where(deltaymin > ymins_predict, deltaymin, ymins_predict)
+                                    centers = u.copy()
+                                    sigma0 = u[j]
+                                    del ymins_predict, deltaymin
+                                else:
+                                    # simple update: only adjust center
+                                    centers = u.copy()
+                                newcones.append((j, centers, sigma0, ymins, slopes, cone_radiussq))
+                            else:
+                                newcones.append(cone)
+                            del j, centers, sigma0, ymins, slopes, cone_radiussq, cone
+                        self.region.cones = newcones
 
                     # if we track the cluster assignment, then in the next round
                     # the ids with the same members are likely to have the same id
