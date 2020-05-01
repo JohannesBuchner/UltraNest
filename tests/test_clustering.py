@@ -83,6 +83,7 @@ class MockIntegrator(ReactiveNestedSampler):
         self.wrapped_axes = []
         self.log = True
         self.logger = create_logger("mock")
+        self.sigma_dims = []
 
 
 def test_overclustering_eggbox_txt():

@@ -621,20 +621,22 @@ class ReactiveNestedSampler(object):
     Storage & resume capable, optionally MPI parallelised.
     """
 
-    def __init__(self,
-                 param_names,
-                 loglike,
-                 transform=None,
-                 derived_param_names=[],
-                 wrapped_params=None,
-                 resume='subfolder',
-                 run_num=None,
-                 log_dir=None,
-                 num_test_samples=2,
-                 draw_multiple=True,
-                 num_bootstraps=30,
-                 vectorized=False,
-                 ):
+    def __init__(
+        self,
+        param_names,
+        loglike,
+        transform=None,
+        derived_param_names=[],
+        wrapped_params=None,
+        resume='subfolder',
+        run_num=None,
+        log_dir=None,
+        num_test_samples=2,
+        draw_multiple=True,
+        num_bootstraps=30,
+        vectorized=False,
+        sigma_dims=[],
+    ):
         """Initialise nested sampler.
 
         Parameters
@@ -678,6 +680,9 @@ class ReactiveNestedSampler(object):
             If true, loglike and transform function can receive arrays
             of points.
 
+        sigma_dims: list
+            parameters
+
         """
         self.paramnames = param_names
         x_dim = len(self.paramnames)
@@ -693,6 +698,11 @@ class ReactiveNestedSampler(object):
         else:
             assert len(wrapped_params) == self.x_dim, ("wrapped_params has the number of entries:", wrapped_params, ", expected", self.x_dim)
             self.wrapped_axes = np.where(wrapped_params)[0]
+        if sigma_dims == 'auto':
+            sigma_dims = np.array([i for i, paramname in enumerate(paramnames) 
+                if 'std' in paramname.lower() or 'sigma' in paramname.lower() 
+                or 'lnvar' in paramname.lower() or 'logvar' in paramname.lower()])
+        self.sigma_dims = sigma_dims
 
         self.use_mpi = False
         try:
@@ -1390,7 +1400,7 @@ class ReactiveNestedSampler(object):
             else:
                 self.transformLayer = ScalingLayer(wrapped_dims=self.wrapped_axes)
             self.transformLayer.optimize(active_u, active_u, minvol=minvol)
-            self.region = MLFriends(active_u, self.transformLayer)
+            self.region = MLFriends(active_u, self.transformLayer, sigma_dims=self.sigma_dims)
             self.region_nodes = active_node_ids.copy()
             assert self.region.maxradiussq is None
 
@@ -1517,7 +1527,7 @@ class ReactiveNestedSampler(object):
                         np.unique(nextTransformLayer.clusterids, return_counts=True)
                     )
 
-                nextregion = MLFriends(active_u, nextTransformLayer)
+                nextregion = MLFriends(active_u, nextTransformLayer, sigma_dims=self.sigma_dims)
                 if not np.isfinite(nextregion.unormed).all():
                     assert False
                     # self.logger.warn("not updating region because new transform gave inf/nans")

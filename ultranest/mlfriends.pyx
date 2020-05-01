@@ -773,6 +773,7 @@ class MLFriends(object):
                 # use the one with the lowest sigma as cone tip
                 centers = ua[indices[0],:]
                 assert centers.shape == (ndim,), (centers.shape, ndim,)
+                cone_efficiencies[j,j] = 0.0
                 
                 for k in range(ndim):
                     if j == k: continue
@@ -792,7 +793,12 @@ class MLFriends(object):
                     #       = 2 * (x1 - x0) * (exp(y1/2) - exp(y0/2)) / (y1 - y0)
                     # Vcylinder is ymax * (x1 - x0)
                     
-                    volratio = 0.5 / (np.exp(ymax/2) - np.exp(ymin/2)) * (ymax - ymin) * np.abs(other_train[1:] - centers[k]).max()
+                    if xmax == xmin:
+                        volratio = 0.
+                    elif ymax == ymin or ymax/2 > 600:
+                        volratio = np.inf
+                    else:
+                        volratio = 0.5 / (np.exp(ymax/2) - np.exp(ymin/2)) * (ymax - ymin) * np.abs(other_train[1:] - centers[k]).max()
                     
                     # update to store worst case
                     if volratio < cone_efficiencies[j,k]:
@@ -1006,9 +1012,10 @@ class MLFriends(object):
         N, ndim = self.u.shape
         self.cones = []
         for j, cone_radiussq, cone_efficiency in zip(self.sigma_dims, self.cone_radiisq, self.cone_efficiencies):
-            if cone_efficiency.min() <= 1:
+            if cone_efficiency.max() <= 1:
                 # a cylinder is more efficient in all axes
                 # so lets not use a cone.
+                print("not using inefficient cone", cone_efficiency)
                 continue
             lnsigma = self.u[:,j]
             indices = lnsigma.argsort()
@@ -1021,7 +1028,7 @@ class MLFriends(object):
             ymins = np.empty(ndim)
             ymins[j] = 0
             # use lowest sigma point as cone tip
-            centers = self.u[indices[0],:]
+            centers = self.u[indices[0],:].copy()
 
             for k in range(ndim):
                 if j == k: continue
@@ -1030,7 +1037,7 @@ class MLFriends(object):
                 # compute the enveloping slopes
                 #print("training slope on", sigma[1:], z)
                 ymin, ymax, xmin, xmax, M = find_slope(sigma[1:], z)
-                print("new slope info:", ymin, ymax, xmin, xmax, M, N)
+                print("\nnew slope info:", ymin, ymax, xmin, xmax, M, N, cone_efficiency)
                 assert np.isfinite([ymin, ymax, xmin, xmax]).all(), [ymin, ymax, xmin, xmax]
                 slope = (ymax - ymin) / (xmax - xmin)
                 slopes[k] = slope
@@ -1067,9 +1074,10 @@ class MLFriends(object):
 
             # compute offset, which corresponds to the radius of the cone,
             # or how much larger it is than expectations
-            print(predict[:10,1], zs[:10,1], cone_radiussq)
+            #print(predict[:10,1], zs[:10,1], cone_radiussq)
             sqr = zs.sum(axis=1) / predict.sum(axis=1)
             assert sqr.shape == (len(u),)
+            #print("cone accepts: %.2f%%" % ((sqr <= cone_radiussq).mean() * 100))
             mask = np.logical_and(mask, sqr <= cone_radiussq)
 
         return mask
