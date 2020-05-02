@@ -160,7 +160,8 @@ class StepSampler(object):
 
         region_filter: bool
             if True, use region to check if a proposed point can be inside
-            before calling likelihood.
+            before calling likelihood. Set to True if you care about
+            the number of likelihood evaluations.
 
         log: file
             log file for sampler statistics, such as acceptance rate,
