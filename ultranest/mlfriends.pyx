@@ -1,5 +1,4 @@
-# cython: language_level=3
-# ,profile=True
+# cython: language_level=3,annotate=True,profile=True,fast_fail=True,warning_errors=True
 """Construct and sample from region.
 
 Implements MLFriends efficiently, with transformation layers and clustering.
@@ -21,13 +20,13 @@ def count_nearby(np.ndarray[np.float_t, ndim=2] apts,
 
     The number is written to `nnearby` (of same length as bpts).
     """
-    cdef int na = apts.shape[0]
-    cdef int nb = bpts.shape[0]
-    cdef int ndim = apts.shape[1]
+    cdef size_t na = apts.shape[0]
+    cdef size_t nb = bpts.shape[0]
+    cdef size_t ndim = apts.shape[1]
     #assert ndim == bpts.shape[1]
     #assert nnearby.shape[0] == nb
 
-    cdef int i, j
+    cdef unsigned long i, j
     cdef np.float_t d
 
     # go through the unselected points and find the worst case
@@ -56,13 +55,13 @@ def find_nearby(np.ndarray[np.float_t, ndim=2] apts,
     The number is written to `nnearby` (of same length as `bpts`).
     If none is found, -1 is returned.
     """
-    cdef int na = apts.shape[0]
-    cdef int nb = bpts.shape[0]
-    cdef int ndim = apts.shape[1]
+    cdef size_t na = apts.shape[0]
+    cdef size_t nb = bpts.shape[0]
+    cdef size_t ndim = apts.shape[1]
     #assert ndim == bpts.shape[1]
     #assert nnearby.shape[0] == nb
 
-    cdef int i, j
+    cdef unsigned long i, j
     cdef np.float_t d
 
     # go through the unselected points and find the worst case
@@ -87,13 +86,13 @@ cdef float compute_maxradiussq(np.ndarray[np.float_t, ndim=2] apts, np.ndarray[n
 
     Returns the square of the maximum over these.
     """
-    cdef int na = apts.shape[0]
-    cdef int nb = bpts.shape[0]
-    cdef int ndim = apts.shape[1]
+    cdef size_t na = apts.shape[0]
+    cdef size_t nb = bpts.shape[0]
+    cdef size_t ndim = apts.shape[1]
     #assert ndim == bpts.shape[1]
     #assert f.dtype == np.float_t and g.dtype == np.float_t
 
-    cdef int i, j
+    cdef unsigned long i, j
     cdef np.float_t d
     cdef np.float_t mind = 1e300
     cdef np.float_t maxd = 0
@@ -124,10 +123,10 @@ def compute_mean_pair_distance(
 
     The number is written to `nnearby` (of same length as bpts).
     """
-    cdef int na = pts.shape[0]
-    cdef int ndim = pts.shape[1]
+    cdef size_t na = pts.shape[0]
+    cdef size_t ndim = pts.shape[1]
 
-    cdef int i, j
+    cdef unsigned long i, j
     cdef np.float_t total_dist = 0.0
     cdef np.float_t pair_dist
     cdef int Npairs = 0
