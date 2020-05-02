@@ -395,7 +395,8 @@ class NestedSampler(object):
                     nextregion = MLFriends(active_u, nextTransformLayer)
 
                 # print("computing maxradius...")
-                r, f, pads = nextregion.apply_enlargement(nbootstraps=max(1, 30 // self.mpi_size))
+                r, f, pads = nextregion.apply_enlargement(
+                    nbootstraps=max(1, 30 // self.mpi_size))
                 # print("MLFriends built. r=%f" % r**0.5)
                 if self.use_mpi:
                     recv_maxradii = self.comm.gather(r, root=0)
@@ -1629,12 +1630,12 @@ class ReactiveNestedSampler(object):
             except Warning as w:
                 if self.log:
                     self.logger.warning("not updating region", exc_info=True)
-            except FloatingPointError as e:
-                if self.log:
-                    self.logger.warning("not updating region", exc_info=True)
-            except np.linalg.LinAlgError as e:
-                if self.log:
-                    self.logger.warning("not updating region", exc_info=True)
+            #except FloatingPointError as e:
+            #    if self.log:
+            #        self.logger.warning("not updating region", exc_info=True)
+            #except np.linalg.LinAlgError as e:
+            #    if self.log:
+            #        self.logger.warning("not updating region", exc_info=True)
 
         assert len(self.region.u) == len(self.transformLayer.clusterids)
         return updated

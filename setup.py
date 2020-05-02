@@ -28,7 +28,7 @@ requirements = ['numpy', 'cython', 'matplotlib', 'corner']
 
 setup_requirements = ['pytest-runner', ]
 
-test_requirements = ['pytest>=3', ]
+test_requirements = ['pytest>=3', 'hypothesis']
 
 setup(
     author="Johannes Buchner",

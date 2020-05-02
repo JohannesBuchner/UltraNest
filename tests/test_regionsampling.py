@@ -270,10 +270,24 @@ def test_region_cone_activation(plot=False):
     assert get_cones(points_funnel2d) != []
     print("Funnel 5d" + "*"*50)
     assert get_cones(points_funnel5d) != []
+
+"""
+def test_region_cone_consistency():
+    datafile = os.path.join(os.path.dirname(__file__), 'conetestdata.npz')
+    data = np.load(datafile)
+    upoints = data['u']
     
+    transformLayer = AffineLayer()
+    transformLayer.optimize(upoints, upoints)
+    region = MLFriends(upoints, transformLayer)
+    region.apply_enlargement(nbootstraps=30)
+    region.create_wrapping_geometry()
+    assert region.inside(upoints).all(), region.inside(upoints)
+"""
 
 if __name__ == '__main__':
-    test_region_funnel(plot=True)
+    #test_region_funnel(plot=True)
     test_region_cone_activation()
     #test_region_sampling_scaling(plot=True)
     #test_region_sampling_affine(plot=True)
+    #test_region_cone_consistency()

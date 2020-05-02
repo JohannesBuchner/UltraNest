@@ -811,8 +811,9 @@ class MLFriends(object):
                 
                 # predict the y values of the test data
                 sigma0 = sigma_train[0]
-                predict_test = np.exp((sigma_test.reshape((-1, 1)) - sigma0) * slopes.reshape((1, -1)) + ymins.reshape((1, -1)))
-                predict_test[:,j] = 0
+                with np.errstate(over='ignore'):
+                    predict_test = np.exp((sigma_test.reshape((-1, 1)) - sigma0) * slopes.reshape((1, -1)) + ymins.reshape((1, -1)))
+                    predict_test[:,j] = 0
                 # compute the actual y values of the test data
                 zs_test = (ub - centers.reshape((1, -1)))**2
                 zs_test[:,j] = 0
@@ -1020,8 +1021,10 @@ class MLFriends(object):
             if cone_efficiency.max() <= 1:
                 # a cylinder is more efficient in all axes
                 # so lets not use a cone.
-                print("not using inefficient cone", cone_efficiency)
+                print("not using inefficient cone", cone_efficiency.max())
                 continue
+            else:
+                print("using efficient cone", cone_efficiency.max())
             lnsigma = self.u[:,j]
             indices = lnsigma.argsort()
             sigma = self.u[indices,j]
@@ -1042,7 +1045,9 @@ class MLFriends(object):
                 # compute the enveloping slopes
                 #print("training slope on", sigma[1:], z)
                 ymin, ymax, xmin, xmax, M = find_slope(sigma[1:], z)
-                print("\nnew slope info:", ymin, ymax, xmin, xmax, M, N, cone_efficiency)
+                if k == 0:
+                    print("\n")
+                print("new slope info:", ymin, ymax, xmin, xmax, M, N, cone_efficiency.max())
                 assert np.isfinite([ymin, ymax, xmin, xmax]).all(), [ymin, ymax, xmin, xmax]
                 slope = (ymax - ymin) / (xmax - xmin)
                 slopes[k] = slope
@@ -1070,8 +1075,9 @@ class MLFriends(object):
                 break
             sigma = u[:,j]
             # predict the y values
-            predict = np.exp((sigma.reshape((-1, 1)) - sigma0) * slopes.reshape((1, -1)) + ymins.reshape((1, -1)))
-            predict[:,j] = 0
+            with np.errstate(over='ignore'):
+                predict = np.exp((sigma.reshape((-1, 1)) - sigma0) * slopes.reshape((1, -1)) + ymins.reshape((1, -1)))
+                predict[:,j] = 0
             
             # compute the actual deviation of the points
             zs = (u - centers)**2
