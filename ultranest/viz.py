@@ -139,7 +139,7 @@ def nicelogger(points, info, region, transformLayer, region_fresh=False):
     elif spearman is not None:
         rho, pval = spearman(p)
         for i, param in enumerate(paramnames):
-            for j, param2 in enumerate(paramnames[i+1:]):
+            for j, param2 in enumerate(paramnames[:i]):
                 if pval[i,j] < 0.01 and abs(rho[i,j]) > 0.99:
                     s = 'positive relation' if rho[i,j] > 0 else 'negative relation'
                     print("   perfect %s between %s and %s" % (s, param, param2))
