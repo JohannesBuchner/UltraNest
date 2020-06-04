@@ -23,21 +23,21 @@ def create_logger(module_name, log_dir=None, level=logging.INFO):
     first_logger = logger.handlers == []
     if log_dir is not None and first_logger:
         # create file handler which logs even debug messages
-        handler = logging.FileHandler(os.path.join(log_dir, 'debug.log'))
+        fhandler = logging.FileHandler(os.path.join(log_dir, 'debug.log'))
         msgformat = '%(asctime)s [{}] [%(levelname)s] %(message)s'
         formatter = logging.Formatter(
             msgformat.format(module_name), datefmt='%H:%M:%S')
-        handler.setLevel(logging.DEBUG)
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
+        fhandler.setLevel(logging.DEBUG)
+        fhandler.setFormatter(formatter)
+        logger.addHandler(fhandler)
     if first_logger:
         logger.setLevel(logging.DEBUG)
         # if it is new, register to write to stdout
-        handler = logging.StreamHandler(sys.stdout)
-        handler.setLevel(level)
-        formatter = logging.Formatter('[{}] %(message)s'.format(module_name))
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
+        shandler = logging.StreamHandler(sys.stdout)
+        shandler.setLevel(level)
+        sformatter = logging.Formatter('[{}] %(message)s'.format(module_name))
+        shandler.setFormatter(sformatter)
+        logger.addHandler(shandler)
 
     return logger
 
@@ -62,7 +62,7 @@ def make_run_dir(log_dir, run_num=None, append_run_num=True):
     log_dir: str
         base path
     run_num: int
-        folder to add to path, such as prefix/1/
+        folder to add to path, such as log_dir/1/
     append_run_num: bool
         If true, set run_num to next unused number
 
@@ -74,9 +74,13 @@ def make_run_dir(log_dir, run_num=None, append_run_num=True):
     """
     _makedirs(log_dir)
 
-    if run_num is None or run_num == '':
+    run_num_in = run_num
+    del run_num
+    if run_num_in is None or run_num_in == '':
         run_num = (sum(os.path.isdir(os.path.join(log_dir,i))
                        for i in os.listdir(log_dir)) + 1)
+    else:
+        run_num = run_num_in
     if append_run_num:
         run_dir = os.path.join(log_dir, 'run%s' % run_num)
     else:
@@ -160,6 +164,7 @@ def resample_equal(samples, weights, rstate=None):
         raise ValueError("weights do not sum to 1 (%g)" % np.sum(weights))
 
     if rstate is None:
+        del rstate
         rstate = np.random
 
     N = len(weights)
@@ -207,19 +212,21 @@ def quantile(x, q, weights=None):
 
     """
     # Initial check.
-    x = np.atleast_1d(x)
-    q = np.atleast_1d(q)
+    x_in, q_in, weights_in = x, q, weights
+    del x, q, weights
+    x = np.atleast_1d(x_in)
+    q = np.atleast_1d(q_in)
 
     # Quantile check.
     if np.any(q < 0.0) or np.any(q > 1.0):
         raise ValueError("Quantiles must be between 0. and 1.")
 
-    if weights is None:
+    if weights_in is None:
         # If no weights provided, this simply calls `np.percentile`.
         return np.percentile(x, list(100.0 * q))
     else:
         # If weights are provided, compute the weighted quantiles.
-        weights = np.atleast_1d(weights)
+        weights = np.atleast_1d(weights_in)
         if len(x) != len(weights):
             raise ValueError("Dimension mismatch: len(weights) != len(x).")
         idx = np.argsort(x)  # sort samples

@@ -33,6 +33,7 @@ def pymultinest_solve_compat(
     Limited results.
     """
     if paramnames is None:
+        del paramnames
         paramnames = list(string.ascii_lowercase)[:n_dims]
     if seed >= 0:
         np.random.seed(seed)
@@ -40,8 +41,9 @@ def pymultinest_solve_compat(
     min_ess = kwargs.pop('min_ess', 0)
     frac_remain = kwargs.pop('frac_remain', 0.01)
     Lepsilon = kwargs.pop('Lepsilon', 0.001)
-    outputkwargs = {}
-    if not verbose:
+    if verbose:
+        outputkwargs = {}
+    else:
         outputkwargs = dict(viz_callback=False, show_status=False)
 
     sampler = ReactiveNestedSampler(

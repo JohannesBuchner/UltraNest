@@ -98,7 +98,7 @@ def build_tree(theta, v, direction, j, epsilon, transform, loglike, gradient, Lm
             can_continue = False
             vminus = v * direction
             vplus = v * direction
-            v = v * direction
+            # v = v * direction
         else:
             # Is the point acceptable?
             sprime = logpprime > Lmin
@@ -109,7 +109,7 @@ def build_tree(theta, v, direction, j, epsilon, transform, loglike, gradient, Lm
             can_continue = True
             vminus = vprime * direction
             vplus = vprime * direction
-            v = vprime * direction
+            #v = vprime * direction
 
         pminus = pprime
         pplus = pprime
@@ -121,16 +121,17 @@ def build_tree(theta, v, direction, j, epsilon, transform, loglike, gradient, Lm
         nreflectprime = reflected * 1
     else:
         # Recursion: Implicitly build the height j-1 left and right subtrees.
-        thetaminus, vminus, pminus, thetaplus, vplus, pplus, thetaprime, vprime, pprime, logpprime, sprime, can_continue, alphaprime, nalphaprime, nreflectprime = \
+        thetaminus1, vminus1, pminus1, thetaplus1, vplus1, pplus1, thetaprime1, vprime1, pprime1, logpprime, sprime1, can_continue1, alphaprime1, nalphaprime1, nreflectprime1 = \
             build_tree(theta, v, direction, j - 1, epsilon, transform, loglike, gradient, Lmin)
+        del v
         # No need to keep going if the stopping criteria were met in the first subtree.
         if can_continue and sprime:
             if direction == -1:
                 thetaminus, vminus, pminus, _, _, _, thetaprime2, vprime2, pprime2, logpprime2, sprime2, can_continue2, alphaprime2, nalphaprime2, nreflectprime2 = \
-                    build_tree(thetaminus, vminus, direction, j - 1, epsilon, transform, loglike, gradient, Lmin)
+                    build_tree(thetaminus1, vminus1, direction, j - 1, epsilon, transform, loglike, gradient, Lmin)
             else:
                 _, _, _, thetaplus, vplus, pplus, thetaprime2, vprime2, pprime2, logpprime2, sprime2, can_continue2, alphaprime2, nalphaprime2, nreflectprime2 = \
-                    build_tree(thetaplus, vplus, direction, j - 1, epsilon, transform, loglike, gradient, Lmin)
+                    build_tree(thetaplus1, vplus1, direction, j - 1, epsilon, transform, loglike, gradient, Lmin)
 
             # Choose which subtree to propagate a sample up from.
             if np.random.uniform() < alphaprime2 / (alphaprime + alphaprime2):
@@ -184,15 +185,18 @@ def tree_sample(theta, p, logL, v, epsilon, transform, loglike, gradient, Lmin, 
 
         # Double the size of the tree.
         if direction == -1:
+            del thetaminus, vminus, pminus
             thetaminus, vminus, pminus, _, _, _, thetaprime, vprime, pprime, logpprime, sprime, can_continue, alphaprime, nalphaprime, nreflectprime = \
                 build_tree(thetaminus, vminus, direction, j, epsilon, transform, loglike, gradient, Lmin)
         else:
+            del thetaplus, vplus, pplus
             _, _, _, thetaplus, vplus, pplus, thetaprime, vprime, pprime, logpprime, sprime, can_continue, alphaprime, nalphaprime, nreflectprime = \
                 build_tree(thetaplus, vplus, direction, j, epsilon, transform, loglike, gradient, Lmin)
 
         # Use Bernoulli trial to decide whether or not to move to a
         # point from the half-tree we just generated.
         if sprime and np.random.uniform() < alphaprime / (alpha + alphaprime):
+            del theta, p, logp, v
             theta = thetaprime
             p = pprime
             logp = logpprime
@@ -205,13 +209,14 @@ def tree_sample(theta, p, logL, v, epsilon, transform, loglike, gradient, Lmin, 
         # Decide if it's time to stop.
         sturn = stop_criterion(thetaminus, thetaplus, vminus, vplus)
         #print(sprime, sturn)
+        del s
         s = sprime and sturn
 
         if not can_continue:
             if direction == 1:
-                fwd_possible = False
+                fwd_possible &= False
             if direction == -1:
-                rwd_possible = False
+                rwd_possible &= False
 
         #if not s and (fwd_possible or rwd_possible):
         #    print("U-turn found a:%d r:%d t:%d" % (alpha, nreflect, nalpha), sturn, sprime, (thetaminus, thetaplus), (vminus, vplus))
@@ -370,7 +375,7 @@ class DynamicCHMCSampler(object):
 
             if pnew is not None:
                 # do not count failed accepts
-                nsteps_remaining = nsteps_remaining - 1
+                nsteps_remaining -= 1
             #else:
             #    print("stuck:", Li, "->", Lnew, "Lmin:", Lmin, nsteps_remaining)
 
@@ -383,6 +388,7 @@ class DynamicCHMCSampler(object):
                 plt.plot(ui[0], ui[1], 'd', color='r', ms=4)
                 plt.plot(unew[:,0], unew[:,1], 'x', color='r', ms=4)
 
+            del ui, pi, Li
             ui, pi, Li = unew, pnew, Lnew
 
             history.append((ui, Li))

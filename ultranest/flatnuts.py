@@ -84,14 +84,15 @@ class SingleJumper(object):
         if accept:
             self.currenti = target
             self.naccepts += 1
+            point_next = pointi
         else:
-            pointi = [(j, xj, vj, Lj) for j, xj, vj, Lj in self.stepsampler.points if j == self.currenti]
+            point_next = [(j, xj, vj, Lj) for j, xj, vj, Lj in self.stepsampler.points if j == self.currenti]
             # reverse
             self.direction *= -1
             self.nrejects += 1
         
         self.isteps += 1
-        return pointi[0][1], pointi[0][3]
+        return point_next[0][1], point_next[0][3]
 
 
 class DirectJumper(object):
@@ -121,7 +122,7 @@ class DirectJumper(object):
             target = currenti + direction
             accept = ilo <= target <= ihi and not gaps.get(target, False)
             if accept:
-                currenti = target
+                currenti += direction
                 if self.log:
                     print("accepted jump %d->%d" % (self.currenti, target), 'fwd' if self.direction == 1 else 'rwd')
             else:
@@ -174,7 +175,7 @@ class DirectJumper(object):
 
 class IntervalJumper(object):
     """ Use interval to choose final point randomly """
-    def __init__(self, stepsampler, nsteps):
+    def __init__(self, stepsampler, nsteps, log=False):
         self.stepsampler = stepsampler
         self.direction = +1
         assert nsteps >= 0
@@ -183,6 +184,7 @@ class IntervalJumper(object):
         self.currenti = 0
         self.naccepts = 0
         self.nrejects = 0
+        self.log = log
     
     def prepare_jump(self):
         target = self.currenti + self.nsteps
@@ -194,7 +196,7 @@ class IntervalJumper(object):
     def make_jump(self):
         pointi = {j: (xj, Lj) for j, xj, vj, Lj in self.stepsampler.points}
         ilo, ihi = min(pointi.keys()), max(pointi.keys())
-        a, b = self.nutssampler.validrange
+        a, b = self.stepsampler.validrange
         nused = b - a
         # these were not used:
         ntotal = ihi - ilo
@@ -284,10 +286,13 @@ class ClockedSimpleStepSampler(object):
             else:
                 unew = sample
                 xnew = transform(unew)
+                del Llast
                 Llast = loglike(xnew)
                 if Llast < Lmin:
                     Llast = None
 
+    def next(self, L):
+        raise NotImplementedError()
 
 class ClockedStepSampler(ClockedSimpleStepSampler):
     """
@@ -426,6 +431,7 @@ class ClockedStepSampler(ClockedSimpleStepSampler):
             elif goal[0] == 'eval-at':
                 _, j, xj, v, sign = goal
                 ret = self.eval_at(j, xj, v, sign, Llast)
+                del Llast
                 Llast = None
                 if ret is not None:
                     return ret
@@ -433,6 +439,7 @@ class ClockedStepSampler(ClockedSimpleStepSampler):
             elif goal[0] == 'reflect-at':
                 _, j, xk, vk, sign = goal
                 self.reflect_at(j, xk, vk, sign, Llast)
+                del Llast
                 Llast = None
             
             else:
@@ -470,6 +477,7 @@ class ClockedBisectSampler(ClockedStepSampler):
         else:
             # we are not done, but cannot reach the goal.
             # reverse. Find position from where to reverse
+            del starti, _
             if i > 0:
                 starti, _, _, _ = max(self.points)
                 reversei = starti + 1
@@ -538,22 +546,23 @@ class ClockedBisectSampler(ClockedStepSampler):
                 # so we successfully jumped all the way successfully
                 if self.log: print("successfully went all the way in one jump!")
                 self.contourpath.add(righti, rightx, rightv, Llast)
-                Llast = None
                 return
         else:
             # shrink interval based on previous evaluation point
             if Llast is not None:
                 #print("   inside.  updating interval %d-%d" % (midi, righti))
+                del lefti, leftx, leftv
                 lefti, leftx, leftv = midi, midx, midv
                 self.contourpath.add(midi, midx, midv, Llast)
-                Llast = None
             else:
                 #print("   outside. updating interval %d-%d" % (lefti, midi))
+                del righti, rightx, rightv
                 righti, rightx, rightv = midi, midx, midv
+        del Llast
         
         # we need to bisect. righti was outside
-        midi = (righti + lefti) // 2
-        if midi == lefti or midi == righti:
+        next_midi = (righti + lefti) // 2
+        if next_midi == lefti or next_midi == righti:
             # we are done bisecting. right is the first point outside
             if self.log: print("  bisecting gave reflection point", righti, rightx, rightv)
             if self.plot: plt.plot(rightx[0], rightx[1], 'xr')
@@ -569,12 +578,12 @@ class ClockedBisectSampler(ClockedStepSampler):
             self.goals.insert(0, ('reflect-at', righti, xk, vk, sign))
             return xk, False
         else:
-            if self.log: print("  continue bisect at", midi)
+            if self.log: print("  continue bisect at", next_midi)
             # we should evaluate the middle point
-            midx, midv = extrapolate_ahead(midi - lefti, leftx, leftv, contourpath=self.contourpath)
+            next_midx, next_midv = extrapolate_ahead(next_midi - lefti, leftx, leftv, contourpath=self.contourpath)
             # continue bisecting
-            self.goals.insert(0, ('bisect', lefti, leftx, leftv, midi, midx, midv, righti, rightx, rightv, sign))
-            return midx, False
+            self.goals.insert(0, ('bisect', lefti, leftx, leftv, next_midi, next_midx, next_midv, righti, rightx, rightv, sign))
+            return next_midx, False
     
     
     def next(self, Llast=None):
@@ -618,6 +627,7 @@ class ClockedBisectSampler(ClockedStepSampler):
             elif goal[0] == 'bisect':
                 _, lefti, leftx, leftv, midi, midx, midv, righti, rightx, rightv, sign = goal
                 ret = self.bisect_at(lefti, leftx, leftv, midi, midx, midv, righti, rightx, rightv, sign, Llast)
+                del Llast
                 Llast = None
                 if ret is not None:
                     return ret
@@ -625,6 +635,7 @@ class ClockedBisectSampler(ClockedStepSampler):
             elif goal[0] == 'reflect-at':
                 _, j, xk, vk, sign = goal
                 self.reflect_at(j, xk, vk, sign, Llast)
+                del Llast
                 Llast = None
             else:
                 assert False, goal
@@ -676,6 +687,7 @@ class ClockedNUTSSampler(ClockedBisectSampler):
             # work down any open tasks
             while self.goals:
                 sample, is_independent = ClockedBisectSampler.next(self, Llast=Llast)
+                del Llast
                 Llast = None
                 if sample is not None:
                     return sample, is_independent
@@ -724,6 +736,7 @@ class ClockedNUTSSampler(ClockedBisectSampler):
             for i in range(a, b+1):
                 xi, vi, Li, onpath = self.contourpath.interpolate(i)
                 plt.plot(xi[0], xi[1], '_ ', color='b', ms=10, mew=2)
+                del i, xi, vi, Li, onpath
         
         while True:
             i = np.random.randint(a, b+1)
@@ -751,16 +764,18 @@ class ClockedNUTSSampler(ClockedBisectSampler):
             return (i, xi, vi), (i, xi, vi), (i,i), False
         
         # recursion-build the left and right subtrees
-        (ileft, xleft, vleft), (iright, xright, vright), rangea, stopa = self.build_tree(startstate, j-1, rwd)
+        (ileft1, xleft1, vleft1), (iright1, xright1, vright1), rangea, stopa = self.build_tree(startstate, j-1, rwd)
         if stopa:
             #print("  one subtree already terminated; returning")
             #plt.plot([xright[0], xleft[0]], [xright[1], xleft[1]], ':', color='navy')
-            return (ileft, xleft, vleft), (iright, xright, vright), (ileft,iright), stopa
+            return (ileft1, xleft1, vleft1), (iright1, xright1, vright1), (ileft1, iright1), stopa
         if rwd:
             # go back
-            (ileft, xleft, vleft), _, rangeb, stopb = self.build_tree((ileft, xleft, vleft), j-1, rwd)
+            (ileft, xleft, vleft), _, rangeb, stopb = self.build_tree((ileft1, xleft1, vleft1), j-1, rwd)
+            iright, xright, vright = iright1, xright1, vright1
         else:
-            _, (iright, xright, vright), rangeb, stopb = self.build_tree((iright, xright, vright), j-1, rwd)
+            _, (iright, xright, vright), rangeb, stopb = self.build_tree((iright1, xright1, vright1), j-1, rwd)
+            ileft, xleft, vleft = ileft1, xleft1, vleft1
         #print("  subtree termination at %d" % j, stopa, stopb, angle(xright-xleft, vleft), angle(xright-xleft, vright), angle(vleft, vright))
         #plt.plot([xright[0], xleft[0]], [xright[1], xleft[1]], ':', color='gray')
         # NUTS criterion: start to end vector must point in the same direction as velocity at end-point

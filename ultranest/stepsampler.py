@@ -66,10 +66,10 @@ def generate_region_random_direction(ui, region, scale=1):
     ti = region.transformLayer.transform(ui)
 
     # choose axis in transformed space:
-    ti = np.random.normal(ti, 1)
+    ti_axis = np.random.normal(ti, 1)
     # ti *= scale / (ti**2).sum()**0.5
     # convert back to unit cube space:
-    uj = region.transformLayer.untransform(ti)
+    uj = region.transformLayer.untransform(ti_axis)
     v = uj - ui
     v *= scale / (v**2).sum()**0.5
     return v
@@ -443,12 +443,14 @@ class StepSampler(object):
         ui, Li = self.last
         if Li is not None and not Li >= Lmin:
             print("wandered out of L constraint; resetting", ui[0])
+            del ui, Li
             ui, Li = None, None
 
         if Li is None and self.history:
             # try to resume from a previous point above the current contour
             for j, (uj, Lj) in enumerate(self.history[::-1]):
                 if Lj > Lmin and region.inside(uj.reshape((1,-1))):
+                    del ui, Li
                     ui, Li = uj, Lj
                     # print("recovering at point %d/%d " % (j+1, len(self.history)))
                     self.last = ui, Li
@@ -462,6 +464,7 @@ class StepSampler(object):
 
         # select starting point
         if Li is None:
+            del ui
             self.new_chain(region)
             # choose a new random starting point
             # mask = region.inside(us)
@@ -484,7 +487,6 @@ class StepSampler(object):
                 plt.plot(unew[:,0], unew[:,1], 'x', color='r', ms=4)
             mask = np.logical_and(unew > 0, unew < 1).all(axis=1)
             unew = unew[mask,:]
-            nc = 0
             if self.region_filter:
                 mask = inside_region(region, unew, ui)
                 if mask.any():
@@ -500,16 +502,17 @@ class StepSampler(object):
                 continue
             break
 
-        unew = unew[i,:]
-        pnew = transform(unew.reshape((1, -1)))
-        Lnew = loglike(pnew)[0]
+        unext = unew[i,:]
+        del unew
+        pnext = transform(unext.reshape((1, -1)))
+        Lnext = loglike(pnext)[0]
         nc = 1
-        if Lnew > Lmin:
+        if Lnext > Lmin:
             if plot:
-                plt.plot(unew[0], unew[1], 'o', color='g', ms=4)
-            self.adjust_accept(True, unew, pnew, Lnew, nc)
+                plt.plot(unext[0], unext[1], 'o', color='g', ms=4)
+            self.adjust_accept(True, unext, pnext, Lnext, nc)
         else:
-            self.adjust_accept(False, unew, pnew, Lnew, nc)
+            self.adjust_accept(False, unext, pnext, Lnext, nc)
 
         if len(self.history) > self.nsteps:
             # print("made %d steps" % len(self.history), Lnew, Lmin)
@@ -595,11 +598,9 @@ class CubeSliceSampler(StepSampler):
                 if u == 0:
                     pass
                 elif u < 0:
-                    left = u
+                    self.interval = (v, u, right, u)
                 elif u > 0:
-                    right = u
-
-                self.interval = (v, left, right, u)
+                    self.interval = (v, left, u, u)
 
     def adjust_outside_region(self):
         """Adjust proposal given that we landed outside region."""
@@ -615,7 +616,7 @@ class CubeSliceSampler(StepSampler):
             right = self.scale
             self.found_left = False
             self.found_right = False
-            u = 0
+            u = 0.0
 
             self.interval = (v, left, right, u)
 
@@ -635,6 +636,7 @@ class CubeSliceSampler(StepSampler):
                 return xj.reshape((1, -1))
             else:
                 self.found_left = True
+            del xj
 
         if not self.found_right:
             xj = ui + v * right
@@ -650,8 +652,10 @@ class CubeSliceSampler(StepSampler):
                 else:
                     self.next_scale /= 1.1
                 # print("adjusting scale...", self.next_scale)
+            del xj
 
         while True:
+            del u
             u = np.random.uniform(left, right)
             xj = ui + v * u
 
@@ -660,8 +664,10 @@ class CubeSliceSampler(StepSampler):
                 return xj.reshape((1, -1))
             else:
                 if u < 0:
+                    del left
                     left = u
                 else:
+                    del right
                     right = u
                 self.interval = (v, left, right, u)
 
@@ -772,10 +778,10 @@ class SpeedVariableRegionSliceSampler(CubeSliceSampler):
         uj = region.transformLayer.untransform(ti + tv * 1e-3)
         uk = ui.copy()
 
-        j = self.axis_index % self.nsteps
-        self.axis_index = j + 1
+        j_next = self.axis_index % self.nsteps
+        self.axis_index = j_next + 1
         # only update active dimensions
-        active_dims = self.step_matrix[j]
+        active_dims = self.step_matrix[j_next]
         # project uj onto ui. vary only active dimensions
         uk[active_dims] = uj[active_dims]
 

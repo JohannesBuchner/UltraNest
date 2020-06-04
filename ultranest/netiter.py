@@ -204,6 +204,7 @@ def print_tree(roots, title='Tree:'):
             for j, child in enumerate(node.children):
                 lanes.insert(laneid, child)
         explorer.expand_children_of(rootid, node)
+        del lastlane
         lastlane = laneid
 
 
@@ -247,7 +248,9 @@ def count_tree(roots):
         if next_node is None:
             return nnodes, maxwidth
         rootid, node, (active_nodes, active_rootids, active_values, active_nodeids) = next_node
-        maxwidth = max(maxwidth, len(active_rootids))
+        maxwidth_next = max(maxwidth, len(active_rootids))
+        del maxwidth
+        maxwidth = maxwidth_next
         nnodes += 1
         explorer.expand_children_of(rootid, node)
 
@@ -279,7 +282,9 @@ def count_tree_between(roots, lo, hi):
             return nnodes, maxwidth
 
         if lo <= node.value <= hi:
-            maxwidth = max(maxwidth, len(active_rootids))
+            maxwidth_next = max(maxwidth, len(active_rootids))
+            del maxwidth
+            maxwidth = maxwidth_next
             nnodes += 1
 
         explorer.expand_children_of(rootid, node)
@@ -701,7 +706,9 @@ def combine_results(saved_logl, saved_nodeids, pointpile, main_iterator, mpi_com
         np.shape(saved_logl),
         np.shape(main_iterator.all_logZ))
 
-    saved_logl = np.array(saved_logl)
+    saved_logl_list = saved_logl
+    del saved_logl
+    saved_logl = np.array(saved_logl_list)
     saved_u = pointpile.getu(saved_nodeids)
     saved_v = pointpile.getp(saved_nodeids)
     saved_logwt = np.array(main_iterator.logweights)
@@ -712,12 +719,14 @@ def combine_results(saved_logl, saved_nodeids, pointpile, main_iterator, mpi_com
 
     if mpi_comm is not None:
         # spread logZ_bs, saved_logwt_bs
-        recv_saved_logwt_bs = mpi_comm.gather(saved_logwt_bs, root=0)
-        recv_saved_logwt_bs = mpi_comm.bcast(recv_saved_logwt_bs, root=0)
+        recv_saved_logwt_bs1 = mpi_comm.gather(saved_logwt_bs, root=0)
+        del saved_logwt_bs
+        recv_saved_logwt_bs = mpi_comm.bcast(recv_saved_logwt_bs1, root=0)
         saved_logwt_bs = np.concatenate(recv_saved_logwt_bs, axis=1)
 
-        recv_logZ_bs = mpi_comm.gather(logZ_bs, root=0)
-        recv_logZ_bs = mpi_comm.bcast(recv_logZ_bs, root=0)
+        recv_logZ_bs1 = mpi_comm.gather(logZ_bs, root=0)
+        del logZ_bs
+        recv_logZ_bs = mpi_comm.bcast(recv_logZ_bs1, root=0)
         logZ_bs = np.concatenate(recv_logZ_bs)
 
     saved_wt_bs = exp(saved_logwt_bs + saved_logl.reshape((-1, 1)) - logZ_bs)

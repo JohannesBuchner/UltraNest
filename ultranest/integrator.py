@@ -23,17 +23,17 @@ from .viz import get_default_viz_callback, nicelogger
 from .netiter import PointPile, MultiCounter, BreadthFirstIterator, TreeNode, count_tree_between, find_nodes_before, logz_sequence
 from .netiter import dump_tree, combine_results
 
-__all__ = ['ReactiveNestedSampler', 'NestedSampler', 'read_file']
+__all__ = ['ReactiveNestedSampler', 'NestedSampler', 'read_file', 'nicelogger']
 
 
 
 def _get_cumsum_range(pi, dp):
     """From probabilities pi compute the quantile indices of `dp` and ``1-dp``."""
     ci = pi.cumsum()
-    ilo = np.where(ci > dp)[0]
-    ilo = ilo[0] if len(ilo) > 0 else 0
-    ihi = np.where(ci < 1. - dp)[0]
-    ihi = ihi[-1] if len(ihi) > 0 else -1
+    ilos = np.where(ci > dp)[0]
+    ilo = ilos[0] if len(ilos) > 0 else 0
+    ihis = np.where(ci < 1. - dp)[0]
+    ihi = ihis[-1] if len(ihis) > 0 else -1
     return ilo, ihi
 
 
@@ -72,11 +72,15 @@ def _sequentialize_width_sequence(minimal_widths, min_width):
     widest = 0
     for i in range(mid):
         widths[i] = max(widest, widths[i])
+        del widest
         widest = widths[i]
+    del widest
     widest = 0
     for i in range(len(widths) - 1, mid, -1):
         widths[i] = max(widest, widths[i])
+        del widest
         widest = widths[i]
+    del widest
 
     return list(zip(Lpoints, widths))
 
@@ -141,21 +145,26 @@ class NestedSampler(object):
 
         assert resume or resume in ('overwrite', 'subfolder', 'resume'), "resume should be one of 'overwrite' 'subfolder' or 'resume'"
         append_run_num = resume == 'subfolder'
-        resume = resume == 'resume' or resume
+        resume_flag = resume == 'resume' or resume
+        del resume
 
         if not vectorized:
-            transform = vectorize(transform)
-            loglike = vectorize(loglike)
+            transform_vectorized = vectorize(transform)
+            loglike_vectorized = vectorize(loglike)
+        else:
+            transform_vectorized = transform
+            loglike_vectorized = loglike
+        del loglike, transform
 
-        if transform is None:
+        if transform_vectorized is None:
             self.transform = lambda x: x
         else:
-            self.transform = transform
+            self.transform = transform_vectorized
 
         u = np.random.uniform(size=(2, self.x_dim))
         p = self.transform(u)
         assert p.shape == (2, self.num_params), ("Error in transform function: returned shape is %s, expected %s" % (p.shape, (2, self.num_params)))
-        logl = loglike(p)
+        logl = loglike_vectorized(p)
         assert np.logical_and(u > 0, u < 1).all(), ("Error in transform function: u was modified!")
         assert logl.shape == (2,), ("Error in loglikelihood function: returned shape is %s, expected %s" % (p.shape, (2, self.num_params)))
         assert np.isfinite(logl).all(), ("Error in loglikelihood function: returned non-finite number: %s for input u=%s p=%s" % (logl, u, p))
@@ -163,7 +172,7 @@ class NestedSampler(object):
         def safe_loglike(x):
             """ wrapped likelihood function """
             x = np.asarray(x)
-            logl = loglike(x)
+            logl = loglike_vectorized(x)
             assert np.isfinite(logl).all(), (
                 'User-provided loglikelihood returned non-finite value:',
                 logl[~np.isfinite(logl)][0],
@@ -190,11 +199,12 @@ class NestedSampler(object):
 
         if self.log and log_dir is not None:
             self.logs = make_run_dir(log_dir, run_num, append_run_num=append_run_num)
-            log_dir = self.logs['run_dir']
+            existing_log_dir = self.logs['run_dir']
         else:
-            log_dir = None
+            existing_log_dir = None
+        del log_dir
 
-        self.logger = create_logger(__name__ + '.' + type(self).__name__, log_dir=log_dir)
+        self.logger = create_logger(__name__ + '.' + type(self).__name__, log_dir=existing_log_dir)
 
         if self.log:
             self.logger.info('Num live points [%d]', self.num_live_points)
@@ -203,7 +213,7 @@ class NestedSampler(object):
             # self.pointstore = TextPointStore(os.path.join(self.logs['results'], 'points.tsv'), 2 + self.x_dim + self.num_params)
             self.pointstore = HDF5PointStore(
                 os.path.join(self.logs['results'], 'points.hdf5'),
-                3 + self.x_dim + self.num_params, mode='a' if resume else 'w')
+                3 + self.x_dim + self.num_params, mode='a' if resume_flag else 'w')
         else:
             self.pointstore = NullPointStore(3 + self.x_dim + self.num_params)
 
@@ -231,51 +241,57 @@ class NestedSampler(object):
 
         """
         if update_interval_ncall is None:
+            del update_interval_ncall
             update_interval_ncall = max(1, round(self.num_live_points))
 
         if update_interval_iter is None:
+            del update_interval_iter
             if update_interval_ncall == 0:
                 update_interval_iter = max(1, round(self.num_live_points))
             else:
                 update_interval_iter = max(1, round(0.2 * self.num_live_points))
 
         if log_interval is None:
-            log_interval = max(1, round(0.2 * self.num_live_points))
+            log_interval_safe = max(1, round(0.2 * self.num_live_points))
         else:
-            log_interval = round(log_interval)
-            if log_interval < 1:
+            log_interval_safe = round(log_interval)
+            if log_interval_safe < 1:
                 raise ValueError("log_interval must be >= 1")
+        del log_interval
+        log_interval = log_interval_safe
 
         viz_callback = get_default_viz_callback()
 
-        prev_u = []
-        prev_v = []
-        prev_logl = []
+        prev_u_list = []
+        prev_v_list = []
+        prev_logl_list = []
         if self.log:
             # try to resume:
             self.logger.info('Resuming...')
             for i in range(self.num_live_points):
                 _, row = self.pointstore.pop(-np.inf)
                 if row is not None:
-                    prev_logl.append(row[1])
-                    prev_u.append(row[3:3 + self.x_dim])
-                    prev_v.append(row[3 + self.x_dim:3 + self.x_dim + self.num_params])
+                    prev_logl_list.append(row[1])
+                    prev_u_list.append(row[3:3 + self.x_dim])
+                    prev_v_list.append(row[3 + self.x_dim:3 + self.x_dim + self.num_params])
                 else:
                     break
 
-            prev_u = np.array(prev_u)
-            prev_v = np.array(prev_v)
-            prev_logl = np.array(prev_logl)
+            prev_u = np.array(prev_u_list)
+            prev_v = np.array(prev_v_list)
+            prev_logl = np.array(prev_logl_list)
 
             num_live_points_missing = self.num_live_points - len(prev_logl)
         else:
             num_live_points_missing = -1
 
         if self.use_mpi:
-            num_live_points_missing = self.comm.bcast(num_live_points_missing, root=0)
-            prev_u = self.comm.bcast(prev_u, root=0)
-            prev_v = self.comm.bcast(prev_v, root=0)
-            prev_logl = self.comm.bcast(prev_logl, root=0)
+            recv_num_live_points_missing = self.comm.bcast(num_live_points_missing, root=0)
+            recv_prev_u = self.comm.bcast(prev_u, root=0)
+            recv_prev_v = self.comm.bcast(prev_v, root=0)
+            recv_prev_logl = self.comm.bcast(prev_logl, root=0)
+            del prev_u, prev_v, prev_logl, num_live_points_missing
+            prev_u, prev_v, prev_logl, num_live_points_missing = recv_prev_u, recv_prev_v, recv_prev_logl, recv_num_live_points_missing
 
         use_point_stack = True
 
@@ -325,10 +341,10 @@ class NestedSampler(object):
             active_v = prev_v
             active_logl = prev_logl
 
-        saved_u = []
-        saved_v = []  # Stored points for posterior results
-        saved_logl = []
-        saved_logwt = []
+        saved_u_list = []
+        saved_v_list = []  # Stored points for posterior results
+        saved_logl_list = []
+        saved_logwt_list = []
         h = 0.0  # Information, initially 0.
         logz = -1e300  # ln(Evidence Z), initially Z=0
         logvol = log(1.0 - exp(-1.0 / self.num_live_points))
@@ -360,14 +376,16 @@ class NestedSampler(object):
 
             # Update evidence Z and information h.
             logz_new = np.logaddexp(logz, logwt)
-            h = (exp(logwt - logz_new) * active_logl[worst] + exp(logz - logz_new) * (h + logz) - logz_new)
+            h_next = (exp(logwt - logz_new) * active_logl[worst] + exp(logz - logz_new) * (h + logz) - logz_new)
+            del h, logz
+            h = h_next
             logz = logz_new
 
             # Add worst object to samples.
-            saved_u.append(np.array(active_u[worst]))
-            saved_v.append(np.array(active_v[worst]))
-            saved_logwt.append(logwt)
-            saved_logl.append(active_logl[worst])
+            saved_u_list.append(np.array(active_u[worst]))
+            saved_v_list.append(np.array(active_v[worst]))
+            saved_logwt_list.append(logwt)
+            saved_logl_list.append(active_logl[worst])
 
             # expected_vol = np.exp(-it / self.num_live_points)
 
@@ -401,6 +419,7 @@ class NestedSampler(object):
                 # force shrinkage of volume
                 # this is to avoid re-connection of dying out nodes
                 if nextregion.estimate_volume() < region.estimate_volume():
+                    del region, transformLayer
                     region = nextregion
                     transformLayer = region.transformLayer
                 region.create_ellipsoid(minvol=exp(-it / self.num_live_points) * self.volfactor)
@@ -415,9 +434,10 @@ class NestedSampler(object):
                         region=region, transformLayer=transformLayer)
                     self.pointstore.flush()
 
+                del next_update_interval_ncall, next_update_interval_iter
                 next_update_interval_ncall = ncall + update_interval_ncall
                 next_update_interval_iter = it + update_interval_iter
-                first_time = False
+                first_time &= False
 
             while True:
                 if ib >= len(samples) and use_point_stack:
@@ -430,6 +450,7 @@ class NestedSampler(object):
                             next_point[0,:] = stored_point
                         else:
                             next_point[0,:] = -np.inf
+                        del use_point_stack
                         use_point_stack = not self.pointstore.stack_empty
 
                     if self.use_mpi:  # and informs everyone
@@ -439,6 +460,7 @@ class NestedSampler(object):
                     # assert not use_point_stack
 
                     # unpack
+                    del samples, ib
                     likes = next_point[:,1]
                     samples = next_point[:,3:3 + self.x_dim]
                     samplesv = next_point[:,3 + self.x_dim:3 + self.x_dim + self.num_params]
@@ -515,6 +537,7 @@ class NestedSampler(object):
                     ib = ib + 1
 
             # Shrink interval
+            del logz_remain, fraction_remain
             logvol -= 1.0 / self.num_live_points
             logz_remain = np.max(active_logl) - it / self.num_live_points
             fraction_remain = np.logaddexp(logz, logz_remain) - logz
@@ -527,33 +550,38 @@ class NestedSampler(object):
                 sys.stdout.flush()
 
                 # if efficiency becomes low, bulk-process larger arrays
+                del ndraw
                 ndraw = max(128, min(16384, round((ncall + 1) / (it + 1) / self.mpi_size)))
 
             # Stopping criterion
             if fraction_remain < dlogz:
                 break
-            it = it + 1
+            it += 1
 
-        logvol = -len(saved_v) / self.num_live_points - log(self.num_live_points)
+        del logvol
+        logvol = -len(saved_v_list) / self.num_live_points - log(self.num_live_points)
         for i in range(self.num_live_points):
+            del logwt, logz_new, h_next
             logwt = logvol + active_logl[i]
             logz_new = np.logaddexp(logz, logwt)
-            h = (exp(logwt - logz_new) * active_logl[i] + exp(logz - logz_new) * (h + logz) - logz_new)
+            h_next = (exp(logwt - logz_new) * active_logl[i] + exp(logz - logz_new) * (h + logz) - logz_new)
+            del h, logz
+            h = h_next
             logz = logz_new
-            saved_u.append(np.array(active_u[i]))
-            saved_v.append(np.array(active_v[i]))
-            saved_logwt.append(logwt)
-            saved_logl.append(active_logl[i])
+            saved_u_list.append(np.array(active_u[i]))
+            saved_v_list.append(np.array(active_v[i]))
+            saved_logwt_list.append(logwt)
+            saved_logl_list.append(active_logl[i])
 
-        saved_u = np.array(saved_u)
-        saved_v = np.array(saved_v)
-        saved_wt = exp(np.array(saved_logwt) - logz)
-        saved_logl = np.array(saved_logl)
+        saved_u = np.array(saved_u_list)
+        saved_v = np.array(saved_v_list)
+        saved_wt = exp(np.array(saved_logwt_list) - logz)
+        saved_logl = np.array(saved_logl_list)
         logzerr = np.sqrt(h / self.num_live_points)
 
         if self.log_to_disk:
-            with open(os.path.join(self.logs['results'], 'final.csv'), 'w') as f:
-                writer = csv.writer(f)
+            with open(os.path.join(self.logs['results'], 'final.csv'), 'w') as fout:
+                writer = csv.writer(fout)
                 writer.writerow(['niter', 'ncall', 'logz', 'logzerr', 'h'])
                 writer.writerow([it + 1, ncall, logz, logzerr, h])
             self.pointstore.close()
@@ -568,7 +596,7 @@ class NestedSampler(object):
             ncall=ncall, niter=it, logz=logz, logzerr=logzerr,
             weighted_samples=dict(
                 upoints=saved_u, points=saved_v, weights=saved_wt,
-                logweights=saved_logwt, logl=saved_logl),
+                logweights=saved_logwt_list, logl=saved_logl),
         )
 
         return self.results
@@ -707,16 +735,18 @@ class ReactiveNestedSampler(object):
 
         assert resume in (True, 'overwrite', 'subfolder', 'resume'), "resume should be one of 'overwrite' 'subfolder' or 'resume'"
         append_run_num = resume == 'subfolder'
-        resume = resume == 'resume' or resume
+        resume_flag = resume == 'resume' or resume
+        del resume
 
         if self.log and log_dir is not None:
             self.logs = make_run_dir(log_dir, run_num, append_run_num=append_run_num)
-            log_dir = self.logs['run_dir']
+            existing_log_dir = self.logs['run_dir']
         else:
-            log_dir = None
+            existing_log_dir = None
+        del log_dir
 
         if self.log:
-            self.logger = create_logger('ultranest', log_dir=log_dir)
+            self.logger = create_logger('ultranest', log_dir=existing_log_dir)
         self.root = TreeNode(id=-1, value=-np.inf)
 
         self.pointpile = PointPile(self.x_dim, self.num_params)
@@ -724,34 +754,41 @@ class ReactiveNestedSampler(object):
             # self.pointstore = TextPointStore(os.path.join(self.logs['results'], 'points.tsv'), 2 + self.x_dim + self.num_params)
             self.pointstore = HDF5PointStore(
                 os.path.join(self.logs['results'], 'points.hdf5'),
-                3 + self.x_dim + self.num_params, mode='a' if resume else 'w')
+                3 + self.x_dim + self.num_params, mode='a' if resume_flag else 'w')
             self.ncall = len(self.pointstore.stack)
         else:
             self.pointstore = NullPointStore(3 + self.x_dim + self.num_params)
         self.ncall = self.pointstore.ncalls
         self.ncall_region = 0
 
+        self.draw_multiple = draw_multiple
         if not vectorized:
             if transform is not None:
-                transform = vectorize(transform)
-            loglike = vectorize(loglike)
-            draw_multiple = False
+                transform_vectorized = vectorize(transform)
+            else:
+                transform_vectorized = None
+            loglike_vectorized = vectorize(loglike)
+            self.draw_multiple = False
+        else:
+            transform_vectorized = transform
+            loglike_vectorized = loglike
+        del transform, loglike
 
-        self.draw_multiple = draw_multiple
-        self._set_likelihood_function(transform, loglike, num_test_samples)
+        self._set_likelihood_function(transform_vectorized, loglike_vectorized, num_test_samples)
         self.stepsampler = None
 
     def _setup_distributed_seeds(self):
         if not self.use_mpi:
             return
-        seed = 0
         if self.mpi_rank == 0:
-            seed = np.random.randint(0, 1000000)
+            start_seed = np.random.randint(0, 1000000)
+        else:
+            start_seed = 0
 
-        seed = self.comm.bcast(seed, root=0)
+        root_seed = self.comm.bcast(start_seed, root=0)
         if self.mpi_rank > 0:
             # from http://arxiv.org/abs/1005.4117
-            seed = int(abs(((seed * 181) * ((self.mpi_rank - 83) * 359)) % 104729))
+            seed = int(abs(((root_seed * 181) * ((self.mpi_rank - 83) * 359)) % 104729))
             # print('setting seed:', self.mpi_rank, seed)
             np.random.seed(seed)
 
@@ -767,10 +804,11 @@ class ReactiveNestedSampler(object):
         # this makes debugging easier by failing early with meaningful errors
 
         # if we are resuming, check that last sample still gives same result
-        num_resume_test_samples = 0
         if num_test_samples and not self.pointstore.stack_empty:
             num_resume_test_samples = 1
             num_test_samples -= 1
+        else:
+            num_resume_test_samples = 0
 
         if num_test_samples > 0:
             # test with num_test_samples random points
@@ -783,6 +821,7 @@ class ReactiveNestedSampler(object):
             assert np.logical_and(u > 0, u < 1).all(), ("Error in transform function: u was modified!")
             assert logl.shape == (num_test_samples,), ("Error in loglikelihood function: returned shape is %s, expected %s" % (p.shape, (num_test_samples,)))
             assert np.isfinite(logl).all(), ("Error in loglikelihood function: returned non-finite number: %s for input u=%s p=%s" % (logl, u, p))
+            del u, p, logl
 
         if not self.pointstore.stack_empty and num_resume_test_samples > 0:
             # test that last sample gives the same likelihood value
@@ -912,10 +951,10 @@ class ReactiveNestedSampler(object):
             # nothing to do
             return
 
-        prev_u = []
-        prev_v = []
-        prev_logl = []
-        prev_rowid = []
+        prev_u_list = []
+        prev_v_list = []
+        prev_logl_list = []
+        prev_rowid_list = []
 
         if self.log and self.use_point_stack:
             # try to resume:
@@ -924,25 +963,28 @@ class ReactiveNestedSampler(object):
                 rowid, row = self.pointstore.pop(-np.inf)
                 if row is None:
                     break
-                prev_logl.append(row[1])
-                prev_u.append(row[3:3 + self.x_dim])
-                prev_v.append(row[3 + self.x_dim:3 + self.x_dim + self.num_params])
-                prev_rowid.append(rowid)
+                prev_logl_list.append(row[1])
+                prev_u_list.append(row[3:3 + self.x_dim])
+                prev_v_list.append(row[3 + self.x_dim:3 + self.x_dim + self.num_params])
+                prev_rowid_list.append(rowid)
+                del rowid
 
         if self.log:
-            prev_u = np.array(prev_u)
-            prev_v = np.array(prev_v)
-            prev_logl = np.array(prev_logl)
+            prev_u = np.array(prev_u_list)
+            prev_v = np.array(prev_v_list)
+            prev_logl = np.array(prev_logl_list)
 
             num_live_points_missing = nnewroots - len(prev_logl)
         else:
             num_live_points_missing = -1
 
         if self.use_mpi:
-            num_live_points_missing = self.comm.bcast(num_live_points_missing, root=0)
-            prev_u = self.comm.bcast(prev_u, root=0)
-            prev_v = self.comm.bcast(prev_v, root=0)
-            prev_logl = self.comm.bcast(prev_logl, root=0)
+            recv_num_live_points_missing = self.comm.bcast(num_live_points_missing, root=0)
+            recv_prev_u = self.comm.bcast(prev_u, root=0)
+            recv_prev_v = self.comm.bcast(prev_v, root=0)
+            recv_prev_logl = self.comm.bcast(prev_logl, root=0)
+            del prev_u, prev_v, prev_logl, num_live_points_missing
+            prev_u, prev_v, prev_logl, num_live_points_missing = recv_prev_u, recv_prev_v, recv_prev_logl, recv_num_live_points_missing
 
         assert num_live_points_missing >= 0
         if self.log and num_live_points_missing > 0:
@@ -1029,6 +1071,7 @@ class ReactiveNestedSampler(object):
         Ls.sort()
         # Ls = [node.value] + [n.value for rootid2, n in parallel_nodes]
         Lmax = Ls[-1]
+        del Lmin
         Lmin = Ls[0]
 
         # all points the same, stop
@@ -1038,10 +1081,10 @@ class ReactiveNestedSampler(object):
         # max remainder contribution is Lmax + weight, to be added to main_iterator.logZ
         # the likelihood that would add an equal amount as main_iterator.logZ is:
         logZmax = main_iterator.logZremain
-        Lnext = logZmax - (main_iterator.logVolremaining + log(frac_remain)) - log(len(Ls))
+        Lnext_extrapolated = logZmax - (main_iterator.logVolremaining + log(frac_remain)) - log(len(Ls))
         L1 = Ls[1] if len(Ls) > 1 else Ls[0]
         Lmax1 = Ls[-2] if len(Ls) > 1 else Ls[-1]
-        Lnext = max(min(Lnext, Lmax1), L1)
+        Lnext = max(min(Lnext_extrapolated, Lmax1), L1)
 
         # if the remainder dominates, return that range
         if main_iterator.logZremain > main_iterator.logZ:
@@ -1079,13 +1122,13 @@ class ReactiveNestedSampler(object):
             required number of effective samples (higher is stricter).
 
         """
-        saved_logl = np.asarray(saved_logl)
+        saved_logl_in = saved_logl
+        del saved_logl
+        saved_logl = np.asarray(saved_logl_in)
         logw = np.asarray(main_iterator.logweights) + saved_logl.reshape((-1,1)) - main_iterator.all_logZ
         ref_logw = logw[:,0].reshape((-1,1))
         other_logw = logw[:,1:]
 
-        Llo_ess = np.inf
-        Lhi_ess = -np.inf
         w = exp(ref_logw.flatten())
         w /= w.sum()
         ess = len(w) / (1.0 + ((len(w) * w - 1)**2).sum() / len(w))
@@ -1093,6 +1136,10 @@ class ReactiveNestedSampler(object):
             samples = np.random.choice(len(w), p=w, size=min_ess)
             Llo_ess = saved_logl[samples].min()
             Lhi_ess = saved_logl[samples].max()
+            del samples
+        else:
+            Llo_ess = np.inf
+            Lhi_ess = -np.inf
         if self.log and Lhi_ess > Llo_ess:
             self.logger.info("Effective samples strategy wants to improve: %.2f..%.2f (ESS = %.1f, need >%d)",
                              Llo_ess, Lhi_ess, ess, min_ess)
@@ -1105,12 +1152,12 @@ class ReactiveNestedSampler(object):
             KL = np.where(np.isfinite(other_logw), exp(other_logw) * (other_logw - ref_logw), 0)
         KLtot = KL.sum(axis=0)
         dKLtot = np.abs(KLtot - KLtot.mean())
-        p = np.where(KL > 0, KL, 0)
-        p /= p.sum(axis=0).reshape((1, -1))
+        p_KL = np.where(KL > 0, KL, 0)
+        p_KL /= p_KL.sum(axis=0).reshape((1, -1))
 
         Llo_KL = np.inf
         Lhi_KL = -np.inf
-        for i, (pi, dKLi, logwi) in enumerate(zip(p.transpose(), dKLtot, other_logw)):
+        for i, (pi, dKLi, logwi) in enumerate(zip(p_KL.transpose(), dKLtot, other_logw)):
             if dKLi > dKL:
                 ilo, ihi = _get_cumsum_range(pi, 1. / 400)
                 # ilo and ihi are most likely missing in this iterator
@@ -1121,8 +1168,10 @@ class ReactiveNestedSampler(object):
                 ihi2 = (ihi + ihis[0]) if len(ihis) > 0 else -1
                 # self.logger.info('   - KL[%d] = %.2f: need to improve near %.2f..%.2f --> %.2f..%.2f' % (
                 #  i, dKLi, saved_logl[ilo], saved_logl[ihi], saved_logl[ilo2], saved_logl[ihi2]))
-                Llo_KL = min(Llo_KL, saved_logl[ilo2])
-                Lhi_KL = max(Lhi_KL, saved_logl[ihi2])
+                Llo_KL_next = min(Llo_KL, saved_logl[ilo2])
+                Lhi_KL_next = max(Lhi_KL, saved_logl[ihi2])
+                del Lhi_KL, Llo_KL
+                Lhi_KL, Llo_KL = Llo_KL_next, Lhi_KL_next
 
         if self.log and Lhi_KL > Llo_KL:
             self.logger.info("Posterior uncertainty strategy wants to improve: %.2f..%.2f (KL: %.2f+-%.2f nat, need <%.2f nat)",
@@ -1134,22 +1183,25 @@ class ReactiveNestedSampler(object):
         Llo_Z = np.inf
         Lhi_Z = -np.inf
         # compute difference between lnZ cumsum
-        p = exp(logw)
-        p /= p.sum(axis=0).reshape((1, -1))
+        p_w = exp(logw)
+        p_w /= p_w.sum(axis=0).reshape((1, -1))
         deltalogZ = np.abs(main_iterator.all_logZ[1:] - main_iterator.logZ)
 
         tail_fraction = w[np.asarray(main_iterator.istail)].sum() / w.sum()
         logzerr_tail = logaddexp(log(tail_fraction) + main_iterator.logZ, main_iterator.logZ) - main_iterator.logZ
         if (deltalogZ > dlogz).any() and (main_iterator.logZerr_bs**2 + logzerr_tail**2)**0.5 > dlogz:
-            for i, (pi, deltalogZi) in enumerate(zip(p.transpose(), deltalogZ)):
+            for i, (pi, deltalogZi) in enumerate(zip(p_w.transpose(), deltalogZ)):
                 if deltalogZi > dlogz:
                     # break up samples with too much weight
                     samples = np.random.choice(len(ref_logw), p=pi, size=400)
                     # if self.log:
                     #     self.logger.info('   - deltalogZi[%d] = %.2f: need to improve near %.2f..%.2f' % (
                     #         i, deltalogZi, saved_logl[samples].min(), saved_logl[samples].max()))
-                    Llo_Z = min(Llo_Z, saved_logl[samples].min())
-                    Lhi_Z = max(Lhi_Z, saved_logl[samples].max())
+                    Llo_Z_next = min(Llo_Z, saved_logl[samples].min())
+                    Lhi_Z_next = max(Lhi_Z, saved_logl[samples].max())
+                    del Llo_Z, Lhi_Z
+                    Llo_Z, Lhi_Z = Llo_Z_next, Lhi_Z_next
+                    del samples
 
         if self.log and Lhi_Z > Llo_Z:
             self.logger.info(
@@ -1176,6 +1228,7 @@ class ReactiveNestedSampler(object):
             Lmin=Lmin, us=active_u, Ls=active_values,
             ndraw=min(10, ndraw))
         if logl is None:
+            del u, v, logl
             u = np.empty((0, self.x_dim))
             v = np.empty((0, self.num_params))
             logl = np.empty((0,))
@@ -1223,9 +1276,11 @@ class ReactiveNestedSampler(object):
             logl = np.empty((0,))
         else:
             if nu > 1 and not self.draw_multiple:
+                del nu
                 nu = 1
-                u = u[:1,:]
-                father = father[:1]
+                u_single, father_single = u[:1,:], father[:1]
+                del u, father
+                u, father = u_single, father_single
 
             v = self.transform(u)
             logl = self.loglike(v)
@@ -1253,14 +1308,15 @@ class ReactiveNestedSampler(object):
                     "Delete the output files and start again.")
             self.sampling_slow_warned = True
 
-        u = u[accepted,:]
-        v = v[accepted,:]
-        logl = logl[accepted]
+        u_accepted = u[accepted,:]
+        v_accepted = v[accepted,:]
+        logl_accepted = logl[accepted]
+        del u, v, logl, accepted
 
         if self.use_mpi:
-            recv_samples = self.comm.gather(u, root=0)
-            recv_samplesv = self.comm.gather(v, root=0)
-            recv_likes = self.comm.gather(logl, root=0)
+            recv_samples = self.comm.gather(u_accepted, root=0)
+            recv_samplesv = self.comm.gather(v_accepted, root=0)
+            recv_likes = self.comm.gather(logl_accepted, root=0)
             recv_nc = self.comm.gather(nc, root=0)
             recv_samples = self.comm.bcast(recv_samples, root=0)
             recv_samplesv = self.comm.bcast(recv_samplesv, root=0)
@@ -1271,9 +1327,9 @@ class ReactiveNestedSampler(object):
             self.likes = np.concatenate(recv_likes, axis=0)
             self.ncall += sum(recv_nc)
         else:
-            self.samples = np.array(u)
-            self.samplesv = np.array(v)
-            self.likes = np.array(logl)
+            self.samples = np.array(u_accepted)
+            self.samplesv = np.array(v_accepted)
+            self.likes = np.array(logl_accepted)
             self.ncall += nc
         self.ncall_region += ndraw
 
@@ -1395,18 +1451,18 @@ class ReactiveNestedSampler(object):
             # print("MLFriends built. r=%f" % r**0.5)
             if self.use_mpi:
                 recv_maxradii = self.comm.gather(r, root=0)
-                recv_maxradii = self.comm.bcast(recv_maxradii, root=0)
-                r = np.max(recv_maxradii)
+                r = np.max(self.comm.bcast(recv_maxradii, root=0))
                 recv_enlarge = self.comm.gather(f, root=0)
-                recv_enlarge = self.comm.bcast(recv_enlarge, root=0)
-                f = np.max(recv_enlarge)
+                f = np.max(self.comm.bcast(recv_enlarge, root=0))
+                del recv_maxradii, recv_enlarge
 
             self.region.maxradiussq = r
             self.region.enlarge = f
+            del r, f
             self.region.create_ellipsoid(minvol=minvol)
             # if self.log:
             #     self.logger.debug("building first region ... r=%e, f=%e" % (r, f))
-            updated = True
+            updated |= True
 
             # verify correctness:
             # self.region.create_ellipsoid(minvol=minvol)
@@ -1430,14 +1486,14 @@ class ReactiveNestedSampler(object):
             # print("MLFriends built. r=%f" % r**0.5)
             if self.use_mpi:
                 recv_maxradii = self.comm.gather(r, root=0)
-                recv_maxradii = self.comm.bcast(recv_maxradii, root=0)
-                r = np.max(recv_maxradii)
+                r = np.max(self.comm.bcast(recv_maxradii, root=0))
                 recv_enlarge = self.comm.gather(f, root=0)
-                recv_enlarge = self.comm.bcast(recv_enlarge, root=0)
-                f = np.max(recv_enlarge)
+                f = np.max(self.comm.bcast(recv_enlarge, root=0))
+                del recv_maxradii, recv_enlarge
 
             self.region.maxradiussq = r
             self.region.enlarge = f
+            del r, f
 
             # print("made first region, r=%e" % (r))
 
@@ -1474,9 +1530,9 @@ class ReactiveNestedSampler(object):
             self.transformLayer.clusterids = clusterids
 
             # we want the clustering to repeat to remove remaining zeros
-            need_accept = (self.transformLayer.clusterids == 0).any()
+            need_accept |= (self.transformLayer.clusterids == 0).any()
 
-            updated = True
+            updated |= True
             assert len(self.region.u) == len(self.transformLayer.clusterids)
 
             # verify correctness:
@@ -1580,17 +1636,17 @@ class ReactiveNestedSampler(object):
                     self.region_nodes = active_node_ids.copy()
                     # if self.log:
                     #     self.logger.debug("region updated: V=%e R=%e" % (self.region.estimate_volume(), r))
-                    updated = True
+                    updated |= True
 
                     assert not (self.transformLayer.clusterids == 0).any(), (self.transformLayer.clusterids, need_accept, updated)
 
-            except Warning as w:
+            except Warning:
                 if self.log:
                     self.logger.warning("not updating region", exc_info=True)
-            except FloatingPointError as e:
+            except FloatingPointError:
                 if self.log:
                     self.logger.warning("not updating region", exc_info=True)
-            except np.linalg.LinAlgError as e:
+            except np.linalg.LinAlgError:
                 if self.log:
                     self.logger.warning("not updating region", exc_info=True)
 
@@ -1672,7 +1728,7 @@ class ReactiveNestedSampler(object):
             # we do not need to expand this one
             # expand_node = len(node.children) == 0
             # prefer 1 child, or the number required, if specified
-            expand_node = len(node.children) < target_min_num_children.get(node.id, 1)
+            expand_node |= len(node.children) < target_min_num_children.get(node.id, 1)
 
             # some exceptions:
             if it > 0:
@@ -1682,15 +1738,15 @@ class ReactiveNestedSampler(object):
 
                 if too_wide:
                     # print("not expanding, because we are quite wide", nlive, minimal_width, minimal_widths_sequence)
-                    expand_node = False
+                    expand_node &= False
 
                 if max_ncalls is not None and self.ncall >= max_ncalls:
                     # print("not expanding, because above max_ncall")
-                    expand_node = False
+                    expand_node &= False
 
                 if max_iters is not None and it >= max_iters:
                     # print("not expanding, because above max_iters")
-                    expand_node = False
+                    expand_node &= False
 
         return expand_node
 
@@ -1848,7 +1904,10 @@ class ReactiveNestedSampler(object):
         self.sampling_slow_warned = False
 
         if viz_callback == 'auto':
-            viz_callback = get_default_viz_callback()
+            viz_callback_function = get_default_viz_callback()
+        else:
+            viz_callback_function = viz_callback
+        del viz_callback
 
         self._widen_roots(min_num_live_points)
 
@@ -1870,14 +1929,17 @@ class ReactiveNestedSampler(object):
             nroots = len(roots)
 
             if update_interval_ncall is None:
+                del update_interval_ncall
                 update_interval_ncall = nroots
 
             if log_interval is None:
-                log_interval = max(1, round(0.1 * nroots))
+                log_interval_safe = max(1, round(0.1 * nroots))
             else:
-                log_interval = round(log_interval)
-                if log_interval < 1:
+                log_interval_safe = round(log_interval)
+                if log_interval_safe < 1:
                     raise ValueError("log_interval must be >= 1")
+            del log_interval
+            log_interval = log_interval_safe
 
             explorer = BreadthFirstIterator(roots)
             # Integrating thing
@@ -1935,6 +1997,7 @@ class ReactiveNestedSampler(object):
                 if strategy_stale or not (Lmin <= Lhi) or not np.isfinite(Lhi) or (active_values == Lmin).all():
                     # check with advisor if we want to expand this node
                     # Llo_prev, Lhi_prev = Llo, Lhi
+                    del Llo, Lhi
                     Llo, Lhi = self._adaptive_strategy_advice(
                         Lmin, active_values, main_iterator,
                         minimal_widths, frac_remain, Lepsilon=Lepsilon)
@@ -1949,6 +2012,7 @@ class ReactiveNestedSampler(object):
 
                     # when we are going to the peak, numerical accuracy
                     # can become an issue. We should try not to get stuck there
+                    del strategy_stale
                     strategy_stale = Lhi - Llo < max(Lepsilon, 0.01)
 
                 expand_node = self._should_node_be_expanded(
@@ -1986,9 +2050,9 @@ class ReactiveNestedSampler(object):
                         # provide nice output to follow what is going on
                         # but skip if we are resuming
                         #  and (self.ncall != ncall_at_run_start and it_at_first_region == it)
-                        if self.log and viz_callback:
+                        if self.log and viz_callback_function:
                             active_p = self.pointpile.getp(active_node_ids)
-                            viz_callback(
+                            viz_callback_function(
                                 points=dict(u=active_u, p=active_p, logl=active_values),
                                 info=dict(
                                     it=it, ncall=self.ncall,
@@ -2115,6 +2179,7 @@ class ReactiveNestedSampler(object):
                         'but it is irrelevant already; try decreasing frac_remain.')
                 break
 
+            del Lmax
             Lmax = main_iterator.Lmax
             if len(region_sequence) > 0:
                 Lmin, nlive, nclusters = region_sequence[-1]
@@ -2383,7 +2448,7 @@ def read_file(log_dir, x_dim, num_bootstraps=20, random=True, verbose=False):
 
     pointpile = PointPile(x_dim, num_params)
 
-    def pop(Lmin):
+    def mock_pop(Lmin):
         """ find matching sample from points file """
         # look forward to see if there is an exact match
         # if we do not use the exact matches
@@ -2398,7 +2463,7 @@ def read_file(log_dir, x_dim, num_bootstraps=20, random=True, verbose=False):
 
     roots = []
     while True:
-        _, row = pop(-np.inf)
+        _, row = mock_pop(-np.inf)
         if row is None:
             break
         logl = row[1]
@@ -2410,7 +2475,7 @@ def read_file(log_dir, x_dim, num_bootstraps=20, random=True, verbose=False):
 
     def onNode(node, main_iterator):
         """ insert (single) child of node if available """
-        _, row = pop(node.value)
+        _, row = mock_pop(node.value)
         if row is not None:
             logl = row[1]
             u = row[3:3 + x_dim]

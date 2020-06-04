@@ -113,6 +113,7 @@ def linear_steps_with_reflection(ray_origin, ray_direction, t, wrapped_dims=None
 
     tleft = 1.0 * t
     while True:
+        del t
         p, t, i = nearest_box_intersection_line(ray_origin, ray_direction, fwd=True)
         # print(p, t, i, ray_origin, ray_direction)
         assert np.isfinite(p).all()
@@ -122,29 +123,32 @@ def linear_steps_with_reflection(ray_origin, ray_direction, t, wrapped_dims=None
             assert np.all(ray_origin + tleft * ray_direction <= 1), (ray_origin, tleft, ray_direction)
             return ray_origin + tleft * ray_direction, ray_direction
         # go to reflection point
-        ray_origin = p
-        assert np.isfinite(ray_origin).all(), ray_origin
+        
+        next_ray_origin = p
+        assert np.isfinite(next_ray_origin).all(), next_ray_origin
         # reflect
-        ray_direction = ray_direction.copy()
+        next_ray_direction = ray_direction.copy()
+        del ray_origin, ray_direction
         if wrapped_dims is None:
-            ray_direction[i] *= -1
+            next_ray_direction[i] *= -1
         else:
             # if we already once bumped into that (wrapped) axis,
             # do not continue but return this as end point
             if np.logical_and(reflected[i], wrapped_dims[i]).any():
-                return ray_origin, ray_direction
+                return next_ray_origin, next_ray_direction
 
             # note which axes we already flipped
             reflected[i] = True
 
             # in wrapped axes, we can keep going. Otherwise, reflects
-            ray_direction[i] *= np.where(wrapped_dims[i], 1, -1)
+            next_ray_direction[i] *= np.where(wrapped_dims[i], 1, -1)
 
             # in the i axes, we should wrap the coordinates
-            assert np.logical_or(np.isclose(ray_origin[i], 1), np.isclose(ray_origin[i], 0)).all(), ray_origin[i]
-            ray_origin[i] = np.where(wrapped_dims[i], 1 - ray_origin[i], ray_origin[i])
+            assert np.logical_or(np.isclose(next_ray_origin[i], 1), np.isclose(next_ray_origin[i], 0)).all(), next_ray_origin[i]
+            next_ray_origin[i] = np.where(wrapped_dims[i], 1 - next_ray_origin[i], next_ray_origin[i])
 
-        assert np.isfinite(ray_direction).all(), ray_direction
+        assert np.isfinite(next_ray_direction).all(), next_ray_direction
+        ray_origin, ray_direction = next_ray_origin, next_ray_direction
         # reduce remaining distance
         tleft -= t
 
@@ -261,6 +265,7 @@ def extrapolate_ahead(dj, xj, vj, contourpath=None):
     for di in d:
         xi, vi = linear_steps_with_reflection(xj, vj, di)
         if not region.inside(xk.reshape((1, -1))):
+            del first_point_outside
             first_point_outside = di, xi, vi
             break
 
@@ -325,6 +330,7 @@ def interpolate(i, points, fwd_possible, rwd_possible, contourpath=None):
         # print("    interpolate_point %d: the path cannot continue fwd, and i does not exist." % i)
         j, xj, vj, Lj = max(points_before)
         return xj, vj, Lj, False
+        del j, xj, vj, Lj
 
     # check if the point before is really before i
     if len(points_before) == 0 and not rwd_possible:
@@ -332,6 +338,7 @@ def interpolate(i, points, fwd_possible, rwd_possible, contourpath=None):
         k, xk, vk, Lk = min(points_after)
         # print("    interpolate_point %d: the path cannot continue rwd, and i does not exist." % i)
         return xk, vk, Lk, False
+        del k, xk, vk, Lk
 
     if len(points_before) == 0 or len(points_after) == 0:
         # return None, None, None, False
@@ -406,13 +413,13 @@ class SamplingPath(object):
 
         Only uses first two dimensions.
         """
-        x = np.array([x for i, x, v, L in sorted(self.points)])
-        p, = plt.plot(x[:,0], x[:,1], 'o ', **kwargs)
+        y = np.array([x for i, x, v, L in sorted(self.points)])
+        p, = plt.plot(y[:,0], y[:,1], 'o ', **kwargs)
         ilo, _, _, _ = min(self.points)
         ihi, _, _, _ = max(self.points)
-        x = np.array([self.interpolate(i)[0] for i in range(ilo, ihi + 1)])
+        z = np.array([self.interpolate(i)[0] for i in range(ilo, ihi + 1)])
         kwargs['color'] = p.get_color()
-        plt.plot(x[:,0], x[:,1], 'o-', ms=4, mfc='None', **kwargs)
+        plt.plot(z[:,0], z[:,1], 'o-', ms=4, mfc='None', **kwargs)
 
     def interpolate(self, i):
         """Interpolate point with index `i` on path."""
@@ -456,6 +463,7 @@ class ContourSamplingPath(object):
         self.samplingpath = samplingpath
         self.points = self.samplingpath.points
         self.region = region
+        self.gradient = self.approximate_gradient
 
     def add(self, i, x, v, L):
         """Add point `xi`, direction `vi` and value `Li` with index `i` to the path."""
@@ -494,7 +502,7 @@ class ContourSamplingPath(object):
         newpoint = extrapolate_ahead(deltai, xj, vj, contourpath=self)
         return newpoint
 
-    def gradient(self, reflpoint, plot=False):
+    def approximate_gradient(self, reflpoint, plot=False):
         """Compute gradient approximation.
 
         Finds spheres enclosing the `reflpoint`, and chooses their mean
@@ -537,6 +545,7 @@ class ContourSamplingPath(object):
         nearby = dist < region.maxradiussq
         assert nearby.shape == (len(region.unormed),), (nearby.shape, len(region.unormed))
         if not nearby.any():
+            del nearby
             nearby = dist == dist.min()
         sphere_centers = region.u[nearby,:]
 

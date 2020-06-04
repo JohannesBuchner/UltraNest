@@ -4,7 +4,6 @@ These features are experimental.
 """
 
 import numpy as np
-from numpy import pi
 
 import matplotlib.pyplot as plt
 
@@ -14,6 +13,9 @@ from ultranest.stepsampler import generate_region_oriented_direction, generate_r
 
 from ultranest.flatnuts import ClockedStepSampler, ClockedBisectSampler, ClockedNUTSSampler
 from ultranest.flatnuts import SingleJumper, DirectJumper, IntervalJumper
+
+
+SingleJumper, DirectJumper, IntervalJumper
 
 
 class SamplingPathSliceSampler(StepSampler):
@@ -83,12 +85,14 @@ class SamplingPathSliceSampler(StepSampler):
                 if not (xj > 0).all() or not (xj < 1).all() or not region.inside(xj.reshape((1, -1))):
                     break
                 # self.path.add(left, xj, vj, 0.0)
+                del xj, vj
                 left *= 2
 
             while abs(right * self.scale) < maxlength:
                 xj, _ = self.path.extrapolate(right)
                 if not (xj > 0).all() or not (xj < 1).all() or not region.inside(xj.reshape((1, -1))):
                     break
+                del xj
                 # self.path.add(right, xj, vj, 0.0)
                 right *= 2
 
@@ -108,6 +112,7 @@ class SamplingPathSliceSampler(StepSampler):
                 left = mid
             elif mid > 0:
                 right = mid
+            del mid
 
         # shrink direction if outside
         while True:
@@ -124,8 +129,10 @@ class SamplingPathSliceSampler(StepSampler):
                 return xj.reshape((1, -1))
             else:
                 if mid < 0:
+                    del left
                     left = mid
                 else:
+                    del right
                     right = mid
                 self.interval = (left, right, mid)
 
@@ -173,13 +180,12 @@ class SamplingPathStepSampler(StepSampler):
 
     def __str__(self):
         """Get string representation."""
-        return '(nsteps=%d, nresets=%d, AR=%d%%)' % (
+        return '%s(nsteps=%d, nresets=%d, AR=%d%%)' % (
             type(self).__name__, self.nsteps, self.nresets, (1 - self.balance) * 100)
 
     def start(self):
         """Start sampler, reset all counters."""
         if hasattr(self, 'naccepts') and self.nrejects + self.naccepts > 0:
-            nr, na = self.nrejects, self.naccepts
             self.logstat.append([
                 self.naccepts / (self.nrejects + self.naccepts),
                 self.nreflects / (self.nreflects + self.nrejects + self.naccepts),
@@ -368,6 +374,7 @@ class SamplingPathStepSampler(StepSampler):
         if Li is not None and not Li >= Lmin:
             if self.log:
                 print("wandered out of L constraint; resetting", ui[0])
+            del ui, Li
             ui, Li = None, None
 
         if Li is not None and not region.inside(ui.reshape((1,-1))):
@@ -375,10 +382,12 @@ class SamplingPathStepSampler(StepSampler):
             # so reset
             if self.log:
                 print("region change; resetting")
+            del ui, Li
             ui, Li = None, None
 
         if Li is None and self.history:
             # try to resume from a previous point above the current contour
+            del ui, Li
             for uj, Lj in self.history[::-1]:
                 if Lj >= Lmin and region.inside(uj.reshape((1,-1))):
                     ui, Li = uj, Lj
@@ -388,6 +397,7 @@ class SamplingPathStepSampler(StepSampler):
 
         # select starting point
         if Li is None:
+            del ui, Li
             # choose a new random starting point
             mask = region.inside(us)
             assert mask.any(), (
@@ -428,7 +438,7 @@ class SamplingPathStepSampler(StepSampler):
                         plt.plot(unew[0], unew[1], '+', color='orange', ms=4)
                     pnew = transform(unew)
                     Lnew = loglike(pnew.reshape((1, -1)))
-                    nc = 1
+                    nc += 1
                 else:
                     Lnew = -np.inf
                     if self.log:
@@ -450,6 +460,7 @@ class SamplingPathStepSampler(StepSampler):
                 if plot:
                     plt.plot(unew[0], unew[1], 'o', color='g', ms=4)
                 self.adjust_accept(True, unew, pnew, Lnew, nc)
+                del uret, pret, Lret
                 uret, pret, Lret = unew, pnew, Lnew
             else:
                 if plot:
@@ -483,6 +494,7 @@ class SamplingPathStepSampler(StepSampler):
                         nc += 1
                         if Lk >= Lmin:
                             jump_successful = True
+                            del uret, pret, Lret
                             uret, pret, Lret = xk, pk, Lk
                             if self.log:
                                 print("successful reflect!")
@@ -700,11 +712,13 @@ class OtherSamplerProxy(object):
         ui, Li = self.last
         if Li is not None and not Li >= Lmin:
             # print("wandered out of L constraint; resetting", ui[0])
+            del ui, Li
             ui, Li = None, None
 
         if Li is not None and not region.inside(ui.reshape((1,-1))):
             # region was updated and we are not inside anymore
             # so reset
+            del ui, Li
             ui, Li = None, None
 
         if Li is None:
@@ -720,13 +734,15 @@ class OtherSamplerProxy(object):
                 u, is_independent = self.sampler.next(Llast=Llast)
                 if not is_independent and u is not None:
                     # should evaluate point
-                    Llast = None
+                    del Llast
                     if region.inside(u.reshape((1,-1))):
                         p = transform(u.reshape((1, -1)))
                         L = loglike(p)[0]
                         self.ncalls += 1
                         if L > Lmin:
                             Llast = L
+                        else:
+                            Llast = None
                     else:
                         Llast = None
             else:

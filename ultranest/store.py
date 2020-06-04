@@ -48,6 +48,11 @@ class NullPointStore(object):
 
 class FilePointStore(object):
     """Base class for storing points in a file."""
+    
+    def __init__(self):
+        self.stack = []
+        self.fileobj = None
+        raise NotImplementedError()
 
     def reset(self):
         """Reset stack to loaded data.

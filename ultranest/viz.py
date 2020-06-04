@@ -12,12 +12,11 @@ from xml.sax.saxutils import escape as html_escape
 
 clusteridstrings = ['%d' % i for i in range(10)] + list(string.ascii_uppercase) + list(string.ascii_lowercase)
 
-spearman = None
 try:
     import scipy.stats
     spearman = scipy.stats.spearmanr
 except ImportError:
-    pass
+    spearman = None
 
 
 def round_parameterlimits(plo, phi, paramlimitguess=None):
@@ -110,10 +109,11 @@ def nicelogger(points, info, region, transformLayer, region_fresh=False):
         columns, _rows = shutil.get_terminal_size(fallback=(80, 25))
     else:
         columns, _rows = 80, 25
+    del _rows
 
     paramwidth = max([len(pname) for pname in paramnames])
-    width = columns - 23 - paramwidth
-    width = max(width, 10)
+    width_guess = columns - 23 - paramwidth
+    width = max(width_guess, 10)
     indices = ((p - plo_rounded) * width / (phi_rounded - plo_rounded).reshape((1, -1))).astype(int)
     indices[indices >= width] = width - 1
     indices[indices < 0] = 0
@@ -146,6 +146,7 @@ def nicelogger(points, info, region, transformLayer, region_fresh=False):
                 elif pval[i,j] < 0.01 and abs(rho[i,j]) > 0.75:
                     s = 'positive degeneracy' if rho[i,j] > 0 else 'negative degeneracy'
                     print("   %s between %s and %s: rho=%.2f" % (s, param, param2, rho[i,j]))
+                del j
 
     for i, (param, fmt) in enumerate(zip(paramnames, paramformats)):
         if nmodes == 1:
@@ -224,7 +225,7 @@ class LivePointsWidget(object):
             number of html table columns.
 
         """
-        from ipywidgets import HTML, VBox, GridBox, Layout, GridspecLayout
+        from ipywidgets import HTML, VBox, Layout, GridspecLayout
         from IPython.display import display
 
         grid = GridspecLayout(len(paramnames), width + 3)
