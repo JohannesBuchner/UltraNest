@@ -76,6 +76,7 @@ coverage: ## check code coverage quickly with the default Python
 docs: ## generate Sphinx HTML documentation, including API docs
 	rm -f docs/ultranest.rst
 	rm -f docs/modules.rst
+	python3 setup.py build_ext --inplace
 	#nbstripout docs/*.ipynb
 	sphinx-apidoc -H API -o docs/ ultranest
 	$(MAKE) -C docs clean
