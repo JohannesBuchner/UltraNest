@@ -1829,8 +1829,6 @@ class ReactiveNestedSampler(object):
             require at least this many live points per detected cluster
 
         """
-        # if viz_callback == 'auto':
-        #    viz_callback = get_default_viz_callback()
 
         for result in self.run_iter(
             update_interval_iter_fraction=update_interval_iter_fraction,
