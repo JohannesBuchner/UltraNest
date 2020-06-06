@@ -475,6 +475,7 @@ class StepSampler(object):
             ui = us[i,:]
             # print("starting at", ui[0])
             # assert np.logical_and(ui > 0, ui < 1).all(), ui
+            del Li
             Li = Ls[i]
             self.history.append((ui.copy(), Li.copy()))
             del i
