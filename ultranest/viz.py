@@ -64,11 +64,11 @@ def round_parameterlimits(plo, phi, paramlimitguess=None):
         if -1 <= expolo[i] <= 2 and -1 <= expohi[i] <= 2:
             fmt = '%+.1f'
         if -4 <= expolo[i] <= 0 and -4 <= expohi[i] <= 0:
-            fmt = '%%+.%df' % (-min(expolo[i], expohi[i]))
+            fmt = '%%+.%df' % (max(0, -min(expolo[i], expohi[i])))
         if phi[i] == plo[i]:
             fmt = '%+.1f'
         elif fmt % plo[i] == fmt % phi[i]:
-            fmt = '%%+.%df' % (-int(np.floor(log10(phi[i] - plo[i]))))
+            fmt = '%%+.%df' % (max(0, -int(np.floor(log10(phi[i] - plo[i])))))
         formats.append(fmt)
 
     return plo_rounded, phi_rounded, formats
@@ -118,7 +118,7 @@ def nicelogger(points, info, region, transformLayer, region_fresh=False):
     indices[indices >= width] = width - 1
     indices[indices < 0] = 0
     ndim = len(plo)
-
+    
     print()
     print()
     clusterids = transformLayer.clusterids % len(clusteridstrings)
