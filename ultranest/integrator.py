@@ -114,7 +114,7 @@ class NestedSampler(object):
             where to store output files
         resume: 'resume', 'overwrite' or 'subfolder'
             if 'overwrite', overwrite previous data.
-            if 'subfolder', create a fresh subdirectory in log_dir
+            if 'subfolder', create a fresh subdirectory in log_dir.
             if 'resume' or True, continue previous run if available.
         wrapped_params: list of bools
             indicating whether this parameter wraps around (circular parameter).
@@ -651,7 +651,7 @@ class ReactiveNestedSampler(object):
             where to store output files
         resume: 'resume', 'overwrite' or 'subfolder'
             if 'overwrite', overwrite previous data.
-            if 'subfolder', create a fresh subdirectory in log_dir
+            if 'subfolder', create a fresh subdirectory in log_dir.
             if 'resume' or True, continue previous run if available.
 
         wrapped_params: list of bools
