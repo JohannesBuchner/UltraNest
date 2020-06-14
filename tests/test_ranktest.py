@@ -14,13 +14,9 @@ def test_expand():
 
 def test_diff_expand():
 	sample_acc = DifferenceRankAccumulator(3)
-	try:
-		sample_acc.add(3, 3)
-		assert False
-	except IndexError:
-		pass
-	sample_acc.expand(4)
-	sample_acc.add(3, 4)
+	sample_acc.add(1, 3)
+	sample_acc.add(4, 4)
+	sample_acc.add(5, 5)
 
 def test_ranker():
 	np.random.seed(1)
@@ -52,9 +48,10 @@ def test_ranker():
 def test_diff_ranker():
 	Nlive = 400
 	N = 1000
+	seed = np.random.randint(1000)
 	for frac in 1, 0.9:
 		print("frac:", frac)
-		np.random.seed(1)
+		np.random.seed(seed)
 		sample_acc = RankAccumulator(Nlive)
 		sample_ref = RankAccumulator(Nlive)
 		runlength = []
@@ -71,7 +68,7 @@ def test_diff_ranker():
 		nruns = len(runlength)
 		
 
-		np.random.seed(1)
+		np.random.seed(seed)
 		acc = DifferenceRankAccumulator(Nlive)
 		diff_runlength = []
 		for i in range(N):

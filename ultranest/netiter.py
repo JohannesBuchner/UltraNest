@@ -684,7 +684,6 @@ class MultiCounter(object):
                     if not active[i]:
                         continue
                     parallel_values_here = parallel_values[self.rootids[i, rootids]]
-                    acc.expand(rank_max)
                     for child in node.children:
                         # rootids is 400 ints pointing to the root id where each parallel_values is from
                         # self.rootids[i] says which rootids belong to this bootstrap

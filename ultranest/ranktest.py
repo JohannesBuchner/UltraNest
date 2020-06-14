@@ -61,25 +61,36 @@ class RankAccumulator():
         return self.histogram.sum()
 
 class DifferenceRankAccumulator():
-    def __init__(self, nsize):
-        self.histogram = np.zeros(nsize, dtype=np.uint32)
-        self.ref_histogram = np.zeros(nsize, dtype=np.uint32)
+    """
+    Store ranks (1 to N), with nsize allowed to vary, for comparison
+    with a random rank.
+    """
+    def __init__(self, N):
+        self.histogram = np.zeros(N, dtype=np.uint32)
+        self.ref_histogram = np.zeros(N, dtype=np.uint32)
         self.U = 0.0
+
     def reset(self):
+        """Set all counts to zero. """
         self.histogram[:] = 0
         self.ref_histogram[:] = 0
         self.U = 0.0
-    def expand(self, nsize):
-        if nsize > self.histogram.size:
+
+    def expand(self, N):
+        if N > self.histogram.size:
             old_hist = self.histogram
-            self.histogram = np.zeros(nsize, dtype=np.uint32)
+            self.histogram = np.zeros(N, dtype=np.uint32)
             self.histogram[:old_hist.size] = old_hist
             old_ref_hist = self.histogram
-            self.ref_histogram = np.zeros(nsize, dtype=np.uint32)
+            self.ref_histogram = np.zeros(N, dtype=np.uint32)
             self.ref_histogram[:old_ref_hist.size] = old_ref_hist
-    def add(self, rank, length):
-        """ add rank out of N to histogram """
-        ref_rank = np.random.randint(0, length)
+
+    def add(self, rank, N):
+        """ add rank out of N to histogram. """
+        assert rank <= N, (rank, N)
+        if N >= self.histogram.size:
+            self.expand(N+1)
+        ref_rank = np.random.randint(0, N)
         # count how often this one value from rank wins over 
         # ref_histogram including new ref_rank
         self.ref_histogram[ref_rank] += 1
@@ -95,7 +106,7 @@ class DifferenceRankAccumulator():
     
     @property
     def zscore(self):
-        """ subtract two accumulators: Mann-Whitney-Wilcoxon U test: """
+        """ Mann-Whitney-Wilcoxon U test z-score, tie-corrected. """
         n1 = self.histogram.sum()
         n2 = self.ref_histogram.sum()
         natrank = (self.ref_histogram + self.histogram)
