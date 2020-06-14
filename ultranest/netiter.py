@@ -26,6 +26,7 @@ import math
 import operator
 import sys
 from .utils import resample_equal
+from .ranktest import RankAccumulator
 
 
 class TreeNode(object):
@@ -510,7 +511,7 @@ class MultiCounter(object):
 
     """
 
-    def __init__(self, nroots, nbootstraps=10, random=False):
+    def __init__(self, nroots, nbootstraps=10, random=False, check_insert_order=False):
         """Initialise counter.
 
         Parameters
@@ -529,6 +530,7 @@ class MultiCounter(object):
         # which rootids are active in each bootstrap instance
         # the first one contains everything
         self.rootids = [allyes]
+        self.insert_order_sample = []
         # np.random.seed(1)
         for i in range(nbootstraps):
             mask = ~allyes
@@ -538,6 +540,11 @@ class MultiCounter(object):
         self.rootids = np.array(self.rootids)
         self.random = random
         self.ncounters = len(self.rootids)
+
+        self.check_insert_order = check_insert_order
+        self.insert_order_threshold = 3
+        self.insert_order_sample = [RankAccumulator(self.rootids.shape[1]) for _ in range(self.rootids.shape[0])]
+        self.insert_order_refsample = [RankAccumulator(self.rootids.shape[1]) for _ in range(self.rootids.shape[0])]
 
         self.reset(len(self.rootids))
 
@@ -559,6 +566,10 @@ class MultiCounter(object):
         self.remainder_ratio = 1.0
         self.remainder_fraction = 1.0
 
+        [acc.reset() for acc in self.insert_order_sample]
+        [acc.reset() for acc in self.insert_order_refsample]
+        self.insert_order_runs = [[] for _ in range(nentries)]
+
     @property
     def logZ_bs(self):
         """Estimate logZ from the bootstrap ensemble."""
@@ -568,6 +579,15 @@ class MultiCounter(object):
     def logZerr_bs(self):
         """Estimate logZ error from the bootstrap ensemble."""
         return self.all_logZ[1:].std()
+
+    @property
+    def insert_order_runlength(self):
+        shortest_runs = []
+        for i, runs in enumerate(self.insert_order_runs):
+            if len(runs) == 0:
+                return shortest_runs.append(np.inf)
+            shortest_runs.append(min(runs))
+        return np.median(shortest_runs)
 
     def passing_node(self, rootid, node, rootids, parallel_values):
         """Accumulate node to the integration.
@@ -584,8 +604,8 @@ class MultiCounter(object):
             node being processed.
         rootids: array of ints
             for each parallel node, which root it belongs to.
-        parallel_nodes: array of TreeNodes
-            parallel nodes passing `node`.
+        parallel_values: float array
+            loglikelihood values of nodes passing `node`.
 
         """
         # node is being consumed
@@ -659,6 +679,30 @@ class MultiCounter(object):
             # volume is reduced by exp(-1/N)
             self.all_logVolremaining[active] += logright[active]
             self.logVolremaining = self.all_logVolremaining[0]
+            
+            if self.check_insert_order:
+                rank_max = nlive.max() + 1
+                [acc.expand(rank_max) for acc in self.insert_order_sample]
+                [acc.expand(rank_max) for acc in self.insert_order_refsample]
+                for child in node.children:
+                    # we only need to pay attention to `active` roots
+                    #print(child.value, parallel_values.shape, rootids.shape, self.rootids.shape, active.shape, active.sum(), nlive.shape)
+                    for i in np.where(active)[0]:
+                        # rootids is 400 ints pointing to the root id where each parallel_values is from
+                        # self.rootids[i] says which rootids belong to this bootstrap
+                        # need which of the parallel_values are active here
+                        parallel_values_here = parallel_values[np.isin(self.rootids[i], rootids)]
+                        acc_sample = self.insert_order_sample[i]
+                        acc_ref = self.insert_order_refsample[i]
+                        acc_sample += (parallel_values_here < child.value).sum()
+                        acc_ref += np.random.randint(0, nlive[i])
+                        zscore = acc_sample - acc_ref
+                        if zscore < self.insert_order_threshold:
+                            self.insert_order_runs[i].append(len(acc_sample))
+                            acc_sample.reset()
+                            acc_ref.reset()
+                
+
         else:
             # contracting!
             # print("contracting...", Li)
