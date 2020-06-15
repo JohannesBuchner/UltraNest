@@ -584,8 +584,13 @@ class MultiCounter(object):
         for i, runs in enumerate(self.insertion_rank_runs):
             if len(runs) == 0:
                 shortest_runs.append(np.inf)
-            shortest_runs.append(min(runs))
+            else:
+                shortest_runs.append(min(runs))
         return np.median(shortest_runs)
+
+    @property
+    def insertion_rank_converged(self):
+        return len(self.insertion_rank_runs[0]) == 0
 
     def passing_node(self, rootid, node, rootids, parallel_values):
         """Accumulate node to the integration.
@@ -689,7 +694,7 @@ class MultiCounter(object):
                         # self.rootids[i] says which rootids belong to this bootstrap
                         # need which of the parallel_values are active here
                         acc.add((parallel_values_here < child.value).sum(), nlive[i])
-                        if acc.zscore < self.insertion_rank_threshold:
+                        if abs(acc.zscore) > self.insertion_rank_threshold:
                             self.insertion_rank_runs[i].append(len(acc))
                             acc.reset()
                 
@@ -802,10 +807,9 @@ def combine_results(saved_logl, saved_nodeids, pointpile, main_iterator, mpi_com
     )
     
     if getattr(main_iterator, 'check_insertion_rank', False):
-        runlength = main_iterator.insertion_rank_runlength
         results['insertion_rank_MWW_test'] = dict(
-            independent_iterations = runlength,
-            converged = not np.isfinite(runlength),
+            independent_iterations = main_iterator.insertion_rank_runlength,
+            converged = main_iterator.insertion_rank_converged,
         )
 
     return results
