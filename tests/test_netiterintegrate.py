@@ -229,7 +229,7 @@ def multi_integrate_graph_singleblock(num_live_points, pointstore, x_dim, num_pa
 	roots = [create_node(pointstore, -np.inf) for i in range(num_live_points)]
 	
 	# and we have one that operators on the entire tree
-	main_iterator = MultiCounter(nroots=len(roots), nbootstraps=10, random=True, check_insert_order=withtests)
+	main_iterator = MultiCounter(nroots=len(roots), nbootstraps=10, random=True, check_insertion_rank=withtests)
 	main_iterator.Lmax = max(n.value for n in roots)
 	
 	explorer = BreadthFirstIterator(roots)
@@ -288,7 +288,7 @@ def multi_integrate_graph_singleblock(num_live_points, pointstore, x_dim, num_pa
 	print('%.4f +- %.4f (main)' % (main_iterator.logZ, main_iterator.logZerr))
 	print('%.4f +- %.4f (bs)' % (main_iterator.all_logZ[1:].mean(), main_iterator.all_logZ[1:].std()))
 	if withtests:
-		print("insertion order:", main_iterator.insert_order_runlength)
+		print("insertion order:", float(main_iterator.insertion_rank_runlength))
 
 	results = dict(niter=len(saved_logwt), 
 		logz=main_iterator.logZ, logzerr=main_iterator.logZerr,
@@ -314,14 +314,14 @@ def test_singleblock(nlive):
 	pointstore = TextPointStore(testfile, 2 + 2 + 2)
 	t = time.time()
 	result = integrate_singleblock(num_live_points=nlive, pointstore=pointstore, num_params=2, x_dim=2)
-	print('  ', result['logz'], '+-', result['logzerr'], '%.2fs' % (time.time() - t))
+	print('  %(logz).1f +- %(logzerr).1f in %(niter)d iter' % result, '%.2fs' % (time.time() - t))
 	pointstore.close()
 	
 	print("Graph integrator")
 	pointstore = TextPointStore(testfile, 2 + 2 + 2)
 	t = time.time()
 	result2 = integrate_graph_singleblock(num_live_points=nlive, pointstore=pointstore, num_params=2, x_dim=2)
-	print('  ', result2['logz'], '+-', result2['logzerr'], '%.2fs' % (time.time() - t))
+	print('  %(logz).1f +- %(logzerr).1f in %(niter)d iter' % result2, '%.2fs' % (time.time() - t))
 	pointstore.close()
 	assert np.isclose(result2['logz'], result['logz'])
 	
@@ -329,7 +329,7 @@ def test_singleblock(nlive):
 	pointstore = TextPointStore(testfile, 2 + 2 + 2)
 	t = time.time()
 	result3 = multi_integrate_graph_singleblock(num_live_points=nlive, pointstore=pointstore, num_params=2, x_dim=2)
-	print('  ', result3['logz'], '+-', result3['logzerr'], '%.2fs' % (time.time() - t))
+	print('  %(logz).1f +- %(logzerr).1f in %(niter)d iter' % result3, '%.2fs' % (time.time() - t))
 	pointstore.close()
 	assert np.isclose(result3['logz'], result['logz'])
 
@@ -337,7 +337,7 @@ def test_singleblock(nlive):
 	pointstore = TextPointStore(testfile, 2 + 2 + 2)
 	t = time.time()
 	result3 = multi_integrate_graph_singleblock(num_live_points=nlive, pointstore=pointstore, num_params=2, x_dim=2, withtests=True)
-	print('  ', result3['logz'], '+-', result3['logzerr'], '%.2fs' % (time.time() - t))
+	print('  %(logz).1f +- %(logzerr).1f in %(niter)d iter' % result3, '%.2fs' % (time.time() - t))
 	pointstore.close()
 	assert np.isclose(result3['logz'], result['logz'])
 

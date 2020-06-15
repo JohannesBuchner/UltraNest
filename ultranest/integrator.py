@@ -1882,7 +1882,7 @@ class ReactiveNestedSampler(object):
             main_iterator = MultiCounter(
                 nroots=len(roots),
                 nbootstraps=max(1, self.num_bootstraps // self.mpi_size),
-                random=False)
+                random=True, check_insertion_rank=True)
             main_iterator.Lmax = max(Lmax, max(n.value for n in roots))
 
             self.transformLayer = None

@@ -94,13 +94,13 @@ class DifferenceRankAccumulator():
         # count how often this one value from rank wins over 
         # ref_histogram including new ref_rank
         self.ref_histogram[ref_rank] += 1
-        nties = self.ref_histogram[rank].sum()
-        nwins = self.ref_histogram[:rank].sum()
-        self.U += nties * 0.5 + nwins
+        nties1 = self.ref_histogram[rank].sum()
+        nwins1 = self.ref_histogram[:rank].sum()
         # also count how often the existing values win over ref_rank
-        nties = self.histogram[ref_rank].sum()
-        nwins = self.histogram[ref_rank+1:].sum()
-        self.U += nties * 0.5 + nwins
+        nties2 = self.histogram[ref_rank].sum()
+        nwins2 = self.histogram[ref_rank+1:].sum()
+        # increment U statistic
+        self.U += (nties1 + nties2) * 0.5 + (nwins1 + nwins2)
         self.histogram[rank] += 1
         return self
     
