@@ -2188,6 +2188,9 @@ class ReactiveNestedSampler(object):
         results['paramnames'] = self.paramnames
         results['logzerr_single'] = (main_iterator.all_H[0] / self.min_num_live_points)**0.5
 
+        sequence, results2 = logz_sequence(self.root, self.pointpile, random=True, check_insertion_rank=True)
+        results['insertion_rank_MWW_test'] = results2['insertion_rank_MWW_test']
+
         results_simple = dict(results)
         weighted_samples = results_simple.pop('weighted_samples')
         samples = results_simple.pop('samples')
@@ -2222,8 +2225,6 @@ class ReactiveNestedSampler(object):
                                       for k in self.paramnames + self.derivedparamnames]),
                     delimiter=',', comments='',
                 )
-
-        sequence, _ = logz_sequence(self.root, self.pointpile, random=True, check_insertion_rank=True)
 
         if self.log_to_disk:
             keys = 'logz', 'logzerr', 'logvol', 'nlive', 'logl', 'logwt'
