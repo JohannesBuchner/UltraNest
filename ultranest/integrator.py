@@ -577,6 +577,11 @@ class NestedSampler(object):
         """Give summary of marginal likelihood and parameters."""
         print()
         print('logZ = %(logz).3f +- %(logzerr).3f' % self.results)
+        if 'insertion_rank_MWW_test' in self.results:
+            if self.results['insertion_rank_MWW_test']:
+                print('   insertion rank MWW test: converged')
+            else:
+                print('   insertion rank MWW test: only %(independent_iterations)s iterations are independent to 3 sigma')
 
         print()
         for i, p in enumerate(self.paramnames + self.derivedparamnames):
@@ -1882,7 +1887,7 @@ class ReactiveNestedSampler(object):
             main_iterator = MultiCounter(
                 nroots=len(roots),
                 nbootstraps=max(1, self.num_bootstraps // self.mpi_size),
-                random=True, check_insertion_rank=True)
+                random=False, check_insertion_rank=False)
             main_iterator.Lmax = max(Lmax, max(n.value for n in roots))
 
             self.transformLayer = None
@@ -2218,7 +2223,7 @@ class ReactiveNestedSampler(object):
                     delimiter=',', comments='',
                 )
 
-        sequence, _ = logz_sequence(self.root, self.pointpile)
+        sequence, _ = logz_sequence(self.root, self.pointpile, random=True, check_insertion_rank=True)
 
         if self.log_to_disk:
             keys = 'logz', 'logzerr', 'logvol', 'nlive', 'logl', 'logwt'
@@ -2336,7 +2341,7 @@ class ReactiveNestedSampler(object):
             self.logger.debug('Making run plot ... done')
 
 
-def read_file(log_dir, x_dim, num_bootstraps=20, random=True, verbose=False):
+def read_file(log_dir, x_dim, num_bootstraps=20, random=True, verbose=False, check_insertion_rank=True):
     """
     Read the output HDF5 file of UltraNest.
 
@@ -2352,6 +2357,8 @@ def read_file(log_dir, x_dim, num_bootstraps=20, random=True, verbose=False):
         use randomization for volume estimation.
     verbose: bool
         show progress
+    check_insertion_rank: bool
+        whether to perform MWW insertion rank test for assessing convergence
 
     Returns
     ----------
@@ -2418,4 +2425,5 @@ def read_file(log_dir, x_dim, num_bootstraps=20, random=True, verbose=False):
             node.children.append(child)
 
     return logz_sequence(root, pointpile, nbootstraps=num_bootstraps,
-                         random=random, onNode=onNode, verbose=verbose)
+                         random=random, onNode=onNode, verbose=verbose,
+                         check_insertion_rank=check_insertion_rank)

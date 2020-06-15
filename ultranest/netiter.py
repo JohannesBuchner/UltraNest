@@ -811,7 +811,7 @@ def combine_results(saved_logl, saved_nodeids, pointpile, main_iterator, mpi_com
     return results
 
 
-def logz_sequence(root, pointpile, nbootstraps=12, random=True, onNode=None, verbose=False):
+def logz_sequence(root, pointpile, nbootstraps=12, random=True, onNode=None, verbose=False, check_insertion_rank=True):
     """Run MultiCounter through tree `root`.
 
     Keeps track of, and returns ``(logz, logzerr, logv, nlive)``.
@@ -823,7 +823,8 @@ def logz_sequence(root, pointpile, nbootstraps=12, random=True, onNode=None, ver
     explorer = BreadthFirstIterator(roots)
     # Integrating thing
     main_iterator = MultiCounter(
-        nroots=len(roots), nbootstraps=max(1, nbootstraps), random=random)
+        nroots=len(roots), nbootstraps=max(1, nbootstraps),
+        random=random, check_insertion_rank=check_insertion_rank)
     main_iterator.Lmax = max(Lmax, max(n.value for n in roots))
 
     logz = []

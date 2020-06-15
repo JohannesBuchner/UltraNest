@@ -1,21 +1,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Functions and classes for treating nested sampling exploration as a tree.
+"""
 
-The root represents the prior volume, branches and sub-branches split the volume.
-The leaves of the tree are the integration tail.
+This implements the same idea as https://arxiv.org/abs/2006.03371
+except their KS test is invalid because the variable (insertion rank)
+is not continuous. Instead, this implements a Mann-Whitney-Wilcoxon
+U test, which also is in practice more sensitive than the KS test.
+A highly efficient implementation is achieved by keeping only
+a histogram of the insertion ranks and comparing those
+to a histogram of uniformly randomly generated ranks.
 
-Nested sampling proceeds as a breadth first graph search,
-with active nodes sorted by likelihood value.
-The number of live points are the number of parallel edges (active nodes to do).
-
-Most functions receive the argument "roots", which are the
-children of the tree root (main branches).
-
-The exploration is bootstrap-capable without requiring additional
-computational effort: The roots are indexed, and the bootstrap explorer
-can ignore the rootids it does not know about.
-
+To quantify the convergence of a run, one route is to apply this test
+at the end of the run. Another approach is to reset the counters every
+time the test exceeds a z-score of 3 sigma, and report the run lengths,
+which quantify how many iterations nested sampling was able to proceed
+without detection of a insertion rank problem.
 
 """
 

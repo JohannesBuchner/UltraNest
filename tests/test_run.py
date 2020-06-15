@@ -244,7 +244,7 @@ def test_reactive_run_resume_eggbox():
         print("reader results: ********************")
         print({k:v for k, v in results.items() if np.asarray(v).size < 20 and k != 'weighted_samples'})
         for k, v in results.items():
-            if k == 'posterior' or k == 'samples':
+            if k == 'posterior' or k == 'samples' or k == 'insertion_rank_MWW_test':
                 pass
             elif k == 'weighted_samples' or k == 'maximum_likelihood':
                 for k2, v2 in results[k].items():
