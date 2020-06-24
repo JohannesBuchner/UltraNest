@@ -581,7 +581,7 @@ class MultiCounter(object):
     @property
     def insertion_rank_runlength(self):
         shortest_runs = []
-        for i, runs in enumerate(self.insertion_rank_runs):
+        for runs in self.insertion_rank_runs[:1]:
             if len(runs) == 0:
                 shortest_runs.append(np.inf)
             else:

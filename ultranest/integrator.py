@@ -20,7 +20,8 @@ from .utils import create_logger, make_run_dir, resample_equal, vol_prefactor, v
 from ultranest.mlfriends import MLFriends, AffineLayer, ScalingLayer, find_nearby
 from .store import HDF5PointStore, NullPointStore
 from .viz import get_default_viz_callback, nicelogger
-from .netiter import PointPile, MultiCounter, BreadthFirstIterator, TreeNode, count_tree_between, find_nodes_before, logz_sequence
+from .netiter import PointPile, MultiCounter, BreadthFirstIterator, TreeNode, DifferenceRankAccumulator
+from .netiter import count_tree_between, find_nodes_before, logz_sequence
 from .netiter import dump_tree, combine_results
 
 __all__ = ['ReactiveNestedSampler', 'NestedSampler', 'read_file']
@@ -1701,8 +1702,9 @@ class ReactiveNestedSampler(object):
 
     def run(
             self,
-            update_interval_iter_fraction=0.2,
+            update_interval_volume_fraction=0.8,
             update_interval_ncall=None,
+            rank_test_window=10,
             log_interval=None,
             show_status=True,
             viz_callback='auto',
@@ -1721,11 +1723,14 @@ class ReactiveNestedSampler(object):
 
         Parameters
         ----------
-        update_interval_iter_fraction: float
-            Update region after (update_interval_iter_fraction*nlive) iterations.
+        update_interval_volume_fraction: float
+            Update region when the volume shrunk by this amount.
 
         update_interval_ncall: int
             Update region after update_interval_ncall likelihood calls (not used).
+
+        rank_test_window: float
+            Number of iterations after which the insertion rank test is reset.
 
         log_interval: int
             Update stdout status line every log_interval iterations
@@ -1780,8 +1785,9 @@ class ReactiveNestedSampler(object):
         """
 
         for result in self.run_iter(
-            update_interval_iter_fraction=update_interval_iter_fraction,
+            update_interval_volume_fraction=update_interval_volume_fraction,
             update_interval_ncall=update_interval_ncall,
+            rank_test_window=rank_test_window,
             log_interval=log_interval,
             dlogz=dlogz, dKL=dKL,
             Lepsilon=Lepsilon, frac_remain=frac_remain,
@@ -1802,8 +1808,9 @@ class ReactiveNestedSampler(object):
 
     def run_iter(
             self,
-            update_interval_iter_fraction=0.2,
+            update_interval_volume_fraction=0.2,
             update_interval_ncall=None,
+            rank_test_window=10,
             log_interval=None,
             dlogz=0.5,
             dKL=0.5,
@@ -1849,6 +1856,7 @@ class ReactiveNestedSampler(object):
         self.min_num_live_points = min_num_live_points
         self.cluster_num_live_points = cluster_num_live_points
         self.sampling_slow_warned = False
+        update_interval_volume_log_fraction = log(update_interval_volume_fraction)
 
         if viz_callback == 'auto':
             viz_callback = get_default_viz_callback()
@@ -1888,6 +1896,7 @@ class ReactiveNestedSampler(object):
                 nroots=len(roots),
                 nbootstraps=max(1, self.num_bootstraps // self.mpi_size),
                 random=False, check_insertion_rank=False)
+            ranker = DifferenceRankAccumulator(nroots)
             main_iterator.Lmax = max(Lmax, max(n.value for n in roots))
 
             self.transformLayer = None
@@ -1922,7 +1931,9 @@ class ReactiveNestedSampler(object):
             ncall_region_at_run_start = self.ncall_region
             # next_update_interval_ncall = -1
             next_update_interval_iter = -1
+            next_update_interval_volume = 1
             last_status = time.time()
+            last_zscore = 0
 
             # we go through each live point (regardless of root) by likelihood value
             while True:
@@ -1965,7 +1976,7 @@ class ReactiveNestedSampler(object):
                     active_u = self.pointpile.getu(active_node_ids)
                     nlive = len(active_u)
                     # first we check that the region is up-to-date
-                    if it > next_update_interval_iter:
+                    if main_iterator.logVolremaining < next_update_interval_volume:
                         if self.region is None:
                             it_at_first_region = it
                         region_fresh = self._update_region(
@@ -1983,8 +1994,8 @@ class ReactiveNestedSampler(object):
                         region_sequence.append((Lmin, nlive, nclusters))
 
                         # next_update_interval_ncall = self.ncall + (update_interval_ncall or nlive)
-                        update_interval_iter = max(1, round(update_interval_iter_fraction * nlive))
-                        next_update_interval_iter = it + update_interval_iter
+                        #update_interval_iter = max(1, round(update_interval_iter_fraction * nlive))
+                        next_update_interval_volume = main_iterator.logVolremaining + update_interval_volume_log_fraction
 
                         # provide nice output to follow what is going on
                         # but skip if we are resuming
@@ -1999,12 +2010,19 @@ class ReactiveNestedSampler(object):
                                     logz_remain=main_iterator.logZremain,
                                     logvol=main_iterator.logVolremaining,
                                     paramnames=self.paramnames + self.derivedparamnames,
-                                    paramlims=self.transform_limits
+                                    paramlims=self.transform_limits,
+                                    rank_z_score=last_zscore,
                                 ),
                                 region=self.region, transformLayer=self.transformLayer,
                                 region_fresh=region_fresh,
                             )
                             self.pointstore.flush()
+
+                    if it > next_update_interval_iter:
+                        last_zscore = ranker.zscore
+                        ranker.reset()
+
+                        next_update_interval_iter = it + max(1, nlive) * rank_test_window
 
                     if nlive < cluster_num_live_points * nclusters and improvement_it < max_num_improvement_loops:
                         # make wider here
@@ -2019,6 +2037,7 @@ class ReactiveNestedSampler(object):
                     u, p, L = self._create_point(Lmin=Lmin, ndraw=ndraw, active_u=active_u, active_values=active_values)
                     child = self.pointpile.make_node(L, u, p)
                     main_iterator.Lmax = max(main_iterator.Lmax, L)
+                    ranker.add((active_values < L).sum(), nlive)
 
                     # identify which point is being replaced (from when we built the region)
                     worst = np.where(self.region_nodes == node.id)[0]
@@ -2085,7 +2104,8 @@ class ReactiveNestedSampler(object):
                     # (heuristics do not work in practice)
                     self.region.maxradiussq = None
                     # ask for the region to be rebuilt
-                    next_update_interval_iter = -1
+                    #next_update_interval_iter = -1
+                    next_update_interval_volume = 1
 
                 it += 1
                 explorer.expand_children_of(rootid, node)
@@ -2252,6 +2272,7 @@ class ReactiveNestedSampler(object):
             print('  single instance: logZ = %(logz_single).3f +- %(logzerr_single).3f' % self.results)
             print('  bootstrapped   : logZ = %(logz_bs).3f +- %(logzerr_bs).3f' % self.results)
             print('  tail           : logZ = +- %(logzerr_tail).3f' % self.results)
+            print('insert order U test : converged: %(converged)s correlation: %(independent_iterations)s iterations' % self.results['insertion_rank_MWW_test'])
 
             print()
             for i, p in enumerate(self.paramnames + self.derivedparamnames):
