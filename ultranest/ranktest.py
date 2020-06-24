@@ -108,6 +108,8 @@ class DifferenceRankAccumulator():
         """ Mann-Whitney-Wilcoxon U test z-score, tie-corrected. """
         n1 = self.histogram.sum()
         n2 = self.ref_histogram.sum()
+        if n1 == 0 or n2 == 0:
+            return 0.0
         natrank = (self.ref_histogram + self.histogram)
         tsum = (natrank**3 * (1 + natrank)).sum()
         m_U = (n1 * n2) / 2
