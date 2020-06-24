@@ -126,7 +126,9 @@ def nicelogger(points, info, region, transformLayer, region_fresh=False):
     print("Mono-modal" if nmodes == 1 else "Have %d modes" % nmodes,
           "Volume: ~exp(%.2f)" % region.estimate_volume(), '*' if region_fresh else ' ',
           "Expected Volume: exp(%.2f)" % info['logvol'],
-          "Quality: %.1f" % info['rank_z_score'] if 'rank_z_score' in info else '')
+          '' if 'rank_test_correlation' not in info else
+            ("Quality: correlation %d iterations" % info['rank_test_correlation']) if np.isfinite(info['rank_test_correlation']) else "Quality: ok",
+    )
 
     print()
     if ndim == 1:
