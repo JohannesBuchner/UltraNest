@@ -27,38 +27,28 @@ def infinite_U_zscore(sample, B):
 
 class UniformOrderAccumulator():
     """
-    Store orders (1 to N), with nsize allowed to vary, for comparison
-    with a random order.
+    Store orders (1 to N), for comparison with a uniform order.
     """
     def __init__(self, N):
-        self.histogram = np.zeros(N, dtype=np.uint32)
+        self.N = 0
         self.U = 0.0
 
     def reset(self):
         """Set all counts to zero. """
-        self.histogram[:] = 0
+        self.N = 0
         self.U = 0.0
-
-    def expand(self, N):
-        if N > self.histogram.size:
-            old_hist = self.histogram
-            self.histogram = np.zeros(N, dtype=np.uint32)
-            self.histogram[:old_hist.size] = old_hist
 
     def add(self, order, N):
         """ add order out of N to histogram. """
         if not 0 <= order <= N:
             raise ValueError("order %d out of %d invalid" % (order, N))
-        if N >= self.histogram.size:
-            self.expand(N + 1)
         self.U += (order + 0.5) / N
-        self.histogram[order] += 1
-        return self
+        self.N += 1
     
     @property
     def zscore(self):
         """ Mann-Whitney-Wilcoxon U test z-score, against a uniform distribution. """
-        N = self.histogram.sum()
+        N = self.N
         if N == 0:
             return 0.0
         m_U = N * 0.5
@@ -66,4 +56,4 @@ class UniformOrderAccumulator():
         return (self.U - m_U) / sigma_U_corr
 
     def __len__(self):
-        return self.histogram.sum()
+        return self.N
