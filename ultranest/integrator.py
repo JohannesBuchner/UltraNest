@@ -577,11 +577,11 @@ class NestedSampler(object):
         """Give summary of marginal likelihood and parameters."""
         print()
         print('logZ = %(logz).3f +- %(logzerr).3f' % self.results)
-        if 'insertion_rank_MWW_test' in self.results:
-            if self.results['insertion_rank_MWW_test']:
-                print('   insertion rank MWW test: converged')
+        if 'insertion_order_MWW_test' in self.results:
+            if self.results['insertion_order_MWW_test']:
+                print('   insertion order MWW test: converged')
             else:
-                print('   insertion rank MWW test: only %(independent_iterations)s iterations are independent to 3 sigma')
+                print('   insertion order MWW test: only %(independent_iterations)s iterations are independent to 3 sigma')
 
         print()
         for i, p in enumerate(self.paramnames + self.derivedparamnames):
@@ -1703,7 +1703,7 @@ class ReactiveNestedSampler(object):
             self,
             update_interval_volume_fraction=0.8,
             update_interval_ncall=None,
-            rank_test_window=10,
+            order_test_window=10,
             log_interval=None,
             show_status=True,
             viz_callback='auto',
@@ -1728,8 +1728,8 @@ class ReactiveNestedSampler(object):
         update_interval_ncall: int
             Update region after update_interval_ncall likelihood calls (not used).
 
-        rank_test_window: float
-            Number of iterations after which the insertion rank test is reset.
+        order_test_window: float
+            Number of iterations after which the insertion order test is reset.
 
         log_interval: int
             Update stdout status line every log_interval iterations
@@ -1786,7 +1786,7 @@ class ReactiveNestedSampler(object):
         for result in self.run_iter(
             update_interval_volume_fraction=update_interval_volume_fraction,
             update_interval_ncall=update_interval_ncall,
-            rank_test_window=rank_test_window,
+            order_test_window=order_test_window,
             log_interval=log_interval,
             dlogz=dlogz, dKL=dKL,
             Lepsilon=Lepsilon, frac_remain=frac_remain,
@@ -1809,7 +1809,7 @@ class ReactiveNestedSampler(object):
             self,
             update_interval_volume_fraction=0.2,
             update_interval_ncall=None,
-            rank_test_window=10,
+            order_test_window=10,
             log_interval=None,
             dlogz=0.5,
             dKL=0.5,
@@ -1894,7 +1894,7 @@ class ReactiveNestedSampler(object):
             main_iterator = MultiCounter(
                 nroots=len(roots),
                 nbootstraps=max(1, self.num_bootstraps // self.mpi_size),
-                random=False, check_insertion_rank=True)
+                random=False, check_insertion_order=True)
             main_iterator.Lmax = max(Lmax, max(n.value for n in roots))
 
             self.transformLayer = None
@@ -2008,8 +2008,8 @@ class ReactiveNestedSampler(object):
                                     logvol=main_iterator.logVolremaining,
                                     paramnames=self.paramnames + self.derivedparamnames,
                                     paramlims=self.transform_limits,
-                                    rank_test_correlation=np.inf if main_iterator.insertion_rank_runs[0] == []
-                                        else max(len(main_iterator.insertion_rank_accumulator[0]), main_iterator.insertion_rank_runs[0][-1]),
+                                    order_test_correlation=np.inf if main_iterator.insertion_order_runs[0] == []
+                                        else max(len(main_iterator.insertion_order_accumulator[0]), main_iterator.insertion_order_runs[0][-1]),
                                 ),
                                 region=self.region, transformLayer=self.transformLayer,
                                 region_fresh=region_fresh,
@@ -2199,8 +2199,8 @@ class ReactiveNestedSampler(object):
         results['paramnames'] = self.paramnames
         results['logzerr_single'] = (main_iterator.all_H[0] / self.min_num_live_points)**0.5
 
-        sequence, results2 = logz_sequence(self.root, self.pointpile, random=True, check_insertion_rank=True)
-        results['insertion_rank_MWW_test'] = results2['insertion_rank_MWW_test']
+        sequence, results2 = logz_sequence(self.root, self.pointpile, random=True, check_insertion_order=True)
+        results['insertion_order_MWW_test'] = results2['insertion_order_MWW_test']
 
         results_simple = dict(results)
         weighted_samples = results_simple.pop('weighted_samples')
@@ -2263,7 +2263,7 @@ class ReactiveNestedSampler(object):
             print('  single instance: logZ = %(logz_single).3f +- %(logzerr_single).3f' % self.results)
             print('  bootstrapped   : logZ = %(logz_bs).3f +- %(logzerr_bs).3f' % self.results)
             print('  tail           : logZ = +- %(logzerr_tail).3f' % self.results)
-            print('insert order U test : converged: %(converged)s correlation: %(independent_iterations)s iterations' % self.results['insertion_rank_MWW_test'])
+            print('insert order U test : converged: %(converged)s correlation: %(independent_iterations)s iterations' % self.results['insertion_order_MWW_test'])
 
             print()
             for i, p in enumerate(self.paramnames + self.derivedparamnames):
@@ -2354,7 +2354,7 @@ class ReactiveNestedSampler(object):
             self.logger.debug('Making run plot ... done')
 
 
-def read_file(log_dir, x_dim, num_bootstraps=20, random=True, verbose=False, check_insertion_rank=True):
+def read_file(log_dir, x_dim, num_bootstraps=20, random=True, verbose=False, check_insertion_order=True):
     """
     Read the output HDF5 file of UltraNest.
 
@@ -2370,8 +2370,8 @@ def read_file(log_dir, x_dim, num_bootstraps=20, random=True, verbose=False, che
         use randomization for volume estimation.
     verbose: bool
         show progress
-    check_insertion_rank: bool
-        whether to perform MWW insertion rank test for assessing convergence
+    check_insertion_order: bool
+        whether to perform MWW insertion order test for assessing convergence
 
     Returns
     ----------
@@ -2439,4 +2439,4 @@ def read_file(log_dir, x_dim, num_bootstraps=20, random=True, verbose=False, che
 
     return logz_sequence(root, pointpile, nbootstraps=num_bootstraps,
                          random=random, onNode=onNode, verbose=verbose,
-                         check_insertion_rank=check_insertion_rank)
+                         check_insertion_order=check_insertion_order)

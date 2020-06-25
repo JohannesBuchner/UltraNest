@@ -229,7 +229,7 @@ def multi_integrate_graph_singleblock(num_live_points, pointstore, x_dim, num_pa
 	roots = [create_node(pointstore, -np.inf) for i in range(num_live_points)]
 	
 	# and we have one that operators on the entire tree
-	main_iterator = MultiCounter(nroots=len(roots), nbootstraps=10, random=True, check_insertion_rank=withtests)
+	main_iterator = MultiCounter(nroots=len(roots), nbootstraps=10, random=True, check_insertion_order=withtests)
 	main_iterator.Lmax = max(n.value for n in roots)
 	
 	explorer = BreadthFirstIterator(roots)
@@ -288,7 +288,7 @@ def multi_integrate_graph_singleblock(num_live_points, pointstore, x_dim, num_pa
 	print('%.4f +- %.4f (main)' % (main_iterator.logZ, main_iterator.logZerr))
 	print('%.4f +- %.4f (bs)' % (main_iterator.all_logZ[1:].mean(), main_iterator.all_logZ[1:].std()))
 	if withtests:
-		print("insertion order:", float(main_iterator.insertion_rank_runlength))
+		print("insertion order:", float(main_iterator.insertion_order_runlength))
 
 	results = dict(niter=len(saved_logwt), 
 		logz=main_iterator.logZ, logzerr=main_iterator.logZerr,

@@ -254,8 +254,8 @@ def test_reactive_run_resume_eggbox():
             elif k.startswith('logzerr') or '_bs' in k or 'Herr' in k:
                 print("   skipping", k, np.shape(v))
                 #assert_allclose(r[k], v, atol=0.5)
-            elif k == 'insertion_rank_MWW_test':
-                print('insertion_rank_MWW_test:', r[k], v)
+            elif k == 'insertion_order_MWW_test':
+                print('insertion_order_MWW_test:', r[k], v)
                 assert r[k] == v, (r[k], v)
             else:
                 print("  ", k, np.shape(v))

@@ -47,4 +47,4 @@ def test_order_correctness():
 	assert nruns2 > 0, (nruns1, nruns2)
 
 if __name__ == '__main__':
-	test_ranker()
+	test_order_correctness()

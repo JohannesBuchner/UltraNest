@@ -511,7 +511,7 @@ class MultiCounter(object):
 
     """
 
-    def __init__(self, nroots, nbootstraps=10, random=False, check_insertion_rank=False):
+    def __init__(self, nroots, nbootstraps=10, random=False, check_insertion_order=False):
         """Initialise counter.
 
         Parameters
@@ -530,7 +530,7 @@ class MultiCounter(object):
         # which rootids are active in each bootstrap instance
         # the first one contains everything
         self.rootids = [allyes]
-        self.insertion_rank_sample = []
+        self.insertion_order_sample = []
         # np.random.seed(1)
         for i in range(nbootstraps):
             mask = ~allyes
@@ -541,9 +541,9 @@ class MultiCounter(object):
         self.random = random
         self.ncounters = len(self.rootids)
 
-        self.check_insertion_rank = check_insertion_rank
-        self.insertion_rank_threshold = 2
-        self.insertion_rank_accumulator = [UniformOrderAccumulator(self.rootids.shape[1]) for _ in range(self.rootids.shape[0])]
+        self.check_insertion_order = check_insertion_order
+        self.insertion_order_threshold = 2
+        self.insertion_order_accumulator = [UniformOrderAccumulator(self.rootids.shape[1]) for _ in range(self.rootids.shape[0])]
 
         self.reset(len(self.rootids))
 
@@ -565,8 +565,8 @@ class MultiCounter(object):
         self.remainder_ratio = 1.0
         self.remainder_fraction = 1.0
 
-        [acc.reset() for acc in self.insertion_rank_accumulator]
-        self.insertion_rank_runs = [[] for _ in range(nentries)]
+        [acc.reset() for acc in self.insertion_order_accumulator]
+        self.insertion_order_runs = [[] for _ in range(nentries)]
 
     @property
     def logZ_bs(self):
@@ -579,9 +579,9 @@ class MultiCounter(object):
         return self.all_logZ[1:].std()
 
     @property
-    def insertion_rank_runlength(self):
+    def insertion_order_runlength(self):
         shortest_runs = []
-        for runs in self.insertion_rank_runs[:1]:
+        for runs in self.insertion_order_runs[:1]:
             if len(runs) == 0:
                 shortest_runs.append(np.inf)
             else:
@@ -589,8 +589,8 @@ class MultiCounter(object):
         return np.median(shortest_runs)
 
     @property
-    def insertion_rank_converged(self):
-        return len(self.insertion_rank_runs[0]) == 0
+    def insertion_order_converged(self):
+        return len(self.insertion_order_runs[0]) == 0
 
     def passing_node(self, rootid, node, rootids, parallel_values):
         """Accumulate node to the integration.
@@ -683,9 +683,9 @@ class MultiCounter(object):
             self.all_logVolremaining[active] += logright[active]
             self.logVolremaining = self.all_logVolremaining[0]
             
-            if self.check_insertion_rank and len(np.unique(parallel_values)) == len(parallel_values):
-                rank_max = nlive.max() + 1
-                for i, acc in enumerate(self.insertion_rank_accumulator):
+            if self.check_insertion_order and len(np.unique(parallel_values)) == len(parallel_values):
+                order_max = nlive.max() + 1
+                for i, acc in enumerate(self.insertion_order_accumulator):
                     if not active[i]:
                         continue
                     parallel_values_here = parallel_values[self.rootids[i, rootids]]
@@ -694,8 +694,8 @@ class MultiCounter(object):
                         # self.rootids[i] says which rootids belong to this bootstrap
                         # need which of the parallel_values are active here
                         acc.add((parallel_values_here < child.value).sum(), nlive[i])
-                        if abs(acc.zscore) > self.insertion_rank_threshold:
-                            self.insertion_rank_runs[i].append(len(acc))
+                        if abs(acc.zscore) > self.insertion_order_threshold:
+                            self.insertion_order_runs[i].append(len(acc))
                             acc.reset()
                 
 
@@ -806,16 +806,16 @@ def combine_results(saved_logl, saved_nodeids, pointpile, main_iterator, mpi_com
         ),
     )
     
-    if getattr(main_iterator, 'check_insertion_rank', False):
-        results['insertion_rank_MWW_test'] = dict(
-            independent_iterations = main_iterator.insertion_rank_runlength,
-            converged = main_iterator.insertion_rank_converged,
+    if getattr(main_iterator, 'check_insertion_order', False):
+        results['insertion_order_MWW_test'] = dict(
+            independent_iterations = main_iterator.insertion_order_runlength,
+            converged = main_iterator.insertion_order_converged,
         )
 
     return results
 
 
-def logz_sequence(root, pointpile, nbootstraps=12, random=True, onNode=None, verbose=False, check_insertion_rank=True):
+def logz_sequence(root, pointpile, nbootstraps=12, random=True, onNode=None, verbose=False, check_insertion_order=True):
     """Run MultiCounter through tree `root`.
 
     Keeps track of, and returns ``(logz, logzerr, logv, nlive)``.
@@ -828,7 +828,7 @@ def logz_sequence(root, pointpile, nbootstraps=12, random=True, onNode=None, ver
     # Integrating thing
     main_iterator = MultiCounter(
         nroots=len(roots), nbootstraps=max(1, nbootstraps),
-        random=random, check_insertion_rank=check_insertion_rank)
+        random=random, check_insertion_order=check_insertion_order)
     main_iterator.Lmax = max(Lmax, max(n.value for n in roots))
 
     logz = []
