@@ -26,7 +26,7 @@ import math
 import operator
 import sys
 from .utils import resample_equal
-from .ranktest import DifferenceRankAccumulator
+from .ordertest import UniformOrderAccumulator
 
 
 class TreeNode(object):
@@ -542,8 +542,8 @@ class MultiCounter(object):
         self.ncounters = len(self.rootids)
 
         self.check_insertion_rank = check_insertion_rank
-        self.insertion_rank_threshold = 3
-        self.insertion_rank_accumulator = [DifferenceRankAccumulator(self.rootids.shape[1]) for _ in range(self.rootids.shape[0])]
+        self.insertion_rank_threshold = 2
+        self.insertion_rank_accumulator = [UniformOrderAccumulator(self.rootids.shape[1]) for _ in range(self.rootids.shape[0])]
 
         self.reset(len(self.rootids))
 
@@ -683,7 +683,7 @@ class MultiCounter(object):
             self.all_logVolremaining[active] += logright[active]
             self.logVolremaining = self.all_logVolremaining[0]
             
-            if self.check_insertion_rank:
+            if self.check_insertion_rank and len(np.unique(parallel_values)) == len(parallel_values):
                 rank_max = nlive.max() + 1
                 for i, acc in enumerate(self.insertion_rank_accumulator):
                     if not active[i]:
