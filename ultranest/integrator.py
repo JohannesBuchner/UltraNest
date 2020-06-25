@@ -20,6 +20,7 @@ from .utils import create_logger, make_run_dir, resample_equal, vol_prefactor, v
 from ultranest.mlfriends import MLFriends, AffineLayer, ScalingLayer, find_nearby
 from .store import HDF5PointStore, NullPointStore
 from .viz import get_default_viz_callback, nicelogger
+from .ordertest import UniformOrderAccumulator
 from .netiter import PointPile, MultiCounter, BreadthFirstIterator, TreeNode, count_tree_between, find_nodes_before, logz_sequence
 from .netiter import dump_tree, combine_results
 
@@ -1823,6 +1824,7 @@ class ReactiveNestedSampler(object):
             cluster_num_live_points=40,
             show_status=True,
             viz_callback='auto',
+            insertion_test_zscore_threshold=2,
     ):
         """Iterate towards convergence.
 
@@ -1894,8 +1896,12 @@ class ReactiveNestedSampler(object):
             main_iterator = MultiCounter(
                 nroots=len(roots),
                 nbootstraps=max(1, self.num_bootstraps // self.mpi_size),
-                random=False, check_insertion_order=True)
+                random=False, check_insertion_order=False)
             main_iterator.Lmax = max(Lmax, max(n.value for n in roots))
+            insertion_test = UniformOrderAccumulator(nroots)
+            insertion_test_runs = []
+            insertion_test_quality = np.inf
+            insertion_test_direction = 0
 
             self.transformLayer = None
             self.region = None
@@ -2008,8 +2014,8 @@ class ReactiveNestedSampler(object):
                                     logvol=main_iterator.logVolremaining,
                                     paramnames=self.paramnames + self.derivedparamnames,
                                     paramlims=self.transform_limits,
-                                    order_test_correlation=np.inf if main_iterator.insertion_order_runs[0] == []
-                                        else max(len(main_iterator.insertion_order_accumulator[0]), main_iterator.insertion_order_runs[0][-1]),
+                                    order_test_correlation=insertion_test_quality,
+                                    order_test_direction=insertion_test_direction,
                                 ),
                                 region=self.region, transformLayer=self.transformLayer,
                                 region_fresh=region_fresh,
@@ -2029,6 +2035,17 @@ class ReactiveNestedSampler(object):
                     u, p, L = self._create_point(Lmin=Lmin, ndraw=ndraw, active_u=active_u, active_values=active_values)
                     child = self.pointpile.make_node(L, u, p)
                     main_iterator.Lmax = max(main_iterator.Lmax, L)
+                    if len(np.unique(active_values)) == nlive:
+                        insertion_test.add((active_values < L).sum(), nlive)
+                        if abs(insertion_test.zscore) > insertion_test_zscore_threshold:
+                            insertion_test_runs.append(insertion_test.N)
+                            insertion_test_quality = insertion_test.N
+                            insertion_test_direction = np.sign(insertion_test.zscore)
+                            insertion_test.reset()
+                        elif insertion_test.N > nlive * order_test_window:
+                            insertion_test_quality = np.inf
+                            insertion_test_direction = 0
+                            insertion_test.reset()
 
                     # identify which point is being replaced (from when we built the region)
                     worst = np.where(self.region_nodes == node.id)[0]
