@@ -47,7 +47,7 @@ class UniformOrderAccumulator():
     
     @property
     def zscore(self):
-        """ Mann-Whitney-Wilcoxon U test z-score, against a uniform distribution. """
+        """ Wilcoxon-Mann-Whitney U test z-score, against a uniform distribution. """
         N = self.N
         if N == 0:
             return 0.0

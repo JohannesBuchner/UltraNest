@@ -389,18 +389,23 @@ class PointPile(object):
 class SingleCounter(object):
     """Evidence log(Z) and posterior weight summation for a Nested Sampling tree."""
 
-    def __init__(self, random=False):
+    def __init__(self, beta=True, random=False):
         """Initialise counter.
 
         Parameters
         ----------
+        beta: bool
+            if False, use (1 - 1/N) estimator
+            if True, use exp(-1/N) order statistic estimator
         random: bool
-            if False, use mean estimator for volume shrinkage
-            if True, draw a random sample
+            if False, use mean beta estimator for volume shrinkage
+            if True, draw a random beta sample
+            only has an affect if beta=True.
 
         """
         self.reset()
         self.random = random
+        self.beta = beta
 
     def reset(self):
         """Reset counters and integration."""
@@ -440,12 +445,19 @@ class SingleCounter(object):
             # one arc terminates, another is spawned
 
             # weight is the size of the slice off the volume
-            logleft = log1p(-exp(-1. / nlive))
-            logright = -1. / nlive
-            if self.random:
+            if not self.beta:
+                # 1/N and 1-1/N estimators
+                logleft = log1p(-1. / nlive)
+                logright = -log(nlive)
+            elif self.random:
+                # draw beta(1, N) sample
                 randompoint = np.random.beta(1, nlive)
                 logleft = log(randompoint)
                 logright = log1p(-randompoint)
+            else:
+                # use beta(1, N) expectation value
+                logleft = log1p(-exp(-1. / nlive))
+                logright = -1. / nlive
 
             logwidth = logleft + self.logVolremaining
             wi = logwidth + Li
@@ -511,7 +523,7 @@ class MultiCounter(object):
 
     """
 
-    def __init__(self, nroots, nbootstraps=10, random=False, check_insertion_order=False):
+    def __init__(self, nroots, nbootstraps=10, random=False, beta=True, check_insertion_order=False):
         """Initialise counter.
 
         Parameters
@@ -520,9 +532,13 @@ class MultiCounter(object):
             number of children the tree root has
         nbootstraps: int
             number of bootstrap rounds
+        beta: bool
+            if False, use (1 - 1/N) estimator
+            if True, use exp(-1/N) order statistic estimator
         random: bool
-            if False, use mean estimator for volume shrinkage
-            if True, draw a random sample
+            if False, use mean beta estimator for volume shrinkage
+            if True, draw a random beta sample
+            only has an affect if beta=True.
 
         """
         allyes = np.ones(nroots, dtype=bool)
@@ -539,6 +555,7 @@ class MultiCounter(object):
             self.rootids.append(mask)
         self.rootids = np.array(self.rootids)
         self.random = random
+        self.beta = beta
         self.ncounters = len(self.rootids)
 
         self.check_insertion_order = check_insertion_order
@@ -627,13 +644,19 @@ class MultiCounter(object):
             # one arc terminates, another is spawned
 
             # weight is the size of the slice off the volume
-            if self.random:
+            if not self.beta:
+                # 1/N and 1-1/N estimators
+                logleft = -log(nlive)
+                logright = log1p(-1. / nlive)
+            elif self.random:
+                # draw beta(1, N) sample
                 randompoint = np.random.beta(1, nlive, size=self.ncounters)
                 logleft = log(randompoint)
                 logright = log1p(-randompoint)
                 logleft[0] = log1p(-exp(-1. / nlive0))
                 logright[0] = -1. / nlive0
             else:
+                # draw use beta(1, N) expectation value
                 logleft = log1p(-exp(-1. / nlive))
                 logright = -1. / nlive
 

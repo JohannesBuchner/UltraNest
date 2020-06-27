@@ -549,6 +549,7 @@ class MLFriends(object):
         """
         if not np.logical_and(u > 0, u < 1).all():
             raise ValueError("not all u values are between 0 and 1: %s" % u[~np.logical_and(u > 0, u < 1).all()])
+        assert u.ndim == 2, u.shape
 
         self.u = u
         self.set_transformLayer(transformLayer)
@@ -800,5 +801,3 @@ class MLFriends(object):
 
     def compute_mean_pair_distance(self):
         return compute_mean_pair_distance(self.unormed, self.transformLayer.clusterids)
-
-
