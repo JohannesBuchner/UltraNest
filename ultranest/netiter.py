@@ -839,6 +839,7 @@ def logz_sequence(root, pointpile, nbootstraps=12, random=True, onNode=None, ver
 
     saved_nodeids = []
     saved_logl = []
+    insert_order = []
     # we go through each live point (regardless of root) by likelihood value
     while True:
         next_node = explorer.next_node()
@@ -855,6 +856,14 @@ def logz_sequence(root, pointpile, nbootstraps=12, random=True, onNode=None, ver
         with np.errstate(invalid='ignore'):
             # first time they are all the same
             logzerr.append(main_iterator.logZerr_bs)
+
+        insert_order_value = 0.0
+        if len(np.unique(active_values)) == len(active_values) and len(node.children) > 0:
+            child_insertion_order = (active_values > node.children[0].value).sum()
+            insert_order.append(2 * (child_insertion_order + 1.) / len(active_values))
+        else:
+            insert_order.append(np.nan)
+
         nlive.append(len(active_values))
         logvol.append(main_iterator.logVolremaining)
 
@@ -878,6 +887,7 @@ def logz_sequence(root, pointpile, nbootstraps=12, random=True, onNode=None, ver
         logvol=np.asarray(logvol),
         samples_n=np.asarray(nlive),
         nlive=np.asarray(nlive),
+        insert_order=np.asarray(insert_order),
         logwt=logwt,
         niter=niter,
         logl=saved_logl,

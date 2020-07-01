@@ -2255,7 +2255,7 @@ class ReactiveNestedSampler(object):
                 )
 
         if self.log_to_disk:
-            keys = 'logz', 'logzerr', 'logvol', 'nlive', 'logl', 'logwt'
+            keys = 'logz', 'logzerr', 'logvol', 'nlive', 'logl', 'logwt', 'insert_order'
             np.savetxt(os.path.join(self.logs['chains'], 'run.txt'),
                        np.hstack(tuple([np.reshape(sequence[k], (-1, 1)) for k in keys])),
                        header=' '.join(keys),
