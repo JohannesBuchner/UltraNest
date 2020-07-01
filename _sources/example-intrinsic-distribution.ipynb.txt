@@ -107,9 +107,9 @@
     "\n",
     "Lets fit a intrinsic, gaussian distribution.\n",
     "\n",
-    "$$ y \\sim \\mathrm{Normal}(x \\times alpha + beta, sigma) $$\n",
+    "$$ y \\sim \\mathrm{Normal}(\\mu, \\sigma) $$\n",
     "\n",
-    "The model has three unknown parameters:\n",
+    "The model has two unknown parameters:\n",
     "\n",
     "* the mean $\\mu$\n",
     "* the scatter $\\sigma$\n",
@@ -176,10 +176,9 @@
    "cell_type": "markdown",
    "metadata": {},
    "source": [
+    "This likelihood evaluates the model for each object at each sample, and averages the model densities. This corresponds to saying: I don't know which of these options is correct, but I assume one of them is, so by using a logical OR, I sum the probabilities.\n",
     "\n",
-    "Implicitly, this model assumes that the velocity dispersion is predicted by the bulge mass.\n",
-    "Alternatively, one could flip the axes, or define the scatter orthogonally.\n",
-    "But lets stick with our approach for now.\n"
+    "The objects are then combined by multiplying the per-object probabilities. This corresponds to saying: I know the model has to describe all of these objects, so using a logical AND, I multiply the probabilities. Here we convert to log space, and sum. The small number is added to gracefully handle when a object probability is zero (distant means and small sigma).\n"
    ]
   },
   {
@@ -300,13 +299,6 @@
     "3. Try varying the prior ranges.\n",
     "4. Continue with the other tutorials and explore other UltraNest features"
    ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "metadata": {},
-   "outputs": [],
-   "source": []
   }
  ],
  "metadata": {
@@ -325,7 +317,7 @@
    "name": "python",
    "nbconvert_exporter": "python",
    "pygments_lexer": "ipython3",
-   "version": "3.6.8"
+   "version": "3.6.9"
   }
  },
  "nbformat": 4,

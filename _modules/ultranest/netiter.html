@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ultranest.netiter &mdash; UltraNest 2.2.0 documentation</title>
+  <title>ultranest.netiter &mdash; UltraNest 2.2.1 documentation</title>
   
 
   
@@ -69,7 +69,7 @@
             
             
               <div class="version">
-                2.2.0
+                2.2.1
               </div>
             
           
@@ -804,7 +804,7 @@
             <span class="n">logZ</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_logZ</span><span class="p">[</span><span class="n">active</span><span class="p">]</span>
             <span class="n">logZnew</span> <span class="o">=</span> <span class="n">logaddexp</span><span class="p">(</span><span class="n">logZ</span><span class="p">,</span> <span class="n">wi</span><span class="p">)</span>
             <span class="n">H</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="n">wi</span> <span class="o">-</span> <span class="n">logZnew</span><span class="p">)</span> <span class="o">*</span> <span class="n">Li</span> <span class="o">+</span> <span class="n">exp</span><span class="p">(</span><span class="n">logZ</span> <span class="o">-</span> <span class="n">logZnew</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_H</span><span class="p">[</span><span class="n">active</span><span class="p">]</span> <span class="o">+</span> <span class="n">logZ</span><span class="p">)</span> <span class="o">-</span> <span class="n">logZnew</span>
-            <span class="n">first_setting</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">logZ</span><span class="p">)</span>
+            <span class="n">first_setting</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">H</span><span class="p">)</span>
             <span class="c1"># print()</span>
             <span class="c1"># print(&quot;Hnext:&quot;, H[0], first_setting[0])</span>
             <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">H</span><span class="p">[</span><span class="o">~</span><span class="n">first_setting</span><span class="p">])</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="p">(</span><span class="n">first_setting</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_H</span><span class="p">[</span><span class="n">active</span><span class="p">][</span><span class="o">~</span><span class="n">first_setting</span><span class="p">],</span> <span class="n">H</span><span class="p">,</span> <span class="n">wi</span><span class="p">,</span> <span class="n">logZnew</span><span class="p">,</span> <span class="n">Li</span><span class="p">,</span> <span class="n">logZ</span><span class="p">)</span>
@@ -816,10 +816,11 @@
                 <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_H</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_H</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                 <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">H</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="p">(</span><span class="n">first_setting</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">H</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_H</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">wi</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">logZnew</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Li</span><span class="p">,</span> <span class="n">logZ</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">all_H</span><span class="p">[</span><span class="n">active</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">first_setting</span><span class="p">,</span> <span class="o">-</span><span class="n">logwidth</span><span class="p">[</span><span class="n">active</span><span class="p">],</span> <span class="n">H</span><span class="p">)</span>
-            <span class="c1"># print(&quot;H:&quot;, self.all_H[0])</span>
+            <span class="c1"># print(&quot;H:&quot;, self.all_H)</span>
             <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_H</span><span class="p">[</span><span class="n">active</span><span class="p">])</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_H</span><span class="p">[</span><span class="n">active</span><span class="p">],</span> <span class="n">first_setting</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">H</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_H</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">wi</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">logZnew</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Li</span><span class="p">,</span> <span class="n">logZ</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
             <span class="c1"># assert np.all(np.isfinite(self.all_H[active])), (H, self.all_H[active], wi, logZnew, Li, logZ)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logZ</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_logZ</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_logZ</span><span class="p">[</span><span class="n">active</span><span class="p">])),</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_logZ</span><span class="p">[</span><span class="n">active</span><span class="p">])</span>
 
             <span class="c1"># self.Lmax = max((n.value for n in parallel_nodes))</span>
             <span class="c1"># print(&quot;L=%.1f N=%d V=%.2e logw=%.2e logZ=%.1f logZremain=%.1f&quot; % (</span>

@@ -333,8 +333,8 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "scatter_samples = result['weighted_samples']['v'][:,2]\n",
-    "weights = result['weighted_samples']['w']\n",
+    "scatter_samples = result['weighted_samples']['points'][:,2]\n",
+    "weights = result['weighted_samples']['weights']\n",
     "\n",
     "plt.figure(figsize=(8, 2.5))\n",
     "\n",
@@ -360,7 +360,7 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "result['weighted_samples']['bs_w'].shape"
+    "result['weighted_samples']['bootstrapped_weights'].shape"
    ]
   },
   {
@@ -389,8 +389,8 @@
     "from ultranest.integrator import resample_equal\n",
     "band = PredictionBand(bins)\n",
     "\n",
-    "for weights in result['weighted_samples']['bs_w'].transpose():\n",
-    "    scatter_samples = resample_equal(result['weighted_samples']['v'][:,2], weights)\n",
+    "for weights in result['weighted_samples']['bootstrapped_weights'].transpose():\n",
+    "    scatter_samples = resample_equal(result['weighted_samples']['points'][:,2], weights)\n",
     "    pdf, _ = fastKDE.pdf(scatter_samples, axes=(bins,))\n",
     "    band.add(pdf)\n",
     "\n",
@@ -508,10 +508,10 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "Lmax0 = result0['weighted_samples']['L'].max()\n",
+    "Lmax0 = result0['weighted_samples']['logl'].max()\n",
     "AIC0 = -2 * Lmax0 + len(parameters0)\n",
     "\n",
-    "Lmax1 = result['weighted_samples']['L'].max()\n",
+    "Lmax1 = result['weighted_samples']['logl'].max()\n",
     "AIC1 = -2 * Lmax1 + len(parameters)\n",
     "\n",
     "print(\"AIC of constant model: %d\" % AIC0)\n",
@@ -656,13 +656,6 @@
     "plt.errorbar(y=mB, yerr=mBerr, x=mBH, xerr=[mBHhi-mBH, mBH-mBHlo], \n",
     "             marker='o', ls=' ', color='orange');\n"
    ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "metadata": {},
-   "outputs": [],
-   "source": []
   }
  ],
  "metadata": {
@@ -681,7 +674,7 @@
    "name": "python",
    "nbconvert_exporter": "python",
    "pygments_lexer": "ipython3",
-   "version": "3.7.4"
+   "version": "3.6.9"
   }
  },
  "nbformat": 4,

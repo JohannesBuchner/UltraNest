@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ultranest package &mdash; UltraNest 2.2.0 documentation</title>
+  <title>ultranest package &mdash; UltraNest 2.2.1 documentation</title>
   
 
   
@@ -71,7 +71,7 @@
             
             
               <div class="version">
-                2.2.0
+                2.2.1
               </div>
             
           
@@ -114,8 +114,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#module-ultranest.integrator">ultranest.integrator module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-ultranest.mlfriends">ultranest.mlfriends module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id1">ultranest.mlfriends module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id2">ultranest.mlfriends module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id3">ultranest.mlfriends module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-ultranest.netiter">ultranest.netiter module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-ultranest.pathsampler">ultranest.pathsampler module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-ultranest.plot">ultranest.plot module</a></li>
@@ -918,7 +916,7 @@ Receives multiple cube vectors, returns multiple parameter vectors.</p></li>
 <li><p><strong>derived_param_names</strong> (<em>list of str</em>) – Additional derived parameters created by transform. (empty by default)</p></li>
 <li><p><strong>log_dir</strong> (<em>str</em>) – where to store output files</p></li>
 <li><p><strong>resume</strong> (<em>'resume'</em><em>, </em><em>'overwrite'</em><em> or </em><em>'subfolder'</em>) – if ‘overwrite’, overwrite previous data.
-if ‘subfolder’, create a fresh subdirectory in log_dir
+if ‘subfolder’, create a fresh subdirectory in log_dir.
 if ‘resume’ or True, continue previous run if available.</p></li>
 <li><p><strong>wrapped_params</strong> (<em>list of bools</em>) – indicating whether this parameter wraps around (circular parameter).</p></li>
 <li><p><strong>num_live_points</strong> (<em>int</em>) – Number of live points</p></li>
@@ -976,7 +974,7 @@ Receives multiple cube vectors, returns multiple parameter vectors.</p></li>
 <li><p><strong>derived_param_names</strong> (<em>list of str</em>) – Additional derived parameters created by transform. (empty by default)</p></li>
 <li><p><strong>log_dir</strong> (<em>str</em>) – where to store output files</p></li>
 <li><p><strong>resume</strong> (<em>'resume'</em><em>, </em><em>'overwrite'</em><em> or </em><em>'subfolder'</em>) – if ‘overwrite’, overwrite previous data.
-if ‘subfolder’, create a fresh subdirectory in log_dir
+if ‘subfolder’, create a fresh subdirectory in log_dir.
 if ‘resume’ or True, continue previous run if available.</p></li>
 <li><p><strong>wrapped_params</strong> (<em>list of bools</em>) – indicating whether this parameter wraps around (circular parameter).</p></li>
 <li><p><strong>num_test_samples</strong> (<em>int</em>) – test transform and likelihood with this number of
@@ -1467,662 +1465,6 @@ Returned values are based on upoints.</p>
 </div>
 <div class="section" id="id1">
 <h2>ultranest.mlfriends module<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
-<span class="target" id="module-ultranest.mlfriends"></span><p>Construct and sample from region.</p>
-<p>Implements MLFriends efficiently, with transformation layers and clustering.</p>
-<dl class="class">
-<dt>
-<em class="property">class </em><code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">AffineLayer</code></dt>
-<dd><p>Bases: <a class="reference internal" href="#ultranest.mlfriends.ScalingLayer" title="ultranest.mlfriends.ScalingLayer"><code class="xref py py-class docutils literal notranslate"><span class="pre">ultranest.mlfriends.ScalingLayer</span></code></a></p>
-<p>Affine whitening transformation.</p>
-<p>Learns the covariance of points.</p>
-<p>Initialise layer.</p>
-<p>The parameters are optional and can be learned from points with <a class="reference internal" href="#ultranest.mlfriends.AffineLayer.optimize" title="ultranest.mlfriends.AffineLayer.optimize"><code class="xref py py-meth docutils literal notranslate"><span class="pre">optimize()</span></code></a></p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>ctr</strong> (<em>vector</em>) – Center of points</p></li>
-<li><p><strong>T</strong> (<em>matrix</em>) – transformation matrix</p></li>
-<li><p><strong>invT</strong> (<em>matrix</em>) – inverse transformation matrix</p></li>
-<li><p><strong>nclusters</strong> (<em>int</em>) – number of clusters</p></li>
-<li><p><strong>wrapped_dims</strong> (<em>array of bools</em>) – indicates which parameter axes are circular.</p></li>
-<li><p><strong>clusterids</strong> (<em>array of int</em>) – cluster id for each point</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">create_new</code></dt>
-<dd><p>Learn next layer from this optimized layer’s clustering.</p>
-<p>Returns a new, optimized AffineLayer.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">optimize</code></dt>
-<dd><p>Optimize layer.</p>
-<p>Estimates covariance of <cite>centered_points</cite>. <cite>minvol</cite> sets the
-smallest allowed size of the covariance to avoid numerical
-collapse.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">transform</code></dt>
-<dd><p>Transform points from cube space to a whitened space.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">untransform</code></dt>
-<dd><p>Transform points from whitened space back to cube space.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt>
-<em class="property">class </em><code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">MLFriends</code></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>MLFriends region.</p>
-<p>Defines a region around nested sampling live points for</p>
-<ol class="arabic simple">
-<li><p>checking whether a proposed point likely also fulfills the
-likelihood constraints</p></li>
-<li><p>proposing new points.</p></li>
-</ol>
-<p>Learns geometry of region from existing live points.</p>
-<p>Initialise region.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>u</strong> (<em>array of vectors</em>) – live points</p></li>
-<li><p><strong>transformLayer</strong> (<a class="reference internal" href="#ultranest.mlfriends.ScalingLayer" title="ultranest.mlfriends.ScalingLayer"><em>ScalingLayer</em></a><em> or </em><a class="reference internal" href="#ultranest.mlfriends.AffineLayer" title="ultranest.mlfriends.AffineLayer"><em>AffineLayer</em></a>) – whitenin layer</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">compute_enlargement</code></dt>
-<dd><p>Return MLFriends radius and ellipsoid enlargement after <cite>nbootstraps</cite> bootstrapping rounds.</p>
-<p>The wrapping ellipsoid covariance is determined in each bootstrap round.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">compute_maxradiussq</code></dt>
-<dd><p>Return MLFriends radius after <cite>nbootstraps</cite> bootstrapping rounds</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">compute_mean_pair_distance</code></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">create_ellipsoid</code></dt>
-<dd><p>Create wrapping ellipsoid and store its center and covariance.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">estimate_volume</code></dt>
-<dd><p>Estimate the order of magnitude of the volume around a single point
-given the current transformLayer and</p>
-<p>Does not account for:
-* the number of live points
-* their overlap
-* the intersection with the unit cube borders</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">inside</code></dt>
-<dd><p>Check if inside region.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>pts</strong> (<em>array of vectors</em>) – Points to check</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>is_inside</strong> – True if inside MLFriends region and wrapping ellipsoid,
-for each point in <em>pts</em>.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>array of bools</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">inside_ellipsoid</code></dt>
-<dd><p>Check if inside wrapping ellipsoid.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>u</strong> (<em>array of vectors</em>) – Points to check</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>is_inside</strong> – True if inside wrapping ellipsoid, for each point in <cite>pts</cite>.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>array of bools</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">sample</code></dt>
-<dd><p>Draw uniformly sampled points from MLFriends region.</p>
-<p>Switches automatically between the <cite>sampling_methods</cite> (attribute).</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">sample_from_boundingbox</code></dt>
-<dd><p>Draw uniformly sampled points from MLFriends region.</p>
-<p>Draws uniformly from bounding box around region.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">sample_from_points</code></dt>
-<dd><p>Draw uniformly sampled points from MLFriends region.</p>
-<p>Chooses randomly from points and their ellipsoids.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">sample_from_transformed_boundingbox</code></dt>
-<dd><p>Draw uniformly sampled points from MLFriends region.</p>
-<p>Draws uniformly from bounding box around region (in whitened space).</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">sample_from_wrapping_ellipsoid</code></dt>
-<dd><p>Draw uniformly sampled points from MLFriends region.</p>
-<p>Draws uniformly from wrapping ellipsoid and filters with region.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">set_transformLayer</code></dt>
-<dd><p>Update transformation layer. Invalidates attribute <cite>maxradius</cite>.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt>
-<em class="property">class </em><code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">ScalingLayer</code></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Simple transformation layer that only shifts and scales each axis.</p>
-<p>Initialise layer.</p>
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">create_new</code></dt>
-<dd><p>Learn next layer from this optimized layer’s clustering.</p>
-<p>Returns a new, optimized ScalingLayer.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">optimize</code></dt>
-<dd><p>Optimize layer.</p>
-<p>Estimates mean and std of points.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">optimize_wrap</code></dt>
-<dd><p>Find largest gap in live points and wrap parameter space there.</p>
-<p>For example, if a wrapped axis has:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">|*****</span>           <span class="o">****|</span>
-</pre></div>
-</div>
-<p>it would identify the middle, subtract it, so that the new space
-is:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">|</span>      <span class="o">********</span>      <span class="o">|</span>
-</pre></div>
-</div>
-<p>Does nothing if there are no wrapped/circular parameters.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">set_clusterids</code></dt>
-<dd><p>Updates the cluster id assigned to each point.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">transform</code></dt>
-<dd><p>Transform points from cube space to a whitened space.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">untransform</code></dt>
-<dd><p>Transform points from whitened space back to cube space.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">unwrap</code></dt>
-<dd><p>Undo wrapping for circular parameters.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">wrap</code></dt>
-<dd><p>Wrap points for circular parameters.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="function">
-<dt>
-<code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">bounding_ellipsoid</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Calculate bounding ellipsoid containing a set of points x.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<em>(</em><em>npoints</em><em>, </em><em>ndim</em><em>) </em><em>ndarray</em>) – Coordinates of uniformly sampled points.</p></li>
-<li><p><strong>pointvol</strong> (<em>float</em><em>, </em><em>optional</em>) – Used to set a minimum bound on the ellipsoid volume when
-minvol is True.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>mean and covariance of points</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt>
-<code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">compute_mean_pair_distance</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Count the number of points in <cite>a</cite> within square radius <cite>radiussq</cite> for each point <cite>b</cite> in <cite>bpts</cite>.</p>
-<p>The number is written to <cite>nnearby</cite> (of same length as bpts).</p>
-</dd></dl>
-
-<dl class="function">
-<dt>
-<code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">count_nearby</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Count the number of points in <cite>a</cite> within square radius <cite>radiussq</cite> for each point <cite>b</cite> in <cite>bpts</cite>.</p>
-<p>The number is written to <cite>nnearby</cite> (of same length as bpts).</p>
-</dd></dl>
-
-<dl class="function">
-<dt>
-<code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">find_nearby</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Gets the index of a point in <cite>a</cite> within square radius <cite>radiussq</cite>, for each point <cite>b</cite> in <cite>bpts</cite>.</p>
-<p>The number is written to <cite>nnearby</cite> (of same length as <cite>bpts</cite>).
-If none is found, -1 is returned.</p>
-</dd></dl>
-
-<dl class="function">
-<dt>
-<code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">make_eigvals_positive</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>For the symmetric square matrix <code class="docutils literal notranslate"><span class="pre">a</span></code>, increase any zero eigenvalues
-to fulfill the given target product of eigenvalues.</p>
-<p>Returns a (possibly) new matrix.</p>
-</dd></dl>
-
-<dl class="function">
-<dt>
-<code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">update_clusters</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Clusters <cite>upoints</cite>, so that clusters are distinct if no member pair is within a radius of sqrt(<cite>maxradiussq</cite>)</p>
-<p>clusterids are the cluster indices of each point
-clusterids re-uses the existing ids to assign new cluster ids</p>
-<p>clustering is performed on a transformed coordinate space (<cite>tpoints</cite>).
-Returned values are based on upoints.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><ul class="simple">
-<li><p><strong>nclusters</strong> (<em>int</em>) – the number of clusters found, which is also clusterids.max()</p></li>
-<li><p><strong>new_clusterids</strong> (<em>array of int</em>) – the new clusterids for each point</p></li>
-<li><p><em>overlapped_points</em> – upoints with their cluster centers subtracted.</p></li>
-</ul>
-</p>
-</dd>
-</dl>
-</dd></dl>
-
-</div>
-<div class="section" id="id2">
-<h2>ultranest.mlfriends module<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
-<span class="target" id="module-ultranest.mlfriends"></span><p>Construct and sample from region.</p>
-<p>Implements MLFriends efficiently, with transformation layers and clustering.</p>
-<dl class="class">
-<dt>
-<em class="property">class </em><code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">AffineLayer</code></dt>
-<dd><p>Bases: <a class="reference internal" href="#ultranest.mlfriends.ScalingLayer" title="ultranest.mlfriends.ScalingLayer"><code class="xref py py-class docutils literal notranslate"><span class="pre">ultranest.mlfriends.ScalingLayer</span></code></a></p>
-<p>Affine whitening transformation.</p>
-<p>Learns the covariance of points.</p>
-<p>Initialise layer.</p>
-<p>The parameters are optional and can be learned from points with <a class="reference internal" href="#ultranest.mlfriends.AffineLayer.optimize" title="ultranest.mlfriends.AffineLayer.optimize"><code class="xref py py-meth docutils literal notranslate"><span class="pre">optimize()</span></code></a></p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>ctr</strong> (<em>vector</em>) – Center of points</p></li>
-<li><p><strong>T</strong> (<em>matrix</em>) – transformation matrix</p></li>
-<li><p><strong>invT</strong> (<em>matrix</em>) – inverse transformation matrix</p></li>
-<li><p><strong>nclusters</strong> (<em>int</em>) – number of clusters</p></li>
-<li><p><strong>wrapped_dims</strong> (<em>array of bools</em>) – indicates which parameter axes are circular.</p></li>
-<li><p><strong>clusterids</strong> (<em>array of int</em>) – cluster id for each point</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">create_new</code></dt>
-<dd><p>Learn next layer from this optimized layer’s clustering.</p>
-<p>Returns a new, optimized AffineLayer.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">optimize</code></dt>
-<dd><p>Optimize layer.</p>
-<p>Estimates covariance of <cite>centered_points</cite>. <cite>minvol</cite> sets the
-smallest allowed size of the covariance to avoid numerical
-collapse.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">transform</code></dt>
-<dd><p>Transform points from cube space to a whitened space.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">untransform</code></dt>
-<dd><p>Transform points from whitened space back to cube space.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt>
-<em class="property">class </em><code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">MLFriends</code></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>MLFriends region.</p>
-<p>Defines a region around nested sampling live points for</p>
-<ol class="arabic simple">
-<li><p>checking whether a proposed point likely also fulfills the
-likelihood constraints</p></li>
-<li><p>proposing new points.</p></li>
-</ol>
-<p>Learns geometry of region from existing live points.</p>
-<p>Initialise region.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>u</strong> (<em>array of vectors</em>) – live points</p></li>
-<li><p><strong>transformLayer</strong> (<a class="reference internal" href="#ultranest.mlfriends.ScalingLayer" title="ultranest.mlfriends.ScalingLayer"><em>ScalingLayer</em></a><em> or </em><a class="reference internal" href="#ultranest.mlfriends.AffineLayer" title="ultranest.mlfriends.AffineLayer"><em>AffineLayer</em></a>) – whitenin layer</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">compute_enlargement</code></dt>
-<dd><p>Return MLFriends radius and ellipsoid enlargement after <cite>nbootstraps</cite> bootstrapping rounds.</p>
-<p>The wrapping ellipsoid covariance is determined in each bootstrap round.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">compute_maxradiussq</code></dt>
-<dd><p>Return MLFriends radius after <cite>nbootstraps</cite> bootstrapping rounds</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">compute_mean_pair_distance</code></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">create_ellipsoid</code></dt>
-<dd><p>Create wrapping ellipsoid and store its center and covariance.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">estimate_volume</code></dt>
-<dd><p>Estimate the order of magnitude of the volume around a single point
-given the current transformLayer and</p>
-<p>Does not account for:
-* the number of live points
-* their overlap
-* the intersection with the unit cube borders</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">inside</code></dt>
-<dd><p>Check if inside region.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>pts</strong> (<em>array of vectors</em>) – Points to check</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>is_inside</strong> – True if inside MLFriends region and wrapping ellipsoid,
-for each point in <em>pts</em>.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>array of bools</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">inside_ellipsoid</code></dt>
-<dd><p>Check if inside wrapping ellipsoid.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>u</strong> (<em>array of vectors</em>) – Points to check</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>is_inside</strong> – True if inside wrapping ellipsoid, for each point in <cite>pts</cite>.</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>array of bools</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">sample</code></dt>
-<dd><p>Draw uniformly sampled points from MLFriends region.</p>
-<p>Switches automatically between the <cite>sampling_methods</cite> (attribute).</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">sample_from_boundingbox</code></dt>
-<dd><p>Draw uniformly sampled points from MLFriends region.</p>
-<p>Draws uniformly from bounding box around region.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">sample_from_points</code></dt>
-<dd><p>Draw uniformly sampled points from MLFriends region.</p>
-<p>Chooses randomly from points and their ellipsoids.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">sample_from_transformed_boundingbox</code></dt>
-<dd><p>Draw uniformly sampled points from MLFriends region.</p>
-<p>Draws uniformly from bounding box around region (in whitened space).</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">sample_from_wrapping_ellipsoid</code></dt>
-<dd><p>Draw uniformly sampled points from MLFriends region.</p>
-<p>Draws uniformly from wrapping ellipsoid and filters with region.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">set_transformLayer</code></dt>
-<dd><p>Update transformation layer. Invalidates attribute <cite>maxradius</cite>.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt>
-<em class="property">class </em><code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">ScalingLayer</code></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Simple transformation layer that only shifts and scales each axis.</p>
-<p>Initialise layer.</p>
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">create_new</code></dt>
-<dd><p>Learn next layer from this optimized layer’s clustering.</p>
-<p>Returns a new, optimized ScalingLayer.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">optimize</code></dt>
-<dd><p>Optimize layer.</p>
-<p>Estimates mean and std of points.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">optimize_wrap</code></dt>
-<dd><p>Find largest gap in live points and wrap parameter space there.</p>
-<p>For example, if a wrapped axis has:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">|*****</span>           <span class="o">****|</span>
-</pre></div>
-</div>
-<p>it would identify the middle, subtract it, so that the new space
-is:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">|</span>      <span class="o">********</span>      <span class="o">|</span>
-</pre></div>
-</div>
-<p>Does nothing if there are no wrapped/circular parameters.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">set_clusterids</code></dt>
-<dd><p>Updates the cluster id assigned to each point.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">transform</code></dt>
-<dd><p>Transform points from cube space to a whitened space.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">untransform</code></dt>
-<dd><p>Transform points from whitened space back to cube space.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">unwrap</code></dt>
-<dd><p>Undo wrapping for circular parameters.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">wrap</code></dt>
-<dd><p>Wrap points for circular parameters.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="function">
-<dt>
-<code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">bounding_ellipsoid</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Calculate bounding ellipsoid containing a set of points x.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<em>(</em><em>npoints</em><em>, </em><em>ndim</em><em>) </em><em>ndarray</em>) – Coordinates of uniformly sampled points.</p></li>
-<li><p><strong>pointvol</strong> (<em>float</em><em>, </em><em>optional</em>) – Used to set a minimum bound on the ellipsoid volume when
-minvol is True.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>mean and covariance of points</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt>
-<code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">compute_mean_pair_distance</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Count the number of points in <cite>a</cite> within square radius <cite>radiussq</cite> for each point <cite>b</cite> in <cite>bpts</cite>.</p>
-<p>The number is written to <cite>nnearby</cite> (of same length as bpts).</p>
-</dd></dl>
-
-<dl class="function">
-<dt>
-<code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">count_nearby</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Count the number of points in <cite>a</cite> within square radius <cite>radiussq</cite> for each point <cite>b</cite> in <cite>bpts</cite>.</p>
-<p>The number is written to <cite>nnearby</cite> (of same length as bpts).</p>
-</dd></dl>
-
-<dl class="function">
-<dt>
-<code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">find_nearby</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Gets the index of a point in <cite>a</cite> within square radius <cite>radiussq</cite>, for each point <cite>b</cite> in <cite>bpts</cite>.</p>
-<p>The number is written to <cite>nnearby</cite> (of same length as <cite>bpts</cite>).
-If none is found, -1 is returned.</p>
-</dd></dl>
-
-<dl class="function">
-<dt>
-<code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">make_eigvals_positive</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>For the symmetric square matrix <code class="docutils literal notranslate"><span class="pre">a</span></code>, increase any zero eigenvalues
-to fulfill the given target product of eigenvalues.</p>
-<p>Returns a (possibly) new matrix.</p>
-</dd></dl>
-
-<dl class="function">
-<dt>
-<code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">update_clusters</code><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Clusters <cite>upoints</cite>, so that clusters are distinct if no member pair is within a radius of sqrt(<cite>maxradiussq</cite>)</p>
-<p>clusterids are the cluster indices of each point
-clusterids re-uses the existing ids to assign new cluster ids</p>
-<p>clustering is performed on a transformed coordinate space (<cite>tpoints</cite>).
-Returned values are based on upoints.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><ul class="simple">
-<li><p><strong>nclusters</strong> (<em>int</em>) – the number of clusters found, which is also clusterids.max()</p></li>
-<li><p><strong>new_clusterids</strong> (<em>array of int</em>) – the new clusterids for each point</p></li>
-<li><p><em>overlapped_points</em> – upoints with their cluster centers subtracted.</p></li>
-</ul>
-</p>
-</dd>
-</dl>
-</dd></dl>
-
-</div>
-<div class="section" id="id3">
-<h2>ultranest.mlfriends module<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
 <span class="target" id="module-ultranest.mlfriends"></span><p>Construct and sample from region.</p>
 <p>Implements MLFriends efficiently, with transformation layers and clustering.</p>
 <dl class="class">
@@ -3556,7 +2898,7 @@ If not, the vector length in transformed space is <cite>tscale</cite>.</p>
 
 <dl class="class">
 <dt id="ultranest.stepsampler.StepSampler">
-<em class="property">class </em><code class="sig-prename descclassname">ultranest.stepsampler.</code><code class="sig-name descname">StepSampler</code><span class="sig-paren">(</span><em class="sig-param">nsteps</em>, <em class="sig-param">scale=1.0</em>, <em class="sig-param">adaptive_nsteps=False</em>, <em class="sig-param">region_filter=False</em>, <em class="sig-param">log=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#StepSampler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.StepSampler" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">ultranest.stepsampler.</code><code class="sig-name descname">StepSampler</code><span class="sig-paren">(</span><em class="sig-param">nsteps</em>, <em class="sig-param">scale=1.0</em>, <em class="sig-param">adaptive_nsteps=False</em>, <em class="sig-param">max_nsteps=1000</em>, <em class="sig-param">region_filter=False</em>, <em class="sig-param">log=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#StepSampler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.StepSampler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Base class for a simple step sampler, staggering around.</p>
 <p>Scales proposal towards a 50% acceptance rate.</p>
@@ -3566,16 +2908,35 @@ If not, the vector length in transformed space is <cite>tscale</cite>.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>scale</strong> (<em>float</em>) – initial proposal size</p></li>
 <li><p><strong>nsteps</strong> (<em>int</em>) – number of accepted steps until the sample is considered independent.</p></li>
-<li><p><strong>adaptive_nsteps</strong> (<em>False</em><em>, </em><em>'proposal-distance'</em><em>, </em><em>'move-distance'</em>) – if not false, allow earlier termination than nsteps.
-The ‘proposal-distance’ strategy stops when the sum of
-all proposed vectors exceeds the mean distance
-between pairs of live points.
-As distance, the Mahalanobis distance is used.
-The ‘move-distance’ strategy stops when the distance between
-start point and current position exceeds the mean distance
+<li><p><strong>adaptive_nsteps</strong> (<em>False</em><em>, </em><em>'proposal-distance'</em><em>, </em><em>'move-distance'</em>) – <p>Select a strategy to adapt the number of steps. The strategies
+make sure that:</p>
+<ul>
+<li><p>’move-distance’ (recommended): distance between
+start point and final position exceeds the mean distance
 between pairs of live points.</p></li>
+<li><p>’move-distance-midway’: distance between
+start point and position in the middle of the chain
+exceeds the mean distance between pairs of live points.</p></li>
+<li><p>’proposal-distance’: mean square distance of
+proposed vectors exceeds the mean distance
+between pairs of live points.</p></li>
+<li><p>’proposal-total-distances-NN’: mean distance
+of chain points from starting point exceeds mean distance
+between pairs of live points.</p></li>
+<li><p>’proposal-summed-distances-NN’: summed distances
+between chain points exceeds mean distance
+between pairs of live points.</p></li>
+<li><p>’proposal-summed-distances-min-NN’: smallest distance
+between chain points exceeds mean distance
+between pairs of live points.</p></li>
+</ul>
+</p></li>
+<li><p><strong>max_nsteps</strong> (<em>int</em>) – Maximum number of steps the adaptive_nsteps can reach.</p></li>
 <li><p><strong>region_filter</strong> (<em>bool</em>) – if True, use region to check if a proposed point can be inside
 before calling likelihood.</p></li>
+<li><p><strong>log</strong> (<em>file</em>) – log file for sampler statistics, such as acceptance rate,
+proposal scale, number of steps, jump distance and distance
+between live points</p></li>
 </ul>
 </dd>
 </dl>
@@ -3631,7 +2992,7 @@ before calling likelihood.</p></li>
 
 <dl class="class">
 <dt id="ultranest.stepsampler.CubeMHSampler">
-<em class="property">class </em><code class="sig-prename descclassname">ultranest.stepsampler.</code><code class="sig-name descname">CubeMHSampler</code><span class="sig-paren">(</span><em class="sig-param">nsteps</em>, <em class="sig-param">scale=1.0</em>, <em class="sig-param">adaptive_nsteps=False</em>, <em class="sig-param">region_filter=False</em>, <em class="sig-param">log=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#CubeMHSampler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.CubeMHSampler" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">ultranest.stepsampler.</code><code class="sig-name descname">CubeMHSampler</code><span class="sig-paren">(</span><em class="sig-param">nsteps</em>, <em class="sig-param">scale=1.0</em>, <em class="sig-param">adaptive_nsteps=False</em>, <em class="sig-param">max_nsteps=1000</em>, <em class="sig-param">region_filter=False</em>, <em class="sig-param">log=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#CubeMHSampler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.CubeMHSampler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ultranest.stepsampler.StepSampler" title="ultranest.stepsampler.StepSampler"><code class="xref py py-class docutils literal notranslate"><span class="pre">ultranest.stepsampler.StepSampler</span></code></a></p>
 <p>Simple step sampler, staggering around in cube space.</p>
 <p>Initialise sampler.</p>
@@ -3640,16 +3001,35 @@ before calling likelihood.</p></li>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>scale</strong> (<em>float</em>) – initial proposal size</p></li>
 <li><p><strong>nsteps</strong> (<em>int</em>) – number of accepted steps until the sample is considered independent.</p></li>
-<li><p><strong>adaptive_nsteps</strong> (<em>False</em><em>, </em><em>'proposal-distance'</em><em>, </em><em>'move-distance'</em>) – if not false, allow earlier termination than nsteps.
-The ‘proposal-distance’ strategy stops when the sum of
-all proposed vectors exceeds the mean distance
-between pairs of live points.
-As distance, the Mahalanobis distance is used.
-The ‘move-distance’ strategy stops when the distance between
-start point and current position exceeds the mean distance
+<li><p><strong>adaptive_nsteps</strong> (<em>False</em><em>, </em><em>'proposal-distance'</em><em>, </em><em>'move-distance'</em>) – <p>Select a strategy to adapt the number of steps. The strategies
+make sure that:</p>
+<ul>
+<li><p>’move-distance’ (recommended): distance between
+start point and final position exceeds the mean distance
 between pairs of live points.</p></li>
+<li><p>’move-distance-midway’: distance between
+start point and position in the middle of the chain
+exceeds the mean distance between pairs of live points.</p></li>
+<li><p>’proposal-distance’: mean square distance of
+proposed vectors exceeds the mean distance
+between pairs of live points.</p></li>
+<li><p>’proposal-total-distances-NN’: mean distance
+of chain points from starting point exceeds mean distance
+between pairs of live points.</p></li>
+<li><p>’proposal-summed-distances-NN’: summed distances
+between chain points exceeds mean distance
+between pairs of live points.</p></li>
+<li><p>’proposal-summed-distances-min-NN’: smallest distance
+between chain points exceeds mean distance
+between pairs of live points.</p></li>
+</ul>
+</p></li>
+<li><p><strong>max_nsteps</strong> (<em>int</em>) – Maximum number of steps the adaptive_nsteps can reach.</p></li>
 <li><p><strong>region_filter</strong> (<em>bool</em>) – if True, use region to check if a proposed point can be inside
 before calling likelihood.</p></li>
+<li><p><strong>log</strong> (<em>file</em>) – log file for sampler statistics, such as acceptance rate,
+proposal scale, number of steps, jump distance and distance
+between live points</p></li>
 </ul>
 </dd>
 </dl>
@@ -3663,7 +3043,7 @@ before calling likelihood.</p></li>
 
 <dl class="class">
 <dt id="ultranest.stepsampler.RegionMHSampler">
-<em class="property">class </em><code class="sig-prename descclassname">ultranest.stepsampler.</code><code class="sig-name descname">RegionMHSampler</code><span class="sig-paren">(</span><em class="sig-param">nsteps</em>, <em class="sig-param">scale=1.0</em>, <em class="sig-param">adaptive_nsteps=False</em>, <em class="sig-param">region_filter=False</em>, <em class="sig-param">log=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#RegionMHSampler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.RegionMHSampler" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">ultranest.stepsampler.</code><code class="sig-name descname">RegionMHSampler</code><span class="sig-paren">(</span><em class="sig-param">nsteps</em>, <em class="sig-param">scale=1.0</em>, <em class="sig-param">adaptive_nsteps=False</em>, <em class="sig-param">max_nsteps=1000</em>, <em class="sig-param">region_filter=False</em>, <em class="sig-param">log=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#RegionMHSampler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.RegionMHSampler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ultranest.stepsampler.StepSampler" title="ultranest.stepsampler.StepSampler"><code class="xref py py-class docutils literal notranslate"><span class="pre">ultranest.stepsampler.StepSampler</span></code></a></p>
 <p>Simple step sampler, staggering around in transformLayer space.</p>
 <p>Initialise sampler.</p>
@@ -3672,16 +3052,35 @@ before calling likelihood.</p></li>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>scale</strong> (<em>float</em>) – initial proposal size</p></li>
 <li><p><strong>nsteps</strong> (<em>int</em>) – number of accepted steps until the sample is considered independent.</p></li>
-<li><p><strong>adaptive_nsteps</strong> (<em>False</em><em>, </em><em>'proposal-distance'</em><em>, </em><em>'move-distance'</em>) – if not false, allow earlier termination than nsteps.
-The ‘proposal-distance’ strategy stops when the sum of
-all proposed vectors exceeds the mean distance
-between pairs of live points.
-As distance, the Mahalanobis distance is used.
-The ‘move-distance’ strategy stops when the distance between
-start point and current position exceeds the mean distance
+<li><p><strong>adaptive_nsteps</strong> (<em>False</em><em>, </em><em>'proposal-distance'</em><em>, </em><em>'move-distance'</em>) – <p>Select a strategy to adapt the number of steps. The strategies
+make sure that:</p>
+<ul>
+<li><p>’move-distance’ (recommended): distance between
+start point and final position exceeds the mean distance
 between pairs of live points.</p></li>
+<li><p>’move-distance-midway’: distance between
+start point and position in the middle of the chain
+exceeds the mean distance between pairs of live points.</p></li>
+<li><p>’proposal-distance’: mean square distance of
+proposed vectors exceeds the mean distance
+between pairs of live points.</p></li>
+<li><p>’proposal-total-distances-NN’: mean distance
+of chain points from starting point exceeds mean distance
+between pairs of live points.</p></li>
+<li><p>’proposal-summed-distances-NN’: summed distances
+between chain points exceeds mean distance
+between pairs of live points.</p></li>
+<li><p>’proposal-summed-distances-min-NN’: smallest distance
+between chain points exceeds mean distance
+between pairs of live points.</p></li>
+</ul>
+</p></li>
+<li><p><strong>max_nsteps</strong> (<em>int</em>) – Maximum number of steps the adaptive_nsteps can reach.</p></li>
 <li><p><strong>region_filter</strong> (<em>bool</em>) – if True, use region to check if a proposed point can be inside
 before calling likelihood.</p></li>
+<li><p><strong>log</strong> (<em>file</em>) – log file for sampler statistics, such as acceptance rate,
+proposal scale, number of steps, jump distance and distance
+between live points</p></li>
 </ul>
 </dd>
 </dl>
@@ -3695,7 +3094,7 @@ before calling likelihood.</p></li>
 
 <dl class="class">
 <dt id="ultranest.stepsampler.CubeSliceSampler">
-<em class="property">class </em><code class="sig-prename descclassname">ultranest.stepsampler.</code><code class="sig-name descname">CubeSliceSampler</code><span class="sig-paren">(</span><em class="sig-param">nsteps</em>, <em class="sig-param">scale=1.0</em>, <em class="sig-param">adaptive_nsteps=False</em>, <em class="sig-param">region_filter=False</em>, <em class="sig-param">log=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#CubeSliceSampler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.CubeSliceSampler" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">ultranest.stepsampler.</code><code class="sig-name descname">CubeSliceSampler</code><span class="sig-paren">(</span><em class="sig-param">nsteps</em>, <em class="sig-param">scale=1.0</em>, <em class="sig-param">adaptive_nsteps=False</em>, <em class="sig-param">max_nsteps=1000</em>, <em class="sig-param">region_filter=False</em>, <em class="sig-param">log=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#CubeSliceSampler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.CubeSliceSampler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ultranest.stepsampler.StepSampler" title="ultranest.stepsampler.StepSampler"><code class="xref py py-class docutils literal notranslate"><span class="pre">ultranest.stepsampler.StepSampler</span></code></a></p>
 <p>Slice sampler, respecting the region.</p>
 <p>Initialise sampler.</p>
@@ -3704,16 +3103,35 @@ before calling likelihood.</p></li>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>scale</strong> (<em>float</em>) – initial proposal size</p></li>
 <li><p><strong>nsteps</strong> (<em>int</em>) – number of accepted steps until the sample is considered independent.</p></li>
-<li><p><strong>adaptive_nsteps</strong> (<em>False</em><em>, </em><em>'proposal-distance'</em><em>, </em><em>'move-distance'</em>) – if not false, allow earlier termination than nsteps.
-The ‘proposal-distance’ strategy stops when the sum of
-all proposed vectors exceeds the mean distance
-between pairs of live points.
-As distance, the Mahalanobis distance is used.
-The ‘move-distance’ strategy stops when the distance between
-start point and current position exceeds the mean distance
+<li><p><strong>adaptive_nsteps</strong> (<em>False</em><em>, </em><em>'proposal-distance'</em><em>, </em><em>'move-distance'</em>) – <p>Select a strategy to adapt the number of steps. The strategies
+make sure that:</p>
+<ul>
+<li><p>’move-distance’ (recommended): distance between
+start point and final position exceeds the mean distance
 between pairs of live points.</p></li>
+<li><p>’move-distance-midway’: distance between
+start point and position in the middle of the chain
+exceeds the mean distance between pairs of live points.</p></li>
+<li><p>’proposal-distance’: mean square distance of
+proposed vectors exceeds the mean distance
+between pairs of live points.</p></li>
+<li><p>’proposal-total-distances-NN’: mean distance
+of chain points from starting point exceeds mean distance
+between pairs of live points.</p></li>
+<li><p>’proposal-summed-distances-NN’: summed distances
+between chain points exceeds mean distance
+between pairs of live points.</p></li>
+<li><p>’proposal-summed-distances-min-NN’: smallest distance
+between chain points exceeds mean distance
+between pairs of live points.</p></li>
+</ul>
+</p></li>
+<li><p><strong>max_nsteps</strong> (<em>int</em>) – Maximum number of steps the adaptive_nsteps can reach.</p></li>
 <li><p><strong>region_filter</strong> (<em>bool</em>) – if True, use region to check if a proposed point can be inside
 before calling likelihood.</p></li>
+<li><p><strong>log</strong> (<em>file</em>) – log file for sampler statistics, such as acceptance rate,
+proposal scale, number of steps, jump distance and distance
+between live points</p></li>
 </ul>
 </dd>
 </dl>
@@ -3751,7 +3169,7 @@ before calling likelihood.</p></li>
 
 <dl class="class">
 <dt id="ultranest.stepsampler.RegionSliceSampler">
-<em class="property">class </em><code class="sig-prename descclassname">ultranest.stepsampler.</code><code class="sig-name descname">RegionSliceSampler</code><span class="sig-paren">(</span><em class="sig-param">nsteps</em>, <em class="sig-param">scale=1.0</em>, <em class="sig-param">adaptive_nsteps=False</em>, <em class="sig-param">region_filter=False</em>, <em class="sig-param">log=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#RegionSliceSampler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.RegionSliceSampler" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">ultranest.stepsampler.</code><code class="sig-name descname">RegionSliceSampler</code><span class="sig-paren">(</span><em class="sig-param">nsteps</em>, <em class="sig-param">scale=1.0</em>, <em class="sig-param">adaptive_nsteps=False</em>, <em class="sig-param">max_nsteps=1000</em>, <em class="sig-param">region_filter=False</em>, <em class="sig-param">log=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#RegionSliceSampler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.RegionSliceSampler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ultranest.stepsampler.CubeSliceSampler" title="ultranest.stepsampler.CubeSliceSampler"><code class="xref py py-class docutils literal notranslate"><span class="pre">ultranest.stepsampler.CubeSliceSampler</span></code></a></p>
 <p>Slice sampler, randomly picking region axes.</p>
 <p>Initialise sampler.</p>
@@ -3760,16 +3178,35 @@ before calling likelihood.</p></li>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>scale</strong> (<em>float</em>) – initial proposal size</p></li>
 <li><p><strong>nsteps</strong> (<em>int</em>) – number of accepted steps until the sample is considered independent.</p></li>
-<li><p><strong>adaptive_nsteps</strong> (<em>False</em><em>, </em><em>'proposal-distance'</em><em>, </em><em>'move-distance'</em>) – if not false, allow earlier termination than nsteps.
-The ‘proposal-distance’ strategy stops when the sum of
-all proposed vectors exceeds the mean distance
-between pairs of live points.
-As distance, the Mahalanobis distance is used.
-The ‘move-distance’ strategy stops when the distance between
-start point and current position exceeds the mean distance
+<li><p><strong>adaptive_nsteps</strong> (<em>False</em><em>, </em><em>'proposal-distance'</em><em>, </em><em>'move-distance'</em>) – <p>Select a strategy to adapt the number of steps. The strategies
+make sure that:</p>
+<ul>
+<li><p>’move-distance’ (recommended): distance between
+start point and final position exceeds the mean distance
 between pairs of live points.</p></li>
+<li><p>’move-distance-midway’: distance between
+start point and position in the middle of the chain
+exceeds the mean distance between pairs of live points.</p></li>
+<li><p>’proposal-distance’: mean square distance of
+proposed vectors exceeds the mean distance
+between pairs of live points.</p></li>
+<li><p>’proposal-total-distances-NN’: mean distance
+of chain points from starting point exceeds mean distance
+between pairs of live points.</p></li>
+<li><p>’proposal-summed-distances-NN’: summed distances
+between chain points exceeds mean distance
+between pairs of live points.</p></li>
+<li><p>’proposal-summed-distances-min-NN’: smallest distance
+between chain points exceeds mean distance
+between pairs of live points.</p></li>
+</ul>
+</p></li>
+<li><p><strong>max_nsteps</strong> (<em>int</em>) – Maximum number of steps the adaptive_nsteps can reach.</p></li>
 <li><p><strong>region_filter</strong> (<em>bool</em>) – if True, use region to check if a proposed point can be inside
 before calling likelihood.</p></li>
+<li><p><strong>log</strong> (<em>file</em>) – log file for sampler statistics, such as acceptance rate,
+proposal scale, number of steps, jump distance and distance
+between live points</p></li>
 </ul>
 </dd>
 </dl>
@@ -3783,7 +3220,7 @@ before calling likelihood.</p></li>
 
 <dl class="class">
 <dt id="ultranest.stepsampler.RegionSequentialSliceSampler">
-<em class="property">class </em><code class="sig-prename descclassname">ultranest.stepsampler.</code><code class="sig-name descname">RegionSequentialSliceSampler</code><span class="sig-paren">(</span><em class="sig-param">nsteps</em>, <em class="sig-param">scale=1.0</em>, <em class="sig-param">adaptive_nsteps=False</em>, <em class="sig-param">region_filter=False</em>, <em class="sig-param">log=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#RegionSequentialSliceSampler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.RegionSequentialSliceSampler" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">ultranest.stepsampler.</code><code class="sig-name descname">RegionSequentialSliceSampler</code><span class="sig-paren">(</span><em class="sig-param">nsteps</em>, <em class="sig-param">scale=1.0</em>, <em class="sig-param">adaptive_nsteps=False</em>, <em class="sig-param">max_nsteps=1000</em>, <em class="sig-param">region_filter=False</em>, <em class="sig-param">log=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#RegionSequentialSliceSampler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.RegionSequentialSliceSampler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ultranest.stepsampler.CubeSliceSampler" title="ultranest.stepsampler.CubeSliceSampler"><code class="xref py py-class docutils literal notranslate"><span class="pre">ultranest.stepsampler.CubeSliceSampler</span></code></a></p>
 <p>Slice sampler, sequentially iterating region axes.</p>
 <p>Initialise sampler.</p>
@@ -3792,16 +3229,35 @@ before calling likelihood.</p></li>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>scale</strong> (<em>float</em>) – initial proposal size</p></li>
 <li><p><strong>nsteps</strong> (<em>int</em>) – number of accepted steps until the sample is considered independent.</p></li>
-<li><p><strong>adaptive_nsteps</strong> (<em>False</em><em>, </em><em>'proposal-distance'</em><em>, </em><em>'move-distance'</em>) – if not false, allow earlier termination than nsteps.
-The ‘proposal-distance’ strategy stops when the sum of
-all proposed vectors exceeds the mean distance
-between pairs of live points.
-As distance, the Mahalanobis distance is used.
-The ‘move-distance’ strategy stops when the distance between
-start point and current position exceeds the mean distance
+<li><p><strong>adaptive_nsteps</strong> (<em>False</em><em>, </em><em>'proposal-distance'</em><em>, </em><em>'move-distance'</em>) – <p>Select a strategy to adapt the number of steps. The strategies
+make sure that:</p>
+<ul>
+<li><p>’move-distance’ (recommended): distance between
+start point and final position exceeds the mean distance
 between pairs of live points.</p></li>
+<li><p>’move-distance-midway’: distance between
+start point and position in the middle of the chain
+exceeds the mean distance between pairs of live points.</p></li>
+<li><p>’proposal-distance’: mean square distance of
+proposed vectors exceeds the mean distance
+between pairs of live points.</p></li>
+<li><p>’proposal-total-distances-NN’: mean distance
+of chain points from starting point exceeds mean distance
+between pairs of live points.</p></li>
+<li><p>’proposal-summed-distances-NN’: summed distances
+between chain points exceeds mean distance
+between pairs of live points.</p></li>
+<li><p>’proposal-summed-distances-min-NN’: smallest distance
+between chain points exceeds mean distance
+between pairs of live points.</p></li>
+</ul>
+</p></li>
+<li><p><strong>max_nsteps</strong> (<em>int</em>) – Maximum number of steps the adaptive_nsteps can reach.</p></li>
 <li><p><strong>region_filter</strong> (<em>bool</em>) – if True, use region to check if a proposed point can be inside
 before calling likelihood.</p></li>
+<li><p><strong>log</strong> (<em>file</em>) – log file for sampler statistics, such as acceptance rate,
+proposal scale, number of steps, jump distance and distance
+between live points</p></li>
 </ul>
 </dd>
 </dl>
@@ -3815,7 +3271,7 @@ before calling likelihood.</p></li>
 
 <dl class="class">
 <dt id="ultranest.stepsampler.BallSliceSampler">
-<em class="property">class </em><code class="sig-prename descclassname">ultranest.stepsampler.</code><code class="sig-name descname">BallSliceSampler</code><span class="sig-paren">(</span><em class="sig-param">nsteps</em>, <em class="sig-param">scale=1.0</em>, <em class="sig-param">adaptive_nsteps=False</em>, <em class="sig-param">region_filter=False</em>, <em class="sig-param">log=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#BallSliceSampler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.BallSliceSampler" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">ultranest.stepsampler.</code><code class="sig-name descname">BallSliceSampler</code><span class="sig-paren">(</span><em class="sig-param">nsteps</em>, <em class="sig-param">scale=1.0</em>, <em class="sig-param">adaptive_nsteps=False</em>, <em class="sig-param">max_nsteps=1000</em>, <em class="sig-param">region_filter=False</em>, <em class="sig-param">log=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#BallSliceSampler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.BallSliceSampler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ultranest.stepsampler.CubeSliceSampler" title="ultranest.stepsampler.CubeSliceSampler"><code class="xref py py-class docutils literal notranslate"><span class="pre">ultranest.stepsampler.CubeSliceSampler</span></code></a></p>
 <p>Hit &amp; run sampler. Choose random directions in space.</p>
 <p>Initialise sampler.</p>
@@ -3824,16 +3280,35 @@ before calling likelihood.</p></li>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>scale</strong> (<em>float</em>) – initial proposal size</p></li>
 <li><p><strong>nsteps</strong> (<em>int</em>) – number of accepted steps until the sample is considered independent.</p></li>
-<li><p><strong>adaptive_nsteps</strong> (<em>False</em><em>, </em><em>'proposal-distance'</em><em>, </em><em>'move-distance'</em>) – if not false, allow earlier termination than nsteps.
-The ‘proposal-distance’ strategy stops when the sum of
-all proposed vectors exceeds the mean distance
-between pairs of live points.
-As distance, the Mahalanobis distance is used.
-The ‘move-distance’ strategy stops when the distance between
-start point and current position exceeds the mean distance
+<li><p><strong>adaptive_nsteps</strong> (<em>False</em><em>, </em><em>'proposal-distance'</em><em>, </em><em>'move-distance'</em>) – <p>Select a strategy to adapt the number of steps. The strategies
+make sure that:</p>
+<ul>
+<li><p>’move-distance’ (recommended): distance between
+start point and final position exceeds the mean distance
 between pairs of live points.</p></li>
+<li><p>’move-distance-midway’: distance between
+start point and position in the middle of the chain
+exceeds the mean distance between pairs of live points.</p></li>
+<li><p>’proposal-distance’: mean square distance of
+proposed vectors exceeds the mean distance
+between pairs of live points.</p></li>
+<li><p>’proposal-total-distances-NN’: mean distance
+of chain points from starting point exceeds mean distance
+between pairs of live points.</p></li>
+<li><p>’proposal-summed-distances-NN’: summed distances
+between chain points exceeds mean distance
+between pairs of live points.</p></li>
+<li><p>’proposal-summed-distances-min-NN’: smallest distance
+between chain points exceeds mean distance
+between pairs of live points.</p></li>
+</ul>
+</p></li>
+<li><p><strong>max_nsteps</strong> (<em>int</em>) – Maximum number of steps the adaptive_nsteps can reach.</p></li>
 <li><p><strong>region_filter</strong> (<em>bool</em>) – if True, use region to check if a proposed point can be inside
 before calling likelihood.</p></li>
+<li><p><strong>log</strong> (<em>file</em>) – log file for sampler statistics, such as acceptance rate,
+proposal scale, number of steps, jump distance and distance
+between live points</p></li>
 </ul>
 </dd>
 </dl>
@@ -3847,7 +3322,7 @@ before calling likelihood.</p></li>
 
 <dl class="class">
 <dt id="ultranest.stepsampler.RegionBallSliceSampler">
-<em class="property">class </em><code class="sig-prename descclassname">ultranest.stepsampler.</code><code class="sig-name descname">RegionBallSliceSampler</code><span class="sig-paren">(</span><em class="sig-param">nsteps</em>, <em class="sig-param">scale=1.0</em>, <em class="sig-param">adaptive_nsteps=False</em>, <em class="sig-param">region_filter=False</em>, <em class="sig-param">log=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#RegionBallSliceSampler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.RegionBallSliceSampler" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">ultranest.stepsampler.</code><code class="sig-name descname">RegionBallSliceSampler</code><span class="sig-paren">(</span><em class="sig-param">nsteps</em>, <em class="sig-param">scale=1.0</em>, <em class="sig-param">adaptive_nsteps=False</em>, <em class="sig-param">max_nsteps=1000</em>, <em class="sig-param">region_filter=False</em>, <em class="sig-param">log=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#RegionBallSliceSampler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.RegionBallSliceSampler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ultranest.stepsampler.CubeSliceSampler" title="ultranest.stepsampler.CubeSliceSampler"><code class="xref py py-class docutils literal notranslate"><span class="pre">ultranest.stepsampler.CubeSliceSampler</span></code></a></p>
 <p>Hit &amp; run sampler. Choose random directions according to region.</p>
 <p>Initialise sampler.</p>
@@ -3856,16 +3331,35 @@ before calling likelihood.</p></li>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>scale</strong> (<em>float</em>) – initial proposal size</p></li>
 <li><p><strong>nsteps</strong> (<em>int</em>) – number of accepted steps until the sample is considered independent.</p></li>
-<li><p><strong>adaptive_nsteps</strong> (<em>False</em><em>, </em><em>'proposal-distance'</em><em>, </em><em>'move-distance'</em>) – if not false, allow earlier termination than nsteps.
-The ‘proposal-distance’ strategy stops when the sum of
-all proposed vectors exceeds the mean distance
-between pairs of live points.
-As distance, the Mahalanobis distance is used.
-The ‘move-distance’ strategy stops when the distance between
-start point and current position exceeds the mean distance
+<li><p><strong>adaptive_nsteps</strong> (<em>False</em><em>, </em><em>'proposal-distance'</em><em>, </em><em>'move-distance'</em>) – <p>Select a strategy to adapt the number of steps. The strategies
+make sure that:</p>
+<ul>
+<li><p>’move-distance’ (recommended): distance between
+start point and final position exceeds the mean distance
 between pairs of live points.</p></li>
+<li><p>’move-distance-midway’: distance between
+start point and position in the middle of the chain
+exceeds the mean distance between pairs of live points.</p></li>
+<li><p>’proposal-distance’: mean square distance of
+proposed vectors exceeds the mean distance
+between pairs of live points.</p></li>
+<li><p>’proposal-total-distances-NN’: mean distance
+of chain points from starting point exceeds mean distance
+between pairs of live points.</p></li>
+<li><p>’proposal-summed-distances-NN’: summed distances
+between chain points exceeds mean distance
+between pairs of live points.</p></li>
+<li><p>’proposal-summed-distances-min-NN’: smallest distance
+between chain points exceeds mean distance
+between pairs of live points.</p></li>
+</ul>
+</p></li>
+<li><p><strong>max_nsteps</strong> (<em>int</em>) – Maximum number of steps the adaptive_nsteps can reach.</p></li>
 <li><p><strong>region_filter</strong> (<em>bool</em>) – if True, use region to check if a proposed point can be inside
 before calling likelihood.</p></li>
+<li><p><strong>log</strong> (<em>file</em>) – log file for sampler statistics, such as acceptance rate,
+proposal scale, number of steps, jump distance and distance
+between live points</p></li>
 </ul>
 </dd>
 </dl>
@@ -4129,6 +3623,12 @@ Another way to sample according to weights would be:</p>
 </pre></div>
 </div>
 <p>However, the method used in this function is less “noisy”.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ultranest.utils.listify">
+<code class="sig-prename descclassname">ultranest.utils.</code><code class="sig-name descname">listify</code><span class="sig-paren">(</span><em class="sig-param">*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/utils.html#listify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.utils.listify" title="Permalink to this definition">¶</a></dt>
+<dd><p>concatenate args, which are (made to be) lists</p>
 </dd></dl>
 
 <dl class="function">

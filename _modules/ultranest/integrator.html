@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ultranest.integrator &mdash; UltraNest 2.2.0 documentation</title>
+  <title>ultranest.integrator &mdash; UltraNest 2.2.1 documentation</title>
   
 
   
@@ -69,7 +69,7 @@
             
             
               <div class="version">
-                2.2.0
+                2.2.1
               </div>
             
           
@@ -195,7 +195,7 @@
 <span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">log</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">logaddexp</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
-<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">create_logger</span><span class="p">,</span> <span class="n">make_run_dir</span><span class="p">,</span> <span class="n">resample_equal</span><span class="p">,</span> <span class="n">vol_prefactor</span><span class="p">,</span> <span class="n">vectorize</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">create_logger</span><span class="p">,</span> <span class="n">make_run_dir</span><span class="p">,</span> <span class="n">resample_equal</span><span class="p">,</span> <span class="n">vol_prefactor</span><span class="p">,</span> <span class="n">vectorize</span><span class="p">,</span> <span class="n">listify</span> <span class="k">as</span> <span class="n">_listify</span>
 <span class="kn">from</span> <span class="nn">ultranest.mlfriends</span> <span class="kn">import</span> <span class="n">MLFriends</span><span class="p">,</span> <span class="n">AffineLayer</span><span class="p">,</span> <span class="n">ScalingLayer</span><span class="p">,</span> <span class="n">find_nearby</span>
 <span class="kn">from</span> <span class="nn">.store</span> <span class="kn">import</span> <span class="n">HDF5PointStore</span><span class="p">,</span> <span class="n">NullPointStore</span>
 <span class="kn">from</span> <span class="nn">.viz</span> <span class="kn">import</span> <span class="n">get_default_viz_callback</span><span class="p">,</span> <span class="n">nicelogger</span>
@@ -204,13 +204,6 @@
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ReactiveNestedSampler&#39;</span><span class="p">,</span> <span class="s1">&#39;NestedSampler&#39;</span><span class="p">,</span> <span class="s1">&#39;read_file&#39;</span><span class="p">]</span>
 
-
-<span class="k">def</span> <span class="nf">_listify</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; concatenate args, which are (made to be) lists &quot;&quot;&quot;</span>
-    <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
-        <span class="n">out</span> <span class="o">+=</span> <span class="nb">list</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">out</span>
 
 
 <span class="k">def</span> <span class="nf">_get_cumsum_range</span><span class="p">(</span><span class="n">pi</span><span class="p">,</span> <span class="n">dp</span><span class="p">):</span>
@@ -300,7 +293,7 @@
 <span class="sd">            where to store output files</span>
 <span class="sd">        resume: &#39;resume&#39;, &#39;overwrite&#39; or &#39;subfolder&#39;</span>
 <span class="sd">            if &#39;overwrite&#39;, overwrite previous data.</span>
-<span class="sd">            if &#39;subfolder&#39;, create a fresh subdirectory in log_dir</span>
+<span class="sd">            if &#39;subfolder&#39;, create a fresh subdirectory in log_dir.</span>
 <span class="sd">            if &#39;resume&#39; or True, continue previous run if available.</span>
 <span class="sd">        wrapped_params: list of bools</span>
 <span class="sd">            indicating whether this parameter wraps around (circular parameter).</span>
@@ -837,7 +830,7 @@
 <span class="sd">            where to store output files</span>
 <span class="sd">        resume: &#39;resume&#39;, &#39;overwrite&#39; or &#39;subfolder&#39;</span>
 <span class="sd">            if &#39;overwrite&#39;, overwrite previous data.</span>
-<span class="sd">            if &#39;subfolder&#39;, create a fresh subdirectory in log_dir</span>
+<span class="sd">            if &#39;subfolder&#39;, create a fresh subdirectory in log_dir.</span>
 <span class="sd">            if &#39;resume&#39; or True, continue previous run if available.</span>
 
 <span class="sd">        wrapped_params: list of bools</span>
@@ -1589,6 +1582,7 @@
 
             <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span> <span class="o">=</span> <span class="n">r</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">enlarge</span> <span class="o">=</span> <span class="n">f</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">create_ellipsoid</span><span class="p">(</span><span class="n">minvol</span><span class="o">=</span><span class="n">minvol</span><span class="p">)</span>
             <span class="c1"># if self.log:</span>
             <span class="c1">#     self.logger.debug(&quot;building first region ... r=%e, f=%e&quot; % (r, f))</span>
             <span class="n">updated</span> <span class="o">=</span> <span class="kc">True</span>
@@ -1665,7 +1659,7 @@
             <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">clusterids</span><span class="p">)</span>
 
             <span class="c1"># verify correctness:</span>
-            <span class="c1"># self.region.create_ellipsoid(minvol=minvol)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">create_ellipsoid</span><span class="p">(</span><span class="n">minvol</span><span class="o">=</span><span class="n">minvol</span><span class="p">)</span>
             <span class="c1"># assert self.region.inside(active_u).all(), self.region.inside(active_u).mean()</span>
 
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">clusterids</span><span class="p">)</span>
@@ -1747,12 +1741,19 @@
 
                 <span class="c1"># good_region = good_region and region.transformLayer.nclusters * 5 &lt; len(active_u)</span>
 
+                <span class="c1"># avoid cases where every point is its own cluster,</span>
+                <span class="c1"># and even the largest cluster has fewer than x_dim points</span>
+                <span class="n">sensible_clustering</span> <span class="o">=</span> <span class="n">nextTransformLayer</span><span class="o">.</span><span class="n">nclusters</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">nextregion</span><span class="o">.</span><span class="n">u</span><span class="p">)</span> \
+                    <span class="ow">and</span> <span class="n">cluster_sizes</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="n">nextregion</span><span class="o">.</span><span class="n">u</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
                 <span class="c1"># if self.log:</span>
                 <span class="c1">#     self.logger.debug(&quot;building new region ... r=%e, f=%e&quot; % (r, f))</span>
                 <span class="c1"># print(&quot;MLFriends computed: r=%e nc=%d&quot; % (r, nextTransformLayer.nclusters))</span>
                 <span class="c1"># force shrinkage of volume</span>
                 <span class="c1"># this is to avoid re-connection of dying out nodes</span>
-                <span class="k">if</span> <span class="n">good_region</span> <span class="ow">and</span> <span class="p">(</span><span class="n">need_accept</span> <span class="ow">or</span> <span class="n">nextregion</span><span class="o">.</span><span class="n">estimate_volume</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">estimate_volume</span><span class="p">()):</span>
+                <span class="k">if</span> <span class="n">good_region</span> <span class="ow">and</span> \
+                    <span class="p">(</span><span class="n">need_accept</span> <span class="ow">or</span> <span class="n">nextregion</span><span class="o">.</span><span class="n">estimate_volume</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">estimate_volume</span><span class="p">())</span> \
+                    <span class="ow">and</span> <span class="n">sensible_clustering</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">region</span> <span class="o">=</span> <span class="n">nextregion</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">transformLayer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">region_nodes</span> <span class="o">=</span> <span class="n">active_node_ids</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -1772,7 +1773,6 @@
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;not updating region&quot;</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">create_ellipsoid</span><span class="p">(</span><span class="n">minvol</span><span class="o">=</span><span class="n">minvol</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">clusterids</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">updated</span>
 
@@ -1952,8 +1952,6 @@
 <span class="sd">            require at least this many live points per detected cluster</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># if viz_callback == &#39;auto&#39;:</span>
-        <span class="c1">#    viz_callback = get_default_viz_callback()</span>
 
         <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_iter</span><span class="p">(</span>
             <span class="n">update_interval_iter_fraction</span><span class="o">=</span><span class="n">update_interval_iter_fraction</span><span class="p">,</span>

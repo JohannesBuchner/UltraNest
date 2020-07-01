@@ -14,17 +14,17 @@ See `Contributing <contributing.rst>`_ for how to report bugs and ask questions.
 How do I suppress the output?
 -----------------------------
 
-To suppress the logging to stdout, you can set your own logger::
+To suppress the logging to stdout, you can configure your own logger::
 
     import logging
-    logger = logging.getLogger(str(module_name))
+    logger = logging.getLogger("ultranest")
     handler = logging.StreamHandler(sys.stdout)
     handler.setLevel(logging.WARNING)
     formatter = logging.Formatter('[{}] [%(levelname)s] %(message)s'.format(module_name))
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
-You may want to alter the above to log to a file only.
+You may want to alter the above to log to a file only. See the logging python module docs.
 
 To suppress the live point visualisations, set ``viz_callback=False`` in ``sampler.run()``.
 

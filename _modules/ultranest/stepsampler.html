@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ultranest.stepsampler &mdash; UltraNest 2.2.0 documentation</title>
+  <title>ultranest.stepsampler &mdash; UltraNest 2.2.1 documentation</title>
   
 
   
@@ -69,7 +69,7 @@
             
             
               <div class="version">
-                2.2.0
+                2.2.1
               </div>
             
           
@@ -188,7 +188,7 @@
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span><span class="p">,</span> <span class="n">division</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">listify</span> <span class="k">as</span> <span class="n">_listify</span>
 
 <div class="viewcode-block" id="generate_random_direction"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.generate_random_direction">[docs]</a><span class="k">def</span> <span class="nf">generate_random_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Draw uniform direction vector in unit cube space of length `scale`.</span>
@@ -297,7 +297,10 @@
 <span class="sd">    Scales proposal towards a 50% acceptance rate.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">adaptive_nsteps</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">region_filter</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">adaptive_nsteps</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">max_nsteps</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+        <span class="n">region_filter</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Initialise sampler.</span>
 
 <span class="sd">        Parameters</span>
@@ -309,24 +312,46 @@
 <span class="sd">            number of accepted steps until the sample is considered independent.</span>
 
 <span class="sd">        adaptive_nsteps: False, &#39;proposal-distance&#39;, &#39;move-distance&#39;</span>
-<span class="sd">            if not false, allow earlier termination than nsteps.</span>
-<span class="sd">            The &#39;proposal-distance&#39; strategy stops when the sum of</span>
-<span class="sd">            all proposed vectors exceeds the mean distance</span>
-<span class="sd">            between pairs of live points.</span>
-<span class="sd">            As distance, the Mahalanobis distance is used.</span>
-<span class="sd">            The &#39;move-distance&#39; strategy stops when the distance between</span>
-<span class="sd">            start point and current position exceeds the mean distance</span>
-<span class="sd">            between pairs of live points.</span>
+<span class="sd">            Select a strategy to adapt the number of steps. The strategies</span>
+<span class="sd">            make sure that:</span>
+
+<span class="sd">            * &#39;move-distance&#39; (recommended): distance between</span>
+<span class="sd">              start point and final position exceeds the mean distance</span>
+<span class="sd">              between pairs of live points.</span>
+<span class="sd">            * &#39;move-distance-midway&#39;: distance between</span>
+<span class="sd">              start point and position in the middle of the chain</span>
+<span class="sd">              exceeds the mean distance between pairs of live points.</span>
+<span class="sd">            * &#39;proposal-distance&#39;: mean square distance of</span>
+<span class="sd">              proposed vectors exceeds the mean distance</span>
+<span class="sd">              between pairs of live points.</span>
+<span class="sd">            * &#39;proposal-total-distances-NN&#39;: mean distance</span>
+<span class="sd">              of chain points from starting point exceeds mean distance</span>
+<span class="sd">              between pairs of live points.</span>
+<span class="sd">            * &#39;proposal-summed-distances-NN&#39;: summed distances</span>
+<span class="sd">              between chain points exceeds mean distance</span>
+<span class="sd">              between pairs of live points.</span>
+<span class="sd">            * &#39;proposal-summed-distances-min-NN&#39;: smallest distance</span>
+<span class="sd">              between chain points exceeds mean distance</span>
+<span class="sd">              between pairs of live points.</span>
+
+<span class="sd">        max_nsteps: int</span>
+<span class="sd">            Maximum number of steps the adaptive_nsteps can reach.</span>
 
 <span class="sd">        region_filter: bool</span>
 <span class="sd">            if True, use region to check if a proposed point can be inside</span>
 <span class="sd">            before calling likelihood.</span>
+
+<span class="sd">        log: file</span>
+<span class="sd">            log file for sampler statistics, such as acceptance rate,</span>
+<span class="sd">            proposal scale, number of steps, jump distance and distance</span>
+<span class="sd">            between live points</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">=</span> <span class="n">nsteps</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nrejects</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_nsteps</span> <span class="o">=</span> <span class="n">max_nsteps</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">next_scale</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">last</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nudge</span> <span class="o">=</span> <span class="mf">1.1</span><span class="o">**</span><span class="p">(</span><span class="mf">1.</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">)</span>
@@ -342,6 +367,9 @@
         <span class="k">if</span> <span class="n">adaptive_nsteps</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">adaptive_nsteps_options</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;adaptive_nsteps must be one of: </span><span class="si">%s</span><span class="s2">, not &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">adaptive_nsteps_options</span><span class="p">,</span> <span class="n">adaptive_nsteps</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="o">=</span> <span class="n">adaptive_nsteps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps_needs_mean_pair_distance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="ow">in</span> <span class="p">(</span>
+            <span class="s1">&#39;proposal-total-distances&#39;</span><span class="p">,</span> <span class="s1">&#39;proposal-summed-distances&#39;</span><span class="p">,</span> <span class="s1">&#39;proposal-variance-min&#39;</span>
+            <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mean_pair_distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">region_filter</span> <span class="o">=</span> <span class="n">region_filter</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="o">=</span> <span class="n">log</span>
@@ -427,7 +455,8 @@
 
         <span class="c1"># assert self.nrejects &lt; len(self.history), (self.nsteps, self.nrejects, len(self.history))</span>
         <span class="c1"># assert self.nrejects &lt;= self.nsteps, (self.nsteps, self.nrejects, len(self.history))</span>
-        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mean_pair_distance</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps_needs_mean_pair_distance</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mean_pair_distance</span><span class="p">)</span>
         <span class="n">nlive</span><span class="p">,</span> <span class="n">ndim</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="o">.</span><span class="n">shape</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="o">==</span> <span class="s1">&#39;proposal-total-distances&#39;</span><span class="p">:</span>
             <span class="c1"># compute mean vector of each proposed jump</span>
@@ -518,7 +547,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_nudge</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_nudge</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">))</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_nsteps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">))</span></div>
 
 <div class="viewcode-block" id="StepSampler.finalize_chain"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.StepSampler.finalize_chain">[docs]</a>    <span class="k">def</span> <span class="nf">finalize_chain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">Lmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">Ls</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Store chain statistics and adapt proposal.&quot;&quot;&quot;</span>
@@ -562,7 +591,7 @@
 <div class="viewcode-block" id="StepSampler.region_changed"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.StepSampler.region_changed">[docs]</a>    <span class="k">def</span> <span class="nf">region_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Ls</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;React to change of region. &quot;&quot;&quot;</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="ow">or</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps_needs_mean_pair_distance</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">mean_pair_distance</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">compute_mean_pair_distance</span><span class="p">()</span></div>
             <span class="c1"># print(&quot;region changed. new mean_pair_distance: %g&quot; % self.mean_pair_distance)</span>
 
