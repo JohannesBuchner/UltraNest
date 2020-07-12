@@ -307,7 +307,7 @@ class NestedSampler(object):
             else:
                 active_logl = self.loglike(active_v)
 
-            if self.log_to_disk:
+            if self.log:
                 for i in range(num_live_points_missing):
                     self.pointstore.add(
                         _listify([-np.inf, active_logl[i], 0.], active_u[i,:], active_v[i,:]),
@@ -424,7 +424,7 @@ class NestedSampler(object):
                     # root checks the point store
                     next_point = np.zeros((1, 3 + self.x_dim + self.num_params))
 
-                    if self.log_to_disk:
+                    if self.log:
                         _, stored_point = self.pointstore.pop(loglstar)
                         if stored_point is not None:
                             next_point[0,:] = stored_point
@@ -556,6 +556,8 @@ class NestedSampler(object):
                 writer = csv.writer(f)
                 writer.writerow(['niter', 'ncall', 'logz', 'logzerr', 'h'])
                 writer.writerow([it + 1, ncall, logz, logzerr, h])
+
+        if self.log:
             self.pointstore.close()
 
         if not self.use_mpi or self.mpi_rank == 0:
@@ -980,7 +982,7 @@ class ReactiveNestedSampler(object):
 
             assert active_logl.shape == (num_live_points_missing,), (active_logl.shape, num_live_points_missing)
 
-            if self.log_to_disk:
+            if self.log:
                 for i in range(num_live_points_missing):
                     rowid = self.pointstore.add(_listify(
                         [-np.inf, active_logl[i], 0.0],
@@ -1303,7 +1305,7 @@ class ReactiveNestedSampler(object):
                 # root checks the point store
                 next_point = np.zeros((1, 3 + self.x_dim + self.num_params)) * np.nan
 
-                if self.log_to_disk:
+                if self.log:
                     _, stored_point = self.pointstore.pop(Lmin)
                     if stored_point is not None:
                         next_point[0,:] = stored_point
@@ -1832,7 +1834,7 @@ class ReactiveNestedSampler(object):
 
         # if self.log:
         #     self.logger.info('Using MPI with rank [%d]' % (self.mpi_rank))
-        if self.log_to_disk:
+        if self.log and hasattr(self.pointstore, 'stack'):
             self.logger.info("PointStore: have %d items", len(self.pointstore.stack))
             self.use_point_stack = not self.pointstore.stack_empty
         else:
@@ -1895,7 +1897,7 @@ class ReactiveNestedSampler(object):
             else:
                 ndraw = 40
             self.pointstore.reset()
-            if self.log_to_disk:
+            if self.log:
                 self.use_point_stack = not self.pointstore.stack_empty
             else:
                 self.use_point_stack = False
