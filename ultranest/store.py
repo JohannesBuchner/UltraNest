@@ -158,7 +158,7 @@ class HDF5PointStore(FilePointStore):
     The format is a HDF5 file, which grows as needed.
     """
 
-    def __init__(self, filepath, ncols, **h5_file_args):
+    def __init__(self, filepath, ncols, group='/', **h5_file_args):
         """Load and append to storage at filepath.
 
         File contains *ncols* columns in 'points' dataset (Lmin, L, and others).
@@ -169,19 +169,20 @@ class HDF5PointStore(FilePointStore):
         self.stack_empty = True
         h5_file_args['mode'] = h5_file_args.get('mode', 'a')
         self.fileobj = h5py.File(filepath, **h5_file_args)
+        self.point_path = os.path.join(group, 'points')
         self._load()
 
     def _load(self):
         """Load from data file."""
-        if 'points' not in self.fileobj:
+        if self.point_path not in self.fileobj:
             self.fileobj.create_dataset(
-                'points', dtype=np.float,
+                self.point_path, dtype=np.float,
                 shape=(0, self.ncols), maxshape=(None, self.ncols))
 
-        self.nrows, ncols = self.fileobj['points'].shape
+        self.nrows, ncols = self.fileobj[self.point_path].shape
         if ncols != self.ncols:
             raise IOError("Tried to resume from file '%s', which has a different number of columns!" % (self.fileobj))
-        points = self.fileobj['points'][:]
+        points = self.fileobj[self.point_path][:]
         self.stack = list(enumerate(points))
         self.ncalls = self.fileobj.attrs.get('ncalls', len(self.stack))
         self.reset()
@@ -192,10 +193,11 @@ class HDF5PointStore(FilePointStore):
             raise ValueError("expected %d values, got %d in %s" % (self.ncols, len(row), row))
 
         # make space:
-        self.fileobj['points'].resize(self.nrows + 1, axis=0)
+        self.fileobj[self.point_path].resize(self.nrows + 1, axis=0)
         # insert:
-        self.fileobj['points'][self.nrows,:] = row
+        self.fileobj[self.point_path][self.nrows,:] = row
         if self.ncalls != ncalls:
             self.ncalls = self.fileobj.attrs['ncalls'] = ncalls
+
         self.nrows += 1
         return self.nrows - 1
