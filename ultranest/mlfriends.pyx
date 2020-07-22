@@ -14,7 +14,7 @@ cimport cython
 def count_nearby(np.ndarray[np.float_t, ndim=2] apts,
     np.ndarray[np.float_t, ndim=2] bpts,
     np.float_t radiussq,
-    np.ndarray[np.int64_t, ndim=1] nnearby
+    np.ndarray[np.int_t, ndim=1] nnearby
 ):
     """Count the number of points in `a` within square radius `radiussq` for each point `b` in `bpts`.
 
@@ -48,7 +48,7 @@ def count_nearby(np.ndarray[np.float_t, ndim=2] apts,
 def find_nearby(np.ndarray[np.float_t, ndim=2] apts,
     np.ndarray[np.float_t, ndim=2] bpts,
     np.float_t radiussq,
-    np.ndarray[np.int64_t, ndim=1] nnearby
+    np.ndarray[np.int_t, ndim=1] nnearby
 ):
     """Gets the index of a point in `a` within square radius `radiussq`, for each point `b` in `bpts`.
 
@@ -117,7 +117,7 @@ cdef float compute_maxradiussq(np.ndarray[np.float_t, ndim=2] apts, np.ndarray[n
 @cython.wraparound(False)
 def compute_mean_pair_distance(
     np.ndarray[np.float_t, ndim=2] pts,
-    np.ndarray[np.int64_t, ndim=1] clusterids
+    np.ndarray[np.int_t, ndim=1] clusterids
 ):
     """Count the number of points in `a` within square radius `radiussq` for each point `b` in `bpts`.
 
@@ -800,5 +800,3 @@ class MLFriends(object):
 
     def compute_mean_pair_distance(self):
         return compute_mean_pair_distance(self.unormed, self.transformLayer.clusterids)
-
-
