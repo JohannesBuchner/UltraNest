@@ -772,6 +772,10 @@ class MLFriends(object):
         self.ellipsoid_axlens = 1. / np.sqrt(l)
         self.ellipsoid_axes = np.dot(v, np.diag(self.ellipsoid_axlens))
 
+        l2, v2 = np.linalg.eigh(cov)
+        self.ellipsoid_inv_axlens = 1. / np.sqrt(l2)
+        self.ellipsoid_inv_axes = np.dot(v2, np.diag(self.ellipsoid_inv_axlens))
+
 
     def inside_ellipsoid(self, u):
         """Check if inside wrapping ellipsoid.

@@ -77,6 +77,8 @@ def main(args):
             log_dir = args.log_dir + 'RNS-%dd-slice%d' % (ndim, args.slice_steps)
         elif args.harm:
             log_dir = args.log_dir + 'RNS-%dd-harm%d' % (ndim, args.slice_steps)
+        elif args.aharm:
+            log_dir = args.log_dir + 'RNS-%dd-aharm%d' % (ndim, args.slice_steps)
         elif args.dyhmc:
             log_dir = args.log_dir + 'RNS-%dd-dyhmc%d' % (ndim, args.slice_steps)
         elif args.dychmc:
@@ -97,6 +99,10 @@ def main(args):
         if args.harm:
             import ultranest.stepsampler
             sampler.stepsampler = ultranest.stepsampler.RegionBallSliceSampler(nsteps=args.slice_steps, adaptive_nsteps=adaptive_nsteps,
+                log=open(log_dir + '/stepsampler.log', 'w'))
+        if args.aharm:
+            import ultranest.stepsampler
+            sampler.stepsampler = ultranest.stepsampler.AHARMSampler(nsteps=args.slice_steps, adaptive_nsteps=adaptive_nsteps,
                 log=open(log_dir + '/stepsampler.log', 'w'))
         if args.dyhmc:
             import ultranest.dyhmc
@@ -137,6 +143,7 @@ if __name__ == '__main__':
     parser.add_argument('--reactive', action='store_true')
     parser.add_argument('--slice', action='store_true')
     parser.add_argument('--harm', action='store_true')
+    parser.add_argument('--aharm', action='store_true')
     parser.add_argument('--dyhmc', action='store_true')
     parser.add_argument('--dychmc', action='store_true')
     parser.add_argument('--slice_steps', type=int, default=100)

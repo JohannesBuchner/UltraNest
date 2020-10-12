@@ -736,6 +736,12 @@ def combine_results(saved_logl, saved_nodeids, pointpile, main_iterator, mpi_com
     logzerr_bs = (logZ_bs - main_iterator.logZ).max()
     logzerr_total = (logzerr_tail**2 + logzerr_bs**2)**0.5
     samples = resample_equal(saved_v, w)
+    
+    ndim = saved_u.shape[1]
+    information_gain_bits = []
+    for i in range(ndim):
+        H, _ = np.histogram(saved_u[:,i], weights=saved_wt0, density=True, bins=np.linspace(0, 1, 40))
+        information_gain_bits.append(float((np.log2(1 / ((H + 0.001) * 40)) / 40).sum()))
 
     j = saved_logl.argmax()
 
@@ -754,6 +760,7 @@ def combine_results(saved_logl, saved_nodeids, pointpile, main_iterator, mpi_com
             median=np.percentile(samples, 50, axis=0).tolist(),
             errlo=np.percentile(samples, 15.8655, axis=0).tolist(),
             errup=np.percentile(samples, 84.1345, axis=0).tolist(),
+            information_gain_bits=information_gain_bits,
         ),
         weighted_samples=dict(
             upoints=saved_u, points=saved_v, weights=saved_wt0, logw=saved_logwt0,
