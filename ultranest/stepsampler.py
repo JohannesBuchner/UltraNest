@@ -926,7 +926,31 @@ class AHARMSampler(StepSampler):
             del i
 
         while True:
-            unew = self.move(ui, region, ndraw=ndraw, plot=plot)
+            if self.interval is None:
+                self.generate_new_interval(ui, region)
+            v, left, right, u = self.interval
+
+            if plot:
+                plt.plot([(ui + v * left)[0], (ui + v * right)[0]],
+                         [(ui + v * left)[1], (ui + v * right)[1]],
+                         ':o', color='k', lw=2, alpha=0.3)
+            
+            # propose a series of points
+            # the first is drawn between the extremes of the slice, each of 
+            # the following is a shrunk slice in case the previous is rejected
+            nproposed = max(2, ndraw // self.nsteps)
+            u = np.random.uniform(size=nproposed)
+            x = np.empty(nproposed)
+            for i in range(nproposed):
+                x[i] = u[i] * (right - left) + left
+                # shrink the rejected side
+                if u[i] > 0:
+                    right = u[i]
+                else:
+                    left = u[i]
+            # prepare interval for the worst case: all rejected
+            self.interval = (v, left, right, x[-1])
+            unew = ui.reshape((1, -1)) + v.reshape((1, -1)) * x.reshape((-1, 1))
             if plot:
                 plt.plot([ui[0], unew[:,0]], [ui[1], unew[:,1]], '-', color='k', lw=0.5)
                 plt.plot(ui[0], ui[1], 'd', color='r', ms=4)
@@ -1004,73 +1028,45 @@ class AHARMSampler(StepSampler):
         self.last = None, None
         self.history = []
         self.nrejects = 0
+    
+    def generate_new_interval(self, ui, region):
+        v = self.generate_direction(ui, region)
+        assert region.inside_ellipsoid(ui.reshape((1, -1)))
+        assert (ui > 0).all(), ui
+        assert (ui < 1).all(), ui
 
-    def move(self, ui, region, ndraw=1, plot=False):
-        """Advance the slice sampling move."""
-        
-        if self.interval is None:
-            v = self.generate_direction(ui, region)
-            assert region.inside_ellipsoid(ui.reshape((1, -1)))
-            assert (ui > 0).all(), ui
-            assert (ui < 1).all(), ui
-
-            # use region ellipsoid to identify limits
-            # rotate line so that ellipsoid is a sphere
-            vell = np.dot(v, region.ellipsoid_inv_axes)
-            # ui in ellipsoid
-            xell = np.dot(ui - region.ellipsoid_center, region.ellipsoid_inv_axes)
-            a = np.dot(vell, vell)
-            b = 2 * np.dot(vell, xell)
-            c = np.dot(xell, xell) - region.enlarge**2
-            assert c <= 0, c
-            d1 = (-b + (b**2 - 4*a*c)**0.5) / (2 * a)
-            d2 = (-b - (b**2 - 4*a*c)**0.5) / (2 * a)
-            left = min(0, d1, d2)
-            right = max(0, d1, d2)
+        # use region ellipsoid to identify limits
+        # rotate line so that ellipsoid is a sphere
+        vell = np.dot(v, region.ellipsoid_inv_axes)
+        # ui in ellipsoid
+        xell = np.dot(ui - region.ellipsoid_center, region.ellipsoid_inv_axes)
+        a = np.dot(vell, vell)
+        b = 2 * np.dot(vell, xell)
+        c = np.dot(xell, xell) - region.enlarge**2
+        assert c <= 0, c
+        d1 = (-b + (b**2 - 4*a*c)**0.5) / (2 * a)
+        d2 = (-b - (b**2 - 4*a*c)**0.5) / (2 * a)
+        left = min(0, d1, d2)
+        right = max(0, d1, d2)
+        leftu = left * v + ui
+        rightu = right * v + ui
+        if (leftu <= 0).any():
+            # choose left so that point is > 0 in all axes
+            # 0 = left * v + ui
+            #print('old left:', leftu, left)
+            left = (-ui[leftu <= 0] / v[leftu <= 0]).max() * 0.999
             leftu = left * v + ui
+            #print('new left:', leftu, left)
+        assert (leftu >= 0).all(), leftu
+        if (rightu >= 1).any():
+            # choose right so that point is < 1 in all axes
+            # 1 = left * v + ui
+            #print('old right:', rightu, right)
+            right = ((1-ui[rightu >= 1]) / v[rightu >= 1]).min() * 0.999
             rightu = right * v + ui
-            if (leftu <= 0).any():
-                # choose left so that point is > 0 in all axes
-                # 0 = left * v + ui
-                #print('old left:', leftu, left)
-                left = (-ui[leftu <= 0] / v[leftu <= 0]).max() * 0.999
-                leftu = left * v + ui
-                #print('new left:', leftu, left)
-            assert (leftu >= 0).all(), leftu
-            if (rightu >= 1).any():
-                # choose right so that point is < 1 in all axes
-                # 1 = left * v + ui
-                #print('old right:', rightu, right)
-                right = ((1-ui[rightu >= 1]) / v[rightu >= 1]).min() * 0.999
-                rightu = right * v + ui
-                #print('new right:', rightu, right)
-            assert (rightu <= 1).all(), rightu
-            assert left < 0 < right, (left, right)
-            
-            u = 0
-            self.interval = (v, left, right, u)
-
-        else:
-            v, left, right, u = self.interval
-
-        if plot:
-            plt.plot([(ui + v * left)[0], (ui + v * right)[0]],
-                     [(ui + v * left)[1], (ui + v * right)[1]],
-                     ':o', color='k', lw=2, alpha=0.3)
+            #print('new right:', rightu, right)
+        assert (rightu <= 1).all(), rightu
+        assert left < 0 < right, (left, right)
         
-        # propose a series of points
-        # the first is drawn between the extremes of the slice, each of 
-        # the following is a shrunk slice in case the previous is rejected
-        nproposed = max(2, ndraw // self.nsteps)
-        u = np.random.uniform(size=nproposed)
-        x = np.empty(nproposed)
-        for i in range(nproposed):
-            x[i] = u[i] * (right - left) + left
-            # shrink the rejected side
-            if u[i] > 0:
-                right = u[i]
-            else:
-                left = u[i]
-        # prepare interval for the worst case: all rejected
-        self.interval = (v, left, right, x[-1])
-        return ui.reshape((1, -1)) + v.reshape((1, -1)) * x.reshape((-1, 1))
+        u = 0
+        self.interval = (v, left, right, u)
