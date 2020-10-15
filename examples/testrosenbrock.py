@@ -95,15 +95,15 @@ def main(args):
         if args.slice:
             import ultranest.stepsampler
             sampler.stepsampler = ultranest.stepsampler.RegionSliceSampler(nsteps=args.slice_steps, adaptive_nsteps=adaptive_nsteps,
-                log=open(log_dir + '/stepsampler.log', 'w'))
+                log=open(log_dir + '/stepsampler.log', 'w'), max_nsteps=ndim)
         if args.harm:
             import ultranest.stepsampler
             sampler.stepsampler = ultranest.stepsampler.RegionBallSliceSampler(nsteps=args.slice_steps, adaptive_nsteps=adaptive_nsteps,
-                log=open(log_dir + '/stepsampler.log', 'w'))
+                log=open(log_dir + '/stepsampler.log', 'w'), max_nsteps=ndim)
         if args.aharm:
             import ultranest.stepsampler
             sampler.stepsampler = ultranest.stepsampler.AHARMSampler(nsteps=args.slice_steps, adaptive_nsteps=adaptive_nsteps,
-                log=open(log_dir + '/stepsampler.log', 'w'))
+                log=open(log_dir + '/stepsampler.log', 'w'), max_nsteps=ndim)
         if args.dyhmc:
             import ultranest.dyhmc
             from ultranest.utils import verify_gradient

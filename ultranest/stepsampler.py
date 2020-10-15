@@ -64,10 +64,10 @@ def generate_region_random_direction(ui, region, scale=1):
 
     The vector length is `scale` (in unit cube space).
     """
-    ti = region.transformLayer.transform(ui)
+    ti_orig = region.transformLayer.transform(ui)
 
     # choose axis in transformed space:
-    ti = np.random.normal(ti, 1)
+    ti = np.random.normal(ti_orig, 1)
     # ti *= scale / (ti**2).sum()**0.5
     # convert back to unit cube space:
     uj = region.transformLayer.untransform(ti)
@@ -442,12 +442,14 @@ class StepSampler(object):
         ui, Li = self.last
         if Li is not None and not Li >= Lmin:
             print("wandered out of L constraint; resetting", ui[0])
+            del ui, Li
             ui, Li = None, None
 
         if Li is None and self.history:
             # try to resume from a previous point above the current contour
             for j, (uj, Lj) in enumerate(self.history[::-1]):
                 if Lj > Lmin and region.inside(uj.reshape((1,-1))):
+                    del ui, Li
                     ui, Li = uj, Lj
                     # print("recovering at point %d/%d " % (j+1, len(self.history)))
                     self.last = ui, Li
@@ -468,6 +470,7 @@ class StepSampler(object):
             #    region.maxradiussq, region.u, region.unormed, us)
             i = np.random.randint(len(us))
             self.starti = i
+            del Li, ui
             ui = us[i,:]
             # print("starting at", ui[0])
             # assert np.logical_and(ui > 0, ui < 1).all(), ui
@@ -782,7 +785,52 @@ class SpeedVariableRegionSliceSampler(CubeSliceSampler):
         v *= scale / (v**2).sum()**0.5
         return v
 
+def ellipsoid_bracket(ui, v, ellipsoid_center, ellipsoid_inv_axes, ellipsoid_radius):
+    """ For a line from ui in direction v through an ellipsoid
+    centered at ellipsoid_center with axes matrix ellipsoid_inv_axes,
+    return the lower and upper intersection parameter."""
+    vell = np.dot(v, ellipsoid_inv_axes)
+    # ui in ellipsoid
+    xell = np.dot(ui - ellipsoid_center, ellipsoid_inv_axes)
+    a = np.dot(vell, vell)
+    b = 2 * np.dot(vell, xell)
+    c = np.dot(xell, xell) - ellipsoid_radius**2
+    assert c <= 0, c
+    d1 = (-b + (b**2 - 4*a*c)**0.5) / (2 * a)
+    d2 = (-b - (b**2 - 4*a*c)**0.5) / (2 * a)
+    left = min(0, d1, d2)
+    right = max(0, d1, d2)
+    return left, right
 
+def crop_bracket_at_unit_cube(ui, v, left, right, epsilon=1e-6):
+    leftu = left * v + ui
+    rightu = right * v + ui
+    cropped_left = False
+    if (leftu <= 0).any():
+        # choose left so that point is > 0 in all axes
+        # 0 = left * v + ui
+        #print('old left:', leftu, left)
+        del left
+        left = (-ui[leftu <= 0] / v[leftu <= 0]).max() * (1 - epsilon)
+        del leftu
+        leftu = left * v + ui
+        #print('new left:', leftu, left)
+        cropped_left |= True
+    assert (leftu >= 0).all(), leftu
+    cropped_right = False
+    if (rightu >= 1).any():
+        # choose right so that point is < 1 in all axes
+        # 1 = left * v + ui
+        #print('old right:', rightu, right)
+        del right
+        right = ((1-ui[rightu >= 1]) / v[rightu >= 1]).min() * (1 - epsilon)
+        del rightu
+        rightu = right * v + ui
+        #print('new right:', rightu, right)
+        cropped_right |= True
+    assert (rightu <= 1).all(), rightu
+    assert left <= 0 <= right, (left, right)
+    return left, right, cropped_left, cropped_right
 
 class AHARMSampler(StepSampler):
     """Accelerated hit-and-run/slice sampler, vectorised.
@@ -925,11 +973,10 @@ class AHARMSampler(StepSampler):
             self.history.append((ui.copy(), Li.copy()))
             del i
 
+        if self.interval is None:
+            self.generate_new_interval(ui, region)
         while True:
-            if self.interval is None:
-                self.generate_new_interval(ui, region)
             v, left, right, u = self.interval
-
             if plot:
                 plt.plot([(ui + v * left)[0], (ui + v * right)[0]],
                          [(ui + v * left)[1], (ui + v * right)[1]],
@@ -973,7 +1020,7 @@ class AHARMSampler(StepSampler):
         assert np.logical_and(unew > 0, unew < 1).all(axis=1).all()
         if np.any(Lnew > Lmin):
             i = np.where(Lnew > Lmin)[0][0]
-            print(ndraw, i, nc, len(self.history), self.nsteps)
+            #print(ndraw, i, nc, len(self.history), self.nsteps)
             if plot:
                 plt.plot(unew[i,0], unew[i,1], 'o', color='g', ms=4)
 
@@ -1037,36 +1084,77 @@ class AHARMSampler(StepSampler):
 
         # use region ellipsoid to identify limits
         # rotate line so that ellipsoid is a sphere
-        vell = np.dot(v, region.ellipsoid_inv_axes)
-        # ui in ellipsoid
-        xell = np.dot(ui - region.ellipsoid_center, region.ellipsoid_inv_axes)
-        a = np.dot(vell, vell)
-        b = 2 * np.dot(vell, xell)
-        c = np.dot(xell, xell) - region.enlarge**2
-        assert c <= 0, c
-        d1 = (-b + (b**2 - 4*a*c)**0.5) / (2 * a)
-        d2 = (-b - (b**2 - 4*a*c)**0.5) / (2 * a)
-        left = min(0, d1, d2)
-        right = max(0, d1, d2)
+        left, right = ellipsoid_bracket(ui, v, region.ellipsoid_center, region.ellipsoid_inv_axes, region.enlarge)
+        left, right, _, _ = crop_bracket_at_unit_cube(ui, v, left, right)
+        self.interval = (v, left, right, 0)
+
+    def generate_new_interval_sequence(self, ui, region):
+        v = self.generate_direction(ui, region)
+        assert region.inside_ellipsoid(ui.reshape((1, -1)))
+        assert (ui > 0).all(), ui
+        assert (ui < 1).all(), ui
+
+        # use region ellipsoid to identify limits
+        # rotate line so that ellipsoid is a sphere
+        left, right = ellipsoid_bracket(ui, v, region.ellipsoid_center, region.ellipsoid_inv_axes, region.enlarge)
+        left, right, left_cropped, right_cropped = crop_bracket_at_unit_cube(ui, v, left, right)
+        left_can_continue = ~left_cropped
+        right_can_continue = ~right_cropped
+        
+        intervals = [(v, left, right, 0)]
         leftu = left * v + ui
         rightu = right * v + ui
-        if (leftu <= 0).any():
-            # choose left so that point is > 0 in all axes
-            # 0 = left * v + ui
-            #print('old left:', leftu, left)
-            left = (-ui[leftu <= 0] / v[leftu <= 0]).max() * 0.999
-            leftu = left * v + ui
-            #print('new left:', leftu, left)
-        assert (leftu >= 0).all(), leftu
-        if (rightu >= 1).any():
-            # choose right so that point is < 1 in all axes
-            # 1 = left * v + ui
-            #print('old right:', rightu, right)
-            right = ((1-ui[rightu >= 1]) / v[rightu >= 1]).min() * 0.999
-            rightu = right * v + ui
-            #print('new right:', rightu, right)
-        assert (rightu <= 1).all(), rightu
-        assert left < 0 < right, (left, right)
+        lv, rv = v, v
         
-        u = 0
-        self.interval = (v, left, right, u)
+        while True:
+            if left_can_continue and right_can_continue:
+                direction_left = np.random.random < 0.5
+            elif left_can_continue:
+                direction_left = True
+            elif right_can_continue:
+                direction_left = False
+            else:
+                break
+
+            # update direction from ellipsoid reflection
+            if direction_left:
+                lnormal = region.ellipsoid_center - leftu
+                lnormal /= (lnormal**2).sum()**0.5
+                lv = lv - 2 * np.dot(lnormal, lv) * lnormal
+            else:
+                rnormal = region.ellipsoid_center - rightu
+                rnormal /= (rnormal**2).sum()**0.5
+                rv = rv - 2 * np.dot(rnormal, rv) * rnormal
+
+            # check if we are still going forward:
+            if np.dot(rv, lv) < 0:
+                break
+
+            # update position from ellipsoid bound
+            if direction_left:
+                lleft, lright = ellipsoid_bracket(leftu, lv, region.ellipsoid_center, region.ellipsoid_inv_axes, region.enlarge)
+                assert np.isclose(lright, 0), (lleft, lright)
+                lleft, lright, lleft_cropped, lright_cropped = crop_bracket_at_unit_cube(leftu, lv, lleft, lright)
+                left_can_continue = ~lleft_cropped
+
+                # add to sampling intervals
+                intervals.insert(0, (lv, lleft, lright, leftu))
+
+                # new end point
+                leftu = lleft * lv + leftu
+            else:
+                rleft, rright = ellipsoid_bracket(rightu, rv, region.ellipsoid_center, region.ellipsoid_inv_axes, region.enlarge)
+                assert np.isclose(rleft, 0), (rleft, rright)
+                rleft, rright, rleft_cropped, rright_cropped = crop_bracket_at_unit_cube(rightu, rv, rleft, rright)
+                right_can_continue = ~rright_cropped
+            
+                # add to sampling intervals
+                intervals.append((rv, rleft, rright, rightu))
+            
+                # new end point
+                rightu = rright * rv + rightu
+        
+        totallength = sum(right - left for _, left, right, _ in intervals)
+        
+        self.interval_length = totallength
+        self.intervals = intervals
