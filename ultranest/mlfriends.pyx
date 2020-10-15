@@ -800,3 +800,87 @@ class MLFriends(object):
 
     def compute_mean_pair_distance(self):
         return compute_mean_pair_distance(self.unormed, self.transformLayer.clusterids)
+
+
+
+class WrappingEllipsoid(object):
+    """Ellipsoid which safely wraps points."""
+
+    def __init__(self, u):
+        """Initialise region.
+
+        Parameters
+        -----------
+        u: array of vectors
+            live points
+        """
+        self.u = u
+
+    def compute_enlargement(self, nbootstraps=50, minvol=0., rng=np.random):
+        """Return ellipsoid enlargement after `nbootstraps` bootstrapping rounds.
+
+        The wrapping ellipsoid covariance is determined in each bootstrap round.
+        """
+        N, ndim = self.u.shape
+        selected = np.empty(N, dtype=bool)
+        maxf = 0.0
+
+        for i in range(nbootstraps):
+            idx = rng.randint(N, size=N)
+            selected[:] = False
+            selected[idx] = True
+            ua = self.u[selected,:]
+            ub = self.u[~selected,:]
+
+            # compute enlargement of bounding ellipsoid
+            ctr, cov = bounding_ellipsoid(ua, minvol=minvol)
+            a = np.linalg.inv(cov)  # inverse covariance
+            # compute expansion factor
+            delta = ub - ctr
+            f = np.einsum('...i, ...i', np.tensordot(delta, a, axes=1), delta).max()
+            assert np.isfinite(f), (ctr, cov, f, delta, a)
+            maxf = max(maxf, f)
+
+        assert maxf > 0, (maxf, self.u)
+        return maxf
+
+    def create_ellipsoid(self, minvol=0.0):
+        """Create wrapping ellipsoid and store its center and covariance."""
+        assert self.enlarge is not None
+        # compute enlargement of bounding ellipsoid
+        ctr, cov = bounding_ellipsoid(self.u, minvol=minvol)
+        a = np.linalg.inv(cov)
+
+        self.ellipsoid_center = ctr
+        self.ellipsoid_invcov = a
+        self.ellipsoid_cov = cov
+
+        l, v = np.linalg.eigh(a)
+        self.ellipsoid_axlens = 1. / np.sqrt(l)
+        self.ellipsoid_axes = np.dot(v, np.diag(self.ellipsoid_axlens))
+
+
+    def inside(self, u):
+        """Check if inside wrapping ellipsoid.
+
+        Parameters
+        ----------
+        u: array of vectors
+            Points to check
+
+        Returns
+        ---------
+        is_inside: array of bools
+            True if inside wrapping ellipsoid, for each point in `pts`.
+
+        """
+        # to disable wrapping ellipsoid
+        #return np.ones(len(u), dtype=bool)
+
+        # compute distance vector to center
+        d = u - self.ellipsoid_center
+        # distance in normalised coordates: vector . matrix . vector
+        # where the matrix is the ellipsoid inverse covariance
+        r = np.einsum('ij,jk,ik->i', d, self.ellipsoid_invcov, d)
+        # (r <= 1) means inside
+        return r <= self.enlarge
