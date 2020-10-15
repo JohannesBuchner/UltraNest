@@ -748,13 +748,16 @@ class MLFriends(object):
             for each point in *pts*.
 
         """
-        bpts = self.transformLayer.transform(pts)
-        idnearby = np.empty(len(pts), dtype=int)
-        find_nearby(self.unormed, bpts, self.maxradiussq, idnearby)
-        mask = idnearby >= 0
+        # require points to be inside bounding ellipsoid
+        mask = self.inside_ellipsoid(pts)
+        
+        if mask.any():
+            # additionally require points to be near neighbours
+            bpts = self.transformLayer.transform(pts[mask,:])
+            idnearby = np.empty(len(bpts), dtype=int)
+            find_nearby(self.unormed, bpts, self.maxradiussq, idnearby)
+            mask[mask] = idnearby >= 0
 
-        # additionally require points to be inside bounding ellipsoid
-        mask[mask] = self.inside_ellipsoid(pts[mask,:])
         return mask
 
     def create_ellipsoid(self, minvol=0.0):

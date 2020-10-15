@@ -97,10 +97,11 @@ def generate_mixture_random_direction(ui, region, scale=1, uniform_weight=1e-6):
     return v
 
 
-def inside_region(region, unew, uold):
+def _inside_region(region, unew, uold):
     """Check if `unew` is inside region.
 
-    always returns True at the moment.
+    This is a bit looser than the region, because it adds a 
+    MLFriends ellipsoid around the old point as well.
     """
     tnew = region.transformLayer.transform(unew)
     told = region.transformLayer.transform(uold)
@@ -110,6 +111,10 @@ def inside_region(region, unew, uold):
 
     mask = region.inside(unew)
     return np.logical_or(mask, mask2)
+
+def inside_region(region, unew, uold):
+    """Check if `unew` is inside region."""
+    return region.inside(unew)
 
 
 class StepSampler(object):
@@ -416,7 +421,7 @@ class StepSampler(object):
             self.mean_pair_distance = region.compute_mean_pair_distance()
             # print("region changed. new mean_pair_distance: %g" % self.mean_pair_distance)
 
-    def __next__(self, region, Lmin, us, Ls, transform, loglike, ndraw=10, plot=False):
+    def __next__(self, region, Lmin, us, Ls, transform, loglike, ndraw=10, plot=False, tregion=None):
         """Get next point.
 
         Parameters
@@ -437,6 +442,8 @@ class StepSampler(object):
             number of draws to attempt simultaneously.
         plot: bool
             whether to produce debug plots.
+        tregion: WrappingEllipsoid
+            optional ellipsoid in transformed space for rejecting proposals
 
         """
         # find most recent point in history conforming to current Lmin
@@ -488,19 +495,23 @@ class StepSampler(object):
             if self.region_filter:
                 mask = inside_region(region, unew, ui)
                 if mask.any():
-                    i = np.where(mask)[0][0]
+                    unew = unew[mask,:]
+                    if tregion is not None:
+                        pnew = transform(unew)
+                        tmask = tregion.inside(pnew)
+                        unew = unew[tmask,:]
+                        pnew = pnew[tmask,:]
+
                 else:
                     self.adjust_outside_region()
                     continue
-            else:
-                i = 0
 
             if len(unew) == 0:
                 self.adjust_outside_region()
                 continue
             break
 
-        unew = unew[i,:]
+        unew = unew[0,:]
         pnew = transform(unew.reshape((1, -1)))
         Lnew = loglike(pnew)[0]
         nc = 1
