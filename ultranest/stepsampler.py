@@ -457,7 +457,7 @@ class StepSampler(object):
             for j, (uj, Lj) in enumerate(self.history[::-1]):
                 if Lj > Lmin and region.inside(uj.reshape((1,-1))):
                     ui, Li = uj, Lj
-                    # print("recovering at point %d/%d " % (j+1, len(self.history)))
+                    # print("recovered off-track walk from point %d/%d " % (j+1, len(self.history)))
                     self.last = ui, Li
 
                     # pj = transform(uj.reshape((1, -1)))
@@ -471,9 +471,9 @@ class StepSampler(object):
         if Li is None:
             self.new_chain(region)
             # choose a new random starting point
-            # mask = region.inside(us)
-            # assert mask.any(), ("One of the live points does not satisfies the current region!",
-            #    region.maxradiussq, region.u, region.unormed, us)
+            mask = region.inside(us)
+            assert mask.any(), ("One of the live points does not satisfies the current region!",
+                region.maxradiussq, region.u, region.unormed, us)
             i = np.random.randint(len(us))
             self.starti = i
             ui = us[i,:]

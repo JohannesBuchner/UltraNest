@@ -307,7 +307,7 @@ def bounding_ellipsoid(x, minvol=0.):
     # combination of others). When this happens, we expand the ellipse
     # in the zero dimensions to fulfill the volume expected from
     # ``pointvol``.
-    #targetprod = (npoints * pointvol / vol_prefactor(ndim))**2
+    #targetprod = (minvol / vol_prefactor(ndim))**2
     cov = make_eigvals_positive(cov, minvol)
 
     return ctr, cov
@@ -523,6 +523,25 @@ class AffineLayer(ScalingLayer):
         return u
 
 
+def vol_prefactor(n):
+    """Volume constant for an `n`-dimensional sphere.
+
+    for `n` even:  $$    (2pi)^(n    /2) / (2 * 4 * ... * n)$$
+    for `n` odd :  $$2 * (2pi)^((n-1)/2) / (1 * 3 * ... * n)$$
+    """
+    if n % 2 == 0:
+        f = 1.
+        i = 2
+    else:
+        f = 2.
+        i = 3
+
+    while i <= n:
+        f *= 2. / i * pi
+        i += 2
+
+    return f
+
 
 class MLFriends(object):
     """MLFriends region.
@@ -560,6 +579,7 @@ class MLFriends(object):
             self.sample_from_wrapping_ellipsoid
         ]
         self.current_sampling_method = self.sample_from_boundingbox
+        self.vol_prefactor = vol_prefactor(self.u.shape[1])
 
     def estimate_volume(self):
         """Estimate the order of magnitude of the volume around a single point
@@ -627,12 +647,13 @@ class MLFriends(object):
             maxd = max(maxd, compute_maxradiussq(ta, tb))
 
             # compute enlargement of bounding ellipsoid
-            ctr, cov = bounding_ellipsoid(ua, minvol=minvol)
+            ctr, cov = bounding_ellipsoid(ua, minvol=(minvol / self.vol_prefactor)**2)
             a = np.linalg.inv(cov)  # inverse covariance
             # compute expansion factor
             delta = ub - ctr
             f = np.einsum('...i, ...i', np.tensordot(delta, a, axes=1), delta).max()
             assert np.isfinite(f), (ctr, cov, self.unormed, f, delta, a)
+            assert f > 0, (f, len(ua), len(ub), delta, ctr, np.einsum('...i, ...i', np.tensordot(delta, a, axes=1), delta))
             maxf = max(maxf, f)
 
         assert maxd > 0, (maxd, self.u, self.unormed)
@@ -819,7 +840,7 @@ class WrappingEllipsoid(object):
         """
         self.u = u
 
-    def compute_enlargement(self, nbootstraps=50, minvol=0., rng=np.random):
+    def compute_enlargement(self, nbootstraps=50, rng=np.random):
         """Return ellipsoid enlargement after `nbootstraps` bootstrapping rounds.
 
         The wrapping ellipsoid covariance is determined in each bootstrap round.
@@ -836,7 +857,7 @@ class WrappingEllipsoid(object):
             ub = self.u[~selected,:]
 
             # compute enlargement of bounding ellipsoid
-            ctr, cov = bounding_ellipsoid(ua, minvol=minvol)
+            ctr, cov = bounding_ellipsoid(ua)
             a = np.linalg.inv(cov)  # inverse covariance
             # compute expansion factor
             delta = ub - ctr

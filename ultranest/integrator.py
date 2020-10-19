@@ -16,8 +16,8 @@ import warnings
 from numpy import log, exp, logaddexp
 import numpy as np
 
-from .utils import create_logger, make_run_dir, resample_equal, vol_prefactor, vectorize, listify as _listify
-from ultranest.mlfriends import MLFriends, AffineLayer, ScalingLayer, find_nearby, WrappingEllipsoid
+from .utils import create_logger, make_run_dir, resample_equal, vectorize, listify as _listify
+from ultranest.mlfriends import MLFriends, AffineLayer, ScalingLayer, find_nearby, WrappingEllipsoid, vol_prefactor
 from .store import HDF5PointStore, NullPointStore
 from .viz import get_default_viz_callback, nicelogger
 from .netiter import PointPile, MultiCounter, BreadthFirstIterator, TreeNode, count_tree_between, find_nodes_before, logz_sequence
