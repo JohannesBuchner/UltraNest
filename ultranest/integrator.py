@@ -1189,7 +1189,7 @@ class ReactiveNestedSampler(object):
             self.region,
             transform=self.transform, loglike=self.loglike,
             Lmin=Lmin, us=active_u, Ls=active_values,
-            ndraw=ndraw, tregion=self.tregion)
+            ndraw=min(10, ndraw), tregion=self.tregion)
         if logl is None:
             u = np.empty((0, self.x_dim))
             v = np.empty((0, self.num_params))
