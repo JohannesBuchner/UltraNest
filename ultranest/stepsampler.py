@@ -98,8 +98,11 @@ def generate_mixture_random_direction(ui, region, scale=1, uniform_weight=1e-6):
     return v
 
 
-def inside_region(region, unew, uold):
+def _inside_region(region, unew, uold):
     """Check if `unew` is inside region.
+
+    This is a bit looser than the region, because it adds a 
+    MLFriends ellipsoid around the old point as well.
     """
     tnew = region.transformLayer.transform(unew)
     told = region.transformLayer.transform(uold)
@@ -109,6 +112,10 @@ def inside_region(region, unew, uold):
 
     mask = region.inside(unew)
     return np.logical_or(mask, mask2)
+
+def inside_region(region, unew, uold):
+    """Check if `unew` is inside region."""
+    return region.inside(unew)
 
 
 class StepSampler(object):
@@ -415,7 +422,7 @@ class StepSampler(object):
             self.mean_pair_distance = region.compute_mean_pair_distance()
             # print("region changed. new mean_pair_distance: %g" % self.mean_pair_distance)
 
-    def __next__(self, region, Lmin, us, Ls, transform, loglike, ndraw=10, plot=False):
+    def __next__(self, region, Lmin, us, Ls, transform, loglike, ndraw=10, plot=False, tregion=None):
         """Get next point.
 
         Parameters
@@ -436,6 +443,8 @@ class StepSampler(object):
             number of draws to attempt simultaneously.
         plot: bool
             whether to produce debug plots.
+        tregion: WrappingEllipsoid
+            optional ellipsoid in transformed space for rejecting proposals
 
         """
         # find most recent point in history conforming to current Lmin
@@ -451,7 +460,7 @@ class StepSampler(object):
                 if Lj > Lmin and region.inside(uj.reshape((1,-1))):
                     del ui, Li
                     ui, Li = uj, Lj
-                    # print("recovering at point %d/%d " % (j+1, len(self.history)))
+                    # print("recovered off-track walk from point %d/%d " % (j+1, len(self.history)))
                     self.last = ui, Li
 
                     # pj = transform(uj.reshape((1, -1)))
@@ -490,19 +499,23 @@ class StepSampler(object):
             if self.region_filter:
                 mask = inside_region(region, unew, ui)
                 if mask.any():
-                    i = np.where(mask)[0][0]
+                    unew = unew[mask,:]
+                    if tregion is not None:
+                        pnew = transform(unew)
+                        tmask = tregion.inside(pnew)
+                        unew = unew[tmask,:]
+                        pnew = pnew[tmask,:]
+
                 else:
                     self.adjust_outside_region()
                     continue
-            else:
-                i = 0
 
             if len(unew) == 0:
                 self.adjust_outside_region()
                 continue
             break
 
-        unew = unew[i,:]
+        unew = unew[0,:]
         pnew = transform(unew.reshape((1, -1)))
         Lnew = loglike(pnew)[0]
         nc = 1
@@ -784,377 +797,3 @@ class SpeedVariableRegionSliceSampler(CubeSliceSampler):
         v = uk - ui
         v *= scale / (v**2).sum()**0.5
         return v
-
-def ellipsoid_bracket(ui, v, ellipsoid_center, ellipsoid_inv_axes, ellipsoid_radius):
-    """ For a line from ui in direction v through an ellipsoid
-    centered at ellipsoid_center with axes matrix ellipsoid_inv_axes,
-    return the lower and upper intersection parameter."""
-    vell = np.dot(v, ellipsoid_inv_axes)
-    # ui in ellipsoid
-    xell = np.dot(ui - ellipsoid_center, ellipsoid_inv_axes)
-    a = np.dot(vell, vell)
-    b = 2 * np.dot(vell, xell)
-    c = np.dot(xell, xell) - ellipsoid_radius**2
-    assert c <= 0, c
-    d1 = (-b + (b**2 - 4*a*c)**0.5) / (2 * a)
-    d2 = (-b - (b**2 - 4*a*c)**0.5) / (2 * a)
-    left = min(0, d1, d2)
-    right = max(0, d1, d2)
-    return left, right
-
-def crop_bracket_at_unit_cube(ui, v, left, right, epsilon=1e-6):
-    leftu = left * v + ui
-    rightu = right * v + ui
-    cropped_left = False
-    if (leftu <= 0).any():
-        # choose left so that point is > 0 in all axes
-        # 0 = left * v + ui
-        #print('old left:', leftu, left)
-        del left
-        left = (-ui[leftu <= 0] / v[leftu <= 0]).max() * (1 - epsilon)
-        del leftu
-        leftu = left * v + ui
-        #print('new left:', leftu, left)
-        cropped_left |= True
-    assert (leftu >= 0).all(), leftu
-    cropped_right = False
-    if (rightu >= 1).any():
-        # choose right so that point is < 1 in all axes
-        # 1 = left * v + ui
-        #print('old right:', rightu, right)
-        del right
-        right = ((1-ui[rightu >= 1]) / v[rightu >= 1]).min() * (1 - epsilon)
-        del rightu
-        rightu = right * v + ui
-        #print('new right:', rightu, right)
-        cropped_right |= True
-    assert (rightu <= 1).all(), rightu
-    assert left <= 0 <= right, (left, right)
-    return left, right, cropped_left, cropped_right
-
-class AHARMSampler(StepSampler):
-    """Accelerated hit-and-run/slice sampler, vectorised.
-
-    Uses region ellipsoid to propose a sequence of points 
-    on a randomly drawn line.
-    """
-
-    def __init__(
-        self, nsteps, scale=1.0, adaptive_nsteps=False, max_nsteps=1000,
-        region_filter=False, log=False, direction=generate_region_random_direction,
-    ):
-        """Initialise vectorised hit-and-run/slice sampler.
-
-        Parameters
-        -----------
-        scale: float
-            initial proposal size
-
-        nsteps: int
-            number of accepted steps until the sample is considered independent.
-
-        adaptive_nsteps: False, 'proposal-distance', 'move-distance'
-            Select a strategy to adapt the number of steps. The strategies
-            make sure that:
-
-            * 'move-distance' (recommended): distance between
-              start point and final position exceeds the mean distance
-              between pairs of live points.
-            * 'move-distance-midway': distance between
-              start point and position in the middle of the chain
-              exceeds the mean distance between pairs of live points.
-
-        max_nsteps: int
-            Maximum number of steps the adaptive_nsteps can reach.
-
-        region_filter: bool
-            if True, use region to check if a proposed point can be inside
-            before calling likelihood.
-
-        direction: function
-            function that draws slice direction given a point and 
-            the current region.
-
-        log: file
-            log file for sampler statistics, such as acceptance rate,
-            proposal scale, number of steps, jump distance and distance
-            between live points
-
-        """
-        self.history = []
-        self.nsteps = nsteps
-        self.nrejects = 0
-        self.max_nsteps = max_nsteps
-        self.last = None, None
-        self.generate_direction = direction
-        adaptive_nsteps_options = [
-            False,
-            'move-distance', 'move-distance-midway',
-        ]
-
-        if adaptive_nsteps not in adaptive_nsteps_options:
-            raise ValueError("adaptive_nsteps must be one of: %s, not '%s'" % (adaptive_nsteps_options, adaptive_nsteps))
-        self.adaptive_nsteps = adaptive_nsteps
-        self.region_filter = region_filter
-        self.log = log
-        self.adaptive_nsteps_needs_mean_pair_distance = False
-        self.nsteps_nudge = 1.01
-
-        self.logstat = []
-        self.logstat_labels = ['rejection_rate', 'steps']
-        if adaptive_nsteps:
-            self.logstat_labels += ['jump-distance', 'reference-distance']
-
-    def __next__(self, region, Lmin, us, Ls, transform, loglike, ndraw=10, plot=False):
-        """Get next point.
-
-        Parameters
-        ----------
-        region: MLFriends
-            region.
-        Lmin: float
-            loglikelihood threshold
-        us: array of vectors
-            current live points
-        Ls: array of floats
-            current live point likelihoods
-        transform: function
-            transform function
-        loglike: function
-            loglikelihood function
-        ndraw: int
-            number of draws to attempt simultaneously.
-        plot: bool
-            whether to produce debug plots.
-
-        """
-        # find most recent point in history conforming to current Lmin
-        ui, Li = self.last
-        if Li is not None and not Li >= Lmin:
-            print("wandered out of L constraint; resetting", ui[0])
-            ui, Li = None, None
-
-        if ui is not None and not region.inside_ellipsoid(ui.reshape((1, -1))):
-            print("wandered out of ellipsoid; resetting", ui[0])
-            ui, Li = None, None
-
-        if Li is None and self.history:
-            # try to resume from a previous point above the current contour
-            for j, (uj, Lj) in enumerate(self.history[::-1]):
-                if Lj > Lmin and region.inside(uj.reshape((1,-1))):
-                    ui, Li = uj, Lj
-                    # print("recovering at point %d/%d " % (j+1, len(self.history)))
-                    self.last = ui, Li
-
-                    # pj = transform(uj.reshape((1, -1)))
-                    # Lj2 = loglike(pj)[0]
-                    # assert Lj2 > Lmin, (Lj2, Lj, uj, pj)
-                    assert region.inside_ellipsoid(ui.reshape((1, -1)))
-
-                    break
-            pass
-
-        # select starting point
-        if Li is None:
-            self.interval = None
-            self.axis_index = 0
-
-            self.history = []
-            self.last = None, None
-            self.nrejects = 0
-            
-            # choose a new random starting point
-            i = np.random.randint(len(us))
-            self.starti = i
-            ui = us[i,:]
-            assert region.inside_ellipsoid(ui.reshape((1, -1)))
-            assert np.logical_and(ui > 0, ui < 1).all(), ui
-            Li = Ls[i]
-            self.history.append((ui.copy(), Li.copy()))
-            del i
-
-        if self.interval is None:
-            self.generate_new_interval(ui, region)
-        while True:
-            v, left, right, u = self.interval
-            if plot:
-                plt.plot([(ui + v * left)[0], (ui + v * right)[0]],
-                         [(ui + v * left)[1], (ui + v * right)[1]],
-                         ':o', color='k', lw=2, alpha=0.3)
-            
-            # propose a series of points
-            # the first is drawn between the extremes of the slice, each of 
-            # the following is a shrunk slice in case the previous is rejected
-            nproposed = max(2, ndraw // self.nsteps)
-            u = np.random.uniform(size=nproposed)
-            x = np.empty(nproposed)
-            for i in range(nproposed):
-                x[i] = u[i] * (right - left) + left
-                # shrink the rejected side
-                if u[i] > 0:
-                    right = u[i]
-                else:
-                    left = u[i]
-            # prepare interval for the worst case: all rejected
-            self.interval = (v, left, right, x[-1])
-            unew = ui.reshape((1, -1)) + v.reshape((1, -1)) * x.reshape((-1, 1))
-            if plot:
-                plt.plot([ui[0], unew[:,0]], [ui[1], unew[:,1]], '-', color='k', lw=0.5)
-                plt.plot(ui[0], ui[1], 'd', color='r', ms=4)
-                plt.plot(unew[:,0], unew[:,1], 'x', color='r', ms=4)
-            nc = 0
-            mask = np.logical_and(unew > 0, unew < 1).all(axis=1)
-            if self.region_filter:
-                mask[mask] = region.inside(unew[mask, :])
-
-            if len(unew) == 0:
-                self.nrejects += 1
-                continue
-            
-            unew = unew[mask,:]
-            break
-
-        nc = len(unew)
-        pnew = transform(unew)
-        Lnew = loglike(pnew)
-        assert np.logical_and(unew > 0, unew < 1).all(axis=1).all()
-        if np.any(Lnew > Lmin):
-            i = np.where(Lnew > Lmin)[0][0]
-            #print(ndraw, i, nc, len(self.history), self.nsteps)
-            if plot:
-                plt.plot(unew[i,0], unew[i,1], 'o', color='g', ms=4)
-
-            # accept
-            self.interval = None
-            self.last = unew[i], Lnew[i]
-            self.history.append((unew[i].copy(), Lnew[i].copy()))
-            
-            if len(self.history) > self.nsteps:
-                # print("made %d steps" % len(self.history), Lnew, Lmin)
-                self.finalize_chain(region=region, Lmin=Lmin, Ls=Ls)
-                return unew[i], pnew[i], Lnew[i], nc
-        else:
-            # reject
-            self.nrejects += 1
-
-        # do not have a independent sample yet
-        return None, None, None, nc
-
-    def region_changed(self, Ls, region):
-        assert region.inside_ellipsoid(region.u).all()
-        ui, Li = self.last
-        if ui is not None and not region.inside(ui.reshape((1, -1))):
-            print("wandered out of ellipsoid; resetting", ui[0])
-            self.last = None, None
-
-
-    def finalize_chain(self, region=None, Lmin=None, Ls=None):
-        """Store chain statistics and adapt proposal."""
-        self.logstat.append([self.nrejects / self.nsteps, self.nsteps])
-        if self.log:
-            ustart, Lstart = self.history[0]
-            ufinal, Lfinal = self.history[-1]
-            # mean_pair_distance = region.compute_mean_pair_distance()
-            mean_pair_distance = np.nan
-            tstart, tfinal = region.transformLayer.transform(np.vstack((ustart, ufinal)))
-            # L index of start and end
-            # Ls_sorted = np.sort(Ls)
-            iLstart = np.sum(Ls > Lstart)
-            iLfinal = np.sum(Ls > Lfinal)
-            # nearest neighbor index of start and end
-            itstart = np.argmin((region.unormed - tstart.reshape((1, -1)))**2)
-            itfinal = np.argmin((region.unormed - tfinal.reshape((1, -1)))**2)
-            np.savetxt(self.log, [_listify(
-                [Lmin], ustart, ufinal, tstart, tfinal,
-                [self.nsteps, region.maxradiussq**0.5, mean_pair_distance,
-                 iLstart, iLfinal, itstart, itfinal])])
-
-        if self.adaptive_nsteps:
-            self.adapt_nsteps(region=region)
-
-        self.last = None, None
-        self.history = []
-        self.nrejects = 0
-    
-    def generate_new_interval(self, ui, region):
-        v = self.generate_direction(ui, region)
-        assert region.inside_ellipsoid(ui.reshape((1, -1)))
-        assert (ui > 0).all(), ui
-        assert (ui < 1).all(), ui
-
-        # use region ellipsoid to identify limits
-        # rotate line so that ellipsoid is a sphere
-        left, right = ellipsoid_bracket(ui, v, region.ellipsoid_center, region.ellipsoid_inv_axes, region.enlarge)
-        left, right, _, _ = crop_bracket_at_unit_cube(ui, v, left, right)
-        self.interval = (v, left, right, 0)
-
-    def generate_new_interval_sequence(self, ui, region):
-        v = self.generate_direction(ui, region)
-        assert region.inside_ellipsoid(ui.reshape((1, -1)))
-        assert (ui > 0).all(), ui
-        assert (ui < 1).all(), ui
-
-        # use region ellipsoid to identify limits
-        # rotate line so that ellipsoid is a sphere
-        left, right = ellipsoid_bracket(ui, v, region.ellipsoid_center, region.ellipsoid_inv_axes, region.enlarge)
-        left, right, left_cropped, right_cropped = crop_bracket_at_unit_cube(ui, v, left, right)
-        left_can_continue = ~left_cropped
-        right_can_continue = ~right_cropped
-        
-        intervals = [(v, left, right, 0)]
-        leftu = left * v + ui
-        rightu = right * v + ui
-        lv, rv = v, v
-        
-        while True:
-            if left_can_continue and right_can_continue:
-                direction_left = np.random.random < 0.5
-            elif left_can_continue:
-                direction_left = True
-            elif right_can_continue:
-                direction_left = False
-            else:
-                break
-
-            # update direction from ellipsoid reflection
-            if direction_left:
-                lnormal = region.ellipsoid_center - leftu
-                lnormal /= (lnormal**2).sum()**0.5
-                lv = lv - 2 * np.dot(lnormal, lv) * lnormal
-            else:
-                rnormal = region.ellipsoid_center - rightu
-                rnormal /= (rnormal**2).sum()**0.5
-                rv = rv - 2 * np.dot(rnormal, rv) * rnormal
-
-            # check if we are still going forward:
-            if np.dot(rv, lv) < 0:
-                break
-
-            # update position from ellipsoid bound
-            if direction_left:
-                lleft, lright = ellipsoid_bracket(leftu, lv, region.ellipsoid_center, region.ellipsoid_inv_axes, region.enlarge)
-                assert np.isclose(lright, 0), (lleft, lright)
-                lleft, lright, lleft_cropped, lright_cropped = crop_bracket_at_unit_cube(leftu, lv, lleft, lright)
-                left_can_continue = ~lleft_cropped
-
-                # add to sampling intervals
-                intervals.insert(0, (lv, lleft, lright, leftu))
-
-                # new end point
-                leftu = lleft * lv + leftu
-            else:
-                rleft, rright = ellipsoid_bracket(rightu, rv, region.ellipsoid_center, region.ellipsoid_inv_axes, region.enlarge)
-                assert np.isclose(rleft, 0), (rleft, rright)
-                rleft, rright, rleft_cropped, rright_cropped = crop_bracket_at_unit_cube(rightu, rv, rleft, rright)
-                right_can_continue = ~rright_cropped
-            
-                # add to sampling intervals
-                intervals.append((rv, rleft, rright, rightu))
-            
-                # new end point
-                rightu = rright * rv + rightu
-        
-        totallength = sum(right - left for _, left, right, _ in intervals)
-        
-        self.interval_length = totallength
-        self.intervals = intervals

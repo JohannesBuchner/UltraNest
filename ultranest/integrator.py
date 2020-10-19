@@ -17,7 +17,7 @@ from numpy import log, exp, logaddexp
 import numpy as np
 
 from .utils import create_logger, make_run_dir, resample_equal, vol_prefactor, vectorize, listify as _listify
-from ultranest.mlfriends import MLFriends, AffineLayer, ScalingLayer, find_nearby
+from ultranest.mlfriends import MLFriends, AffineLayer, ScalingLayer, find_nearby, WrappingEllipsoid
 from .store import HDF5PointStore, NullPointStore
 from .viz import get_default_viz_callback, nicelogger
 from .netiter import PointPile, MultiCounter, BreadthFirstIterator, TreeNode, count_tree_between, find_nodes_before, logz_sequence
@@ -465,6 +465,7 @@ class NestedSampler(object):
                         logl = logl[accepted]
                         father = father[accepted]
 
+                    # collect results from all MPI members
                     if self.use_mpi:
                         recv_father = self.comm.gather(father, root=0)
                         recv_samples = self.comm.gather(u, root=0)
@@ -629,6 +630,8 @@ class ReactiveNestedSampler(object):
                  draw_multiple=True,
                  num_bootstraps=30,
                  vectorized=False,
+                 ndraw_min=128,
+                 ndraw_max=65536,
                  ):
         """Initialise nested sampler.
 
@@ -661,17 +664,27 @@ class ReactiveNestedSampler(object):
             test transform and likelihood with this number of
             random points for errors first. Useful to catch bugs.
 
+        vectorized: bool
+            If true, loglike and transform function can receive arrays
+            of points.
+
         draw_multiple: bool
-            draw more points if efficiency goes down.
+            If efficiency goes down, dynamically draw more points
+            from the region between `ndraw_min` and `ndraw_max`.
             If set to False, few points are sampled at once.
+
+        ndraw_min: int
+            Minimum number of points to simultaneously propose.
+            Increase this if your likelihood makes vectorization very cheap.
+
+        ndraw_max: int
+            Maximum number of points to simultaneously propose.
+            Increase this if your likelihood makes vectorization very cheap.
+            Memory allocation may be slow for extremely high values.
 
         num_bootstraps: int
             number of logZ estimators and MLFriends region
             bootstrap rounds.
-
-        vectorized: bool
-            If true, loglike and transform function can receive arrays
-            of points.
 
         """
         self.paramnames = param_names
@@ -738,6 +751,8 @@ class ReactiveNestedSampler(object):
             draw_multiple = False
 
         self.draw_multiple = draw_multiple
+        self.ndraw_min = ndraw_min
+        self.ndraw_max = ndraw_max
         self._set_likelihood_function(transform, loglike, num_test_samples)
         self.stepsampler = None
 
@@ -1174,7 +1189,7 @@ class ReactiveNestedSampler(object):
             self.region,
             transform=self.transform, loglike=self.loglike,
             Lmin=Lmin, us=active_u, Ls=active_values,
-            ndraw=min(128, ndraw))
+            ndraw=ndraw, tregion=self.tregion)
         if logl is None:
             u = np.empty((0, self.x_dim))
             v = np.empty((0, self.num_params))
@@ -1221,17 +1236,37 @@ class ReactiveNestedSampler(object):
         if nu == 0:
             v = np.empty((0, self.num_params))
             logl = np.empty((0,))
+            accepted = np.empty(0, dtype=bool)
         else:
             if nu > 1 and not self.draw_multiple:
+                # peel off first if multiple evaluation is not supported
                 nu = 1
                 u = u[:1,:]
                 father = father[:1]
 
             v = self.transform(u)
-            logl = self.loglike(v)
-        nc += nu
-        accepted = logl > Lmin
-        if nit >= 100000 / ndraw and nit % (100000 // ndraw) == 0 and not self.sampling_slow_warned:
+            logl = np.ones(nu) * -np.inf
+
+            if self.tregion is not None:
+                # check wrapping ellipsoid in transformed space
+                tmask = self.tregion.inside(v)
+                #print("tregion accepted %.2f%%" % (tmask.mean()*100))
+                accepted = tmask
+                nt = tmask.sum()
+            else:
+                # if undefined, all pass; rarer branch
+                accepted = np.ones(nu, dtype=bool)
+                nt = nu
+
+            if nt > 0:
+                logl[accepted] = self.loglike(v[accepted, :])
+                nc += nt
+            accepted = logl > Lmin
+        
+            #print("it: %4d ndraw: %d -> %d -> %d -> %d " % (nit, ndraw, nu, nt, accepted.sum()))
+
+        #if nit >= 100000 / ndraw and nit % (100000 // ndraw) == 0 and not self.sampling_slow_warned:
+        if not self.sampling_slow_warned and nit * ndraw >= 100000 and nit > 20:
             np.savez(
                 'sampling-stuck-it%d.npz' % nit,
                 u=self.region.u, unormed=self.region.unormed,
@@ -1350,9 +1385,16 @@ class ReactiveNestedSampler(object):
     def _update_region(
         self, active_u, active_node_ids,
         bootstrap_rootids=None, active_rootids=None,
-        nbootstraps=30, minvol=0.
+        nbootstraps=30, minvol=0., active_p=None
     ):
-        """Build a new MLFriends region from `active_u`.
+        """Build a new MLFriends region from `active_u`,
+        and wrapping ellipsoid. 
+        Both are safely built using bootstrapping, so that the
+        region can be used for sampling and rejecting points.
+        If MPI is enabled, this computation is parallelised.
+
+        If active_p is not None, a wrapping ellipsoid is built also
+        in the user-transformed parameter space.
 
         Parameters
         -----------
@@ -1366,6 +1408,8 @@ class ReactiveNestedSampler(object):
             bootstrap samples. if None, they are drawn fresh.
         nbootstraps: int
             number of bootstrap rounds
+        active_p: array of floats
+            current live points, in user-transformed space
         minvol: float
             expected current minimum volume of region.
 
@@ -1552,13 +1596,13 @@ class ReactiveNestedSampler(object):
                 good_region = nextregion.inside(active_u).all()
                 # assert good_region
                 if not good_region and self.log:
-                    self.logger.warning("constructed region is inconsistent (maxr=%f,enlarge=%f)", r, f)
-                    np.savez('inconsistent_region.npz',
-                             u=nextregion.u, unormed=nextregion.unormed,
-                             maxradiussq=nextregion.maxradiussq,
-                             u0=self.region.u, unormed0=self.region.unormed,
-                             maxradiussq0=self.region.maxradiussq)
-                    np.savetxt('inconsistent_region.txt', nextregion.u)
+                    self.logger.warning("Proposed region is inconsistent (maxr=%f,enlarge=%f) and will be skipped.", r, f)
+                    #np.savez('inconsistent_region.npz',
+                    #         u=nextregion.u, unormed=nextregion.unormed,
+                    #         maxradiussq=nextregion.maxradiussq,
+                    #         u0=self.region.u, unormed0=self.region.unormed,
+                    #         maxradiussq0=self.region.maxradiussq)
+                    #np.savetxt('inconsistent_region.txt', nextregion.u)
 
                 # good_region = good_region and region.transformLayer.nclusters * 5 < len(active_u)
 
@@ -1584,17 +1628,41 @@ class ReactiveNestedSampler(object):
 
                     assert not (self.transformLayer.clusterids == 0).any(), (self.transformLayer.clusterids, need_accept, updated)
 
-            except Warning as w:
+            except Warning:
                 if self.log:
                     self.logger.warning("not updating region", exc_info=True)
-            except FloatingPointError as e:
+            except FloatingPointError:
                 if self.log:
                     self.logger.warning("not updating region", exc_info=True)
-            except np.linalg.LinAlgError as e:
+            except np.linalg.LinAlgError:
                 if self.log:
                     self.logger.warning("not updating region", exc_info=True)
 
         assert len(self.region.u) == len(self.transformLayer.clusterids)
+        
+        if active_p is None:
+            self.tregion = None
+        else:
+            try:
+                tregion = WrappingEllipsoid(active_p)
+                f = tregion.compute_enlargement(
+                    nbootstraps=max(1, nbootstraps // self.mpi_size))
+                if self.use_mpi:
+                    recv_enlarge = self.comm.gather(f, root=0)
+                    recv_enlarge = self.comm.bcast(recv_enlarge, root=0)
+                    f = np.max(recv_enlarge)
+                tregion.enlarge = f
+                tregion.create_ellipsoid()
+                self.tregion = tregion
+            except FloatingPointError:
+                if self.log:
+                    self.logger.warning("not updating t-ellipsoid", exc_info=True)
+                    self.tregion = None
+            except np.linalg.LinAlgError:
+                if self.log:
+                    self.logger.warning("not updating t-ellipsoid", exc_info=True)
+                    self.tregion = None
+
         return updated
 
     def _expand_nodes_before(self, Lmin, nnodes_needed, update_interval_ncall):
@@ -1958,13 +2026,14 @@ class ReactiveNestedSampler(object):
                 if expand_node:
                     # sample a new point above Lmin
                     active_u = self.pointpile.getu(active_node_ids)
+                    active_p = self.pointpile.getp(active_node_ids)
                     nlive = len(active_u)
                     # first we check that the region is up-to-date
                     if it > next_update_interval_iter:
                         if self.region is None:
                             it_at_first_region = it
                         region_fresh = self._update_region(
-                            active_u=active_u, active_node_ids=active_node_ids,
+                            active_u=active_u, active_p=active_p, active_node_ids=active_node_ids,
                             active_rootids=active_rootids,
                             bootstrap_rootids=main_iterator.rootids[1:,],
                             nbootstraps=self.num_bootstraps,
@@ -1985,7 +2054,6 @@ class ReactiveNestedSampler(object):
                         # but skip if we are resuming
                         #  and (self.ncall != ncall_at_run_start and it_at_first_region == it)
                         if self.log and viz_callback:
-                            active_p = self.pointpile.getp(active_node_ids)
                             viz_callback(
                                 points=dict(u=active_u, p=active_p, logl=active_values),
                                 info=dict(
@@ -2024,6 +2092,8 @@ class ReactiveNestedSampler(object):
                     self.region.unormed[worst] = self.region.transformLayer.transform(u)
                     # move also the ellipsoid
                     self.region.ellipsoid_center = np.mean(self.region.u, axis=0)
+                    if self.tregion:
+                        self.tregion.ellipsoid_center = np.mean(active_p, axis=0)
 
                     # if we track the cluster assignment, then in the next round
                     # the ids with the same members are likely to have the same id
@@ -2041,6 +2111,8 @@ class ReactiveNestedSampler(object):
                         last_status = time.time()
                         ncall_here = self.ncall - ncall_at_run_start
                         it_here = it - it_at_first_region
+                        ncall_region_here = self.ncall_region - ncall_region_at_run_start
+                        
                         if show_status:
                             if Lmin < -1e8:
                                 txt = 'Z=%.1g(%.2f%%) | Like=%.2g..%.2g [%.4g..%.4g]%s| it/evals=%d/%d eff=%.4f%% N=%d \r'
@@ -2060,9 +2132,20 @@ class ReactiveNestedSampler(object):
                             # inefficiency is the number of (region) proposals per successful number of iterations
                             # but improves by parallelism (because we need only the per-process inefficiency)
                             # sampling_inefficiency = (self.ncall - ncall_at_run_start + 1) / (it + 1) / self.mpi_size
-                            sampling_inefficiency = (self.ncall_region - ncall_region_at_run_start + 1) / (it + 1) / self.mpi_size
+                            sampling_inefficiency = (ncall_region_here + 1) / (it_here + 1) / self.mpi_size
                             # (self.ncall - ncall_at_run_start + 1) (self.ncall_region - self.ncall_region_at_run_start) / self.
-                            ndraw = max(128, min(16384, round(sampling_inefficiency)))
+
+                            # smooth update:
+                            ndraw_next = 0.04 * sampling_inefficiency + ndraw * 0.96
+                            ndraw = max(self.ndraw_min, min(self.ndraw_max, round(ndraw_next), ndraw * 100))
+                            
+                            if sampling_inefficiency > 1000 and it >= it_at_first_region + 10:
+                                # if the efficiency is poor, there are enough samples in each iteration
+                                # to estimate the inefficiency
+                                ncall_at_run_start = self.ncall
+                                it_at_first_region = it
+                                ncall_region_at_run_start = self.ncall_region
+                                
 
                 else:
                     # we do not want to count iterations without work
