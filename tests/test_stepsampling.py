@@ -1,7 +1,7 @@
 import numpy as np
 from ultranest.mlfriends import ScalingLayer, AffineLayer, MLFriends
 from ultranest import ReactiveNestedSampler
-from ultranest.stepsampler import RegionMHSampler, CubeMHSampler, CubeSliceSampler, RegionSliceSampler
+from ultranest.stepsampler import RegionMHSampler, CubeMHSampler, CubeSliceSampler, RegionSliceSampler, AHARMSampler
 from ultranest.pathsampler import SamplingPathStepSampler
 from numpy.testing import assert_allclose
 
@@ -249,10 +249,40 @@ def test_pathsampler():
     assert (stepper.naccepts, stepper.nrejects) == (0, 0), (stepper.naccepts, stepper.nrejects)
     assert origscale > stepper.scale, (origscale, stepper.scale, "should shrink scale")
 
+# 0.73725749 0.69636307
+def run_aharm_sampler():
+    for seed in list(range(1000)):
+        np.random.seed(seed)
+        nsteps = max(1, int(10**np.random.uniform(0, 3)))
+        Nlive = int(10**np.random.uniform(1, 3))
+        sampler = AHARMSampler(nsteps, adaptive_nsteps=False, region_filter=False)
+        us = np.random.uniform(0.6, 0.8, size=(4000, 2))
+        Ls = loglike(us)
+        i = np.argsort(Ls)[-Nlive:]
+        us = us[i,:]
+        Ls = Ls[i]
+        Lmin = Ls.min()
+        
+        transformLayer = ScalingLayer()
+        region = MLFriends(us, transformLayer)
+        region.maxradiussq, region.enlarge = region.compute_enlargement()
+        region.create_ellipsoid()
+        nfunccalls = 0
+        ncalls = 0
+        while True:
+            u, p, L, nc = sampler.__next__(region, Lmin, us, Ls, transform, loglike)
+            nfunccalls += 1
+            ncalls += nc
+            if u is not None:
+                break
+            if nfunccalls > 100:
+                assert False, ('infinite loop?', seed, nsteps, Nlive)
+        print("done in %d function calls, %d likelihood evals" % (nfunccalls, ncalls))
+
 if __name__ == '__main__':
     #test_stepsampler_cubemh(plot=True)
     #test_stepsampler_regionmh(plot=False)
     #test_stepsampler_de(plot=False)
     #test_stepsampler_cubeslice(plot=True)
     #test_stepsampler_regionslice(plot=True)
-    pass
+    run_aharm_sampler()

@@ -489,30 +489,30 @@ class StepSampler(object):
 
         while True:
             unew = self.move(ui, region, ndraw=ndraw, plot=plot)
-            print("proposed: %s -> %s" % (ui, unew))
+            #print("proposed: %s -> %s" % (ui, unew))
             if plot:
                 plt.plot([ui[0], unew[:,0]], [ui[1], unew[:,1]], '-', color='k', lw=0.5)
                 plt.plot(ui[0], ui[1], 'd', color='r', ms=4)
                 plt.plot(unew[:,0], unew[:,1], 'x', color='r', ms=4)
             mask = np.logical_and(unew > 0, unew < 1).all(axis=1)
-            if ~mask.all(): print("rejected by unit cube")
+            if not mask.any():
+                #print("rejected by unit cube")
+                self.adjust_outside_region()
+                continue
             unew = unew[mask,:]
             nc = 0
             if self.region_filter:
                 mask = inside_region(region, unew, ui)
-                if ~mask.all(): print("rejected by region")
-                if mask.any():
-                    unew = unew[mask,:]
-                    if tregion is not None:
-                        if ~mask.all(): print("rejected by transformed ellipsoid")
-                        pnew = transform(unew)
-                        tmask = tregion.inside(pnew)
-                        unew = unew[tmask,:]
-                        pnew = pnew[tmask,:]
-
-                else:
+                if not mask.any():
+                    print("rejected by region")
                     self.adjust_outside_region()
                     continue
+                unew = unew[mask,:]
+                if tregion is not None:
+                    pnew = transform(unew)
+                    tmask = tregion.inside(pnew)
+                    unew = unew[tmask,:]
+                    pnew = pnew[tmask,:]
 
             if len(unew) == 0:
                 self.adjust_outside_region()
@@ -812,6 +812,7 @@ def ellipsoid_bracket(ui, v, ellipsoid_center, ellipsoid_inv_axes, ellipsoid_rad
     a = np.dot(vell, vell)
     b = 2 * np.dot(vell, xell)
     c = np.dot(xell, xell) - ellipsoid_radius**2
+    assert b**2 >= 4*a*c, (b**2 - 4*a*c, c)
     assert c <= 0, c
     d1 = (-b + (b**2 - 4*a*c)**0.5) / (2 * a)
     d2 = (-b - (b**2 - 4*a*c)**0.5) / (2 * a)
@@ -857,16 +858,14 @@ class AHARMSampler(StepSampler):
     """
 
     def __init__(
-        self, nsteps, scale=1.0, adaptive_nsteps=False, max_nsteps=1000,
+        self, nsteps, adaptive_nsteps=False, max_nsteps=1000,
         region_filter=False, log=False, direction=generate_region_random_direction,
+        orthogonalise=True,
     ):
         """Initialise vectorised hit-and-run/slice sampler.
 
         Parameters
         -----------
-        scale: float
-            initial proposal size
-
         nsteps: int
             number of accepted steps until the sample is considered independent.
 
@@ -892,6 +891,10 @@ class AHARMSampler(StepSampler):
             function that draws slice direction given a point and 
             the current region.
 
+        orthogonalise: bool
+            If true, make subsequent proposed directions orthogonal 
+            to each other.
+
         log: file
             log file for sampler statistics, such as acceptance rate,
             proposal scale, number of steps, jump distance and distance
@@ -916,6 +919,7 @@ class AHARMSampler(StepSampler):
         self.log = log
         self.adaptive_nsteps_needs_mean_pair_distance = False
         self.nsteps_nudge = 1.01
+        self.orthogonalise = orthogonalise
 
         self.logstat = []
         self.logstat_labels = ['rejection_rate', 'steps']
@@ -974,9 +978,9 @@ class AHARMSampler(StepSampler):
             pass
 
         # select starting point
+        ndim = us.shape[1]
         if Li is None:
-            self.interval = None
-            self.axis_index = 0
+            self.directions = None
 
             self.history = []
             self.last = None, None
@@ -991,72 +995,174 @@ class AHARMSampler(StepSampler):
             Li = Ls[i]
             self.history.append((ui.copy(), Li.copy()))
             del i
+            # set initially nleft = nsteps
+            self.nsteps_done = 0
+        
+            # generate nsteps directions
+            self.directions = []
+            for i in range(self.nsteps):
+                v = self.generate_direction(ui, region)
+                self.directions.append(v)
+            self.directions = np.array(self.directions)
 
-        if self.interval is None:
-            self.generate_new_interval(ui, region)
+            print("directions:", self.directions)
+            if self.orthogonalise:
+                # orthogonalise relative to this previous direction
+                for i in range(self.nsteps // ndim):
+                    # go back only ndim steps, then start fresh
+                    self.directions[i * ndim : (i + 1) * ndim], _ = np.linalg.qr(self.directions[i * ndim : (i + 1) * ndim])
+
+            self.current_interval = ui, None, None
+        
+        del ui
+        nc = 0
         while True:
-            v, left, right, u = self.interval
-            if plot:
-                plt.plot([(ui + v * left)[0], (ui + v * right)[0]],
-                         [(ui + v * left)[1], (ui + v * right)[1]],
-                         ':o', color='k', lw=2, alpha=0.3)
-            
-            # propose a series of points
-            # the first is drawn between the extremes of the slice, each of 
-            # the following is a shrunk slice in case the previous is rejected
-            nproposed = max(2, ndraw // self.nsteps)
-            u = np.random.uniform(size=nproposed)
-            x = np.empty(nproposed)
-            for i in range(nproposed):
-                x[i] = u[i] * (right - left) + left
-                # shrink the rejected side
-                if u[i] > 0:
-                    right = u[i]
+            # prepare a sequence of points until nsteps are reached
+            point_sequence = []
+            point_expectation = []
+            intervals = []
+            nsteps_prepared = 0
+            while nsteps_prepared + self.nsteps_done < self.nsteps:
+                v = self.directions[self.nsteps_done + nsteps_prepared]
+                if len(point_sequence) == 0:
+                    ucurrent, left, right = self.current_interval
+                    assert region.inside_ellipsoid(ucurrent.reshape((1, ndim))), ('cannot start from outside ellipsoid!', region.inside_ellipsoid(ucurrent.reshape((1, ndim))))
+                    assert region.inside(ucurrent.reshape((1, ndim))), ('cannot start from outside region!', region.inside(ucurrent.reshape((1, ndim))))
+                    assert loglike(transform(ucurrent.reshape((1, ndim)))) >= Lmin, ('cannot start from outside!', loglike(transform(ucurrent.reshape((1, ndim)))), Lmin)
                 else:
-                    left = u[i]
-            # prepare interval for the worst case: all rejected
-            self.interval = (v, left, right, x[-1])
-            unew = ui.reshape((1, -1)) + v.reshape((1, -1)) * x.reshape((-1, 1))
-            if plot:
-                plt.plot([ui[0], unew[:,0]], [ui[1], unew[:,1]], '-', color='k', lw=0.5)
-                plt.plot(ui[0], ui[1], 'd', color='r', ms=4)
-                plt.plot(unew[:,0], unew[:,1], 'x', color='r', ms=4)
-            nc = 0
-            mask = np.logical_and(unew > 0, unew < 1).all(axis=1)
+                    left, right = None, None
+                print("preparing step: %d from %s" % (nsteps_prepared + self.nsteps_done, ucurrent))
+                
+                if left is None or right is None:
+                    # in each, find the end points using the expanded ellipsoid
+                    left, right = ellipsoid_bracket(ucurrent, v, region.ellipsoid_center, region.ellipsoid_inv_axes, region.enlarge)
+                    left, right, _, _ = crop_bracket_at_unit_cube(ucurrent, v, left, right)
+                    assert left < right, (left, right)
+                    print("   ellipsoid bracket found:", left, right)
+
+                for tries in range(1000):
+                    # sample in each a point until presumed success:
+                    t = np.random.uniform(left, right)
+                    unext = ucurrent + v * t
+
+                    # compute distance vector to center
+                    d = unext - region.ellipsoid_center
+                    # distance in normalised coordates: vector . matrix . vector
+                    # where the matrix is the ellipsoid inverse covariance
+                    r = np.einsum('j,jk,k->', d, region.ellipsoid_invcov, d)
+                    
+                    likely_inside = r <= 1
+                    if not likely_inside and r <= region.enlarge:
+                        # The exception is, when a point is between projected ellipsoid center and current point
+                        # then it is also likely inside (if still inside the ellipsoid)
+                        
+                        # project ellipsoid center onto line
+                        # region.ellipsoid_center = ucurrent + tc * v
+                        tc = np.dot(ucurrent - region.ellipsoid_center, v)
+                        # current point is at 0 by definition
+                        if 0 < t < tc or tc < t < 0:
+                            print("   proposed point is further inside than current point")
+                            likely_inside = True
+                        #    print("   proposed point %.3f is going towards center %.3f" % (t, tc))
+                        #else:
+                        #    print("   proposed point %.3f is going away from center %.3f" % (t, tc))
+                    
+                    print("   proposed point %s (%f) is likely %s (r=%f)" % (unext, t, 'inside' if likely_inside else 'outside', r))
+                    intervals.append((nsteps_prepared, ucurrent, v, left, right, t))
+                    point_sequence.append(unext)
+                    point_expectation.append(likely_inside)
+                    #   If point radius in ellipsoid is <1, presume that it will be successful
+                    if likely_inside:
+                        nsteps_prepared += 1
+                        ucurrent = unext
+                        break
+                    
+                    #   Else, presume it will be unsuccessful, and sample another point
+                    #   shrink interval
+                    if t > 0:
+                        right = t
+                    else:
+                        left = t
+                    assert tries < 100
+                    
+                # the above defines a sequence of points (u)
+            
+            assert len(point_sequence) > 0
+            point_sequence = np.array(point_sequence, dtype=float)
+            point_expectation = np.array(point_expectation, dtype=bool)
+            print("proposed sequence:", point_sequence)
+            print("expectations:", point_expectation)
+            # region-filter, transform, tregion-filter, and evaluate the likelihood
             if self.region_filter:
-                mask[mask] = region.inside(unew[mask, :])
-                if tregion is not None and mask.any():
-                    mask[mask] = tregion.inside(transform(unew[mask, :]))
+                mask = region.inside(point_sequence)
+                # identify first point that was expected to be inside, but was marked outside-of-region
+                i = np.where(np.logical_and(point_expectation, ~mask))[0]
+                if len(i) == 0:
+                    continue
 
-            if len(unew) == 0:
-                self.nrejects += 1
+                imax = i[0]
+                # truncate there
+                point_sequence = point_sequence[:imax]
+                point_expectation = point_expectation[:imax]
+
+            if len(point_sequence) == 0:
                 continue
+
+            t_point_sequence = transform(point_sequence)
+            if self.region_filter and tregion is not None:
+                tmask = tregion.inside(t_point_sequence)
+                # identify first point that was expected to be inside, but was marked outside-of-region
+                i = np.where(np.logical_and(point_expectation, ~tmask))[0]
+                if len(i) > 0:
+                    imax = i[0]
+                    # truncate there
+                    point_sequence = point_sequence[:imax]
+                    point_expectation = point_expectation[:imax]
+                    t_point_sequence = t_point_sequence[:imax]
+
+            if len(point_sequence) == 0:
+                continue
+
+            nc += len(point_sequence)
+            L = loglike(t_point_sequence)
+            Lmask = L > Lmin
+            i = np.where(point_expectation != Lmask)[0]
+            self.nrejects += (~Lmask).sum()
+            print("reality:", Lmask)
+            print("difference:", point_expectation == Lmask)
+            # identify first point that was unexpected
+            if len(i) == 0:
+                # everything according to prediction. 
+                # done, return last point
+                return point_sequence[-1], t_point_sequence[-1], L[-1], nc
             
-            unew = unew[mask,:]
+            # point i unexpectedly inside or outside
+            imax = i[0]
+            nsteps_prepared, ucurrent, v, left, right, t = intervals[imax]
+            if point_expectation[imax]:
+                # expected point to lie inside, but rejected
+                # need to repair interval
+                self.nsteps_done += nsteps_prepared
+                if t > 0:
+                    right = t
+                else:
+                    left = t
+                print("%d steps done, continuing from unexpected outside point" % self.nsteps_done, imax, point_sequence[imax], "interval:", t)
+                self.current_interval = ucurrent, left, right
+            else:
+                # expected point to lie outside, but actually inside
+                # adopt as point and continue
+                self.nsteps_done += nsteps_prepared + 1
+                self.current_interval = point_sequence[imax], None, None
+                if self.nsteps_done == self.nsteps:
+                    # last point was inside, so we are actually done there
+                    return point_sequence[-1], t_point_sequence[-1], L[-1], nc
+                else:
+                    print("%d steps done, continuing from unexpected inside point" % self.nsteps_done, imax, point_sequence[imax])
+
+            # need to exit here to only do one likelihood evaluation
+            # per function call
             break
-
-        nc = len(unew)
-        pnew = transform(unew)
-        Lnew = loglike(pnew)
-        assert np.logical_and(unew > 0, unew < 1).all(axis=1).all()
-        if np.any(Lnew > Lmin):
-            i = np.where(Lnew > Lmin)[0][0]
-            #print(ndraw, i, nc, len(self.history), self.nsteps)
-            if plot:
-                plt.plot(unew[i,0], unew[i,1], 'o', color='g', ms=4)
-
-            # accept
-            self.interval = None
-            self.last = unew[i], Lnew[i]
-            self.history.append((unew[i].copy(), Lnew[i].copy()))
-            
-            if len(self.history) > self.nsteps:
-                # print("made %d steps" % len(self.history), Lnew, Lmin)
-                self.finalize_chain(region=region, Lmin=Lmin, Ls=Ls)
-                return unew[i], pnew[i], Lnew[i], nc
-        else:
-            # reject
-            self.nrejects += 1
 
         # do not have a independent sample yet
         return None, None, None, nc
