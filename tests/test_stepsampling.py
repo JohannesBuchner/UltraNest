@@ -2,6 +2,7 @@ import numpy as np
 from ultranest.mlfriends import ScalingLayer, AffineLayer, MLFriends
 from ultranest import ReactiveNestedSampler
 from ultranest.stepsampler import RegionMHSampler, CubeMHSampler, CubeSliceSampler, RegionSliceSampler, AHARMSampler
+from ultranest.stepsampler import generate_region_random_direction, ellipsoid_bracket
 from ultranest.pathsampler import SamplingPathStepSampler
 from numpy.testing import assert_allclose
 
@@ -249,12 +250,67 @@ def test_pathsampler():
     assert (stepper.naccepts, stepper.nrejects) == (0, 0), (stepper.naccepts, stepper.nrejects)
     assert origscale > stepper.scale, (origscale, stepper.scale, "should shrink scale")
 
-# 0.73725749 0.69636307
+def test_ellipsoid_bracket(plot=False):
+    seed = 1
+    np.random.seed(seed)
+    us = np.random.normal(size=(400, 2))
+    us /= ((us**2).sum(axis=1)**0.5).reshape((-1, 1))
+    us = us * 0.1 + 0.5
+    
+    if plot:
+        import matplotlib.pyplot as plt
+        plt.plot(us[:,0], us[:,1], 'o ', ms=2)
+    
+    transformLayer = ScalingLayer()
+    region = MLFriends(us, transformLayer)
+    region.maxradiussq, region.enlarge = region.compute_enlargement()
+    region.create_ellipsoid()
+
+    print(region.ellipsoid_center)
+    print(region.enlarge)
+    print(region.ellipsoid_cov)
+    print(region.ellipsoid_invcov)
+    print(region.ellipsoid_axes)
+    print(region.ellipsoid_inv_axes)
+
+    ucurrent = np.array([2**0.5*0.1/2+0.5, 2**0.5*0.1/2+0.5])
+    ucurrent = np.array([0.4, 0.525])
+    v = np.array([1., 0])
+    if plot: plt.plot(ucurrent[0], ucurrent[1], 'o')
+    print("from", ucurrent, "in direction", v)
+    left, right = ellipsoid_bracket(ucurrent, v, region.ellipsoid_center, region.ellipsoid_inv_axes, region.enlarge)
+    uleft = ucurrent + v * left
+    uright = ucurrent + v * right
+
+    if plot: 
+        plt.plot([uleft[0], uright[0]], [uleft[1], uright[1]], 'x-')
+        
+        plt.savefig('test_ellipsoid_bracket.pdf', bbox_inches='tight')
+        plt.close()
+    print("ellipsoid bracket:", left, right)
+    assert left <= 0, left
+    assert right >= 0, right
+    
+    unext = ucurrent + v * left
+    d = unext - region.ellipsoid_center
+    r = np.einsum('j,jk,k->', d, region.ellipsoid_invcov, d)
+    assert np.isclose(r, region.enlarge), (left, r, region.enlarge)
+
+    unext = ucurrent + v * right
+    d = unext - region.ellipsoid_center
+    r = np.einsum('j,jk,k->', d, region.ellipsoid_invcov, d)
+    assert np.isclose(r, region.enlarge), (right, r, region.enlarge)
+
+
 def run_aharm_sampler():
-    for seed in list(range(1000)):
+    for seed in [733] + list(range(1000)):
+        print()
+        print("SEED=%d" % seed)
+        print()
         np.random.seed(seed)
         nsteps = max(1, int(10**np.random.uniform(0, 3)))
-        Nlive = int(10**np.random.uniform(1, 3))
+        Nlive = int(10**np.random.uniform(1.5, 3))
+        print("Nlive=%d nsteps=%d" % (Nlive, nsteps))
         sampler = AHARMSampler(nsteps, adaptive_nsteps=False, region_filter=False)
         us = np.random.uniform(0.6, 0.8, size=(4000, 2))
         Ls = loglike(us)
@@ -275,9 +331,10 @@ def run_aharm_sampler():
             ncalls += nc
             if u is not None:
                 break
-            if nfunccalls > 100:
+            if nfunccalls > 100 + nsteps:
                 assert False, ('infinite loop?', seed, nsteps, Nlive)
         print("done in %d function calls, %d likelihood evals" % (nfunccalls, ncalls))
+
 
 if __name__ == '__main__':
     #test_stepsampler_cubemh(plot=True)
@@ -286,3 +343,4 @@ if __name__ == '__main__':
     #test_stepsampler_cubeslice(plot=True)
     #test_stepsampler_regionslice(plot=True)
     run_aharm_sampler()
+    #test_ellipsoid_bracket()

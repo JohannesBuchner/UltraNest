@@ -651,7 +651,8 @@ class MLFriends(object):
             a = np.linalg.inv(cov)  # inverse covariance
             # compute expansion factor
             delta = ub - ctr
-            f = np.einsum('...i, ...i', np.tensordot(delta, a, axes=1), delta).max()
+            #f = np.einsum('...i, ...i', np.tensordot(delta, a, axes=1), delta).max()
+            f = np.einsum('ij,jk,ik->i', delta, a, delta).max()
             assert np.isfinite(f), (ctr, cov, self.unormed, f, delta, a)
             assert f > 0, (f, len(ua), len(ub), delta, ctr, np.einsum('...i, ...i', np.tensordot(delta, a, axes=1), delta))
             maxf = max(maxf, f)
