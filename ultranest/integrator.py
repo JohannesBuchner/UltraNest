@@ -1760,6 +1760,10 @@ class ReactiveNestedSampler(object):
                     # print("not expanding, because above max_iters")
                     expand_node = False
 
+            # in a plateau, only shrink (Fowlie+2020)
+            if (Lmin == parallel_values).sum() > 1:
+                expand_node = False
+
         return expand_node
 
     def run(
