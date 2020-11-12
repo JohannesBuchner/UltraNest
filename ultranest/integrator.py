@@ -1630,13 +1630,13 @@ class ReactiveNestedSampler(object):
 
             except Warning:
                 if self.log:
-                    self.logger.warning("not updating region", exc_info=True)
+                    self.logger.debug("not updating region", exc_info=True)
             except FloatingPointError:
                 if self.log:
-                    self.logger.warning("not updating region", exc_info=True)
+                    self.logger.debug("not updating region", exc_info=True)
             except np.linalg.LinAlgError:
                 if self.log:
-                    self.logger.warning("not updating region", exc_info=True)
+                    self.logger.debug("not updating region", exc_info=True)
 
         assert len(self.region.u) == len(self.transformLayer.clusterids)
         
@@ -1656,11 +1656,11 @@ class ReactiveNestedSampler(object):
                 self.tregion = tregion
             except FloatingPointError:
                 if self.log:
-                    self.logger.warning("not updating t-ellipsoid", exc_info=True)
+                    self.logger.debug("not updating t-ellipsoid", exc_info=True)
                     self.tregion = None
             except np.linalg.LinAlgError:
                 if self.log:
-                    self.logger.warning("not updating t-ellipsoid", exc_info=True)
+                    self.logger.debug("not updating t-ellipsoid", exc_info=True)
                     self.tregion = None
 
         return updated
@@ -2506,3 +2506,243 @@ def read_file(log_dir, x_dim, num_bootstraps=20, random=True, verbose=False):
 
     return logz_sequence(root, pointpile, nbootstraps=num_bootstraps,
                          random=random, onNode=onNode, verbose=verbose)
+
+def _explore_iterator_batch(explorer, pop, x_dim, num_params, pointpile, batchsize=1):
+    batch = []
+
+    while True:
+        next_node = explorer.next_node()
+        if next_node is None:
+            break
+        rootid, node, (active_nodes, active_rootids, active_values, active_node_ids) = next_node
+        Lmin = node.value
+        children = []
+        
+        while True:
+            _, row = pop(Lmin)
+            if row is None:
+                break
+            logl_old = row[1]
+            u = row[3:3 + x_dim]
+            v = row[3 + x_dim:3 + x_dim + num_params]
+            
+            assert u.shape == (x_dim,)
+            assert v.shape == (num_params,)
+            children.append((u, v, logl_old))
+            child = pointpile.make_node(logl_old, u, v)
+            node.children.append(child)
+
+        batch.append((Lmin, active_values.copy(), children))
+        if len(batch) >= batchsize:
+            yield batch
+            batch = []
+        explorer.expand_children_of(rootid, node)
+    if len(batch) > 0:
+        yield batch
+
+
+def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform, verbose=False, vectorized=False, ndraw=400):
+    """
+    Change a stored UltraNest run to a modified loglikelihood/transform.
+    Build a new 
+
+    Parameters
+    ----------
+    log_dir: str
+        Folder containing results
+    x_dim: int
+        number of dimensions
+    loglikelihood: function
+        new likelihood function
+    transform: function
+        new transform function
+    verbose: bool
+        show progress
+
+    Returns
+    ----------
+    sequence: dict
+        contains arrays storing for each iteration estimates of:
+
+            * logz: log evidence estimate
+            * logzerr: log evidence uncertainty estimate
+            * logvol: log volume estimate
+            * samples_n: number of live points
+            * logwt: log weight
+            * logl: log likelihood
+
+    final: dict
+        same as ReactiveNestedSampler.results and
+        ReactiveNestedSampler.run return values
+
+    """
+    import h5py
+    filepath = os.path.join(log_dir, 'results', 'points.hdf5')
+    filepath2 = os.path.join(log_dir, 'results', 'points.hdf5.new')
+    fileobj = h5py.File(filepath, 'r')
+    nrows, ncols = fileobj['points'].shape
+    num_params = ncols - 3 - x_dim
+
+    pointstore2 = HDF5PointStore(filepath2, ncols, mode='w')
+
+    points = fileobj['points'][:]
+    stack = list(enumerate(points))
+
+    pointpile = PointPile(x_dim, num_params)
+    pointpile2 = PointPile(x_dim, num_params)
+
+    def pop(Lmin):
+        """ find matching sample from points file """
+        # look forward to see if there is an exact match
+        # if we do not use the exact matches
+        #   this causes a shift in the loglikelihoods
+        for i, (idx, next_row) in enumerate(stack):
+            row_Lmin = next_row[0]
+            L = next_row[1]
+            if row_Lmin <= Lmin and L > Lmin:
+                idx, row = stack.pop(i)
+                return idx, row
+        return None, None
+
+    roots = []
+    roots2 = []
+    initial_points_u = []
+    initial_points_v = []
+    initial_points_logl = []
+    while True:
+        _, row = pop(-np.inf)
+        if row is None:
+            break
+        logl = row[1]
+        u = row[3:3 + x_dim]
+        v = row[3 + x_dim:3 + x_dim + num_params]
+        initial_points_u.append(u)
+        initial_points_v.append(v)
+        initial_points_logl.append(logl)
+    
+    v2 = transform(np.array(initial_points_u, ndmin=2, dtype=float))
+    assert np.allclose(v2, initial_points_v), 'transform inconsistent, cannot resume'
+    logls_new = loglikelihood(v2)
+    
+    for u, v, logl, logl_new in zip(initial_points_u, initial_points_v, initial_points_logl, logls_new):
+        roots.append(pointpile.make_node(logl, u, v))
+        roots2.append(pointpile2.make_node(logl_new, u, v))
+
+    batchsize = ndraw if vectorized else 1
+    explorer = BreadthFirstIterator(roots)
+    explorer2 = BreadthFirstIterator(roots2)
+    order_consistent = True
+
+    niter = 0
+    for batch in _explore_iterator_batch(explorer, pop, x_dim, num_params, pointpile, batchsize=batchsize):
+        assert len(batch) > 0
+        batch_u = np.array([u for _, _, children in batch for u, _, _ in children], ndmin=2, dtype=float)
+        if batch_u.size > 0:
+            assert batch_u.shape[1] == x_dim, batch_u.shape
+            batch_v = np.array([v for _, _, children in batch for _, v, _ in children], ndmin=2, dtype=float)
+            print("calling likelihood with %d points" % len(batch_u))
+            v2 = transform(batch_u)
+            assert batch_v.shape[1] == num_params, batch_v.shape
+            assert np.allclose(v2, batch_v), 'transform inconsistent, cannot resume'
+            logls_new = loglikelihood(v2)
+        else:
+            # no new points
+            logls_new = []
+
+        j = 0
+        for Lmin, active_values, children in batch:
+
+            next_node2 = explorer2.next_node()
+            rootid2, node2, (active_nodes2, active_rootids2, active_values2, active_node_ids2) = next_node2
+            Lmin2 = node2.value
+
+            assert len(active_values) == len(active_values2), (len(active_values), len(active_values2))
+            if (np.argmin(active_values) != np.argmin(active_values2)):
+                print("lowest live point different at iter=%d" % niter)
+                order_consistent = False
+                break
+            
+            for u, v, logl_old in children:
+                logl_new = logls_new[j]
+                j += 1
+
+                child2 = pointpile2.make_node(logl_new, u, v)
+                node2.children.append(child2)
+
+                pointstore2.add(_listify([Lmin2, logl_new, 0.0], u, v), 1)
+
+            niter += 1
+            if verbose:
+                sys.stderr.write("%d...\r" % niter)
+
+            explorer2.expand_children_of(rootid2, node2)
+
+        if not order_consistent:
+            break
+        
+    """
+    explorer = BreadthFirstIterator(roots)
+    explorer2 = BreadthFirstIterator(roots2)
+    order_consistent = True
+
+    while True:
+        next_node = explorer.next_node()
+        if next_node is None:
+            break
+        rootid, node, (active_nodes, active_rootids, active_values, active_node_ids) = next_node
+        next_node2 = explorer2.next_node()
+        rootid2, node2, (active_nodes2, active_rootids2, active_values2, active_node_ids2) = next_node2
+        #print(niter, active_values.shape, active_values2.shape, np.argsort(active_values), np.argsort(active_values2), np.argsort(active_values) == np.argsort(active_values2))
+
+        # this is the likelihood level we have to improve upon
+        Lmin = node.value
+        Lmin2 = node2.value
+
+        assert len(active_values) == len(active_values2)
+        if (np.argmin(active_values) != np.argmin(active_values2)):
+            print("lowest live point different at iter=%d" % niter)
+            order_consistent = False
+            break
+        #if (np.argsort(active_values) != np.argsort(active_values2)).any():
+        #    print("live point order changed at iter=%d" % niter)
+        #    order_consistent = False
+        #    break
+
+        while True:
+            _, row = pop(Lmin)
+            if row is None:
+                break
+            logl_old = row[1]
+            u = row[3:3 + x_dim]
+            v = row[3 + x_dim:3 + x_dim + num_params]
+            
+            v2 = transform(u.reshape((1, -1)))
+            assert np.allclose(v2[0], v), 'transform inconsistent, cannot resume'
+            logl_new = loglikelihood(v2)[0]
+            
+            # check insertion order
+            #if (logl_old < active_values).sum() != (logl_new < active_values2).sum():
+            #    print("insertion order changed at iter=%d" % niter, (logl_old < active_values).sum(), (logl_new < active_values2).sum())
+            #    order_consistent = False
+            #    break
+            
+            child = pointpile.make_node(logl_old, u, v)
+            node.children.append(child)
+
+            child2 = pointpile2.make_node(logl_new, u, v)
+            node2.children.append(child2)
+
+            pointstore2.add(_listify([Lmin2, logl_new, 0.0], u, v), 1)
+        if not order_consistent:
+            break
+
+        niter += 1
+        if verbose:
+            sys.stderr.write("%d...\r" % niter)
+
+        explorer.expand_children_of(rootid, node)
+        explorer2.expand_children_of(rootid2, node2)
+    """
+    if verbose:
+        sys.stderr.write("%d iterations done.\n" % niter)
+    os.rename(filepath2, filepath)
