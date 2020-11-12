@@ -652,10 +652,16 @@ class ReactiveNestedSampler(object):
 
         log_dir: str
             where to store output files
-        resume: 'resume', 'overwrite' or 'subfolder'
+        resume: 'resume', 'resume-similar', 'overwrite' or 'subfolder'
             if 'overwrite', overwrite previous data.
             if 'subfolder', create a fresh subdirectory in log_dir.
-            if 'resume' or True, continue previous run if available.
+            if 'resume' or True, continue previous run if available. 
+               Only works when dimensionality, transform or likelihood are consistent.
+            if 'resume-similar', continue previous run if available.
+               Only works when dimensionality and transform are consistent.
+               If a likelihood difference is detected, the existing likelihoods 
+               are updated until the live point order differs.
+               Otherwise, behaves like resume.
 
         wrapped_params: list of bools
             indicating whether this parameter wraps around (circular parameter).
@@ -718,9 +724,10 @@ class ReactiveNestedSampler(object):
         self.log = self.mpi_rank == 0
         self.log_to_disk = self.log and log_dir is not None
 
-        assert resume in (True, 'overwrite', 'subfolder', 'resume'), "resume should be one of 'overwrite' 'subfolder' or 'resume'"
+        assert resume in (True, 'overwrite', 'subfolder', 'resume', 'resume-similar'), "resume should be one of 'overwrite' 'subfolder', 'resume' or 'resume-similar'"
         append_run_num = resume == 'subfolder'
-        resume = resume == 'resume' or resume
+        resume_similar = resume == 'resume-similar'
+        resume = resume_similar or resume == 'resume' or resume
 
         if self.log and log_dir is not None:
             self.logs = make_run_dir(log_dir, run_num, append_run_num=append_run_num)
@@ -738,7 +745,6 @@ class ReactiveNestedSampler(object):
             self.pointstore = HDF5PointStore(
                 os.path.join(self.logs['results'], 'points.hdf5'),
                 3 + self.x_dim + self.num_params, mode='a' if resume else 'w')
-            self.ncall = len(self.pointstore.stack)
         else:
             self.pointstore = NullPointStore(3 + self.x_dim + self.num_params)
         self.ncall = self.pointstore.ncalls
@@ -753,6 +759,18 @@ class ReactiveNestedSampler(object):
         self.draw_multiple = draw_multiple
         self.ndraw_min = ndraw_min
         self.ndraw_max = ndraw_max
+        if not self._check_likelihood_function(transform, loglike, num_test_samples):
+            assert self.log_to_disk
+            if resume_similar:
+                # close
+                del self.pointstore
+                # rewrite points file
+                resume_from_similar_file(log_dir, x_dim, loglike, transform, vectorized=vectorized, ndraw=ndraw_min)
+                self.pointstore = HDF5PointStore(
+                    os.path.join(self.logs['results'], 'points.hdf5'),
+                    3 + self.x_dim + self.num_params, mode='a' if resume else 'w')
+            elif resume:
+                raise Exception("Cannot resume because loglikelihood function changed. To start from scratch, delete '%s'." % (log_dir))
         self._set_likelihood_function(transform, loglike, num_test_samples)
         self.stepsampler = None
 
@@ -770,13 +788,12 @@ class ReactiveNestedSampler(object):
             # print('setting seed:', self.mpi_rank, seed)
             np.random.seed(seed)
 
-    def _set_likelihood_function(self, transform, loglike, num_test_samples, make_safe=False):
-        """Store the transform and log-likelihood functions.
+    def _check_likelihood_function(self, transform, loglike, num_test_samples):
+        """Tests the `transform` and `loglike`lihood functions.
+        `num_test_samples` samples are used to check whether they work and give the correct output.
 
-        Tests with `num_test_samples` whether they work and give the correct output.
-
-        if make_safe is set, make functions safer by accepting misformed
-        return shapes and non-finite likelihood values.
+        returns whether the most recently stored point (if any) 
+        still returns the same likelihood value.
         """
         # do some checks on the likelihood function
         # this makes debugging easier by failing early with meaningful errors
@@ -824,7 +841,16 @@ class ReactiveNestedSampler(object):
                 self.logger.warning(
                     "Trying to resume from previous run, but likelihood function gives different result: %s gave %s, now %s",
                     lastu.flatten(), lastL, logl)
-            assert np.isclose(logl, lastL), "Cannot resume because loglikelihood function changed. To start from scratch, delete '%s'." % (self.logs['run_dir'])
+            #assert np.isclose(logl, lastL), "Cannot resume because loglikelihood function changed. To start from scratch, delete '%s'." % (self.logs['run_dir'])
+            return np.isclose(logl, lastL)
+        return True
+        
+    def _set_likelihood_function(self, transform, loglike, num_test_samples, make_safe=False):
+        """Store the transform and log-likelihood functions.
+
+        if make_safe is set, make functions safer by accepting misformed
+        return shapes and non-finite likelihood values.
+        """
 
         def safe_loglike(x):
             """ safe wrapper of likelihood function """
@@ -2640,7 +2666,6 @@ def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform, verbose=F
         if batch_u.size > 0:
             assert batch_u.shape[1] == x_dim, batch_u.shape
             batch_v = np.array([v for _, _, children in batch for _, v, _ in children], ndmin=2, dtype=float)
-            print("calling likelihood with %d points" % len(batch_u))
             v2 = transform(batch_u)
             assert batch_v.shape[1] == num_params, batch_v.shape
             assert np.allclose(v2, batch_v), 'transform inconsistent, cannot resume'
@@ -2658,7 +2683,7 @@ def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform, verbose=F
 
             assert len(active_values) == len(active_values2), (len(active_values), len(active_values2))
             if (np.argmin(active_values) != np.argmin(active_values2)):
-                print("lowest live point different at iter=%d" % niter)
+                # print("lowest live point different at iter=%d" % niter)
                 order_consistent = False
                 break
             
