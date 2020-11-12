@@ -286,6 +286,80 @@ def test_reactive_run_resume_eggbox():
     finally:
         shutil.rmtree(folder, ignore_errors=True)
 
+def test_reactive_run_warmstart_gauss():
+    from ultranest import ReactiveNestedSampler
+    from ultranest import read_file
+    center = 0
+
+    def loglike(z):
+        chi2 = (((z - center)/0.001)**2).sum(axis=1)
+        loglike.ncalls += len(z)
+        return -0.5 * chi2
+    loglike.ncalls = 0
+
+    def transform(x):
+        return x * 20000 - 10000
+
+    paramnames = ['a']
+    ndim = len(paramnames)
+
+    folder = tempfile.mkdtemp()
+    np.random.seed(1)
+    first_ncalls = None
+    resume_ncalls = None
+    try:
+        for i, resume in enumerate(['overwrite', 'resume', 'resume-similar']):
+            print()
+            print("====== Running Gauss problem [%d] =====" % (i+1))
+            print()
+            center = (i+1) * 1e-4
+            try:
+                sampler = ReactiveNestedSampler(paramnames,
+                    loglike, transform=transform,
+                    log_dir=folder, resume=resume, vectorized=True, draw_multiple=False)
+            except Exception as e:
+                # we expect an error for resuming with a changed likelihood
+                if resume != 'resume':
+                    raise e
+                else:
+                    assert 'loglikelihood function changed' in str(e), e
+                    print("Exception as expected:", e)
+                    continue
+            initial_ncalls = int(sampler.ncall)
+            if i == 0:
+                assert initial_ncalls == 0
+            num_live_points = 100
+            loglike.ncalls = 0
+            r = sampler.run(
+                max_num_improvement_loops=0,
+                min_num_live_points=num_live_points,
+                cluster_num_live_points=0, viz_callback=None, frac_remain=
+                0.5)
+            sampler.print_results()
+            print("pointstore:", sampler.pointstore.fileobj['points'].shape)
+            sampler.pointstore.close()
+            print(loglike.ncalls, r['ncall'], initial_ncalls)
+
+            ncalls = loglike.ncalls
+            if sampler.mpi_size > 1:
+                ncalls = sampler.comm.gather(ncalls, root=0)
+                if sampler.mpi_rank == 0:
+                    print("ncalls on the different MPI ranks:", ncalls)
+                ncalls = sum(sampler.comm.bcast(ncalls, root=0))
+            ncalls = ncalls + initial_ncalls
+            if i == 0:
+                first_ncalls = ncalls
+            if i == 2:
+                resume_ncalls = loglike.ncalls
+            assert abs(r['ncall'] - ncalls) <= 2 * sampler.mpi_size, (i, r['ncall'], ncalls, r['ncall'] - ncalls)
+            assert paramnames == r['paramnames'], 'paramnames should be in results'
+
+    finally:
+        shutil.rmtree(folder, ignore_errors=True)
+    
+    # make sure warm start is much faster
+    assert resume_ncalls < first_ncalls - 1000, (resume_ncalls, first_ncalls)
+
 def test_run_compat():
     from ultranest.solvecompat import pymultinest_solve_compat as solve
 
@@ -316,5 +390,6 @@ if __name__ == '__main__':
     #test_run_compat()
     #test_run_resume(dlogz=0.5)
     #test_reactive_run_resume(dlogz=0.5, min_ess=1000)
-    test_reactive_run()
-    test_run()
+    #test_reactive_run()
+    #test_run()
+    test_reactive_run_warmstart_gauss()
