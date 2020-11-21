@@ -251,6 +251,30 @@ def vol_prefactor(n):
     return f
 
 
+def is_affine_transform(a, b):
+    """
+    checks if one group of points *a* is an affine transform
+    of another group of points *b*.
+
+    The implementation currently returns False for rotations.
+    """
+    n, da = a.shape
+    nb, db = b.shape
+    assert n == nb
+    n = (n // 2) * 2
+    a1 = a[0:n:2]
+    a2 = a[1:n:2]
+    b1 = b[0:n:2]
+    b2 = b[1:n:2]
+    slopes = (b2 - b1) / (a2 - a1)
+    if not np.allclose(slopes, slopes[0]):
+        return False
+    offsets = b1 - slopes * a1
+    if not np.allclose(offsets, offsets[0]):
+        return False
+    return True
+
+
 def _merge_transform_loglike_gradient_function(transform, loglike, gradient):
     def transform_loglike_gradient(u):
         """combine transform, likelihood and gradient function"""

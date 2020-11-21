@@ -16,7 +16,7 @@ import warnings
 from numpy import log, exp, logaddexp
 import numpy as np
 
-from .utils import create_logger, make_run_dir, resample_equal, vol_prefactor, vectorize, listify as _listify
+from .utils import create_logger, make_run_dir, resample_equal, vol_prefactor, vectorize, listify as _listify, is_affine_transform
 from ultranest.mlfriends import MLFriends, AffineLayer, ScalingLayer, find_nearby, WrappingEllipsoid
 from .store import HDF5PointStore, TextPointStore, NullPointStore
 from .viz import get_default_viz_callback, nicelogger
@@ -1047,6 +1047,8 @@ class ReactiveNestedSampler(object):
             active_logl = prev_logl
 
         roots = [self.pointpile.make_node(logl, u, p) for u, p, logl in zip(active_u, active_v, active_logl)]
+        if len(active_u) > 4:
+            self.build_tregion = not is_affine_transform(active_u, active_v)
         self.root.children += roots
 
     def _adaptive_strategy_advice(self, Lmin, parallel_values, main_iterator, minimal_widths, frac_remain, Lepsilon):
@@ -1632,7 +1634,7 @@ class ReactiveNestedSampler(object):
 
         assert len(self.region.u) == len(self.transformLayer.clusterids)
         
-        if active_p is None:
+        if active_p is None or not self.build_tregion:
             self.tregion = None
         else:
             try:
@@ -1908,6 +1910,7 @@ class ReactiveNestedSampler(object):
         self.min_num_live_points = min_num_live_points
         self.cluster_num_live_points = cluster_num_live_points
         self.sampling_slow_warned = False
+        self.build_tregion = True
 
         if viz_callback == 'auto':
             viz_callback = get_default_viz_callback()
