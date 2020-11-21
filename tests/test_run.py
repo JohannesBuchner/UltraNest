@@ -181,7 +181,8 @@ def test_run_resume(dlogz):
     finally:
         shutil.rmtree(folder, ignore_errors=True)
 
-def test_reactive_run_resume_eggbox():
+@pytest.mark.parametrize("storage_backend", ['hdf5', 'tsv', 'csv'])
+def test_reactive_run_resume_eggbox(storage_backend):
     from ultranest import ReactiveNestedSampler
     from ultranest import read_file
 
@@ -207,7 +208,8 @@ def test_reactive_run_resume_eggbox():
             print()
             sampler = ReactiveNestedSampler(paramnames,
                 loglike, transform=transform,
-                log_dir=folder, resume=True, vectorized=True, draw_multiple=False)
+                log_dir=folder, resume=True, vectorized=True, draw_multiple=False,
+                storage_backend=storage_backend)
             initial_ncalls = int(sampler.ncall)
             num_live_points = 100
             loglike.ncalls = 0
@@ -216,7 +218,8 @@ def test_reactive_run_resume_eggbox():
                 min_num_live_points=num_live_points,
                 cluster_num_live_points=0)
             sampler.print_results()
-            print("pointstore:", sampler.pointstore.fileobj['points'].shape)
+            if storage_backend == 'hdf5':
+                print("pointstore:", sampler.pointstore.fileobj['points'].shape)
             sampler.pointstore.close()
             print(loglike.ncalls, r['ncall'], initial_ncalls)
 
@@ -237,51 +240,52 @@ def test_reactive_run_resume_eggbox():
         #    log_dir=folder, resume=True, vectorized=True, num_test_samples=0)
         #print("pointstore:", sampler.pointstore.fileobj['points'].shape)
         #assert ncalls == loglike.ncalls, (ncalls, loglike.ncalls)
-        sequence, results = read_file(folder, ndim, random=False, num_bootstraps=0)
+        if storage_backend == 'hdf5':
+            sequence, results = read_file(folder, ndim, random=False, num_bootstraps=0)
 
-        print("sampler results: ********************")
-        print({k:v for k, v in r.items() if np.asarray(v).size < 20 and k != 'weighted_samples'})
-        print("reader results: ********************")
-        print({k:v for k, v in results.items() if np.asarray(v).size < 20 and k != 'weighted_samples'})
-        for k, v in results.items():
-            if k == 'posterior' or k == 'samples':
-                pass
-            elif k == 'weighted_samples' or k == 'maximum_likelihood':
-                for k2, v2 in results[k].items():
-                    if k2 == 'bootstrapped_weights': continue
-                    print("  ", k, "::", k2, np.shape(v2))
-                    assert_allclose(r[k][k2], v2)
-            elif k.startswith('logzerr') or '_bs' in k or 'Herr' in k:
-                print("   skipping", k, np.shape(v))
-                #assert_allclose(r[k], v, atol=0.5)
-            else:
-                print("  ", k, np.shape(v))
-                assert_allclose(r[k], v)
+            print("sampler results: ********************")
+            print({k:v for k, v in r.items() if np.asarray(v).size < 20 and k != 'weighted_samples'})
+            print("reader results: ********************")
+            print({k:v for k, v in results.items() if np.asarray(v).size < 20 and k != 'weighted_samples'})
+            for k, v in results.items():
+                if k == 'posterior' or k == 'samples':
+                    pass
+                elif k == 'weighted_samples' or k == 'maximum_likelihood':
+                    for k2, v2 in results[k].items():
+                        if k2 == 'bootstrapped_weights': continue
+                        print("  ", k, "::", k2, np.shape(v2))
+                        assert_allclose(r[k][k2], v2)
+                elif k.startswith('logzerr') or '_bs' in k or 'Herr' in k:
+                    print("   skipping", k, np.shape(v))
+                    #assert_allclose(r[k], v, atol=0.5)
+                else:
+                    print("  ", k, np.shape(v))
+                    assert_allclose(r[k], v)
 
-        logw = r['weighted_samples']['logw']
-        v = r['weighted_samples']['points']
-        L = r['weighted_samples']['logl']
+            logw = r['weighted_samples']['logw']
+            v = r['weighted_samples']['points']
+            L = r['weighted_samples']['logl']
 
-        assert sequence['logz'][-1] - r['logz'] < 0.5, (results['logz'][-1], r['logz'])
-        assert sequence['logzerr'][-1] <= r['logzerr_single'], (results['logzerr'][-1], r['logzerr'])
-        #assert_allclose(sequence['logz_final'], r['logz_single'], atol=0.3)
-        #assert_allclose(sequence['logzerr_final'], r['logzerr_single'], atol=0.1)
-        assert r['niter'] <= sequence['niter'] <= r['niter'], (sequence['niter'], r['niter'])
-        assert results['niter'] == len(sequence['logz']) == len(sequence['logzerr']) == len(sequence['logvol']) == len(sequence['logwt'])
-        assert results['niter'] == len(results['samples'])
-        data = np.loadtxt(folder + '/chains/weighted_post.txt', skiprows=1)
-        assert_allclose(data[:,0], results['weighted_samples']['weights'])
-        assert_allclose(data[:,1], results['weighted_samples']['logl'])
-        assert_allclose(v, results['weighted_samples']['points'])
-        assert_allclose(logw, results['weighted_samples']['logw'])
-        assert_allclose(L, results['weighted_samples']['logl'])
+            assert sequence['logz'][-1] - r['logz'] < 0.5, (results['logz'][-1], r['logz'])
+            assert sequence['logzerr'][-1] <= r['logzerr_single'], (results['logzerr'][-1], r['logzerr'])
+            #assert_allclose(sequence['logz_final'], r['logz_single'], atol=0.3)
+            #assert_allclose(sequence['logzerr_final'], r['logzerr_single'], atol=0.1)
+            assert r['niter'] <= sequence['niter'] <= r['niter'], (sequence['niter'], r['niter'])
+            assert results['niter'] == len(sequence['logz']) == len(sequence['logzerr']) == len(sequence['logvol']) == len(sequence['logwt'])
+            assert results['niter'] == len(results['samples'])
+            data = np.loadtxt(folder + '/chains/weighted_post.txt', skiprows=1)
+            assert_allclose(data[:,0], results['weighted_samples']['weights'])
+            assert_allclose(data[:,1], results['weighted_samples']['logl'])
+            assert_allclose(v, results['weighted_samples']['points'])
+            assert_allclose(logw, results['weighted_samples']['logw'])
+            assert_allclose(L, results['weighted_samples']['logl'])
 
-        assert_allclose(L, sequence['logl'])
-        #assert_allclose(logw + L, sequence['logwt'])
-        assert sequence['logvol'].shape == logw.shape == (len(L),), (sequence['logvol'].shape, logw.shape)
-        assert sequence['logwt'].shape == logw.shape == (len(L),), (sequence['logwt'].shape, logw.shape)
-        #assert_allclose(logw, sequence['logvols'])
-        #assert results['samples_untransformed'].shape == v.shape == (len(L), ndim), (results['samples_untransformed'].shape, v.shape)
+            assert_allclose(L, sequence['logl'])
+            #assert_allclose(logw + L, sequence['logwt'])
+            assert sequence['logvol'].shape == logw.shape == (len(L),), (sequence['logvol'].shape, logw.shape)
+            assert sequence['logwt'].shape == logw.shape == (len(L),), (sequence['logwt'].shape, logw.shape)
+            #assert_allclose(logw, sequence['logvols'])
+            #assert results['samples_untransformed'].shape == v.shape == (len(L), ndim), (results['samples_untransformed'].shape, v.shape)
 
     finally:
         shutil.rmtree(folder, ignore_errors=True)
