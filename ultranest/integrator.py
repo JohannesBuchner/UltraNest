@@ -651,6 +651,7 @@ class ReactiveNestedSampler(object):
                  vectorized=False,
                  ndraw_min=128,
                  ndraw_max=65536,
+                 storage_backend='hdf5',
                  ):
         """Initialise nested sampler.
 
@@ -705,6 +706,9 @@ class ReactiveNestedSampler(object):
             number of logZ estimators and MLFriends region
             bootstrap rounds.
 
+        storage_backend: str or class
+            Class to use for storing the evaluated points (see ultranest.store)
+            'hdf5' is strongly recommended. 'tsv' and 'csv' are also possible.
         """
         self.paramnames = param_names
         x_dim = len(self.paramnames)
@@ -736,6 +740,7 @@ class ReactiveNestedSampler(object):
 
         self.log = self.mpi_rank == 0
         self.log_to_disk = self.log and log_dir is not None
+        self.log_to_pointstore = self.log_to_disk
 
         assert resume in (True, 'overwrite', 'subfolder', 'resume'), "resume should be one of 'overwrite' 'subfolder' or 'resume'"
         append_run_num = resume == 'subfolder'
@@ -752,12 +757,20 @@ class ReactiveNestedSampler(object):
         self.root = TreeNode(id=-1, value=-np.inf)
 
         self.pointpile = PointPile(self.x_dim, self.num_params)
-        if self.log_to_disk:
-            # self.pointstore = TextPointStore(os.path.join(self.logs['results'], 'points.tsv'), 2 + self.x_dim + self.num_params)
-            self.pointstore = HDF5PointStore(
-                os.path.join(self.logs['results'], 'points.hdf5'),
-                3 + self.x_dim + self.num_params, mode='a' if resume else 'w')
-            self.ncall = len(self.pointstore.stack)
+        if self.log_to_pointstore:
+            storage_filename = os.path.join(self.logs['results'], 'points.' + storage_backend)
+            storage_num_cols = 3 + self.x_dim + self.num_params
+            if storage_backend == 'tsv':
+                self.pointstore = TextPointStore(storage_filename, storage_num_cols)
+                self.pointstore.delimiter = '\n'
+            elif storage_backend == 'csv':
+                self.pointstore = TextPointStore(storage_filename, storage_num_cols)
+                self.pointstore.delimiter = ','
+            elif storage_backend == 'hdf5':
+                self.pointstore = HDF5PointStore(storage_filename, storage_num_cols, mode='a' if resume else 'w')
+            else:
+                # use custom backend
+                self.pointstore = storage_backend
         else:
             self.pointstore = NullPointStore(3 + self.x_dim + self.num_params)
         self.ncall = self.pointstore.ncalls
@@ -1014,7 +1027,7 @@ class ReactiveNestedSampler(object):
 
             assert active_logl.shape == (num_live_points_missing,), (active_logl.shape, num_live_points_missing)
 
-            if self.log_to_disk:
+            if self.log_to_pointstore:
                 for i in range(num_live_points_missing):
                     rowid = self.pointstore.add(_listify(
                         [-np.inf, active_logl[i], 0.0],
@@ -1357,7 +1370,7 @@ class ReactiveNestedSampler(object):
                 # root checks the point store
                 next_point = np.zeros((1, 3 + self.x_dim + self.num_params)) * np.nan
 
-                if self.log_to_disk:
+                if self.log_to_pointstore:
                     _, stored_point = self.pointstore.pop(Lmin)
                     if stored_point is not None:
                         next_point[0,:] = stored_point
@@ -1883,7 +1896,7 @@ class ReactiveNestedSampler(object):
 
         # if self.log:
         #     self.logger.info('Using MPI with rank [%d]' % (self.mpi_rank))
-        if self.log_to_disk:
+        if self.log_to_pointstore:
             self.logger.info("PointStore: have %d items", len(self.pointstore.stack))
             self.use_point_stack = not self.pointstore.stack_empty
         else:
@@ -1946,7 +1959,7 @@ class ReactiveNestedSampler(object):
             else:
                 ndraw = 40
             self.pointstore.reset()
-            if self.log_to_disk:
+            if self.log_to_pointstore:
                 self.use_point_stack = not self.pointstore.stack_empty
             else:
                 self.use_point_stack = False
