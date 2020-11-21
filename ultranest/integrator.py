@@ -80,6 +80,33 @@ def _sequentialize_width_sequence(minimal_widths, min_width):
 
     return list(zip(Lpoints, widths))
 
+def _update_region_bootstrap(region, nbootstraps, minvol=0., comm=None, mpi_size=1):
+    """
+    update *region* with *nbootstraps* rounds of excluding points randomly.
+    Stiffen ellipsoid size using the minimum volume *minvol*.
+
+    If the mpi communicator *comm* is not None, use MPI to distribute
+    the bootstraps over the *mpi_size* processes.
+    """
+    r, f = region.compute_enlargement(
+        minvol=minvol,
+        nbootstraps=max(1, nbootstraps // mpi_size))
+
+    if comm is not None:
+        recv_maxradii = comm.gather(r, root=0)
+        recv_maxradii = comm.bcast(recv_maxradii, root=0)
+        # if there are very many processors, we may have more
+        # rounds than requested, leading to slowdown
+        # thus we throw away the extra ones
+        r = np.max(recv_maxradii[:nbootstraps])
+        recv_enlarge = comm.gather(f, root=0)
+        recv_enlarge = comm.bcast(recv_enlarge, root=0)
+        f = np.max(recv_enlarge[:nbootstraps])
+
+    region.maxradiussq = r
+    region.enlarge = f
+    return r, f
+
 
 class NestedSampler(object):
     """Simple Nested sampler for reference."""
@@ -386,15 +413,7 @@ class NestedSampler(object):
                     nextregion = MLFriends(active_u, nextTransformLayer)
 
                 # print("computing maxradius...")
-                r, f = nextregion.compute_enlargement(nbootstraps=max(1, 30 // self.mpi_size))
-                # print("MLFriends built. r=%f" % r**0.5)
-                if self.use_mpi:
-                    recv_maxradii = self.comm.gather(r, root=0)
-                    recv_maxradii = self.comm.bcast(recv_maxradii, root=0)
-                    r = np.max(recv_maxradii)
-                    recv_enlarge = self.comm.gather(f, root=0)
-                    recv_enlarge = self.comm.bcast(recv_enlarge, root=0)
-                    f = np.max(recv_enlarge)
+                r, f = _update_region_bootstrap(nextregion, 30, 0., self.comm if self.use_mpi else None, self.mpi_size)
 
                 nextregion.maxradiussq = r
                 nextregion.enlarge = f
@@ -791,12 +810,12 @@ class ReactiveNestedSampler(object):
             # test with num_test_samples random points
             u = np.random.uniform(size=(num_test_samples, self.x_dim))
             p = transform(u) if transform is not None else u
-            assert p.shape == (num_test_samples, self.num_params), (
+            assert np.shape(p) == (num_test_samples, self.num_params), (
                 "Error in transform function: returned shape is %s, expected %s" % (
-                    p.shape, (num_test_samples, self.num_params)))
+                    np.shape(p), (num_test_samples, self.num_params)))
             logl = loglike(p)
             assert np.logical_and(u > 0, u < 1).all(), ("Error in transform function: u was modified!")
-            assert logl.shape == (num_test_samples,), ("Error in loglikelihood function: returned shape is %s, expected %s" % (p.shape, (num_test_samples,)))
+            assert np.shape(logl) == (num_test_samples,), ("Error in loglikelihood function: returned shape is %s, expected %s" % (np.shape(logl), (num_test_samples,)))
             assert np.isfinite(logl).all(), ("Error in loglikelihood function: returned non-finite number: %s for input u=%s p=%s" % (logl, u, p))
 
         if not self.pointstore.stack_empty and num_resume_test_samples > 0:
@@ -1433,20 +1452,7 @@ class ReactiveNestedSampler(object):
             self.region_nodes = active_node_ids.copy()
             assert self.region.maxradiussq is None
 
-            r, f = self.region.compute_enlargement(
-                minvol=minvol, nbootstraps=max(1, nbootstraps // self.mpi_size))
-            # rng=np.random.RandomState(self.mpi_rank))
-            # print("MLFriends built. r=%f" % r**0.5)
-            if self.use_mpi:
-                recv_maxradii = self.comm.gather(r, root=0)
-                recv_maxradii = self.comm.bcast(recv_maxradii, root=0)
-                r = np.max(recv_maxradii)
-                recv_enlarge = self.comm.gather(f, root=0)
-                recv_enlarge = self.comm.bcast(recv_enlarge, root=0)
-                f = np.max(recv_enlarge)
-
-            self.region.maxradiussq = r
-            self.region.enlarge = f
+            _update_region_bootstrap(self.region, nbootstraps, minvol, self.comm if self.use_mpi else None, self.mpi_size)
             self.region.create_ellipsoid(minvol=minvol)
             # if self.log:
             #     self.logger.debug("building first region ... r=%e, f=%e" % (r, f))
@@ -1467,21 +1473,8 @@ class ReactiveNestedSampler(object):
             oldu = self.region.u
             self.region.u = active_u
             self.region.set_transformLayer(self.transformLayer)
-            r, f = self.region.compute_enlargement(
-                minvol=minvol,
-                nbootstraps=max(1, nbootstraps // self.mpi_size))
-            # rng=np.random.RandomState(self.mpi_rank))
-            # print("MLFriends built. r=%f" % r**0.5)
-            if self.use_mpi:
-                recv_maxradii = self.comm.gather(r, root=0)
-                recv_maxradii = self.comm.bcast(recv_maxradii, root=0)
-                r = np.max(recv_maxradii)
-                recv_enlarge = self.comm.gather(f, root=0)
-                recv_enlarge = self.comm.bcast(recv_enlarge, root=0)
-                f = np.max(recv_enlarge)
-
-            self.region.maxradiussq = r
-            self.region.enlarge = f
+            
+            _update_region_bootstrap(self.region, nbootstraps, minvol, self.comm if self.use_mpi else None, self.mpi_size)
 
             # print("made first region, r=%e" % (r))
 
@@ -1572,21 +1565,7 @@ class ReactiveNestedSampler(object):
 
                 # if self.log:
                 #     self.logger.info("computing maxradius...")
-                r, f = nextregion.compute_enlargement(
-                    minvol=minvol,
-                    nbootstraps=max(1, nbootstraps // self.mpi_size))
-                # rng=np.random.RandomState(self.mpi_rank))
-                # print("MLFriends built. r=%f" % r**0.5)
-                if self.use_mpi:
-                    recv_maxradii = self.comm.gather(r, root=0)
-                    recv_maxradii = self.comm.bcast(recv_maxradii, root=0)
-                    r = np.max(recv_maxradii)
-                    recv_enlarge = self.comm.gather(f, root=0)
-                    recv_enlarge = self.comm.bcast(recv_enlarge, root=0)
-                    f = np.max(recv_enlarge)
-
-                nextregion.maxradiussq = r
-                nextregion.enlarge = f
+                r, f = _update_region_bootstrap(nextregion, nbootstraps, minvol, self.comm if self.use_mpi else None, self.mpi_size)
                 # verify correctness:
                 nextregion.create_ellipsoid(minvol=minvol)
                 assert (nextregion.u == active_u).all()

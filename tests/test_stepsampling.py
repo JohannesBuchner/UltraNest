@@ -303,7 +303,7 @@ def test_ellipsoid_bracket(plot=False):
 
 
 def run_aharm_sampler():
-    for seed in [733] + list(range(1000)):
+    for seed in [733] + list(range(10)):
         print()
         print("SEED=%d" % seed)
         print()

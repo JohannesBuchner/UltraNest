@@ -821,6 +821,8 @@ def ellipsoid_bracket(ui, v, ellipsoid_center, ellipsoid_inv_axes, ellipsoid_rad
     return left, right
 
 def crop_bracket_at_unit_cube(ui, v, left, right, epsilon=1e-6):
+    assert (ui > 0).all(), ui
+    assert (ui < 1).all(), ui
     leftu = left * v + ui
     rightu = right * v + ui
     cropped_left = False
