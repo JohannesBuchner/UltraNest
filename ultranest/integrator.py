@@ -754,6 +754,10 @@ class ReactiveNestedSampler(object):
 
         if self.log:
             self.logger = create_logger('ultranest', log_dir=log_dir)
+            self.logger.debug('ReactiveNestedSampler: dims=%d+%d, resume=%s, log_dir=%s, backend=%s, vectorized=%s, nbootstraps=%s, ndraw=%s..%s' % (
+                x_dim, num_derived, resume, log_dir, storage_backend, vectorized,
+                num_bootstraps, ndraw_min, ndraw_max,
+            ))
         self.root = TreeNode(id=-1, value=-np.inf)
 
         self.pointpile = PointPile(self.x_dim, self.num_params)
@@ -1887,6 +1891,13 @@ class ReactiveNestedSampler(object):
         assert max_iters is None or max_iters > 0, ("Invalid value for max_iters: %s. Set to None or positive number" % max_iters)
         assert max_ncalls is None or max_ncalls > 0, ("Invalid value for max_ncalls: %s. Set to None or positive number" % max_ncalls)
 
+        if self.log:
+            self.logger.debug('run_iter dlogz=%.1f, dKL=%.1f, frac_remain=%.2f, Lepsilon=%.4f, min_ess=%d, max_iters=%d, max_ncalls=%d, max_num_improvement_loops=%d, min_num_live_points=%d, cluster_num_live_points=%d' % (
+                dlogz, dKL, frac_remain, Lepsilon, min_ess,
+                max_iters if max_iters else -1, max_ncalls if max_ncalls else -1,
+                max_num_improvement_loops, min_num_live_points, cluster_num_live_points,
+            ))
+
         self.results = None
 
         while True:
@@ -2070,6 +2081,9 @@ class ReactiveNestedSampler(object):
                                 np.inf if ncall_here == 0 else it_here * 100 / ncall_here,
                                 nlive))
                             sys.stdout.flush()
+                        self.logger.debug('iteration=%d, ncalls=%d, logz=%.2f, remainder_fraction=%.4f%%, Lmin=%.2f, Lmax=%.2f' % (
+                            it, self.ncall, main_iterator.logZ,
+                            100 * main_iterator.remainder_fraction, Lmin, main_iterator.Lmax))
 
                         # if efficiency becomes low, bulk-process larger arrays
                         if self.draw_multiple:
