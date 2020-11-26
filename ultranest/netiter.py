@@ -466,8 +466,9 @@ class SingleCounter(object):
             # volume is reduced by exp(-1/N)
             self.logVolremaining += logright
             # TODO: this needs to change if nlive varies
-            self.logZerr = (self.H / nlive)**0.5
-            assert np.all(np.isfinite(self.logZerr)), (self.H, nlive)
+            if self.H >= 0:
+                self.logZerr = (self.H / nlive)**0.5
+                assert np.isfinite(self.logZerr), (self.H, nlive)
         else:
             # contracting!
 

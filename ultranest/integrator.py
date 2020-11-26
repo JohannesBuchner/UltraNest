@@ -20,7 +20,7 @@ from .utils import create_logger, make_run_dir, resample_equal, vol_prefactor, v
 from ultranest.mlfriends import MLFriends, AffineLayer, ScalingLayer, find_nearby, WrappingEllipsoid
 from .store import HDF5PointStore, TextPointStore, NullPointStore
 from .viz import get_default_viz_callback, nicelogger
-from .netiter import PointPile, MultiCounter, BreadthFirstIterator, TreeNode, count_tree_between, find_nodes_before, logz_sequence
+from .netiter import PointPile, SingleCounter, MultiCounter, BreadthFirstIterator, TreeNode, count_tree_between, find_nodes_before, logz_sequence
 from .netiter import dump_tree, combine_results
 
 __all__ = ['ReactiveNestedSampler', 'NestedSampler', 'read_file']
@@ -2574,7 +2574,7 @@ def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform, verbose=F
     v2 = transform(np.array(initial_points_u, ndmin=2, dtype=float))
     assert np.allclose(v2, initial_points_v), 'transform inconsistent, cannot resume'
     logls_new = loglikelihood(v2)
-    
+
     for u, v, logl, logl_new in zip(initial_points_u, initial_points_v, initial_points_logl, logls_new):
         roots.append(pointpile.make_node(logl, u, v))
         roots2.append(pointpile2.make_node(logl_new, u, v))
@@ -2582,8 +2582,13 @@ def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform, verbose=F
     batchsize = ndraw if vectorized else 1
     explorer = BreadthFirstIterator(roots)
     explorer2 = BreadthFirstIterator(roots2)
-    order_consistent = True
+    main_iterator2 = SingleCounter()
+    main_iterator2.Lmax = logls_new.max()
+    good_state = True
 
+    last_good_like = -1e300
+    last_good_state = 0
+    epsilon = 1 + 1e-6
     niter = 0
     for batch in _explore_iterator_batch(explorer, pop, x_dim, num_params, pointpile, batchsize=batchsize):
         assert len(batch) > 0
@@ -2608,11 +2613,29 @@ def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform, verbose=F
             Lmin2 = node2.value
 
             assert len(active_values) == len(active_values2), (len(active_values), len(active_values2))
-            if (np.argmin(active_values) != np.argmin(active_values2)):
-                print("lowest live point different at iter=%d" % niter)
-                order_consistent = False
-                break
-            
+            order_consistent = (np.argmin(active_values) == np.argmin(active_values2))
+            order_fully_consistent = (np.argsort(active_values) == np.argsort(active_values2)).all()
+            if order_fully_consistent and len(active_values) > 10:
+                good_state = True
+            elif not order_consistent:
+                good_state = False
+            else:
+                # maintain state
+                pass
+            print(niter, order_consistent, order_fully_consistent, good_state, (np.argsort(active_values) == np.argsort(active_values2)).mean())
+            if good_state:
+                print("        (%.1e)   L=%.1f" % (last_good_like, Lmin2))
+                #assert last_good_like < Lmin2, (last_good_like, Lmin2)
+                last_good_like = Lmin2
+                last_good_state = niter
+            else:
+                # interpolate a increasing likelihood
+                # in the hope that the step size is smaller than
+                # the likelihood increase
+                Lmin2 = last_good_like
+                node2.value = Lmin2
+                last_good_like = last_good_like * epsilon
+
             for u, v, logl_old in children:
                 logl_new = logls_new[j]
                 j += 1
@@ -2621,6 +2644,7 @@ def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform, verbose=F
                 node2.children.append(child2)
 
                 pointstore2.add(_listify([Lmin2, logl_new, 0.0], u, v), 1)
+                main_iterator2.passing_node(node2, active_nodes2)
 
             niter += 1
             if verbose:
@@ -2628,9 +2652,22 @@ def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform, verbose=F
 
             explorer2.expand_children_of(rootid2, node2)
 
-        if not order_consistent:
+        if main_iterator2.logZremain < main_iterator2.logZ and not good_state:
+            # stop as the results diverged already
             break
 
     if verbose:
-        sys.stderr.write("%d iterations done.\n" % niter)
+        sys.stderr.write("%d iterations done. %d iterations salvaged.\n" % (niter, last_good_state))
+    # delete the ones at the end from last_good_state onwards
+    #assert len(pointstore2.fileobj['points']) == niter, (len(pointstore2.fileobj['points']), niter)
+    mask = pointstore2.fileobj['points'][:,0] <= last_good_like
+    points2 = pointstore2.fileobj['points'][mask,:]
+    print('keeping %.2f%%' % (100 * mask.mean()))
+    del pointstore2.fileobj['points']
+    pointstore2.fileobj.create_dataset(
+        'points', dtype=np.float,
+        shape=(0, pointstore2.ncols), maxshape=(None, pointstore2.ncols))
+    pointstore2.fileobj['points'][:] = points2
+    del pointstore2
+
     os.rename(filepath2, filepath)
