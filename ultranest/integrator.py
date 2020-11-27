@@ -20,6 +20,7 @@ from .utils import create_logger, make_run_dir, resample_equal, vol_prefactor, v
 from ultranest.mlfriends import MLFriends, AffineLayer, ScalingLayer, find_nearby, WrappingEllipsoid
 from .store import HDF5PointStore, TextPointStore, NullPointStore
 from .viz import get_default_viz_callback, nicelogger
+from .ordertest import UniformOrderAccumulator
 from .netiter import PointPile, MultiCounter, BreadthFirstIterator, TreeNode, count_tree_between, find_nodes_before, logz_sequence
 from .netiter import dump_tree, combine_results
 
@@ -1728,7 +1729,7 @@ class ReactiveNestedSampler(object):
 
     def run(
             self,
-            update_interval_iter_fraction=0.2,
+            update_interval_volume_fraction=0.8,
             update_interval_ncall=None,
             log_interval=None,
             show_status=True,
@@ -1743,13 +1744,14 @@ class ReactiveNestedSampler(object):
             max_num_improvement_loops=-1,
             min_num_live_points=400,
             cluster_num_live_points=40,
+            order_test_window=10,
     ):
         """Run until target convergence criteria are fulfilled.
 
         Parameters
         ----------
-        update_interval_iter_fraction: float
-            Update region after (update_interval_iter_fraction*nlive) iterations.
+        update_interval_volume_fraction: float
+            Update region when the volume shrunk by this amount.
 
         update_interval_ncall: int
             Update region after update_interval_ncall likelihood calls (not used).
@@ -1804,10 +1806,13 @@ class ReactiveNestedSampler(object):
         cluster_num_live_points: int
             require at least this many live points per detected cluster
 
+        order_test_window: float
+            Number of iterations after which the insertion order test is reset.
+
         """
 
         for result in self.run_iter(
-            update_interval_iter_fraction=update_interval_iter_fraction,
+            update_interval_volume_fraction=update_interval_volume_fraction,
             update_interval_ncall=update_interval_ncall,
             log_interval=log_interval,
             dlogz=dlogz, dKL=dKL,
@@ -1818,6 +1823,7 @@ class ReactiveNestedSampler(object):
             cluster_num_live_points=cluster_num_live_points,
             show_status=show_status,
             viz_callback=viz_callback,
+            order_test_window=order_test_window,
         ):
             if self.log:
                 self.logger.debug("did a run_iter pass!")
@@ -1829,7 +1835,7 @@ class ReactiveNestedSampler(object):
 
     def run_iter(
             self,
-            update_interval_iter_fraction=0.2,
+            update_interval_volume_fraction=0.2,
             update_interval_ncall=None,
             log_interval=None,
             dlogz=0.5,
@@ -1844,6 +1850,8 @@ class ReactiveNestedSampler(object):
             cluster_num_live_points=40,
             show_status=True,
             viz_callback='auto',
+            order_test_window=10,
+            insertion_test_zscore_threshold=2,
     ):
         """Iterate towards convergence.
 
@@ -1875,6 +1883,7 @@ class ReactiveNestedSampler(object):
         self.cluster_num_live_points = cluster_num_live_points
         self.sampling_slow_warned = False
         self.build_tregion = True
+        update_interval_volume_log_fraction = log(update_interval_volume_fraction)
 
         if viz_callback == 'auto':
             viz_callback = get_default_viz_callback()
@@ -1920,8 +1929,12 @@ class ReactiveNestedSampler(object):
             main_iterator = MultiCounter(
                 nroots=len(roots),
                 nbootstraps=max(1, self.num_bootstraps // self.mpi_size),
-                random=False)
+                random=False, check_insertion_order=False)
             main_iterator.Lmax = max(Lmax, max(n.value for n in roots))
+            insertion_test = UniformOrderAccumulator(nroots)
+            insertion_test_runs = []
+            insertion_test_quality = np.inf
+            insertion_test_direction = 0
 
             self.transformLayer = None
             self.region = None
@@ -1952,7 +1965,7 @@ class ReactiveNestedSampler(object):
             it = 0
             ncall_at_run_start = self.ncall
             ncall_region_at_run_start = self.ncall_region
-            next_update_interval_iter = -1
+            next_update_interval_volume = 1
             last_status = time.time()
 
             # we go through each live point (regardless of root) by likelihood value
@@ -1987,7 +2000,7 @@ class ReactiveNestedSampler(object):
                     active_p = self.pointpile.getp(active_node_ids)
                     nlive = len(active_u)
                     # first we check that the region is up-to-date
-                    if it > next_update_interval_iter:
+                    if main_iterator.logVolremaining < next_update_interval_volume:
                         if self.region is None:
                             it_at_first_region = it
                         region_fresh = self._update_region(
@@ -2005,8 +2018,7 @@ class ReactiveNestedSampler(object):
                         region_sequence.append((Lmin, nlive, nclusters))
 
                         # next_update_interval_ncall = self.ncall + (update_interval_ncall or nlive)
-                        update_interval_iter = max(1, round(update_interval_iter_fraction * nlive))
-                        next_update_interval_iter = it + update_interval_iter
+                        next_update_interval_volume = main_iterator.logVolremaining + update_interval_volume_log_fraction
 
                         # provide nice output to follow what is going on
                         # but skip if we are resuming
@@ -2020,7 +2032,9 @@ class ReactiveNestedSampler(object):
                                     logz_remain=main_iterator.logZremain,
                                     logvol=main_iterator.logVolremaining,
                                     paramnames=self.paramnames + self.derivedparamnames,
-                                    paramlims=self.transform_limits
+                                    paramlims=self.transform_limits,
+                                    order_test_correlation=insertion_test_quality,
+                                    order_test_direction=insertion_test_direction,
                                 ),
                                 region=self.region, transformLayer=self.transformLayer,
                                 region_fresh=region_fresh,
@@ -2040,6 +2054,17 @@ class ReactiveNestedSampler(object):
                     u, p, L = self._create_point(Lmin=Lmin, ndraw=ndraw, active_u=active_u, active_values=active_values)
                     child = self.pointpile.make_node(L, u, p)
                     main_iterator.Lmax = max(main_iterator.Lmax, L)
+                    if len(np.unique(active_values)) == nlive:
+                        insertion_test.add((active_values < L).sum(), nlive)
+                        if abs(insertion_test.zscore) > insertion_test_zscore_threshold:
+                            insertion_test_runs.append(insertion_test.N)
+                            insertion_test_quality = insertion_test.N
+                            insertion_test_direction = np.sign(insertion_test.zscore)
+                            insertion_test.reset()
+                        elif insertion_test.N > nlive * order_test_window:
+                            insertion_test_quality = np.inf
+                            insertion_test_direction = 0
+                            insertion_test.reset()
 
                     # identify which point is being replaced (from when we built the region)
                     worst = np.where(self.region_nodes == node.id)[0]
@@ -2120,7 +2145,7 @@ class ReactiveNestedSampler(object):
                     # (heuristics do not work in practice)
                     self.region.maxradiussq = None
                     # ask for the region to be rebuilt
-                    next_update_interval_iter = -1
+                    next_update_interval_volume = 1
 
                 it += 1
                 explorer.expand_children_of(rootid, node)
@@ -2221,6 +2246,9 @@ class ReactiveNestedSampler(object):
         results['paramnames'] = self.paramnames
         results['logzerr_single'] = (main_iterator.all_H[0] / self.min_num_live_points)**0.5
 
+        sequence, results2 = logz_sequence(self.root, self.pointpile, random=True, check_insertion_order=True)
+        results['insertion_order_MWW_test'] = results2['insertion_order_MWW_test']
+
         results_simple = dict(results)
         weighted_samples = results_simple.pop('weighted_samples')
         samples = results_simple.pop('samples')
@@ -2256,10 +2284,8 @@ class ReactiveNestedSampler(object):
                     delimiter=',', comments='',
                 )
 
-        sequence, _ = logz_sequence(self.root, self.pointpile)
-
         if self.log_to_disk:
-            keys = 'logz', 'logzerr', 'logvol', 'nlive', 'logl', 'logwt'
+            keys = 'logz', 'logzerr', 'logvol', 'nlive', 'logl', 'logwt', 'insert_order'
             np.savetxt(os.path.join(self.logs['chains'], 'run.txt'),
                        np.hstack(tuple([np.reshape(sequence[k], (-1, 1)) for k in keys])),
                        header=' '.join(keys),
@@ -2284,6 +2310,7 @@ class ReactiveNestedSampler(object):
             print('  single instance: logZ = %(logz_single).3f +- %(logzerr_single).3f' % self.results)
             print('  bootstrapped   : logZ = %(logz_bs).3f +- %(logzerr_bs).3f' % self.results)
             print('  tail           : logZ = +- %(logzerr_tail).3f' % self.results)
+            print('insert order U test : converged: %(converged)s correlation: %(independent_iterations)s iterations' % self.results['insertion_order_MWW_test'])
 
             print()
             for i, p in enumerate(self.paramnames + self.derivedparamnames):
@@ -2374,7 +2401,7 @@ class ReactiveNestedSampler(object):
             self.logger.debug('Making run plot ... done')
 
 
-def read_file(log_dir, x_dim, num_bootstraps=20, random=True, verbose=False):
+def read_file(log_dir, x_dim, num_bootstraps=20, random=True, verbose=False, check_insertion_order=True):
     """
     Read the output HDF5 file of UltraNest.
 
@@ -2390,6 +2417,8 @@ def read_file(log_dir, x_dim, num_bootstraps=20, random=True, verbose=False):
         use randomization for volume estimation.
     verbose: bool
         show progress
+    check_insertion_order: bool
+        whether to perform MWW insertion order test for assessing convergence
 
     Returns
     ----------
@@ -2456,7 +2485,8 @@ def read_file(log_dir, x_dim, num_bootstraps=20, random=True, verbose=False):
             node.children.append(child)
 
     return logz_sequence(root, pointpile, nbootstraps=num_bootstraps,
-                         random=random, onNode=onNode, verbose=verbose)
+                         random=random, onNode=onNode, verbose=verbose,
+                         check_insertion_order=check_insertion_order)
 
 def _explore_iterator_batch(explorer, pop, x_dim, num_params, pointpile, batchsize=1):
     batch = []

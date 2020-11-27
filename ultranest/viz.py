@@ -125,7 +125,11 @@ def nicelogger(points, info, region, transformLayer, region_fresh=False):
     nmodes = transformLayer.nclusters
     print("Mono-modal" if nmodes == 1 else "Have %d modes" % nmodes,
           "Volume: ~exp(%.2f)" % region.estimate_volume(), '*' if region_fresh else ' ',
-          "Expected Volume: exp(%.2f)" % info['logvol'])
+          "Expected Volume: exp(%.2f)" % info['logvol'],
+          '' if 'order_test_correlation' not in info else
+            ("Quality: correlation length: %d (%s)" % (info['order_test_correlation'], '+' if info['order_test_direction'] >= 0 else '-'))
+            if np.isfinite(info['order_test_correlation']) else "Quality: ok",
+    )
 
     print()
     if ndim == 1:
@@ -295,7 +299,11 @@ class LivePointsWidget(object):
         nmodes = transformLayer.nclusters
         labeltext = ("Mono-modal" if nmodes == 1 else "Have %d modes" % nmodes) + \
             (" | Volume: ~exp(%.2f) " % region.estimate_volume()) + ('*' if region_fresh else ' ') + \
-            " | Expected Volume: exp(%.2f)" % info['logvol']
+            " | Expected Volume: exp(%.2f)" % info['logvol'] + \
+            ('' if 'order_test_correlation' not in info else
+            (" | Quality: correlation length: %d (%s)" % (info['order_test_correlation'], '+' if info['order_test_direction'] >= 0 else '-'))
+            if np.isfinite(info['order_test_correlation']) else " | Quality: ok")
+
 
         if ndim == 1:
             pass

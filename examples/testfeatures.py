@@ -118,7 +118,7 @@ def main(args):
         wrapped_params=wrapped_params,
     )
     for result in sampler.run_iter(
-            update_interval_iter_fraction=args.update_interval_iter_fraction,
+            update_interval_volume_fraction=args.update_interval_iter_fraction,
             dlogz=args.dlogz,
             dKL=args.dKL,
             frac_remain=args.frac_remain,
@@ -254,4 +254,3 @@ if __name__ == '__main__':
             if i + 1 >= progargs.nrounds:
                 break
         i = i + 1
-            
