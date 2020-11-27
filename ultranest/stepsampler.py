@@ -825,30 +825,50 @@ def crop_bracket_at_unit_cube(ui, v, left, right, epsilon=1e-6):
     assert (ui < 1).all(), ui
     leftu = left * v + ui
     rightu = right * v + ui
+    print("crop: current ends:", leftu, rightu)
     cropped_left = False
-    if (leftu <= 0).any():
+    leftbelow = leftu <= 0
+    if leftbelow.any():
         # choose left so that point is > 0 in all axes
         # 0 = left * v + ui
-        #print('old left:', leftu, left)
         del left
-        left = (-ui[leftu <= 0] / v[leftu <= 0]).max() * (1 - epsilon)
+        left = (-ui[leftbelow] / v[leftbelow]).max() * (1 - epsilon)
         del leftu
         leftu = left * v + ui
-        #print('new left:', leftu, left)
         cropped_left |= True
-    assert (leftu >= 0).all(), leftu
+        assert (leftu >= 0).all(), leftu
+    leftabove = leftu >= 1
+    if leftabove.any():
+        del left
+        left = ((1 - ui[leftabove]) / v[leftabove]).max() * (1 - epsilon)
+        del leftu
+        leftu = left * v + ui
+        cropped_left |= True
+        assert (leftu <= 1).all(), leftu
+
     cropped_right = False
-    if (rightu >= 1).any():
+    rightabove = rightu >= 1
+    if rightabove.any():
         # choose right so that point is < 1 in all axes
         # 1 = left * v + ui
         #print('old right:', rightu, right)
         del right
-        right = ((1-ui[rightu >= 1]) / v[rightu >= 1]).min() * (1 - epsilon)
+        right = ((1-ui[rightabove]) / v[rightabove]).min() * (1 - epsilon)
         del rightu
         rightu = right * v + ui
         #print('new right:', rightu, right)
         cropped_right |= True
-    assert (rightu <= 1).all(), rightu
+        assert (rightu <= 1).all(), rightu
+
+    rightbelow = rightu <= 0
+    if rightbelow.any():
+        del right
+        right = (-ui[rightbelow] / v[rightbelow]).min() * (1 - epsilon)
+        del rightu
+        rightu = right * v + ui
+        cropped_right |= True
+        assert (rightu >= 0).all(), rightu
+
     assert left <= 0 <= right, (left, right)
     return left, right, cropped_left, cropped_right
 
@@ -1014,6 +1034,8 @@ class AHARMSampler(StepSampler):
                     # go back only ndim steps, then start fresh
                     self.directions[i * ndim : (i + 1) * ndim], _ = np.linalg.qr(self.directions[i * ndim : (i + 1) * ndim])
 
+            assert (ui >= 0).all(), ui
+            assert (ui <= 1).all(), ui
             self.current_interval = ui, None, None
         
         del ui
@@ -1028,18 +1050,27 @@ class AHARMSampler(StepSampler):
                 v = self.directions[self.nsteps_done + nsteps_prepared]
                 if len(point_sequence) == 0:
                     ucurrent, left, right = self.current_interval
+                    assert (ucurrent >= 0).all(), ucurrent
+                    assert (ucurrent <= 1).all(), ucurrent
                     assert region.inside_ellipsoid(ucurrent.reshape((1, ndim))), ('cannot start from outside ellipsoid!', region.inside_ellipsoid(ucurrent.reshape((1, ndim))))
                     if self.region_filter:
                         assert region.inside(ucurrent.reshape((1, ndim))), ('cannot start from outside region!', region.inside(ucurrent.reshape((1, ndim))))
                     assert loglike(transform(ucurrent.reshape((1, ndim)))) >= Lmin, ('cannot start from outside!', loglike(transform(ucurrent.reshape((1, ndim)))), Lmin)
                 else:
                     left, right = None, None
+                assert (ucurrent >= 0).all(), ucurrent
+                assert (ucurrent <= 1).all(), ucurrent
                 if verbose: print("preparing step: %d from %s" % (nsteps_prepared + self.nsteps_done, ucurrent))
                 
                 if left is None or right is None:
                     # in each, find the end points using the expanded ellipsoid
-                    left, right = ellipsoid_bracket(ucurrent, v, region.ellipsoid_center, region.ellipsoid_inv_axes, region.enlarge)
+                    left, right = ellipsoid_bracket(ucurrent, v, region.ellipsoid_center, region.ellipsoid_invcov, region.enlarge)
                     left, right, _, _ = crop_bracket_at_unit_cube(ucurrent, v, left, right)
+                    assert (ucurrent + v * left <= 1).all(), (ucurrent, v, region.ellipsoid_center, region.ellipsoid_inv_axes, region.ellipsoid_invcov, region.enlarge)
+                    assert (ucurrent + v * right <= 1).all(), (ucurrent, v, region.ellipsoid_center, region.ellipsoid_inv_axes, region.ellipsoid_invcov, region.enlarge)
+                    assert (ucurrent + v * left >= 0).all(), (ucurrent, v, region.ellipsoid_center, region.ellipsoid_inv_axes, region.ellipsoid_invcov, region.enlarge)
+                    assert (ucurrent + v * right >= 0).all(), (ucurrent, v, region.ellipsoid_center, region.ellipsoid_inv_axes, region.ellipsoid_invcov, region.enlarge)
+                    
                     assert left <= 0 <= right, (left, right)
                     if verbose: print("   ellipsoid bracket found:", left, right)
 
@@ -1048,6 +1079,8 @@ class AHARMSampler(StepSampler):
                     assert region.inside_ellipsoid(ucurrent.reshape((1, ndim))), ('current point outside ellipsoid!')
                     t = np.random.uniform(left, right)
                     unext = ucurrent + v * t
+                    assert (unext >= 0).all(), unext
+                    assert (unext <= 1).all(), unext
                     assert region.inside_ellipsoid(unext.reshape((1, ndim))), ('proposal landed outside ellipsoid!', t, left, right)
 
                     # compute distance vector to center
@@ -1157,6 +1190,8 @@ class AHARMSampler(StepSampler):
                 # continue from last point
                 self.nsteps_done += nsteps_prepared
                 nsteps_prepared, ucurrent, v, left, right, t = intervals[-1]
+                assert (ucurrent >= 0).all(), ucurrent
+                assert (ucurrent <= 1).all(), ucurrent
                 if point_expectation[-1]:
                     self.current_interval = ucurrent, None, None
                 else:
@@ -1169,6 +1204,8 @@ class AHARMSampler(StepSampler):
                 # point i unexpectedly inside or outside
                 imax = i[0]
                 nsteps_prepared, ucurrent, v, left, right, t = intervals[imax]
+                assert (ucurrent >= 0).all(), ucurrent
+                assert (ucurrent <= 1).all(), ucurrent
                 if point_expectation[imax]:
                     # expected point to lie inside, but rejected
                     # need to repair interval
