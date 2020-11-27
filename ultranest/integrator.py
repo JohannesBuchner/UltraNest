@@ -81,6 +81,150 @@ def _sequentialize_width_sequence(minimal_widths, min_width):
 
     return list(zip(Lpoints, widths))
 
+
+def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform, verbose=False, vectorized=False, ndraw=400):
+    """
+    Change a stored UltraNest run to a modified loglikelihood/transform.
+    Build a new 
+
+    Parameters
+    ----------
+    log_dir: str
+        Folder containing results
+    x_dim: int
+        number of dimensions
+    loglikelihood: function
+        new likelihood function
+    transform: function
+        new transform function
+    verbose: bool
+        show progress
+
+    Returns
+    ----------
+    sequence: dict
+        contains arrays storing for each iteration estimates of:
+
+            * logz: log evidence estimate
+            * logzerr: log evidence uncertainty estimate
+            * logvol: log volume estimate
+            * samples_n: number of live points
+            * logwt: log weight
+            * logl: log likelihood
+
+    final: dict
+        same as ReactiveNestedSampler.results and
+        ReactiveNestedSampler.run return values
+
+    """
+    import h5py
+    filepath = os.path.join(log_dir, 'results', 'points.hdf5')
+    filepath2 = os.path.join(log_dir, 'results', 'points.hdf5.new')
+    fileobj = h5py.File(filepath, 'r')
+    nrows, ncols = fileobj['points'].shape
+    num_params = ncols - 3 - x_dim
+
+    pointstore2 = HDF5PointStore(filepath2, ncols, mode='w')
+
+    points = fileobj['points'][:]
+    stack = list(enumerate(points))
+
+    pointpile = PointPile(x_dim, num_params)
+    pointpile2 = PointPile(x_dim, num_params)
+
+    def pop(Lmin):
+        """ find matching sample from points file """
+        # look forward to see if there is an exact match
+        # if we do not use the exact matches
+        #   this causes a shift in the loglikelihoods
+        for i, (idx, next_row) in enumerate(stack):
+            row_Lmin = next_row[0]
+            L = next_row[1]
+            if row_Lmin <= Lmin and L > Lmin:
+                idx, row = stack.pop(i)
+                return idx, row
+        return None, None
+
+    roots = []
+    roots2 = []
+    initial_points_u = []
+    initial_points_v = []
+    initial_points_logl = []
+    while True:
+        _, row = pop(-np.inf)
+        if row is None:
+            break
+        logl = row[1]
+        u = row[3:3 + x_dim]
+        v = row[3 + x_dim:3 + x_dim + num_params]
+        initial_points_u.append(u)
+        initial_points_v.append(v)
+        initial_points_logl.append(logl)
+    
+    v2 = transform(np.array(initial_points_u, ndmin=2, dtype=float))
+    assert np.allclose(v2, initial_points_v), 'transform inconsistent, cannot resume'
+    logls_new = loglikelihood(v2)
+    
+    for u, v, logl, logl_new in zip(initial_points_u, initial_points_v, initial_points_logl, logls_new):
+        roots.append(pointpile.make_node(logl, u, v))
+        roots2.append(pointpile2.make_node(logl_new, u, v))
+
+    batchsize = ndraw if vectorized else 1
+    explorer = BreadthFirstIterator(roots)
+    explorer2 = BreadthFirstIterator(roots2)
+    order_consistent = True
+
+    niter = 0
+    for batch in _explore_iterator_batch(explorer, pop, x_dim, num_params, pointpile, batchsize=batchsize):
+        assert len(batch) > 0
+        batch_u = np.array([u for _, _, children in batch for u, _, _ in children], ndmin=2, dtype=float)
+        if batch_u.size > 0:
+            assert batch_u.shape[1] == x_dim, batch_u.shape
+            batch_v = np.array([v for _, _, children in batch for _, v, _ in children], ndmin=2, dtype=float)
+            v2 = transform(batch_u)
+            assert batch_v.shape[1] == num_params, batch_v.shape
+            assert np.allclose(v2, batch_v), 'transform inconsistent, cannot resume'
+            logls_new = loglikelihood(v2)
+        else:
+            # no new points
+            logls_new = []
+
+        j = 0
+        for Lmin, active_values, children in batch:
+
+            next_node2 = explorer2.next_node()
+            rootid2, node2, (active_nodes2, active_rootids2, active_values2, active_node_ids2) = next_node2
+            Lmin2 = node2.value
+
+            assert len(active_values) == len(active_values2), (len(active_values), len(active_values2))
+            if (np.argmin(active_values) != np.argmin(active_values2)):
+                # print("lowest live point different at iter=%d" % niter)
+                order_consistent = False
+                break
+            
+            for u, v, logl_old in children:
+                logl_new = logls_new[j]
+                j += 1
+
+                child2 = pointpile2.make_node(logl_new, u, v)
+                node2.children.append(child2)
+
+                pointstore2.add(_listify([Lmin2, logl_new, 0.0], u, v), 1)
+
+            niter += 1
+            if verbose:
+                sys.stderr.write("%d...\r" % niter)
+
+            explorer2.expand_children_of(rootid2, node2)
+
+        if not order_consistent:
+            break
+        
+    if verbose:
+        sys.stderr.write("%d iterations done.\n" % niter)
+    os.rename(filepath2, filepath)
+
+
 def _update_region_bootstrap(region, nbootstraps, minvol=0., comm=None, mpi_size=1):
     """
     update *region* with *nbootstraps* rounds of excluding points randomly.
@@ -673,10 +817,16 @@ class ReactiveNestedSampler(object):
 
         log_dir: str
             where to store output files
-        resume: 'resume', 'overwrite' or 'subfolder'
+        resume: 'resume', 'resume-similar', 'overwrite' or 'subfolder'
             if 'overwrite', overwrite previous data.
             if 'subfolder', create a fresh subdirectory in log_dir.
-            if 'resume' or True, continue previous run if available.
+            if 'resume' or True, continue previous run if available. 
+               Only works when dimensionality, transform or likelihood are consistent.
+            if 'resume-similar', continue previous run if available.
+               Only works when dimensionality and transform are consistent.
+               If a likelihood difference is detected, the existing likelihoods 
+               are updated until the live point order differs.
+               Otherwise, behaves like resume.
 
         wrapped_params: list of bools
             indicating whether this parameter wraps around (circular parameter).
@@ -743,9 +893,10 @@ class ReactiveNestedSampler(object):
         self.log_to_disk = self.log and log_dir is not None
         self.log_to_pointstore = self.log_to_disk
 
-        assert resume in (True, 'overwrite', 'subfolder', 'resume'), "resume should be one of 'overwrite' 'subfolder' or 'resume'"
+        assert resume in (True, 'overwrite', 'subfolder', 'resume', 'resume-similar'), "resume should be one of 'overwrite' 'subfolder', 'resume' or 'resume-similar'"
         append_run_num = resume == 'subfolder'
-        resume = resume == 'resume' or resume
+        resume_similar = resume == 'resume-similar'
+        resume = resume_similar or resume == 'resume' or resume
 
         if self.log and log_dir is not None:
             self.logs = make_run_dir(log_dir, run_num, append_run_num=append_run_num)
@@ -790,6 +941,18 @@ class ReactiveNestedSampler(object):
         self.draw_multiple = draw_multiple
         self.ndraw_min = ndraw_min
         self.ndraw_max = ndraw_max
+        if not self._check_likelihood_function(transform, loglike, num_test_samples):
+            assert self.log_to_disk
+            if resume_similar:
+                # close
+                del self.pointstore
+                # rewrite points file
+                resume_from_similar_file(log_dir, x_dim, loglike, transform, vectorized=vectorized, ndraw=ndraw_min)
+                self.pointstore = HDF5PointStore(
+                    os.path.join(self.logs['results'], 'points.hdf5'),
+                    3 + self.x_dim + self.num_params, mode='a' if resume else 'w')
+            elif resume:
+                raise Exception("Cannot resume because loglikelihood function changed, unless resume=resume-similar. To start from scratch, delete '%s'." % (log_dir))
         self._set_likelihood_function(transform, loglike, num_test_samples)
         self.stepsampler = None
 
@@ -807,13 +970,12 @@ class ReactiveNestedSampler(object):
             # print('setting seed:', self.mpi_rank, seed)
             np.random.seed(seed)
 
-    def _set_likelihood_function(self, transform, loglike, num_test_samples, make_safe=False):
-        """Store the transform and log-likelihood functions.
+    def _check_likelihood_function(self, transform, loglike, num_test_samples):
+        """Tests the `transform` and `loglike`lihood functions.
+        `num_test_samples` samples are used to check whether they work and give the correct output.
 
-        Tests with `num_test_samples` whether they work and give the correct output.
-
-        if make_safe is set, make functions safer by accepting misformed
-        return shapes and non-finite likelihood values.
+        returns whether the most recently stored point (if any) 
+        still returns the same likelihood value.
         """
         # do some checks on the likelihood function
         # this makes debugging easier by failing early with meaningful errors
@@ -861,7 +1023,15 @@ class ReactiveNestedSampler(object):
                 self.logger.warning(
                     "Trying to resume from previous run, but likelihood function gives different result: %s gave %s, now %s",
                     lastu.flatten(), lastL, logl)
-            assert np.isclose(logl, lastL), "Cannot resume because loglikelihood function changed. To start from scratch, delete '%s'." % (self.logs['run_dir'])
+            return np.isclose(logl, lastL)
+        return True
+
+    def _set_likelihood_function(self, transform, loglike, num_test_samples, make_safe=False):
+        """Store the transform and log-likelihood functions.
+
+        if make_safe is set, make functions safer by accepting misformed
+        return shapes and non-finite likelihood values.
+        """
 
         def safe_loglike(x):
             """ safe wrapper of likelihood function """
