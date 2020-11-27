@@ -369,6 +369,7 @@ def test_aharm_sampler():
     region = MLFriends(us, transformLayer)
     region.maxradiussq, region.enlarge = region.compute_enlargement()
     region.create_ellipsoid()
+    assert region.inside(us).all()
     nsteps = 10
     sampler = AHARMSampler(nsteps=nsteps, region_filter=True)
 
@@ -425,6 +426,6 @@ if __name__ == '__main__':
     #test_stepsampler_de(plot=False)
     #test_stepsampler_cubeslice(plot=True)
     #test_stepsampler_regionslice(plot=True)
-    #run_aharm_sampler()
+    run_aharm_sampler()
     #test_ellipsoid_bracket()
-    test_crop_bracket(plot=True)
+    #test_crop_bracket(plot=True)
