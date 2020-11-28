@@ -62,9 +62,6 @@ class TreeNode(object):
         return self.value < other.value
 
 
-multitree_sort_key = operator.itemgetter(1)
-
-
 class BreadthFirstIterator(object):
     """Generator exploring the tree.
 
@@ -682,7 +679,7 @@ class MultiCounter(object):
             # volume is reduced by exp(-1/N)
             self.all_logVolremaining[active] += logright[active]
             self.logVolremaining = self.all_logVolremaining[0]
-            
+
             if self.check_insertion_order and len(np.unique(parallel_values)) == len(parallel_values):
                 order_max = nlive.max() + 1
                 for i, acc in enumerate(self.insertion_order_accumulator):
@@ -697,7 +694,6 @@ class MultiCounter(object):
                         if abs(acc.zscore) > self.insertion_order_threshold:
                             self.insertion_order_runs[i].append(len(acc))
                             acc.reset()
-                
 
         else:
             # contracting!
@@ -776,7 +772,7 @@ def combine_results(saved_logl, saved_nodeids, pointpile, main_iterator, mpi_com
     logzerr_bs = (logZ_bs - main_iterator.logZ).max()
     logzerr_total = (logzerr_tail**2 + logzerr_bs**2)**0.5
     samples = resample_equal(saved_v, w)
-    
+
     ndim = saved_u.shape[1]
     information_gain_bits = []
     for i in range(ndim):
@@ -812,11 +808,11 @@ def combine_results(saved_logl, saved_nodeids, pointpile, main_iterator, mpi_com
             point_untransformed=saved_u[j,:].tolist(),
         ),
     )
-    
+
     if getattr(main_iterator, 'check_insertion_order', False):
         results['insertion_order_MWW_test'] = dict(
-            independent_iterations = main_iterator.insertion_order_runlength,
-            converged = main_iterator.insertion_order_converged,
+            independent_iterations=main_iterator.insertion_order_runlength,
+            converged=main_iterator.insertion_order_converged,
         )
 
     return results

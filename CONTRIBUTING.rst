@@ -42,6 +42,8 @@ UltraNest could always use more documentation, whether as part of the
 official UltraNest docs, in docstrings, or even on the web in blog posts,
 articles, and such.
 
+Notebooks demonstrating how to use UltraNest are also appreciated.
+
 Submit Feedback
 ~~~~~~~~~~~~~~~
 
@@ -80,7 +82,7 @@ Ready to contribute? Here's how to set up `ultranest` for local development.
    tests, including testing other Python versions with tox::
 
     $ flake8 ultranest tests
-    $ python setup.py test # or pytest
+    $ PYTHONPATH=. pytest
     $ tox
 
    To get flake8 and tox, just pip install them into your virtualenv.
@@ -111,7 +113,7 @@ Tips
 
 To run a subset of tests::
 
-$ pytest tests.test_ultranest
+$ PYTHONPATH=. pytest tests.test_utils
 
 
 Deploying

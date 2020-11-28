@@ -383,7 +383,7 @@ We can test whether the slice sampler is good enough by halving
 Using multiple cores
 ====================
 
-Depending on your numpy installation, this may already use multiple CPUs.
+Depending on your numpy installation, the above may already use multiple CPUs.
 You can control this with the OMP_NUM_THREADS environment variable:
 
 .. code-block:: bash
@@ -391,8 +391,10 @@ You can control this with the OMP_NUM_THREADS environment variable:
         # avoid automatic parallelisation
         export OMP_NUM_THREADS=1
 
-You can parallelise the program with MPI. No code changes are required.
-You need to install MPI (for example, OpenMPI) and mpi4py (pip install mpi4py).
+To use multiple processors and cores, scaling UltraNest all the way to 
+large computing clusters, you can parallelise the program with MPI:
+
+No code changes are required. You need to install MPI (for example, OpenMPI) and mpi4py (pip install mpi4py).
 Then run:
 
 .. code-block:: bash
@@ -412,4 +414,3 @@ To find more features such as ...
 * Using in a Jupyter notebook
 
 ... see the tutorials!
-

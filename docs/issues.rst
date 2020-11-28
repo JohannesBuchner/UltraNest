@@ -57,7 +57,7 @@ Computationally:
  * Speed up the likelihood function
  * Vectorize the likelihood function (see `Tour of the features <performance.rst>`_).
 
-Algorithimically:
+Algorithmically:
 
  * Use a step sampler (see `the high-d tutorial example <example-sine-highd.html>`)
  * Try to alter your model
@@ -144,5 +144,3 @@ So it is appropriate to write something like
 
 If you use the corner plot, also cite ``corner``.
 If you use the trace or run plot, also cite ``dynesty``.
-
-

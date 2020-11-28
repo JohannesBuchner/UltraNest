@@ -63,6 +63,7 @@ Features
   * Can control the run programmatically and check status
   * Reasonable defaults, but customizable
   * Thoroughly tested with many unit and integration tests
+  * allows likelihood functions written in `Python <https://github.com/JohannesBuchner/UltraNest/tree/master/languages/python>`_, `C <https://github.com/JohannesBuchner/UltraNest/tree/master/languages/c>`_, `C++ <https://github.com/JohannesBuchner/UltraNest/tree/master/languages/c%2B%2B>`_, `Julia <https://github.com/JohannesBuchner/UltraNest/tree/master/languages/c%2B%2B>`_ and `Julia <https://github.com/JohannesBuchner/UltraNest/tree/master/languages/julia>`_
 
 * Robust exploration easily handles:
 
@@ -71,8 +72,7 @@ Features
   * Robust, parameter-free MLFriends algorithm 
     (metric learning RadFriends, Buchner+14,+19), with new improvements
     (region follows new live points, clustering improves metric iteratively).
-  * High-dimensional problems with slice sampling (or ellipsoidal sampling, FlatNUTS, etc.),
-    inside region.
+  * High-dimensional problems with hit-and-run sampling
   * Wrapped/circular parameters, derived parameters
   * Fast-slow parameters
 
@@ -90,30 +90,20 @@ Features
 
   * some functions implemented in Cython
   * vectorized likelihood function calls
-  * Use multiple cores, fully parallelizable from laptops to clusters
+  * Use multiple cores, fully parallelizable from laptops to computing clusters
   * MPI support
 
 * Advanced visualisation and crash recovery:
 
-  * Checkpointing and resuming, even with different number of live points
-  * Run-time visualisations and exploration information
+  * Live view of the exploration from Jupyter notebooks and terminals
+  * Publication-ready visualisations
   * Corner plots, run and parameter exploration diagnostic plots
-
-
-TODO
-^^^^
-
-* Documentation:
-
-  * Example power law fit
-  * Example spectral line fit, white and GP
-  * Example low-d Bayesian GP emulator as pre-filter to model evaluation
-  * Example verifying integration with VB+IS
+  * Checkpointing and resuming, even with different number of live points
 
 Usage
 ^^^^^
 
-Read the full documentation at:
+Read the full documentation with tutorials at:
 
 https://johannesbuchner.github.io/UltraNest/
 

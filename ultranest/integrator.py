@@ -27,7 +27,6 @@ from .netiter import dump_tree, combine_results
 __all__ = ['ReactiveNestedSampler', 'NestedSampler', 'read_file']
 
 
-
 def _get_cumsum_range(pi, dp):
     """From probabilities pi compute the quantile indices of `dp` and ``1-dp``."""
     ci = pi.cumsum()
@@ -72,20 +71,51 @@ def _sequentialize_width_sequence(minimal_widths, min_width):
     mid = np.where(widths == max_width)[0][0]
     widest = 0
     for i in range(mid):
-        widths[i] = max(widest, widths[i])
-        widest = widths[i]
+        widest = widths[i] = max(widest, widths[i])
     widest = 0
     for i in range(len(widths) - 1, mid, -1):
-        widths[i] = max(widest, widths[i])
-        widest = widths[i]
+        widest = widths[i] = max(widest, widths[i])
 
     return list(zip(Lpoints, widths))
+
+
+def _explore_iterator_batch(explorer, pop, x_dim, num_params, pointpile, batchsize=1):
+    batch = []
+
+    while True:
+        next_node = explorer.next_node()
+        if next_node is None:
+            break
+        rootid, node, (_, active_rootids, active_values, active_node_ids) = next_node
+        Lmin = node.value
+        children = []
+
+        while True:
+            _, row = pop(Lmin)
+            if row is None:
+                break
+            logl_old = row[1]
+            u = row[3:3 + x_dim]
+            v = row[3 + x_dim:3 + x_dim + num_params]
+
+            assert u.shape == (x_dim,)
+            assert v.shape == (num_params,)
+            children.append((u, v, logl_old))
+            child = pointpile.make_node(logl_old, u, v)
+            node.children.append(child)
+
+        batch.append((Lmin, active_values.copy(), children))
+        if len(batch) >= batchsize:
+            yield batch
+            batch = []
+        explorer.expand_children_of(rootid, node)
+    if len(batch) > 0:
+        yield batch
 
 
 def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform, verbose=False, vectorized=False, ndraw=400):
     """
     Change a stored UltraNest run to a modified loglikelihood/transform.
-    Build a new 
 
     Parameters
     ----------
@@ -121,7 +151,7 @@ def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform, verbose=F
     filepath = os.path.join(log_dir, 'results', 'points.hdf5')
     filepath2 = os.path.join(log_dir, 'results', 'points.hdf5.new')
     fileobj = h5py.File(filepath, 'r')
-    nrows, ncols = fileobj['points'].shape
+    _, ncols = fileobj['points'].shape
     num_params = ncols - 3 - x_dim
 
     pointstore2 = HDF5PointStore(filepath2, ncols, mode='w')
@@ -160,11 +190,11 @@ def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform, verbose=F
         initial_points_u.append(u)
         initial_points_v.append(v)
         initial_points_logl.append(logl)
-    
+
     v2 = transform(np.array(initial_points_u, ndmin=2, dtype=float))
     assert np.allclose(v2, initial_points_v), 'transform inconsistent, cannot resume'
     logls_new = loglikelihood(v2)
-    
+
     for u, v, logl, logl_new in zip(initial_points_u, initial_points_v, initial_points_logl, logls_new):
         roots.append(pointpile.make_node(logl, u, v))
         roots2.append(pointpile2.make_node(logl_new, u, v))
@@ -193,7 +223,7 @@ def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform, verbose=F
         for Lmin, active_values, children in batch:
 
             next_node2 = explorer2.next_node()
-            rootid2, node2, (active_nodes2, active_rootids2, active_values2, active_node_ids2) = next_node2
+            rootid2, node2, (_, _, active_values2, _) = next_node2
             Lmin2 = node2.value
 
             assert len(active_values) == len(active_values2), (len(active_values), len(active_values2))
@@ -201,7 +231,7 @@ def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform, verbose=F
                 # print("lowest live point different at iter=%d" % niter)
                 order_consistent = False
                 break
-            
+
             for u, v, logl_old in children:
                 logl_new = logls_new[j]
                 j += 1
@@ -219,7 +249,7 @@ def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform, verbose=F
 
         if not order_consistent:
             break
-        
+
     if verbose:
         sys.stderr.write("%d iterations done.\n" % niter)
     os.rename(filepath2, filepath)
@@ -820,11 +850,11 @@ class ReactiveNestedSampler(object):
         resume: 'resume', 'resume-similar', 'overwrite' or 'subfolder'
             if 'overwrite', overwrite previous data.
             if 'subfolder', create a fresh subdirectory in log_dir.
-            if 'resume' or True, continue previous run if available. 
+            if 'resume' or True, continue previous run if available.
                Only works when dimensionality, transform or likelihood are consistent.
             if 'resume-similar', continue previous run if available.
                Only works when dimensionality and transform are consistent.
-               If a likelihood difference is detected, the existing likelihoods 
+               If a likelihood difference is detected, the existing likelihoods
                are updated until the live point order differs.
                Otherwise, behaves like resume.
 
@@ -893,7 +923,8 @@ class ReactiveNestedSampler(object):
         self.log_to_disk = self.log and log_dir is not None
         self.log_to_pointstore = self.log_to_disk
 
-        assert resume in (True, 'overwrite', 'subfolder', 'resume', 'resume-similar'), "resume should be one of 'overwrite' 'subfolder', 'resume' or 'resume-similar'"
+        assert resume in (True, 'overwrite', 'subfolder', 'resume', 'resume-similar'), \
+            "resume should be one of 'overwrite' 'subfolder', 'resume' or 'resume-similar'"
         append_run_num = resume == 'subfolder'
         resume_similar = resume == 'resume-similar'
         resume = resume_similar or resume == 'resume' or resume
@@ -952,7 +983,8 @@ class ReactiveNestedSampler(object):
                     os.path.join(self.logs['results'], 'points.hdf5'),
                     3 + self.x_dim + self.num_params, mode='a' if resume else 'w')
             elif resume:
-                raise Exception("Cannot resume because loglikelihood function changed, unless resume=resume-similar. To start from scratch, delete '%s'." % (log_dir))
+                raise Exception("Cannot resume because loglikelihood function changed, "
+                                "unless resume=resume-similar. To start from scratch, delete '%s'." % (log_dir))
         self._set_likelihood_function(transform, loglike, num_test_samples)
         self.stepsampler = None
 
@@ -974,7 +1006,7 @@ class ReactiveNestedSampler(object):
         """Tests the `transform` and `loglike`lihood functions.
         `num_test_samples` samples are used to check whether they work and give the correct output.
 
-        returns whether the most recently stored point (if any) 
+        returns whether the most recently stored point (if any)
         still returns the same likelihood value.
         """
         # do some checks on the likelihood function
@@ -994,9 +1026,12 @@ class ReactiveNestedSampler(object):
                 "Error in transform function: returned shape is %s, expected %s" % (
                     np.shape(p), (num_test_samples, self.num_params)))
             logl = loglike(p)
-            assert np.logical_and(u > 0, u < 1).all(), ("Error in transform function: u was modified!")
-            assert np.shape(logl) == (num_test_samples,), ("Error in loglikelihood function: returned shape is %s, expected %s" % (np.shape(logl), (num_test_samples,)))
-            assert np.isfinite(logl).all(), ("Error in loglikelihood function: returned non-finite number: %s for input u=%s p=%s" % (logl, u, p))
+            assert np.logical_and(u > 0, u < 1).all(), (
+                "Error in transform function: u was modified!")
+            assert np.shape(logl) == (num_test_samples,), (
+                "Error in loglikelihood function: returned shape is %s, expected %s" % (np.shape(logl), (num_test_samples,)))
+            assert np.isfinite(logl).all(), (
+                "Error in loglikelihood function: returned non-finite number: %s for input u=%s p=%s" % (logl, u, p))
 
         if not self.pointstore.stack_empty and num_resume_test_samples > 0:
             # test that last sample gives the same likelihood value
@@ -1458,10 +1493,8 @@ class ReactiveNestedSampler(object):
 
             if self.tregion is not None:
                 # check wrapping ellipsoid in transformed space
-                tmask = self.tregion.inside(v)
-                #print("tregion accepted %.2f%%" % (tmask.mean()*100))
-                accepted = tmask
-                nt = tmask.sum()
+                accepted = self.tregion.inside(v)
+                nt = accepted.sum()
             else:
                 # if undefined, all pass; rarer branch
                 accepted = np.ones(nu, dtype=bool)
@@ -1471,20 +1504,21 @@ class ReactiveNestedSampler(object):
                 logl[accepted] = self.loglike(v[accepted, :])
                 nc += nt
             accepted = logl > Lmin
-        
-            #print("it: %4d ndraw: %d -> %d -> %d -> %d " % (nit, ndraw, nu, nt, accepted.sum()))
 
-        #if nit >= 100000 / ndraw and nit % (100000 // ndraw) == 0 and not self.sampling_slow_warned:
+            # print("it: %4d ndraw: %d -> %d -> %d -> %d " % (nit, ndraw, nu, nt, accepted.sum()))
+
         if not self.sampling_slow_warned and nit * ndraw >= 100000 and nit > 20:
-            np.savez(
-                'sampling-stuck-it%d.npz' % nit,
-                u=self.region.u, unormed=self.region.unormed,
-                maxradiussq=self.region.maxradiussq,
-                sample_u=u, sample_v=v, sample_logl=logl)
+            if self.log_to_disk:
+                np.savez(
+                    os.path.join(self.logs['extra'], 'sampling-stuck-it%d.npz' % nit),
+                    u=self.region.u, unormed=self.region.unormed,
+                    maxradiussq=self.region.maxradiussq,
+                    sample_u=u, sample_v=v, sample_logl=logl)
+                np.savetxt(os.path.join(self.logs['extra'], 'sampling-stuck-it%d.csv' % nit), self.region.u, delimiter=',')
+                os.path.join(self.logs['extra'], 'sampling-stuck-it%d.csv' % nit)
             warnings.warn(
-                "Sampling from region seems inefficient. "
-                "You can try increasing nlive, frac_remain, dlogz, dKL, decrease min_ess)."
-                " [%d/%d accepted, it=%d]" % (accepted.sum(), ndraw, nit))
+                "Sampling from region seems inefficient (%d/%d accepted in iteration %d)" % (accepted.sum(), ndraw, nit))
+            log.info("To improve efficiency, modify the transformation so that the live points are ellipsoidal, or use a stepsampler.")
             logl_region = self.loglike(self.transform(self.region.u))
             if (logl_region == Lmin).all():
                 raise ValueError(
@@ -1597,7 +1631,7 @@ class ReactiveNestedSampler(object):
         nbootstraps=30, minvol=0., active_p=None
     ):
         """Build a new MLFriends region from `active_u`,
-        and wrapping ellipsoid. 
+        and wrapping ellipsoid.
         Both are safely built using bootstrapping, so that the
         region can be used for sampling and rejecting points.
         If MPI is enabled, this computation is parallelised.
@@ -1663,7 +1697,7 @@ class ReactiveNestedSampler(object):
             oldu = self.region.u
             self.region.u = active_u
             self.region.set_transformLayer(self.transformLayer)
-            
+
             _update_region_bootstrap(self.region, nbootstraps, minvol, self.comm if self.use_mpi else None, self.mpi_size)
 
             # print("made first region, r=%e" % (r))
@@ -1750,8 +1784,8 @@ class ReactiveNestedSampler(object):
 
                 # force shrinkage of volume. avoids reconnecting dying modes
                 if good_region and \
-                    (need_accept or nextregion.estimate_volume() <= self.region.estimate_volume()) \
-                    and sensible_clustering:
+                        (need_accept or nextregion.estimate_volume() <= self.region.estimate_volume()) \
+                        and sensible_clustering:
                     self.region = nextregion
                     self.transformLayer = self.region.transformLayer
                     self.region_nodes = active_node_ids.copy()
@@ -1770,7 +1804,7 @@ class ReactiveNestedSampler(object):
                     self.logger.debug("not updating region", exc_info=True)
 
         assert len(self.region.u) == len(self.transformLayer.clusterids)
-        
+
         if active_p is None or not self.build_tregion:
             self.tregion = None
         else:
@@ -1849,53 +1883,52 @@ class ReactiveNestedSampler(object):
         """
         Lmin = node.value
         nlive = len(parallel_values)
+
+        if not (Lmin <= Lhi and Llo <= Lhi):
+            return False
+
+        # some exceptions:
+        if it > 0:
+            if max_ncalls is not None and self.ncall >= max_ncalls:
+                # print("not expanding, because above max_ncall")
+                return False
+
+            if max_iters is not None and it >= max_iters:
+                # print("not expanding, because above max_iters")
+                return False
+
+        # in a plateau, only shrink (Fowlie+2020)
+        if (Lmin == parallel_values).sum() > 1:
+            return False
+
         expand_node = False
-        if Lmin <= Lhi and Llo <= Lhi:
-            # we should continue to progress towards Lhi
-            while Lmin > minimal_widths_sequence[0][0]:
-                minimal_widths_sequence.pop(0)
+        # we should continue to progress towards Lhi
+        while Lmin > minimal_widths_sequence[0][0]:
+            minimal_widths_sequence.pop(0)
 
-            # get currently desired width
-            if self.region is None:
-                minimal_width_clusters = 0
-            else:
-                # compute number of clusters with more than 1 element
-                _, cluster_sizes = np.unique(self.region.transformLayer.clusterids, return_counts=True)
-                nclusters = (cluster_sizes > 1).sum()
-                minimal_width_clusters = self.cluster_num_live_points * nclusters
+        # get currently desired width
+        if self.region is None:
+            minimal_width_clusters = 0
+        else:
+            # compute number of clusters with more than 1 element
+            _, cluster_sizes = np.unique(self.region.transformLayer.clusterids, return_counts=True)
+            nclusters = (cluster_sizes > 1).sum()
+            minimal_width_clusters = self.cluster_num_live_points * nclusters
 
-            minimal_width = max(minimal_widths_sequence[0][1], minimal_width_clusters)
+        minimal_width = max(minimal_widths_sequence[0][1], minimal_width_clusters)
 
-            # if already has children, no need to expand
-            # if we are wider than the width required
-            # we do not need to expand this one
-            # expand_node = len(node.children) == 0
-            # prefer 1 child, or the number required, if specified
-            expand_node = len(node.children) < target_min_num_children.get(node.id, 1)
+        # if already has children, no need to expand
+        # if we are wider than the width required
+        # we do not need to expand this one
+        # expand_node = len(node.children) == 0
+        # prefer 1 child, or the number required, if specified
+        expand_node = len(node.children) < target_min_num_children.get(node.id, 1)
+        # print("not expanding, because we are quite wide", nlive, minimal_width, minimal_widths_sequence)
+        # but we have to expand the first iteration,
+        # otherwise the integrator never sets H
+        too_wide = nlive > minimal_width and it > 0
 
-            # some exceptions:
-            if it > 0:
-                too_wide = nlive > minimal_width
-                # we have to expand the first iteration,
-                # otherwise the integrator never sets H
-
-                if too_wide:
-                    # print("not expanding, because we are quite wide", nlive, minimal_width, minimal_widths_sequence)
-                    expand_node = False
-
-                if max_ncalls is not None and self.ncall >= max_ncalls:
-                    # print("not expanding, because above max_ncall")
-                    expand_node = False
-
-                if max_iters is not None and it >= max_iters:
-                    # print("not expanding, because above max_iters")
-                    expand_node = False
-
-            # in a plateau, only shrink (Fowlie+2020)
-            if (Lmin == parallel_values).sum() > 1:
-                expand_node = False
-
-        return expand_node
+        return expand_node and not too_wide
 
     def run(
             self,
@@ -2071,11 +2104,15 @@ class ReactiveNestedSampler(object):
         assert max_ncalls is None or max_ncalls > 0, ("Invalid value for max_ncalls: %s. Set to None or positive number" % max_ncalls)
 
         if self.log:
-            self.logger.debug('run_iter dlogz=%.1f, dKL=%.1f, frac_remain=%.2f, Lepsilon=%.4f, min_ess=%d, max_iters=%d, max_ncalls=%d, max_num_improvement_loops=%d, min_num_live_points=%d, cluster_num_live_points=%d' % (
-                dlogz, dKL, frac_remain, Lepsilon, min_ess,
-                max_iters if max_iters else -1, max_ncalls if max_ncalls else -1,
-                max_num_improvement_loops, min_num_live_points, cluster_num_live_points,
-            ))
+            self.logger.debug(
+                'run_iter dlogz=%.1f, dKL=%.1f, frac_remain=%.2f, Lepsilon=%.4f, min_ess=%d' % (
+                    dlogz, dKL, frac_remain, Lepsilon, min_ess)
+            )
+            self.logger.debug(
+                'max_iters=%d, max_ncalls=%d, max_num_improvement_loops=%d, min_num_live_points=%d, cluster_num_live_points=%d' % (
+                    max_iters if max_iters else -1, max_ncalls if max_ncalls else -1,
+                    max_num_improvement_loops, min_num_live_points, cluster_num_live_points)
+            )
 
         self.results = None
 
@@ -2143,7 +2180,7 @@ class ReactiveNestedSampler(object):
                 next_node = explorer.next_node()
                 if next_node is None:
                     break
-                rootid, node, (active_nodes, active_rootids, active_values, active_node_ids) = next_node
+                rootid, node, (_, active_rootids, active_values, active_node_ids) = next_node
                 assert not isinstance(rootid, float)
                 # this is the likelihood level we have to improve upon
                 Lmin = node.value
@@ -2262,7 +2299,7 @@ class ReactiveNestedSampler(object):
                         ncall_here = self.ncall - ncall_at_run_start
                         it_here = it - it_at_first_region
                         ncall_region_here = self.ncall_region - ncall_region_at_run_start
-                        
+
                         if show_status:
                             if Lmin < -1e8:
                                 txt = 'Z=%.1g(%.2f%%) | Like=%.2g..%.2g [%.4g..%.4g]%s| it/evals=%d/%d eff=%.4f%% N=%d \r'
@@ -2290,14 +2327,13 @@ class ReactiveNestedSampler(object):
                             # smooth update:
                             ndraw_next = 0.04 * sampling_inefficiency + ndraw * 0.96
                             ndraw = max(self.ndraw_min, min(self.ndraw_max, round(ndraw_next), ndraw * 100))
-                            
+
                             if sampling_inefficiency > 1000 and it >= it_at_first_region + 10:
                                 # if the efficiency is poor, there are enough samples in each iteration
                                 # to estimate the inefficiency
                                 ncall_at_run_start = self.ncall
                                 it_at_first_region = it
                                 ncall_region_at_run_start = self.ncall_region
-                                
 
                 else:
                     # we do not want to count iterations without work
@@ -2480,7 +2516,8 @@ class ReactiveNestedSampler(object):
             print('  single instance: logZ = %(logz_single).3f +- %(logzerr_single).3f' % self.results)
             print('  bootstrapped   : logZ = %(logz_bs).3f +- %(logzerr_bs).3f' % self.results)
             print('  tail           : logZ = +- %(logzerr_tail).3f' % self.results)
-            print('insert order U test : converged: %(converged)s correlation: %(independent_iterations)s iterations' % self.results['insertion_order_MWW_test'])
+            print('insert order U test : converged: %(converged)s correlation: %(independent_iterations)s iterations' % (
+                self.results['insertion_order_MWW_test']))
 
             print()
             for i, p in enumerate(self.paramnames + self.derivedparamnames):
@@ -2610,7 +2647,7 @@ def read_file(log_dir, x_dim, num_bootstraps=20, random=True, verbose=False, che
     import h5py
     filepath = os.path.join(log_dir, 'results', 'points.hdf5')
     fileobj = h5py.File(filepath, 'r')
-    nrows, ncols = fileobj['points'].shape
+    _, ncols = fileobj['points'].shape
     num_params = ncols - 3 - x_dim
 
     points = fileobj['points'][:]
@@ -2657,180 +2694,3 @@ def read_file(log_dir, x_dim, num_bootstraps=20, random=True, verbose=False, che
     return logz_sequence(root, pointpile, nbootstraps=num_bootstraps,
                          random=random, onNode=onNode, verbose=verbose,
                          check_insertion_order=check_insertion_order)
-
-def _explore_iterator_batch(explorer, pop, x_dim, num_params, pointpile, batchsize=1):
-    batch = []
-
-    while True:
-        next_node = explorer.next_node()
-        if next_node is None:
-            break
-        rootid, node, (active_nodes, active_rootids, active_values, active_node_ids) = next_node
-        Lmin = node.value
-        children = []
-        
-        while True:
-            _, row = pop(Lmin)
-            if row is None:
-                break
-            logl_old = row[1]
-            u = row[3:3 + x_dim]
-            v = row[3 + x_dim:3 + x_dim + num_params]
-            
-            assert u.shape == (x_dim,)
-            assert v.shape == (num_params,)
-            children.append((u, v, logl_old))
-            child = pointpile.make_node(logl_old, u, v)
-            node.children.append(child)
-
-        batch.append((Lmin, active_values.copy(), children))
-        if len(batch) >= batchsize:
-            yield batch
-            batch = []
-        explorer.expand_children_of(rootid, node)
-    if len(batch) > 0:
-        yield batch
-
-
-def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform, verbose=False, vectorized=False, ndraw=400):
-    """
-    Change a stored UltraNest run to a modified loglikelihood/transform.
-    Build a new 
-
-    Parameters
-    ----------
-    log_dir: str
-        Folder containing results
-    x_dim: int
-        number of dimensions
-    loglikelihood: function
-        new likelihood function
-    transform: function
-        new transform function
-    verbose: bool
-        show progress
-
-    Returns
-    ----------
-    sequence: dict
-        contains arrays storing for each iteration estimates of:
-
-            * logz: log evidence estimate
-            * logzerr: log evidence uncertainty estimate
-            * logvol: log volume estimate
-            * samples_n: number of live points
-            * logwt: log weight
-            * logl: log likelihood
-
-    final: dict
-        same as ReactiveNestedSampler.results and
-        ReactiveNestedSampler.run return values
-
-    """
-    import h5py
-    filepath = os.path.join(log_dir, 'results', 'points.hdf5')
-    filepath2 = os.path.join(log_dir, 'results', 'points.hdf5.new')
-    fileobj = h5py.File(filepath, 'r')
-    nrows, ncols = fileobj['points'].shape
-    num_params = ncols - 3 - x_dim
-
-    pointstore2 = HDF5PointStore(filepath2, ncols, mode='w')
-
-    points = fileobj['points'][:]
-    stack = list(enumerate(points))
-
-    pointpile = PointPile(x_dim, num_params)
-    pointpile2 = PointPile(x_dim, num_params)
-
-    def pop(Lmin):
-        """ find matching sample from points file """
-        # look forward to see if there is an exact match
-        # if we do not use the exact matches
-        #   this causes a shift in the loglikelihoods
-        for i, (idx, next_row) in enumerate(stack):
-            row_Lmin = next_row[0]
-            L = next_row[1]
-            if row_Lmin <= Lmin and L > Lmin:
-                idx, row = stack.pop(i)
-                return idx, row
-        return None, None
-
-    roots = []
-    roots2 = []
-    initial_points_u = []
-    initial_points_v = []
-    initial_points_logl = []
-    while True:
-        _, row = pop(-np.inf)
-        if row is None:
-            break
-        logl = row[1]
-        u = row[3:3 + x_dim]
-        v = row[3 + x_dim:3 + x_dim + num_params]
-        initial_points_u.append(u)
-        initial_points_v.append(v)
-        initial_points_logl.append(logl)
-    
-    v2 = transform(np.array(initial_points_u, ndmin=2, dtype=float))
-    assert np.allclose(v2, initial_points_v), 'transform inconsistent, cannot resume'
-    logls_new = loglikelihood(v2)
-    
-    for u, v, logl, logl_new in zip(initial_points_u, initial_points_v, initial_points_logl, logls_new):
-        roots.append(pointpile.make_node(logl, u, v))
-        roots2.append(pointpile2.make_node(logl_new, u, v))
-
-    batchsize = ndraw if vectorized else 1
-    explorer = BreadthFirstIterator(roots)
-    explorer2 = BreadthFirstIterator(roots2)
-    order_consistent = True
-
-    niter = 0
-    for batch in _explore_iterator_batch(explorer, pop, x_dim, num_params, pointpile, batchsize=batchsize):
-        assert len(batch) > 0
-        batch_u = np.array([u for _, _, children in batch for u, _, _ in children], ndmin=2, dtype=float)
-        if batch_u.size > 0:
-            assert batch_u.shape[1] == x_dim, batch_u.shape
-            batch_v = np.array([v for _, _, children in batch for _, v, _ in children], ndmin=2, dtype=float)
-            print("calling likelihood with %d points" % len(batch_u))
-            v2 = transform(batch_u)
-            assert batch_v.shape[1] == num_params, batch_v.shape
-            assert np.allclose(v2, batch_v), 'transform inconsistent, cannot resume'
-            logls_new = loglikelihood(v2)
-        else:
-            # no new points
-            logls_new = []
-
-        j = 0
-        for Lmin, active_values, children in batch:
-
-            next_node2 = explorer2.next_node()
-            rootid2, node2, (active_nodes2, active_rootids2, active_values2, active_node_ids2) = next_node2
-            Lmin2 = node2.value
-
-            assert len(active_values) == len(active_values2), (len(active_values), len(active_values2))
-            if (np.argmin(active_values) != np.argmin(active_values2)):
-                print("lowest live point different at iter=%d" % niter)
-                order_consistent = False
-                break
-            
-            for u, v, logl_old in children:
-                logl_new = logls_new[j]
-                j += 1
-
-                child2 = pointpile2.make_node(logl_new, u, v)
-                node2.children.append(child2)
-
-                pointstore2.add(_listify([Lmin2, logl_new, 0.0], u, v), 1)
-
-            niter += 1
-            if verbose:
-                sys.stderr.write("%d...\r" % niter)
-
-            explorer2.expand_children_of(rootid2, node2)
-
-        if not order_consistent:
-            break
-
-    if verbose:
-        sys.stderr.write("%d iterations done.\n" % niter)
-    os.rename(filepath2, filepath)

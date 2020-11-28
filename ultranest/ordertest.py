@@ -19,11 +19,15 @@ without detection of a insertion order problem.
 """
 
 from __future__ import print_function, division
-import numpy as np
+
+__all__ = ['infinite_U_zscore', 'UniformOrderAccumulator']
+
 
 def infinite_U_zscore(sample, B):
-	N = len(sample)
-	return ((sample + 0.5).sum() - N * B * 0.5) / ((N / 12.0)**0.5 * B)
+    """z-score for *sample* of integers to be uniformly distributed between 0 and *B*. """
+    N = len(sample)
+    return ((sample + 0.5).sum() - N * B * 0.5) / ((N / 12.0)**0.5 * B)
+
 
 class UniformOrderAccumulator():
     """
@@ -44,7 +48,7 @@ class UniformOrderAccumulator():
             raise ValueError("order %d out of %d invalid" % (order, N))
         self.U += (order + 0.5) / N
         self.N += 1
-    
+
     @property
     def zscore(self):
         """ Mann-Whitney-Wilcoxon U test z-score, against a uniform distribution. """
