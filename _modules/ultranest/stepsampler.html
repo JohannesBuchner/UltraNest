@@ -1,15 +1,18 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ultranest.stepsampler &mdash; UltraNest 2.2.1 documentation</title>
+  <title>ultranest.stepsampler &mdash; UltraNest 3.0.0 documentation</title>
   
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
 
   
   
@@ -21,7 +24,9 @@
   
 
   
-  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -30,17 +35,13 @@
         <script src="../../_static/doctools.js"></script>
         <script src="../../_static/language_data.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
         <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.18.0/dist/embed-amd.js"></script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
 </head>
@@ -56,7 +57,7 @@
           
 
           
-            <a href="../../index.html" class="icon icon-home"> UltraNest
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> UltraNest
           
 
           
@@ -69,7 +70,7 @@
             
             
               <div class="version">
-                2.2.1
+                3.0.0
               </div>
             
           
@@ -86,6 +87,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -98,7 +100,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../readme.html">UltraNest</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../method.html">Method</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../usage-spectral-line.html">Basic usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../priors.html">Specifying priors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../performance.html">Tour of the features</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../modules.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../issues.html">Frequently Asked Questions</a></li>
@@ -119,6 +121,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -157,7 +160,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../../index.html">Docs</a> &raquo;</li>
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
         
           <li><a href="../index.html">Module code</a> &raquo;</li>
         
@@ -189,6 +192,7 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">listify</span> <span class="k">as</span> <span class="n">_listify</span>
+
 
 <div class="viewcode-block" id="generate_random_direction"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.generate_random_direction">[docs]</a><span class="k">def</span> <span class="nf">generate_random_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Draw uniform direction vector in unit cube space of length `scale`.</span>
@@ -242,10 +246,10 @@
 
 <span class="sd">    The vector length is `scale` (in unit cube space).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">ti</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">ui</span><span class="p">)</span>
+    <span class="n">ti_orig</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">ui</span><span class="p">)</span>
 
     <span class="c1"># choose axis in transformed space:</span>
-    <span class="n">ti</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">ti</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">ti</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">ti_orig</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
     <span class="c1"># ti *= scale / (ti**2).sum()**0.5</span>
     <span class="c1"># convert back to unit cube space:</span>
     <span class="n">uj</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">untransform</span><span class="p">(</span><span class="n">ti</span><span class="p">)</span>
@@ -276,10 +280,11 @@
     <span class="k">return</span> <span class="n">v</span></div>
 
 
-<div class="viewcode-block" id="inside_region"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.inside_region">[docs]</a><span class="k">def</span> <span class="nf">inside_region</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">unew</span><span class="p">,</span> <span class="n">uold</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">_inside_region</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">unew</span><span class="p">,</span> <span class="n">uold</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Check if `unew` is inside region.</span>
 
-<span class="sd">    always returns True at the moment.</span>
+<span class="sd">    This is a bit looser than the region, because it adds a</span>
+<span class="sd">    MLFriends ellipsoid around the old point as well.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">tnew</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">unew</span><span class="p">)</span>
     <span class="n">told</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">uold</span><span class="p">)</span>
@@ -288,7 +293,13 @@
         <span class="k">return</span> <span class="n">mask2</span>
 
     <span class="n">mask</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">unew</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">mask2</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">mask2</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="inside_region"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.inside_region">[docs]</a><span class="k">def</span> <span class="nf">inside_region</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">unew</span><span class="p">,</span> <span class="n">uold</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Check if `unew` is inside region.&quot;&quot;&quot;</span>
+    <span class="k">del</span> <span class="n">uold</span>
+    <span class="k">return</span> <span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">unew</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="StepSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.StepSampler">[docs]</a><span class="k">class</span> <span class="nc">StepSampler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -369,7 +380,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="o">=</span> <span class="n">adaptive_nsteps</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps_needs_mean_pair_distance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="ow">in</span> <span class="p">(</span>
             <span class="s1">&#39;proposal-total-distances&#39;</span><span class="p">,</span> <span class="s1">&#39;proposal-summed-distances&#39;</span><span class="p">,</span> <span class="s1">&#39;proposal-variance-min&#39;</span>
-            <span class="p">)</span>
+        <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mean_pair_distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">region_filter</span> <span class="o">=</span> <span class="n">region_filter</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="o">=</span> <span class="n">log</span>
@@ -457,7 +468,7 @@
         <span class="c1"># assert self.nrejects &lt;= self.nsteps, (self.nsteps, self.nrejects, len(self.history))</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps_needs_mean_pair_distance</span><span class="p">:</span>
             <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mean_pair_distance</span><span class="p">)</span>
-        <span class="n">nlive</span><span class="p">,</span> <span class="n">ndim</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">ndim</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="o">==</span> <span class="s1">&#39;proposal-total-distances&#39;</span><span class="p">:</span>
             <span class="c1"># compute mean vector of each proposed jump</span>
             <span class="c1"># compute total distance of all jumps</span>
@@ -595,7 +606,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">mean_pair_distance</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">compute_mean_pair_distance</span><span class="p">()</span></div>
             <span class="c1"># print(&quot;region changed. new mean_pair_distance: %g&quot; % self.mean_pair_distance)</span>
 
-    <span class="k">def</span> <span class="fm">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">,</span> <span class="n">us</span><span class="p">,</span> <span class="n">Ls</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">,</span> <span class="n">us</span><span class="p">,</span> <span class="n">Ls</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">tregion</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get next point.</span>
 
 <span class="sd">        Parameters</span>
@@ -616,20 +627,24 @@
 <span class="sd">            number of draws to attempt simultaneously.</span>
 <span class="sd">        plot: bool</span>
 <span class="sd">            whether to produce debug plots.</span>
+<span class="sd">        tregion: WrappingEllipsoid</span>
+<span class="sd">            optional ellipsoid in transformed space for rejecting proposals</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># find most recent point in history conforming to current Lmin</span>
         <span class="n">ui</span><span class="p">,</span> <span class="n">Li</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">last</span>
         <span class="k">if</span> <span class="n">Li</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">Li</span> <span class="o">&gt;=</span> <span class="n">Lmin</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;wandered out of L constraint; resetting&quot;</span><span class="p">,</span> <span class="n">ui</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">del</span> <span class="n">ui</span><span class="p">,</span> <span class="n">Li</span>
             <span class="n">ui</span><span class="p">,</span> <span class="n">Li</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
 
         <span class="k">if</span> <span class="n">Li</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">:</span>
             <span class="c1"># try to resume from a previous point above the current contour</span>
             <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="p">(</span><span class="n">uj</span><span class="p">,</span> <span class="n">Lj</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
-                <span class="k">if</span> <span class="n">Lj</span> <span class="o">&gt;</span> <span class="n">Lmin</span> <span class="ow">and</span> <span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">uj</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">))):</span>
+                <span class="k">if</span> <span class="n">Lj</span> <span class="o">&gt;</span> <span class="n">Lmin</span> <span class="ow">and</span> <span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">uj</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)))</span> <span class="ow">and</span> <span class="p">(</span><span class="n">tregion</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">tregion</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">transform</span><span class="p">(</span><span class="n">uj</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))))):</span>
+                    <span class="k">del</span> <span class="n">ui</span><span class="p">,</span> <span class="n">Li</span>
                     <span class="n">ui</span><span class="p">,</span> <span class="n">Li</span> <span class="o">=</span> <span class="n">uj</span><span class="p">,</span> <span class="n">Lj</span>
-                    <span class="c1"># print(&quot;recovering at point %d/%d &quot; % (j+1, len(self.history)))</span>
+                    <span class="c1"># print(&quot;recovered off-track walk from point %d/%d &quot; % (j+1, len(self.history)))</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">last</span> <span class="o">=</span> <span class="n">ui</span><span class="p">,</span> <span class="n">Li</span>
 
                     <span class="c1"># pj = transform(uj.reshape((1, -1)))</span>
@@ -648,6 +663,7 @@
             <span class="c1">#    region.maxradiussq, region.u, region.unormed, us)</span>
             <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">us</span><span class="p">))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">starti</span> <span class="o">=</span> <span class="n">i</span>
+            <span class="k">del</span> <span class="n">Li</span><span class="p">,</span> <span class="n">ui</span>
             <span class="n">ui</span> <span class="o">=</span> <span class="n">us</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span>
             <span class="c1"># print(&quot;starting at&quot;, ui[0])</span>
             <span class="c1"># assert np.logical_and(ui &gt; 0, ui &lt; 1).all(), ui</span>
@@ -657,29 +673,37 @@
 
         <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
             <span class="n">unew</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="n">ndraw</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="n">plot</span><span class="p">)</span>
+            <span class="c1"># print(&quot;proposed: %s -&gt; %s&quot; % (ui, unew))</span>
             <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
                 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="n">ui</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">unew</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]],</span> <span class="p">[</span><span class="n">ui</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">unew</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]],</span> <span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
                 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ui</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ui</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;d&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
                 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">unew</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">unew</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
             <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">unew</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">unew</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">mask</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+                <span class="c1"># print(&quot;rejected by unit cube&quot;)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">adjust_outside_region</span><span class="p">()</span>
+                <span class="k">continue</span>
             <span class="n">unew</span> <span class="o">=</span> <span class="n">unew</span><span class="p">[</span><span class="n">mask</span><span class="p">,:]</span>
             <span class="n">nc</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">region_filter</span><span class="p">:</span>
                 <span class="n">mask</span> <span class="o">=</span> <span class="n">inside_region</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">unew</span><span class="p">,</span> <span class="n">ui</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">mask</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
-                    <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">mask</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-                <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">mask</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;rejected by region&quot;</span><span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">adjust_outside_region</span><span class="p">()</span>
                     <span class="k">continue</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">unew</span> <span class="o">=</span> <span class="n">unew</span><span class="p">[</span><span class="n">mask</span><span class="p">,:]</span>
+                <span class="k">if</span> <span class="n">tregion</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">pnew</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">unew</span><span class="p">)</span>
+                    <span class="n">tmask</span> <span class="o">=</span> <span class="n">tregion</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">pnew</span><span class="p">)</span>
+                    <span class="n">unew</span> <span class="o">=</span> <span class="n">unew</span><span class="p">[</span><span class="n">tmask</span><span class="p">,:]</span>
+                    <span class="n">pnew</span> <span class="o">=</span> <span class="n">pnew</span><span class="p">[</span><span class="n">tmask</span><span class="p">,:]</span>
 
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">unew</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">adjust_outside_region</span><span class="p">()</span>
                 <span class="k">continue</span>
             <span class="k">break</span>
 
-        <span class="n">unew</span> <span class="o">=</span> <span class="n">unew</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span>
+        <span class="n">unew</span> <span class="o">=</span> <span class="n">unew</span><span class="p">[</span><span class="mi">0</span><span class="p">,:]</span>
         <span class="n">pnew</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">unew</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)))</span>
         <span class="n">Lnew</span> <span class="o">=</span> <span class="n">loglike</span><span class="p">(</span><span class="n">pnew</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">nc</span> <span class="o">=</span> <span class="mi">1</span>
@@ -707,7 +731,7 @@
 <div class="viewcode-block" id="CubeMHSampler.move"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.CubeMHSampler.move">[docs]</a>    <span class="k">def</span> <span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Move in cube space.&quot;&quot;&quot;</span>
         <span class="c1"># propose in that direction</span>
-        <span class="n">jitter</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">ndraw</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ui</span><span class="p">)))</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span>
+        <span class="n">jitter</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">ndraw</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">ui</span><span class="p">)))</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span>
         <span class="n">unew</span> <span class="o">=</span> <span class="n">ui</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span> <span class="o">+</span> <span class="n">jitter</span>
         <span class="k">return</span> <span class="n">unew</span></div></div>
 
@@ -718,7 +742,7 @@
 <div class="viewcode-block" id="RegionMHSampler.move"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.RegionMHSampler.move">[docs]</a>    <span class="k">def</span> <span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Move in transformLayer space.&quot;&quot;&quot;</span>
         <span class="n">ti</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">ui</span><span class="p">)</span>
-        <span class="n">jitter</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">ndraw</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ui</span><span class="p">)))</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span>
+        <span class="n">jitter</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">ndraw</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">ui</span><span class="p">)))</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span>
         <span class="n">tnew</span> <span class="o">=</span> <span class="n">ti</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span> <span class="o">+</span> <span class="n">jitter</span>
         <span class="n">unew</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">untransform</span><span class="p">(</span><span class="n">tnew</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">unew</span></div></div>
@@ -961,6 +985,553 @@
         <span class="n">v</span> <span class="o">=</span> <span class="n">uk</span> <span class="o">-</span> <span class="n">ui</span>
         <span class="n">v</span> <span class="o">*=</span> <span class="n">scale</span> <span class="o">/</span> <span class="p">(</span><span class="n">v</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">**</span><span class="mf">0.5</span>
         <span class="k">return</span> <span class="n">v</span></div></div>
+
+
+<div class="viewcode-block" id="ellipsoid_bracket"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.ellipsoid_bracket">[docs]</a><span class="k">def</span> <span class="nf">ellipsoid_bracket</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">ellipsoid_center</span><span class="p">,</span> <span class="n">ellipsoid_inv_axes</span><span class="p">,</span> <span class="n">ellipsoid_radius_square</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; For a line from ui in direction v through an ellipsoid</span>
+<span class="sd">    centered at ellipsoid_center with axes matrix ellipsoid_inv_axes,</span>
+<span class="sd">    return the lower and upper intersection parameter.&quot;&quot;&quot;</span>
+    <span class="n">vell</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">ellipsoid_inv_axes</span><span class="p">)</span>
+    <span class="c1"># ui in ellipsoid</span>
+    <span class="n">xell</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">ui</span> <span class="o">-</span> <span class="n">ellipsoid_center</span><span class="p">,</span> <span class="n">ellipsoid_inv_axes</span><span class="p">)</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">vell</span><span class="p">,</span> <span class="n">vell</span><span class="p">)</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">vell</span><span class="p">,</span> <span class="n">xell</span><span class="p">)</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">xell</span><span class="p">,</span> <span class="n">xell</span><span class="p">)</span> <span class="o">-</span> <span class="n">ellipsoid_radius_square</span>
+    <span class="k">assert</span> <span class="n">c</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;outside ellipsoid&quot;</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+    <span class="n">intersect</span> <span class="o">=</span> <span class="n">b</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">a</span> <span class="o">*</span> <span class="n">c</span>
+    <span class="k">assert</span> <span class="n">intersect</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="s2">&quot;no intersection&quot;</span><span class="p">,</span> <span class="n">intersect</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+    <span class="n">d1</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="n">b</span> <span class="o">+</span> <span class="n">intersect</span><span class="o">**</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">a</span><span class="p">)</span>
+    <span class="n">d2</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="n">b</span> <span class="o">-</span> <span class="n">intersect</span><span class="o">**</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">a</span><span class="p">)</span>
+    <span class="n">left</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">d1</span><span class="p">,</span> <span class="n">d2</span><span class="p">)</span>
+    <span class="n">right</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">d1</span><span class="p">,</span> <span class="n">d2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span></div>
+
+
+<div class="viewcode-block" id="crop_bracket_at_unit_cube"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.crop_bracket_at_unit_cube">[docs]</a><span class="k">def</span> <span class="nf">crop_bracket_at_unit_cube</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">epsilon</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A line segment from *ui* in direction *v* from t between *left* &lt;= 0 &lt;= *right*</span>
+<span class="sd">    will be truncated by the unit cube. Returns newleft, newright, cropped_left, cropped_right,</span>
+<span class="sd">    i.e., the new end parameters and whether cropping was applied.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">ui</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">ui</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">ui</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">ui</span>
+    <span class="n">leftu</span> <span class="o">=</span> <span class="n">left</span> <span class="o">*</span> <span class="n">v</span> <span class="o">+</span> <span class="n">ui</span>
+    <span class="n">rightu</span> <span class="o">=</span> <span class="n">right</span> <span class="o">*</span> <span class="n">v</span> <span class="o">+</span> <span class="n">ui</span>
+    <span class="c1"># print(&quot;crop: current ends:&quot;, leftu, rightu)</span>
+    <span class="n">cropped_left</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">leftbelow</span> <span class="o">=</span> <span class="n">leftu</span> <span class="o">&lt;=</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">leftbelow</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+        <span class="c1"># choose left so that point is &gt; 0 in all axes</span>
+        <span class="c1"># 0 = left * v + ui</span>
+        <span class="k">del</span> <span class="n">left</span>
+        <span class="n">left</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="n">ui</span><span class="p">[</span><span class="n">leftbelow</span><span class="p">]</span> <span class="o">/</span> <span class="n">v</span><span class="p">[</span><span class="n">leftbelow</span><span class="p">])</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">epsilon</span><span class="p">)</span>
+        <span class="k">del</span> <span class="n">leftu</span>
+        <span class="n">leftu</span> <span class="o">=</span> <span class="n">left</span> <span class="o">*</span> <span class="n">v</span> <span class="o">+</span> <span class="n">ui</span>
+        <span class="n">cropped_left</span> <span class="o">|=</span> <span class="kc">True</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">leftu</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">leftu</span>
+    <span class="n">leftabove</span> <span class="o">=</span> <span class="n">leftu</span> <span class="o">&gt;=</span> <span class="mi">1</span>
+    <span class="k">if</span> <span class="n">leftabove</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+        <span class="k">del</span> <span class="n">left</span>
+        <span class="n">left</span> <span class="o">=</span> <span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">ui</span><span class="p">[</span><span class="n">leftabove</span><span class="p">])</span> <span class="o">/</span> <span class="n">v</span><span class="p">[</span><span class="n">leftabove</span><span class="p">])</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">epsilon</span><span class="p">)</span>
+        <span class="k">del</span> <span class="n">leftu</span>
+        <span class="n">leftu</span> <span class="o">=</span> <span class="n">left</span> <span class="o">*</span> <span class="n">v</span> <span class="o">+</span> <span class="n">ui</span>
+        <span class="n">cropped_left</span> <span class="o">|=</span> <span class="kc">True</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">leftu</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">leftu</span>
+
+    <span class="n">cropped_right</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">rightabove</span> <span class="o">=</span> <span class="n">rightu</span> <span class="o">&gt;=</span> <span class="mi">1</span>
+    <span class="k">if</span> <span class="n">rightabove</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+        <span class="c1"># choose right so that point is &lt; 1 in all axes</span>
+        <span class="c1"># 1 = left * v + ui</span>
+        <span class="k">del</span> <span class="n">right</span>
+        <span class="n">right</span> <span class="o">=</span> <span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">ui</span><span class="p">[</span><span class="n">rightabove</span><span class="p">])</span> <span class="o">/</span> <span class="n">v</span><span class="p">[</span><span class="n">rightabove</span><span class="p">])</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">epsilon</span><span class="p">)</span>
+        <span class="k">del</span> <span class="n">rightu</span>
+        <span class="n">rightu</span> <span class="o">=</span> <span class="n">right</span> <span class="o">*</span> <span class="n">v</span> <span class="o">+</span> <span class="n">ui</span>
+        <span class="n">cropped_right</span> <span class="o">|=</span> <span class="kc">True</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">rightu</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">rightu</span>
+
+    <span class="n">rightbelow</span> <span class="o">=</span> <span class="n">rightu</span> <span class="o">&lt;=</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">rightbelow</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+        <span class="k">del</span> <span class="n">right</span>
+        <span class="n">right</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="n">ui</span><span class="p">[</span><span class="n">rightbelow</span><span class="p">]</span> <span class="o">/</span> <span class="n">v</span><span class="p">[</span><span class="n">rightbelow</span><span class="p">])</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">epsilon</span><span class="p">)</span>
+        <span class="k">del</span> <span class="n">rightu</span>
+        <span class="n">rightu</span> <span class="o">=</span> <span class="n">right</span> <span class="o">*</span> <span class="n">v</span> <span class="o">+</span> <span class="n">ui</span>
+        <span class="n">cropped_right</span> <span class="o">|=</span> <span class="kc">True</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">rightu</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">rightu</span>
+
+    <span class="k">assert</span> <span class="n">left</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">right</span><span class="p">,</span> <span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">cropped_left</span><span class="p">,</span> <span class="n">cropped_right</span></div>
+
+
+<div class="viewcode-block" id="AHARMSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.AHARMSampler">[docs]</a><span class="k">class</span> <span class="nc">AHARMSampler</span><span class="p">(</span><span class="n">StepSampler</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Accelerated hit-and-run/slice sampler, vectorised.</span>
+
+<span class="sd">    Uses region ellipsoid to propose a sequence of points</span>
+<span class="sd">    on a randomly drawn line.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">,</span> <span class="n">adaptive_nsteps</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">max_nsteps</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+        <span class="n">region_filter</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="n">generate_region_random_direction</span><span class="p">,</span>
+        <span class="n">orthogonalise</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialise vectorised hit-and-run/slice sampler.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        -----------</span>
+<span class="sd">        nsteps: int</span>
+<span class="sd">            number of accepted steps until the sample is considered independent.</span>
+
+<span class="sd">        adaptive_nsteps: False, &#39;proposal-distance&#39;, &#39;move-distance&#39;</span>
+<span class="sd">            Select a strategy to adapt the number of steps. The strategies</span>
+<span class="sd">            make sure that:</span>
+
+<span class="sd">            * &#39;move-distance&#39; (recommended): distance between</span>
+<span class="sd">              start point and final position exceeds the mean distance</span>
+<span class="sd">              between pairs of live points.</span>
+<span class="sd">            * &#39;move-distance-midway&#39;: distance between</span>
+<span class="sd">              start point and position in the middle of the chain</span>
+<span class="sd">              exceeds the mean distance between pairs of live points.</span>
+
+<span class="sd">        max_nsteps: int</span>
+<span class="sd">            Maximum number of steps the adaptive_nsteps can reach.</span>
+
+<span class="sd">        region_filter: bool</span>
+<span class="sd">            if True, use region to check if a proposed point can be inside</span>
+<span class="sd">            before calling likelihood.</span>
+
+<span class="sd">        direction: function</span>
+<span class="sd">            function that draws slice direction given a point and</span>
+<span class="sd">            the current region.</span>
+
+<span class="sd">        orthogonalise: bool</span>
+<span class="sd">            If true, make subsequent proposed directions orthogonal</span>
+<span class="sd">            to each other.</span>
+
+<span class="sd">        log: file</span>
+<span class="sd">            log file for sampler statistics, such as acceptance rate,</span>
+<span class="sd">            proposal scale, number of steps, jump distance and distance</span>
+<span class="sd">            between live points</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">=</span> <span class="n">nsteps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nrejects</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_nsteps</span> <span class="o">=</span> <span class="n">max_nsteps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span> <span class="o">=</span> <span class="n">direction</span>
+        <span class="n">adaptive_nsteps_options</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="kc">False</span><span class="p">,</span>
+            <span class="s1">&#39;move-distance&#39;</span><span class="p">,</span> <span class="s1">&#39;move-distance-midway&#39;</span><span class="p">,</span>
+        <span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">adaptive_nsteps</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">adaptive_nsteps_options</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;adaptive_nsteps must be one of: </span><span class="si">%s</span><span class="s2">, not &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">adaptive_nsteps_options</span><span class="p">,</span> <span class="n">adaptive_nsteps</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="o">=</span> <span class="n">adaptive_nsteps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">region_filter</span> <span class="o">=</span> <span class="n">region_filter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="o">=</span> <span class="n">log</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps_needs_mean_pair_distance</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_nudge</span> <span class="o">=</span> <span class="mf">1.01</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">orthogonalise</span> <span class="o">=</span> <span class="n">orthogonalise</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;rejection_rate&#39;</span><span class="p">,</span> <span class="s1">&#39;steps&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">adaptive_nsteps</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;jump-distance&#39;</span><span class="p">,</span> <span class="s1">&#39;reference-distance&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">,</span> <span class="n">us</span><span class="p">,</span> <span class="n">Ls</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">tregion</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get next point.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        region: MLFriends</span>
+<span class="sd">            region.</span>
+<span class="sd">        Lmin: float</span>
+<span class="sd">            loglikelihood threshold</span>
+<span class="sd">        us: array of vectors</span>
+<span class="sd">            current live points</span>
+<span class="sd">        Ls: array of floats</span>
+<span class="sd">            current live point likelihoods</span>
+<span class="sd">        transform: function</span>
+<span class="sd">            transform function</span>
+<span class="sd">        loglike: function</span>
+<span class="sd">            loglikelihood function</span>
+<span class="sd">        ndraw: int</span>
+<span class="sd">            number of draws to attempt simultaneously.</span>
+<span class="sd">        plot: bool</span>
+<span class="sd">            whether to produce debug plots.</span>
+<span class="sd">        tregion: WrappingEllipsoid</span>
+<span class="sd">            optional ellipsoid in transformed space for rejecting proposals</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># find most recent point in history conforming to current Lmin</span>
+        <span class="n">ui</span><span class="p">,</span> <span class="n">Li</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">last</span>
+        <span class="k">if</span> <span class="n">Li</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">Li</span> <span class="o">&gt;=</span> <span class="n">Lmin</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;wandered out of L constraint; resetting&quot;</span><span class="p">,</span> <span class="n">ui</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">ui</span><span class="p">,</span> <span class="n">Li</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">ui</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">region</span><span class="o">.</span><span class="n">inside_ellipsoid</span><span class="p">(</span><span class="n">ui</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;wandered out of ellipsoid; resetting&quot;</span><span class="p">,</span> <span class="n">ui</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">ui</span><span class="p">,</span> <span class="n">Li</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">Li</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">:</span>
+            <span class="c1"># try to resume from a previous point above the current contour</span>
+            <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="p">(</span><span class="n">uj</span><span class="p">,</span> <span class="n">Lj</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
+                <span class="k">if</span> <span class="n">Lj</span> <span class="o">&gt;</span> <span class="n">Lmin</span> <span class="ow">and</span> <span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">uj</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)))</span> <span class="ow">and</span> <span class="p">(</span><span class="n">tregion</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">tregion</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">transform</span><span class="p">(</span><span class="n">uj</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))))):</span>
+                    <span class="n">ui</span><span class="p">,</span> <span class="n">Li</span> <span class="o">=</span> <span class="n">uj</span><span class="p">,</span> <span class="n">Lj</span>
+                    <span class="c1"># print(&quot;recovering at point %d/%d &quot; % (j+1, len(self.history)))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">last</span> <span class="o">=</span> <span class="n">ui</span><span class="p">,</span> <span class="n">Li</span>
+
+                    <span class="c1"># pj = transform(uj.reshape((1, -1)))</span>
+                    <span class="c1"># Lj2 = loglike(pj)[0]</span>
+                    <span class="c1"># assert Lj2 &gt; Lmin, (Lj2, Lj, uj, pj)</span>
+                    <span class="k">assert</span> <span class="n">region</span><span class="o">.</span><span class="n">inside_ellipsoid</span><span class="p">(</span><span class="n">ui</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)))</span>
+
+                    <span class="k">break</span>
+            <span class="k">pass</span>
+
+        <span class="c1"># select starting point</span>
+        <span class="n">ndim</span> <span class="o">=</span> <span class="n">us</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">Li</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">directions</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">last</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nrejects</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="c1"># choose a new random starting point</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">us</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">starti</span> <span class="o">=</span> <span class="n">i</span>
+            <span class="n">ui</span> <span class="o">=</span> <span class="n">us</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span>
+            <span class="k">assert</span> <span class="n">region</span><span class="o">.</span><span class="n">inside_ellipsoid</span><span class="p">(</span><span class="n">ui</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)))</span>
+            <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">ui</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">ui</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">ui</span>
+            <span class="n">Li</span> <span class="o">=</span> <span class="n">Ls</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">ui</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">Li</span><span class="o">.</span><span class="n">copy</span><span class="p">()))</span>
+            <span class="k">del</span> <span class="n">i</span>
+            <span class="c1"># set initially nleft = nsteps</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_done</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="c1"># generate nsteps directions</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">directions</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">):</span>
+                <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">directions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">directions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directions</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;directions:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">directions</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">orthogonalise</span><span class="p">:</span>
+                <span class="c1"># orthogonalise relative to this previous direction</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">//</span> <span class="n">ndim</span><span class="p">):</span>
+                    <span class="c1"># go back only ndim steps, then start fresh</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">directions</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="n">ndim</span><span class="p">:(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">ndim</span><span class="p">],</span> <span class="n">_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">qr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directions</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="n">ndim</span><span class="p">:(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">ndim</span><span class="p">])</span>
+
+            <span class="k">assert</span> <span class="p">(</span><span class="n">ui</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">ui</span>
+            <span class="k">assert</span> <span class="p">(</span><span class="n">ui</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">ui</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">current_interval</span> <span class="o">=</span> <span class="n">ui</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">region_filter</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">ui</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))),</span> <span class="p">(</span><span class="s1">&#39;cannot start from outside region!&#39;</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">ui</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))))</span>
+
+        <span class="k">del</span> <span class="n">ui</span>
+        <span class="n">nc</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="c1"># prepare a sequence of points until nsteps are reached</span>
+            <span class="n">point_sequence</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">point_expectation</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">intervals</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">nsteps_prepared</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">while</span> <span class="n">nsteps_prepared</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_done</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">point_sequence</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">ndraw</span><span class="p">:</span>
+                <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">directions</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps_done</span> <span class="o">+</span> <span class="n">nsteps_prepared</span><span class="p">]</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">point_sequence</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">ucurrent</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_interval</span>
+                    <span class="k">assert</span> <span class="p">(</span><span class="n">ucurrent</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">ucurrent</span>
+                    <span class="k">assert</span> <span class="p">(</span><span class="n">ucurrent</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">ucurrent</span>
+                    <span class="k">assert</span> <span class="n">region</span><span class="o">.</span><span class="n">inside_ellipsoid</span><span class="p">(</span><span class="n">ucurrent</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))),</span> <span class="p">(</span>
+                        <span class="s1">&#39;cannot start from outside ellipsoid!&#39;</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">inside_ellipsoid</span><span class="p">(</span><span class="n">ucurrent</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))))</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">region_filter</span><span class="p">:</span>
+                        <span class="k">assert</span> <span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">ucurrent</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))),</span> <span class="p">(</span>
+                            <span class="s1">&#39;cannot start from outside region!&#39;</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">ucurrent</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))))</span>
+                    <span class="k">assert</span> <span class="n">loglike</span><span class="p">(</span><span class="n">transform</span><span class="p">(</span><span class="n">ucurrent</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))))</span> <span class="o">&gt;=</span> <span class="n">Lmin</span><span class="p">,</span> <span class="p">(</span>
+                        <span class="s1">&#39;cannot start from outside!&#39;</span><span class="p">,</span> <span class="n">loglike</span><span class="p">(</span><span class="n">transform</span><span class="p">(</span><span class="n">ucurrent</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndim</span><span class="p">)))),</span> <span class="n">Lmin</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">left</span><span class="p">,</span> <span class="n">right</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+                <span class="k">assert</span> <span class="p">(</span><span class="n">ucurrent</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">ucurrent</span>
+                <span class="k">assert</span> <span class="p">(</span><span class="n">ucurrent</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">ucurrent</span>
+                <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;preparing step: </span><span class="si">%d</span><span class="s2"> from </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">nsteps_prepared</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_done</span><span class="p">,</span> <span class="n">ucurrent</span><span class="p">))</span>
+
+                <span class="k">if</span> <span class="n">left</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">right</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="c1"># in each, find the end points using the expanded ellipsoid</span>
+                    <span class="k">assert</span> <span class="n">region</span><span class="o">.</span><span class="n">inside_ellipsoid</span><span class="p">(</span><span class="n">ucurrent</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))),</span> <span class="p">(</span><span class="s1">&#39;current point outside ellipsoid!&#39;</span><span class="p">)</span>
+                    <span class="n">left</span><span class="p">,</span> <span class="n">right</span> <span class="o">=</span> <span class="n">ellipsoid_bracket</span><span class="p">(</span><span class="n">ucurrent</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_center</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_inv_axes</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">enlarge</span><span class="p">)</span>
+                    <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">crop_bracket_at_unit_cube</span><span class="p">(</span><span class="n">ucurrent</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">)</span>
+                    <span class="k">assert</span> <span class="p">(</span><span class="n">ucurrent</span> <span class="o">+</span> <span class="n">v</span> <span class="o">*</span> <span class="n">left</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="p">(</span>
+                        <span class="n">ucurrent</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_center</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_inv_axes</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_invcov</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">enlarge</span><span class="p">)</span>
+                    <span class="k">assert</span> <span class="p">(</span><span class="n">ucurrent</span> <span class="o">+</span> <span class="n">v</span> <span class="o">*</span> <span class="n">right</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="p">(</span>
+                        <span class="n">ucurrent</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_center</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_inv_axes</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_invcov</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">enlarge</span><span class="p">)</span>
+                    <span class="k">assert</span> <span class="p">(</span><span class="n">ucurrent</span> <span class="o">+</span> <span class="n">v</span> <span class="o">*</span> <span class="n">left</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="p">(</span>
+                        <span class="n">ucurrent</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_center</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_inv_axes</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_invcov</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">enlarge</span><span class="p">)</span>
+                    <span class="k">assert</span> <span class="p">(</span><span class="n">ucurrent</span> <span class="o">+</span> <span class="n">v</span> <span class="o">*</span> <span class="n">right</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="p">(</span>
+                        <span class="n">ucurrent</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_center</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_inv_axes</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_invcov</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">enlarge</span><span class="p">)</span>
+
+                    <span class="k">assert</span> <span class="n">left</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">right</span><span class="p">,</span> <span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   ellipsoid bracket found:&quot;</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">)</span>
+
+                <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="c1"># sample in each a point until presumed success:</span>
+                    <span class="k">assert</span> <span class="n">region</span><span class="o">.</span><span class="n">inside_ellipsoid</span><span class="p">(</span><span class="n">ucurrent</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))),</span> <span class="p">(</span><span class="s1">&#39;current point outside ellipsoid!&#39;</span><span class="p">)</span>
+                    <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">)</span>
+                    <span class="n">unext</span> <span class="o">=</span> <span class="n">ucurrent</span> <span class="o">+</span> <span class="n">v</span> <span class="o">*</span> <span class="n">t</span>
+                    <span class="k">assert</span> <span class="p">(</span><span class="n">unext</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">unext</span>
+                    <span class="k">assert</span> <span class="p">(</span><span class="n">unext</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">unext</span>
+                    <span class="k">assert</span> <span class="n">region</span><span class="o">.</span><span class="n">inside_ellipsoid</span><span class="p">(</span><span class="n">unext</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))),</span> <span class="p">(</span><span class="s1">&#39;proposal landed outside ellipsoid!&#39;</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">)</span>
+
+                    <span class="c1"># compute distance vector to center</span>
+                    <span class="n">d</span> <span class="o">=</span> <span class="n">unext</span> <span class="o">-</span> <span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_center</span>
+                    <span class="c1"># distance in normalised coordates: vector . matrix . vector</span>
+                    <span class="c1"># where the matrix is the ellipsoid inverse covariance</span>
+                    <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;j,jk,k-&gt;&#39;</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_invcov</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+
+                    <span class="n">likely_inside</span> <span class="o">=</span> <span class="n">r</span> <span class="o">&lt;=</span> <span class="mi">1</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">likely_inside</span> <span class="ow">and</span> <span class="n">r</span> <span class="o">&lt;=</span> <span class="n">region</span><span class="o">.</span><span class="n">enlarge</span><span class="p">:</span>
+                        <span class="c1"># The exception is, when a point is between projected ellipsoid center and current point</span>
+                        <span class="c1"># then it is also likely inside (if still inside the ellipsoid)</span>
+
+                        <span class="c1"># project ellipsoid center onto line</span>
+                        <span class="c1"># region.ellipsoid_center = ucurrent + tc * v</span>
+                        <span class="n">tc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_center</span> <span class="o">-</span> <span class="n">ucurrent</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+                        <span class="c1"># current point is at 0 by definition</span>
+                        <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="n">t</span> <span class="o">&lt;</span> <span class="n">tc</span> <span class="ow">or</span> <span class="n">tc</span> <span class="o">&lt;</span> <span class="n">t</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   proposed point is further inside than current point&quot;</span><span class="p">)</span>
+                            <span class="n">likely_inside</span> <span class="o">=</span> <span class="kc">True</span>
+                        <span class="c1">#    print(&quot;   proposed point %.3f is going towards center %.3f&quot; % (t, tc))</span>
+                        <span class="c1"># else:</span>
+                        <span class="c1">#    print(&quot;   proposed point %.3f is going away from center %.3f&quot; % (t, tc))</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="c1"># another exception is that points very close to the current point</span>
+                            <span class="c1"># are very likely also inside</span>
+                            <span class="c1"># to find that out, project all live points on the line</span>
+                            <span class="n">tall</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;ij,j-&gt;i&#39;</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">u</span> <span class="o">-</span> <span class="n">ucurrent</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+                            <span class="c1"># find the range and identify a small part of it</span>
+                            <span class="n">epsilon_nearby</span> <span class="o">=</span> <span class="mf">1e-6</span>
+                            <span class="k">if</span> <span class="n">tc</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">tall</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">tall</span><span class="o">.</span><span class="n">min</span><span class="p">())</span> <span class="o">*</span> <span class="n">epsilon_nearby</span><span class="p">:</span>
+                                <span class="n">likely_inside</span> <span class="o">=</span> <span class="kc">True</span>
+                                <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   proposed point is very nearby&quot;</span><span class="p">)</span>
+
+                    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   proposed point </span><span class="si">%s</span><span class="s2"> (</span><span class="si">%f</span><span class="s2">) is likely </span><span class="si">%s</span><span class="s2"> (r=</span><span class="si">%f</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">unext</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="s1">&#39;inside&#39;</span> <span class="k">if</span> <span class="n">likely_inside</span> <span class="k">else</span> <span class="s1">&#39;outside&#39;</span><span class="p">,</span> <span class="n">r</span><span class="p">))</span>
+                    <span class="n">intervals</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">nsteps_prepared</span><span class="p">,</span> <span class="n">ucurrent</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">t</span><span class="p">))</span>
+                    <span class="n">point_sequence</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">unext</span><span class="p">)</span>
+                    <span class="n">point_expectation</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">likely_inside</span><span class="p">)</span>
+                    <span class="c1">#   If point radius in ellipsoid is &lt;1, presume that it will be successful</span>
+                    <span class="k">if</span> <span class="n">likely_inside</span><span class="p">:</span>
+                        <span class="n">nsteps_prepared</span> <span class="o">+=</span> <span class="mi">1</span>
+                        <span class="n">ucurrent</span> <span class="o">=</span> <span class="n">unext</span>
+                        <span class="k">assert</span> <span class="n">region</span><span class="o">.</span><span class="n">inside_ellipsoid</span><span class="p">(</span><span class="n">ucurrent</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))),</span> <span class="p">(</span><span class="s1">&#39;current point outside ellipsoid!&#39;</span><span class="p">)</span>
+                        <span class="k">break</span>
+
+                    <span class="c1">#   Else, presume it will be unsuccessful, and sample another point</span>
+                    <span class="c1">#   shrink interval</span>
+                    <span class="k">if</span> <span class="n">t</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">right</span> <span class="o">=</span> <span class="n">t</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">left</span> <span class="o">=</span> <span class="n">t</span>
+
+                <span class="c1"># the above defines a sequence of points (u)</span>
+
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">point_sequence</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">point_sequence</span><span class="p">),</span> <span class="n">ndraw</span><span class="p">,</span> <span class="n">nsteps_prepared</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_done</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">)</span>
+            <span class="n">point_sequence</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">point_sequence</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+            <span class="n">point_expectation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">point_expectation</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;proposed sequence:&quot;</span><span class="p">,</span> <span class="n">point_sequence</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;expectations:&quot;</span><span class="p">,</span> <span class="n">point_expectation</span><span class="p">)</span>
+            <span class="n">truncated</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="c1"># region-filter, transform, tregion-filter, and evaluate the likelihood</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">region_filter</span><span class="p">:</span>
+                <span class="n">mask_inside</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">point_sequence</span><span class="p">)</span>
+                <span class="c1"># identify first point that was expected to be inside, but was marked outside-of-region</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">point_expectation</span><span class="p">,</span> <span class="o">~</span><span class="n">mask_inside</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;region filter says:&quot;</span><span class="p">,</span> <span class="n">mask_inside</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">imax</span> <span class="o">=</span> <span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+                    <span class="c1"># truncate there</span>
+                    <span class="n">point_sequence</span> <span class="o">=</span> <span class="n">point_sequence</span><span class="p">[:</span><span class="n">imax</span><span class="p">]</span>
+                    <span class="n">point_expectation</span> <span class="o">=</span> <span class="n">point_expectation</span><span class="p">[:</span><span class="n">imax</span><span class="p">]</span>
+                    <span class="n">mask_inside</span> <span class="o">=</span> <span class="n">mask_inside</span><span class="p">[:</span><span class="n">imax</span><span class="p">]</span>
+                    <span class="n">truncated</span> <span class="o">|=</span> <span class="kc">True</span>
+                    <span class="k">del</span> <span class="n">imax</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">mask_inside</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+                    <span class="k">continue</span>
+
+            <span class="n">t_point_sequence</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">point_sequence</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">region_filter</span> <span class="ow">and</span> <span class="n">tregion</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">tmask</span> <span class="o">=</span> <span class="n">tregion</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">t_point_sequence</span><span class="p">)</span>
+                <span class="c1"># identify first point that was expected to be inside, but was marked outside-of-region</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">point_expectation</span><span class="p">,</span> <span class="o">~</span><span class="n">tmask</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;tregion filter says:&quot;</span><span class="p">,</span> <span class="n">tmask</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+                <span class="n">mask_inside</span><span class="p">[</span><span class="o">~</span><span class="n">tmask</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">del</span> <span class="n">tmask</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">imax</span> <span class="o">=</span> <span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+                    <span class="c1"># truncate there</span>
+                    <span class="n">point_sequence</span> <span class="o">=</span> <span class="n">point_sequence</span><span class="p">[:</span><span class="n">imax</span><span class="p">]</span>
+                    <span class="n">point_expectation</span> <span class="o">=</span> <span class="n">point_expectation</span><span class="p">[:</span><span class="n">imax</span><span class="p">]</span>
+                    <span class="n">t_point_sequence</span> <span class="o">=</span> <span class="n">t_point_sequence</span><span class="p">[:</span><span class="n">imax</span><span class="p">]</span>
+                    <span class="n">mask_inside</span> <span class="o">=</span> <span class="n">mask_inside</span><span class="p">[:</span><span class="n">imax</span><span class="p">]</span>
+                    <span class="n">truncated</span> <span class="o">|=</span> <span class="kc">True</span>
+                    <span class="k">del</span> <span class="n">imax</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">mask_inside</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+                    <span class="k">continue</span>
+
+            <span class="c1"># we expect the last point to be an accept, otherwise we would not terminate the sequence</span>
+            <span class="k">assert</span> <span class="n">point_expectation</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">region_filter</span><span class="p">:</span>
+                <span class="c1"># set filtered ones to -np.inf</span>
+                <span class="n">L</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">t_point_sequence</span><span class="p">))</span> <span class="o">*</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+                <span class="n">nc</span> <span class="o">+=</span> <span class="n">mask_inside</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+                <span class="n">L</span><span class="p">[</span><span class="n">mask_inside</span><span class="p">]</span> <span class="o">=</span> <span class="n">loglike</span><span class="p">(</span><span class="n">t_point_sequence</span><span class="p">[</span><span class="n">mask_inside</span><span class="p">,:])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">nc</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">point_sequence</span><span class="p">)</span>
+                <span class="n">L</span> <span class="o">=</span> <span class="n">loglike</span><span class="p">(</span><span class="n">t_point_sequence</span><span class="p">)</span>
+            <span class="n">Lmask</span> <span class="o">=</span> <span class="n">L</span> <span class="o">&gt;</span> <span class="n">Lmin</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">point_expectation</span> <span class="o">!=</span> <span class="n">Lmask</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nrejects</span> <span class="o">+=</span> <span class="p">(</span><span class="o">~</span><span class="n">Lmask</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;reality:&quot;</span><span class="p">,</span> <span class="n">Lmask</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;difference:&quot;</span><span class="p">,</span> <span class="n">point_expectation</span> <span class="o">==</span> <span class="n">Lmask</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;calling likelihood with </span><span class="si">%5d</span><span class="s2"> prepared points, accepted:&quot;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="nb">len</span><span class="p">(</span><span class="n">point_sequence</span><span class="p">)),</span> <span class="s1">&#39;=&#39;</span> <span class="o">*</span> <span class="p">(</span><span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">Lmask</span><span class="p">[</span><span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">*</span> <span class="mi">1</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="n">Lmask</span><span class="p">)))</span>
+            <span class="c1"># identify first point that was unexpected</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">nsteps_prepared</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_done</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">:</span>
+                <span class="c1"># everything according to prediction.</span>
+                <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;everything according to prediction and done&quot;</span><span class="p">)</span>
+                <span class="c1"># done, return last point</span>
+                <span class="k">for</span> <span class="n">ui</span><span class="p">,</span> <span class="n">Li</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">point_sequence</span><span class="p">[</span><span class="n">Lmask</span><span class="p">],</span> <span class="n">L</span><span class="p">[</span><span class="n">Lmask</span><span class="p">]):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">ui</span><span class="p">,</span> <span class="n">Li</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">finalize_chain</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="n">region</span><span class="p">,</span> <span class="n">Lmin</span><span class="o">=</span><span class="n">Lmin</span><span class="p">,</span> <span class="n">Ls</span><span class="o">=</span><span class="n">Ls</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">point_sequence</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">t_point_sequence</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">L</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">nc</span>
+            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="c1"># everything according to prediction.</span>
+                <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;everything according to prediction&quot;</span><span class="p">)</span>
+                <span class="c1"># continue from last point</span>
+                <span class="k">for</span> <span class="n">ui</span><span class="p">,</span> <span class="n">Li</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">point_sequence</span><span class="p">[</span><span class="n">Lmask</span><span class="p">],</span> <span class="n">L</span><span class="p">[</span><span class="n">Lmask</span><span class="p">]):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">ui</span><span class="p">,</span> <span class="n">Li</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_done</span> <span class="o">+=</span> <span class="n">nsteps_prepared</span>
+                <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_done</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">),</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps_done</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">))</span>
+                <span class="n">nsteps_prepared</span><span class="p">,</span> <span class="n">ucurrent</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">intervals</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="k">assert</span> <span class="p">(</span><span class="n">ucurrent</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">ucurrent</span>
+                <span class="k">assert</span> <span class="p">(</span><span class="n">ucurrent</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">ucurrent</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">current_interval</span> <span class="o">=</span> <span class="n">ucurrent</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">region_filter</span><span class="p">:</span>
+                    <span class="k">assert</span> <span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">ucurrent</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))),</span> <span class="p">(</span><span class="s1">&#39;suggested point outside region!&#39;</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">ucurrent</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># point i unexpectedly inside or outside</span>
+                <span class="n">imax</span> <span class="o">=</span> <span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">ui</span><span class="p">,</span> <span class="n">Li</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">point_sequence</span><span class="p">[:</span><span class="n">imax</span><span class="p">][</span><span class="n">Lmask</span><span class="p">[:</span><span class="n">imax</span><span class="p">]],</span> <span class="n">L</span><span class="p">[:</span><span class="n">imax</span><span class="p">][</span><span class="n">Lmask</span><span class="p">[:</span><span class="n">imax</span><span class="p">]]):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">ui</span><span class="p">,</span> <span class="n">Li</span><span class="p">))</span>
+                <span class="n">nsteps_prepared</span><span class="p">,</span> <span class="n">ucurrent</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">intervals</span><span class="p">[</span><span class="n">imax</span><span class="p">]</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">region_filter</span><span class="p">:</span>
+                    <span class="k">assert</span> <span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">ucurrent</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))),</span> <span class="p">(</span><span class="s1">&#39;suggested point outside region!&#39;</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">ucurrent</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))))</span>
+                <span class="k">assert</span> <span class="p">(</span><span class="n">ucurrent</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">ucurrent</span>
+                <span class="k">assert</span> <span class="p">(</span><span class="n">ucurrent</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">ucurrent</span>
+                <span class="k">if</span> <span class="n">point_expectation</span><span class="p">[</span><span class="n">imax</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;following prediction until </span><span class="si">%d</span><span class="s2">, which was unexpectedly rejected&quot;</span> <span class="o">%</span> <span class="n">imax</span><span class="p">)</span>
+                    <span class="c1"># expected point to lie inside, but rejected</span>
+                    <span class="c1"># need to repair interval</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_done</span> <span class="o">+=</span> <span class="n">nsteps_prepared</span>
+                    <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_done</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">),</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps_done</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">))</span>
+                    <span class="k">if</span> <span class="n">t</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">right</span> <span class="o">=</span> <span class="n">t</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">left</span> <span class="o">=</span> <span class="n">t</span>
+                    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2"> steps done, continuing from unexpected outside point&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_done</span><span class="p">,</span> <span class="n">imax</span><span class="p">,</span> <span class="n">point_sequence</span><span class="p">[</span><span class="n">imax</span><span class="p">],</span> <span class="s2">&quot;interval:&quot;</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">current_interval</span> <span class="o">=</span> <span class="n">ucurrent</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;following prediction until </span><span class="si">%d</span><span class="s2">, which was unexpectedly accepted&quot;</span> <span class="o">%</span> <span class="n">imax</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">imax</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">point_sequence</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">truncated</span><span class="p">:</span>
+                        <span class="k">assert</span> <span class="kc">False</span>
+                    <span class="n">ucurrent</span> <span class="o">=</span> <span class="n">point_sequence</span><span class="p">[</span><span class="n">imax</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">region_filter</span><span class="p">:</span>
+                        <span class="k">assert</span> <span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">ucurrent</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))),</span> <span class="p">(</span><span class="s1">&#39;accepted point outside region!&#39;</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">ucurrent</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))))</span>
+                    <span class="c1"># expected point to lie outside, but actually inside</span>
+                    <span class="c1"># adopt as point and continue</span>
+                    <span class="c1"># print(len(self.history), self.nsteps_done, nsteps_prepared, Lmask[:imax].sum())</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_done</span> <span class="o">+=</span> <span class="n">nsteps_prepared</span> <span class="o">+</span> <span class="mi">1</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">ucurrent</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">L</span><span class="p">[</span><span class="n">imax</span><span class="p">]))</span>
+                    <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_done</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">),</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps_done</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">current_interval</span> <span class="o">=</span> <span class="n">ucurrent</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_done</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">:</span>
+                        <span class="c1"># last point was inside, so we are actually done there</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">finalize_chain</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="n">region</span><span class="p">,</span> <span class="n">Lmin</span><span class="o">=</span><span class="n">Lmin</span><span class="p">,</span> <span class="n">Ls</span><span class="o">=</span><span class="n">Ls</span><span class="p">)</span>
+                        <span class="k">return</span> <span class="n">point_sequence</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">t_point_sequence</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">L</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">nc</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2"> steps done, continuing from unexpected inside point&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_done</span><span class="p">,</span> <span class="n">imax</span><span class="p">,</span> <span class="n">point_sequence</span><span class="p">[</span><span class="n">imax</span><span class="p">])</span>
+
+            <span class="c1"># need to exit here to only do one likelihood evaluation</span>
+            <span class="c1"># per function call</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;breaking&quot;</span><span class="p">)</span>
+            <span class="k">break</span>
+
+        <span class="c1"># do not have a independent sample yet</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">nc</span>
+
+<div class="viewcode-block" id="AHARMSampler.region_changed"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.AHARMSampler.region_changed">[docs]</a>    <span class="k">def</span> <span class="nf">region_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Ls</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="n">region</span><span class="o">.</span><span class="n">inside_ellipsoid</span><span class="p">(</span><span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="n">ui</span><span class="p">,</span> <span class="n">Li</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">last</span>
+        <span class="k">if</span> <span class="n">ui</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">ui</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;wandered out of ellipsoid; resetting&quot;</span><span class="p">,</span> <span class="n">ui</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">last</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="AHARMSampler.finalize_chain"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.AHARMSampler.finalize_chain">[docs]</a>    <span class="k">def</span> <span class="nf">finalize_chain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">Lmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">Ls</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Store chain statistics and adapt proposal.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">nrejects</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">])</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
+            <span class="n">ustart</span><span class="p">,</span> <span class="n">Lstart</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">ufinal</span><span class="p">,</span> <span class="n">Lfinal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="c1"># mean_pair_distance = region.compute_mean_pair_distance()</span>
+            <span class="n">mean_pair_distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+            <span class="n">tstart</span><span class="p">,</span> <span class="n">tfinal</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">ustart</span><span class="p">,</span> <span class="n">ufinal</span><span class="p">)))</span>
+            <span class="c1"># L index of start and end</span>
+            <span class="c1"># Ls_sorted = np.sort(Ls)</span>
+            <span class="n">iLstart</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Ls</span> <span class="o">&gt;</span> <span class="n">Lstart</span><span class="p">)</span>
+            <span class="n">iLfinal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Ls</span> <span class="o">&gt;</span> <span class="n">Lfinal</span><span class="p">)</span>
+            <span class="c1"># nearest neighbor index of start and end</span>
+            <span class="n">itstart</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">((</span><span class="n">region</span><span class="o">.</span><span class="n">unormed</span> <span class="o">-</span> <span class="n">tstart</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)))</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">itfinal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">((</span><span class="n">region</span><span class="o">.</span><span class="n">unormed</span> <span class="o">-</span> <span class="n">tfinal</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)))</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">,</span> <span class="p">[</span><span class="n">_listify</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">Lmin</span><span class="p">],</span> <span class="n">ustart</span><span class="p">,</span> <span class="n">ufinal</span><span class="p">,</span> <span class="n">tstart</span><span class="p">,</span> <span class="n">tfinal</span><span class="p">,</span>
+                <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">,</span>
+                 <span class="n">iLstart</span><span class="p">,</span> <span class="n">iLfinal</span><span class="p">,</span> <span class="n">itstart</span><span class="p">,</span> <span class="n">itfinal</span><span class="p">])])</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">adapt_nsteps</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="n">region</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">last</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nrejects</span> <span class="o">=</span> <span class="mi">0</span></div>
+
+<div class="viewcode-block" id="AHARMSampler.generate_new_interval"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.AHARMSampler.generate_new_interval">[docs]</a>    <span class="k">def</span> <span class="nf">generate_new_interval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">region</span><span class="o">.</span><span class="n">inside_ellipsoid</span><span class="p">(</span><span class="n">ui</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)))</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">ui</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">ui</span>
+        <span class="k">assert</span> <span class="p">(</span><span class="n">ui</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">ui</span>
+
+        <span class="c1"># use region ellipsoid to identify limits</span>
+        <span class="c1"># rotate line so that ellipsoid is a sphere</span>
+        <span class="n">left</span><span class="p">,</span> <span class="n">right</span> <span class="o">=</span> <span class="n">ellipsoid_bracket</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_center</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_inv_axes</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">enlarge</span><span class="p">)</span>
+        <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">crop_bracket_at_unit_cube</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span></div></div>
 </pre></div>
 
            </div>
@@ -973,6 +1544,7 @@
 
   <div role="contentinfo">
     <p>
+        
         &copy; Copyright 2014-2020, Johannes Buchner
 
     </p>
@@ -987,7 +1559,6 @@
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

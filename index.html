@@ -1,15 +1,18 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Welcome to UltraNest’s documentation! &mdash; UltraNest 2.2.1 documentation</title>
+  <title>Welcome to UltraNest’s documentation! &mdash; UltraNest 3.0.0 documentation</title>
   
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
 
   
   
@@ -21,7 +24,9 @@
   
 
   
-  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -30,17 +35,13 @@
         <script src="_static/doctools.js"></script>
         <script src="_static/language_data.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
         <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.18.0/dist/embed-amd.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="UltraNest" href="readme.html" /> 
@@ -57,7 +58,7 @@
           
 
           
-            <a href="#" class="icon icon-home"> UltraNest
+            <a href="#" class="icon icon-home" alt="Documentation Home"> UltraNest
           
 
           
@@ -70,7 +71,7 @@
             
             
               <div class="version">
-                2.2.1
+                3.0.0
               </div>
             
           
@@ -87,6 +88,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -99,7 +101,7 @@
 <li class="toctree-l1"><a class="reference internal" href="readme.html">UltraNest</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="method.html">Method</a></li>
-<li class="toctree-l1"><a class="reference internal" href="usage-spectral-line.html">Basic usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="priors.html">Specifying priors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="performance.html">Tour of the features</a></li>
 <li class="toctree-l1"><a class="reference internal" href="modules.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="issues.html">Frequently Asked Questions</a></li>
@@ -120,6 +122,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -158,7 +161,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="#">Docs</a> &raquo;</li>
+      <li><a href="#" class="icon icon-home"></a> &raquo;</li>
         
       <li>Welcome to UltraNest’s documentation!</li>
     
@@ -209,7 +212,7 @@
 <li class="toctree-l1"><a class="reference internal" href="readme.html">UltraNest</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="method.html">Method</a></li>
-<li class="toctree-l1"><a class="reference internal" href="usage-spectral-line.html">Basic usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="priors.html">Specifying priors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="performance.html">Tour of the features</a></li>
 <li class="toctree-l1"><a class="reference internal" href="modules.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="issues.html">Frequently Asked Questions</a></li>
@@ -272,11 +275,12 @@ See the <a class="reference external" href="https://johannesbuchner.github.io/Ul
 <ul class="simple">
 <li><p>Pythonic</p>
 <ul>
-<li><p>pip installable</p></li>
+<li><p>pip and conda installable</p></li>
 <li><p>Easy to program for: Sanity checks with meaningful errors</p></li>
 <li><p>Can control the run programmatically and check status</p></li>
 <li><p>Reasonable defaults, but customizable</p></li>
 <li><p>Thoroughly tested with many unit and integration tests</p></li>
+<li><p>NEW: allows likelihood functions written in <a class="reference external" href="https://github.com/JohannesBuchner/UltraNest/tree/master/languages/python">Python</a>, <a class="reference external" href="https://github.com/JohannesBuchner/UltraNest/tree/master/languages/c">C</a>, <a class="reference external" href="https://github.com/JohannesBuchner/UltraNest/tree/master/languages/c%2B%2B">C++</a>, <a class="reference external" href="https://github.com/JohannesBuchner/UltraNest/tree/master/languages/c%2B%2B">Julia</a> and <a class="reference external" href="https://github.com/JohannesBuchner/UltraNest/tree/master/languages/julia">Julia</a></p></li>
 </ul>
 </li>
 <li><p>Robust exploration easily handles:</p>
@@ -286,8 +290,7 @@ See the <a class="reference external" href="https://johannesbuchner.github.io/Ul
 <li><p>Robust, parameter-free MLFriends algorithm
 (metric learning RadFriends, Buchner+14,+19), with new improvements
 (region follows new live points, clustering improves metric iteratively).</p></li>
-<li><p>High-dimensional problems with slice sampling (or ellipsoidal sampling, FlatNUTS, etc.),
-inside region.</p></li>
+<li><p>High-dimensional problems with hit-and-run sampling</p></li>
 <li><p>Wrapped/circular parameters, derived parameters</p></li>
 <li><p>Fast-slow parameters</p></li>
 </ul>
@@ -306,41 +309,33 @@ inside region.</p></li>
 <li><p>Lightweight and fast</p>
 <ul>
 <li><p>some functions implemented in Cython</p></li>
-<li><p>vectorized likelihood function calls</p></li>
-<li><p>Use multiple cores, fully parallelizable from laptops to clusters</p></li>
-<li><p>MPI support</p></li>
+<li><p><a class="reference external" href="https://johannesbuchner.github.io/UltraNest/performance.html">vectorized likelihood function calls</a></p></li>
+<li><p>Use multiple cores, fully parallelizable from laptops to computing clusters</p></li>
+<li><p><a class="reference external" href="https://johannesbuchner.github.io/UltraNest/performance.html">MPI support</a></p></li>
 </ul>
 </li>
 <li><p>Advanced visualisation and crash recovery:</p>
 <ul>
-<li><p>Checkpointing and resuming, even with different number of live points</p></li>
-<li><p>Run-time visualisations and exploration information</p></li>
+<li><p>Live view of the exploration for Jupyter notebooks and terminals</p></li>
+<li><p>Publication-ready visualisations</p></li>
 <li><p>Corner plots, run and parameter exploration diagnostic plots</p></li>
+<li><p>Checkpointing and resuming, even with different number of live points</p></li>
+<li><p>NEW: <a class="reference external" href="https://johannesbuchner.github.io/UltraNest/usage-warmstart.html">Warm-start: resume from modified data / model</a></p></li>
 </ul>
 </li>
 </ul>
-<div class="section" id="todo">
-<h4>TODO<a class="headerlink" href="#todo" title="Permalink to this headline">¶</a></h4>
-<ul class="simple">
-<li><p>Documentation:</p>
-<ul>
-<li><p>Example power law fit</p></li>
-<li><p>Example spectral line fit, white and GP</p></li>
-<li><p>Example low-d Bayesian GP emulator as pre-filter to model evaluation</p></li>
-<li><p>Example verifying integration with VB+IS</p></li>
-</ul>
-</li>
-</ul>
-</div>
 <div class="section" id="usage">
 <h4>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h4>
-<p>Read the full documentation at:</p>
+<p><a class="reference external" href="https://johannesbuchner.github.io/UltraNest/usage-spectral-line.html">Get started!</a></p>
+<p>Read the full documentation with tutorials at:</p>
 <p><a class="reference external" href="https://johannesbuchner.github.io/UltraNest/">https://johannesbuchner.github.io/UltraNest/</a></p>
+<p>There, you can also find the <a class="reference external" href="https://johannesbuchner.github.io/UltraNest/ultranest.html#ultranest.integrator.ReactiveNestedSampler">API Reference</a>.</p>
 </div>
 <div class="section" id="licence">
 <h4>Licence<a class="headerlink" href="#licence" title="Permalink to this headline">¶</a></h4>
+<p>How to <a class="reference external" href="https://johannesbuchner.github.io/UltraNest/issues.html#how-should-i-cite-ultranest">cite UltraNest</a>.</p>
 <p>GPLv3 (see LICENCE file). If you require another license, please contact me.</p>
-<p>Icon made by <a class="reference external" href="https://www.flaticon.com/authors/freepik">Freepik</a>.</p>
+<p>The cute hedgehog icon was made by <a class="reference external" href="https://www.flaticon.com/authors/freepik">Freepik</a>.</p>
 </div>
 </div>
 </div>
@@ -372,6 +367,7 @@ inside region.</p></li>
 
   <div role="contentinfo">
     <p>
+        
         &copy; Copyright 2014-2020, Johannes Buchner
 
     </p>
@@ -386,7 +382,6 @@ inside region.</p></li>
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

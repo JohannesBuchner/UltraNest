@@ -1,15 +1,18 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Method &mdash; UltraNest 2.2.1 documentation</title>
+  <title>Method &mdash; UltraNest 3.0.0 documentation</title>
   
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
 
   
   
@@ -21,7 +24,9 @@
   
 
   
-  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -30,20 +35,16 @@
         <script src="_static/doctools.js"></script>
         <script src="_static/language_data.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
         <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.18.0/dist/embed-amd.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Basic usage" href="usage-spectral-line.html" />
+    <link rel="next" title="Specifying priors" href="priors.html" />
     <link rel="prev" title="Installation" href="installation.html" /> 
 </head>
 
@@ -58,7 +59,7 @@
           
 
           
-            <a href="index.html" class="icon icon-home"> UltraNest
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> UltraNest
           
 
           
@@ -71,7 +72,7 @@
             
             
               <div class="version">
-                2.2.1
+                3.0.0
               </div>
             
           
@@ -88,6 +89,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -109,9 +111,10 @@
 <li class="toctree-l2"><a class="reference internal" href="#nested-sampler-integrator">Nested sampler &amp; integrator</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#constructing-mlfriends-regions">Constructing MLFriends regions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#sampling-from-regions">Sampling from regions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#transformed-ellipsoid">Transformed ellipsoid</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="usage-spectral-line.html">Basic usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="priors.html">Specifying priors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="performance.html">Tour of the features</a></li>
 <li class="toctree-l1"><a class="reference internal" href="modules.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="issues.html">Frequently Asked Questions</a></li>
@@ -132,6 +135,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -170,7 +174,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="index.html">Docs</a> &raquo;</li>
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
         
       <li>Method</li>
     
@@ -389,6 +393,19 @@ distributes the RadFriends bootstraps. This makes clustering very fast
 Efficiency here means being able to draw points, not whether they are
 above the likelihood contour.</p>
 </div>
+<div class="section" id="transformed-ellipsoid">
+<h2>Transformed ellipsoid<a class="headerlink" href="#transformed-ellipsoid" title="Permalink to this headline">¶</a></h2>
+<p>Additionally, a ellipsoid is also built in transformed space and used
+for rejecting points. This is only done when the transform is non-linear.
+The parameter transformation, perhaps being closer to the data constraints,
+allows the ellipsoid to follow.</p>
+<p>Users can thus tune the transform to improve the sampling efficiency.</p>
+<p>For example:</p>
+<ul class="simple">
+<li><p>L-shapes: when two parameters are added with a log-uniform prior, it could be wise to transform them into linear space.</p></li>
+<li><p>funnel-shapes: in hierarchical models, the variance and means should be decorrelated – providing the means as a fraction of the variance allows the ellipsoid to follow funnel-shapes.</p></li>
+</ul>
+</div>
 </div>
 
 
@@ -399,7 +416,7 @@ above the likelihood contour.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="usage-spectral-line.html" class="btn btn-neutral float-right" title="Basic usage" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="priors.html" class="btn btn-neutral float-right" title="Specifying priors" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
@@ -411,6 +428,7 @@ above the likelihood contour.</p>
 
   <div role="contentinfo">
     <p>
+        
         &copy; Copyright 2014-2020, Johannes Buchner
 
     </p>
@@ -425,7 +443,6 @@ above the likelihood contour.</p>
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

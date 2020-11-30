@@ -1,15 +1,18 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Frequently Asked Questions &mdash; UltraNest 2.2.1 documentation</title>
+  <title>Frequently Asked Questions &mdash; UltraNest 3.0.0 documentation</title>
   
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
 
   
   
@@ -21,7 +24,9 @@
   
 
   
-  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -30,17 +35,13 @@
         <script src="_static/doctools.js"></script>
         <script src="_static/language_data.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
         <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.18.0/dist/embed-amd.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Contributing" href="contributing.html" />
@@ -58,7 +59,7 @@
           
 
           
-            <a href="index.html" class="icon icon-home"> UltraNest
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> UltraNest
           
 
           
@@ -71,7 +72,7 @@
             
             
               <div class="version">
-                2.2.1
+                3.0.0
               </div>
             
           
@@ -88,6 +89,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -100,7 +102,7 @@
 <li class="toctree-l1"><a class="reference internal" href="readme.html">UltraNest</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="method.html">Method</a></li>
-<li class="toctree-l1"><a class="reference internal" href="usage-spectral-line.html">Basic usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="priors.html">Specifying priors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="performance.html">Tour of the features</a></li>
 <li class="toctree-l1"><a class="reference internal" href="modules.html">API</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Frequently Asked Questions</a><ul>
@@ -112,6 +114,11 @@
 <li class="toctree-l2"><a class="reference internal" href="#how-can-i-verify-that-the-step-sampler-is-correct">How can I verify that the step sampler is correct?</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#what-does-the-status-line-mean">What does the status line mean?</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#what-does-the-live-point-display-mean">What does the live point display mean?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-use-ultranest-with-c-c-fortran-julia">How do I use UltraNest with C / C++ / Fortran / Julia?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#what-is-the-difference-between-ultranest-and-multinest-dynesty">What is the difference between UltraNest and MultiNest/dynesty/…</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#what-is-the-difference-between-ultranest-and-polychord">What is the difference between UltraNest and PolyChord?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#what-is-the-difference-between-ultranest-and-dypolychord-dynesty">What is the difference between UltraNest and dyPolyChord/dynesty?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#what-is-the-difference-between-ultranest-and-emcee">What is the difference between UltraNest and emcee</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#how-should-i-cite-ultranest">How should I cite UltraNest?</a></li>
 </ul>
 </li>
@@ -132,6 +139,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -170,7 +178,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="index.html">Docs</a> &raquo;</li>
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
         
       <li>Frequently Asked Questions</li>
     
@@ -225,12 +233,18 @@
 <li><p><a class="reference internal" href="#how-can-i-verify-that-the-step-sampler-is-correct" id="id6">How can I verify that the step sampler is correct?</a></p></li>
 <li><p><a class="reference internal" href="#what-does-the-status-line-mean" id="id7">What does the status line mean?</a></p></li>
 <li><p><a class="reference internal" href="#what-does-the-live-point-display-mean" id="id8">What does the live point display mean?</a></p></li>
-<li><p><a class="reference internal" href="#how-should-i-cite-ultranest" id="id9">How should I cite UltraNest?</a></p></li>
+<li><p><a class="reference internal" href="#how-do-i-use-ultranest-with-c-c-fortran-julia" id="id9">How do I use UltraNest with C / C++ / Fortran / Julia?</a></p></li>
+<li><p><a class="reference internal" href="#what-is-the-difference-between-ultranest-and-multinest-dynesty" id="id10">What is the difference between UltraNest and MultiNest/dynesty/…</a></p></li>
+<li><p><a class="reference internal" href="#what-is-the-difference-between-ultranest-and-polychord" id="id11">What is the difference between UltraNest and PolyChord?</a></p></li>
+<li><p><a class="reference internal" href="#what-is-the-difference-between-ultranest-and-dypolychord-dynesty" id="id12">What is the difference between UltraNest and dyPolyChord/dynesty?</a></p></li>
+<li><p><a class="reference internal" href="#what-is-the-difference-between-ultranest-and-emcee" id="id13">What is the difference between UltraNest and emcee</a></p></li>
+<li><p><a class="reference internal" href="#how-should-i-cite-ultranest" id="id14">How should I cite UltraNest?</a></p></li>
 </ul>
 </div>
 <div class="section" id="how-can-i-add-a-question-here">
 <h2><a class="toc-backref" href="#id1">How can I add a question here?</a><a class="headerlink" href="#how-can-i-add-a-question-here" title="Permalink to this headline">¶</a></h2>
-<p>See <a class="reference internal" href="contributing.html"><span class="doc">Contributing</span></a> for how to report bugs and ask questions. (hint: open a github issue)</p>
+<p>See <a class="reference internal" href="contributing.html"><span class="doc">Contributing</span></a> for how to report bugs and ask questions.</p>
+<p>Opening a github issue is preferred, because then other people can find the question and answer.</p>
 </div>
 <div class="section" id="how-do-i-suppress-the-output">
 <h2><a class="toc-backref" href="#id2">How do I suppress the output?</a><a class="headerlink" href="#how-do-i-suppress-the-output" title="Permalink to this headline">¶</a></h2>
@@ -269,13 +283,14 @@ The <a class="reference external" href="example-sine-highd.html">high-dimensiona
 <p>Computationally:</p>
 <blockquote>
 <div><ul class="simple">
-<li><p>Speed up the likelihood function</p></li>
+<li><p>Speed up the likelihood function, for example by using numpy more efficiently</p></li>
 <li><p>Vectorize the likelihood function (see <a class="reference internal" href="performance.html"><span class="doc">Tour of the features</span></a>).</p></li>
 </ul>
 </div></blockquote>
-<p>Algorithimically:</p>
+<p>Algorithmically:</p>
 <blockquote>
 <div><ul class="simple">
+<li><p>Modify the transform to better map the live points to data constraints.</p></li>
 <li><p>Use a step sampler (see <cite>the high-d tutorial example &lt;example-sine-highd.html&gt;</cite>)</p></li>
 <li><p>Try to alter your model</p></li>
 </ul>
@@ -346,20 +361,140 @@ chances are good that the result is reliable.</p></li>
 </pre></div>
 </div>
 </div>
+<div class="section" id="how-do-i-use-ultranest-with-c-c-fortran-julia">
+<h2><a class="toc-backref" href="#id9">How do I use UltraNest with C / C++ / Fortran / Julia?</a><a class="headerlink" href="#how-do-i-use-ultranest-with-c-c-fortran-julia" title="Permalink to this headline">¶</a></h2>
+<p>Examples are available for C, C++, Fortran and Julia: <a class="reference external" href="https://github.com/JohannesBuchner/UltraNest/lang">https://github.com/JohannesBuchner/UltraNest/lang</a></p>
+<p>These implement the same prior and likelihood functions. The
+functions are vectorized to reduce the number of function calls.</p>
+<p>The C, C++ and Fortran functions are compiled to a dynamic library,
+which is used from Python.</p>
+<p>The Julia example differs in that the code is run from the Julia
+environment, calling Python which calls back Julia.</p>
+</div>
+<div class="section" id="what-is-the-difference-between-ultranest-and-multinest-dynesty">
+<h2><a class="toc-backref" href="#id10">What is the difference between UltraNest and MultiNest/dynesty/…</a><a class="headerlink" href="#what-is-the-difference-between-ultranest-and-multinest-dynesty" title="Permalink to this headline">¶</a></h2>
+<p>MultiNest, PyMultiNest, nestle, dynesty, NestedSamplers.jl</p>
+<p>Correctness:</p>
+<ul class="simple">
+<li><p>MultiNest, PyMultiNest, nestle, dynesty, NestedSamplers.jl implement and default to
+multi-ellipsoidal rejection. This is a heuristic technique
+known to give biased results for some problems, including the
+<a class="reference external" href="https://arxiv.org/abs/1407.5459">hyper-rectangle</a> and the <a class="reference external" href="https://arxiv.org/abs/1304.7808">LogGamma</a> problems,
+as well as real-world applications.
+This problem does not really go away with decreasing efficiency (increasing the ellipsoid scale factor).
+All implementations of MultiNest will suffer this issue.</p></li>
+<li><p>MultiNest also implements importance nested sampling, which has been claimed to
+<cite>reduce this problem &lt;https://ui.adsabs.harvard.edu/abs/2019OJAp….2E..10F/abstract&gt;</cite>.
+However, importance nested sampling severely <a class="reference external" href="https://ui.adsabs.harvard.edu/abs/2020AJ....159...73N/abstract">under-estimates the uncertainties</a>.</p></li>
+<li><p>UltraNest implements MLFriends, a parameter-free algorithm that derives
+a safe region by learning from the points themselves using cross-validation.</p></li>
+<li><p>UltraNest implements safer uncertainty estimation.
+It incorporates the scatter in both volume estimates and likelihood estimates.
+The other libraries only support a static volume uncertainty estimate.
+UltraNest additionally uses bootstrapping to emulate multiple runs.</p></li>
+</ul>
+<p>Implementation differences:</p>
+<ul class="simple">
+<li><p>UltraNest supports writing to disk (check-pointing) and resuming.
+nestle and dynesty do not support this.</p></li>
+<li><p>UltraNest supports parallelisation out-of-the-box.
+MPI support is built-in, like in MultiNest, allowing scaling to clusters.</p></li>
+<li><p>MultiNest, dynesty, nestle, and other algorithms need to pause parallelisation
+while the main process clusters the live points into a region.
+UltraNest also distributes this step.
+UltraNest does not discard additional newly discovered live points in other processes,
+and allows step samplers to resume when the likelihood threshold is raised.
+This saves model evaluations.</p></li>
+<li><p>UltraNest gives more helpful error messages when the likelihood has a bug.</p></li>
+<li><p>UltraNest has a visualisation to observe the current live points.
+This allows interrupting the run when the model seems wrong,
+without needing to wait for the full results.</p></li>
+</ul>
+<p>Algorithmic speed (number of likelihood evaluations):</p>
+<ul class="simple">
+<li><p>For problems with an ellipsoid likelihood shapes, the algorithms of MultiNest and UltraNest are equally fast.
+For more complicated problems with up to 3 parameters, UltraNest is typically faster,
+while for higher dimensional problems, it depends.
+Sometimes the MultiNest algorithm requires fewer model evaluations by factors of several.
+However, the above safety caveats apply – UltraNest favors correctness over speed.</p></li>
+</ul>
+<p>Computational speed:</p>
+<ul class="simple">
+<li><p>nestle is a very small library implemented in pure python, which is fast
+for single-processors. dynesty is also pure python, but
+substantially slower due to design choices and depth of the call stack.
+UltraNest tries to keep the call stack shallow, and uses Cython to
+accelerate some portions of the code, making it on average faster than dynesty.</p></li>
+<li><p>UltraNest allows the user to define vectorized likelihood functions.
+This reduces the number of python function calls, making it much faster.
+UltraNest also supports this for the C/C++/Fortran/Julia languages.</p></li>
+<li><p>Paired with MPI parallelisation.</p></li>
+</ul>
+<p>Distribution differences:</p>
+<ul class="simple">
+<li><p>MultiNest uses a custom licence which is not open source by OSI standards.
+UltraNest is free and open source software.</p></li>
+<li><p>MultiNest, being written in Fortran, requires manual compilation.
+UltraNest, nestle and dynesty can be installed using pip and conda.
+This allows easy integration as dependency into other packages.</p></li>
+</ul>
+</div>
+<div class="section" id="what-is-the-difference-between-ultranest-and-polychord">
+<h2><a class="toc-backref" href="#id11">What is the difference between UltraNest and PolyChord?</a><a class="headerlink" href="#what-is-the-difference-between-ultranest-and-polychord" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>When UltraNest is run with a slice stepsampler, it is very similar to PolyChord.</p></li>
+<li><p>UltraNest supports combining of region rejection and random walking,
+which avoids unnecessary model evaluations.</p></li>
+<li><p>UltraNest also allows running with MLFriends first, and resuming with random walking.</p></li>
+<li><p>UltraNest allows auto-tuning of the number of steps during the run.
+In PolyChord this parameter has to be hand-tuned.</p></li>
+<li><p>PolyChord is not open-source, but uses a custom licence.
+UltraNest is free and open source software.</p></li>
+</ul>
+</div>
+<div class="section" id="what-is-the-difference-between-ultranest-and-dypolychord-dynesty">
+<h2><a class="toc-backref" href="#id12">What is the difference between UltraNest and dyPolyChord/dynesty?</a><a class="headerlink" href="#what-is-the-difference-between-ultranest-and-dypolychord-dynesty" title="Permalink to this headline">¶</a></h2>
+<p>First, see the differences to PolyChord and dynesty above:
+<cite>What is the difference between UltraNest and MultiNest/dynesty/…</cite>,
+<cite>What is the difference between UltraNest and PolyChord?</cite>.</p>
+<p>Here, the different methods to vary the live points is discussed.</p>
+<p>The dynamic nested sampling implemented in DyPolyChord/dynesty is
+a heuristic optimization with a fudge-factor to balance improving
+the posterior samples or the integral.</p>
+<p>UltraNest implements a more general and rigorous approach to varying the number
+of live points (tree search view, Buchner et al., in prep).
+The number of live points can be tuned to increase towards multiple,
+independent goals, including the integral accuracy,
+posterior weight accuracy, reliability to subsampling (KL).</p>
+<p>UltraNest is implementing in this way both
+<a class="reference external" href="https://arxiv.org/abs/1805.03924">nested sampling and sequential Monte Carlo</a>.</p>
+<p>UltraNest also allows the number of live points to increase when
+clusters are detected. This is not supported in dynesty.
+PolyChord (and MultiNest) splits the nested sampling runs into completely independent runs,
+however this step is not well-understood in the literature.</p>
+</div>
+<div class="section" id="what-is-the-difference-between-ultranest-and-emcee">
+<h2><a class="toc-backref" href="#id13">What is the difference between UltraNest and emcee</a><a class="headerlink" href="#what-is-the-difference-between-ultranest-and-emcee" title="Permalink to this headline">¶</a></h2>
+<p>emcee can work okay if the posterior is a mono-modal, multi-variate gaussian.
+UltraNest handles a wider range of problems. This includes
+multiple solutions/modes, non-linear correlation among parameters and posteriors with heavy or light tails.</p>
+<p>emcee requires MCMC convergence checks which are tricky to get correct.</p>
+</div>
 <div class="section" id="how-should-i-cite-ultranest">
-<h2><a class="toc-backref" href="#id9">How should I cite UltraNest?</a><a class="headerlink" href="#how-should-i-cite-ultranest" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id14">How should I cite UltraNest?</a><a class="headerlink" href="#how-should-i-cite-ultranest" title="Permalink to this headline">¶</a></h2>
 <p>The main method (MLFriends) is described in:</p>
 <ul class="simple">
-<li><p>Buchner, J. (2014): A statistical test for Nested Sampling algorithms</p></li>
-<li><p>Buchner, J. (2019): Collaborative Nested Sampling: Big Data versus Complex Physical Models</p></li>
+<li><p>Buchner, J. (2014): <a class="reference external" href="https://arxiv.org/abs/1407.5459">A statistical test for Nested Sampling algorithms</a> (<a class="reference external" href="https://scholar.googleusercontent.com/scholar.bib?q=info:yTXfZFtI_vYJ:scholar.google.com/&amp;output=citation&amp;scisdr=CgXWBaaNEK7YkjRrxRc:AAGBfm0AAAAAX8Nu3Rcw9Cl4oM-O20oJrdlLRUQB2IhI&amp;scisig=AAGBfm0AAAAAX8Nu3ftd-SBQKMLTBDogxM9U1n9uLKdi&amp;scisf=4&amp;ct=citation&amp;cd=-1&amp;hl=en&amp;scfhb=1">bibtex</a>)</p></li>
+<li><p>Buchner, J. (2019): <a class="reference external" href="https://arxiv.org/abs/1707.04476">Collaborative Nested Sampling: Big Data versus Complex Physical Models</a> (<a class="reference external" href="https://ui.adsabs.harvard.edu/abs/2019PASP..131j8005B/exportcitation">bibtex</a>)</p></li>
 </ul>
 <p>So it is appropriate to write something like</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>We derive posterior probability distributions and the Bayesian
 evidence with the nested sampling Monte Carlo algorithm
-MLFriends (Buchner, 2014; 2019) using the
-UltraNest[https://johannesbuchner.github.io/UltraNest/] software.
+MLFriends (Buchner, 2014; 2019) using
+UltraNest\footnote{\url{https://johannesbuchner.github.io/UltraNest/}}.
 </pre></div>
 </div>
+<p>A paper presenting UltraNest implementation details is in preparation.</p>
 <p>If you use the corner plot, also cite <code class="docutils literal notranslate"><span class="pre">corner</span></code>.
 If you use the trace or run plot, also cite <code class="docutils literal notranslate"><span class="pre">dynesty</span></code>.</p>
 </div>
@@ -385,6 +520,7 @@ If you use the trace or run plot, also cite <code class="docutils literal notran
 
   <div role="contentinfo">
     <p>
+        
         &copy; Copyright 2014-2020, Johannes Buchner
 
     </p>
@@ -399,7 +535,6 @@ If you use the trace or run plot, also cite <code class="docutils literal notran
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

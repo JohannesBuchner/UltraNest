@@ -1,0 +1,930 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Tutorial: experimenting with models &mdash; UltraNest 3.0.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+    <link rel="shortcut icon" href="_static/icon.ico"/>
+  
+  
+  
+    <link rel="canonical" href="https://johannesbuchner.github.io/UltraNest/example-warmstart.html"/>
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+        <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.18.0/dist/embed-amd.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+          
+
+          
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> UltraNest
+          
+
+          
+            
+            <img src="_static/logo.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                3.0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="readme.html">UltraNest</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="method.html">Method</a></li>
+<li class="toctree-l1"><a class="reference internal" href="priors.html">Specifying priors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="performance.html">Tour of the features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="issues.html">Frequently Asked Questions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="history.html">Release Notes</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="example-sine-line.html">Time series fitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-sine-modelcomparison.html">Model comparison</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-sine-highd.html">Higher-dimensional fitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-intrinsic-distribution.html">Tutorial: intrinsic distribution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-line.html">Tutorial: fitting a line</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-outliers.html">Tutorial: distribution with outliers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-sine-bayesian-workflow.html">Bayesian workflow</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">UltraNest</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content style-external-links">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Tutorial: experimenting with models</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt *,
+div.nbinput.container div.input_area pre,
+div.nboutput.container div.output_area pre,
+div.nbinput.container div.input_area .highlight,
+div.nboutput.container div.output_area .highlight {
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+div.nbinput.container > div[class*=highlight],
+div.nboutput.container > div[class*=highlight] {
+    margin: 0;
+}
+
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt * {
+    background: none;
+}
+
+div.nboutput.container div.output_area .highlight,
+div.nboutput.container div.output_area pre {
+    background: unset;
+}
+
+div.nboutput.container div.output_area div.highlight {
+    color: unset;  /* override Pygments text color */
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
+}
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        width: unset;
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    /*background: #f5f5f5;*/
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 5px;
+    margin: 0;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt a.copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="Tutorial:-experimenting-with-models">
+<h1>Tutorial: experimenting with models<a class="headerlink" href="#Tutorial:-experimenting-with-models" title="Permalink to this headline">¶</a></h1>
+<p>In this tutorial you will learn:</p>
+<ul class="simple">
+<li><p>How to play with model variations</p></li>
+<li><p>How UltraNest can resume and reuse an existing run, even if you modify the data/likelihood</p></li>
+</ul>
+<p>As a simple example, lets say we want to estimate the mean and standard deviation of a sample of points. Over time, more and more points are added.</p>
+<div class="section" id="Generate-some-data">
+<h2>Generate some data<a class="headerlink" href="#Generate-some-data" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">pi</span><span class="p">,</span> <span class="n">log</span>
+
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">Ndata</span> <span class="o">=</span> <span class="mi">200</span>
+<span class="n">mean_true</span> <span class="o">=</span> <span class="mf">42.0</span>
+<span class="n">sigma_true</span> <span class="o">=</span> <span class="mf">0.1</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">mean_true</span><span class="p">,</span> <span class="n">sigma_true</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">Ndata</span><span class="p">)</span>
+
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Visualise-the-data">
+<h2>Visualise the data<a class="headerlink" href="#Visualise-the-data" title="Permalink to this headline">¶</a></h2>
+<p>Lets plot the data first to see what is going on:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">Ndata</span><span class="p">),</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">yerr</span><span class="o">=</span><span class="n">sigma_true</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">);</span>
+
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&lt;ErrorbarContainer object of 3 artists&gt;
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/example-warmstart_4_1.svg" src="_images/example-warmstart_4_1.svg" /></div>
+</div>
+</div>
+<div class="section" id="Model-setup">
+<h2>Model setup<a class="headerlink" href="#Model-setup" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">ultranest</span> <span class="kn">import</span> <span class="n">ReactiveNestedSampler</span>
+
+<span class="n">parameters</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="s1">&#39;scatter&#39;</span><span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">prior_transform</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">z</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2000</span> <span class="o">-</span> <span class="mi">1000</span>
+    <span class="n">z</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="mi">4</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">z</span>
+
+<span class="kn">import</span> <span class="nn">scipy.stats</span>
+<span class="k">def</span> <span class="nf">log_likelihood</span><span class="p">(</span><span class="n">params</span><span class="p">):</span>
+    <span class="n">mean</span><span class="p">,</span> <span class="n">sigma</span> <span class="o">=</span> <span class="n">params</span>
+    <span class="k">return</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span><span class="o">.</span><span class="n">logpdf</span><span class="p">(</span><span class="n">yseen</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Adding-one-data-point-at-a-time,-no-warm-start">
+<h2>Adding one data point at a time, no warm start<a class="headerlink" href="#Adding-one-data-point-at-a-time,-no-warm-start" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">reference_results</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">Ndata</span><span class="p">,</span> <span class="mi">20</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Iteration with </span><span class="si">%d</span><span class="s2"> data points&quot;</span> <span class="o">%</span> <span class="n">i</span><span class="p">)</span>
+    <span class="n">yseen</span> <span class="o">=</span> <span class="n">y</span><span class="p">[:</span><span class="n">i</span><span class="p">]</span>
+    <span class="n">sampler_ref</span> <span class="o">=</span> <span class="n">ReactiveNestedSampler</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="n">log_likelihood</span><span class="p">,</span> <span class="n">prior_transform</span><span class="p">)</span>
+    <span class="n">res_ref</span> <span class="o">=</span> <span class="n">sampler_ref</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">min_num_live_points</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">max_num_improvement_loops</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">viz_callback</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">frac_remain</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">reference_results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">res_ref</span><span class="p">)</span>
+
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+Iteration with 10 data points
+[ultranest] Sampling 400 live points from prior ...
+[ultranest] Explored until L=7
+[ultranest] Likelihood function evaluations: 9505
+[ultranest] Reached maximum number of improvement loops.
+[ultranest] done iterating.
+
+Iteration with 30 data points
+[ultranest] Sampling 400 live points from prior ...
+[ultranest] Explored until L=3e+01
+[ultranest] Likelihood function evaluations: 10726
+[ultranest] Reached maximum number of improvement loops.
+[ultranest] done iterating.
+
+Iteration with 50 data points
+[ultranest] Sampling 400 live points from prior ...
+[ultranest] Explored until L=5e+01
+[ultranest] Likelihood function evaluations: 10118
+[ultranest] Reached maximum number of improvement loops.
+[ultranest] done iterating.
+
+Iteration with 70 data points
+[ultranest] Sampling 400 live points from prior ...
+[ultranest] Explored until L=6e+01
+[ultranest] Likelihood function evaluations: 9824
+[ultranest] Reached maximum number of improvement loops.
+[ultranest] done iterating.
+
+Iteration with 90 data points
+[ultranest] Sampling 400 live points from prior ...
+[ultranest] Explored until L=9e+01
+[ultranest] Likelihood function evaluations: 10660
+[ultranest] Reached maximum number of improvement loops.
+[ultranest] done iterating.
+
+Iteration with 110 data points
+[ultranest] Sampling 400 live points from prior ...
+[ultranest] Explored until L=1e+02
+[ultranest] Likelihood function evaluations: 12089
+[ultranest] Reached maximum number of improvement loops.
+[ultranest] done iterating.
+
+Iteration with 130 data points
+[ultranest] Sampling 400 live points from prior ...
+[ultranest] Explored until L=1e+02
+[ultranest] Likelihood function evaluations: 10744
+[ultranest] Reached maximum number of improvement loops.
+[ultranest] done iterating.
+
+Iteration with 150 data points
+[ultranest] Sampling 400 live points from prior ...
+[ultranest] Explored until L=2e+02
+[ultranest] Likelihood function evaluations: 10553
+[ultranest] Reached maximum number of improvement loops.
+[ultranest] done iterating.
+
+Iteration with 170 data points
+[ultranest] Sampling 400 live points from prior ...
+[ultranest] Explored until L=2e+02
+[ultranest] Likelihood function evaluations: 11979
+[ultranest] Reached maximum number of improvement loops.
+[ultranest] done iterating.
+
+Iteration with 190 data points
+[ultranest] Sampling 400 live points from prior ...
+[ultranest] Explored until L=2e+02
+[ultranest] Likelihood function evaluations: 10801
+[ultranest] Reached maximum number of improvement loops.
+[ultranest] done iterating.
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Adding-one-data-point-at-a-time,-with-warm-start">
+<h2>Adding one data point at a time, with warm start<a class="headerlink" href="#Adding-one-data-point-at-a-time,-with-warm-start" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="n">yseen</span> <span class="o">=</span> <span class="n">y</span><span class="p">[:</span><span class="n">i</span><span class="p">]</span>
+
+<span class="c1"># delete any existing content:</span>
+<span class="n">ReactiveNestedSampler</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="n">log_likelihood</span><span class="p">,</span> <span class="n">prior_transform</span><span class="p">,</span>
+                      <span class="n">log_dir</span><span class="o">=</span><span class="s1">&#39;warmstartdoc&#39;</span><span class="p">,</span> <span class="n">resume</span><span class="o">=</span><span class="s1">&#39;overwrite&#39;</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">Ndata</span><span class="p">,</span> <span class="mi">20</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Iteration with </span><span class="si">%d</span><span class="s2"> data points&quot;</span> <span class="o">%</span> <span class="n">i</span><span class="p">)</span>
+
+    <span class="n">yseen</span> <span class="o">=</span> <span class="n">y</span><span class="p">[:</span><span class="n">i</span><span class="p">]</span>
+    <span class="n">sampler</span> <span class="o">=</span> <span class="n">ReactiveNestedSampler</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="n">log_likelihood</span><span class="p">,</span> <span class="n">prior_transform</span><span class="p">,</span>
+                                              <span class="n">log_dir</span><span class="o">=</span><span class="s1">&#39;warmstartdoc&#39;</span><span class="p">,</span> <span class="n">resume</span><span class="o">=</span><span class="s1">&#39;resume-similar&#39;</span><span class="p">)</span>
+    <span class="n">ncall_initial</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">sampler</span><span class="o">.</span><span class="n">ncall</span><span class="p">)</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">sampler</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">frac_remain</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">viz_callback</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">i</span><span class="p">,</span> <span class="n">res</span><span class="p">,</span> <span class="n">ncall_initial</span><span class="p">))</span>
+
+
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+Iteration with 10 data points
+[ultranest] Sampling 400 live points from prior ...
+[ultranest] Explored until L=7
+[ultranest] Likelihood function evaluations: 9105
+[ultranest] Writing samples and results to disk ...
+[ultranest] Writing samples and results to disk ... done
+[ultranest]   logZ = -5.744 +- 0.09967
+[ultranest] Effective samples strategy satisfied (ESS = 992.1, need &gt;400)
+[ultranest] Posterior uncertainty strategy is satisfied (KL: 0.46+-0.07 nat, need &lt;0.50 nat)
+[ultranest] Evidency uncertainty strategy is satisfied (dlogz=0.26, need &lt;0.5)
+[ultranest]   logZ error budget: single: 0.17 bs:0.10 tail:0.41 total:0.42 required:&lt;0.50
+[ultranest] done iterating.
+
+Iteration with 30 data points
+[ultranest] Trying to resume from previous run, but likelihood function gives different result: [0.52098483 0.28034306] gave 6.865222228747802, now 23.8824068553758
+[ultranest] Resuming from 1868 stored points
+[ultranest] Explored until L=3e+01
+[ultranest] Likelihood function evaluations: 15667
+[ultranest] Writing samples and results to disk ...
+[ultranest] Writing samples and results to disk ... done
+[ultranest]   logZ = 12.04 +- 0.1481
+[ultranest] Effective samples strategy satisfied (ESS = 977.4, need &gt;400)
+[ultranest] Posterior uncertainty strategy is satisfied (KL: 0.46+-0.06 nat, need &lt;0.50 nat)
+[ultranest] Evidency uncertainty strategy is satisfied (dlogz=0.44, need &lt;0.5)
+[ultranest]   logZ error budget: single: 0.18 bs:0.15 tail:0.41 total:0.43 required:&lt;0.50
+[ultranest] done iterating.
+
+Iteration with 50 data points
+[ultranest] Trying to resume from previous run, but likelihood function gives different result: [0.52099517 0.2600334 ] gave 26.023261427324037, now 44.92037183684748
+[ultranest] Resuming from 1460 stored points
+[ultranest] Explored until L=5e+01
+[ultranest] Likelihood function evaluations: 23676
+[ultranest] Writing samples and results to disk ...
+[ultranest] Writing samples and results to disk ... done
+[ultranest]   logZ = 30.57 +- 0.1231
+[ultranest] Effective samples strategy satisfied (ESS = 984.8, need &gt;400)
+[ultranest] Posterior uncertainty strategy is satisfied (KL: 0.45+-0.05 nat, need &lt;0.50 nat)
+[ultranest] Evidency uncertainty strategy is satisfied (dlogz=0.36, need &lt;0.5)
+[ultranest]   logZ error budget: single: 0.19 bs:0.12 tail:0.41 total:0.42 required:&lt;0.50
+[ultranest] done iterating.
+
+Iteration with 70 data points
+[ultranest] Trying to resume from previous run, but likelihood function gives different result: [0.52100228 0.24447593] gave 45.566294290527175, now 64.85676642392573
+[ultranest] Resuming from 1187 stored points
+[ultranest] Explored until L=6e+01
+[ultranest] Likelihood function evaluations: 32193
+[ultranest] Writing samples and results to disk ...
+[ultranest] Writing samples and results to disk ... done
+[ultranest]   logZ = 49.04 +- 0.1221
+[ultranest] Effective samples strategy satisfied (ESS = 979.2, need &gt;400)
+[ultranest] Posterior uncertainty strategy is satisfied (KL: 0.46+-0.07 nat, need &lt;0.50 nat)
+[ultranest] Evidency uncertainty strategy is satisfied (dlogz=0.25, need &lt;0.5)
+[ultranest]   logZ error budget: single: 0.19 bs:0.12 tail:0.41 total:0.42 required:&lt;0.50
+[ultranest] done iterating.
+
+Iteration with 90 data points
+[ultranest] Trying to resume from previous run, but likelihood function gives different result: [0.521003  0.2525997] gave 64.58041307326059, now 86.53404889764462
+[ultranest] Resuming from 2250 stored points
+[ultranest] Explored until L=9e+01
+[ultranest] Likelihood function evaluations: 38597
+[ultranest] Writing samples and results to disk ...
+[ultranest] Writing samples and results to disk ... done
+[ultranest]   logZ = 71.48 +- 0.1397
+[ultranest] Effective samples strategy satisfied (ESS = 981.5, need &gt;400)
+[ultranest] Posterior uncertainty strategy is satisfied (KL: 0.46+-0.06 nat, need &lt;0.50 nat)
+[ultranest] Evidency uncertainty strategy is satisfied (dlogz=0.33, need &lt;0.5)
+[ultranest]   logZ error budget: single: 0.19 bs:0.14 tail:0.41 total:0.43 required:&lt;0.50
+[ultranest] done iterating.
+
+Iteration with 110 data points
+[ultranest] Trying to resume from previous run, but likelihood function gives different result: [0.52099983 0.23568817] gave 87.21772001566896, now 112.205385143945
+[ultranest] Resuming from 2299 stored points
+[ultranest] Explored until L=1e+02
+[ultranest] Likelihood function evaluations: 45317
+[ultranest] Writing samples and results to disk ...
+[ultranest] Writing samples and results to disk ... done
+[ultranest]   logZ = 95.53 +- 0.1418
+[ultranest] Effective samples strategy satisfied (ESS = 980.2, need &gt;400)
+[ultranest] Posterior uncertainty strategy is satisfied (KL: 0.46+-0.10 nat, need &lt;0.50 nat)
+[ultranest] Evidency uncertainty strategy is satisfied (dlogz=0.41, need &lt;0.5)
+[ultranest]   logZ error budget: single: 0.20 bs:0.14 tail:0.41 total:0.43 required:&lt;0.50
+[ultranest] done iterating.
+
+Iteration with 130 data points
+[ultranest] Trying to resume from previous run, but likelihood function gives different result: [0.5209989  0.23720107] gave 111.98344223933148, now 125.93163789270002
+[ultranest] Resuming from 2519 stored points
+[ultranest] Explored until L=1e+02
+[ultranest] Likelihood function evaluations: 53158
+[ultranest] Writing samples and results to disk ...
+[ultranest] Writing samples and results to disk ... done
+[ultranest]   logZ = 106.9 +- 0.1665
+[ultranest] Effective samples strategy satisfied (ESS = 976.5, need &gt;400)
+[ultranest] Posterior uncertainty strategy is satisfied (KL: 0.47+-0.08 nat, need &lt;0.50 nat)
+[ultranest] Evidency uncertainty strategy is satisfied (dlogz=0.32, need &lt;0.5)
+[ultranest]   logZ error budget: single: 0.22 bs:0.17 tail:0.41 total:0.44 required:&lt;0.50
+[ultranest] done iterating.
+
+Iteration with 150 data points
+[ultranest] Trying to resume from previous run, but likelihood function gives different result: [0.52100452 0.23462919] gave 126.1455902309205, now 151.5186001792962
+[ultranest] Resuming from 2250 stored points
+[ultranest] Explored until L=2e+02
+[ultranest] Likelihood function evaluations: 60387
+[ultranest] Writing samples and results to disk ...
+[ultranest] Writing samples and results to disk ... done
+[ultranest]   logZ = 133.9 +- 0.129
+[ultranest] Effective samples strategy satisfied (ESS = 978.7, need &gt;400)
+[ultranest] Posterior uncertainty strategy is satisfied (KL: 0.46+-0.06 nat, need &lt;0.50 nat)
+[ultranest] Evidency uncertainty strategy is satisfied (dlogz=0.40, need &lt;0.5)
+[ultranest]   logZ error budget: single: 0.20 bs:0.13 tail:0.41 total:0.43 required:&lt;0.50
+[ultranest] done iterating.
+
+Iteration with 170 data points
+[ultranest] Trying to resume from previous run, but likelihood function gives different result: [0.52100027 0.24083937] gave 150.97865929164323, now 165.84429690201858
+[ultranest] Resuming from 2250 stored points
+[ultranest] Explored until L=2e+02
+[ultranest] Likelihood function evaluations: 67331
+[ultranest] Writing samples and results to disk ...
+[ultranest] Writing samples and results to disk ... done
+[ultranest]   logZ = 149 +- 0.1497
+[ultranest] Effective samples strategy satisfied (ESS = 974.5, need &gt;400)
+[ultranest] Posterior uncertainty strategy is satisfied (KL: 0.47+-0.06 nat, need &lt;0.50 nat)
+[ultranest] Evidency uncertainty strategy is satisfied (dlogz=0.29, need &lt;0.5)
+[ultranest]   logZ error budget: single: 0.20 bs:0.15 tail:0.41 total:0.43 required:&lt;0.50
+[ultranest] done iterating.
+
+Iteration with 190 data points
+[ultranest] Trying to resume from previous run, but likelihood function gives different result: [0.5210047  0.24587624] gave 165.52422774972237, now 186.4506673491101
+[ultranest] Resuming from 2250 stored points
+[ultranest] Explored until L=2e+02
+[ultranest] Likelihood function evaluations: 74006
+[ultranest] Writing samples and results to disk ...
+[ultranest] Writing samples and results to disk ... done
+[ultranest]   logZ = 170.7 +- 0.1086
+[ultranest] Effective samples strategy satisfied (ESS = 979.1, need &gt;400)
+[ultranest] Posterior uncertainty strategy is satisfied (KL: 0.46+-0.06 nat, need &lt;0.50 nat)
+[ultranest] Evidency uncertainty strategy is satisfied (dlogz=0.19, need &lt;0.5)
+[ultranest]   logZ error budget: single: 0.20 bs:0.11 tail:0.41 total:0.42 required:&lt;0.50
+[ultranest] done iterating.
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Likelihood-evaluations-saved">
+<h2>Likelihood evaluations saved<a class="headerlink" href="#Likelihood-evaluations-saved" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">ndim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">res</span><span class="p">,</span> <span class="n">ncall_initial</span><span class="p">),</span> <span class="n">res_ref</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">reference_results</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndim</span><span class="p">):</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="n">ndim</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="o">+</span><span class="n">j</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">i</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">res</span><span class="p">[</span><span class="s1">&#39;samples&#39;</span><span class="p">][:,</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">yerr</span><span class="o">=</span><span class="n">res</span><span class="p">[</span><span class="s1">&#39;samples&#39;</span><span class="p">][:,</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">(),</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">i</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">res_ref</span><span class="p">[</span><span class="s1">&#39;samples&#39;</span><span class="p">][:,</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">yerr</span><span class="o">=</span><span class="n">res_ref</span><span class="p">[</span><span class="s1">&#39;samples&#39;</span><span class="p">][:,</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">(),</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="n">ndim</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="o">+</span><span class="n">ndim</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;$\log(\Delta Z)$&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">res</span><span class="p">[</span><span class="s1">&#39;logz&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">res_ref</span><span class="p">[</span><span class="s1">&#39;logz&#39;</span><span class="p">],</span> <span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="n">ndim</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="o">+</span><span class="n">ndim</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Likelihood call fraction&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="p">((</span><span class="n">res</span><span class="p">[</span><span class="s1">&#39;ncall&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">ncall_initial</span><span class="p">)</span> <span class="o">/</span> <span class="n">res_ref</span><span class="p">[</span><span class="s1">&#39;ncall&#39;</span><span class="p">]),</span> <span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="n">ndim</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">hlines</span><span class="p">(</span><span class="n">mean_true</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">linestyles</span><span class="o">=</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="n">ndim</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">hlines</span><span class="p">(</span><span class="n">sigma_true</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">linestyles</span><span class="o">=</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+&lt;ipython-input-1-b199cde2cbba&gt;:5: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
+  plt.subplot(ndim + 2, 1, 1+j)
+&lt;ipython-input-1-b199cde2cbba&gt;:10: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
+  plt.subplot(ndim + 2, 1, 1+ndim)
+&lt;ipython-input-1-b199cde2cbba&gt;:13: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
+  plt.subplot(ndim + 2, 1, 1+ndim+1)
+&lt;ipython-input-1-b199cde2cbba&gt;:18: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
+  plt.subplot(ndim + 2, 1, 1)
+&lt;ipython-input-1-b199cde2cbba&gt;:20: MatplotlibDeprecationWarning: Adding an axes using the same arguments as a previous axes currently reuses the earlier instance.  In a future version, a new instance will always be created and returned.  Meanwhile, this warning can be suppressed, and the future behavior ensured, by passing a unique label to each axes instance.
+  plt.subplot(ndim + 2, 1, 2)
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+&lt;matplotlib.collections.LineCollection at 0x7ff19bf495e0&gt;
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/example-warmstart_12_2.svg" src="_images/example-warmstart_12_2.svg" /></div>
+</div>
+</div>
+<div class="section" id="Conclusion">
+<h2>Conclusion<a class="headerlink" href="#Conclusion" title="Permalink to this headline">¶</a></h2>
+<p>Notice the time saving in the bottom panel a cost reduction of ~30%. This benefit is <em>independent of problem dimension</em>. The cost savings are higher, the more similar the modified problem is.</p>
+<p>This feature allows you to:</p>
+<ul class="simple">
+<li><p>vary the data (change the analysis pipeline)</p></li>
+<li><p>vary model assumptions</p></li>
+</ul>
+<p><strong>without needing to start the computation from scratch</strong> (potentially costly).</p>
+<p>Warmstart (resume=‘resume-similar’) is <em>experimental</em> and it is recommended to do a full, clean run to obtain final, reliable results before publication.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2014-2020, Johannes Buchner
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
