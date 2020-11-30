@@ -9,6 +9,7 @@ Welcome to UltraNest's documentation!
    installation
    method
    usage-spectral-line.ipynb
+   priors.ipynb
    performance
    modules
    issues

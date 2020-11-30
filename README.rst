@@ -103,14 +103,17 @@ Features
 Usage
 ^^^^^
 
+`Get started! <https://johannesbuchner.github.io/UltraNest/usage-spectral-line.html>`_
+
 Read the full documentation with tutorials at:
 
 https://johannesbuchner.github.io/UltraNest/
 
+There, you can also find the `API Reference <https://johannesbuchner.github.io/UltraNest/ultranest.html#ultranest.integrator.ReactiveNestedSampler>`_.
 
 Licence
 ^^^^^^^
 
 GPLv3 (see LICENCE file). If you require another license, please contact me.
 
-Icon made by `Freepik <https://www.flaticon.com/authors/freepik>`_.
+The cute hedgehog icon was made by `Freepik <https://www.flaticon.com/authors/freepik>`_.

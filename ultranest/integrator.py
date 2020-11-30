@@ -227,6 +227,16 @@ def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform, verbose=F
             Lmin2 = node2.value
 
             assert len(active_values) == len(active_values2), (len(active_values), len(active_values2))
+            active_values_order = np.argsort(active_values)
+            active_values2_order = np.argsort(active_values2)
+            mask_order_different = active_values_order != active_values2_order
+            EMD = np.zeros(len(active_values), dtype=int)
+            for i in range(len(active_values)-1):
+                EMD[i+1] = active_values_order[i] - active_values2_order[i] + EMD[i]
+            # mask_order_different
+            reorders = list(zip(active_values_order[active_values_order!=active_values2_order], active_values2_order[active_values_order!=active_values2_order]))
+            reorders_are_onlyswaps = all((b, a) in reorders for a, b in reorders)
+            #print('EMD[%d]' % niter, EMD.sum(), mask_order_different.sum(), reorders_are_onlyswaps, sorted(reorders))
             if (np.argmin(active_values) != np.argmin(active_values2)):
                 # print("lowest live point different at iter=%d" % niter)
                 order_consistent = False
@@ -252,6 +262,8 @@ def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform, verbose=F
 
     if verbose:
         sys.stderr.write("%d iterations done.\n" % niter)
+    pointstore2.flush()
+    pointstore2.close()
     os.rename(filepath2, filepath)
 
 
@@ -927,7 +939,7 @@ class ReactiveNestedSampler(object):
             "resume should be one of 'overwrite' 'subfolder', 'resume' or 'resume-similar'"
         append_run_num = resume == 'subfolder'
         resume_similar = resume == 'resume-similar'
-        resume = resume_similar or resume == 'resume' or resume
+        resume = resume in ('resume-similar', 'resume', True)
 
         if self.log and log_dir is not None:
             self.logs = make_run_dir(log_dir, run_num, append_run_num=append_run_num)
@@ -2360,6 +2372,7 @@ class ReactiveNestedSampler(object):
                 self.logger.info("Explored until L=%.1g  ", node.value)
             # print_tree(roots[::10])
 
+            self.pointstore.flush()
             self._update_results(main_iterator, saved_logl, saved_nodeids)
             yield self.results
 

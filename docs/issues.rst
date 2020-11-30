@@ -54,11 +54,12 @@ How can I speed up my problem?
 
 Computationally:
 
- * Speed up the likelihood function
+ * Speed up the likelihood function, for example by using numpy more efficiently
  * Vectorize the likelihood function (see `Tour of the features <performance.rst>`_).
 
 Algorithmically:
 
+ * Modify the transform to better map the live points to data constraints.
  * Use a step sampler (see `the high-d tutorial example <example-sine-highd.html>`)
  * Try to alter your model
 
@@ -125,13 +126,28 @@ They are very useful if you understand them. Here is what the parts mean::
     not make the result incorrect. Increasing the number of live points
     can avoid this (use >100).
 
+How do I use UltraNest with C / C++ / Fortran / Julia?
+-------------------------------------------------------
+
+Examples are available for C, C++, Fortran and Julia: https://github.com/JohannesBuchner/UltraNest/lang
+
+These implement the same prior and likelihood functions. The
+functions are vectorized to reduce the number of function calls.
+
+The C, C++ and Fortran functions are compiled to a dynamic library,
+which is used from Python.
+
+The Julia example differs in that the code is run from the Julia
+environment, calling Python which calls back Julia.
+
+
 How should I cite UltraNest?
 ------------------------------
 
 The main method (MLFriends) is described in:
 
-* Buchner, J. (2014): A statistical test for Nested Sampling algorithms
-* Buchner, J. (2019): Collaborative Nested Sampling: Big Data versus Complex Physical Models
+* Buchner, J. (2014): `A statistical test for Nested Sampling algorithms <https://arxiv.org/abs/1407.5459>`_ (`bibtex <https://scholar.googleusercontent.com/scholar.bib?q=info:yTXfZFtI_vYJ:scholar.google.com/&output=citation&scisdr=CgXWBaaNEK7YkjRrxRc:AAGBfm0AAAAAX8Nu3Rcw9Cl4oM-O20oJrdlLRUQB2IhI&scisig=AAGBfm0AAAAAX8Nu3ftd-SBQKMLTBDogxM9U1n9uLKdi&scisf=4&ct=citation&cd=-1&hl=en&scfhb=1>`__)
+* Buchner, J. (2019): `Collaborative Nested Sampling: Big Data versus Complex Physical Models <https://arxiv.org/abs/1707.04476>`_ (`bibtex <https://ui.adsabs.harvard.edu/abs/2019PASP..131j8005B/exportcitation>`__)
 
 So it is appropriate to write something like
 
@@ -139,8 +155,8 @@ So it is appropriate to write something like
 
     We derive posterior probability distributions and the Bayesian
     evidence with the nested sampling Monte Carlo algorithm
-    MLFriends (Buchner, 2014; 2019) using the 
-    UltraNest[https://johannesbuchner.github.io/UltraNest/] software.
+    MLFriends (Buchner, 2014; 2019) using
+    UltraNest\footnote{\url{https://johannesbuchner.github.io/UltraNest/}}.
 
 If you use the corner plot, also cite ``corner``.
 If you use the trace or run plot, also cite ``dynesty``.
