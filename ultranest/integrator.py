@@ -112,7 +112,7 @@ def _explore_iterator_batch(explorer, pop, x_dim, num_params, pointpile, batchsi
         yield batch
 
 
-def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform, verbose=True, vectorized=False, ndraw=400):
+def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform, verbose=False, vectorized=False, ndraw=400):
     """
     Change a stored UltraNest run to a modified loglikelihood/transform.
 
@@ -239,7 +239,10 @@ def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform, verbose=T
             # warmstart copying when some bulk of points differ.
             # in any case, warmstart should not be considered safe, but help iterating
             # and a final clean run is needed to finalise the results.
-            assert len(active_values) == len(active_values2), (len(active_values), len(active_values2))
+            if len(active_values) != len(active_values2):
+                if verbose == 2:
+                    print("stopping, number of live points differ (%d vs %d)" % (len(active_values), len(active_values2)))
+                break
             active_values_order = np.argsort(active_values)
             active_values2_order = np.argsort(active_values2)
             mask_order_different = active_values_order != active_values2_order
@@ -285,6 +288,8 @@ def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform, verbose=T
 
                 #print(j, Lmin2, '->', logl_new, 'instead of', Lmin, '->', [c.value for c in node2.children])
                 if logl_new > Lmin2:
+                    if verbose == 2:
+                        print("cannot use new point because it would decrease likelihood (%.1f->%.1f)" % (Lmin2, logl_new))
                     child2 = pointpile2.make_node(logl_new, u, v)
                     node2.children.append(child2)
                     pointstore2.add(_listify([Lmin2, logl_new, 0.0], u, v), 1)
@@ -1243,7 +1248,7 @@ class ReactiveNestedSampler(object):
 
         if self.log and self.use_point_stack:
             # try to resume:
-            self.logger.info('Resuming...')
+            # self.logger.info('Resuming...')
             for i in range(nnewroots):
                 rowid, row = self.pointstore.pop(-np.inf)
                 if row is None:
@@ -2141,7 +2146,8 @@ class ReactiveNestedSampler(object):
                 exp(-dlogz) - 1, frac_remain))
 
         if self.log_to_pointstore:
-            self.logger.info("PointStore: have %d items", len(self.pointstore.stack))
+            if len(self.pointstore.stack) > 0:
+                self.logger.info("Resuming from %d stored points", len(self.pointstore.stack))
             self.use_point_stack = not self.pointstore.stack_empty
         else:
             self.use_point_stack = False

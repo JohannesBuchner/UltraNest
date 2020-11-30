@@ -157,6 +157,7 @@ class HDF5PointStore(FilePointStore):
 
     The format is a HDF5 file, which grows as needed.
     """
+    FILES_OPENED = []
 
     def __init__(self, filepath, ncols, **h5_file_args):
         """Load and append to storage at filepath.
@@ -168,7 +169,22 @@ class HDF5PointStore(FilePointStore):
         self.ncols = int(ncols)
         self.stack_empty = True
         h5_file_args['mode'] = h5_file_args.get('mode', 'a')
+        
+        # An annoying part of jupyter notebooks is that they keep all the variables
+        # This means a old pointstore can survive, as we don't usually close them
+        # Opening a new one with the same path will then fail with
+        #    Unable to create file (unable to truncate a file which is already open)
+        # even when overwriting/truncating (mode='w')
+        # To avoid this problem, we keep track of all the files opened in this process
+        # and when another HDF5PointStore instance is created with the same path,
+        # we close the old one. Further operations on it will then likely fail.
+        for i, (filepath2, fileobj2) in enumerate(HDF5PointStore.FILES_OPENED):
+            if filepath == filepath2:
+                fileobj2.close()
+                HDF5PointStore.FILES_OPENED.pop(i)
+
         self.fileobj = h5py.File(filepath, **h5_file_args)
+        HDF5PointStore.FILES_OPENED.append((filepath, self.fileobj))
         self._load()
 
     def _load(self):
