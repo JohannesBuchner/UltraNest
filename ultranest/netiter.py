@@ -26,6 +26,7 @@ import math
 import operator
 import sys
 from .utils import resample_equal
+from .ordertest import UniformOrderAccumulator
 
 
 class TreeNode(object):
@@ -59,9 +60,6 @@ class TreeNode(object):
     def __lt__(self, other):
         """Define order of node based on value attribute."""
         return self.value < other.value
-
-
-multitree_sort_key = operator.itemgetter(1)
 
 
 class BreadthFirstIterator(object):
@@ -511,7 +509,7 @@ class MultiCounter(object):
 
     """
 
-    def __init__(self, nroots, nbootstraps=10, random=False):
+    def __init__(self, nroots, nbootstraps=10, random=False, check_insertion_order=False):
         """Initialise counter.
 
         Parameters
@@ -530,6 +528,7 @@ class MultiCounter(object):
         # which rootids are active in each bootstrap instance
         # the first one contains everything
         self.rootids = [allyes]
+        self.insertion_order_sample = []
         # np.random.seed(1)
         for i in range(nbootstraps):
             mask = ~allyes
@@ -539,6 +538,10 @@ class MultiCounter(object):
         self.rootids = np.array(self.rootids)
         self.random = random
         self.ncounters = len(self.rootids)
+
+        self.check_insertion_order = check_insertion_order
+        self.insertion_order_threshold = 2
+        self.insertion_order_accumulator = [UniformOrderAccumulator(self.rootids.shape[1]) for _ in range(self.rootids.shape[0])]
 
         self.reset(len(self.rootids))
 
@@ -560,6 +563,9 @@ class MultiCounter(object):
         self.remainder_ratio = 1.0
         self.remainder_fraction = 1.0
 
+        [acc.reset() for acc in self.insertion_order_accumulator]
+        self.insertion_order_runs = [[] for _ in range(nentries)]
+
     @property
     def logZ_bs(self):
         """Estimate logZ from the bootstrap ensemble."""
@@ -569,6 +575,20 @@ class MultiCounter(object):
     def logZerr_bs(self):
         """Estimate logZ error from the bootstrap ensemble."""
         return self.all_logZ[1:].std()
+
+    @property
+    def insertion_order_runlength(self):
+        shortest_runs = []
+        for runs in self.insertion_order_runs[:1]:
+            if len(runs) == 0:
+                shortest_runs.append(np.inf)
+            else:
+                shortest_runs.append(min(runs))
+        return np.median(shortest_runs)
+
+    @property
+    def insertion_order_converged(self):
+        return len(self.insertion_order_runs[0]) == 0
 
     def passing_node(self, rootid, node, rootids, parallel_values):
         """Accumulate node to the integration.
@@ -585,8 +605,8 @@ class MultiCounter(object):
             node being processed.
         rootids: array of ints
             for each parallel node, which root it belongs to.
-        parallel_nodes: array of TreeNodes
-            parallel nodes passing `node`.
+        parallel_values: float array
+            loglikelihood values of nodes passing `node`.
 
         """
         # node is being consumed
@@ -660,6 +680,22 @@ class MultiCounter(object):
             # volume is reduced by exp(-1/N)
             self.all_logVolremaining[active] += logright[active]
             self.logVolremaining = self.all_logVolremaining[0]
+
+            if self.check_insertion_order and len(np.unique(parallel_values)) == len(parallel_values):
+                order_max = nlive.max() + 1
+                for i, acc in enumerate(self.insertion_order_accumulator):
+                    if not active[i]:
+                        continue
+                    parallel_values_here = parallel_values[self.rootids[i, rootids]]
+                    for child in node.children:
+                        # rootids is 400 ints pointing to the root id where each parallel_values is from
+                        # self.rootids[i] says which rootids belong to this bootstrap
+                        # need which of the parallel_values are active here
+                        acc.add((parallel_values_here < child.value).sum(), nlive[i])
+                        if abs(acc.zscore) > self.insertion_order_threshold:
+                            self.insertion_order_runs[i].append(len(acc))
+                            acc.reset()
+
         else:
             # contracting!
             # print("contracting...", Li)
@@ -737,7 +773,7 @@ def combine_results(saved_logl, saved_nodeids, pointpile, main_iterator, mpi_com
     logzerr_bs = (logZ_bs - main_iterator.logZ).max()
     logzerr_total = (logzerr_tail**2 + logzerr_bs**2)**0.5
     samples = resample_equal(saved_v, w)
-    
+
     ndim = saved_u.shape[1]
     information_gain_bits = []
     for i in range(ndim):
@@ -773,10 +809,17 @@ def combine_results(saved_logl, saved_nodeids, pointpile, main_iterator, mpi_com
             point_untransformed=saved_u[j,:].tolist(),
         ),
     )
+
+    if getattr(main_iterator, 'check_insertion_order', False):
+        results['insertion_order_MWW_test'] = dict(
+            independent_iterations=main_iterator.insertion_order_runlength,
+            converged=main_iterator.insertion_order_converged,
+        )
+
     return results
 
 
-def logz_sequence(root, pointpile, nbootstraps=12, random=True, onNode=None, verbose=False):
+def logz_sequence(root, pointpile, nbootstraps=12, random=True, onNode=None, verbose=False, check_insertion_order=True):
     """Run MultiCounter through tree `root`.
 
     Keeps track of, and returns ``(logz, logzerr, logv, nlive)``.
@@ -788,7 +831,8 @@ def logz_sequence(root, pointpile, nbootstraps=12, random=True, onNode=None, ver
     explorer = BreadthFirstIterator(roots)
     # Integrating thing
     main_iterator = MultiCounter(
-        nroots=len(roots), nbootstraps=max(1, nbootstraps), random=random)
+        nroots=len(roots), nbootstraps=max(1, nbootstraps),
+        random=random, check_insertion_order=check_insertion_order)
     main_iterator.Lmax = max(Lmax, max(n.value for n in roots))
 
     logz = []
@@ -799,6 +843,7 @@ def logz_sequence(root, pointpile, nbootstraps=12, random=True, onNode=None, ver
 
     saved_nodeids = []
     saved_logl = []
+    insert_order = []
     # we go through each live point (regardless of root) by likelihood value
     while True:
         next_node = explorer.next_node()
@@ -815,6 +860,14 @@ def logz_sequence(root, pointpile, nbootstraps=12, random=True, onNode=None, ver
         with np.errstate(invalid='ignore'):
             # first time they are all the same
             logzerr.append(main_iterator.logZerr_bs)
+
+        insert_order_value = 0.0
+        if len(np.unique(active_values)) == len(active_values) and len(node.children) > 0:
+            child_insertion_order = (active_values > node.children[0].value).sum()
+            insert_order.append(2 * (child_insertion_order + 1.) / len(active_values))
+        else:
+            insert_order.append(np.nan)
+
         nlive.append(len(active_values))
         logvol.append(main_iterator.logVolremaining)
 
@@ -838,6 +891,7 @@ def logz_sequence(root, pointpile, nbootstraps=12, random=True, onNode=None, ver
         logvol=np.asarray(logvol),
         samples_n=np.asarray(nlive),
         nlive=np.asarray(nlive),
+        insert_order=np.asarray(insert_order),
         logwt=logwt,
         niter=niter,
         logl=saved_logl,

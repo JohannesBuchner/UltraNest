@@ -200,4 +200,17 @@ UltraNest switches between these methods when the current on becomes inefficient
 Efficiency here means being able to draw points, not whether they are
 above the likelihood contour.
 
+Transformed ellipsoid
+-------------------------------
 
+Additionally, a ellipsoid is also built in transformed space and used
+for rejecting points. This is only done when the transform is non-linear.
+The parameter transformation, perhaps being closer to the data constraints,
+allows the ellipsoid to follow.
+
+Users can thus tune the transform to improve the sampling efficiency.
+
+For example:
+
+* L-shapes: when two parameters are added with a log-uniform prior, it could be wise to transform them into linear space.
+* funnel-shapes: in hierarchical models, the variance and means should be decorrelated -- providing the means as a fraction of the variance allows the ellipsoid to follow funnel-shapes.

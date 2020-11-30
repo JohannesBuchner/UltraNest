@@ -188,6 +188,7 @@ def listify(*args):
         out += list(a)
     return out
 
+
 def quantile(x, q, weights=None):
     """Compute (weighted) quantiles from an input set of samples.
 

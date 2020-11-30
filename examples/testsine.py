@@ -4,6 +4,9 @@ from numpy import pi, sin, log
 import matplotlib.pyplot as plt
 
 def main(args):
+    adaptive_nsteps = args.adapt_steps
+    if adaptive_nsteps is None:
+        adaptive_nsteps = False
 
     np.random.seed(2)
     Ndata = args.ndata
@@ -84,6 +87,9 @@ def main(args):
         if args.harm:
             import ultranest.stepsampler
             sampler.stepsampler = ultranest.stepsampler.RegionBallSliceSampler(nsteps=args.slice_steps, adaptive_nsteps=adaptive_nsteps)
+        if args.slice:
+            import ultranest.stepsampler
+            sampler.stepsampler = ultranest.stepsampler.RegionSliceSampler(nsteps=args.slice_steps, adaptive_nsteps=adaptive_nsteps)
     else:
         from ultranest import NestedSampler
         sampler = NestedSampler(paramnames, loglike, transform=transform, 
@@ -94,6 +100,7 @@ def main(args):
     sampler.run(min_num_live_points=args.num_live_points)
         
     print()
+    sampler.print_results()
     sampler.plot()
     
     for i, p in enumerate(paramnames + derivednames):
@@ -112,6 +119,10 @@ if __name__ == '__main__':
     parser.add_argument('--log_dir', type=str, default='logs/testsine')
     parser.add_argument('--reactive', action='store_true', default=False)
     parser.add_argument('--pymultinest', action='store_true')
+    parser.add_argument('--slice', action='store_true')
+    parser.add_argument('--harm', action='store_true')
+    parser.add_argument('--dyhmc', action='store_true')
+    parser.add_argument('--dychmc', action='store_true')
     parser.add_argument('--slice_steps', type=int, default=100)
     parser.add_argument('--adapt_steps', type=str)
 
