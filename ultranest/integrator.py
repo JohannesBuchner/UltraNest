@@ -1580,7 +1580,7 @@ class ReactiveNestedSampler(object):
 
         if not self.sampling_slow_warned and nit * ndraw >= 100000 and nit > 20:
             warning_message1 = ("Sampling from region seems inefficient (%d/%d accepted in iteration %d). " % (accepted.sum(), ndraw, nit))
-            warning_message2 = "To improve efficiency, modify the transformation so that the current live points%%s are ellipsoidal, " + \
+            warning_message2 = "To improve efficiency, modify the transformation so that the current live points%s are ellipsoidal, " + \
                 "or use a stepsampler, or set frac_remain to a lower number (e.g., 0.5) to terminate earlier."
             if self.log_to_disk:
                 debug_filename = os.path.join(self.logs['extra'], 'sampling-stuck-it%d')
