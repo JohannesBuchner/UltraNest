@@ -1998,7 +1998,8 @@ class ReactiveNestedSampler(object):
         # we do not need to expand this one
         # expand_node = len(node.children) == 0
         # prefer 1 child, or the number required, if specified
-        expand_node = len(node.children) < target_min_num_children.get(node.id, 1)
+        nmin = target_min_num_children.get(node.id, 1) if target_min_num_children else 1
+        expand_node = len(node.children) < nmin
         # print("not expanding, because we are quite wide", nlive, minimal_width, minimal_widths_sequence)
         # but we have to expand the first iteration,
         # otherwise the integrator never sets H
@@ -2023,7 +2024,8 @@ class ReactiveNestedSampler(object):
             max_num_improvement_loops=-1,
             min_num_live_points=400,
             cluster_num_live_points=40,
-            order_test_window=10,
+            insertion_test_window=10,
+            insertion_test_zscore_threshold=2,
     ):
         """Run until target convergence criteria are fulfilled.
 
@@ -2085,7 +2087,11 @@ class ReactiveNestedSampler(object):
         cluster_num_live_points: int
             require at least this many live points per detected cluster
 
-        order_test_window: float
+        insertion_test_zscore_threshold: float
+            z-score used as a threshold for the insertion order test.
+            Set to infinity to disable.
+
+        insertion_test_window: float
             Number of iterations after which the insertion order test is reset.
 
         """
@@ -2102,7 +2108,8 @@ class ReactiveNestedSampler(object):
             cluster_num_live_points=cluster_num_live_points,
             show_status=show_status,
             viz_callback=viz_callback,
-            order_test_window=order_test_window,
+            insertion_test_window=insertion_test_window,
+            insertion_test_zscore_threshold=insertion_test_zscore_threshold,
         ):
             if self.log:
                 self.logger.debug("did a run_iter pass!")
@@ -2129,7 +2136,7 @@ class ReactiveNestedSampler(object):
             cluster_num_live_points=40,
             show_status=True,
             viz_callback='auto',
-            order_test_window=10,
+            insertion_test_window=10,
             insertion_test_zscore_threshold=2,
     ):
         """Iterate towards convergence.
@@ -2338,14 +2345,14 @@ class ReactiveNestedSampler(object):
                     u, p, L = self._create_point(Lmin=Lmin, ndraw=ndraw, active_u=active_u, active_values=active_values)
                     child = self.pointpile.make_node(L, u, p)
                     main_iterator.Lmax = max(main_iterator.Lmax, L)
-                    if len(np.unique(active_values)) == nlive:
+                    if np.isfinite(insertion_test_zscore_threshold) and nlive > 1:
                         insertion_test.add((active_values < L).sum(), nlive)
                         if abs(insertion_test.zscore) > insertion_test_zscore_threshold:
                             insertion_test_runs.append(insertion_test.N)
                             insertion_test_quality = insertion_test.N
                             insertion_test_direction = np.sign(insertion_test.zscore)
                             insertion_test.reset()
-                        elif insertion_test.N > nlive * order_test_window:
+                        elif insertion_test.N > nlive * insertion_test_window:
                             insertion_test_quality = np.inf
                             insertion_test_direction = 0
                             insertion_test.reset()

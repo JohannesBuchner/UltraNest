@@ -11,7 +11,7 @@ cimport cython
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def count_nearby(np.ndarray[np.float_t, ndim=2] apts,
+cdef count_nearby(np.ndarray[np.float_t, ndim=2] apts,
     np.ndarray[np.float_t, ndim=2] bpts,
     np.float_t radiussq,
     np.ndarray[np.int_t, ndim=1] nnearby
@@ -149,10 +149,14 @@ def compute_mean_pair_distance(
     return total_dist / Npairs
 
 
-
-
-
-def update_clusters(upoints, tpoints, maxradiussq, clusterids=None):
+@cython.boundscheck(False)
+@cython.wraparound(False)
+cdef _update_clusters(
+    np.ndarray[np.float_t, ndim=2] upoints,
+    np.ndarray[np.float_t, ndim=2] tpoints,
+    np.float_t maxradiussq,
+    np.ndarray[np.int_t, ndim=1] clusterids,
+):
     """Clusters `upoints`, so that clusters are distinct if no member pair is within a radius of sqrt(`maxradiussq`)
 
     clusterids are the cluster indices of each point
@@ -172,18 +176,16 @@ def update_clusters(upoints, tpoints, maxradiussq, clusterids=None):
 
     """
     #print("clustering with maxradiussq %f..." % maxradiussq)
-    assert upoints.shape == tpoints.shape
+    assert upoints.shape[0] == tpoints.shape[0], ('different number of points', upoints.shape[0], tpoints.shape[0])
+    assert upoints.shape[1] == tpoints.shape[1], ('different dimensionality of points', upoints.shape[1], tpoints.shape[1])
     clusteridxs = np.zeros(len(tpoints), dtype=int)
     currentclusterid = 1
     i = 0
-    if clusterids is None:
-        clusterids = np.zeros(len(tpoints), dtype=int)
-    else:
-        # avoid issues when old clusterids are from a longer array
-        clusterids = clusterids[:len(tpoints)]
-        existing = clusterids == currentclusterid
-        if existing.any():
-            i = np.where(existing)[0][0]
+    # avoid issues when old clusterids are from a longer array
+    clusterids = clusterids[:len(tpoints)]
+    existing = clusterids == currentclusterid
+    if existing.any():
+        i = np.where(existing)[0][0]
 
     clusteridxs[i] = currentclusterid
     while True:
@@ -234,15 +236,46 @@ def update_clusters(upoints, tpoints, maxradiussq, clusterids=None):
                 # so use the mean of the entire point population instead
                 group_mean = upoints.mean(axis=0).reshape((1,-1))
             overlapped_upoints[clusteridxs == idx,:] = group_upoints - group_mean
-    #print("clustering done, %d clusters" % nclusters)
-    #if nclusters > 1:
-    #    np.savetxt("clusters%d.txt" % nclusters, upoints)
-    #    np.savetxt("clusters%d_radius.txt" % nclusters, [maxradiussq])
+
     return nclusters, clusteridxs, overlapped_upoints
 
+@cython.boundscheck(False)
+@cython.wraparound(False)
+def update_clusters(
+    np.ndarray[np.float_t, ndim=2] upoints,
+    np.ndarray[np.float_t, ndim=2] tpoints,
+    np.float_t maxradiussq,
+    clusterids = None,
+):
+    """Clusters `upoints`, so that clusters are distinct if no member pair is within a radius of sqrt(`maxradiussq`)
+
+    clusterids are the cluster indices of each point
+    clusterids re-uses the existing ids to assign new cluster ids
+
+    clustering is performed on a transformed coordinate space (`tpoints`).
+    Returned values are based on upoints.
+
+    Returns
+    ---------
+    nclusters: int
+        the number of clusters found, which is also clusterids.max()
+    new_clusterids: array of int
+        the new clusterids for each point
+    overlapped_points:
+        upoints with their cluster centers subtracted.
+
+    """
+    if clusterids is None:
+        clusterids = np.zeros(len(tpoints), dtype=int)
+    return _update_clusters(upoints, tpoints, maxradiussq, clusterids)
 
 
-def make_eigvals_positive(a, targetprod):
+@cython.boundscheck(False)
+@cython.wraparound(False)
+def make_eigvals_positive(
+    np.ndarray[np.float_t, ndim=2] a,
+    np.float_t targetprod
+):
     """For the symmetric square matrix ``a``, increase any zero eigenvalues
     to fulfill the given target product of eigenvalues.
 
@@ -263,7 +296,12 @@ def make_eigvals_positive(a, targetprod):
 
     return a
 
-def bounding_ellipsoid(x, minvol=0.):
+@cython.boundscheck(False)
+@cython.wraparound(False)
+def bounding_ellipsoid(
+    np.ndarray[np.float_t, ndim=2] x,
+    np.float_t minvol=0.
+):
     """Calculate bounding ellipsoid containing a set of points x.
 
     Parameters
@@ -281,7 +319,8 @@ def bounding_ellipsoid(x, minvol=0.):
     """
     # Function taken from nestle, MIT licensed, (C) kbarbary
 
-    npoints, ndim = x.shape
+    npoints = x.shape[0]
+    ndim = x.shape[1]
 
     # Calculate covariance of points
     ctr = np.mean(x, axis=0)
@@ -523,7 +562,7 @@ class AffineLayer(ScalingLayer):
         return u
 
 
-def vol_prefactor(n):
+def vol_prefactor(np.int_t n):
     """Volume constant for an `n`-dimensional sphere.
 
     for `n` even:  $$    (2pi)^(n    /2) / (2 * 4 * ... * n)$$
@@ -542,6 +581,37 @@ def vol_prefactor(n):
 
     return f
 
+def _inside_ellipsoid(
+    np.ndarray[np.float_t, ndim=2] points,
+    np.ndarray[np.float_t, ndim=1] ellipsoid_center,
+    np.ndarray[np.float_t, ndim=2] ellipsoid_invcov,
+    np.float_t square_radius
+):
+    """Check if inside ellipsoid
+
+    Parameters
+    ----------
+    points: array of vectors
+        Points to check
+    ellipsoid_center: vector
+        center of ellipsoid
+    ellipsoid_invcov: matrix
+        inverse covariance matrix
+    square_radius: float
+        square radius
+
+    Returns
+    ---------
+    is_inside: array of bools
+        True if inside wrapping for each point in `points`.
+    """
+    # compute distance vector to center
+    d = points - ellipsoid_center
+    # distance in normalised coordates: vector . matrix . vector
+    # where the matrix is the ellipsoid inverse covariance
+    r = np.einsum('ij,jk,ik->i', d, ellipsoid_invcov, d)
+    # (r <= 1) means inside
+    return r <= square_radius
 
 class MLFriends(object):
     """MLFriends region.
@@ -816,16 +886,7 @@ class MLFriends(object):
             True if inside wrapping ellipsoid, for each point in `pts`.
 
         """
-        # to disable wrapping ellipsoid
-        #return np.ones(len(u), dtype=bool)
-
-        # compute distance vector to center
-        d = u - self.ellipsoid_center
-        # distance in normalised coordates: vector . matrix . vector
-        # where the matrix is the ellipsoid inverse covariance
-        r = np.einsum('ij,jk,ik->i', d, self.ellipsoid_invcov, d)
-        # (r <= 1) means inside
-        return r <= self.enlarge
+        return _inside_ellipsoid(u, self.ellipsoid_center, self.ellipsoid_invcov, self.enlarge)
 
     def compute_mean_pair_distance(self):
         return compute_mean_pair_distance(self.unormed, self.transformLayer.clusterids)
@@ -903,13 +964,4 @@ class WrappingEllipsoid(object):
             True if inside wrapping ellipsoid, for each point in `pts`.
 
         """
-        # to disable wrapping ellipsoid
-        #return np.ones(len(u), dtype=bool)
-
-        # compute distance vector to center
-        d = u - self.ellipsoid_center
-        # distance in normalised coordates: vector . matrix . vector
-        # where the matrix is the ellipsoid inverse covariance
-        r = np.einsum('ij,jk,ik->i', d, self.ellipsoid_invcov, d)
-        # (r <= 1) means inside
-        return r <= self.enlarge
+        return _inside_ellipsoid(u, self.ellipsoid_center, self.ellipsoid_invcov, self.enlarge)
