@@ -58,12 +58,12 @@ Features
 
 * Pythonic
 
-  * pip installable
+  * pip and conda installable
   * Easy to program for: Sanity checks with meaningful errors
   * Can control the run programmatically and check status
   * Reasonable defaults, but customizable
   * Thoroughly tested with many unit and integration tests
-  * allows likelihood functions written in `Python <https://github.com/JohannesBuchner/UltraNest/tree/master/languages/python>`_, `C <https://github.com/JohannesBuchner/UltraNest/tree/master/languages/c>`_, `C++ <https://github.com/JohannesBuchner/UltraNest/tree/master/languages/c%2B%2B>`_, `Julia <https://github.com/JohannesBuchner/UltraNest/tree/master/languages/c%2B%2B>`_ and `Julia <https://github.com/JohannesBuchner/UltraNest/tree/master/languages/julia>`_
+  * NEW: allows likelihood functions written in `Python <https://github.com/JohannesBuchner/UltraNest/tree/master/languages/python>`_, `C <https://github.com/JohannesBuchner/UltraNest/tree/master/languages/c>`_, `C++ <https://github.com/JohannesBuchner/UltraNest/tree/master/languages/c%2B%2B>`_, `Julia <https://github.com/JohannesBuchner/UltraNest/tree/master/languages/c%2B%2B>`_ and `Julia <https://github.com/JohannesBuchner/UltraNest/tree/master/languages/julia>`_
 
 * Robust exploration easily handles:
 
@@ -89,16 +89,17 @@ Features
 * Lightweight and fast
 
   * some functions implemented in Cython
-  * vectorized likelihood function calls
+  * `vectorized likelihood function calls <https://johannesbuchner.github.io/UltraNest/performance.html>`__
   * Use multiple cores, fully parallelizable from laptops to computing clusters
-  * MPI support
+  * `MPI support <https://johannesbuchner.github.io/UltraNest/performance.html>`__
 
 * Advanced visualisation and crash recovery:
 
-  * Live view of the exploration from Jupyter notebooks and terminals
+  * Live view of the exploration for Jupyter notebooks and terminals
   * Publication-ready visualisations
   * Corner plots, run and parameter exploration diagnostic plots
   * Checkpointing and resuming, even with different number of live points
+  * NEW: `Warm-start: resume from modified data / model <https://johannesbuchner.github.io/UltraNest/usage-warmstart.html>`__
 
 Usage
 ^^^^^
@@ -113,6 +114,8 @@ There, you can also find the `API Reference <https://johannesbuchner.github.io/U
 
 Licence
 ^^^^^^^
+
+How to `cite UltraNest <https://johannesbuchner.github.io/UltraNest/issues.html#how-should-i-cite-ultranest>`_.
 
 GPLv3 (see LICENCE file). If you require another license, please contact me.
 

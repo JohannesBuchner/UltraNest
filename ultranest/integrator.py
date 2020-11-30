@@ -213,7 +213,6 @@ def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform, verbose=F
     for batch in _explore_iterator_batch(explorer, pop, x_dim, num_params, pointpile, batchsize=batchsize):
         assert len(batch) > 0
         batch_u = np.array([u for _, _, children in batch for u, _, _ in children], ndmin=2, dtype=float)
-        batch_L = np.array([L for _, _, children in batch for _, _, L in children], ndmin=1, dtype=float)
         if batch_u.size > 0:
             assert batch_u.shape[1] == x_dim, batch_u.shape
             batch_v = np.array([v for _, _, children in batch for _, v, _ in children], ndmin=2, dtype=float)
@@ -1580,17 +1579,22 @@ class ReactiveNestedSampler(object):
             # print("it: %4d ndraw: %d -> %d -> %d -> %d " % (nit, ndraw, nu, nt, accepted.sum()))
 
         if not self.sampling_slow_warned and nit * ndraw >= 100000 and nit > 20:
+            warning_message1 = ("Sampling from region seems inefficient (%d/%d accepted in iteration %d). " % (accepted.sum(), ndraw, nit))
+            warning_message2 = "To improve efficiency, modify the transformation so that the current live points%%s are ellipsoidal, " + \
+                "or use a stepsampler, or set frac_remain to a lower number (e.g., 0.5) to terminate earlier."
             if self.log_to_disk:
+                debug_filename = os.path.join(self.logs['extra'], 'sampling-stuck-it%d')
                 np.savez(
-                    os.path.join(self.logs['extra'], 'sampling-stuck-it%d.npz' % nit),
+                    debug_filename + '.npz',
                     u=self.region.u, unormed=self.region.unormed,
                     maxradiussq=self.region.maxradiussq,
                     sample_u=u, sample_v=v, sample_logl=logl)
-                np.savetxt(os.path.join(self.logs['extra'], 'sampling-stuck-it%d.csv' % nit), self.region.u, delimiter=',')
-                os.path.join(self.logs['extra'], 'sampling-stuck-it%d.csv' % nit)
-            warnings.warn(
-                "Sampling from region seems inefficient (%d/%d accepted in iteration %d)" % (accepted.sum(), ndraw, nit))
-            log.info("To improve efficiency, modify the transformation so that the live points are ellipsoidal, or use a stepsampler.")
+                np.savetxt(debug_filename + '.csv', self.region.u, delimiter=',')
+                log.info("live points stored in %s.csv" % debug_filename)
+                warning_message = warning_message1 + (warning_message2 % ' (stored for you in %s.csv)') % debug_filename
+            else:
+                warning_message = warning_message1 + warning_message2 % ''
+            warnings.warn(warning_message)
             logl_region = self.loglike(self.transform(self.region.u))
             if (logl_region == Lmin).all():
                 raise ValueError(
