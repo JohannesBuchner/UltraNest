@@ -313,7 +313,7 @@ def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform, verbose=F
     # delete the ones at the end from last_good_state onwards
     # assert len(pointstore2.fileobj['points']) == niter, (len(pointstore2.fileobj['points']), niter)
     mask = pointstore2.fileobj['points'][:,0] <= last_good_like
-    points2 = pointstore2.fileobj['points'][mask,:]
+    points2 = pointstore2.fileobj['points'][:][mask,:]
     del pointstore2.fileobj['points']
     pointstore2.fileobj.create_dataset(
         'points', dtype=np.float,
