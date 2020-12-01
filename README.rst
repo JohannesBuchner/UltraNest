@@ -103,7 +103,7 @@ Features
   * Publication-ready visualisations
   * Corner plots, run and parameter exploration diagnostic plots
   * Checkpointing and resuming, even with different number of live points
-  * NEW: `Warm-start: resume from modified data / model <https://johannesbuchner.github.io/UltraNest/usage-warmstart.html>`__
+  * NEW: `Warm-start: resume from modified data / model <https://johannesbuchner.github.io/UltraNest/example-warmstart.html>`__
 
 Usage
 ^^^^^
