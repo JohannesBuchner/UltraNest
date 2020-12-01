@@ -131,7 +131,8 @@ They are very useful if you understand them. Here is what the parts mean::
 How do I use UltraNest with C / C++ / Fortran / Julia / R?
 ----------------------------------------------------------
 
-Examples are available for C, C++, Fortran, Julia and R: https://github.com/JohannesBuchner/UltraNest/lang
+Examples are available for C, C++, Fortran, Julia and R
+at https://github.com/JohannesBuchner/UltraNest/tree/master/languages
 
 These implement the same prior and likelihood functions. The
 functions are vectorized to reduce the number of function calls.

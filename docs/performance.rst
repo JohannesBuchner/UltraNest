@@ -20,7 +20,7 @@ Usage in a program
 Lets write a script simple.py. It defines a problem through prior and likelihood functions,
 and analyses it.
 
-To understand it, have a look first the `Basic usage <usage-spectral-line.html>`_ page.
+To understand it, have a look first the `Basic usage <using-ultranest.html>`_ page.
 
 .. code-block:: python3
    :caption: simple.py
