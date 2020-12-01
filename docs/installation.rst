@@ -17,12 +17,28 @@ To install UltraNest, run this command in your terminal:
 
 This is the preferred method to install UltraNest, as it will always install the most recent stable release.
 
+If you get this error:
+
+    ModuleNotFoundError: No module named 'Cython'
+
+run:
+
+.. code-block:: console
+
+    $ pip install cython
+    $ pip install ultranest
+
 If you don't have `pip`_ installed, this `Python installation guide`_ can guide
 you through the process.
 
 .. _pip: https://pip.pypa.io
 .. _Python installation guide: http://docs.python-guide.org/en/latest/starting/installation/
 
+If you use conda, you can install UltraNest with:
+
+.. code-block:: console
+
+    $ conda install ultranest
 
 From sources
 ------------
