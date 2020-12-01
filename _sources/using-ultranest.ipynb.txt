@@ -1,0 +1,271 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Basic usage\n",
+    "\n",
+    "Using UltraNest in a project is as simple as:\n",
+    "\n",
+    "    import ultranest\n",
+    "\n",
+    "    sampler = ultranest.ReactiveNestedSampler(param_names, my_likelihood, my_prior_transform,\n",
+    "        log_dir=\"myanalysis\", resume=True)\n",
+    "    result = sampler.run()\n",
+    "    sampler.print_results()\n",
+    "\n",
+    "All parameters and methods of ReactiveNestedSampler are documented in the [API reference](https://johannesbuchner.github.io/UltraNest/ultranest.html#ultranest.integrator.ReactiveNestedSampler)."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Simple example"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "To demonstrate, we define a spectral line fitting problem.\n",
+    "\n",
+    "Lets generate some data over a wavelength range with a noisy signal."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import numpy as np\n",
+    "x = np.linspace(400, 800, 100)\n",
+    "yerr = 1.0\n",
+    "y = np.random.normal(20 * np.exp(-0.5 * ((x-500)/4.2)**2), yerr)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "%matplotlib inline\n",
+    "import matplotlib.pyplot as plt\n",
+    "plt.errorbar(x, y, yerr=yerr, ls=' ', marker='x')\n",
+    "plt.plot(x, 20 * np.exp(-0.5 * ((x-500)/4.2)**2), ls=':', alpha=0.5, color='k')\n",
+    "plt.xlabel('x')\n",
+    "plt.ylabel('y');"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "This problem has 3 parameters: The location, amplitude and width of the gaussian line. We assume that the noise level is known."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "param_names = ['location', 'amplitude', 'width']"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "In UltraNest, the parameter space is defined through a transform\n",
+    "from unit values (0...1) to the physical range.\n",
+    "\n",
+    "The next function demonstrates:\n",
+    "\n",
+    "* a uniform prior for a location parameter\n",
+    "* a log-uniform prior for a scale parameter\n",
+    "* a log-normal prior"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import scipy.stats\n",
+    "\n",
+    "def my_prior_transform(cube):\n",
+    "    params = cube.copy()\n",
+    "\n",
+    "    # transform location parameter: uniform prior\n",
+    "    lo = 400\n",
+    "    hi = 800\n",
+    "    params[0] = cube[0] * (hi - lo) + lo\n",
+    "\n",
+    "    # transform amplitude parameter: log-uniform prior\n",
+    "    lo = 0.1\n",
+    "    hi = 100\n",
+    "    params[1] = 10**(cube[1] * (np.log10(hi) - np.log10(lo)) + np.log10(lo))\n",
+    "\n",
+    "    # More complex prior, you can use the ppf functions \n",
+    "    # from scipy.stats, such as scipy.stats.norm(mean, std).ppf\n",
+    "    \n",
+    "    # transform for width:\n",
+    "    # a log-normal centered at 1 +- 1dex\n",
+    "    params[2] = 10**scipy.stats.norm.ppf(cube[2], 0, 1)\n",
+    "\n",
+    "    return params\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Next, we need to specify the data likelihood given certain parameters:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from numpy import log\n",
+    "\n",
+    "def my_likelihood(params):\n",
+    "    location, amplitude, width = params\n",
+    "    # compute intensity at every x position according to the model\n",
+    "    y_model = amplitude * np.exp(-0.5 * ((x - location)/width)**2)\n",
+    "    # compare model and data with gaussian likelihood:\n",
+    "    like = -0.5 * (((y_model - y)/yerr)**2).sum()\n",
+    "    return like"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We are now ready to explore this parameter space!"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import ultranest\n",
+    "\n",
+    "sampler = ultranest.ReactiveNestedSampler(param_names, my_likelihood, my_prior_transform)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "[ReactiveNestedSampler](ultranest.rst#ultranest.integrator.ReactiveNestedSampler)\n",
+    "has several options to specify what logging and file output it should produce.\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "result = sampler.run()\n",
+    "sampler.print_results()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from ultranest.plot import cornerplot\n",
+    "cornerplot(result)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "\n",
+    "    sampler = ultranest.ReactiveNestedSampler(\n",
+    "        param_names, \n",
+    "        loglike=my_likelihood, \n",
+    "        transform=my_prior_transform,\n",
+    "        ## additional parameter properties:\n",
+    "        # identify circular parameters\n",
+    "        wrapped_params=[False, False, False],\n",
+    "        # add derived calculations\n",
+    "        derived_param_names=[], \n",
+    "        # store outputs for resuming:\n",
+    "        log_dir='my_folder/,\n",
+    "        resume='resume' or 'overwrite' or 'subfolder',\n",
+    "        )\n",
+    "\n",
+    "\n",
+    "\n",
+    "Both [ReactiveNestedSampler](modules.html#ultranest.integrator.ReactiveNestedSampler) and [its .run() function](modules.html#ultranest.integrator.ReactiveNestedSampler.run)  have several options to specify what logging and file output they should produce, and how they should explore the parameter space.\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "You can create more diagnostic plots with:\n",
+    "\n",
+    "    sampler.plot_run()\n",
+    "    sampler.plot_trace()\n",
+    "    sampler.plot_corner()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "##  Further topics\n",
+    "\n",
+    "Check out the rest of the documentation and the tutorials.\n",
+    "\n",
+    "They illustrate the features of UltraNest, including:\n",
+    "\n",
+    "* Model comparison\n",
+    "* Visualisation\n",
+    "* Saving & Resuming output\n",
+    "* Controlling output\n",
+    "* Parallelisation\n",
+    "* Handling high dimensional problems\n",
+    "* ..."
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.8.5"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}

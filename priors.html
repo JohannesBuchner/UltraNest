@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Specifying priors &mdash; UltraNest 3.0.0 documentation</title>
+  <title>Specifying priors &mdash; UltraNest 3.0.1 documentation</title>
   
 
   
@@ -45,7 +45,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Tour of the features" href="performance.html" />
-    <link rel="prev" title="Method" href="method.html" /> 
+    <link rel="prev" title="Basic usage" href="using-ultranest.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -72,7 +72,7 @@
             
             
               <div class="version">
-                3.0.0
+                3.0.1
               </div>
             
           
@@ -102,6 +102,7 @@
 <li class="toctree-l1"><a class="reference internal" href="readme.html">UltraNest</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="method.html">Method</a></li>
+<li class="toctree-l1"><a class="reference internal" href="using-ultranest.html">Basic usage</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Specifying priors</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#Cumulative-prior-distributions">Cumulative prior distributions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#Transforming-from-the-unit-interval">Transforming from the unit interval</a></li>
@@ -1449,7 +1450,7 @@ if (IPython.notebook.kernel !== null) {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area rendered_html docutils container">
-<div id='17fcf179-1d4a-4a14-94ee-ce7c1342b4e8'></div></div>
+<div id='defb6d81-ada6-424f-ac91-230fe301fbd1'></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
@@ -1457,7 +1458,7 @@ if (IPython.notebook.kernel !== null) {
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-&lt;matplotlib.legend.Legend at 0x7fd1684ddd60&gt;
+&lt;matplotlib.legend.Legend at 0x7fa41c309820&gt;
 </pre></div></div>
 </div>
 </div>
@@ -2451,7 +2452,7 @@ if (IPython.notebook.kernel !== null) {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area rendered_html docutils container">
-<div id='97a99954-8831-430a-8d31-fa133a68cea0'></div></div>
+<div id='0c8a8ea5-d03a-4153-8582-7acf6536b56c'></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
@@ -2459,7 +2460,7 @@ if (IPython.notebook.kernel !== null) {
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-&lt;matplotlib.legend.Legend at 0x7fd1687c0c70&gt;
+&lt;matplotlib.legend.Legend at 0x7fa41a280040&gt;
 </pre></div></div>
 </div>
 <p>Beautiful! We obtained nice samples that follow the prior distribution.</p>
@@ -3473,7 +3474,7 @@ if (IPython.notebook.kernel !== null) {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area rendered_html docutils container">
-<div id='5ab293ab-b922-4177-bf7f-241e1618e1de'></div></div>
+<div id='11a0f7e6-972d-4b97-bc68-e7312eccca97'></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
@@ -4470,7 +4471,7 @@ if (IPython.notebook.kernel !== null) {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area rendered_html docutils container">
-<div id='a296f368-8b5f-40ae-ac68-d3cc683025d6'></div></div>
+<div id='5c976d36-a6c1-4335-84ac-ab9d3986f6c7'></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
@@ -5463,7 +5464,7 @@ if (IPython.notebook.kernel !== null) {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area rendered_html docutils container">
-<div id='8f916a35-1e01-4648-975e-60916e9f40e6'></div></div>
+<div id='3a8fdc42-fbe5-4fc2-9813-e28bc2a29e10'></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
@@ -5471,43 +5472,38 @@ if (IPython.notebook.kernel !== null) {
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-(array([ 23.,  29.,  26.,  19.,  28.,  21.,  28.,  15.,  26.,  21.,  31.,
-         20.,  17.,  29.,  17.,  32.,  18.,  21.,  25.,  22.,  40.,  15.,
-         30.,  23.,  33.,  22.,  25.,  27.,  25.,  25.,  27.,  20.,  23.,
-         21.,  28.,  19.,  28.,  23.,  27.,  22.,  26.,  24.,  21.,  30.,
-         30.,  16.,  26.,  26.,  29.,  21.,  22.,  29.,  23.,  29.,  30.,
-         27.,  15.,  36.,  31.,  25.,  30.,  26.,  20.,  27.,  26.,  25.,
-         25.,  30.,  22.,  41.,  39.,  40.,  55.,  61.,  86., 100., 122.,
-        130., 132., 181., 173., 156., 143., 146., 140., 114.,  92.,  76.,
-         75.,  57.,  44.,  29.,  18.,  11.,   9.,   3.,   4.,   0.,   1.,
-          4.]),
- array([3.54787655e-04, 3.70968268e-02, 7.38388660e-02, 1.10580905e-01,
-        1.47322944e-01, 1.84064983e-01, 2.20807023e-01, 2.57549062e-01,
-        2.94291101e-01, 3.31033140e-01, 3.67775179e-01, 4.04517218e-01,
-        4.41259258e-01, 4.78001297e-01, 5.14743336e-01, 5.51485375e-01,
-        5.88227414e-01, 6.24969453e-01, 6.61711493e-01, 6.98453532e-01,
-        7.35195571e-01, 7.71937610e-01, 8.08679649e-01, 8.45421688e-01,
-        8.82163728e-01, 9.18905767e-01, 9.55647806e-01, 9.92389845e-01,
-        1.02913188e+00, 1.06587392e+00, 1.10261596e+00, 1.13935800e+00,
-        1.17610004e+00, 1.21284208e+00, 1.24958412e+00, 1.28632616e+00,
-        1.32306820e+00, 1.35981024e+00, 1.39655228e+00, 1.43329432e+00,
-        1.47003635e+00, 1.50677839e+00, 1.54352043e+00, 1.58026247e+00,
-        1.61700451e+00, 1.65374655e+00, 1.69048859e+00, 1.72723063e+00,
-        1.76397267e+00, 1.80071471e+00, 1.83745675e+00, 1.87419878e+00,
-        1.91094082e+00, 1.94768286e+00, 1.98442490e+00, 2.02116694e+00,
-        2.05790898e+00, 2.09465102e+00, 2.13139306e+00, 2.16813510e+00,
-        2.20487714e+00, 2.24161918e+00, 2.27836122e+00, 2.31510325e+00,
-        2.35184529e+00, 2.38858733e+00, 2.42532937e+00, 2.46207141e+00,
-        2.49881345e+00, 2.53555549e+00, 2.57229753e+00, 2.60903957e+00,
-        2.64578161e+00, 2.68252365e+00, 2.71926569e+00, 2.75600772e+00,
-        2.79274976e+00, 2.82949180e+00, 2.86623384e+00, 2.90297588e+00,
-        2.93971792e+00, 2.97645996e+00, 3.01320200e+00, 3.04994404e+00,
-        3.08668608e+00, 3.12342812e+00, 3.16017016e+00, 3.19691219e+00,
-        3.23365423e+00, 3.27039627e+00, 3.30713831e+00, 3.34388035e+00,
-        3.38062239e+00, 3.41736443e+00, 3.45410647e+00, 3.49084851e+00,
-        3.52759055e+00, 3.56433259e+00, 3.60107463e+00, 3.63781666e+00,
-        3.67455870e+00]),
- [&lt;matplotlib.patches.Polygon at 0x7fd166186730&gt;])
+(array([ 29.,  22.,  23.,  34.,  22.,  22.,  30.,  37.,  25.,  24.,  21.,
+         17.,  26.,  18.,  23.,  26.,  21.,  27.,  36.,  23.,  23.,  24.,
+         28.,  21.,  34.,  18.,  18.,  23.,  31.,  29.,  37.,  23.,  22.,
+         28.,  36.,  22.,  21.,  26.,  25.,  25.,  28.,  22.,  26.,  26.,
+         23.,  25.,  16.,  25.,  28.,  19.,  19.,  28.,  19.,  28.,  21.,
+         31.,  33.,  22.,  32.,  27.,  27.,  28.,  32.,  26.,  25.,  29.,
+         30.,  40.,  39.,  55.,  63.,  77.,  97.,  92., 129., 128., 137.,
+        181., 197., 158., 142., 133., 108., 113., 100.,  84.,  62.,  45.,
+         40.,  24.,  15.,   9.,   9.,   5.,   0.,   1.,   0.,   1.,   0.,
+          1.]),
+ array([0.00386091, 0.04149857, 0.07913624, 0.11677391, 0.15441157,
+        0.19204924, 0.22968691, 0.26732458, 0.30496224, 0.34259991,
+        0.38023758, 0.41787525, 0.45551291, 0.49315058, 0.53078825,
+        0.56842592, 0.60606358, 0.64370125, 0.68133892, 0.71897659,
+        0.75661425, 0.79425192, 0.83188959, 0.86952725, 0.90716492,
+        0.94480259, 0.98244026, 1.02007792, 1.05771559, 1.09535326,
+        1.13299093, 1.17062859, 1.20826626, 1.24590393, 1.2835416 ,
+        1.32117926, 1.35881693, 1.3964546 , 1.43409226, 1.47172993,
+        1.5093676 , 1.54700527, 1.58464293, 1.6222806 , 1.65991827,
+        1.69755594, 1.7351936 , 1.77283127, 1.81046894, 1.84810661,
+        1.88574427, 1.92338194, 1.96101961, 1.99865728, 2.03629494,
+        2.07393261, 2.11157028, 2.14920794, 2.18684561, 2.22448328,
+        2.26212095, 2.29975861, 2.33739628, 2.37503395, 2.41267162,
+        2.45030928, 2.48794695, 2.52558462, 2.56322229, 2.60085995,
+        2.63849762, 2.67613529, 2.71377295, 2.75141062, 2.78904829,
+        2.82668596, 2.86432362, 2.90196129, 2.93959896, 2.97723663,
+        3.01487429, 3.05251196, 3.09014963, 3.1277873 , 3.16542496,
+        3.20306263, 3.2407003 , 3.27833797, 3.31597563, 3.3536133 ,
+        3.39125097, 3.42888863, 3.4665263 , 3.50416397, 3.54180164,
+        3.5794393 , 3.61707697, 3.65471464, 3.69235231, 3.72998997,
+        3.76762764]),
+ [&lt;matplotlib.patches.Polygon at 0x7fa419f2ba00&gt;])
 </pre></div></div>
 </div>
 <p>In this case, you can compute the cumulative distribution numerically and invert it:</p>
@@ -6476,7 +6472,7 @@ if (IPython.notebook.kernel !== null) {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area rendered_html docutils container">
-<div id='1a23f4ad-fb94-4c4e-aa8b-e5d1cb312e4d'></div></div>
+<div id='8714dbe2-ab5a-481b-91f5-b8e9ac098baa'></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
@@ -6484,48 +6480,48 @@ if (IPython.notebook.kernel !== null) {
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-(array([0.19279294, 0.13770924, 0.19279294, 0.22033479, 0.1101674 ,
-        0.1101674 , 0.0550837 , 0.08262555, 0.24787664, 0.22033479,
-        0.13770924, 0.0550837 , 0.1101674 , 0.0550837 , 0.22033479,
-        0.1101674 , 0.08262555, 0.27541849, 0.16525109, 0.22033479,
-        0.1101674 , 0.22033479, 0.19279294, 0.30296034, 0.33050219,
-        0.16525109, 0.27541849, 0.16525109, 0.1101674 , 0.22033479,
-        0.1101674 , 0.13770924, 0.24787664, 0.13770924, 0.08262555,
-        0.08262555, 0.08262555, 0.24787664, 0.44066958, 0.08262555,
-        0.08262555, 0.30296034, 0.0550837 , 0.0550837 , 0.13770924,
-        0.27541849, 0.30296034, 0.1101674 , 0.22033479, 0.0550837 ,
-        0.19279294, 0.1101674 , 0.22033479, 0.1101674 , 0.33050219,
-        0.13770924, 0.13770924, 0.27541849, 0.22033479, 0.27541849,
-        0.24787664, 0.16525109, 0.1101674 , 0.33050219, 0.27541849,
-        0.1101674 , 0.27541849, 0.19279294, 0.13770924, 0.33050219,
-        0.30296034, 0.22033479, 0.33050219, 0.46821143, 0.46821143,
-        0.74362992, 0.71608807, 1.01904841, 0.90888101, 1.0741321 ,
-        1.04659025, 1.04659025, 1.15675765, 0.79871362, 1.0741321 ,
-        0.88133916, 0.33050219, 0.57837882, 0.52329513, 0.46821143,
-        0.33050219, 0.19279294, 0.02754185, 0.02754185, 0.16525109,
-        0.02754185, 0.0550837 , 0.        , 0.        , 0.02754185]),
- array([0.01872581, 0.05503419, 0.09134257, 0.12765096, 0.16395934,
-        0.20026772, 0.23657611, 0.27288449, 0.30919287, 0.34550126,
-        0.38180964, 0.41811802, 0.45442641, 0.49073479, 0.52704317,
-        0.56335156, 0.59965994, 0.63596832, 0.6722767 , 0.70858509,
-        0.74489347, 0.78120185, 0.81751024, 0.85381862, 0.890127  ,
-        0.92643539, 0.96274377, 0.99905215, 1.03536054, 1.07166892,
-        1.1079773 , 1.14428569, 1.18059407, 1.21690245, 1.25321084,
-        1.28951922, 1.3258276 , 1.36213599, 1.39844437, 1.43475275,
-        1.47106114, 1.50736952, 1.5436779 , 1.57998628, 1.61629467,
-        1.65260305, 1.68891143, 1.72521982, 1.7615282 , 1.79783658,
-        1.83414497, 1.87045335, 1.90676173, 1.94307012, 1.9793785 ,
-        2.01568688, 2.05199527, 2.08830365, 2.12461203, 2.16092042,
-        2.1972288 , 2.23353718, 2.26984557, 2.30615395, 2.34246233,
-        2.37877071, 2.4150791 , 2.45138748, 2.48769586, 2.52400425,
-        2.56031263, 2.59662101, 2.6329294 , 2.66923778, 2.70554616,
-        2.74185455, 2.77816293, 2.81447131, 2.8507797 , 2.88708808,
-        2.92339646, 2.95970485, 2.99601323, 3.03232161, 3.06863   ,
-        3.10493838, 3.14124676, 3.17755515, 3.21386353, 3.25017191,
-        3.28648029, 3.32278868, 3.35909706, 3.39540544, 3.43171383,
-        3.46802221, 3.50433059, 3.54063898, 3.57694736, 3.61325574,
-        3.64956413]),
- [&lt;matplotlib.patches.Polygon at 0x7fd1660ec9d0&gt;])
+(array([0.2879438 , 0.05758876, 0.25914942, 0.23035504, 0.11517752,
+        0.1439719 , 0.25914942, 0.25914942, 0.05758876, 0.11517752,
+        0.17276628, 0.17276628, 0.25914942, 0.08638314, 0.17276628,
+        0.11517752, 0.20156066, 0.2879438 , 0.25914942, 0.20156066,
+        0.20156066, 0.17276628, 0.17276628, 0.20156066, 0.1439719 ,
+        0.40312133, 0.17276628, 0.05758876, 0.11517752, 0.        ,
+        0.2879438 , 0.25914942, 0.20156066, 0.17276628, 0.25914942,
+        0.1439719 , 0.34553257, 0.        , 0.08638314, 0.11517752,
+        0.20156066, 0.23035504, 0.08638314, 0.25914942, 0.1439719 ,
+        0.1439719 , 0.08638314, 0.02879438, 0.02879438, 0.08638314,
+        0.11517752, 0.17276628, 0.1439719 , 0.23035504, 0.02879438,
+        0.1439719 , 0.08638314, 0.1439719 , 0.1439719 , 0.11517752,
+        0.25914942, 0.1439719 , 0.11517752, 0.20156066, 0.11517752,
+        0.20156066, 0.25914942, 0.08638314, 0.11517752, 0.17276628,
+        0.1439719 , 0.25914942, 0.23035504, 0.17276628, 0.2879438 ,
+        0.43191571, 0.40312133, 0.66227075, 0.89262579, 0.86383141,
+        0.97900893, 0.86383141, 1.3245415 , 1.3245415 , 1.09418646,
+        0.97900893, 1.00780332, 1.06539208, 0.63347637, 0.83503703,
+        0.48950447, 0.66227075, 0.34553257, 0.46071009, 0.31673818,
+        0.20156066, 0.20156066, 0.08638314, 0.02879438, 0.02879438]),
+ array([0.02267974, 0.05740874, 0.09213774, 0.12686674, 0.16159573,
+        0.19632473, 0.23105373, 0.26578273, 0.30051173, 0.33524073,
+        0.36996973, 0.40469872, 0.43942772, 0.47415672, 0.50888572,
+        0.54361472, 0.57834372, 0.61307272, 0.64780172, 0.68253071,
+        0.71725971, 0.75198871, 0.78671771, 0.82144671, 0.85617571,
+        0.89090471, 0.9256337 , 0.9603627 , 0.9950917 , 1.0298207 ,
+        1.0645497 , 1.0992787 , 1.1340077 , 1.1687367 , 1.20346569,
+        1.23819469, 1.27292369, 1.30765269, 1.34238169, 1.37711069,
+        1.41183969, 1.44656869, 1.48129768, 1.51602668, 1.55075568,
+        1.58548468, 1.62021368, 1.65494268, 1.68967168, 1.72440067,
+        1.75912967, 1.79385867, 1.82858767, 1.86331667, 1.89804567,
+        1.93277467, 1.96750367, 2.00223266, 2.03696166, 2.07169066,
+        2.10641966, 2.14114866, 2.17587766, 2.21060666, 2.24533565,
+        2.28006465, 2.31479365, 2.34952265, 2.38425165, 2.41898065,
+        2.45370965, 2.48843865, 2.52316764, 2.55789664, 2.59262564,
+        2.62735464, 2.66208364, 2.69681264, 2.73154164, 2.76627063,
+        2.80099963, 2.83572863, 2.87045763, 2.90518663, 2.93991563,
+        2.97464463, 3.00937363, 3.04410262, 3.07883162, 3.11356062,
+        3.14828962, 3.18301862, 3.21774762, 3.25247662, 3.28720562,
+        3.32193461, 3.35666361, 3.39139261, 3.42612161, 3.46085061,
+        3.49557961]),
+ [&lt;matplotlib.patches.Polygon at 0x7fa419eea9a0&gt;])
 </pre></div></div>
 </div>
 </div>
@@ -7510,7 +7506,7 @@ if (IPython.notebook.kernel !== null) {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area rendered_html docutils container">
-<div id='dd50855e-65d1-4756-989b-8fe70352e738'></div></div>
+<div id='a771c684-6d32-444a-91b6-4152f2383c7d'></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
@@ -7518,7 +7514,7 @@ if (IPython.notebook.kernel !== null) {
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-[&lt;mpl_toolkits.mplot3d.art3d.Line3D at 0x7fd1660b8670&gt;]
+[&lt;mpl_toolkits.mplot3d.art3d.Line3D at 0x7fa419eb7310&gt;]
 </pre></div></div>
 </div>
 <p>The samples nicely lie on the plane where the sum is 1.</p>
@@ -7546,7 +7542,7 @@ if (IPython.notebook.kernel !== null) {
         <a href="performance.html" class="btn btn-neutral float-right" title="Tour of the features" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="method.html" class="btn btn-neutral float-left" title="Method" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="using-ultranest.html" class="btn btn-neutral float-left" title="Basic usage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

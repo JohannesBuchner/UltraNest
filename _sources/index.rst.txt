@@ -8,7 +8,7 @@ Welcome to UltraNest's documentation!
    readme
    installation
    method
-   usage-spectral-line.ipynb
+   using-ultranest.ipynb
    priors.ipynb
    performance
    modules
