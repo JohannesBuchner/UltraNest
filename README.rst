@@ -14,6 +14,10 @@ Fit and compare complex models reliably and rapidly with advanced sampling techn
         :target: https://johannesbuchner.github.io/UltraNest/
         :alt: Documentation Status
 
+.. image:: https://img.shields.io/badge/GitHub-JohannesBuchner%2FUltraNest-blue.svg?style=flat
+        :target: https://github.com/JohannesBuchner/UltraNest/
+        :alt: Github repository
+
 Correctness. Speed. Ease of use. 🦔
 
 About
@@ -110,7 +114,9 @@ Read the full documentation with tutorials at:
 
 https://johannesbuchner.github.io/UltraNest/
 
-There, you can also find the `API Reference <https://johannesbuchner.github.io/UltraNest/ultranest.html#ultranest.integrator.ReactiveNestedSampler>`_.
+`API Reference: <https://johannesbuchner.github.io/UltraNest/ultranest.html#ultranest.integrator.ReactiveNestedSampler>`_.
+
+`Code repository: https://github.com/JohannesBuchner/UltraNest/ <https://github.com/JohannesBuchner/UltraNest/>`_
 
 Licence
 ^^^^^^^
