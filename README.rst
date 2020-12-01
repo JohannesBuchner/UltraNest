@@ -67,7 +67,7 @@ Features
   * Can control the run programmatically and check status
   * Reasonable defaults, but customizable
   * Thoroughly tested with many unit and integration tests
-  * NEW: allows likelihood functions written in `Python <https://github.com/JohannesBuchner/UltraNest/tree/master/languages/python>`_, `C <https://github.com/JohannesBuchner/UltraNest/tree/master/languages/c>`_, `C++ <https://github.com/JohannesBuchner/UltraNest/tree/master/languages/c%2B%2B>`_, `Fortran <https://github.com/JohannesBuchner/UltraNest/tree/master/languages/fortran>`_ and `Julia <https://github.com/JohannesBuchner/UltraNest/tree/master/languages/julia>`_
+  * NEW: allows likelihood functions written in `Python <https://github.com/JohannesBuchner/UltraNest/tree/master/languages/python>`_, `C <https://github.com/JohannesBuchner/UltraNest/tree/master/languages/c>`_, `C++ <https://github.com/JohannesBuchner/UltraNest/tree/master/languages/c%2B%2B>`_, `Fortran <https://github.com/JohannesBuchner/UltraNest/tree/master/languages/fortran>`_, `Julia <https://github.com/JohannesBuchner/UltraNest/tree/master/languages/julia>`_ and `R <https://github.com/JohannesBuchner/UltraNest/tree/master/languages/r>`_
 
 * Robust exploration easily handles:
 
