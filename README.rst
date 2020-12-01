@@ -104,7 +104,7 @@ Features
 Usage
 ^^^^^
 
-`Get started! <https://johannesbuchner.github.io/UltraNest/usage-spectral-line.html>`_
+`Get started! <https://johannesbuchner.github.io/UltraNest/using-ultranest.html>`_
 
 Read the full documentation with tutorials at:
 
