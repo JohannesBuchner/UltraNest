@@ -128,10 +128,10 @@ They are very useful if you understand them. Here is what the parts mean::
     not make the result incorrect. Increasing the number of live points
     can avoid this (use >100).
 
-How do I use UltraNest with C / C++ / Fortran / Julia?
--------------------------------------------------------
+How do I use UltraNest with C / C++ / Fortran / Julia / R?
+----------------------------------------------------------
 
-Examples are available for C, C++, Fortran and Julia: https://github.com/JohannesBuchner/UltraNest/lang
+Examples are available for C, C++, Fortran, Julia and R: https://github.com/JohannesBuchner/UltraNest/lang
 
 These implement the same prior and likelihood functions. The
 functions are vectorized to reduce the number of function calls.
@@ -139,8 +139,8 @@ functions are vectorized to reduce the number of function calls.
 The C, C++ and Fortran functions are compiled to a dynamic library,
 which is used from Python.
 
-The Julia example differs in that the code is run from the Julia
-environment, calling Python which calls back Julia.
+The Julia and R example differ in that the code is run from the Julia/R
+environment, calling Python which calls back Julia/R.
 
 
 What is the difference between UltraNest and MultiNest/dynesty/...

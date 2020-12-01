@@ -115,7 +115,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#how-can-i-verify-that-the-step-sampler-is-correct">How can I verify that the step sampler is correct?</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#what-does-the-status-line-mean">What does the status line mean?</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#what-does-the-live-point-display-mean">What does the live point display mean?</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#how-do-i-use-ultranest-with-c-c-fortran-julia">How do I use UltraNest with C / C++ / Fortran / Julia?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-do-i-use-ultranest-with-c-c-fortran-julia-r">How do I use UltraNest with C / C++ / Fortran / Julia / R?</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#what-is-the-difference-between-ultranest-and-multinest-dynesty">What is the difference between UltraNest and MultiNest/dynesty/…</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#what-is-the-difference-between-ultranest-and-polychord">What is the difference between UltraNest and PolyChord?</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#what-is-the-difference-between-ultranest-and-dypolychord-dynesty">What is the difference between UltraNest and dyPolyChord/dynesty?</a></li>
@@ -234,7 +234,7 @@
 <li><p><a class="reference internal" href="#how-can-i-verify-that-the-step-sampler-is-correct" id="id6">How can I verify that the step sampler is correct?</a></p></li>
 <li><p><a class="reference internal" href="#what-does-the-status-line-mean" id="id7">What does the status line mean?</a></p></li>
 <li><p><a class="reference internal" href="#what-does-the-live-point-display-mean" id="id8">What does the live point display mean?</a></p></li>
-<li><p><a class="reference internal" href="#how-do-i-use-ultranest-with-c-c-fortran-julia" id="id9">How do I use UltraNest with C / C++ / Fortran / Julia?</a></p></li>
+<li><p><a class="reference internal" href="#how-do-i-use-ultranest-with-c-c-fortran-julia-r" id="id9">How do I use UltraNest with C / C++ / Fortran / Julia / R?</a></p></li>
 <li><p><a class="reference internal" href="#what-is-the-difference-between-ultranest-and-multinest-dynesty" id="id10">What is the difference between UltraNest and MultiNest/dynesty/…</a></p></li>
 <li><p><a class="reference internal" href="#what-is-the-difference-between-ultranest-and-polychord" id="id11">What is the difference between UltraNest and PolyChord?</a></p></li>
 <li><p><a class="reference internal" href="#what-is-the-difference-between-ultranest-and-dypolychord-dynesty" id="id12">What is the difference between UltraNest and dyPolyChord/dynesty?</a></p></li>
@@ -362,15 +362,15 @@ chances are good that the result is reliable.</p></li>
 </pre></div>
 </div>
 </div>
-<div class="section" id="how-do-i-use-ultranest-with-c-c-fortran-julia">
-<h2><a class="toc-backref" href="#id9">How do I use UltraNest with C / C++ / Fortran / Julia?</a><a class="headerlink" href="#how-do-i-use-ultranest-with-c-c-fortran-julia" title="Permalink to this headline">¶</a></h2>
-<p>Examples are available for C, C++, Fortran and Julia: <a class="reference external" href="https://github.com/JohannesBuchner/UltraNest/lang">https://github.com/JohannesBuchner/UltraNest/lang</a></p>
+<div class="section" id="how-do-i-use-ultranest-with-c-c-fortran-julia-r">
+<h2><a class="toc-backref" href="#id9">How do I use UltraNest with C / C++ / Fortran / Julia / R?</a><a class="headerlink" href="#how-do-i-use-ultranest-with-c-c-fortran-julia-r" title="Permalink to this headline">¶</a></h2>
+<p>Examples are available for C, C++, Fortran, Julia and R: <a class="reference external" href="https://github.com/JohannesBuchner/UltraNest/lang">https://github.com/JohannesBuchner/UltraNest/lang</a></p>
 <p>These implement the same prior and likelihood functions. The
 functions are vectorized to reduce the number of function calls.</p>
 <p>The C, C++ and Fortran functions are compiled to a dynamic library,
 which is used from Python.</p>
-<p>The Julia example differs in that the code is run from the Julia
-environment, calling Python which calls back Julia.</p>
+<p>The Julia and R example differ in that the code is run from the Julia/R
+environment, calling Python which calls back Julia/R.</p>
 </div>
 <div class="section" id="what-is-the-difference-between-ultranest-and-multinest-dynesty">
 <h2><a class="toc-backref" href="#id10">What is the difference between UltraNest and MultiNest/dynesty/…</a><a class="headerlink" href="#what-is-the-difference-between-ultranest-and-multinest-dynesty" title="Permalink to this headline">¶</a></h2>
