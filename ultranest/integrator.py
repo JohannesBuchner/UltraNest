@@ -1054,6 +1054,8 @@ class ReactiveNestedSampler(object):
                 # close
                 del self.pointstore
                 # rewrite points file
+                if self.log:
+                    self.logger.info('trying to salvage points from previous, different run ...')
                 resume_from_similar_file(log_dir, x_dim, loglike, transform, vectorized=vectorized, ndraw=ndraw_min)
                 self.pointstore = HDF5PointStore(
                     os.path.join(self.logs['results'], 'points.hdf5'),
