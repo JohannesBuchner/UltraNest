@@ -160,7 +160,7 @@ Correctness:
   All implementations of MultiNest will suffer this issue.
 
 * MultiNest also implements importance nested sampling, which has been claimed to
-  `reduce this problem <https://ui.adsabs.harvard.edu/abs/2019OJAp....2E..10F/abstract>`.
+  `reduce this problem <https://ui.adsabs.harvard.edu/abs/2019OJAp....2E..10F/abstract>`_.
   However, importance nested sampling severely `under-estimates the uncertainties <https://ui.adsabs.harvard.edu/abs/2020AJ....159...73N/abstract>`_.
 
 * UltraNest implements MLFriends, a parameter-free algorithm that derives

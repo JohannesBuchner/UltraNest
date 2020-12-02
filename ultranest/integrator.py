@@ -234,7 +234,7 @@ def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform, verbose=F
 
             # in the tails of distributions it can happen that two points are out of order
             # but that may not be very important
-            # in the interest of practicality, we allow this and only stop the 
+            # in the interest of practicality, we allow this and only stop the
             # warmstart copying when some bulk of points differ.
             # in any case, warmstart should not be considered safe, but help iterating
             # and a final clean run is needed to finalise the results.
@@ -260,10 +260,10 @@ def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform, verbose=F
             if verbose == 2:
                 print(
                     niter, mask_order_different.sum(),
-                    'S' if reorders_are_onlyswaps else ' ', 
-                    'C' if order_consistent else ' ', 
+                    'S' if reorders_are_onlyswaps else ' ',
+                    'C' if order_consistent else ' ',
                     'F' if order_fully_consistent else ' ',
-                    'G' if good_state else ' ', 
+                    'G' if good_state else ' ',
                     '%5.2f' % (100 * (np.argsort(active_values) == np.argsort(active_values2)).mean())
                 )
             if good_state:
@@ -919,15 +919,19 @@ class ReactiveNestedSampler(object):
         log_dir: str
             where to store output files
         resume: 'resume', 'resume-similar', 'overwrite' or 'subfolder'
+
             if 'overwrite', overwrite previous data.
+
             if 'subfolder', create a fresh subdirectory in log_dir.
+
             if 'resume' or True, continue previous run if available.
-               Only works when dimensionality, transform or likelihood are consistent.
+            Only works when dimensionality, transform or likelihood are consistent.
+
             if 'resume-similar', continue previous run if available.
-               Only works when dimensionality and transform are consistent.
-               If a likelihood difference is detected, the existing likelihoods
-               are updated until the live point order differs.
-               Otherwise, behaves like resume.
+            Only works when dimensionality and transform are consistent.
+            If a likelihood difference is detected, the existing likelihoods
+            are updated until the live point order differs.
+            Otherwise, behaves like resume.
 
         wrapped_params: list of bools
             indicating whether this parameter wraps around (circular parameter).
@@ -1045,7 +1049,8 @@ class ReactiveNestedSampler(object):
         self.ndraw_max = ndraw_max
         if not self._check_likelihood_function(transform, loglike, num_test_samples):
             assert self.log_to_disk
-            if resume_similar:
+            if resume_similar and self.log_to_disk:
+                assert storage_backend == 'hdf5', 'resume-similar is only supported for HDF5 files'
                 # close
                 del self.pointstore
                 # rewrite points file
