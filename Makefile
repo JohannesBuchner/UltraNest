@@ -46,7 +46,7 @@ clean-pyc: ## remove Python file artifacts
 	find . -name '*~' -exec rm -f {} +
 	find . -name '__pycache__' -exec rm -fr {} +
 	find . -name '*.so' -exec rm -f {} +
-	find . -name '*.c' -exec rm -f {} +
+	find ultranest -name '*.c' -exec rm -f {} +
 
 clean-test: ## remove test and coverage artifacts
 	rm -fr .tox/

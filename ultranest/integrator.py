@@ -2418,7 +2418,7 @@ class ReactiveNestedSampler(object):
                             ndraw_next = 0.04 * sampling_inefficiency + ndraw * 0.96
                             ndraw = max(self.ndraw_min, min(self.ndraw_max, round(ndraw_next), ndraw * 100))
 
-                            if sampling_inefficiency > 1000 and it >= it_at_first_region + 10:
+                            if sampling_inefficiency > 100000 and it >= it_at_first_region + 10:
                                 # if the efficiency is poor, there are enough samples in each iteration
                                 # to estimate the inefficiency
                                 ncall_at_run_start = self.ncall
