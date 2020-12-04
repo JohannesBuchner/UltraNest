@@ -2386,9 +2386,12 @@ class ReactiveNestedSampler(object):
 
                     if self.log and (region_fresh or it % log_interval == 0 or time.time() > last_status + 0.1):
                         last_status = time.time()
+                        # the number of proposals asked from region
+                        ncall_region_here = (self.ncall_region - ncall_region_at_run_start)
+                        # the number of proposals returned by the region
                         ncall_here = self.ncall - ncall_at_run_start
+                        # the number of likelihood evaluations above threshold
                         it_here = it - it_at_first_region
-                        ncall_region_here = self.ncall_region - ncall_region_at_run_start
 
                         if show_status:
                             if Lmin < -1e8:
