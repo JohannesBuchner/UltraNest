@@ -1597,7 +1597,6 @@ class ReactiveNestedSampler(object):
                     maxradiussq=self.region.maxradiussq,
                     sample_u=u, sample_v=v, sample_logl=logl)
                 np.savetxt(debug_filename + '.csv', self.region.u, delimiter=',')
-                log.info("live points stored in %s.csv" % debug_filename)
                 warning_message = warning_message1 + (warning_message2 % ' (stored for you in %s.csv)') % debug_filename
             else:
                 warning_message = warning_message1 + warning_message2 % ''
