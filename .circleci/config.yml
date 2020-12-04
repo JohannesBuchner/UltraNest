@@ -15,7 +15,7 @@ jobs:
       - run: sudo apt-get update -y
       - run: sudo apt-get install -y python3-dev python3-mpi4py python3-h5py python3-numpy python3-scipy python3-matplotlib python3-pandas
       - run: sudo ln -s /usr/lib/python3/dist-packages/numpy/core/include/numpy/ /usr/include/numpy
-      - run: sudo pip3 install -r pip-requirements.txt pytest-html
+      - run: sudo pip3 install -r pip-requirements.txt pytest-html coveralls
       - run: mkdir -p test-reports
       
       - run: coverage3 run --parallel-mode setup.py test
@@ -38,6 +38,7 @@ jobs:
       - run: coverage3 report --include="$PWD/*" --omit="$PWD/.eggs/*"
       - run: coverage3 html --include="$PWD/*" --omit="$PWD/.eggs/*" && mv htmlcov test-reports
       - run: for i in examples/test*.py; do python3 $i --help; done
+      - run: coveralls
       
       - store_test_results:
           path: test-reports
