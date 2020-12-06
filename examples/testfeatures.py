@@ -8,7 +8,11 @@ import sys
 import os
 import signal
 import string
+import hashlib
 
+
+def get_arg_hash(runargs):
+    return hashlib.md5(str(sorted(runargs.items())).encode()).hexdigest()[:10]
 
 def main(args):
     ndim = args.x_dim
@@ -144,7 +148,7 @@ def main(args):
     return results
 
 def run_safely(runargs):
-    id = hash(frozenset(runargs.items()))
+    id = get_arg_hash(runargs)
     if os.path.exists('testfeatures/%s.done' % id):
         return
     
@@ -172,6 +176,7 @@ class AttrDict(dict):
     def __init__(self, *args, **kwargs):
         super(AttrDict, self).__init__(*args, **kwargs)
         self.__dict__ = self
+
 
 if __name__ == '__main__':
     import argparse
@@ -241,8 +246,7 @@ if __name__ == '__main__':
                 else:
                     runargs[k] = v[0]
                     key -= len(v)
-            id = hash(frozenset(runargs.items()))
-            filename = 'testfeatures/runsettings-%s-iterated.json' % id
+            filename = 'testfeatures/runsettings-%s-iterated.json' % get_arg_hash(runargs)
             print("Storing configuration as '%s'. Options were:" % filename, runargs)
             with open(filename, 'w') as f:
                 json.dump(runargs, f, indent=2)

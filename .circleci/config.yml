@@ -31,9 +31,8 @@ jobs:
       - run: |
             for i in testfeatures/runsettings-*-iterated.json; 
             do 
-                  PYTHONPATH=. mpiexec -np 2 coverage run -p examples/testfeatures.py $i & 
+                  PYTHONPATH=. mpiexec -np 2 coverage run examples/testfeatures.py $i
             done
-            wait
       - run: coverage3 combine
       - run: coverage3 report --include="$PWD/*" --omit="$PWD/.eggs/*"
       - run: coverage3 html --include="$PWD/*" --omit="$PWD/.eggs/*" && mv htmlcov test-reports
@@ -45,5 +44,3 @@ jobs:
 
       - store_artifacts:
           path: test-reports    
-
-

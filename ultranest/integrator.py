@@ -334,6 +334,7 @@ def _update_region_bootstrap(region, nbootstraps, minvol=0., comm=None, mpi_size
     If the mpi communicator *comm* is not None, use MPI to distribute
     the bootstraps over the *mpi_size* processes.
     """
+    assert nbootstraps > 0, nbootstraps
     r, f = region.compute_enlargement(
         minvol=minvol,
         nbootstraps=max(1, nbootstraps // mpi_size))
@@ -1204,6 +1205,9 @@ class ReactiveNestedSampler(object):
             # preferentially select nodes with few parents, as those
             # have most weight
             i = np.random.choice(len(weighted_parents), size=nnodes_needed, p=p / p.sum())
+            if self.use_mpi:
+                i = self.comm.bcast(i, root=0)
+
             parents = [weighted_parents[ii] for ii in i]
 
         del weighted_parents, weights
@@ -1283,35 +1287,28 @@ class ReactiveNestedSampler(object):
         if self.log and num_live_points_missing > 0:
             self.logger.info('Sampling %d live points from prior ...', num_live_points_missing)
         if num_live_points_missing > 0:
-            if self.use_mpi:
-                if self.mpi_rank == 0:
-                    active_u = np.random.uniform(size=(num_live_points_missing, self.x_dim))
-                else:
-                    active_u = np.empty((num_live_points_missing, self.x_dim), dtype=np.float64)
-                active_u = self.comm.bcast(active_u, root=0)
+            if self.mpi_rank != 0:
+                num_live_points_todo = num_live_points_missing // self.mpi_size
             else:
-                active_u = np.random.uniform(size=(num_live_points_missing, self.x_dim))
+                # rank 0 picks up what the others did not do
+                num_live_points_todo = num_live_points_missing - (num_live_points_missing // self.mpi_size) * (self.mpi_size - 1)
+
+            active_u = np.random.uniform(size=(num_live_points_todo, self.x_dim))
             active_v = self.transform(active_u)
+            active_logl = self.loglike(active_v)
+            self.ncall += num_live_points_missing
 
             if self.use_mpi:
-                if self.mpi_rank == 0:
-                    chunks = [[] for _ in range(self.mpi_size)]
-                    for i, chunk in enumerate(active_v):
-                        chunks[i % self.mpi_size].append(chunk)
-                    self.ncall += num_live_points_missing
-                else:
-                    chunks = None
-                data = np.asarray(self.comm.scatter(chunks, root=0))
-                active_logl = self.loglike(data)
-                assert active_logl.shape == (len(data),), (active_logl.shape, len(data))
-                recv_active_logl = self.comm.gather(active_logl, root=0)
-                recv_active_logl = self.comm.bcast(recv_active_logl, root=0)
-                self.ncall = self.comm.bcast(self.ncall, root=0)
-                active_logl = np.concatenate(recv_active_logl, axis=0)
-                assert active_logl.shape == (num_live_points_missing,), (active_logl.shape, num_live_points_missing, chunks)
-            else:
-                self.ncall += num_live_points_missing
-                active_logl = self.loglike(active_v)
+                recv_samples = self.comm.gather(active_u, root=0)
+                recv_samplesv = self.comm.gather(active_v, root=0)
+                recv_likes = self.comm.gather(active_logl, root=0)
+                recv_samples = self.comm.bcast(recv_samples, root=0)
+                recv_samplesv = self.comm.bcast(recv_samplesv, root=0)
+                recv_likes = self.comm.bcast(recv_likes, root=0)
+
+                active_u = np.concatenate(recv_samples, axis=0)
+                active_v = np.concatenate(recv_samplesv, axis=0)
+                active_logl = np.concatenate(recv_likes, axis=0)
 
             assert active_logl.shape == (num_live_points_missing,), (active_logl.shape, num_live_points_missing)
 
@@ -1320,7 +1317,7 @@ class ReactiveNestedSampler(object):
                     rowid = self.pointstore.add(_listify(
                         [-np.inf, active_logl[i], 0.0],
                         active_u[i,:],
-                        active_v[i,:]), self.ncall)
+                        active_v[i,:]), 1)
 
             if len(prev_u) > 0:
                 active_u = np.concatenate((prev_u, active_u))
@@ -1597,7 +1594,7 @@ class ReactiveNestedSampler(object):
                     maxradiussq=self.region.maxradiussq,
                     sample_u=u, sample_v=v, sample_logl=logl)
                 np.savetxt(debug_filename + '.csv', self.region.u, delimiter=',')
-                warning_message = warning_message1 + (warning_message2 % ' (stored for you in %s.csv)') % debug_filename
+                warning_message = warning_message1 + (warning_message2 % (' (stored for you in %s.csv)' % debug_filename))
             else:
                 warning_message = warning_message1 + warning_message2 % ''
             warnings.warn(warning_message)

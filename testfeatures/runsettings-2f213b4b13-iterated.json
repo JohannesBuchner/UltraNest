@@ -1,0 +1,19 @@
+{
+  "problem": "gauss",
+  "x_dim": 2,
+  "seed": 1,
+  "wrapped_dims": false,
+  "log_dir": "logs/features",
+  "delete_dir": false,
+  "pass_transform": true,
+  "num_live_points": 100,
+  "resume": false,
+  "cluster_num_live_points": 50,
+  "update_interval_iter_fraction": 0.2,
+  "dlogz": 0.5,
+  "dKL": 1.0,
+  "frac_remain": 0.5,
+  "min_ess": 0,
+  "max_iters": null,
+  "max_ncalls": 10000000.0
+}

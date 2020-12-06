@@ -1,0 +1,20 @@
+{
+  "problem": "funnel",
+  "x_dim": 6,
+  "seed": 3,
+  "wrapped_dims": false,
+  "log_dir": "logs/features",
+  "delete_dir": true,
+  "pass_transform": true,
+  "num_live_points": 50,
+  "resume": true,
+  "cluster_num_live_points": 50,
+  "max_num_live_points_for_efficiency": 0,
+  "update_interval_iter_fraction": 0.2,
+  "dlogz": 2.0,
+  "dKL": 0.1,
+  "frac_remain": 0.001,
+  "min_ess": 0,
+  "max_iters": null,
+  "max_ncalls": 100000.0
+}
