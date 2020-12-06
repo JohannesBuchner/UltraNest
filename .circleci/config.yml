@@ -25,7 +25,6 @@ jobs:
       - run: python3 setup.py install --user
       
       - run: python3 examples/testfeatures.py
-      - run: mkdir logs
       - run: |
             grep -l '"x_dim". .,' testfeatures/*error.json | 
                 xargs coverage3 run --parallel-mode examples/testfeatures.py  
