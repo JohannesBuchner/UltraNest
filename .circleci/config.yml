@@ -25,6 +25,7 @@ jobs:
       - run: python3 setup.py install --user
       
       - run: python3 examples/testfeatures.py
+      - run: mkdir logs
       - run: |
             grep -l '"x_dim". .,' testfeatures/*error.json | 
                 xargs coverage3 run --parallel-mode examples/testfeatures.py  
@@ -33,6 +34,7 @@ jobs:
             do 
                   PYTHONPATH=. mpiexec -np 2 coverage run examples/testfeatures.py $i
             done
+      - run: mpiexec -np 3 coverage run --parallel-mode examples/testfeatures.py --random
       - run: coverage3 combine
       - run: coverage3 report --include="$PWD/*" --omit="$PWD/.eggs/*"
       - run: coverage3 html --include="$PWD/*" --omit="$PWD/.eggs/*" && mv htmlcov test-reports
