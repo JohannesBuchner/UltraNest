@@ -195,6 +195,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--random', action='store_true')
+    parser.add_argument('--seed', type=int, default=1)
     parser.add_argument('--timeout', action='store_true')
     parser.add_argument('--nrounds', type=int, default=1,
                         help="Number of random configurations to generate")
@@ -213,6 +214,7 @@ if __name__ == '__main__':
         sys.exit(0)
 
     if progargs.random:
+        random.seed(progargs.seed)
         def choose(myargs):
             # pick first (default) option most of the time
             if random.random() < 0.25:
