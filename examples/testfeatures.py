@@ -153,7 +153,7 @@ def main(args):
     try:
         sampler.plot()
     except AssertionError as e:
-        if "I don't believe that you want more dimensions than samples" in str(e) and results['ess'] <= 1:
+        if "I don't believe that you want more dimensions than samples" in str(e) and results['ess'] <= ndim + 1:
             pass
         else:
             raise e
