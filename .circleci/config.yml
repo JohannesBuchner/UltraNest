@@ -32,7 +32,7 @@ jobs:
       - run: |
             for i in testfeatures/runsettings-*-iterated.json; 
             do 
-                  PYTHONPATH=. mpiexec -mca btl ^openib -np 3 coverage run examples/testfeatures.py $i
+                  PYTHONPATH=. mpiexec -mca btl ^openib -np 3 coverage run --parallel-mode examples/testfeatures.py $i
             done
       - run: mpiexec -np 3 coverage run --parallel-mode examples/testfeatures.py --random
       - run: coverage3 combine
