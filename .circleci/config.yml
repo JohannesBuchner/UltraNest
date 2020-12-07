@@ -35,7 +35,7 @@ jobs:
             do 
                   PYTHONPATH=. mpiexec -mca btl ^openib -np 3 coverage run --parallel-mode examples/testfeatures.py $i
             done
-      - run: PYTHONPATH=. mpiexec -mca btl ^openib -np 3 coverage run --parallel-mode examples/testfeatures.py --random --seed $RANDOM
+      #- run: PYTHONPATH=. mpiexec -mca btl ^openib -np 3 coverage run --parallel-mode examples/testfeatures.py --random --seed $RANDOM
       - run: coverage3 combine
       - run: coverage3 report --include="$PWD/*" --omit="$PWD/.eggs/*"
       - run: coverage3 html --include="$PWD/*" --omit="$PWD/.eggs/*" && mv htmlcov test-reports
