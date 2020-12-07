@@ -150,7 +150,13 @@ def main(args):
                 )))
 
     results = sampler.results
-    sampler.plot()
+    try:
+        sampler.plot()
+    except AssertionError as e:
+        if "I don't believe that you want more dimensions than samples" in str(e) and results['ess'] <= 1:
+            pass
+        else:
+            raise e
     sampler.pointstore.close()
     if results['logzerr_tail'] < 0.5 and results['logzerr'] < 1.0 and true_Z is not None and args.num_live_points > 50:
         assert results['logz'] - results['logzerr'] * 3 < true_Z < results['logz'] + results['logzerr'] * 3
