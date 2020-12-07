@@ -164,8 +164,6 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "import scipy.stats\n",
-    "\n",
     "def log_likelihood1(params):\n",
     "    # unpack the current parameters:\n",
     "    B, A1, P1, t1 = params\n",
@@ -234,7 +232,7 @@
    "source": [
     "## Plot the parameter posterior probability distribution\n",
     "\n",
-    "A classic corner plot:"
+    "A classic corner plot of the parameter pairs and the marginal distributions:"
    ]
   },
   {
@@ -495,7 +493,7 @@
    "name": "python",
    "nbconvert_exporter": "python",
    "pygments_lexer": "ipython3",
-   "version": "3.7.4"
+   "version": "3.8.5"
   }
  },
  "nbformat": 4,

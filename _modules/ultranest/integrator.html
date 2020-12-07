@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ultranest.integrator &mdash; UltraNest 3.0.1 documentation</title>
+  <title>ultranest.integrator &mdash; UltraNest 3.1.0 documentation</title>
   
 
   
@@ -70,7 +70,7 @@
             
             
               <div class="version">
-                3.0.1
+                3.1.0
               </div>
             
           
@@ -417,7 +417,7 @@
 
             <span class="c1"># in the tails of distributions it can happen that two points are out of order</span>
             <span class="c1"># but that may not be very important</span>
-            <span class="c1"># in the interest of practicality, we allow this and only stop the </span>
+            <span class="c1"># in the interest of practicality, we allow this and only stop the</span>
             <span class="c1"># warmstart copying when some bulk of points differ.</span>
             <span class="c1"># in any case, warmstart should not be considered safe, but help iterating</span>
             <span class="c1"># and a final clean run is needed to finalise the results.</span>
@@ -443,10 +443,10 @@
             <span class="k">if</span> <span class="n">verbose</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span>
                     <span class="n">niter</span><span class="p">,</span> <span class="n">mask_order_different</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span>
-                    <span class="s1">&#39;S&#39;</span> <span class="k">if</span> <span class="n">reorders_are_onlyswaps</span> <span class="k">else</span> <span class="s1">&#39; &#39;</span><span class="p">,</span> 
-                    <span class="s1">&#39;C&#39;</span> <span class="k">if</span> <span class="n">order_consistent</span> <span class="k">else</span> <span class="s1">&#39; &#39;</span><span class="p">,</span> 
+                    <span class="s1">&#39;S&#39;</span> <span class="k">if</span> <span class="n">reorders_are_onlyswaps</span> <span class="k">else</span> <span class="s1">&#39; &#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;C&#39;</span> <span class="k">if</span> <span class="n">order_consistent</span> <span class="k">else</span> <span class="s1">&#39; &#39;</span><span class="p">,</span>
                     <span class="s1">&#39;F&#39;</span> <span class="k">if</span> <span class="n">order_fully_consistent</span> <span class="k">else</span> <span class="s1">&#39; &#39;</span><span class="p">,</span>
-                    <span class="s1">&#39;G&#39;</span> <span class="k">if</span> <span class="n">good_state</span> <span class="k">else</span> <span class="s1">&#39; &#39;</span><span class="p">,</span> 
+                    <span class="s1">&#39;G&#39;</span> <span class="k">if</span> <span class="n">good_state</span> <span class="k">else</span> <span class="s1">&#39; &#39;</span><span class="p">,</span>
                     <span class="s1">&#39;</span><span class="si">%5.2f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">active_values</span><span class="p">)</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">active_values2</span><span class="p">))</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
                 <span class="p">)</span>
             <span class="k">if</span> <span class="n">good_state</span><span class="p">:</span>
@@ -517,6 +517,7 @@
 <span class="sd">    If the mpi communicator *comm* is not None, use MPI to distribute</span>
 <span class="sd">    the bootstraps over the *mpi_size* processes.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">nbootstraps</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">nbootstraps</span>
     <span class="n">r</span><span class="p">,</span> <span class="n">f</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">compute_enlargement</span><span class="p">(</span>
         <span class="n">minvol</span><span class="o">=</span><span class="n">minvol</span><span class="p">,</span>
         <span class="n">nbootstraps</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nbootstraps</span> <span class="o">//</span> <span class="n">mpi_size</span><span class="p">))</span>
@@ -1102,15 +1103,19 @@
 <span class="sd">        log_dir: str</span>
 <span class="sd">            where to store output files</span>
 <span class="sd">        resume: &#39;resume&#39;, &#39;resume-similar&#39;, &#39;overwrite&#39; or &#39;subfolder&#39;</span>
+
 <span class="sd">            if &#39;overwrite&#39;, overwrite previous data.</span>
+
 <span class="sd">            if &#39;subfolder&#39;, create a fresh subdirectory in log_dir.</span>
+
 <span class="sd">            if &#39;resume&#39; or True, continue previous run if available.</span>
-<span class="sd">               Only works when dimensionality, transform or likelihood are consistent.</span>
+<span class="sd">            Only works when dimensionality, transform or likelihood are consistent.</span>
+
 <span class="sd">            if &#39;resume-similar&#39;, continue previous run if available.</span>
-<span class="sd">               Only works when dimensionality and transform are consistent.</span>
-<span class="sd">               If a likelihood difference is detected, the existing likelihoods</span>
-<span class="sd">               are updated until the live point order differs.</span>
-<span class="sd">               Otherwise, behaves like resume.</span>
+<span class="sd">            Only works when dimensionality and transform are consistent.</span>
+<span class="sd">            If a likelihood difference is detected, the existing likelihoods</span>
+<span class="sd">            are updated until the live point order differs.</span>
+<span class="sd">            Otherwise, behaves like resume.</span>
 
 <span class="sd">        wrapped_params: list of bools</span>
 <span class="sd">            indicating whether this parameter wraps around (circular parameter).</span>
@@ -1228,10 +1233,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">ndraw_max</span> <span class="o">=</span> <span class="n">ndraw_max</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_likelihood_function</span><span class="p">(</span><span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">num_test_samples</span><span class="p">):</span>
             <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_to_disk</span>
-            <span class="k">if</span> <span class="n">resume_similar</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">resume_similar</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_to_disk</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="n">storage_backend</span> <span class="o">==</span> <span class="s1">&#39;hdf5&#39;</span><span class="p">,</span> <span class="s1">&#39;resume-similar is only supported for HDF5 files&#39;</span>
                 <span class="c1"># close</span>
                 <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">pointstore</span>
                 <span class="c1"># rewrite points file</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;trying to salvage points from previous, different run ...&#39;</span><span class="p">)</span>
                 <span class="n">resume_from_similar_file</span><span class="p">(</span><span class="n">log_dir</span><span class="p">,</span> <span class="n">x_dim</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">vectorized</span><span class="o">=</span><span class="n">vectorized</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="n">ndraw_min</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">pointstore</span> <span class="o">=</span> <span class="n">HDF5PointStore</span><span class="p">(</span>
                     <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logs</span><span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">],</span> <span class="s1">&#39;points.hdf5&#39;</span><span class="p">),</span>
@@ -1380,6 +1388,9 @@
             <span class="c1"># preferentially select nodes with few parents, as those</span>
             <span class="c1"># have most weight</span>
             <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">weighted_parents</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="n">nnodes_needed</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">p</span> <span class="o">/</span> <span class="n">p</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_mpi</span><span class="p">:</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">bcast</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
             <span class="n">parents</span> <span class="o">=</span> <span class="p">[</span><span class="n">weighted_parents</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="n">i</span><span class="p">]</span>
 
         <span class="k">del</span> <span class="n">weighted_parents</span><span class="p">,</span> <span class="n">weights</span>
@@ -1459,35 +1470,28 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="ow">and</span> <span class="n">num_live_points_missing</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Sampling </span><span class="si">%d</span><span class="s1"> live points from prior ...&#39;</span><span class="p">,</span> <span class="n">num_live_points_missing</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">num_live_points_missing</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_mpi</span><span class="p">:</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mpi_rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="n">active_u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">num_live_points_missing</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_dim</span><span class="p">))</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">active_u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">num_live_points_missing</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_dim</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
-                <span class="n">active_u</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">bcast</span><span class="p">(</span><span class="n">active_u</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mpi_rank</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">num_live_points_todo</span> <span class="o">=</span> <span class="n">num_live_points_missing</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">mpi_size</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">active_u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">num_live_points_missing</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_dim</span><span class="p">))</span>
+                <span class="c1"># rank 0 picks up what the others did not do</span>
+                <span class="n">num_live_points_todo</span> <span class="o">=</span> <span class="n">num_live_points_missing</span> <span class="o">-</span> <span class="p">(</span><span class="n">num_live_points_missing</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">mpi_size</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mpi_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+            <span class="n">active_u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">num_live_points_todo</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_dim</span><span class="p">))</span>
             <span class="n">active_v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">active_u</span><span class="p">)</span>
+            <span class="n">active_logl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loglike</span><span class="p">(</span><span class="n">active_v</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ncall</span> <span class="o">+=</span> <span class="n">num_live_points_missing</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_mpi</span><span class="p">:</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mpi_rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="n">chunks</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mpi_size</span><span class="p">)]</span>
-                    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">chunk</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">active_v</span><span class="p">):</span>
-                        <span class="n">chunks</span><span class="p">[</span><span class="n">i</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">mpi_size</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">ncall</span> <span class="o">+=</span> <span class="n">num_live_points_missing</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">chunks</span> <span class="o">=</span> <span class="kc">None</span>
-                <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">chunks</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
-                <span class="n">active_logl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loglike</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-                <span class="k">assert</span> <span class="n">active_logl</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">),),</span> <span class="p">(</span><span class="n">active_logl</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
-                <span class="n">recv_active_logl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="n">active_logl</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-                <span class="n">recv_active_logl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">bcast</span><span class="p">(</span><span class="n">recv_active_logl</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">ncall</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">bcast</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ncall</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-                <span class="n">active_logl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">recv_active_logl</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-                <span class="k">assert</span> <span class="n">active_logl</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">num_live_points_missing</span><span class="p">,),</span> <span class="p">(</span><span class="n">active_logl</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">num_live_points_missing</span><span class="p">,</span> <span class="n">chunks</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">ncall</span> <span class="o">+=</span> <span class="n">num_live_points_missing</span>
-                <span class="n">active_logl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loglike</span><span class="p">(</span><span class="n">active_v</span><span class="p">)</span>
+                <span class="n">recv_samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="n">active_u</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">recv_samplesv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="n">active_v</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">recv_likes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="n">active_logl</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">recv_samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">bcast</span><span class="p">(</span><span class="n">recv_samples</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">recv_samplesv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">bcast</span><span class="p">(</span><span class="n">recv_samplesv</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">recv_likes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">bcast</span><span class="p">(</span><span class="n">recv_likes</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+                <span class="n">active_u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">recv_samples</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">active_v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">recv_samplesv</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">active_logl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">recv_likes</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
             <span class="k">assert</span> <span class="n">active_logl</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">num_live_points_missing</span><span class="p">,),</span> <span class="p">(</span><span class="n">active_logl</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">num_live_points_missing</span><span class="p">)</span>
 
@@ -1496,7 +1500,7 @@
                     <span class="n">rowid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pointstore</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">_listify</span><span class="p">(</span>
                         <span class="p">[</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">active_logl</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="mf">0.0</span><span class="p">],</span>
                         <span class="n">active_u</span><span class="p">[</span><span class="n">i</span><span class="p">,:],</span>
-                        <span class="n">active_v</span><span class="p">[</span><span class="n">i</span><span class="p">,:]),</span> <span class="bp">self</span><span class="o">.</span><span class="n">ncall</span><span class="p">)</span>
+                        <span class="n">active_v</span><span class="p">[</span><span class="n">i</span><span class="p">,:]),</span> <span class="mi">1</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">prev_u</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="n">active_u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">prev_u</span><span class="p">,</span> <span class="n">active_u</span><span class="p">))</span>
@@ -1773,8 +1777,7 @@
                     <span class="n">maxradiussq</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="p">,</span>
                     <span class="n">sample_u</span><span class="o">=</span><span class="n">u</span><span class="p">,</span> <span class="n">sample_v</span><span class="o">=</span><span class="n">v</span><span class="p">,</span> <span class="n">sample_logl</span><span class="o">=</span><span class="n">logl</span><span class="p">)</span>
                 <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">debug_filename</span> <span class="o">+</span> <span class="s1">&#39;.csv&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
-                <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;live points stored in </span><span class="si">%s</span><span class="s2">.csv&quot;</span> <span class="o">%</span> <span class="n">debug_filename</span><span class="p">)</span>
-                <span class="n">warning_message</span> <span class="o">=</span> <span class="n">warning_message1</span> <span class="o">+</span> <span class="p">(</span><span class="n">warning_message2</span> <span class="o">%</span> <span class="s1">&#39; (stored for you in </span><span class="si">%s</span><span class="s1">.csv)&#39;</span><span class="p">)</span> <span class="o">%</span> <span class="n">debug_filename</span>
+                <span class="n">warning_message</span> <span class="o">=</span> <span class="n">warning_message1</span> <span class="o">+</span> <span class="p">(</span><span class="n">warning_message2</span> <span class="o">%</span> <span class="p">(</span><span class="s1">&#39; (stored for you in </span><span class="si">%s</span><span class="s1">.csv)&#39;</span> <span class="o">%</span> <span class="n">debug_filename</span><span class="p">))</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">warning_message</span> <span class="o">=</span> <span class="n">warning_message1</span> <span class="o">+</span> <span class="n">warning_message2</span> <span class="o">%</span> <span class="s1">&#39;&#39;</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">warning_message</span><span class="p">)</span>
@@ -2563,9 +2566,12 @@
 
                     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="ow">and</span> <span class="p">(</span><span class="n">region_fresh</span> <span class="ow">or</span> <span class="n">it</span> <span class="o">%</span> <span class="n">log_interval</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">last_status</span> <span class="o">+</span> <span class="mf">0.1</span><span class="p">):</span>
                         <span class="n">last_status</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+                        <span class="c1"># the number of proposals asked from region</span>
+                        <span class="n">ncall_region_here</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ncall_region</span> <span class="o">-</span> <span class="n">ncall_region_at_run_start</span><span class="p">)</span>
+                        <span class="c1"># the number of proposals returned by the region</span>
                         <span class="n">ncall_here</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ncall</span> <span class="o">-</span> <span class="n">ncall_at_run_start</span>
+                        <span class="c1"># the number of likelihood evaluations above threshold</span>
                         <span class="n">it_here</span> <span class="o">=</span> <span class="n">it</span> <span class="o">-</span> <span class="n">it_at_first_region</span>
-                        <span class="n">ncall_region_here</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ncall_region</span> <span class="o">-</span> <span class="n">ncall_region_at_run_start</span>
 
                         <span class="k">if</span> <span class="n">show_status</span><span class="p">:</span>
                             <span class="k">if</span> <span class="n">Lmin</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">1e8</span><span class="p">:</span>
@@ -2595,7 +2601,7 @@
                             <span class="n">ndraw_next</span> <span class="o">=</span> <span class="mf">0.04</span> <span class="o">*</span> <span class="n">sampling_inefficiency</span> <span class="o">+</span> <span class="n">ndraw</span> <span class="o">*</span> <span class="mf">0.96</span>
                             <span class="n">ndraw</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ndraw_min</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ndraw_max</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">ndraw_next</span><span class="p">),</span> <span class="n">ndraw</span> <span class="o">*</span> <span class="mi">100</span><span class="p">))</span>
 
-                            <span class="k">if</span> <span class="n">sampling_inefficiency</span> <span class="o">&gt;</span> <span class="mi">1000</span> <span class="ow">and</span> <span class="n">it</span> <span class="o">&gt;=</span> <span class="n">it_at_first_region</span> <span class="o">+</span> <span class="mi">10</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">sampling_inefficiency</span> <span class="o">&gt;</span> <span class="mi">100000</span> <span class="ow">and</span> <span class="n">it</span> <span class="o">&gt;=</span> <span class="n">it_at_first_region</span> <span class="o">+</span> <span class="mi">10</span><span class="p">:</span>
                                 <span class="c1"># if the efficiency is poor, there are enough samples in each iteration</span>
                                 <span class="c1"># to estimate the inefficiency</span>
                                 <span class="n">ncall_at_run_start</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ncall</span>

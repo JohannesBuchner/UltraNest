@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Frequently Asked Questions &mdash; UltraNest 3.0.1 documentation</title>
+  <title>Frequently Asked Questions &mdash; UltraNest 3.1.0 documentation</title>
   
 
   
@@ -72,7 +72,7 @@
             
             
               <div class="version">
-                3.0.1
+                3.1.0
               </div>
             
           
@@ -364,7 +364,8 @@ chances are good that the result is reliable.</p></li>
 </div>
 <div class="section" id="how-do-i-use-ultranest-with-c-c-fortran-julia-r">
 <h2><a class="toc-backref" href="#id9">How do I use UltraNest with C / C++ / Fortran / Julia / R?</a><a class="headerlink" href="#how-do-i-use-ultranest-with-c-c-fortran-julia-r" title="Permalink to this headline">¶</a></h2>
-<p>Examples are available for C, C++, Fortran, Julia and R: <a class="reference external" href="https://github.com/JohannesBuchner/UltraNest/lang">https://github.com/JohannesBuchner/UltraNest/lang</a></p>
+<p>Examples are available for C, C++, Fortran, Julia and R
+at <a class="reference external" href="https://github.com/JohannesBuchner/UltraNest/tree/master/languages">https://github.com/JohannesBuchner/UltraNest/tree/master/languages</a></p>
 <p>These implement the same prior and likelihood functions. The
 functions are vectorized to reduce the number of function calls.</p>
 <p>The C, C++ and Fortran functions are compiled to a dynamic library,
@@ -385,7 +386,7 @@ as well as real-world applications.
 This problem does not really go away with decreasing efficiency (increasing the ellipsoid scale factor).
 All implementations of MultiNest will suffer this issue.</p></li>
 <li><p>MultiNest also implements importance nested sampling, which has been claimed to
-<cite>reduce this problem &lt;https://ui.adsabs.harvard.edu/abs/2019OJAp….2E..10F/abstract&gt;</cite>.
+<a class="reference external" href="https://ui.adsabs.harvard.edu/abs/2019OJAp....2E..10F/abstract">reduce this problem</a>.
 However, importance nested sampling severely <a class="reference external" href="https://ui.adsabs.harvard.edu/abs/2020AJ....159...73N/abstract">under-estimates the uncertainties</a>.</p></li>
 <li><p>UltraNest implements MLFriends, a parameter-free algorithm that derives
 a safe region by learning from the points themselves using cross-validation.</p></li>

@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ultranest package &mdash; UltraNest 3.0.1 documentation</title>
+  <title>ultranest package &mdash; UltraNest 3.1.0 documentation</title>
   
 
   
@@ -72,7 +72,7 @@
             
             
               <div class="version">
-                3.0.1
+                3.1.0
               </div>
             
           
@@ -921,19 +921,15 @@ Receives multiple parameter vectors, returns vector of likelihood.</p></li>
 Receives multiple cube vectors, returns multiple parameter vectors.</p></li>
 <li><p><strong>derived_param_names</strong> (<em>list of str</em>) – Additional derived parameters created by transform. (empty by default)</p></li>
 <li><p><strong>log_dir</strong> (<em>str</em>) – where to store output files</p></li>
-<li><p><strong>resume</strong> (<em>'resume'</em><em>, </em><em>'resume-similar'</em><em>, </em><em>'overwrite'</em><em> or </em><em>'subfolder'</em>) – <p>if ‘overwrite’, overwrite previous data.
-if ‘subfolder’, create a fresh subdirectory in log_dir.
-if ‘resume’ or True, continue previous run if available.</p>
-<blockquote>
-<div><p>Only works when dimensionality, transform or likelihood are consistent.</p>
-</div></blockquote>
-<dl class="simple">
-<dt>if ‘resume-similar’, continue previous run if available.</dt><dd><p>Only works when dimensionality and transform are consistent.
+<li><p><strong>resume</strong> (<em>'resume'</em><em>, </em><em>'resume-similar'</em><em>, </em><em>'overwrite'</em><em> or </em><em>'subfolder'</em>) – <p>if ‘overwrite’, overwrite previous data.</p>
+<p>if ‘subfolder’, create a fresh subdirectory in log_dir.</p>
+<p>if ‘resume’ or True, continue previous run if available.
+Only works when dimensionality, transform or likelihood are consistent.</p>
+<p>if ‘resume-similar’, continue previous run if available.
+Only works when dimensionality and transform are consistent.
 If a likelihood difference is detected, the existing likelihoods
 are updated until the live point order differs.
 Otherwise, behaves like resume.</p>
-</dd>
-</dl>
 </p></li>
 <li><p><strong>wrapped_params</strong> (<em>list of bools</em>) – indicating whether this parameter wraps around (circular parameter).</p></li>
 <li><p><strong>num_test_samples</strong> (<em>int</em>) – test transform and likelihood with this number of
