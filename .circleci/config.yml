@@ -18,27 +18,28 @@ jobs:
 
       - run: sudo pip3 install -r pip-requirements.txt pytest-html coveralls pyyaml mpi4py
       - run: mkdir -p test-reports
+
+      - run: python3 setup.py install --user
+      - run: for i in examples/test*.py; do python3 $i --help; done
       
       - run: coverage3 run --parallel-mode setup.py test
       - run: |
             echo "backend: Agg" > matplotlibrc
 
-      - run: python3 setup.py install --user
-      
       - run: python3 examples/testfeatures.py
       - run: |
             grep -l '"x_dim". .,' testfeatures/*error.json | 
-                xargs coverage3 run --parallel-mode examples/testfeatures.py  
+                PYTHONPATH=. xargs coverage3 run --parallel-mode examples/testfeatures.py
       - run: |
             for i in testfeatures/runsettings-*-iterated.json; 
             do 
-                  mpiexec -mca btl ^openib -np 3 coverage run --parallel-mode examples/testfeatures.py $i
+                  PYTHONPATH=. mpiexec -mca btl ^openib -np 3 coverage run --parallel-mode examples/testfeatures.py $i
             done
-      - run: mpiexec -mca btl ^openib -np 3 coverage run --parallel-mode examples/testfeatures.py --random --seed $RANDOM
+      - run: PYTHONPATH=. mpiexec -mca btl ^openib -np 3 coverage run --parallel-mode examples/testfeatures.py --random --seed $RANDOM
       - run: coverage3 combine
       - run: coverage3 report --include="$PWD/*" --omit="$PWD/.eggs/*"
       - run: coverage3 html --include="$PWD/*" --omit="$PWD/.eggs/*" && mv htmlcov test-reports
-      - run: for i in examples/test*.py; do python3 $i --help; done
+
       - run: coveralls
       
       - store_test_results:
