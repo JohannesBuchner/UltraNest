@@ -323,7 +323,7 @@ def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform, verbose=F
     pointstore2.close()
     del pointstore2
 
-    os.rename(filepath2, filepath)
+    os.replace(filepath2, filepath)
 
 
 def _update_region_bootstrap(region, nbootstraps, minvol=0., comm=None, mpi_size=1):
