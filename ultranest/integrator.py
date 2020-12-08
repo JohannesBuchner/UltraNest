@@ -2742,6 +2742,8 @@ def read_file(log_dir, x_dim, num_bootstraps=20, random=True, verbose=False, che
     num_params = ncols - 3 - x_dim
 
     points = fileobj['points'][:]
+    fileobj.close()
+    del fileobj
     stack = list(enumerate(points))
 
     pointpile = PointPile(x_dim, num_params)
