@@ -153,9 +153,11 @@ def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform, verbose=F
     _, ncols = fileobj['points'].shape
     num_params = ncols - 3 - x_dim
 
-    pointstore2 = HDF5PointStore(filepath2, ncols, mode='w')
+    points = fileobj['points'][:]
+    fileobj.close()
+    del fileobj
 
-    points = fileobj['points'][:].copy()
+    pointstore2 = HDF5PointStore(filepath2, ncols, mode='w')
     stack = list(enumerate(points))
 
     pointpile = PointPile(x_dim, num_params)
@@ -1053,6 +1055,7 @@ class ReactiveNestedSampler(object):
             if resume_similar and self.log_to_disk:
                 assert storage_backend == 'hdf5', 'resume-similar is only supported for HDF5 files'
                 # close
+                self.pointstore.close()
                 del self.pointstore
                 # rewrite points file
                 if self.log:
