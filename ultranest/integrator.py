@@ -1050,6 +1050,7 @@ class ReactiveNestedSampler(object):
         self.draw_multiple = draw_multiple
         self.ndraw_min = ndraw_min
         self.ndraw_max = ndraw_max
+        self.build_tregion = transform is not None
         if not self._check_likelihood_function(transform, loglike, num_test_samples):
             assert self.log_to_disk
             if resume_similar and self.log_to_disk:
@@ -2235,6 +2236,7 @@ class ReactiveNestedSampler(object):
 
             self.transformLayer = None
             self.region = None
+            self.tregion = None
             it_at_first_region = 0
             self.ib = 0
             self.samples = []
