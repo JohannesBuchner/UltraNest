@@ -1,27 +1,35 @@
 import numpy as np
 from ultranest.mlfriends import ScalingLayer, AffineLayer, MLFriends
 from ultranest import ReactiveNestedSampler
-from ultranest.stepsampler import RegionMHSampler, CubeMHSampler, CubeSliceSampler, RegionSliceSampler, AHARMSampler
+from ultranest.stepsampler import RegionMHSampler, CubeMHSampler, CubeSliceSampler, RegionSliceSampler, SpeedVariableRegionSliceSampler, AHARMSampler
 from ultranest.stepsampler import generate_region_random_direction, ellipsoid_bracket, crop_bracket_at_unit_cube
 from ultranest.pathsampler import SamplingPathStepSampler
 from numpy.testing import assert_allclose
 
 #here = os.path.dirname(__file__)
 
-def loglike(z):
+def loglike_vectorized(z):
     a = np.array([-0.5 * sum([((xi - 0.7 + i*0.001)/0.1)**2 for i, xi in enumerate(x)]) for x in z])
     b = np.array([-0.5 * sum([((xi - 0.3 - i*0.001)/0.1)**2 for i, xi in enumerate(x)]) for x in z])
     return np.logaddexp(a, b)
 
+def loglike(x):
+    a = -0.5 * sum([((xi - 0.7 + i*0.001)/0.1)**2 for i, xi in enumerate(x)])
+    b = -0.5 * sum([((xi - 0.3 - i*0.001)/0.1)**2 for i, xi in enumerate(x)])
+    return np.logaddexp(a, b)
+
 def transform(x):
     return x # * 10. - 5.
+
+def transform1(x):
+    return x**2
 
 paramnames = ['param%d' % i for i in range(3)]
 #paramnames = ['param%d' % i for i in range(40)]
 
 def test_stepsampler_cubemh(plot=False):
     np.random.seed(1)
-    sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, vectorized=True)
+    sampler = ReactiveNestedSampler(paramnames, loglike_vectorized, transform=transform1, vectorized=True)
     sampler.stepsampler = CubeMHSampler(nsteps=4 * len(paramnames))
     r = sampler.run(log_interval=50, min_num_live_points=400)
     sampler.print_results()
@@ -31,8 +39,8 @@ def test_stepsampler_cubemh(plot=False):
     assert b.sum() > 1, b.sum()
 
 def test_stepsampler_regionmh(plot=False):
-    np.random.seed(1)
-    sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, vectorized=True)
+    np.random.seed(2)
+    sampler = ReactiveNestedSampler(paramnames, loglike_vectorized, transform=transform, vectorized=True)
     sampler.stepsampler = RegionMHSampler(nsteps=4 * len(paramnames))
     r = sampler.run(log_interval=50, min_num_live_points=400)
     sampler.print_results()
@@ -42,8 +50,8 @@ def test_stepsampler_regionmh(plot=False):
     assert b.sum() > 1, b
 
 def test_stepsampler_cubeslice(plot=False):
-    np.random.seed(1)
-    sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, vectorized=True)
+    np.random.seed(3)
+    sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform1)
     sampler.stepsampler = CubeSliceSampler(nsteps=len(paramnames))
     r = sampler.run(log_interval=50, min_num_live_points=400)
     sampler.print_results()
@@ -53,8 +61,8 @@ def test_stepsampler_cubeslice(plot=False):
     assert b.sum() > 1
 
 def test_stepsampler_regionslice(plot=False):
-    np.random.seed(1)
-    sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, vectorized=True)
+    np.random.seed(4)
+    sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform)
     sampler.stepsampler = RegionSliceSampler(nsteps=len(paramnames))
     r = sampler.run(log_interval=50, min_num_live_points=400)
     sampler.print_results()
@@ -62,6 +70,23 @@ def test_stepsampler_regionslice(plot=False):
     b = (np.abs(r['samples'] - 0.3) < 0.1).all(axis=1)
     assert a.sum() > 1
     assert b.sum() > 1
+
+
+def test_stepsampler_variable_speed(plot=False):
+    matrices = [
+        np.array([[True, True, True], [False, True, True], [False, False, True]]),
+        [Ellipsis, slice(1,None), slice(2,4)]
+    ]
+    for i, matrix in enumerate(matrices):
+        np.random.seed(42 + i)
+        sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform)
+        sampler.stepsampler = SpeedVariableRegionSliceSampler(matrix)
+        r = sampler.run(log_interval=50, min_num_live_points=400)
+        sampler.print_results()
+        a = (np.abs(r['samples'] - 0.7) < 0.1).all(axis=1)
+        b = (np.abs(r['samples'] - 0.3) < 0.1).all(axis=1)
+        assert a.sum() > 1
+        assert b.sum() > 1
 
 def make_region(ndim, us=None):
     if us is None:
@@ -79,9 +104,9 @@ def make_region(ndim, us=None):
 
 
 def test_stepsampler(plot=False):
-    np.random.seed(1)
+    np.random.seed(6)
     region = make_region(len(paramnames))
-    Ls = loglike(region.u)
+    Ls = loglike_vectorized(region.u)
     
     stepsampler = CubeMHSampler(nsteps=len(paramnames))
     while True:
@@ -101,10 +126,10 @@ def test_stepsampler(plot=False):
 
 def test_stepsampler_adapt_when_stuck(plot=False):
     # check that a stuck sampler can free itself
-    np.random.seed(1)
+    np.random.seed(7)
     us = np.random.normal(0.7, 0.001, size=(1000, len(paramnames)))
     region = make_region(len(paramnames), us=us)
-    Ls = loglike(us)
+    Ls = loglike_vectorized(us)
     Lmin = Ls.min()
 
     print('CubeMHSampler')
@@ -139,9 +164,9 @@ def test_stepsampler_adapt_when_stuck(plot=False):
     assert new_scale < 0.01, new_scale
 
 def test_stepsampler_regionmh_adapt(plot=False):
-    np.random.seed(1)
+    np.random.seed(8)
     region = make_region(len(paramnames))
-    Ls = loglike(region.u)
+    Ls = loglike_vectorized(region.u)
     try:
         RegionMHSampler(nsteps=len(paramnames), adaptive_nsteps='Hello')
         assert False, 'expected error'
@@ -397,7 +422,7 @@ def run_aharm_sampler():
         print("Nlive=%d nsteps=%d" % (Nlive, nsteps))
         sampler = AHARMSampler(nsteps, adaptive_nsteps=False, region_filter=False)
         us = np.random.uniform(0.6, 0.8, size=(4000, 2))
-        Ls = loglike(us)
+        Ls = loglike_vectorized(us)
         i = np.argsort(Ls)[-Nlive:]
         us = us[i,:]
         Ls = Ls[i]

@@ -7,7 +7,8 @@ from numpy.testing import assert_allclose
 def test_run():
     from ultranest import NestedSampler
 
-    def loglike(z):
+    def loglike(y):
+        z = np.log10(y)
         a = np.array([-0.5 * sum([((xi - 0.83456 + i*0.1)/0.5)**2 for i, xi in enumerate(x)]) for x in z])
         b = np.array([-0.5 * sum([((xi - 0.43456 - i*0.1)/0.5)**2 for i, xi in enumerate(x)]) for x in z])
         loglike.ncalls += len(a)
@@ -15,7 +16,7 @@ def test_run():
     loglike.ncalls = 0
 
     def transform(x):
-        return 10. * x - 5.
+        return 10**(10. * x - 5.)
 
     paramnames = ['Hinz', 'Kunz']
 
@@ -380,7 +381,10 @@ def test_run_compat():
         return like
 
     def transform(x):
-        return 10 * x - 5.
+        params = x.copy()
+        params[0] = 10 * x[0] - 5.
+        params[1] = 10**(x[1] - 1)
+        return params
 
     result = solve(LogLikelihood=loglike, Prior=transform,
         n_dims=ndim, outputfiles_basename=None,

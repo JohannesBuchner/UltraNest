@@ -777,7 +777,6 @@ class SpeedVariableRegionSliceSampler(CubeSliceSampler):
         nsteps = len(step_matrix)
 
         StepSampler.__init__(self, nsteps=nsteps)
-        self.reset()
         self.step_matrix = step_matrix
 
     def generate_direction(self, ui, region, scale=1):
@@ -798,7 +797,7 @@ class SpeedVariableRegionSliceSampler(CubeSliceSampler):
         # only update active dimensions
         active_dims = self.step_matrix[j]
         # project uj onto ui. vary only active dimensions
-        uk[active_dims] = uj[active_dims]
+        uk[active_dims] = uj[active_dims]  # if this fails, a boolean array with the wrong number of columns was passed
 
         v = uk - ui
         v *= scale / (v**2).sum()**0.5
