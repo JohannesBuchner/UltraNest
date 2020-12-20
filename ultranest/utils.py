@@ -276,6 +276,27 @@ def is_affine_transform(a, b):
     return True
 
 
+def normalised_kendall_tau_distance(values1, values2, i=None, j=None):
+    """
+    Normalised Kendall tau distance between two arrays, 
+    *values1* and *values2*, both of length N.
+    
+    see https://en.wikipedia.org/wiki/Kendall_tau_distance
+
+    You can optionally pass precomputed indices:
+    i, j = np.meshgrid(np.arange(N), np.arange(N))
+    """
+    N = len(values1)
+    assert len(values2) == N, "Both lists have to be of equal length"
+    if i is None or j is None:
+        i, j = np.meshgrid(np.arange(N), np.arange(N))
+    a = np.argsort(values1)
+    b = np.argsort(values2)
+    ndisordered = np.logical_or(np.logical_and(a[i] < a[j], b[i] > b[j]), np.logical_and(a[i] > a[j], b[i] < b[j])).sum()
+    return ndisordered / (N * (N - 1))
+
+
+
 def _merge_transform_loglike_gradient_function(transform, loglike, gradient):
     def transform_loglike_gradient(u):
         """combine transform, likelihood and gradient function"""

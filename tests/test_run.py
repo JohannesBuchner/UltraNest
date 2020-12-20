@@ -324,7 +324,8 @@ def test_reactive_run_warmstart_gauss():
             try:
                 sampler = ReactiveNestedSampler(paramnames,
                     loglike, transform=transform,
-                    log_dir=folder, resume=resume, vectorized=True, draw_multiple=False)
+                    log_dir=folder, resume=resume, vectorized=True, draw_multiple=False,
+                    warmstart_max_tau=0.5)
             except Exception as e:
                 # we expect an error for resuming with a changed likelihood
                 if resume != 'resume':

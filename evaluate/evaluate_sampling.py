@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from ultranest.mlfriends import ScalingLayer, AffineLayer, MLFriends
 from ultranest.stepsampler import RegionMHSampler, CubeMHSampler
 from ultranest.stepsampler import CubeSliceSampler, RegionSliceSampler, RegionBallSliceSampler, RegionSequentialSliceSampler, SpeedVariableRegionSliceSampler
-#from ultranest.stepsampler import DESampler
+from ultranest.stepsampler import AHARMSampler
 #from ultranest.stepsampler import OtherSamplerProxy, SamplingPathSliceSampler, SamplingPathStepSampler
 #from ultranest.stepsampler import GeodesicSliceSampler, RegionGeodesicSliceSampler
 import tqdm
@@ -11,7 +11,7 @@ import joblib
 import warnings
 from problems import transform, get_problem
 
-mem = joblib.Memory('.', verbose=False)
+#mem = joblib.Memory('.', verbose=False)
 
 def quantify_step(a, b):
     # euclidean step distance
@@ -28,7 +28,7 @@ def quantify_step(a, b):
     radial_step = np.abs(ra - rb)
     return [stepsize, angular_step, radial_step]
 
-@mem.cache
+#@mem.cache
 def evaluate_warmed_sampler(problemname, ndim, nlive, nsteps, sampler):
     loglike, grad, volume, warmup = get_problem(problemname, ndim=ndim)
     if hasattr(sampler, 'set_gradient'):
@@ -134,35 +134,22 @@ def main(args):
     
     samplers = [
         #CubeMHSampler(nsteps=16), #CubeMHSampler(nsteps=4), CubeMHSampler(nsteps=1),
-        RegionMHSampler(nsteps=16), #RegionMHSampler(nsteps=4), RegionMHSampler(nsteps=1),
+        #RegionMHSampler(nsteps=16), #RegionMHSampler(nsteps=4), RegionMHSampler(nsteps=1),
         ##DESampler(nsteps=16), DESampler(nsteps=4), #DESampler(nsteps=1),
         #CubeSliceSampler(nsteps=2*ndim), CubeSliceSampler(nsteps=ndim), CubeSliceSampler(nsteps=max(1, ndim//2)),
         #RegionSliceSampler(nsteps=ndim), RegionSliceSampler(nsteps=max(1, ndim//2)),
-        RegionSliceSampler(nsteps=2), RegionSliceSampler(nsteps=4), 
-        RegionSliceSampler(nsteps=ndim), RegionSliceSampler(nsteps=4*ndim),
+        #RegionSliceSampler(nsteps=2), RegionSliceSampler(nsteps=4), 
+        #RegionSliceSampler(nsteps=ndim), RegionSliceSampler(nsteps=4*ndim),
         #RegionBallSliceSampler(nsteps=2*ndim), RegionBallSliceSampler(nsteps=ndim), RegionBallSliceSampler(nsteps=max(1, ndim//2)),
        # RegionSequentialSliceSampler(nsteps=2*ndim), RegionSequentialSliceSampler(nsteps=ndim), RegionSequentialSliceSampler(nsteps=max(1, ndim//2)),
 
         #SpeedVariableRegionSliceSampler([Ellipsis]*ndim), SpeedVariableRegionSliceSampler([slice(i, ndim) for i in range(ndim)]),
         #SpeedVariableRegionSliceSampler([Ellipsis]*ndim + [slice(1 + ndim//2, None)]*ndim), 
         
-        RegionMHSampler(nsteps=2*ndim, adaptive_nsteps='move-distance'),
-        RegionMHSampler(nsteps=2*ndim, adaptive_nsteps='proposal-total-distances'),
-        RegionMHSampler(nsteps=2*ndim, adaptive_nsteps='proposal-total-distances-NN'),
-        RegionMHSampler(nsteps=2*ndim, adaptive_nsteps='proposal-summed-distances'),
-        RegionMHSampler(nsteps=2*ndim, adaptive_nsteps='proposal-summed-distances-NN'),
-
-        RegionSliceSampler(nsteps=2*ndim, adaptive_nsteps='move-distance'),
-        RegionSliceSampler(nsteps=2*ndim, adaptive_nsteps='proposal-total-distances'),
-        RegionSliceSampler(nsteps=2*ndim, adaptive_nsteps='proposal-total-distances-NN'),
-        RegionSliceSampler(nsteps=2*ndim, adaptive_nsteps='proposal-summed-distances'),
-        RegionSliceSampler(nsteps=2*ndim, adaptive_nsteps='proposal-summed-distances-NN'),
-
-        RegionBallSliceSampler(nsteps=2*ndim, adaptive_nsteps='move-distance'),
-        RegionBallSliceSampler(nsteps=2*ndim, adaptive_nsteps='proposal-total-distances'),
-        RegionBallSliceSampler(nsteps=2*ndim, adaptive_nsteps='proposal-total-distances-NN'),
-        RegionBallSliceSampler(nsteps=2*ndim, adaptive_nsteps='proposal-summed-distances'),
-        RegionBallSliceSampler(nsteps=2*ndim, adaptive_nsteps='proposal-summed-distances-NN'),
+        AHARMSampler(nsteps=64),
+        AHARMSampler(nsteps=64, adaptive_nsteps='move-distance'),
+        AHARMSampler(nsteps=64, region_filter=False),
+        AHARMSampler(nsteps=64, orthogonalise=True),
     ]
     if ndim < 14:
         samplers.insert(0, MLFriendsSampler())
@@ -311,4 +298,3 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     main(args)
-

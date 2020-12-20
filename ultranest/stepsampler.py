@@ -878,6 +878,198 @@ def crop_bracket_at_unit_cube(ui, v, left, right, epsilon=1e-6):
     assert left <= 0 <= right, (left, right)
     return left, right, cropped_left, cropped_right
 
+def _prepare_steps(
+    nsteps_done, nsteps, directions, ndraw,
+    current_interval, loglike, transform, region, ndim, region_filter, 
+    Lmin, verbose,
+):
+    point_sequence = []
+    point_expectation = []
+    intervals = []
+    nsteps_prepared = 0
+    while nsteps_prepared + nsteps_done < nsteps and len(point_sequence) < ndraw:
+        if verbose:
+            print("loop:", nsteps_prepared, nsteps_done, 'of', nsteps)
+        v = directions[nsteps_done + nsteps_prepared]
+        if verbose:
+            print("direction:", v)
+        if len(point_sequence) == 0:
+            ucurrent, left, right = current_interval
+            assert (ucurrent >= 0).all(), ucurrent
+            assert (ucurrent <= 1).all(), ucurrent
+            assert region.inside_ellipsoid(ucurrent.reshape((1, ndim))), (
+                'cannot start from outside ellipsoid!', region.inside_ellipsoid(ucurrent.reshape((1, ndim))))
+            if region_filter:
+                assert region.inside(ucurrent.reshape((1, ndim))), (
+                    'cannot start from outside region!', region.inside(ucurrent.reshape((1, ndim))))
+            assert loglike(transform(ucurrent.reshape((1, ndim)))) >= Lmin, (
+                'cannot start from outside!', loglike(transform(ucurrent.reshape((1, ndim)))), Lmin)
+        else:
+            left, right = None, None
+        assert (ucurrent >= 0).all(), ucurrent
+        assert (ucurrent <= 1).all(), ucurrent
+        if verbose:
+            print("preparing step: %d from %s" % (nsteps_prepared + nsteps_done, ucurrent))
+
+        if left is None or right is None:
+            # in each, find the end points using the expanded ellipsoid
+            assert region.inside_ellipsoid(ucurrent.reshape((1, ndim))), ('current point outside ellipsoid!')
+            left, right = ellipsoid_bracket(ucurrent, v, region.ellipsoid_center, region.ellipsoid_inv_axes, region.enlarge)
+            left, right, _, _ = crop_bracket_at_unit_cube(ucurrent, v, left, right)
+            assert (ucurrent + v * left <= 1).all(), (
+                ucurrent, v, region.ellipsoid_center, region.ellipsoid_inv_axes, region.ellipsoid_invcov, region.enlarge)
+            assert (ucurrent + v * right <= 1).all(), (
+                ucurrent, v, region.ellipsoid_center, region.ellipsoid_inv_axes, region.ellipsoid_invcov, region.enlarge)
+            assert (ucurrent + v * left >= 0).all(), (
+                ucurrent, v, region.ellipsoid_center, region.ellipsoid_inv_axes, region.ellipsoid_invcov, region.enlarge)
+            assert (ucurrent + v * right >= 0).all(), (
+                ucurrent, v, region.ellipsoid_center, region.ellipsoid_inv_axes, region.ellipsoid_invcov, region.enlarge)
+
+            assert left <= 0 <= right, (left, right)
+            if verbose:
+                print("   ellipsoid bracket found:", left, right)
+
+        while True:
+            # sample in each a point until presumed success:
+            assert region.inside_ellipsoid(ucurrent.reshape((1, ndim))), ('current point outside ellipsoid!')
+            t = np.random.uniform(left, right)
+            unext = ucurrent + v * t
+            assert (unext >= 0).all(), unext
+            assert (unext <= 1).all(), unext
+            assert region.inside_ellipsoid(unext.reshape((1, ndim))), ('proposal landed outside ellipsoid!', t, left, right)
+
+            # compute distance vector to center
+            d = unext - region.ellipsoid_center
+            # distance in normalised coordates: vector . matrix . vector
+            # where the matrix is the ellipsoid inverse covariance
+            r = np.einsum('j,jk,k->', d, region.ellipsoid_invcov, d)
+            if verbose:
+                print("   proposed slice point", t, r)
+
+            likely_inside = r <= 1
+            if not likely_inside and r <= region.enlarge:
+                # The exception is, when a point is between projected ellipsoid center and current point
+                # then it is also likely inside (if still inside the ellipsoid)
+
+                # project ellipsoid center onto line
+                # region.ellipsoid_center = ucurrent + tc * v
+                tc = np.dot(region.ellipsoid_center - ucurrent, v)
+                # current point is at 0 by definition
+                if 0 < t < tc or tc < t < 0:
+                    if verbose:
+                        print("   proposed point is further inside than current point")
+                    likely_inside = True
+                #    print("   proposed point %.3f is going towards center %.3f" % (t, tc))
+                # else:
+                #    print("   proposed point %.3f is going away from center %.3f" % (t, tc))
+                else:
+                    # another exception is that points very close to the current point
+                    # are very likely also inside
+                    # to find that out, project all live points on the line
+                    tall = np.einsum('ij,j->i', region.u - ucurrent, v)
+                    # find the range and identify a small part of it
+                    epsilon_nearby = 1e-6
+                    if tc < (tall.max() - tall.min()) * epsilon_nearby:
+                        likely_inside = True
+                        if verbose:
+                            print("   proposed point is very nearby")
+
+            if verbose:
+                print("   proposed point %s (%f) is likely %s (r=%f)" % (unext, t, 'inside' if likely_inside else 'outside', r))
+            intervals.append((nsteps_prepared, ucurrent, v, left, right, t))
+            point_sequence.append(unext)
+            point_expectation.append(likely_inside)
+            #   If point radius in ellipsoid is <1, presume that it will be successful
+            if likely_inside:
+                nsteps_prepared += 1
+                ucurrent = unext
+                assert region.inside_ellipsoid(ucurrent.reshape((1, ndim))), ('current point outside ellipsoid!')
+                break
+
+            #   Else, presume it will be unsuccessful, and sample another point
+            #   shrink interval
+            if t > 0:
+                right = t
+            else:
+                left = t
+
+    assert len(point_sequence) == len(point_expectation)
+    assert len(point_sequence) == len(intervals)
+    assert nsteps_prepared <= len(point_sequence)
+
+    assert len(point_sequence) > 0, (len(point_sequence), ndraw, nsteps_prepared, nsteps_done, nsteps)
+
+    if verbose:
+        print("proposed sequence:", point_sequence)
+        print("expectations:", point_expectation)
+
+    return np.array(point_sequence, dtype=float), np.array(point_expectation, dtype=bool), intervals, nsteps_prepared
+
+
+def _evaluate_with_filter(
+    region_filter, loglike, transform, Lmin, region, tregion,
+    point_sequence, point_expectation, 
+    verbose
+):
+    truncated = False
+    # region-filter, transform, tregion-filter, and evaluate the likelihood
+    if region_filter:
+        mask_inside = region.inside(point_sequence)
+        # identify first point that was expected to be inside, but was marked outside-of-region
+        i = np.where(np.logical_and(point_expectation, ~mask_inside))[0]
+        if verbose:
+            print("region filter says:", mask_inside, i)
+        if len(i) > 0:
+            imax = i[0] + 1
+            # truncate there
+            point_sequence = point_sequence[:imax]
+            point_expectation = point_expectation[:imax]
+            mask_inside = mask_inside[:imax]
+            truncated |= True
+            del imax
+        if not mask_inside.any():
+            return None
+    else:
+        mask_inside = None
+
+    t_point_sequence = transform(point_sequence)
+    if region_filter and tregion is not None:
+        tmask = tregion.inside(t_point_sequence)
+        # identify first point that was expected to be inside, but was marked outside-of-region
+        i = np.where(np.logical_and(point_expectation, ~tmask))[0]
+        if verbose:
+            print("tregion filter says:", tmask, i)
+        mask_inside[~tmask] = False
+        del tmask
+        if len(i) > 0:
+            imax = i[0] + 1
+            # truncate there
+            point_sequence = point_sequence[:imax]
+            point_expectation = point_expectation[:imax]
+            t_point_sequence = t_point_sequence[:imax]
+            mask_inside = mask_inside[:imax]
+            truncated |= True
+            del imax
+        if not mask_inside.any():
+            return None
+
+    # we expect the last point to be an accept, otherwise we would not terminate the sequence
+    assert point_expectation[-1]
+    if region_filter:
+        # set filtered ones to -np.inf
+        L = np.ones(len(t_point_sequence)) * -np.inf
+        nc = mask_inside.sum()
+        L[mask_inside] = loglike(t_point_sequence[mask_inside,:])
+    else:
+        nc = len(point_sequence)
+        L = loglike(t_point_sequence)
+    Lmask = L > Lmin
+
+    i = np.where(point_expectation != Lmask)[0]
+    if verbose:
+        print("reality:", Lmask)
+        print("difference:", point_expectation == Lmask)
+    return point_sequence, t_point_sequence, L, Lmask, i, nc, truncated
 
 class AHARMSampler(StepSampler):
     """Accelerated hit-and-run/slice sampler, vectorised.
@@ -1024,6 +1216,7 @@ class AHARMSampler(StepSampler):
             Li = Ls[i]
             self.history.append((ui.copy(), Li.copy()))
             del i
+            print("starting at", ui)
             # set initially nleft = nsteps
             self.nsteps_done = 0
 
@@ -1052,178 +1245,25 @@ class AHARMSampler(StepSampler):
         nc = 0
         while True:
             # prepare a sequence of points until nsteps are reached
-            point_sequence = []
-            point_expectation = []
-            intervals = []
-            nsteps_prepared = 0
-            while nsteps_prepared + self.nsteps_done < self.nsteps and len(point_sequence) < ndraw:
-                v = self.directions[self.nsteps_done + nsteps_prepared]
-                if len(point_sequence) == 0:
-                    ucurrent, left, right = self.current_interval
-                    assert (ucurrent >= 0).all(), ucurrent
-                    assert (ucurrent <= 1).all(), ucurrent
-                    assert region.inside_ellipsoid(ucurrent.reshape((1, ndim))), (
-                        'cannot start from outside ellipsoid!', region.inside_ellipsoid(ucurrent.reshape((1, ndim))))
-                    if self.region_filter:
-                        assert region.inside(ucurrent.reshape((1, ndim))), (
-                            'cannot start from outside region!', region.inside(ucurrent.reshape((1, ndim))))
-                    assert loglike(transform(ucurrent.reshape((1, ndim)))) >= Lmin, (
-                        'cannot start from outside!', loglike(transform(ucurrent.reshape((1, ndim)))), Lmin)
-                else:
-                    left, right = None, None
-                assert (ucurrent >= 0).all(), ucurrent
-                assert (ucurrent <= 1).all(), ucurrent
-                if verbose:
-                    print("preparing step: %d from %s" % (nsteps_prepared + self.nsteps_done, ucurrent))
+            point_sequence, point_expectation, intervals, nsteps_prepared = _prepare_steps(
+                self.nsteps_done, self.nsteps, self.directions, ndraw,
+                self.current_interval, loglike, transform, region, ndim, self.region_filter, 
+                Lmin, verbose
+            )
+            point_sequence, t_point_sequence, L, Lmask, indices_deviating, nc_here, truncated = _evaluate_with_filter(
+                self.region_filter, loglike, transform, Lmin, region, tregion,
+                point_sequence, point_expectation, 
+                verbose
+            )
+            del point_expectation
+            nc += nc_here
 
-                if left is None or right is None:
-                    # in each, find the end points using the expanded ellipsoid
-                    assert region.inside_ellipsoid(ucurrent.reshape((1, ndim))), ('current point outside ellipsoid!')
-                    left, right = ellipsoid_bracket(ucurrent, v, region.ellipsoid_center, region.ellipsoid_inv_axes, region.enlarge)
-                    left, right, _, _ = crop_bracket_at_unit_cube(ucurrent, v, left, right)
-                    assert (ucurrent + v * left <= 1).all(), (
-                        ucurrent, v, region.ellipsoid_center, region.ellipsoid_inv_axes, region.ellipsoid_invcov, region.enlarge)
-                    assert (ucurrent + v * right <= 1).all(), (
-                        ucurrent, v, region.ellipsoid_center, region.ellipsoid_inv_axes, region.ellipsoid_invcov, region.enlarge)
-                    assert (ucurrent + v * left >= 0).all(), (
-                        ucurrent, v, region.ellipsoid_center, region.ellipsoid_inv_axes, region.ellipsoid_invcov, region.enlarge)
-                    assert (ucurrent + v * right >= 0).all(), (
-                        ucurrent, v, region.ellipsoid_center, region.ellipsoid_inv_axes, region.ellipsoid_invcov, region.enlarge)
-
-                    assert left <= 0 <= right, (left, right)
-                    if verbose:
-                        print("   ellipsoid bracket found:", left, right)
-
-                while True:
-                    # sample in each a point until presumed success:
-                    assert region.inside_ellipsoid(ucurrent.reshape((1, ndim))), ('current point outside ellipsoid!')
-                    t = np.random.uniform(left, right)
-                    unext = ucurrent + v * t
-                    assert (unext >= 0).all(), unext
-                    assert (unext <= 1).all(), unext
-                    assert region.inside_ellipsoid(unext.reshape((1, ndim))), ('proposal landed outside ellipsoid!', t, left, right)
-
-                    # compute distance vector to center
-                    d = unext - region.ellipsoid_center
-                    # distance in normalised coordates: vector . matrix . vector
-                    # where the matrix is the ellipsoid inverse covariance
-                    r = np.einsum('j,jk,k->', d, region.ellipsoid_invcov, d)
-
-                    likely_inside = r <= 1
-                    if not likely_inside and r <= region.enlarge:
-                        # The exception is, when a point is between projected ellipsoid center and current point
-                        # then it is also likely inside (if still inside the ellipsoid)
-
-                        # project ellipsoid center onto line
-                        # region.ellipsoid_center = ucurrent + tc * v
-                        tc = np.dot(region.ellipsoid_center - ucurrent, v)
-                        # current point is at 0 by definition
-                        if 0 < t < tc or tc < t < 0:
-                            if verbose:
-                                print("   proposed point is further inside than current point")
-                            likely_inside = True
-                        #    print("   proposed point %.3f is going towards center %.3f" % (t, tc))
-                        # else:
-                        #    print("   proposed point %.3f is going away from center %.3f" % (t, tc))
-                        else:
-                            # another exception is that points very close to the current point
-                            # are very likely also inside
-                            # to find that out, project all live points on the line
-                            tall = np.einsum('ij,j->i', region.u - ucurrent, v)
-                            # find the range and identify a small part of it
-                            epsilon_nearby = 1e-6
-                            if tc < (tall.max() - tall.min()) * epsilon_nearby:
-                                likely_inside = True
-                                if verbose:
-                                    print("   proposed point is very nearby")
-
-                    if verbose:
-                        print("   proposed point %s (%f) is likely %s (r=%f)" % (unext, t, 'inside' if likely_inside else 'outside', r))
-                    intervals.append((nsteps_prepared, ucurrent, v, left, right, t))
-                    point_sequence.append(unext)
-                    point_expectation.append(likely_inside)
-                    #   If point radius in ellipsoid is <1, presume that it will be successful
-                    if likely_inside:
-                        nsteps_prepared += 1
-                        ucurrent = unext
-                        assert region.inside_ellipsoid(ucurrent.reshape((1, ndim))), ('current point outside ellipsoid!')
-                        break
-
-                    #   Else, presume it will be unsuccessful, and sample another point
-                    #   shrink interval
-                    if t > 0:
-                        right = t
-                    else:
-                        left = t
-
-                # the above defines a sequence of points (u)
-
-            assert len(point_sequence) > 0, (len(point_sequence), ndraw, nsteps_prepared, self.nsteps_done, self.nsteps)
-            point_sequence = np.array(point_sequence, dtype=float)
-            point_expectation = np.array(point_expectation, dtype=bool)
-            if verbose:
-                print("proposed sequence:", point_sequence)
-                print("expectations:", point_expectation)
-            truncated = False
-            # region-filter, transform, tregion-filter, and evaluate the likelihood
-            if self.region_filter:
-                mask_inside = region.inside(point_sequence)
-                # identify first point that was expected to be inside, but was marked outside-of-region
-                i = np.where(np.logical_and(point_expectation, ~mask_inside))[0]
-                if verbose:
-                    print("region filter says:", mask_inside, i)
-                if len(i) > 0:
-                    imax = i[0] + 1
-                    # truncate there
-                    point_sequence = point_sequence[:imax]
-                    point_expectation = point_expectation[:imax]
-                    mask_inside = mask_inside[:imax]
-                    truncated |= True
-                    del imax
-                if not mask_inside.any():
-                    continue
-
-            t_point_sequence = transform(point_sequence)
-            if self.region_filter and tregion is not None:
-                tmask = tregion.inside(t_point_sequence)
-                # identify first point that was expected to be inside, but was marked outside-of-region
-                i = np.where(np.logical_and(point_expectation, ~tmask))[0]
-                if verbose:
-                    print("tregion filter says:", tmask, i)
-                mask_inside[~tmask] = False
-                del tmask
-                if len(i) > 0:
-                    imax = i[0] + 1
-                    # truncate there
-                    point_sequence = point_sequence[:imax]
-                    point_expectation = point_expectation[:imax]
-                    t_point_sequence = t_point_sequence[:imax]
-                    mask_inside = mask_inside[:imax]
-                    truncated |= True
-                    del imax
-                if not mask_inside.any():
-                    continue
-
-            # we expect the last point to be an accept, otherwise we would not terminate the sequence
-            assert point_expectation[-1]
-            if self.region_filter:
-                # set filtered ones to -np.inf
-                L = np.ones(len(t_point_sequence)) * -np.inf
-                nc += mask_inside.sum()
-                L[mask_inside] = loglike(t_point_sequence[mask_inside,:])
-            else:
-                nc += len(point_sequence)
-                L = loglike(t_point_sequence)
-            Lmask = L > Lmin
-            i = np.where(point_expectation != Lmask)[0]
             self.nrejects += (~Lmask).sum()
-            if verbose:
-                print("reality:", Lmask)
-                print("difference:", point_expectation == Lmask)
-            print("calling likelihood with %5d prepared points, accepted:" % (
-                len(point_sequence)), '=' * (i[0] + Lmask[i[0]] * 1 if len(i) > 0 else len(Lmask)))
+            #print("calling likelihood with %5d prepared points, accepted:" % (
+            #    len(point_sequence)), '=' * (i[0] + Lmask[i[0]] * 1 if len(i) > 0 else len(Lmask)))
             # identify first point that was unexpected
-            if len(i) == 0 and nsteps_prepared + self.nsteps_done == self.nsteps:
+            any_deviating = len(indices_deviating) > 0
+            if any_deviating and nsteps_prepared + self.nsteps_done == self.nsteps:
                 # everything according to prediction.
                 if verbose:
                     print("everything according to prediction and done")
@@ -1232,7 +1272,7 @@ class AHARMSampler(StepSampler):
                     self.history.append((ui, Li))
                 self.finalize_chain(region=region, Lmin=Lmin, Ls=Ls)
                 return point_sequence[-1], t_point_sequence[-1], L[-1], nc
-            elif len(i) == 0:
+            elif any_deviating:
                 # everything according to prediction.
                 if verbose:
                     print("everything according to prediction")
@@ -1249,7 +1289,7 @@ class AHARMSampler(StepSampler):
                     assert region.inside(ucurrent.reshape((1, ndim))), ('suggested point outside region!', region.inside(ucurrent.reshape((1, ndim))))
             else:
                 # point i unexpectedly inside or outside
-                imax = i[0]
+                imax = indices_deviating[0]
                 for ui, Li in zip(point_sequence[:imax][Lmask[:imax]], L[:imax][Lmask[:imax]]):
                     self.history.append((ui, Li))
                 nsteps_prepared, ucurrent, v, left, right, t = intervals[imax]

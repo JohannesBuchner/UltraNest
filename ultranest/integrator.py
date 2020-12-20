@@ -16,7 +16,7 @@ import warnings
 from numpy import log, exp, logaddexp
 import numpy as np
 
-from .utils import create_logger, make_run_dir, resample_equal, vol_prefactor, vectorize, listify as _listify, is_affine_transform
+from .utils import create_logger, make_run_dir, resample_equal, vol_prefactor, vectorize, listify as _listify, is_affine_transform, normalised_kendall_tau_distance
 from ultranest.mlfriends import MLFriends, AffineLayer, ScalingLayer, find_nearby, WrappingEllipsoid
 from .store import HDF5PointStore, TextPointStore, NullPointStore
 from .viz import get_default_viz_callback, nicelogger
@@ -112,7 +112,9 @@ def _explore_iterator_batch(explorer, pop, x_dim, num_params, pointpile, batchsi
         yield batch
 
 
-def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform, verbose=False, vectorized=False, ndraw=400):
+
+def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform,
+    max_tau=0, verbose=False, ndraw=400):
     """
     Change a stored UltraNest run to a modified loglikelihood/transform.
 
@@ -128,6 +130,16 @@ def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform, verbose=F
         new transform function
     verbose: bool
         show progress
+    ndraw: int
+        set to >1 if functions can take advantage of vectorized computations
+    max_tau: float
+        Allowed dissimilarity in the live point ordering, quantified as
+        normalised Kendall tau distance.
+        
+        max_tau=0 is the very conservative choice of stopping the warm start
+        when the live point order differs.
+        Near 1 are completely different live point orderings.
+        Values in between permit mild disorder.
 
     Returns
     ----------
@@ -201,13 +213,14 @@ def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform, verbose=F
         roots2.append(pointpile2.make_node(logl_new, u, v))
         pointstore2.add(_listify([-np.inf, logl_new, 0.0], u, v), 1)
 
-    batchsize = ndraw if vectorized else 1
+    batchsize = ndraw
     explorer = BreadthFirstIterator(roots)
     explorer2 = BreadthFirstIterator(roots2)
     main_iterator2 = SingleCounter()
     main_iterator2.Lmax = logls_new.max()
     good_state = True
 
+    indices1, indices2 = np.meshgrid(np.arange(len(logls_new)), np.arange(len(logls_new)))
     last_good_like = -1e300
     last_good_state = 0
     epsilon = 1 + 1e-6
@@ -243,16 +256,15 @@ def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform, verbose=F
             if len(active_values) != len(active_values2):
                 if verbose == 2:
                     print("stopping, number of live points differ (%d vs %d)" % (len(active_values), len(active_values2)))
+                    good_state = False
                 break
-            active_values_order = np.argsort(active_values)
-            active_values2_order = np.argsort(active_values2)
-            mask_order_different = active_values_order != active_values2_order
-            reorders = list(zip(active_values_order[active_values_order!=active_values2_order], active_values2_order[active_values_order!=active_values2_order]))
-            reorders_are_onlyswaps = all((b, a) in reorders for a, b in reorders)
-
-            order_consistent = (np.argmin(active_values) == np.argmin(active_values2))
-            order_fully_consistent = (np.argsort(active_values) == np.argsort(active_values2)).all()
-            if order_fully_consistent and len(active_values) > 10 or reorders_are_onlyswaps and len(active_values) > 10:
+            
+            
+            if len(active_values) != len(indices1):
+                indices1, indices2 = np.meshgrid(np.arange(len(active_values)), np.arange(len(active_values2)))
+            tau = normalised_kendall_tau_distance(active_values, active_values2, indices1, indices2)
+            order_consistent = tau <= max_tau
+            if order_consistent and len(active_values) > 10 and len(active_values) > 10:
                 good_state = True
             elif not order_consistent:
                 good_state = False
@@ -260,14 +272,7 @@ def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform, verbose=F
                 # maintain state
                 pass
             if verbose == 2:
-                print(
-                    niter, mask_order_different.sum(),
-                    'S' if reorders_are_onlyswaps else ' ',
-                    'C' if order_consistent else ' ',
-                    'F' if order_fully_consistent else ' ',
-                    'G' if good_state else ' ',
-                    '%5.2f' % (100 * (np.argsort(active_values) == np.argsort(active_values2)).mean())
-                )
+                print(niter, tau)
             if good_state:
                 #print("        (%.1e)   L=%.1f" % (last_good_like, Lmin2))
                 #assert last_good_like < Lmin2, (last_good_like, Lmin2)
@@ -286,14 +291,16 @@ def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform, verbose=F
                 logl_new = logls_new[j]
                 j += 1
 
-
                 #print(j, Lmin2, '->', logl_new, 'instead of', Lmin, '->', [c.value for c in node2.children])
+                child2 = pointpile2.make_node(logl_new, u, v)
+                node2.children.append(child2)
                 if logl_new > Lmin2:
+                    pointstore2.add(_listify([Lmin2, logl_new, 0.0], u, v), 1)
+                else:
                     if verbose == 2:
                         print("cannot use new point because it would decrease likelihood (%.1f->%.1f)" % (Lmin2, logl_new))
-                    child2 = pointpile2.make_node(logl_new, u, v)
-                    node2.children.append(child2)
-                    pointstore2.add(_listify([Lmin2, logl_new, 0.0], u, v), 1)
+                    #good_state = False
+                    #break
 
             main_iterator2.passing_node(node2, active_nodes2)
 
@@ -901,6 +908,7 @@ class ReactiveNestedSampler(object):
                  ndraw_min=128,
                  ndraw_max=65536,
                  storage_backend='hdf5',
+                 warmstart_max_tau=-1,
                  ):
         """Initialise nested sampler.
 
@@ -968,6 +976,12 @@ class ReactiveNestedSampler(object):
         storage_backend: str or class
             Class to use for storing the evaluated points (see ultranest.store)
             'hdf5' is strongly recommended. 'tsv' and 'csv' are also possible.
+
+        warmstart_max_tau: float
+            Maximum disorder to accept when resume='resume-similar';
+            Live points are reused as long as the live point order 
+            is below this normalised Kendall tau distance.
+            Values from 0 (highly conservative) to 1 (extremely negligent).
         """
         self.paramnames = param_names
         x_dim = len(self.paramnames)
@@ -1055,13 +1069,17 @@ class ReactiveNestedSampler(object):
             assert self.log_to_disk
             if resume_similar and self.log_to_disk:
                 assert storage_backend == 'hdf5', 'resume-similar is only supported for HDF5 files'
+                assert 0 <= warmstart_max_tau <= 1, 'warmstart_max_tau parameter needs to be set to a value between 0 and 1'
                 # close
                 self.pointstore.close()
                 del self.pointstore
                 # rewrite points file
                 if self.log:
                     self.logger.info('trying to salvage points from previous, different run ...')
-                resume_from_similar_file(log_dir, x_dim, loglike, transform, vectorized=vectorized, ndraw=ndraw_min)
+                resume_from_similar_file(
+                    log_dir, x_dim, loglike, transform,
+                    ndraw=ndraw_min if vectorized else 1,
+                    max_tau=warmstart_max_tau, verbose=False)
                 self.pointstore = HDF5PointStore(
                     os.path.join(self.logs['results'], 'points.hdf5'),
                     3 + self.x_dim + self.num_params, mode='a' if resume else 'w')
