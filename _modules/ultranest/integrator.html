@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ultranest.integrator &mdash; UltraNest 3.1.0 documentation</title>
+  <title>ultranest.integrator &mdash; UltraNest 3.1.5 documentation</title>
   
 
   
@@ -70,7 +70,7 @@
             
             
               <div class="version">
-                3.1.0
+                3.1.5
               </div>
             
           
@@ -199,7 +199,7 @@
 <span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">log</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">logaddexp</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
-<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">create_logger</span><span class="p">,</span> <span class="n">make_run_dir</span><span class="p">,</span> <span class="n">resample_equal</span><span class="p">,</span> <span class="n">vol_prefactor</span><span class="p">,</span> <span class="n">vectorize</span><span class="p">,</span> <span class="n">listify</span> <span class="k">as</span> <span class="n">_listify</span><span class="p">,</span> <span class="n">is_affine_transform</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">create_logger</span><span class="p">,</span> <span class="n">make_run_dir</span><span class="p">,</span> <span class="n">resample_equal</span><span class="p">,</span> <span class="n">vol_prefactor</span><span class="p">,</span> <span class="n">vectorize</span><span class="p">,</span> <span class="n">listify</span> <span class="k">as</span> <span class="n">_listify</span><span class="p">,</span> <span class="n">is_affine_transform</span><span class="p">,</span> <span class="n">normalised_kendall_tau_distance</span>
 <span class="kn">from</span> <span class="nn">ultranest.mlfriends</span> <span class="kn">import</span> <span class="n">MLFriends</span><span class="p">,</span> <span class="n">AffineLayer</span><span class="p">,</span> <span class="n">ScalingLayer</span><span class="p">,</span> <span class="n">find_nearby</span><span class="p">,</span> <span class="n">WrappingEllipsoid</span>
 <span class="kn">from</span> <span class="nn">.store</span> <span class="kn">import</span> <span class="n">HDF5PointStore</span><span class="p">,</span> <span class="n">TextPointStore</span><span class="p">,</span> <span class="n">NullPointStore</span>
 <span class="kn">from</span> <span class="nn">.viz</span> <span class="kn">import</span> <span class="n">get_default_viz_callback</span><span class="p">,</span> <span class="n">nicelogger</span>
@@ -295,7 +295,9 @@
         <span class="k">yield</span> <span class="n">batch</span>
 
 
-<span class="k">def</span> <span class="nf">resume_from_similar_file</span><span class="p">(</span><span class="n">log_dir</span><span class="p">,</span> <span class="n">x_dim</span><span class="p">,</span> <span class="n">loglikelihood</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">vectorized</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="mi">400</span><span class="p">):</span>
+
+<span class="k">def</span> <span class="nf">resume_from_similar_file</span><span class="p">(</span><span class="n">log_dir</span><span class="p">,</span> <span class="n">x_dim</span><span class="p">,</span> <span class="n">loglikelihood</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span>
+    <span class="n">max_tau</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="mi">400</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Change a stored UltraNest run to a modified loglikelihood/transform.</span>
 
@@ -311,6 +313,16 @@
 <span class="sd">        new transform function</span>
 <span class="sd">    verbose: bool</span>
 <span class="sd">        show progress</span>
+<span class="sd">    ndraw: int</span>
+<span class="sd">        set to &gt;1 if functions can take advantage of vectorized computations</span>
+<span class="sd">    max_tau: float</span>
+<span class="sd">        Allowed dissimilarity in the live point ordering, quantified as</span>
+<span class="sd">        normalised Kendall tau distance.</span>
+<span class="sd">        </span>
+<span class="sd">        max_tau=0 is the very conservative choice of stopping the warm start</span>
+<span class="sd">        when the live point order differs.</span>
+<span class="sd">        Near 1 are completely different live point orderings.</span>
+<span class="sd">        Values in between permit mild disorder.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    ----------</span>
@@ -336,9 +348,11 @@
     <span class="n">_</span><span class="p">,</span> <span class="n">ncols</span> <span class="o">=</span> <span class="n">fileobj</span><span class="p">[</span><span class="s1">&#39;points&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span>
     <span class="n">num_params</span> <span class="o">=</span> <span class="n">ncols</span> <span class="o">-</span> <span class="mi">3</span> <span class="o">-</span> <span class="n">x_dim</span>
 
-    <span class="n">pointstore2</span> <span class="o">=</span> <span class="n">HDF5PointStore</span><span class="p">(</span><span class="n">filepath2</span><span class="p">,</span> <span class="n">ncols</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+    <span class="n">points</span> <span class="o">=</span> <span class="n">fileobj</span><span class="p">[</span><span class="s1">&#39;points&#39;</span><span class="p">][:]</span>
+    <span class="n">fileobj</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">del</span> <span class="n">fileobj</span>
 
-    <span class="n">points</span> <span class="o">=</span> <span class="n">fileobj</span><span class="p">[</span><span class="s1">&#39;points&#39;</span><span class="p">][:]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">pointstore2</span> <span class="o">=</span> <span class="n">HDF5PointStore</span><span class="p">(</span><span class="n">filepath2</span><span class="p">,</span> <span class="n">ncols</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
     <span class="n">stack</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">enumerate</span><span class="p">(</span><span class="n">points</span><span class="p">))</span>
 
     <span class="n">pointpile</span> <span class="o">=</span> <span class="n">PointPile</span><span class="p">(</span><span class="n">x_dim</span><span class="p">,</span> <span class="n">num_params</span><span class="p">)</span>
@@ -382,13 +396,14 @@
         <span class="n">roots2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pointpile2</span><span class="o">.</span><span class="n">make_node</span><span class="p">(</span><span class="n">logl_new</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
         <span class="n">pointstore2</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">_listify</span><span class="p">([</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">logl_new</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
 
-    <span class="n">batchsize</span> <span class="o">=</span> <span class="n">ndraw</span> <span class="k">if</span> <span class="n">vectorized</span> <span class="k">else</span> <span class="mi">1</span>
+    <span class="n">batchsize</span> <span class="o">=</span> <span class="n">ndraw</span>
     <span class="n">explorer</span> <span class="o">=</span> <span class="n">BreadthFirstIterator</span><span class="p">(</span><span class="n">roots</span><span class="p">)</span>
     <span class="n">explorer2</span> <span class="o">=</span> <span class="n">BreadthFirstIterator</span><span class="p">(</span><span class="n">roots2</span><span class="p">)</span>
     <span class="n">main_iterator2</span> <span class="o">=</span> <span class="n">SingleCounter</span><span class="p">()</span>
     <span class="n">main_iterator2</span><span class="o">.</span><span class="n">Lmax</span> <span class="o">=</span> <span class="n">logls_new</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
     <span class="n">good_state</span> <span class="o">=</span> <span class="kc">True</span>
 
+    <span class="n">indices1</span><span class="p">,</span> <span class="n">indices2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">logls_new</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">logls_new</span><span class="p">)))</span>
     <span class="n">last_good_like</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1e300</span>
     <span class="n">last_good_state</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">epsilon</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="mf">1e-6</span>
@@ -424,16 +439,15 @@
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">active_values</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">active_values2</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">verbose</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
                     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;stopping, number of live points differ (</span><span class="si">%d</span><span class="s2"> vs </span><span class="si">%d</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">active_values</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">active_values2</span><span class="p">)))</span>
+                    <span class="n">good_state</span> <span class="o">=</span> <span class="kc">False</span>
                 <span class="k">break</span>
-            <span class="n">active_values_order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">active_values</span><span class="p">)</span>
-            <span class="n">active_values2_order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">active_values2</span><span class="p">)</span>
-            <span class="n">mask_order_different</span> <span class="o">=</span> <span class="n">active_values_order</span> <span class="o">!=</span> <span class="n">active_values2_order</span>
-            <span class="n">reorders</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">active_values_order</span><span class="p">[</span><span class="n">active_values_order</span><span class="o">!=</span><span class="n">active_values2_order</span><span class="p">],</span> <span class="n">active_values2_order</span><span class="p">[</span><span class="n">active_values_order</span><span class="o">!=</span><span class="n">active_values2_order</span><span class="p">]))</span>
-            <span class="n">reorders_are_onlyswaps</span> <span class="o">=</span> <span class="nb">all</span><span class="p">((</span><span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span> <span class="ow">in</span> <span class="n">reorders</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">reorders</span><span class="p">)</span>
-
-            <span class="n">order_consistent</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">active_values</span><span class="p">)</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">active_values2</span><span class="p">))</span>
-            <span class="n">order_fully_consistent</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">active_values</span><span class="p">)</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">active_values2</span><span class="p">))</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
-            <span class="k">if</span> <span class="n">order_fully_consistent</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">active_values</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">10</span> <span class="ow">or</span> <span class="n">reorders_are_onlyswaps</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">active_values</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">:</span>
+            
+            
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">active_values</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">indices1</span><span class="p">):</span>
+                <span class="n">indices1</span><span class="p">,</span> <span class="n">indices2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">active_values</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">active_values2</span><span class="p">)))</span>
+            <span class="n">tau</span> <span class="o">=</span> <span class="n">normalised_kendall_tau_distance</span><span class="p">(</span><span class="n">active_values</span><span class="p">,</span> <span class="n">active_values2</span><span class="p">,</span> <span class="n">indices1</span><span class="p">,</span> <span class="n">indices2</span><span class="p">)</span>
+            <span class="n">order_consistent</span> <span class="o">=</span> <span class="n">tau</span> <span class="o">&lt;=</span> <span class="n">max_tau</span>
+            <span class="k">if</span> <span class="n">order_consistent</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">active_values</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">10</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">active_values</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">:</span>
                 <span class="n">good_state</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="k">elif</span> <span class="ow">not</span> <span class="n">order_consistent</span><span class="p">:</span>
                 <span class="n">good_state</span> <span class="o">=</span> <span class="kc">False</span>
@@ -441,14 +455,7 @@
                 <span class="c1"># maintain state</span>
                 <span class="k">pass</span>
             <span class="k">if</span> <span class="n">verbose</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span>
-                    <span class="n">niter</span><span class="p">,</span> <span class="n">mask_order_different</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span>
-                    <span class="s1">&#39;S&#39;</span> <span class="k">if</span> <span class="n">reorders_are_onlyswaps</span> <span class="k">else</span> <span class="s1">&#39; &#39;</span><span class="p">,</span>
-                    <span class="s1">&#39;C&#39;</span> <span class="k">if</span> <span class="n">order_consistent</span> <span class="k">else</span> <span class="s1">&#39; &#39;</span><span class="p">,</span>
-                    <span class="s1">&#39;F&#39;</span> <span class="k">if</span> <span class="n">order_fully_consistent</span> <span class="k">else</span> <span class="s1">&#39; &#39;</span><span class="p">,</span>
-                    <span class="s1">&#39;G&#39;</span> <span class="k">if</span> <span class="n">good_state</span> <span class="k">else</span> <span class="s1">&#39; &#39;</span><span class="p">,</span>
-                    <span class="s1">&#39;</span><span class="si">%5.2f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">active_values</span><span class="p">)</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">active_values2</span><span class="p">))</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span>
-                <span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">niter</span><span class="p">,</span> <span class="n">tau</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">good_state</span><span class="p">:</span>
                 <span class="c1">#print(&quot;        (%.1e)   L=%.1f&quot; % (last_good_like, Lmin2))</span>
                 <span class="c1">#assert last_good_like &lt; Lmin2, (last_good_like, Lmin2)</span>
@@ -467,14 +474,16 @@
                 <span class="n">logl_new</span> <span class="o">=</span> <span class="n">logls_new</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
                 <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
 
-
                 <span class="c1">#print(j, Lmin2, &#39;-&gt;&#39;, logl_new, &#39;instead of&#39;, Lmin, &#39;-&gt;&#39;, [c.value for c in node2.children])</span>
+                <span class="n">child2</span> <span class="o">=</span> <span class="n">pointpile2</span><span class="o">.</span><span class="n">make_node</span><span class="p">(</span><span class="n">logl_new</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+                <span class="n">node2</span><span class="o">.</span><span class="n">children</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">child2</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">logl_new</span> <span class="o">&gt;</span> <span class="n">Lmin2</span><span class="p">:</span>
+                    <span class="n">pointstore2</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">_listify</span><span class="p">([</span><span class="n">Lmin2</span><span class="p">,</span> <span class="n">logl_new</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">verbose</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
                         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;cannot use new point because it would decrease likelihood (</span><span class="si">%.1f</span><span class="s2">-&gt;</span><span class="si">%.1f</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">Lmin2</span><span class="p">,</span> <span class="n">logl_new</span><span class="p">))</span>
-                    <span class="n">child2</span> <span class="o">=</span> <span class="n">pointpile2</span><span class="o">.</span><span class="n">make_node</span><span class="p">(</span><span class="n">logl_new</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
-                    <span class="n">node2</span><span class="o">.</span><span class="n">children</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">child2</span><span class="p">)</span>
-                    <span class="n">pointstore2</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">_listify</span><span class="p">([</span><span class="n">Lmin2</span><span class="p">,</span> <span class="n">logl_new</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+                    <span class="c1">#good_state = False</span>
+                    <span class="c1">#break</span>
 
             <span class="n">main_iterator2</span><span class="o">.</span><span class="n">passing_node</span><span class="p">(</span><span class="n">node2</span><span class="p">,</span> <span class="n">active_nodes2</span><span class="p">)</span>
 
@@ -506,7 +515,7 @@
     <span class="n">pointstore2</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
     <span class="k">del</span> <span class="n">pointstore2</span>
 
-    <span class="n">os</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">filepath2</span><span class="p">,</span> <span class="n">filepath</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">filepath2</span><span class="p">,</span> <span class="n">filepath</span><span class="p">)</span>
 
 
 <span class="k">def</span> <span class="nf">_update_region_bootstrap</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">nbootstraps</span><span class="p">,</span> <span class="n">minvol</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">comm</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mpi_size</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
@@ -1082,6 +1091,7 @@
                  <span class="n">ndraw_min</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span>
                  <span class="n">ndraw_max</span><span class="o">=</span><span class="mi">65536</span><span class="p">,</span>
                  <span class="n">storage_backend</span><span class="o">=</span><span class="s1">&#39;hdf5&#39;</span><span class="p">,</span>
+                 <span class="n">warmstart_max_tau</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
                  <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Initialise nested sampler.</span>
 
@@ -1149,6 +1159,12 @@
 <span class="sd">        storage_backend: str or class</span>
 <span class="sd">            Class to use for storing the evaluated points (see ultranest.store)</span>
 <span class="sd">            &#39;hdf5&#39; is strongly recommended. &#39;tsv&#39; and &#39;csv&#39; are also possible.</span>
+
+<span class="sd">        warmstart_max_tau: float</span>
+<span class="sd">            Maximum disorder to accept when resume=&#39;resume-similar&#39;;</span>
+<span class="sd">            Live points are reused as long as the live point order </span>
+<span class="sd">            is below this normalised Kendall tau distance.</span>
+<span class="sd">            Values from 0 (highly conservative) to 1 (extremely negligent).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">paramnames</span> <span class="o">=</span> <span class="n">param_names</span>
         <span class="n">x_dim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">paramnames</span><span class="p">)</span>
@@ -1231,16 +1247,22 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">draw_multiple</span> <span class="o">=</span> <span class="n">draw_multiple</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ndraw_min</span> <span class="o">=</span> <span class="n">ndraw_min</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ndraw_max</span> <span class="o">=</span> <span class="n">ndraw_max</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">build_tregion</span> <span class="o">=</span> <span class="n">transform</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_likelihood_function</span><span class="p">(</span><span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">num_test_samples</span><span class="p">):</span>
             <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_to_disk</span>
             <span class="k">if</span> <span class="n">resume_similar</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_to_disk</span><span class="p">:</span>
                 <span class="k">assert</span> <span class="n">storage_backend</span> <span class="o">==</span> <span class="s1">&#39;hdf5&#39;</span><span class="p">,</span> <span class="s1">&#39;resume-similar is only supported for HDF5 files&#39;</span>
+                <span class="k">assert</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">warmstart_max_tau</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;warmstart_max_tau parameter needs to be set to a value between 0 and 1&#39;</span>
                 <span class="c1"># close</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">pointstore</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
                 <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">pointstore</span>
                 <span class="c1"># rewrite points file</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;trying to salvage points from previous, different run ...&#39;</span><span class="p">)</span>
-                <span class="n">resume_from_similar_file</span><span class="p">(</span><span class="n">log_dir</span><span class="p">,</span> <span class="n">x_dim</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">vectorized</span><span class="o">=</span><span class="n">vectorized</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="n">ndraw_min</span><span class="p">)</span>
+                <span class="n">resume_from_similar_file</span><span class="p">(</span>
+                    <span class="n">log_dir</span><span class="p">,</span> <span class="n">x_dim</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span>
+                    <span class="n">ndraw</span><span class="o">=</span><span class="n">ndraw_min</span> <span class="k">if</span> <span class="n">vectorized</span> <span class="k">else</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="n">max_tau</span><span class="o">=</span><span class="n">warmstart_max_tau</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">pointstore</span> <span class="o">=</span> <span class="n">HDF5PointStore</span><span class="p">(</span>
                     <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logs</span><span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">],</span> <span class="s1">&#39;points.hdf5&#39;</span><span class="p">),</span>
                     <span class="mi">3</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_dim</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_params</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;a&#39;</span> <span class="k">if</span> <span class="n">resume</span> <span class="k">else</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
@@ -2415,6 +2437,7 @@
 
             <span class="bp">self</span><span class="o">.</span><span class="n">transformLayer</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">region</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tregion</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="n">it_at_first_region</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ib</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">samples</span> <span class="o">=</span> <span class="p">[]</span>
@@ -2925,6 +2948,8 @@
     <span class="n">num_params</span> <span class="o">=</span> <span class="n">ncols</span> <span class="o">-</span> <span class="mi">3</span> <span class="o">-</span> <span class="n">x_dim</span>
 
     <span class="n">points</span> <span class="o">=</span> <span class="n">fileobj</span><span class="p">[</span><span class="s1">&#39;points&#39;</span><span class="p">][:]</span>
+    <span class="n">fileobj</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">del</span> <span class="n">fileobj</span>
     <span class="n">stack</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">enumerate</span><span class="p">(</span><span class="n">points</span><span class="p">))</span>
 
     <span class="n">pointpile</span> <span class="o">=</span> <span class="n">PointPile</span><span class="p">(</span><span class="n">x_dim</span><span class="p">,</span> <span class="n">num_params</span><span class="p">)</span>

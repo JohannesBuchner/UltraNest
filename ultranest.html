@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ultranest package &mdash; UltraNest 3.1.0 documentation</title>
+  <title>ultranest package &mdash; UltraNest 3.1.5 documentation</title>
   
 
   
@@ -72,7 +72,7 @@
             
             
               <div class="version">
-                3.1.0
+                3.1.5
               </div>
             
           
@@ -906,7 +906,7 @@ rwd: bool whether we go backward</p>
 <p>Ultranest calculates the Bayesian evidence and posterior samples of arbitrary models.</p>
 <dl class="py class">
 <dt id="ultranest.integrator.ReactiveNestedSampler">
-<em class="property">class </em><code class="sig-prename descclassname">ultranest.integrator.</code><code class="sig-name descname">ReactiveNestedSampler</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">param_names</span></em>, <em class="sig-param"><span class="n">loglike</span></em>, <em class="sig-param"><span class="n">transform</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">derived_param_names</span><span class="o">=</span><span class="default_value">[]</span></em>, <em class="sig-param"><span class="n">wrapped_params</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">resume</span><span class="o">=</span><span class="default_value">'subfolder'</span></em>, <em class="sig-param"><span class="n">run_num</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">log_dir</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">num_test_samples</span><span class="o">=</span><span class="default_value">2</span></em>, <em class="sig-param"><span class="n">draw_multiple</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">num_bootstraps</span><span class="o">=</span><span class="default_value">30</span></em>, <em class="sig-param"><span class="n">vectorized</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">ndraw_min</span><span class="o">=</span><span class="default_value">128</span></em>, <em class="sig-param"><span class="n">ndraw_max</span><span class="o">=</span><span class="default_value">65536</span></em>, <em class="sig-param"><span class="n">storage_backend</span><span class="o">=</span><span class="default_value">'hdf5'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/integrator.html#ReactiveNestedSampler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.integrator.ReactiveNestedSampler" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">ultranest.integrator.</code><code class="sig-name descname">ReactiveNestedSampler</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">param_names</span></em>, <em class="sig-param"><span class="n">loglike</span></em>, <em class="sig-param"><span class="n">transform</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">derived_param_names</span><span class="o">=</span><span class="default_value">[]</span></em>, <em class="sig-param"><span class="n">wrapped_params</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">resume</span><span class="o">=</span><span class="default_value">'subfolder'</span></em>, <em class="sig-param"><span class="n">run_num</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">log_dir</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">num_test_samples</span><span class="o">=</span><span class="default_value">2</span></em>, <em class="sig-param"><span class="n">draw_multiple</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">num_bootstraps</span><span class="o">=</span><span class="default_value">30</span></em>, <em class="sig-param"><span class="n">vectorized</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">ndraw_min</span><span class="o">=</span><span class="default_value">128</span></em>, <em class="sig-param"><span class="n">ndraw_max</span><span class="o">=</span><span class="default_value">65536</span></em>, <em class="sig-param"><span class="n">storage_backend</span><span class="o">=</span><span class="default_value">'hdf5'</span></em>, <em class="sig-param"><span class="n">warmstart_max_tau</span><span class="o">=</span><span class="default_value">- 1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/integrator.html#ReactiveNestedSampler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.integrator.ReactiveNestedSampler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Nested sampler with reactive exploration strategy.</p>
 <p>Storage &amp; resume capable, optionally MPI parallelised.</p>
@@ -948,6 +948,10 @@ Memory allocation may be slow for extremely high values.</p></li>
 bootstrap rounds.</p></li>
 <li><p><strong>storage_backend</strong> (<em>str</em><em> or </em><em>class</em>) – Class to use for storing the evaluated points (see ultranest.store)
 ‘hdf5’ is strongly recommended. ‘tsv’ and ‘csv’ are also possible.</p></li>
+<li><p><strong>warmstart_max_tau</strong> (<em>float</em>) – Maximum disorder to accept when resume=’resume-similar’;
+Live points are reused as long as the live point order
+is below this normalised Kendall tau distance.
+Values from 0 (highly conservative) to 1 (extremely negligent).</p></li>
 </ul>
 </dd>
 </dl>
@@ -3909,6 +3913,16 @@ for <cite>n</cite> odd :  $$2 * (2pi)^((n-1)/2) / (1 * 3 * … * n)$$</p>
 <dd><p>checks if one group of points <em>a</em> is an affine transform
 of another group of points <em>b</em>.</p>
 <p>The implementation currently returns False for rotations.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="ultranest.utils.normalised_kendall_tau_distance">
+<code class="sig-prename descclassname">ultranest.utils.</code><code class="sig-name descname">normalised_kendall_tau_distance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">values1</span></em>, <em class="sig-param"><span class="n">values2</span></em>, <em class="sig-param"><span class="n">i</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">j</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/utils.html#normalised_kendall_tau_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.utils.normalised_kendall_tau_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Normalised Kendall tau distance between two arrays,
+<em>values1</em> and <em>values2</em>, both of length N.</p>
+<p>see <a class="reference external" href="https://en.wikipedia.org/wiki/Kendall_tau_distance">https://en.wikipedia.org/wiki/Kendall_tau_distance</a></p>
+<p>You can optionally pass precomputed indices:
+i, j = np.meshgrid(np.arange(N), np.arange(N))</p>
 </dd></dl>
 
 <dl class="py function">
