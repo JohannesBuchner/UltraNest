@@ -6,20 +6,21 @@ from ultranest.utils import verify_gradient
 
 def main(args):
     ndim = args.x_dim
+    scale = args.scale
     adaptive_nsteps = args.adapt_steps
     if adaptive_nsteps is None:
         adaptive_nsteps = False
 
-    rv1a = scipy.stats.loggamma(1, loc=2./3, scale=1./30)
-    rv1b = scipy.stats.loggamma(1, loc=1./3, scale=1./30)
-    rv2a = scipy.stats.norm(2./3, 1./30)
-    rv2b = scipy.stats.norm(1./3, 1./30)
+    rv1a = scipy.stats.loggamma(1, loc=2./3, scale=scale)
+    rv1b = scipy.stats.loggamma(1, loc=1./3, scale=scale)
+    rv2a = scipy.stats.norm(2./3, scale)
+    rv2b = scipy.stats.norm(1./3, scale)
     rv_rest = []
     for i in range(2, ndim):
 	    if i <= (ndim+2)/2:
-		    rv = scipy.stats.loggamma(1, loc=2./3., scale=1./30)
+		    rv = scipy.stats.loggamma(1, loc=2./3., scale=scale)
 	    else:
-		    rv = scipy.stats.norm(2./3, 1./30)
+		    rv = scipy.stats.norm(2./3, scale)
 	    rv_rest.append(rv)
 	    del rv
 
@@ -114,6 +115,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--x_dim', type=int, default=2,
                         help="Dimensionality")
+    parser.add_argument('--scale', type=float, default=1/30., help="Peak widths")
     parser.add_argument("--num_live_points", type=int, default=400)
     parser.add_argument('--log_dir', type=str, default='logs/loggamma')
     parser.add_argument('--pymultinest', action='store_true')
