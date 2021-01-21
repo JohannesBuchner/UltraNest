@@ -6,8 +6,8 @@ Frequently Asked Questions
 
 .. contents:: :local:
 
-How can I add a question here?
-------------------------------
+How can I ask a question not covered here?
+------------------------------------------
 
 See `Contributing <contributing.rst>`_ for how to report bugs and ask questions.
 
