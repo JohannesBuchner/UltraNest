@@ -2293,7 +2293,7 @@ class ReactiveNestedSampler(object):
                 rootid, node, (_, active_rootids, active_values, active_node_ids) = next_node
                 assert not isinstance(rootid, float)
                 # this is the likelihood level we have to improve upon
-                Lmin = node.value
+                self.Lmin = Lmin = node.value
 
                 # if within suggested range, expand
                 if strategy_stale or not (Lmin <= Lhi) or not np.isfinite(Lhi) or (active_values == Lmin).all():
