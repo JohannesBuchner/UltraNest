@@ -37,49 +37,6 @@ Parallelisation to computing clusters and resuming incomplete runs is available.
 
 # Outline
 
-* Statement of need
-* Method
-
-  Introduce nested sampling basics
-
-  * Reactive Nested Sampling
-
-    Introduce novel exploration: tree
-
-  * Integration procedure
-
-    Introduce novel integration: bootstrapping
-
-  * LRPS procedures in UltraNest
-
-    * Region construction
-
-      MLFriends + ellipsoid + ellipsoid
-
-    * Region sampling
-
-      rejection sampling
-
-    * Step sampling
-
-* Diagnostics
-
-  * Run-time visualisations
-
-  * Posterior visualisations
-
-  * Diagnostic test
-
-    MWW U test
-
-* Features
-  * Parallelisation
-  * Resuming
-  * Languages
-  * Documentation
-* Basic Example
-* Acknowledgements
-
 # Statement of need
 
 When scientific models are compared to data, two tasks are important: 
@@ -87,17 +44,15 @@ When scientific models are compared to data, two tasks are important:
 While several open source, Bayesian model fitting packages are available that 
 can be easily tied to existing models,
 they are difficult to run such that the result is reliable and user interaction is minimized.
-However, current and upcoming large astronomical surveys require characterising 
-a large number of highly diverse objects, which requires reliable analysis pipelines.
 A chicken-and-egg problem is that one does not know a priori the posterior distribution
 of a given likelihood, prior and data set, and cannot chose a sampler that performs well.
-For example, Markov Chain Monte Carlo 
- convergence checks may suggest good results,
+For example, Markov Chain Monte Carlo convergence checks may suggest good results,
 while in fact another distant but important posterior peak has remained unseen.
+Current and upcoming large astronomical surveys require characterising 
+a large number of highly diverse objects, which requires reliable analysis pipelines.
+This is what UltraNest was developed for.
 
-[//]: # (While `emcee` performs well in gaussian posteriors, it can be inefficient 
-[//]: # (in estimating tails in heavy-tailed, non-ellipsoidal posteriors.
-[//]: # (see e.g., the `emcee` and `zeus` packages; @emcee, @zeus, within-chain and cross-chain)
+# Overview
 
 Nested sampling [@Skilling2004] allows Bayesian inference on arbitrary user-defined likelihoods.
 Additional to computing parameter posterior samples, 
@@ -105,34 +60,37 @@ it also estimates the marginal likelihood (“evidence”, $Z$).
 Bayes factors between two competing models $B=Z_1/Z_2$ are 
 a measure of the relative prediction parsimony of the models, 
 and form the basis of Bayesian model comparison.
-
 By performing a global scan of the parameter space from the 
 worst to best fits to the data, nested sampling performs well also in multi-modal settings.
-Currently available efficient nested sampling implementations such as `MultiNest` [@Feroz2009] and its
-open-source implementations (e.g., `nestle`, `dynesty`) rely on 
-the heuristic multi-ellipsoidal rejection algorithm which has shown biases
- when the likelihood contours are not ellipsoidal [@Buchner2014stats;@Nelson2020].
-For potentially complex posteriors where the user 
-is willing to invest computation for obtaining a 
-gold-standard exploration of the entire posterior distribution in one run,
-UltraNest was developed. 
-In other words, UltraNest prioritizes robustness and correctness
-over speed.
 
-In the last decade, multiple variants of nested sampling have been developed. 
+In the last decade, several variants of nested sampling have been developed. 
 These include (1) how better and better fits are found while 
 respecting the priors,
 (2) whether it is allowed to go back to worse fits and explore the parameter space more,
 and (3) diagnostics through tests and visualisations. 
-This package develops novel, state-of-the-art techniques for all of the above. 
+UltraNest develops novel, state-of-the-art techniques for all of the above. 
 They are especially remarkable for being free of tuning parameters and 
-theoretically justified, representing a evolution over heuristic methods like 
-multi-ellipsoid nested sampling and dynamic nested sampling. 
-This package attempts to provide feature parity compared to other packages
- (such as `MultiNest`), e.g., resuming, efficient multi-core 
-computation on clusters and circular parameters.
+theoretically justified.
 
-![Logo of UltraNest; made by https://www.flaticon.com/authors/freepik](docs/static/logo.svg)
+Currently available efficient nested sampling implementations such as `MultiNest` [@Feroz2009] and its
+open-source implementations (e.g., `nestle`, `dynesty`) rely on 
+the heuristic multi-ellipsoidal rejection algorithm which has shown biases
+ when the likelihood contours are not ellipsoidal [@Buchner2014stats;@Nelson2020].
+UltraNest instead implements better motivated self-diagnosing algorithms,
+and improved, conservative uncertainty propagation.
+In other words, UltraNest prioritizes robustness and correctness, and maximizes 
+speed second. For potentially complex posteriors where the user 
+is willing to invest computation for obtaining a 
+gold-standard exploration of the entire posterior distribution in one run,
+UltraNest was developed.
+
+This package provides feature parity with other packages
+ (such as `MultiNest`), e.g., circular parameters, 
+ resuming incomplete runs, efficient multi-core 
+computation on clusters, and provides additional convenience features
+for visualisation and diagnostics.
+
+![The logo of UltraNest is a hedgehog carefully walking up a likelihood function; made by https://www.flaticon.com/authors/freepik](docs/static/logo.svg)
 
 # Method
 
@@ -154,7 +112,7 @@ with weight $w_i=L_i \times V_i$, and we can estimate $Z_i=\sum_{j=1}^i w_i$,
 yielding the posterior distribution and evidence.
 The iteration procedure can terminate when the weight of the live points,
 e.g., estimated as $w_{live} = V_{i+1} \max_{i=1}^N L_{live,i}$, 
-is small ($w_{live} \ll \sum_i w_i$).
+is small ($w_{live} \ll Z_i$).
 
 ## Reactive Nested Sampling
 
@@ -205,6 +163,10 @@ Each explorer provides for each sample a weight estimate (0 if it is blind to it
 which provide uncertainty on the posterior distribution.
 Each explorer provides a $Z$ estimate; the dispersion quantifies the $Z$ uncertainty.
 
+The bootstrapped integrators is an evolution over 
+single-bulk evidence uncertainty measures and includes the scatter 
+in volume estimates (by beta sampling)
+and and likelihood values (by bootstrapping).
 
 ## LRPS procedures in UltraNest
 
@@ -221,10 +183,11 @@ expanded by a empirically determined factor.
 which are then again expanded by a factor. 
 This works well for many problems. However, these heuristics are not well justified,
 and do not detect when they work poorly.
-
 @Buchner2014stats explored hyper-rectangle posteriors and a heavy-tailed distribution which show-case
-that the ellipsoid cut off too much of the prior space. @Buchner2014stats then constructed a 
-more robust algorithm, RadFriends. RadFriends creates an hyper-sphere around each live point. The radius of the spheres
+that the ellipsoids cut off too much of the prior space. 
+
+@Buchner2014stats proposed a more robust algorithm, RadFriends. 
+RadFriends creates an hyper-sphere around each live point. The radius of the spheres
 is determined by cross-validation: Some live points are randomly left out following a bootstrapping procedure, 
 and based on sphere around the remainder the radius is chosen so that the former are recovered.
 This is repeated over many rounds, and the largest radius kept. In this fashion, some guarantees 
@@ -247,7 +210,6 @@ The bootstrapping approach can also be applied the single ellipsoid method:
 The sample covariance of the selected live points 
 identifies the shape of the ellipse, 
 while the left-out live points identify the scale.
-
 A single ellipsoid performs best in ellipsoidal posteriors (such as gaussians).
 MLFriends performs best in complex posterior shapes with low dimension.
 
@@ -256,8 +218,9 @@ and uses their intersection: (1) MLFriends, (2) a bootstrapped single ellipsoid 
 (3) a bootstrapped single ellipsoid in v-space.
 The last one drastically helps when one parameter constraint scales with another,
 (e.g., funnel shapes). By altering how the parameter is 
- applied in the likelihood function and how its prior is transformed,
- the user can help produce ellipsoidal shapes, which narrows the sampling region.
+applied in the likelihood function and how its prior is transformed,
+the user can -- without altering the posterior -- help produce ellipsoidal shapes.
+The better parameterization narrows the sampling region, and leads to efficiency gains.
 
 ### Region sampling
 
@@ -284,25 +247,35 @@ in particular in high dimensions ($d>20$). The step samplers include:
 
 * Slice sampling [as in `Polychord`, @Handley2015a]
 * Hit-and-run sampling
-* Hamiltonian Monte Carlo
+* Constrained Hamiltonian Monte Carlo with No-U turn sampling [similar to `NoGUTS`, @Griffiths2019]
 
 The user can choose whether to filter proposals with the constructed 
 regions. This has some function call overhead but can reduce
- likelihood evaluations, especially important for slow models.
+likelihood evaluations, especially important for slow models.
 
 Variations that alter some parameters more often than others (fast-slow)
 are also implemented.
 
-## Visualisations
+# Diagnostics & Visualisations
+
+## Run-time visualisation
 
 During the run, UltraNest by default shows a visualisation in the standard output
 where the current live points are distributed. Thus already during a run,
 the user can identify where the fit is spending its time and 
 choose to abort the fit and alter the model.
-A similar visualisation widget is also available for Jupyter notebooks.
+In Jupyter notebooks, a visualisation widget is shown, when run 
+in the terminal, it is shown in the standard output. Additionally, 
+log output gives information on the progress. Both can be turned off.
 
-Additionally, publication-read corner/pairs plots and trace plots [@Higson2019] 
+## Posterior visualisations
+
+Publication-read corner/pairs plots and trace plots [@Higson2019] 
 are created, based on code from corner [@corner] and dynesty [@dynesty].
+
+The weighted posterior samples
+(or a resampled set with uniform weighting)
+can however also be plotted with any other tool.
 
 ## Diagnostic tests
 
@@ -311,8 +284,8 @@ by checking whether new children are inserted in the sorted stack at
 uniformy distributed positions (insertion order or rank).
 Buchner et al., in prep. presents a similar test based on rank
 statistics, which is slightly more sensitive and easier to implement.
-UltraNest prints the p-value of this test during the run. However,
-more experience is needed to identify reasonably rolling windows 
+UltraNest prints the p-value of this test during the run. 
+More experience is needed to identify reasonably rolling windows 
 and thresholds for applying this test.
 
 # Features
@@ -320,12 +293,12 @@ and thresholds for applying this test.
 ## Parallelisation
 
 UltraNest allows parallelisation from laptops to computing clusters
-with the Message Passing Interface (MPI). The region construction,
-step sampling, and multi-explorer approaches are all parallelised 
-across cores and for efficiency are kept on the same cores.
-
+with the Message Passing Interface (MPI). 
 Programs using UltraNest can be run with MPI without modification,
 if the mpi4py python library is installed.
+The region construction,
+step sampling, and multi-explorer approaches are all parallelised 
+across cores and are kept on the same cores for efficiency.
 
 ## Resuming
 
@@ -340,7 +313,7 @@ two processes trying to operate on the same file at once.
 
 ## Languages
 
-In the github repository,
+In the Github repository,
 wrappers are provided for models (prior transforms and likelihood functions) written in:
 
 * Python
