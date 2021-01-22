@@ -320,10 +320,14 @@ wrappers are provided for models (prior transforms and likelihood functions) wri
 * C
 * C++
 * Fortran
-* Julia 
+* Julia
 * R
+* Javascript
 
 For Julia, the dedicated wrapper package UltraNest.jl is available [@ultranestjl].
+
+For Javascript, a simpler implementation of MLFriends is available [@ultranestjs],
+which allows building interactive Bayesian inference websites.
 
 ## Documentation
 
