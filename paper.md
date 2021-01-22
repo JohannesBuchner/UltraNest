@@ -90,7 +90,7 @@ This package provides feature parity with other packages
 computation on clusters, and provides additional convenience features
 for visualisation and diagnostics.
 
-![The logo of UltraNest is a hedgehog carefully walking up a likelihood function; made by https://www.flaticon.com/authors/freepik](docs/static/logo.svg)
+![The logo of UltraNest is a hedgehog cautiously walking up a likelihood function; made by https://www.flaticon.com/authors/freepik](docs/static/logo.png)
 
 # Method
 
