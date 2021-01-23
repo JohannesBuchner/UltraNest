@@ -127,7 +127,7 @@ and an estimate of the evidence. The ensemble gives an uncertainty distribution.
 
 The bootstrapped integrators is an evolution over 
 single-bulk evidence uncertainty measures and includes the scatter 
-in volume estimates (by beta sampling) and likelihoods.
+in likelihoods (by bootstrapping) and volume estimates [by beta sampling; @Skilling2004].
 
 ## LRPS procedures in UltraNest
 
