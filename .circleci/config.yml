@@ -27,15 +27,6 @@ jobs:
             echo "backend: Agg" > matplotlibrc
 
       - run: python3 examples/testfeatures.py
-      - run: |
-            grep -l '"x_dim". .,' testfeatures/*error.json | 
-                PYTHONPATH=. xargs coverage3 run --parallel-mode examples/testfeatures.py
-      - run: |
-            for i in testfeatures/runsettings-*-iterated.json; 
-            do 
-                  PYTHONPATH=. mpiexec -mca btl ^openib -np 3 coverage run --parallel-mode examples/testfeatures.py $i
-            done
-      #- run: PYTHONPATH=. mpiexec -mca btl ^openib -np 3 coverage run --parallel-mode examples/testfeatures.py --random --seed $RANDOM
       - run: coverage3 combine
       - run: coverage3 report --include="$PWD/*" --omit="$PWD/.eggs/*"
       - run: coverage3 html --include="$PWD/*" --omit="$PWD/.eggs/*" && mv htmlcov test-reports
