@@ -2595,14 +2595,13 @@ class ReactiveNestedSampler(object):
             with open(os.path.join(self.logs['info'], 'results.json'), 'w') as f:
                 json.dump(results_simple, f, indent=4)
 
-            with open(os.path.join(self.logs['info'], 'post_summary.csv'), 'wb') as f:
-                np.savetxt(
-                    f,
-                    [np.hstack([results['posterior'][k] for k in ('mean', 'stdev', 'median', 'errlo', 'errup')])],
-                    header=', '.join(['"{0}_mean", "{0}_stdev", "{0}_median", "{0}_errlo", "{0}_errup"'.format(k)
-                                      for k in self.paramnames + self.derivedparamnames]),
-                    delimiter=',', comments='',
-                )
+            np.savetxt(
+                os.path.join(self.logs['info'], 'post_summary.csv'),
+                [np.hstack([results['posterior'][k] for k in ('mean', 'stdev', 'median', 'errlo', 'errup')])],
+                header=', '.join(['"{0}_mean", "{0}_stdev", "{0}_median", "{0}_errlo", "{0}_errup"'.format(k)
+                                  for k in self.paramnames + self.derivedparamnames]),
+                delimiter=',', comments='',
+            )
 
         if self.log_to_disk:
             keys = 'logz', 'logzerr', 'logvol', 'nlive', 'logl', 'logwt', 'insert_order'
