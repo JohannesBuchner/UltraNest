@@ -141,7 +141,7 @@ def nicelogger(points, info, region, transformLayer, region_fresh=False):
             print("   %s between %s and %s: rho=%.2f" % (
                 'positive degeneracy' if rho > 0 else 'negative degeneracy',
                 paramnames[0], paramnames[1], rho))
-    elif spearman is not None:
+    elif spearman is not None and len(p) > 1:
         rho, pval = spearman(p)
         for i, param in enumerate(paramnames):
             for j, param2 in enumerate(paramnames[:i]):
