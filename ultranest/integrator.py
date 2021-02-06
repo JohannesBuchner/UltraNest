@@ -1523,51 +1523,6 @@ class ReactiveNestedSampler(object):
 
         return (Llo_Z, Lhi_Z), (Llo_KL, Lhi_KL), (Llo_ess, Lhi_ess)
 
-    def _pump_region(self, Lmin, ndraw, nit, active_u, active_values):
-        """Get new samples at `Lmin` with attribute `.stepsampler`."""
-        # tlive = self.region.transformLayer.transform(ulive)
-        u, v, logl, nc = self.stepsampler.__next__(
-            self.region,
-            transform=self.transform, loglike=self.loglike,
-            Lmin=Lmin, us=active_u, Ls=active_values,
-            ndraw=ndraw, tregion=self.tregion)
-        if logl is None:
-            u = np.empty((0, self.x_dim))
-            v = np.empty((0, self.num_params))
-            logl = np.empty((0,))
-        else:
-            assert np.logical_and(u > 0, u < 1).all(), (u)
-            u = u.reshape((1, self.x_dim))
-            v = v.reshape((1, self.num_params))
-            logl = logl.reshape((1,))
-
-        if self.use_mpi:
-            recv_samples = self.comm.gather(u, root=0)
-            recv_samplesv = self.comm.gather(v, root=0)
-            recv_likes = self.comm.gather(logl, root=0)
-            recv_nc = self.comm.gather(nc, root=0)
-            recv_samples = self.comm.bcast(recv_samples, root=0)
-            recv_samplesv = self.comm.bcast(recv_samplesv, root=0)
-            recv_likes = self.comm.bcast(recv_likes, root=0)
-            recv_nc = self.comm.bcast(recv_nc, root=0)
-            self.samples = np.concatenate(recv_samples, axis=0)
-            self.samplesv = np.concatenate(recv_samplesv, axis=0)
-            self.likes = np.concatenate(recv_likes, axis=0)
-            self.ncall += sum(recv_nc)
-        else:
-            self.samples = u
-            self.samplesv = v
-            self.likes = logl
-            self.ncall += nc
-        self.ncall_region += ndraw
-
-        if self.log:
-            quality = self.stepsampler.nsteps
-            for ui, vi, logli in zip(self.samples, self.samplesv, self.likes):
-                self.pointstore.add(
-                    _listify([Lmin, logli, quality], ui, vi),
-                    self.ncall)
-
     def _refill_samples(self, Lmin, ndraw, nit):
         """Get new samples from region."""
         nc = 0
@@ -1632,33 +1587,8 @@ class ReactiveNestedSampler(object):
                     "Delete the output files and start again.")
             self.sampling_slow_warned = True
 
-        u = u[accepted,:]
-        v = v[accepted,:]
-        logl = logl[accepted]
-
-        if self.use_mpi:
-            recv_samples = self.comm.gather(u, root=0)
-            recv_samplesv = self.comm.gather(v, root=0)
-            recv_likes = self.comm.gather(logl, root=0)
-            recv_nc = self.comm.gather(nc, root=0)
-            recv_samples = self.comm.bcast(recv_samples, root=0)
-            recv_samplesv = self.comm.bcast(recv_samplesv, root=0)
-            recv_likes = self.comm.bcast(recv_likes, root=0)
-            recv_nc = self.comm.bcast(recv_nc, root=0)
-            self.samples = np.concatenate(recv_samples, axis=0)
-            self.samplesv = np.concatenate(recv_samplesv, axis=0)
-            self.likes = np.concatenate(recv_likes, axis=0)
-            self.ncall += sum(recv_nc)
-        else:
-            self.samples = np.array(u)
-            self.samplesv = np.array(v)
-            self.likes = np.array(logl)
-            self.ncall += nc
         self.ncall_region += ndraw
-
-        if self.log:
-            for ui, vi, logli in zip(self.samples, self.samplesv, self.likes):
-                self.pointstore.add(_listify([Lmin, logli, 0.0], ui, vi), self.ncall)
+        return u[accepted,:], v[accepted,:], logl[accepted], nc, 0
 
     def _create_point(self, Lmin, ndraw, active_u, active_values):
         """Draw a new point above likelihood threshold `Lmin`.
@@ -1704,16 +1634,55 @@ class ReactiveNestedSampler(object):
             assert self.region.inside(active_u).any(), \
                 ("None of the live points satisfies the current region!",
                  self.region.maxradiussq, self.region.u, self.region.unormed, active_u)
-            if self.stepsampler is None:
-                while ib >= len(self.samples):
-                    ib = 0
-                    self._refill_samples(Lmin, ndraw, nit)
-                    nit += 1
-            else:
-                while ib >= len(self.samples):
-                    ib = 0
-                    self._pump_region(Lmin, ndraw, nit, active_u=active_u, active_values=active_values)
-                    nit += 1
+
+            use_stepsampler = self.stepsampler is not None
+            while ib >= len(self.samples):
+                ib = 0
+                if use_stepsampler:
+                    u, v, logl, nc = self.stepsampler.__next__(
+                        self.region,
+                        transform=self.transform, loglike=self.loglike,
+                        Lmin=Lmin, us=active_u, Ls=active_values,
+                        ndraw=ndraw, tregion=self.tregion)
+                    quality = self.stepsampler.nsteps
+                else:
+                    u, v, logl, nc, quality = self._refill_samples(Lmin, ndraw, nit)
+                nit += 1
+            
+                if logl is None:
+                    u = np.empty((0, self.x_dim))
+                    v = np.empty((0, self.num_params))
+                    logl = np.empty((0,))
+                elif u.ndim == 1:
+                    assert np.logical_and(u > 0, u < 1).all(), (u)
+                    u = u.reshape((1, self.x_dim))
+                    v = v.reshape((1, self.num_params))
+                    logl = logl.reshape((1,))
+
+                if self.use_mpi:
+                    recv_samples = self.comm.gather(u, root=0)
+                    recv_samplesv = self.comm.gather(v, root=0)
+                    recv_likes = self.comm.gather(logl, root=0)
+                    recv_nc = self.comm.gather(nc, root=0)
+                    recv_samples = self.comm.bcast(recv_samples, root=0)
+                    recv_samplesv = self.comm.bcast(recv_samplesv, root=0)
+                    recv_likes = self.comm.bcast(recv_likes, root=0)
+                    recv_nc = self.comm.bcast(recv_nc, root=0)
+                    self.samples = np.concatenate(recv_samples, axis=0)
+                    self.samplesv = np.concatenate(recv_samplesv, axis=0)
+                    self.likes = np.concatenate(recv_likes, axis=0)
+                    self.ncall += sum(recv_nc)
+                else:
+                    self.samples = u
+                    self.samplesv = v
+                    self.likes = logl
+                    self.ncall += nc
+
+                if self.log:
+                    for ui, vi, logli in zip(self.samples, self.samplesv, self.likes):
+                        self.pointstore.add(
+                            _listify([Lmin, logli, quality], ui, vi),
+                            self.ncall)
 
             if self.likes[ib] > Lmin:
                 u = self.samples[ib, :]
@@ -1797,6 +1766,7 @@ class ReactiveNestedSampler(object):
             # compute radius given current transformLayer
             oldu = self.region.u
             self.region.u = active_u
+            self.region_nodes = active_node_ids.copy()
             self.region.set_transformLayer(self.transformLayer)
 
             _update_region_bootstrap(self.region, nbootstraps, minvol, self.comm if self.use_mpi else None, self.mpi_size)
