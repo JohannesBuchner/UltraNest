@@ -143,14 +143,15 @@ def nicelogger(points, info, region, transformLayer, region_fresh=False):
                 paramnames[0], paramnames[1], rho))
     elif spearman is not None:
         rho, pval = spearman(p)
-        for i, param in enumerate(paramnames):
-            for j, param2 in enumerate(paramnames[:i]):
-                if pval[i,j] < 0.01 and abs(rho[i,j]) > 0.99:
-                    s = 'positive relation' if rho[i,j] > 0 else 'negative relation'
-                    print("   perfect %s between %s and %s" % (s, param, param2))
-                elif pval[i,j] < 0.01 and abs(rho[i,j]) > 0.75:
-                    s = 'positive degeneracy' if rho[i,j] > 0 else 'negative degeneracy'
-                    print("   %s between %s and %s: rho=%.2f" % (s, param, param2, rho[i,j]))
+        if np.isfinite(pval).all() and pval.ndim == 2:
+            for i, param in enumerate(paramnames):
+                for j, param2 in enumerate(paramnames[:i]):
+                    if pval[i,j] < 0.01 and abs(rho[i,j]) > 0.99:
+                        s = 'positive relation' if rho[i,j] > 0 else 'negative relation'
+                        print("   perfect %s between %s and %s" % (s, param, param2))
+                    elif pval[i,j] < 0.01 and abs(rho[i,j]) > 0.75:
+                        s = 'positive degeneracy' if rho[i,j] > 0 else 'negative degeneracy'
+                        print("   %s between %s and %s: rho=%.2f" % (s, param, param2, rho[i,j]))
 
     for i, (param, fmt) in enumerate(zip(paramnames, paramformats)):
         if nmodes == 1:

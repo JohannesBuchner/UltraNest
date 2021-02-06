@@ -1869,6 +1869,12 @@ class ReactiveNestedSampler(object):
                 r, f = _update_region_bootstrap(nextregion, nbootstraps, minvol, self.comm if self.use_mpi else None, self.mpi_size)
                 # verify correctness:
                 nextregion.create_ellipsoid(minvol=minvol)
+
+                # check if live points are numerically colliding or become linearly dependent
+                self.live_points_healthy = len(active_u) > self.x_dim and \
+                    np.all(np.sum(active_u[1:] != active_u[0], axis=0) > self.x_dim) and \
+                    np.linalg.matrix_rank(nextregion.ellipsoid_cov)
+
                 assert (nextregion.u == active_u).all()
                 assert np.allclose(nextregion.unormed, nextregion.transformLayer.transform(active_u))
                 # assert nextregion.inside(active_u).all(),
@@ -1956,7 +1962,7 @@ class ReactiveNestedSampler(object):
 
     def _should_node_be_expanded(
         self, it, Llo, Lhi, minimal_widths_sequence, target_min_num_children,
-        node, parallel_values, max_ncalls, max_iters
+        node, parallel_values, max_ncalls, max_iters, live_points_healthy
     ):
         """Check if node needs new children.
 
@@ -1980,6 +1986,10 @@ class ReactiveNestedSampler(object):
             maximum number of nested sampling iteration allowed
         Llo, Lhi, minimal_widths_sequence, target_min_num_children:
             Current strategy parameters
+        live_points_healthy: bool
+            indicates whether the live points have become
+            linearly dependent (covariance not full rank)
+            or have attained the same exact value in some parameter.
 
         """
         Lmin = node.value
@@ -1988,7 +1998,10 @@ class ReactiveNestedSampler(object):
         if not (Lmin <= Lhi and Llo <= Lhi):
             return False
 
-        # some exceptions:
+        if not live_points_healthy:
+            return False
+
+        # some reasons to stop:
         if it > 0:
             if max_ncalls is not None and self.ncall >= max_ncalls:
                 # print("not expanding, because above max_ncall")
@@ -2255,6 +2268,7 @@ class ReactiveNestedSampler(object):
             self.transformLayer = None
             self.region = None
             self.tregion = None
+            self.live_points_healthy = True
             it_at_first_region = 0
             self.ib = 0
             self.samples = []
@@ -2293,7 +2307,7 @@ class ReactiveNestedSampler(object):
                 rootid, node, (_, active_rootids, active_values, active_node_ids) = next_node
                 assert not isinstance(rootid, float)
                 # this is the likelihood level we have to improve upon
-                Lmin = node.value
+                self.Lmin = Lmin = node.value
 
                 # if within suggested range, expand
                 if strategy_stale or not (Lmin <= Lhi) or not np.isfinite(Lhi) or (active_values == Lmin).all():
@@ -2308,7 +2322,7 @@ class ReactiveNestedSampler(object):
                 expand_node = self._should_node_be_expanded(
                     it, Llo, Lhi, minimal_widths_sequence,
                     target_min_num_children, node, active_values,
-                    max_ncalls, max_iters)
+                    max_ncalls, max_iters, self.live_points_healthy)
 
                 region_fresh = False
                 if expand_node:
@@ -2595,14 +2609,13 @@ class ReactiveNestedSampler(object):
             with open(os.path.join(self.logs['info'], 'results.json'), 'w') as f:
                 json.dump(results_simple, f, indent=4)
 
-            with open(os.path.join(self.logs['info'], 'post_summary.csv'), 'wb') as f:
-                np.savetxt(
-                    f,
-                    [np.hstack([results['posterior'][k] for k in ('mean', 'stdev', 'median', 'errlo', 'errup')])],
-                    header=', '.join(['"{0}_mean", "{0}_stdev", "{0}_median", "{0}_errlo", "{0}_errup"'.format(k)
-                                      for k in self.paramnames + self.derivedparamnames]),
-                    delimiter=',', comments='',
-                )
+            np.savetxt(
+                os.path.join(self.logs['info'], 'post_summary.csv'),
+                [np.hstack([results['posterior'][k] for k in ('mean', 'stdev', 'median', 'errlo', 'errup')])],
+                header=', '.join(['"{0}_mean", "{0}_stdev", "{0}_median", "{0}_errlo", "{0}_errup"'.format(k)
+                                  for k in self.paramnames + self.derivedparamnames]),
+                delimiter=',', comments='',
+            )
 
         if self.log_to_disk:
             keys = 'logz', 'logzerr', 'logvol', 'nlive', 'logl', 'logwt', 'insert_order'
