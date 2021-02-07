@@ -1797,6 +1797,7 @@ class ReactiveNestedSampler(object):
             # compute radius given current transformLayer
             oldu = self.region.u
             self.region.u = active_u
+            self.region_nodes = active_node_ids.copy()
             self.region.set_transformLayer(self.transformLayer)
 
             _update_region_bootstrap(self.region, nbootstraps, minvol, self.comm if self.use_mpi else None, self.mpi_size)
