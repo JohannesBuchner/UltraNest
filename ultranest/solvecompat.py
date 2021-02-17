@@ -48,7 +48,7 @@ def pymultinest_solve_compat(
         paramnames, LogLikelihood, transform=Prior,
         log_dir=outputfiles_basename, resume='resume' if resume else 'overwrite',
         wrapped_params=wrapped_params, draw_multiple=False, vectorized=False,
-        **outputkwargs)
+    )
 
     if speed == "safe":
         pass
@@ -71,7 +71,7 @@ def pymultinest_solve_compat(
                 max_iters=max_iter if max_iter > 0 else None,
                 min_num_live_points=n_live_points,
                 min_ess=min_ess, frac_remain=frac_remain,
-                Lepsilon=Lepsilon)
+                Lepsilon=Lepsilon, **outputkwargs)
 
     if verbose:
         sampler.print_results()
