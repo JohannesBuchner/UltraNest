@@ -38,8 +38,8 @@ Parallelisation to computing clusters and resuming incomplete runs is available.
 # Statement of need
 
 When scientific models are compared to data, two tasks are important: 
-1) contraining the model parameters and 2) comparing the model to other models. 
-While several open source, Bayesian model fitting packages are available that 
+1) constraining the model parameters and 2) comparing the model to other models. 
+While several open source Bayesian model fitting packages are available that 
 can be easily tied to existing models,
 they are difficult to run such that the result is reliable and user interaction is minimized.
 A chicken-and-egg problem is that one does not know a priori the posterior distribution
@@ -57,11 +57,11 @@ Bayes factors between two competing models $B=Z_1/Z_2$ are
 a measure of the relative prediction parsimony of the models, 
 and form the basis of Bayesian model comparison.
 By performing a global scan of the parameter space from the 
-worst to best fits to the data, NS performs well also in multi-modal settings.
+worst to best fits to the data, NS also performs well in multi-modal settings.
 
 In the last decade, several variants of NS have been developed. 
-These include (1) how better and better fits are found while 
-respecting the priors,
+The variants relate to 
+(1) how better and better fits are found while respecting the priors,
 (2) whether it is allowed to go back to worse fits and explore the parameter space more,
 and (3) diagnostics through tests and visualisations. 
 UltraNest develops novel, state-of-the-art techniques for all of the above. 
@@ -83,16 +83,16 @@ UltraNest was developed.
 
 # Method
 
-NS methods are systematically reviewed in Buchner et al., submitted,
-highlighting also the approaches used in UltraNest.
+NS methods are systematically reviewed in Buchner et al., submitted.
+The approaches used in UltraNest are highlighted there as well.
 
 The basic outline of vanilla NS [see @Skilling2004 for details] is as follows:
 
-A set of $N$ live points is drawn from the unit hypercube (u-space).
-A inverse cumulative prior transform converts to physical parameter units (v-space),
-and the likelihood $L$ evaluated.
-NS then repeatedly replaces the current worst likelihood
-through likelihood-constrained prior sampling (LRPS).
+A set of $N$ points are randomly drawn from the unit hypercube (u-space).
+A inverse cumulative prior transform converts these points to physical parameter units (v-space).
+The likelihood $L$ evaluated for each point.
+In this population of live points, NS repeatedly replaces the current worst likelihood
+point through likelihood-constrained prior sampling (LRPS).
 At each iteration (represented by the removed, dead point), 
 the prior space investigated shrinks by approximately $V_{i+1}/V_i = (N - 1)/N$,
 starting from the entire prior volume $V_i=1$.
@@ -122,10 +122,10 @@ variable number of live points straight-forward.
 UltraNest computes conservative uncertainties on $Z$ and the posterior weights.
 Several Reactive NS explorers are run which see only parts of the tree,
 specifically a bootstrapped subsample of the root edges.
-For each sample, each explorer estimate a weight (0 if it is blind to it),
+For each sample, each explorer estimates a weight (0 if it is blind to it),
 and an estimate of the evidence. The ensemble gives an uncertainty distribution.
 
-The bootstrapped integrators is an evolution over 
+The bootstrapped integrators are an evolution over 
 single-bulk evidence uncertainty measures and includes the scatter 
 in likelihoods (by bootstrapping) and volume estimates [by beta sampling; @Skilling2004].
 
