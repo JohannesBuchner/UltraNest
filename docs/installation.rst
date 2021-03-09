@@ -38,7 +38,7 @@ If you use conda, you can install UltraNest with:
 
 .. code-block:: console
 
-    $ conda install -c conda-forge ultranest
+    $ conda install --channel conda-forge ultranest
 
 From sources
 ------------
