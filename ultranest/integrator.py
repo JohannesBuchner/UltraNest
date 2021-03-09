@@ -28,7 +28,22 @@ __all__ = ['ReactiveNestedSampler', 'NestedSampler', 'read_file']
 
 
 def _get_cumsum_range(pi, dp):
-    """From probabilities pi compute the quantile indices of `dp` and ``1-dp``."""
+    """Compute quantile indices from probabilities.
+
+    Parameters
+    ------------
+    pi: array
+        probability of each item.
+    dp: float
+        Quantile (between 0 and 0.5).
+
+    Returns:
+    ---------
+    index_lo: int
+        Index of the item corresponding to quantile ``dp``.
+    index_hi: int
+        Index of the item corresponding to quantile ``1-dp``.
+    """
     ci = pi.cumsum()
     ilo = np.where(ci > dp)[0]
     ilo = ilo[0] if len(ilo) > 0 else 0
