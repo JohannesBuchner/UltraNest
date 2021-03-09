@@ -15,7 +15,12 @@ from .utils import listify as _listify
 def generate_random_direction(ui, region, scale=1):
     """Draw uniform direction vector in unit cube space of length `scale`.
 
-    Region is not used.
+    Parameters
+    -----------
+    region: MLFriends object
+        current region (not used)
+    scale: float:
+        length of direction vector
     """
     del region
     v = np.random.normal(0, 1, size=len(ui))
@@ -26,7 +31,12 @@ def generate_random_direction(ui, region, scale=1):
 def generate_cube_oriented_direction(ui, region):
     """Draw a unit direction vector in direction of a random unit cube axes.
 
-    `region` is not used.
+    Parameters
+    -----------
+    region: MLFriends object
+        current region (not used)
+    scale: float:
+        length of direction vector
     """
     del region
     ndim = len(ui)
@@ -274,7 +284,15 @@ class StepSampler(object):
         assert self.next_scale > 0, self.next_scale
 
     def adapt_nsteps(self, region):
-        """ change nsteps """
+        """
+        Adapt the number of steps.
+
+        Parameters
+        -----------
+        region: MLFriends object
+            current region
+
+        """
         if not self.adaptive_nsteps:
             return
         elif len(self.history) < self.nsteps:

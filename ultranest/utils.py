@@ -182,7 +182,18 @@ def resample_equal(samples, weights, rstate=None):
 
 
 def listify(*args):
-    """ concatenate args, which are (made to be) lists """
+    """
+    concatenate args, which are (made to be) lists
+
+    Parameters
+    ----------
+    args: iterable
+        Lists to concatenate.
+
+    Returns
+    -------
+    Concatenation of the lists in args.
+    """
     out = []
     for a in args:
         out += list(a)

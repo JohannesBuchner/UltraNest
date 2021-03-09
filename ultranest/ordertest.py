@@ -24,7 +24,21 @@ __all__ = ['infinite_U_zscore', 'UniformOrderAccumulator']
 
 
 def infinite_U_zscore(sample, B):
-    """z-score for *sample* of integers to be uniformly distributed between 0 and *B*. """
+    """
+    Compute Mann-Whitney-Wilcoxon U test for a 
+    *sample* of integers to be uniformly distributed between 0 and *B*.
+
+    Parameters
+    ----------
+    B: int
+        maximum rank allowed.
+    sample: array of integers
+        values between 0 and B (inclusive).
+
+    Returns
+    -------
+    z-score (float).
+    """
     N = len(sample)
     return ((sample + 0.5).sum() - N * B * 0.5) / ((N / 12.0)**0.5 * B)
 
@@ -43,7 +57,16 @@ class UniformOrderAccumulator():
         self.U = 0.0
 
     def add(self, order, N):
-        """ add order out of N to histogram. """
+        """
+        Accumulate rank *order* (0 to N).
+
+        Parameters
+        ----------
+        N: int
+            maximum rank allowed.
+        order: int
+            rank between 0 and N (inclusive).
+        """
         if not 0 <= order <= N:
             raise ValueError("order %d out of %d invalid" % (order, N))
         self.U += (order + 0.5) / N
