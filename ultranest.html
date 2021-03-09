@@ -1191,16 +1191,40 @@ ReactiveNestedSampler.run return values</p></li>
 <dt id="ultranest.mlfriends.AffineLayer.create_new">
 <code class="sig-name descname">create_new</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">upoints</span></em>, <em class="sig-param"><span class="n">maxradiussq</span></em>, <em class="sig-param"><span class="n">minvol</span><span class="o">=</span><span class="default_value">0.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.mlfriends.AffineLayer.create_new" title="Permalink to this definition">¶</a></dt>
 <dd><p>Learn next layer from this optimized layer’s clustering.</p>
-<p>Returns a new, optimized AffineLayer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>upoints</strong> (<em>array</em>) – points to use for optimize (in u-space)</p></li>
+<li><p><strong>maxradiussq</strong> (<em>float</em>) – square of the MLFriends radius</p></li>
+<li><p><strong>minvol</strong> (<em>float</em>) – Minimum volume to regularize sample covariance</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>A new, optimized AffineLayer.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="ultranest.mlfriends.AffineLayer.optimize">
 <code class="sig-name descname">optimize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">points</span></em>, <em class="sig-param"><span class="n">centered_points</span></em>, <em class="sig-param"><span class="n">clusterids</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">minvol</span><span class="o">=</span><span class="default_value">0.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.mlfriends.AffineLayer.optimize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Optimize layer.</p>
-<p>Estimates covariance of <cite>centered_points</cite>. <cite>minvol</cite> sets the
+<p>Estimates covariance of <code class="docutils literal notranslate"><span class="pre">centered_points</span></code>. <code class="docutils literal notranslate"><span class="pre">minvol</span></code> sets the
 smallest allowed size of the covariance to avoid numerical
 collapse.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>points</strong> (<em>array</em>) – points to use for optimize (in u-space)</p></li>
+<li><p><strong>centered_points</strong> (<em>array</em>) – points with their cluster center subtracted</p></li>
+<li><p><strong>clusterids</strong> (<em>array of ints</em>) – for each point, which cluster they belong to</p></li>
+<li><p><strong>minvol</strong> (<em>float</em>) – Minimum volume to regularize sample covariance</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1234,21 +1258,48 @@ likelihood constraints</p></li>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>u</strong> (<em>array of vectors</em>) – live points</p></li>
-<li><p><strong>transformLayer</strong> (<a class="reference internal" href="#id20" title="ultranest.mlfriends.ScalingLayer"><em>ScalingLayer</em></a><em> or </em><a class="reference internal" href="#id0" title="ultranest.mlfriends.AffineLayer"><em>AffineLayer</em></a>) – whitenin layer</p></li>
+<li><p><strong>transformLayer</strong> (<a class="reference internal" href="#id20" title="ultranest.mlfriends.ScalingLayer"><em>ScalingLayer</em></a><em> or </em><a class="reference internal" href="#id0" title="ultranest.mlfriends.AffineLayer"><em>AffineLayer</em></a>) – whitening layer</p></li>
 </ul>
 </dd>
 </dl>
 <dl class="py method">
 <dt id="ultranest.mlfriends.MLFriends.compute_enlargement">
 <code class="sig-name descname">compute_enlargement</code><span class="sig-paren">(</span><em class="sig-param">nbootstraps=50</em>, <em class="sig-param">minvol=0.0</em>, <em class="sig-param">rng=&lt;module 'numpy.random' from '/home/user/.local/lib/python3.8/site-packages/numpy/random/__init__.py'&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.mlfriends.MLFriends.compute_enlargement" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return MLFriends radius and ellipsoid enlargement after <cite>nbootstraps</cite> bootstrapping rounds.</p>
+<dd><p>Return MLFriends radius and ellipsoid enlargement using bootstrapping.</p>
 <p>The wrapping ellipsoid covariance is determined in each bootstrap round.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>nbootstraps</strong> (<em>int</em>) – number of bootstrapping rounds</p></li>
+<li><p><strong>minvol</strong> (<em>float</em>) – minimum volume to enforce to wrapping ellipsoid</p></li>
+<li><p><strong>rng</strong> – random number generator</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>max_distance</strong> (<em>float</em>) – square radius of MLFriends algorithm</p></li>
+<li><p><strong>max_radius</strong> (<em>float</em>) – square radius of enclosing ellipsoid.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="ultranest.mlfriends.MLFriends.compute_maxradiussq">
 <code class="sig-name descname">compute_maxradiussq</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nbootstraps</span><span class="o">=</span><span class="default_value">50</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.mlfriends.MLFriends.compute_maxradiussq" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return MLFriends radius after <cite>nbootstraps</cite> bootstrapping rounds</p>
+<dd><p>Run MLFriends bootstrapping</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>nbootstraps</strong> (<em>int</em>) – number of bootstrapping rounds</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>square radius that safely encloses all live points.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1260,6 +1311,11 @@ likelihood constraints</p></li>
 <dt id="ultranest.mlfriends.MLFriends.create_ellipsoid">
 <code class="sig-name descname">create_ellipsoid</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">minvol</span><span class="o">=</span><span class="default_value">0.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.mlfriends.MLFriends.create_ellipsoid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create wrapping ellipsoid and store its center and covariance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>minvol</strong> (<em>float</em>) – If positive, make sure ellipsoid has at least this volume.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1271,6 +1327,14 @@ given the current transformLayer and</p>
 * the number of live points
 * their overlap
 * the intersection with the unit cube borders</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>volume (float)</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1283,7 +1347,7 @@ given the current transformLayer and</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>is_inside</strong> – True if inside MLFriends region and wrapping ellipsoid,
-for each point in <em>pts</em>.</p>
+for each point in <code class="docutils literal notranslate"><span class="pre">pts</span></code>.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>array of bools</p>
@@ -1312,7 +1376,19 @@ for each point in <em>pts</em>.</p>
 <dt id="ultranest.mlfriends.MLFriends.sample">
 <code class="sig-name descname">sample</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nsamples</span><span class="o">=</span><span class="default_value">100</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.mlfriends.MLFriends.sample" title="Permalink to this definition">¶</a></dt>
 <dd><p>Draw uniformly sampled points from MLFriends region.</p>
-<p>Switches automatically between the <cite>sampling_methods</cite> (attribute).</p>
+<p>Switches automatically between the <code class="docutils literal notranslate"><span class="pre">sampling_methods</span></code> (attribute).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>nsamples</strong> (<em>int</em>) – number of samples to draw</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>samples</strong> (<em>array of shape (nsamples, dimension)</em>) – samples drawn</p></li>
+<li><p><strong>idx</strong> (<em>array of integers (nsamples)</em>) – index of a point nearby (MLFriends.u)</p></li>
+</ul>
+</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1320,6 +1396,7 @@ for each point in <em>pts</em>.</p>
 <code class="sig-name descname">sample_from_boundingbox</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nsamples</span><span class="o">=</span><span class="default_value">100</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.mlfriends.MLFriends.sample_from_boundingbox" title="Permalink to this definition">¶</a></dt>
 <dd><p>Draw uniformly sampled points from MLFriends region.</p>
 <p>Draws uniformly from bounding box around region.</p>
+<p>Parameters as described in <em>sample()</em>.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1327,6 +1404,7 @@ for each point in <em>pts</em>.</p>
 <code class="sig-name descname">sample_from_points</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nsamples</span><span class="o">=</span><span class="default_value">100</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.mlfriends.MLFriends.sample_from_points" title="Permalink to this definition">¶</a></dt>
 <dd><p>Draw uniformly sampled points from MLFriends region.</p>
 <p>Chooses randomly from points and their ellipsoids.</p>
+<p>Parameters as described in <em>sample()</em>.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1334,6 +1412,7 @@ for each point in <em>pts</em>.</p>
 <code class="sig-name descname">sample_from_transformed_boundingbox</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nsamples</span><span class="o">=</span><span class="default_value">100</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.mlfriends.MLFriends.sample_from_transformed_boundingbox" title="Permalink to this definition">¶</a></dt>
 <dd><p>Draw uniformly sampled points from MLFriends region.</p>
 <p>Draws uniformly from bounding box around region (in whitened space).</p>
+<p>Parameters as described in <em>sample()</em>.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1341,12 +1420,18 @@ for each point in <em>pts</em>.</p>
 <code class="sig-name descname">sample_from_wrapping_ellipsoid</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nsamples</span><span class="o">=</span><span class="default_value">100</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.mlfriends.MLFriends.sample_from_wrapping_ellipsoid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Draw uniformly sampled points from MLFriends region.</p>
 <p>Draws uniformly from wrapping ellipsoid and filters with region.</p>
+<p>Parameters as described in <code class="docutils literal notranslate"><span class="pre">sample()</span></code>.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="ultranest.mlfriends.MLFriends.set_transformLayer">
 <code class="sig-name descname">set_transformLayer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">transformLayer</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.mlfriends.MLFriends.set_transformLayer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update transformation layer. Invalidates attribute <cite>maxradius</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>transformLayer</strong> (<a class="reference internal" href="#id20" title="ultranest.mlfriends.ScalingLayer"><em>ScalingLayer</em></a><em> or </em><a class="reference internal" href="#id0" title="ultranest.mlfriends.AffineLayer"><em>AffineLayer</em></a>) – t-space transformation layer</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -1361,7 +1446,21 @@ for each point in <em>pts</em>.</p>
 <dt id="ultranest.mlfriends.ScalingLayer.create_new">
 <code class="sig-name descname">create_new</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">upoints</span></em>, <em class="sig-param"><span class="n">maxradiussq</span></em>, <em class="sig-param"><span class="n">minvol</span><span class="o">=</span><span class="default_value">0.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.mlfriends.ScalingLayer.create_new" title="Permalink to this definition">¶</a></dt>
 <dd><p>Learn next layer from this optimized layer’s clustering.</p>
-<p>Returns a new, optimized ScalingLayer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>upoints</strong> (<em>array</em>) – points to use for optimize (in u-space)</p></li>
+<li><p><strong>maxradiussq</strong> (<em>float</em>) – square of the MLFriends radius</p></li>
+<li><p><strong>minvol</strong> (<em>float</em>) – Minimum volume to regularize sample covariance</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>A new, optimized ScalingLayer.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1369,22 +1468,40 @@ for each point in <em>pts</em>.</p>
 <code class="sig-name descname">optimize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">points</span></em>, <em class="sig-param"><span class="n">centered_points</span></em>, <em class="sig-param"><span class="n">clusterids</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">minvol</span><span class="o">=</span><span class="default_value">0.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.mlfriends.ScalingLayer.optimize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Optimize layer.</p>
 <p>Estimates mean and std of points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>points</strong> (<em>array</em>) – points to use for optimize (in u-space)</p></li>
+<li><p><strong>centered_points</strong> (<em>array</em>) – points with their cluster center subtracted</p></li>
+<li><p><strong>clusterids</strong> (<em>array of ints</em>) – for each point, which cluster they belong to</p></li>
+<li><p><strong>minvol</strong> – ignored</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="ultranest.mlfriends.ScalingLayer.optimize_wrap">
 <code class="sig-name descname">optimize_wrap</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">points</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.mlfriends.ScalingLayer.optimize_wrap" title="Permalink to this definition">¶</a></dt>
-<dd><p>Find largest gap in live points and wrap parameter space there.</p>
-<p>For example, if a wrapped axis has:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">|*****</span>           <span class="o">****|</span>
-</pre></div>
+<dd><p>Optimization for wrapped/circular parameters.
+Does nothing if there are no wrapped/circular parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>points</strong> (<em>array</em>) – points to use for optimization (in u-space)</p></li>
+<li><p><strong>largest gap in live points and wrap parameter space there.</strong> (<em>Find</em>) – </p></li>
+<li><p><strong>example</strong> (<em>For</em>) – <a href="#id39"><span class="problematic" id="id40">|*****           ****|</span></a></p></li>
+<li><p><strong>a wrapped axis has::</strong> (<em>if</em>) – <a href="#id41"><span class="problematic" id="id42">|*****           ****|</span></a></p></li>
+<li><p><strong>would identify the middle</strong> (<em>it</em>) – </p></li>
+<li><p><strong>it</strong> (<em>subtract</em>) – </p></li>
+<li><p><strong>that the new space</strong> (<em>so</em>) – </p></li>
+<li><p><strong>is::</strong> – <div class="line-block">
+<div class="line"><strong>****</strong>      |</div>
 </div>
-<p>it would identify the middle, subtract it, so that the new space
-is:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">|</span>      <span class="o">********</span>      <span class="o">|</span>
-</pre></div>
-</div>
-<p>Does nothing if there are no wrapped/circular parameters.</p>
+</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1486,8 +1603,22 @@ minvol is True.</p></li>
 <dl class="py function">
 <dt id="ultranest.mlfriends.compute_mean_pair_distance">
 <code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">compute_mean_pair_distance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.mlfriends.compute_mean_pair_distance" title="Permalink to this definition">¶</a></dt>
-<dd><p>Count the number of points in <cite>a</cite> within square radius <cite>radiussq</cite> for each point <cite>b</cite> in <cite>bpts</cite>.</p>
-<p>The number is written to <cite>nnearby</cite> (of same length as bpts).</p>
+<dd><p>Compute the average distance between pairs of points.
+Pairs from different clusters are excluded in the computation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pts</strong> (<em>array</em>) – points</p></li>
+<li><p><strong>clusterids</strong> (<em>array of ints</em><em> or </em><em>None</em>) – for each point, index of the associated cluster.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>mean distance between point pairs.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -1495,31 +1626,63 @@ minvol is True.</p></li>
 <code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">find_nearby</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.mlfriends.find_nearby" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets the index of a point in <cite>a</cite> within square radius <cite>radiussq</cite>, for each point <cite>b</cite> in <cite>bpts</cite>.</p>
 <p>The number is written to <cite>nnearby</cite> (of same length as <cite>bpts</cite>).
-If none is found, -1 is returned.</p>
+If none is found, -1 is written.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>apts</strong> (<em>array</em>) – points</p></li>
+<li><p><strong>bpts</strong> (<em>array</em>) – points</p></li>
+<li><p><strong>radiussq</strong> (<em>float</em>) – square of the MLFriends radius</p></li>
+<li><p><strong>nnearby</strong> (<em>array of ints</em>) – The result will be written here.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="ultranest.mlfriends.make_eigvals_positive">
 <code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">make_eigvals_positive</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.mlfriends.make_eigvals_positive" title="Permalink to this definition">¶</a></dt>
 <dd><p>For the symmetric square matrix <code class="docutils literal notranslate"><span class="pre">a</span></code>, increase any zero eigenvalues
-to fulfill the given target product of eigenvalues.</p>
-<p>Returns a (possibly) new matrix.</p>
+to fulfill a target product of eigenvalues.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>a</strong> (<em>array</em>) – covariance matrix</p></li>
+<li><p><strong>targetprod</strong> (<em>array</em>) – target product of eigenvalues</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>covariance matrix</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="ultranest.mlfriends.update_clusters">
 <code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">update_clusters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.mlfriends.update_clusters" title="Permalink to this definition">¶</a></dt>
-<dd><p>Clusters <cite>upoints</cite>, so that clusters are distinct if no member pair is within a radius of sqrt(<cite>maxradiussq</cite>)</p>
-<p>clusterids are the cluster indices of each point
-clusterids re-uses the existing ids to assign new cluster ids</p>
-<p>clustering is performed on a transformed coordinate space (<cite>tpoints</cite>).
-Returned values are based on upoints.</p>
+<dd><p>Clusters <cite>upoints</cite>, so that clusters are distinct if no
+member pair is within a radius of sqrt(<cite>maxradiussq</cite>).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><ul class="simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>upoints</strong> (<em>array</em>) – points (in u-space)</p></li>
+<li><p><strong>tpoints</strong> (<em>array</em>) – points (in t-space)</p></li>
+<li><p><strong>maxradiussq</strong> (<em>float</em>) – square of the MLFriends radius</p></li>
+<li><p><strong>clusterids</strong> (<em>array of ints</em><em> or </em><em>None</em>) – for each point, index of the associated cluster.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
 <li><p><strong>nclusters</strong> (<em>int</em>) – the number of clusters found, which is also clusterids.max()</p></li>
 <li><p><strong>new_clusterids</strong> (<em>array of int</em>) – the new clusterids for each point</p></li>
 <li><p><em>overlapped_points</em> – upoints with their cluster centers subtracted.</p></li>
+<li><p><em>The existing cluster ids are re-used when assigning new clusters,</em></p></li>
+<li><p><em>if possible.</em></p></li>
+<li><p>Clustering is performed on a transformed coordinate space (<cite>tpoints</cite>).</p></li>
+<li><p><em>Returned values are based on upoints.</em></p></li>
 </ul>
 </p>
 </dd>
@@ -1529,9 +1692,20 @@ Returned values are based on upoints.</p>
 <dl class="py function">
 <dt id="ultranest.mlfriends.vol_prefactor">
 <code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">vol_prefactor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.mlfriends.vol_prefactor" title="Permalink to this definition">¶</a></dt>
-<dd><p>Volume constant for an <cite>n</cite>-dimensional sphere.</p>
-<p>for <cite>n</cite> even:  $$    (2pi)^(n    /2) / (2 * 4 * … * n)$$
-for <cite>n</cite> odd :  $$2 * (2pi)^((n-1)/2) / (1 * 3 * … * n)$$</p>
+<dd><p>Volume constant for an <code class="docutils literal notranslate"><span class="pre">n</span></code>-dimensional sphere.</p>
+<p>for <code class="docutils literal notranslate"><span class="pre">n</span></code> even:  $$    (2pi)^(n    /2) / (2 * 4 * … * n)$$
+for <code class="docutils literal notranslate"><span class="pre">n</span></code> odd :  $$2 * (2pi)^((n-1)/2) / (1 * 3 * … * n)$$</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>n</strong> (<em>int</em>) – dimensionality</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>volume (float)</p>
+</dd>
+</dl>
 </dd></dl>
 
 </div>
@@ -1563,16 +1737,40 @@ for <cite>n</cite> odd :  $$2 * (2pi)^((n-1)/2) / (1 * 3 * … * n)$$</p>
 <dt id="id2">
 <code class="sig-name descname">create_new</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">upoints</span></em>, <em class="sig-param"><span class="n">maxradiussq</span></em>, <em class="sig-param"><span class="n">minvol</span><span class="o">=</span><span class="default_value">0.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id2" title="Permalink to this definition">¶</a></dt>
 <dd><p>Learn next layer from this optimized layer’s clustering.</p>
-<p>Returns a new, optimized AffineLayer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>upoints</strong> (<em>array</em>) – points to use for optimize (in u-space)</p></li>
+<li><p><strong>maxradiussq</strong> (<em>float</em>) – square of the MLFriends radius</p></li>
+<li><p><strong>minvol</strong> (<em>float</em>) – Minimum volume to regularize sample covariance</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>A new, optimized AffineLayer.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="id3">
 <code class="sig-name descname">optimize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">points</span></em>, <em class="sig-param"><span class="n">centered_points</span></em>, <em class="sig-param"><span class="n">clusterids</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">minvol</span><span class="o">=</span><span class="default_value">0.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id3" title="Permalink to this definition">¶</a></dt>
 <dd><p>Optimize layer.</p>
-<p>Estimates covariance of <cite>centered_points</cite>. <cite>minvol</cite> sets the
+<p>Estimates covariance of <code class="docutils literal notranslate"><span class="pre">centered_points</span></code>. <code class="docutils literal notranslate"><span class="pre">minvol</span></code> sets the
 smallest allowed size of the covariance to avoid numerical
 collapse.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>points</strong> (<em>array</em>) – points to use for optimize (in u-space)</p></li>
+<li><p><strong>centered_points</strong> (<em>array</em>) – points with their cluster center subtracted</p></li>
+<li><p><strong>clusterids</strong> (<em>array of ints</em>) – for each point, which cluster they belong to</p></li>
+<li><p><strong>minvol</strong> (<em>float</em>) – Minimum volume to regularize sample covariance</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1606,21 +1804,48 @@ likelihood constraints</p></li>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>u</strong> (<em>array of vectors</em>) – live points</p></li>
-<li><p><strong>transformLayer</strong> (<a class="reference internal" href="#id20" title="ultranest.mlfriends.ScalingLayer"><em>ScalingLayer</em></a><em> or </em><a class="reference internal" href="#id0" title="ultranest.mlfriends.AffineLayer"><em>AffineLayer</em></a>) – whitenin layer</p></li>
+<li><p><strong>transformLayer</strong> (<a class="reference internal" href="#id20" title="ultranest.mlfriends.ScalingLayer"><em>ScalingLayer</em></a><em> or </em><a class="reference internal" href="#id0" title="ultranest.mlfriends.AffineLayer"><em>AffineLayer</em></a>) – whitening layer</p></li>
 </ul>
 </dd>
 </dl>
 <dl class="py method">
 <dt id="id7">
 <code class="sig-name descname">compute_enlargement</code><span class="sig-paren">(</span><em class="sig-param">nbootstraps=50</em>, <em class="sig-param">minvol=0.0</em>, <em class="sig-param">rng=&lt;module 'numpy.random' from '/home/user/.local/lib/python3.8/site-packages/numpy/random/__init__.py'&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#id7" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return MLFriends radius and ellipsoid enlargement after <cite>nbootstraps</cite> bootstrapping rounds.</p>
+<dd><p>Return MLFriends radius and ellipsoid enlargement using bootstrapping.</p>
 <p>The wrapping ellipsoid covariance is determined in each bootstrap round.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>nbootstraps</strong> (<em>int</em>) – number of bootstrapping rounds</p></li>
+<li><p><strong>minvol</strong> (<em>float</em>) – minimum volume to enforce to wrapping ellipsoid</p></li>
+<li><p><strong>rng</strong> – random number generator</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>max_distance</strong> (<em>float</em>) – square radius of MLFriends algorithm</p></li>
+<li><p><strong>max_radius</strong> (<em>float</em>) – square radius of enclosing ellipsoid.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="id8">
 <code class="sig-name descname">compute_maxradiussq</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nbootstraps</span><span class="o">=</span><span class="default_value">50</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id8" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return MLFriends radius after <cite>nbootstraps</cite> bootstrapping rounds</p>
+<dd><p>Run MLFriends bootstrapping</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>nbootstraps</strong> (<em>int</em>) – number of bootstrapping rounds</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>square radius that safely encloses all live points.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1632,6 +1857,11 @@ likelihood constraints</p></li>
 <dt id="id10">
 <code class="sig-name descname">create_ellipsoid</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">minvol</span><span class="o">=</span><span class="default_value">0.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id10" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create wrapping ellipsoid and store its center and covariance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>minvol</strong> (<em>float</em>) – If positive, make sure ellipsoid has at least this volume.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1643,6 +1873,14 @@ given the current transformLayer and</p>
 * the number of live points
 * their overlap
 * the intersection with the unit cube borders</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p></p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>volume (float)</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1655,7 +1893,7 @@ given the current transformLayer and</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>is_inside</strong> – True if inside MLFriends region and wrapping ellipsoid,
-for each point in <em>pts</em>.</p>
+for each point in <code class="docutils literal notranslate"><span class="pre">pts</span></code>.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>array of bools</p>
@@ -1684,7 +1922,19 @@ for each point in <em>pts</em>.</p>
 <dt id="id14">
 <code class="sig-name descname">sample</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nsamples</span><span class="o">=</span><span class="default_value">100</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id14" title="Permalink to this definition">¶</a></dt>
 <dd><p>Draw uniformly sampled points from MLFriends region.</p>
-<p>Switches automatically between the <cite>sampling_methods</cite> (attribute).</p>
+<p>Switches automatically between the <code class="docutils literal notranslate"><span class="pre">sampling_methods</span></code> (attribute).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>nsamples</strong> (<em>int</em>) – number of samples to draw</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>samples</strong> (<em>array of shape (nsamples, dimension)</em>) – samples drawn</p></li>
+<li><p><strong>idx</strong> (<em>array of integers (nsamples)</em>) – index of a point nearby (MLFriends.u)</p></li>
+</ul>
+</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1692,6 +1942,7 @@ for each point in <em>pts</em>.</p>
 <code class="sig-name descname">sample_from_boundingbox</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nsamples</span><span class="o">=</span><span class="default_value">100</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id15" title="Permalink to this definition">¶</a></dt>
 <dd><p>Draw uniformly sampled points from MLFriends region.</p>
 <p>Draws uniformly from bounding box around region.</p>
+<p>Parameters as described in <em>sample()</em>.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1699,6 +1950,7 @@ for each point in <em>pts</em>.</p>
 <code class="sig-name descname">sample_from_points</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nsamples</span><span class="o">=</span><span class="default_value">100</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id16" title="Permalink to this definition">¶</a></dt>
 <dd><p>Draw uniformly sampled points from MLFriends region.</p>
 <p>Chooses randomly from points and their ellipsoids.</p>
+<p>Parameters as described in <em>sample()</em>.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1706,6 +1958,7 @@ for each point in <em>pts</em>.</p>
 <code class="sig-name descname">sample_from_transformed_boundingbox</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nsamples</span><span class="o">=</span><span class="default_value">100</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id17" title="Permalink to this definition">¶</a></dt>
 <dd><p>Draw uniformly sampled points from MLFriends region.</p>
 <p>Draws uniformly from bounding box around region (in whitened space).</p>
+<p>Parameters as described in <em>sample()</em>.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1713,12 +1966,18 @@ for each point in <em>pts</em>.</p>
 <code class="sig-name descname">sample_from_wrapping_ellipsoid</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nsamples</span><span class="o">=</span><span class="default_value">100</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id18" title="Permalink to this definition">¶</a></dt>
 <dd><p>Draw uniformly sampled points from MLFriends region.</p>
 <p>Draws uniformly from wrapping ellipsoid and filters with region.</p>
+<p>Parameters as described in <code class="docutils literal notranslate"><span class="pre">sample()</span></code>.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="id19">
 <code class="sig-name descname">set_transformLayer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">transformLayer</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id19" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update transformation layer. Invalidates attribute <cite>maxradius</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>transformLayer</strong> (<a class="reference internal" href="#id20" title="ultranest.mlfriends.ScalingLayer"><em>ScalingLayer</em></a><em> or </em><a class="reference internal" href="#id0" title="ultranest.mlfriends.AffineLayer"><em>AffineLayer</em></a>) – t-space transformation layer</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -1733,7 +1992,21 @@ for each point in <em>pts</em>.</p>
 <dt id="id21">
 <code class="sig-name descname">create_new</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">upoints</span></em>, <em class="sig-param"><span class="n">maxradiussq</span></em>, <em class="sig-param"><span class="n">minvol</span><span class="o">=</span><span class="default_value">0.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id21" title="Permalink to this definition">¶</a></dt>
 <dd><p>Learn next layer from this optimized layer’s clustering.</p>
-<p>Returns a new, optimized ScalingLayer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>upoints</strong> (<em>array</em>) – points to use for optimize (in u-space)</p></li>
+<li><p><strong>maxradiussq</strong> (<em>float</em>) – square of the MLFriends radius</p></li>
+<li><p><strong>minvol</strong> (<em>float</em>) – Minimum volume to regularize sample covariance</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>A new, optimized ScalingLayer.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1741,22 +2014,40 @@ for each point in <em>pts</em>.</p>
 <code class="sig-name descname">optimize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">points</span></em>, <em class="sig-param"><span class="n">centered_points</span></em>, <em class="sig-param"><span class="n">clusterids</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">minvol</span><span class="o">=</span><span class="default_value">0.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id22" title="Permalink to this definition">¶</a></dt>
 <dd><p>Optimize layer.</p>
 <p>Estimates mean and std of points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>points</strong> (<em>array</em>) – points to use for optimize (in u-space)</p></li>
+<li><p><strong>centered_points</strong> (<em>array</em>) – points with their cluster center subtracted</p></li>
+<li><p><strong>clusterids</strong> (<em>array of ints</em>) – for each point, which cluster they belong to</p></li>
+<li><p><strong>minvol</strong> – ignored</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="id23">
 <code class="sig-name descname">optimize_wrap</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">points</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id23" title="Permalink to this definition">¶</a></dt>
-<dd><p>Find largest gap in live points and wrap parameter space there.</p>
-<p>For example, if a wrapped axis has:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">|*****</span>           <span class="o">****|</span>
-</pre></div>
+<dd><p>Optimization for wrapped/circular parameters.
+Does nothing if there are no wrapped/circular parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>points</strong> (<em>array</em>) – points to use for optimization (in u-space)</p></li>
+<li><p><strong>largest gap in live points and wrap parameter space there.</strong> (<em>Find</em>) – </p></li>
+<li><p><strong>example</strong> (<em>For</em>) – <a href="#id43"><span class="problematic" id="id44">|*****           ****|</span></a></p></li>
+<li><p><strong>a wrapped axis has::</strong> (<em>if</em>) – <a href="#id45"><span class="problematic" id="id46">|*****           ****|</span></a></p></li>
+<li><p><strong>would identify the middle</strong> (<em>it</em>) – </p></li>
+<li><p><strong>it</strong> (<em>subtract</em>) – </p></li>
+<li><p><strong>that the new space</strong> (<em>so</em>) – </p></li>
+<li><p><strong>is::</strong> – <div class="line-block">
+<div class="line"><strong>****</strong>      |</div>
 </div>
-<p>it would identify the middle, subtract it, so that the new space
-is:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">|</span>      <span class="o">********</span>      <span class="o">|</span>
-</pre></div>
-</div>
-<p>Does nothing if there are no wrapped/circular parameters.</p>
+</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1858,8 +2149,22 @@ minvol is True.</p></li>
 <dl class="py function">
 <dt id="id34">
 <code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">compute_mean_pair_distance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id34" title="Permalink to this definition">¶</a></dt>
-<dd><p>Count the number of points in <cite>a</cite> within square radius <cite>radiussq</cite> for each point <cite>b</cite> in <cite>bpts</cite>.</p>
-<p>The number is written to <cite>nnearby</cite> (of same length as bpts).</p>
+<dd><p>Compute the average distance between pairs of points.
+Pairs from different clusters are excluded in the computation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pts</strong> (<em>array</em>) – points</p></li>
+<li><p><strong>clusterids</strong> (<em>array of ints</em><em> or </em><em>None</em>) – for each point, index of the associated cluster.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>mean distance between point pairs.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -1867,31 +2172,63 @@ minvol is True.</p></li>
 <code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">find_nearby</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id35" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets the index of a point in <cite>a</cite> within square radius <cite>radiussq</cite>, for each point <cite>b</cite> in <cite>bpts</cite>.</p>
 <p>The number is written to <cite>nnearby</cite> (of same length as <cite>bpts</cite>).
-If none is found, -1 is returned.</p>
+If none is found, -1 is written.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>apts</strong> (<em>array</em>) – points</p></li>
+<li><p><strong>bpts</strong> (<em>array</em>) – points</p></li>
+<li><p><strong>radiussq</strong> (<em>float</em>) – square of the MLFriends radius</p></li>
+<li><p><strong>nnearby</strong> (<em>array of ints</em>) – The result will be written here.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="id36">
 <code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">make_eigvals_positive</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id36" title="Permalink to this definition">¶</a></dt>
 <dd><p>For the symmetric square matrix <code class="docutils literal notranslate"><span class="pre">a</span></code>, increase any zero eigenvalues
-to fulfill the given target product of eigenvalues.</p>
-<p>Returns a (possibly) new matrix.</p>
+to fulfill a target product of eigenvalues.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>a</strong> (<em>array</em>) – covariance matrix</p></li>
+<li><p><strong>targetprod</strong> (<em>array</em>) – target product of eigenvalues</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>covariance matrix</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="id37">
 <code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">update_clusters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id37" title="Permalink to this definition">¶</a></dt>
-<dd><p>Clusters <cite>upoints</cite>, so that clusters are distinct if no member pair is within a radius of sqrt(<cite>maxradiussq</cite>)</p>
-<p>clusterids are the cluster indices of each point
-clusterids re-uses the existing ids to assign new cluster ids</p>
-<p>clustering is performed on a transformed coordinate space (<cite>tpoints</cite>).
-Returned values are based on upoints.</p>
+<dd><p>Clusters <cite>upoints</cite>, so that clusters are distinct if no
+member pair is within a radius of sqrt(<cite>maxradiussq</cite>).</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><ul class="simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>upoints</strong> (<em>array</em>) – points (in u-space)</p></li>
+<li><p><strong>tpoints</strong> (<em>array</em>) – points (in t-space)</p></li>
+<li><p><strong>maxradiussq</strong> (<em>float</em>) – square of the MLFriends radius</p></li>
+<li><p><strong>clusterids</strong> (<em>array of ints</em><em> or </em><em>None</em>) – for each point, index of the associated cluster.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
 <li><p><strong>nclusters</strong> (<em>int</em>) – the number of clusters found, which is also clusterids.max()</p></li>
 <li><p><strong>new_clusterids</strong> (<em>array of int</em>) – the new clusterids for each point</p></li>
 <li><p><em>overlapped_points</em> – upoints with their cluster centers subtracted.</p></li>
+<li><p><em>The existing cluster ids are re-used when assigning new clusters,</em></p></li>
+<li><p><em>if possible.</em></p></li>
+<li><p>Clustering is performed on a transformed coordinate space (<cite>tpoints</cite>).</p></li>
+<li><p><em>Returned values are based on upoints.</em></p></li>
 </ul>
 </p>
 </dd>
@@ -1901,9 +2238,20 @@ Returned values are based on upoints.</p>
 <dl class="py function">
 <dt id="id38">
 <code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">vol_prefactor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id38" title="Permalink to this definition">¶</a></dt>
-<dd><p>Volume constant for an <cite>n</cite>-dimensional sphere.</p>
-<p>for <cite>n</cite> even:  $$    (2pi)^(n    /2) / (2 * 4 * … * n)$$
-for <cite>n</cite> odd :  $$2 * (2pi)^((n-1)/2) / (1 * 3 * … * n)$$</p>
+<dd><p>Volume constant for an <code class="docutils literal notranslate"><span class="pre">n</span></code>-dimensional sphere.</p>
+<p>for <code class="docutils literal notranslate"><span class="pre">n</span></code> even:  $$    (2pi)^(n    /2) / (2 * 4 * … * n)$$
+for <code class="docutils literal notranslate"><span class="pre">n</span></code> odd :  $$2 * (2pi)^((n-1)/2) / (1 * 3 * … * n)$$</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>n</strong> (<em>int</em>) – dimensionality</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>volume (float)</p>
+</dd>
+</dl>
 </dd></dl>
 
 </div>
@@ -2232,7 +2580,22 @@ without detection of a insertion order problem.</p>
 <dl class="py function">
 <dt id="ultranest.ordertest.infinite_U_zscore">
 <code class="sig-prename descclassname">ultranest.ordertest.</code><code class="sig-name descname">infinite_U_zscore</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sample</span></em>, <em class="sig-param"><span class="n">B</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/ordertest.html#infinite_U_zscore"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.ordertest.infinite_U_zscore" title="Permalink to this definition">¶</a></dt>
-<dd><p>z-score for <em>sample</em> of integers to be uniformly distributed between 0 and <em>B</em>.</p>
+<dd><p>Compute Mann-Whitney-Wilcoxon U test for a
+<em>sample</em> of integers to be uniformly distributed between 0 and <em>B</em>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>B</strong> (<em>int</em>) – maximum rank allowed.</p></li>
+<li><p><strong>sample</strong> (<em>array of integers</em>) – values between 0 and B (inclusive).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>z-score (float)</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py class">
@@ -2249,7 +2612,15 @@ without detection of a insertion order problem.</p>
 <dl class="py method">
 <dt id="ultranest.ordertest.UniformOrderAccumulator.add">
 <code class="sig-name descname">add</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">order</span></em>, <em class="sig-param"><span class="n">N</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/ordertest.html#UniformOrderAccumulator.add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.ordertest.UniformOrderAccumulator.add" title="Permalink to this definition">¶</a></dt>
-<dd><p>add order out of N to histogram.</p>
+<dd><p>Accumulate rank <em>order</em> (0 to N).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>N</strong> (<em>int</em>) – maximum rank allowed.</p></li>
+<li><p><strong>order</strong> (<em>int</em>) – rank between 0 and N (inclusive).</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -3021,14 +3392,28 @@ do not terminate at the same number of iterations.</p>
 <dt id="ultranest.stepsampler.generate_random_direction">
 <code class="sig-prename descclassname">ultranest.stepsampler.</code><code class="sig-name descname">generate_random_direction</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ui</span></em>, <em class="sig-param"><span class="n">region</span></em>, <em class="sig-param"><span class="n">scale</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#generate_random_direction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.generate_random_direction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Draw uniform direction vector in unit cube space of length <cite>scale</cite>.</p>
-<p>Region is not used.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>region</strong> (<em>MLFriends object</em>) – current region (not used)</p></li>
+<li><p><strong>scale</strong> (<em>float:</em>) – length of direction vector</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="ultranest.stepsampler.generate_cube_oriented_direction">
 <code class="sig-prename descclassname">ultranest.stepsampler.</code><code class="sig-name descname">generate_cube_oriented_direction</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ui</span></em>, <em class="sig-param"><span class="n">region</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#generate_cube_oriented_direction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.generate_cube_oriented_direction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Draw a unit direction vector in direction of a random unit cube axes.</p>
-<p><cite>region</cite> is not used.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>region</strong> (<em>MLFriends object</em>) – current region (not used)</p></li>
+<li><p><strong>scale</strong> (<em>float:</em>) – length of direction vector</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -3138,7 +3523,12 @@ between live points</p></li>
 <dl class="py method">
 <dt id="ultranest.stepsampler.StepSampler.adapt_nsteps">
 <code class="sig-name descname">adapt_nsteps</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">region</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#StepSampler.adapt_nsteps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.StepSampler.adapt_nsteps" title="Permalink to this definition">¶</a></dt>
-<dd><p>change nsteps</p>
+<dd><p>Adapt the number of steps.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>region</strong> (<em>MLFriends object</em>) – current region</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -3876,6 +4266,17 @@ Another way to sample according to weights would be:</p>
 <dt id="ultranest.utils.listify">
 <code class="sig-prename descclassname">ultranest.utils.</code><code class="sig-name descname">listify</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/utils.html#listify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.utils.listify" title="Permalink to this definition">¶</a></dt>
 <dd><p>concatenate args, which are (made to be) lists</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>args</strong> (<em>iterable</em>) – Lists to concatenate.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Concatenation of the lists in args.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">

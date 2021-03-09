@@ -365,7 +365,18 @@
 
 
 <div class="viewcode-block" id="listify"><a class="viewcode-back" href="../../ultranest.html#ultranest.utils.listify">[docs]</a><span class="k">def</span> <span class="nf">listify</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; concatenate args, which are (made to be) lists &quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    concatenate args, which are (made to be) lists</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    args: iterable</span>
+<span class="sd">        Lists to concatenate.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Concatenation of the lists in args.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
         <span class="n">out</span> <span class="o">+=</span> <span class="nb">list</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>

@@ -207,7 +207,21 @@
 
 
 <div class="viewcode-block" id="infinite_U_zscore"><a class="viewcode-back" href="../../ultranest.html#ultranest.ordertest.infinite_U_zscore">[docs]</a><span class="k">def</span> <span class="nf">infinite_U_zscore</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="n">B</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;z-score for *sample* of integers to be uniformly distributed between 0 and *B*. &quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute Mann-Whitney-Wilcoxon U test for a </span>
+<span class="sd">    *sample* of integers to be uniformly distributed between 0 and *B*.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    B: int</span>
+<span class="sd">        maximum rank allowed.</span>
+<span class="sd">    sample: array of integers</span>
+<span class="sd">        values between 0 and B (inclusive).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    z-score (float).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sample</span><span class="p">)</span>
     <span class="k">return</span> <span class="p">((</span><span class="n">sample</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">-</span> <span class="n">N</span> <span class="o">*</span> <span class="n">B</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">/</span> <span class="p">((</span><span class="n">N</span> <span class="o">/</span> <span class="mf">12.0</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">B</span><span class="p">)</span></div>
 
@@ -226,7 +240,16 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">U</span> <span class="o">=</span> <span class="mf">0.0</span></div>
 
 <div class="viewcode-block" id="UniformOrderAccumulator.add"><a class="viewcode-back" href="../../ultranest.html#ultranest.ordertest.UniformOrderAccumulator.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">N</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; add order out of N to histogram. &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Accumulate rank *order* (0 to N).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        N: int</span>
+<span class="sd">            maximum rank allowed.</span>
+<span class="sd">        order: int</span>
+<span class="sd">            rank between 0 and N (inclusive).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">order</span> <span class="o">&lt;=</span> <span class="n">N</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;order </span><span class="si">%d</span><span class="s2"> out of </span><span class="si">%d</span><span class="s2"> invalid&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">order</span><span class="p">,</span> <span class="n">N</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">U</span> <span class="o">+=</span> <span class="p">(</span><span class="n">order</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">/</span> <span class="n">N</span>

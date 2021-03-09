@@ -198,7 +198,12 @@
 <div class="viewcode-block" id="generate_random_direction"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.generate_random_direction">[docs]</a><span class="k">def</span> <span class="nf">generate_random_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Draw uniform direction vector in unit cube space of length `scale`.</span>
 
-<span class="sd">    Region is not used.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    region: MLFriends object</span>
+<span class="sd">        current region (not used)</span>
+<span class="sd">    scale: float:</span>
+<span class="sd">        length of direction vector</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">del</span> <span class="n">region</span>
     <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">ui</span><span class="p">))</span>
@@ -209,7 +214,12 @@
 <div class="viewcode-block" id="generate_cube_oriented_direction"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.generate_cube_oriented_direction">[docs]</a><span class="k">def</span> <span class="nf">generate_cube_oriented_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Draw a unit direction vector in direction of a random unit cube axes.</span>
 
-<span class="sd">    `region` is not used.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    region: MLFriends object</span>
+<span class="sd">        current region (not used)</span>
+<span class="sd">    scale: float:</span>
+<span class="sd">        length of direction vector</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">del</span> <span class="n">region</span>
     <span class="n">ndim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ui</span><span class="p">)</span>
@@ -457,7 +467,15 @@
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_scale</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_scale</span></div>
 
 <div class="viewcode-block" id="StepSampler.adapt_nsteps"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.StepSampler.adapt_nsteps">[docs]</a>    <span class="k">def</span> <span class="nf">adapt_nsteps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; change nsteps &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adapt the number of steps.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        -----------</span>
+<span class="sd">        region: MLFriends object</span>
+<span class="sd">            current region</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span><span class="p">:</span>
             <span class="k">return</span>
         <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">:</span>
