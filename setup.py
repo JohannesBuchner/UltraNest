@@ -24,7 +24,12 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = ['numpy', 'cython', 'matplotlib', 'corner']
+requirements = ['numpy', 
+                'cython', 
+                'matplotlib', 
+                'corner<=2.1.0; python_version <= "2.7"',
+                'corner; python_version > "3.0"',
+               ]
 
 setup_requirements = ['pytest-runner', ]
 
