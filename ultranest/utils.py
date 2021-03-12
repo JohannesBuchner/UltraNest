@@ -16,8 +16,22 @@ def create_logger(module_name, log_dir=None, level=logging.INFO):
     Append to ``debug.log`` in `log_dir` (if not ``None``).
     Write to stdout with output level `level`.
 
-    If logging handlers are already registered, no new handlers are
-    registered.
+    If logging handlers are already registered for this module,
+    no new handlers are registered.
+
+    Parameters
+    ----------
+    module_name: str
+        logger module
+    log_dir: str
+        directory to write debug.log file into
+    level: logging level
+        which level (and above) to log to stdout.
+
+    Returns
+    -------
+    logger:
+        logger instance
     """
     logger = logging.getLogger(str(module_name))
     first_logger = logger.handlers == []
@@ -68,8 +82,9 @@ def make_run_dir(log_dir, run_num=None, append_run_num=True):
 
     Returns
     -------
-    dictionary of folder paths for different purposes.
-    Keys are "run_dir" (the path), "info", "results", "chains", "plots".
+    folderpath: dict
+        dictionary of folder paths for different purposes.
+        Keys are "run_dir" (the path), "info", "results", "chains", "plots".
 
     """
     _makedirs(log_dir)
@@ -192,7 +207,8 @@ def listify(*args):
 
     Returns
     -------
-    Concatenation of the lists in args.
+    list:
+        Concatenation of the lists in args.
     """
     out = []
     for a in args:
@@ -248,6 +264,16 @@ def vol_prefactor(n):
 
     for `n` even:  $$    (2pi)^(n    /2) / (2 * 4 * ... * n)$$
     for `n` odd :  $$2 * (2pi)^((n-1)/2) / (1 * 3 * ... * n)$$
+
+    Parameters
+    ----------
+    n: int
+        Dimensionality
+
+    Returns
+    -------
+    Volume: float
+
     """
     if n % 2 == 0:
         f = 1.
@@ -269,6 +295,18 @@ def is_affine_transform(a, b):
     of another group of points *b*.
 
     The implementation currently returns False for rotations.
+
+    Parameters
+    ----------
+    a: array
+        transformed points
+    b: array
+        original points
+
+    Returns
+    -------
+    is_affine: bool
+
     """
     n, da = a.shape
     nb, db = b.shape
@@ -294,8 +332,25 @@ def normalised_kendall_tau_distance(values1, values2, i=None, j=None):
     
     see https://en.wikipedia.org/wiki/Kendall_tau_distance
 
-    You can optionally pass precomputed indices:
-    i, j = np.meshgrid(np.arange(N), np.arange(N))
+    You can optionally pass precomputed indices::
+
+        i, j = np.meshgrid(np.arange(N), np.arange(N))
+
+    Parameters
+    ----------
+    values1: array of ints
+        ranks
+    values2: array of ints
+        other ranks (same length as values1)
+    i: array of ints
+        2d indices selecting values1
+    j: array of ints
+        2d indices selecting values2
+
+    Returns
+    -------
+    distance: float
+
     """
     N = len(values1)
     assert len(values2) == N, "Both lists have to be of equal length"

@@ -37,7 +37,7 @@ def infinite_U_zscore(sample, B):
 
     Returns
     -------
-    z-score (float).
+    zscore: float
     """
     N = len(sample)
     return ((sample + 0.5).sum() - N * B * 0.5) / ((N / 12.0)**0.5 * B)

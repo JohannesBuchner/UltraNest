@@ -19,12 +19,13 @@ def generate_random_direction(ui, region, scale=1):
     -----------
     region: MLFriends object
         current region (not used)
-    scale: float:
+    scale: float
         length of direction vector
     
     Returns
     --------
-    new direction vector
+    v: array
+        new direction vector
     """
     del region
     v = np.random.normal(0, 1, size=len(ui))
@@ -42,7 +43,8 @@ def generate_cube_oriented_direction(ui, region):
 
     Returns
     --------
-    new direction vector
+    v: array
+        new direction vector
     """
     del region
     ndim = len(ui)
@@ -71,7 +73,8 @@ def generate_region_oriented_direction(ui, region, tscale=1, scale=None):
 
     Returns
     --------
-    new direction vector (in u-space)
+    v: array
+        new direction vector (in u-space)
     """
     ndim = len(ui)
     ti = region.transformLayer.transform(ui)
@@ -102,7 +105,8 @@ def generate_region_random_direction(ui, region, scale=1):
     
     Returns
     --------
-    new direction vector
+    v: array
+        new direction vector
     """
     ti_orig = region.transformLayer.transform(ui)
 
@@ -130,7 +134,8 @@ def generate_mixture_random_direction(ui, region, scale=1, uniform_weight=1e-6):
 
     Returns
     --------
-    new direction vector
+    v: array
+        new direction vector
     """
     v1 = generate_random_direction(ui, region)
     v1 /= (v1**2).sum()**0.5
@@ -171,7 +176,8 @@ def inside_region(region, unew, uold):
     
     Returns
     --------
-    boolean whether point is inside the region
+    v: array
+        boolean whether point is inside the region
     """
     del uold
     return region.inside(unew)
@@ -832,7 +838,8 @@ class RegionSliceSampler(CubeSliceSampler):
 
         Returns
         --------
-        new direction vector (in u-space)
+        v: array
+            new direction vector (in u-space)
         """
         return generate_region_oriented_direction(ui, region, tscale=self.scale, scale=None)
 
@@ -854,7 +861,8 @@ class RegionSequentialSliceSampler(CubeSliceSampler):
 
         Returns
         --------
-        new direction vector (in u-space)
+        v: array
+            new direction vector (in u-space)
         """
         ndim = len(ui)
         ti = region.transformLayer.transform(ui)
@@ -945,7 +953,8 @@ class SpeedVariableRegionSliceSampler(CubeSliceSampler):
 
         Returns
         --------
-        new direction vector
+        v: array
+            new direction vector
         """
         ndim = len(ui)
         ti = region.transformLayer.transform(ui)

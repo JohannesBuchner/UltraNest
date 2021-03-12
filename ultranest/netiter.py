@@ -41,9 +41,8 @@ class TreeNode(object):
             used to order nodes
         id: int
             refers to the order of discovery and storage (PointPile)
-        children: list of nodes
+        children: list of :class:TreeNode objects
             children nodes. if None, a empty list is used.
-
         """
         self.value = value
         self.id = id
@@ -91,9 +90,10 @@ class BreadthFirstIterator(object):
 
         Returns
         --------
-        None if done.
-        rootid, node, (active_nodes, active_root_ids, active_node_values, active_node_ids)
-        otherwise
+        tuple or None:
+            None if done.
+            `rootid, node, (active_nodes, active_root_ids, active_node_values, active_node_ids)`
+            otherwise
 
         """
         if self.active_nodes == []:
@@ -121,9 +121,15 @@ class BreadthFirstIterator(object):
         assert len(self.active_nodes) == len(self.active_node_values)
 
     def expand_children_of(self, rootid, node):
-        """Replace the current node with its children.
+        """Replace the current node with its children in the iterators
+        list of active nodes.
 
-        rootid and node have to come from the most recent call to next_node.
+        Parameters
+        ----------
+        rootid: int
+            index of the root returned by the most recent call to :pyfunc:BreadthFirstIterator.next_node
+        node: :pyclass:TreeNode
+            node returned by the most recent call to :pyfunc:BreadthFirstIterator.next_node
         """
         # print("replacing %.1f" % node.value, len(node.children))
         i = self.next_index
@@ -163,7 +169,13 @@ def _stringify_lanes(lanes, char='║'):
 
 
 def print_tree(roots, title='Tree:'):
-    """Print a pretty yet compact graphic of the tree."""
+    """Print a pretty yet compact graphic of the tree.
+
+    Parameters
+    ----------
+    roots: list of :pyclass:TreeNode
+        tree
+    """
     print()
     print(title)
     explorer = BreadthFirstIterator(roots)
@@ -206,7 +218,17 @@ def print_tree(roots, title='Tree:'):
 
 
 def dump_tree(filename, roots, pointpile):
-    """Write a copy of the tree to a HDF5 file."""
+    """Write a copy of the tree to a HDF5 file.
+
+    Parameters
+    ----------
+    filename: str
+        output filename
+    roots: list of :pyclass:TreeNode
+        tree to store
+    pointpile: :class:PointPile
+        information on the node points
+    """
     import h5py
 
     nodes_from_ids = []
@@ -235,7 +257,20 @@ def dump_tree(filename, roots, pointpile):
 
 
 def count_tree(roots):
-    """Return the maximum number of parallel edges and the total number of nodes."""
+    """Return the total number of nodes and maximum number of parallel edges.
+
+    Parameters
+    ----------
+    roots: list of :pyclass:TreeNode
+        tree
+
+    Returns
+    --------
+    count: int
+        total number of nodes
+    maxwidth: int
+        maximum number of active/parallel nodes encountered
+    """
     explorer = BreadthFirstIterator(roots)
     nnodes = 0
     maxwidth = 0
@@ -251,14 +286,24 @@ def count_tree(roots):
 
 
 def count_tree_between(roots, lo, hi):
-    """Build basic tree statistics.
+    """Return the total number of nodes and maximum number of parallel edges,
+    but only considering a interval of the tree.
+
+    Parameters
+    ----------
+    roots: list of :pyclass:TreeNode
+        tree
+    lo: float
+        lower value threshold
+    hi: float
+        upper value threshold
 
     Returns
     --------
     nnodes: int
-        the total number of nodes in the value interval lo .. hi (inclusive).
+        total number of nodes in the value interval lo .. hi (inclusive).
     maxwidth: int
-        the maximum number of parallel edges
+        maximum number of parallel edges
 
     """
     explorer = BreadthFirstIterator(roots)
@@ -284,9 +329,16 @@ def count_tree_between(roots, lo, hi):
 
 
 def find_nodes_before(root, value):
-    """Identify all nodes that have children above value.
+    """Identify all nodes that have children above *value*.
 
-    If a root child is above the value, its parent (root) is the leaf returned.
+    If a root child is above the value, its parent (*root*) is the leaf returned.
+
+    Parameters
+    ----------
+    root: :pyclass:TreeNode
+        tree
+    value: float
+        selection threshold
 
     Returns
     --------
@@ -332,7 +384,7 @@ def find_nodes_before(root, value):
 class PointPile(object):
     """A in-memory linearized storage of point coordinates.
 
-    TreeNodes only store the logL value and id,
+    :pyclass:TreeNodes only store the logL value and id,
     which is the index in the point pile. The point pile stores
     the point coordinates.
     """
@@ -358,7 +410,20 @@ class PointPile(object):
         self.pdim = pdim
 
     def add(self, newpointu, newpointp):
-        """Save point `newpointu` (cube) / `newpointp` (parameters)."""
+        """Save point.
+
+        Parameters
+        -----------
+        newpointu: array
+            point (in u-space)
+        newpointp: array
+            point (in p-space)
+
+        Returns
+        ---------
+        index: int
+            index of the new point in the pile
+        """
         if self.nrows >= self.us.shape[0]:
             self.us = np.concatenate((self.us, np.zeros((self.chunksize, self.udim))))
             self.ps = np.concatenate((self.ps, np.zeros((self.chunksize, self.pdim))))
@@ -378,7 +443,22 @@ class PointPile(object):
         return self.ps[i]
 
     def make_node(self, value, u, p):
-        """Save point `u` (cube) / `p` (parameters), return a tree node."""
+        """Store point in pile, and create a new tree node that points to it.
+
+        Parameters
+        -----------
+        value: float
+            value to store in node (loglikelihood)
+        u: array
+            point (in u-space)
+        p: array
+            point (in p-space)
+
+        Returns
+        ---------
+        node: :pyclass:TreeNode
+            node
+        """
         index = self.add(u, p)
         return TreeNode(value=value, id=index)
 
@@ -599,9 +679,9 @@ class MultiCounter(object):
 
         Parameters
         ----------
-        rootid: TreeNode
+        rootid: :pyclass:TreeNode
             root node this `node` is from.
-        node: TreeNode
+        node: :pyclass:TreeNode
             node being processed.
         rootids: array of ints
             for each parallel node, which root it belongs to.
@@ -731,7 +811,36 @@ class MultiCounter(object):
 
 
 def combine_results(saved_logl, saved_nodeids, pointpile, main_iterator, mpi_comm=None):
-    """Combine a sequence of likelihoods and nodes into a summary dictionary."""
+    """Combine a sequence of likelihoods and nodes into a summary dictionary.
+
+    Parameters
+    ----------
+    saved_logl: list of floats
+        loglikelihoods of dead points
+    saved_nodeids: list of ints
+        indices of dead points
+    pointpile: :pyclass:PointPile
+        Point pile.
+    main_iterator: :pyclass:BreadthFirstIterator
+        iterator used
+    mpi_comm:
+        MPI communicator object, or None if MPI is not used.
+    
+    Returns
+    --------
+    results: dict
+        All information of the run. Important keys:
+        Number of nested sampling iterations (niter), 
+        Evidence estimate (logz), 
+        Effective Sample Size (ess), 
+        H (information gain),
+        weighted samples (weighted_samples),
+        equally weighted samples (samples),
+        best-fit point information (maximum_likelihood),
+        posterior summaries (posterior).
+        The rank order test score (insertion_order_MWW_test) is
+        included if the iterator has it.
+    """
 
     assert np.shape(main_iterator.logweights) == (len(saved_logl), len(main_iterator.all_logZ)), (
         np.shape(main_iterator.logweights),
@@ -823,6 +932,40 @@ def logz_sequence(root, pointpile, nbootstraps=12, random=True, onNode=None, ver
     """Run MultiCounter through tree `root`.
 
     Keeps track of, and returns ``(logz, logzerr, logv, nlive)``.
+
+    Parameters
+    ----------
+    root: :pyclass:TreeNode
+        Tree
+    pointpile: :pyclass:PointPile
+        Point pile
+    nbootstraps: int
+        Number of independent iterators
+    random: bool
+        Whether to randomly draw volume estimates
+    onNode: function
+        Function to call for every node.
+        receives current node and the iterator
+    verbose: bool
+        Whether to show a progress indicator on stderr
+    check_insertion_order: bool
+        Whether to perform a rolling insertion order rank test
+
+    Returns
+    --------
+    results: dict
+        Run information, see :pyfunc:combine_results
+    sequence: dict
+        Each entry of the dictionary is results['niter'] long,
+        and contains the state of information at that iteration.
+        Important keys are:
+        Iteration number (niter),
+        Volume estimate (logvol), loglikelihood (logl), absolute logarithmic weight (logwt),
+        Relative weight (weights), point (samples),
+        Number of live points (nlive),
+        Evidence estimate (logz) and its uncertainty (logzerr),
+        Rank test score (insert_order).
+
     """
     roots = root.children
 
