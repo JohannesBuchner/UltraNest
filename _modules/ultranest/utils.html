@@ -199,8 +199,22 @@
 <span class="sd">    Append to ``debug.log`` in `log_dir` (if not ``None``).</span>
 <span class="sd">    Write to stdout with output level `level`.</span>
 
-<span class="sd">    If logging handlers are already registered, no new handlers are</span>
-<span class="sd">    registered.</span>
+<span class="sd">    If logging handlers are already registered for this module,</span>
+<span class="sd">    no new handlers are registered.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    module_name: str</span>
+<span class="sd">        logger module</span>
+<span class="sd">    log_dir: str</span>
+<span class="sd">        directory to write debug.log file into</span>
+<span class="sd">    level: logging level</span>
+<span class="sd">        which level (and above) to log to stdout.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    logger:</span>
+<span class="sd">        logger instance</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">module_name</span><span class="p">))</span>
     <span class="n">first_logger</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">handlers</span> <span class="o">==</span> <span class="p">[]</span>
@@ -251,8 +265,9 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    dictionary of folder paths for different purposes.</span>
-<span class="sd">    Keys are &quot;run_dir&quot; (the path), &quot;info&quot;, &quot;results&quot;, &quot;chains&quot;, &quot;plots&quot;.</span>
+<span class="sd">    folderpath: dict</span>
+<span class="sd">        dictionary of folder paths for different purposes.</span>
+<span class="sd">        Keys are &quot;run_dir&quot; (the path), &quot;info&quot;, &quot;results&quot;, &quot;chains&quot;, &quot;plots&quot;.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">_makedirs</span><span class="p">(</span><span class="n">log_dir</span><span class="p">)</span>
@@ -375,7 +390,8 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    Concatenation of the lists in args.</span>
+<span class="sd">    list:</span>
+<span class="sd">        Concatenation of the lists in args.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
@@ -431,6 +447,16 @@
 
 <span class="sd">    for `n` even:  $$    (2pi)^(n    /2) / (2 * 4 * ... * n)$$</span>
 <span class="sd">    for `n` odd :  $$2 * (2pi)^((n-1)/2) / (1 * 3 * ... * n)$$</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n: int</span>
+<span class="sd">        Dimensionality</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Volume: float</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">n</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">f</span> <span class="o">=</span> <span class="mf">1.</span>
@@ -452,6 +478,18 @@
 <span class="sd">    of another group of points *b*.</span>
 
 <span class="sd">    The implementation currently returns False for rotations.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    a: array</span>
+<span class="sd">        transformed points</span>
+<span class="sd">    b: array</span>
+<span class="sd">        original points</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    is_affine: bool</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">n</span><span class="p">,</span> <span class="n">da</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span>
     <span class="n">nb</span><span class="p">,</span> <span class="n">db</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">shape</span>
@@ -477,8 +515,25 @@
 <span class="sd">    </span>
 <span class="sd">    see https://en.wikipedia.org/wiki/Kendall_tau_distance</span>
 
-<span class="sd">    You can optionally pass precomputed indices:</span>
-<span class="sd">    i, j = np.meshgrid(np.arange(N), np.arange(N))</span>
+<span class="sd">    You can optionally pass precomputed indices::</span>
+
+<span class="sd">        i, j = np.meshgrid(np.arange(N), np.arange(N))</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    values1: array of ints</span>
+<span class="sd">        ranks</span>
+<span class="sd">    values2: array of ints</span>
+<span class="sd">        other ranks (same length as values1)</span>
+<span class="sd">    i: array of ints</span>
+<span class="sd">        2d indices selecting values1</span>
+<span class="sd">    j: array of ints</span>
+<span class="sd">        2d indices selecting values2</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    distance: float</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">values1</span><span class="p">)</span>
     <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">values2</span><span class="p">)</span> <span class="o">==</span> <span class="n">N</span><span class="p">,</span> <span class="s2">&quot;Both lists have to be of equal length&quot;</span>

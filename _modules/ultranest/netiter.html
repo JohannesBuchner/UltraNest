@@ -224,9 +224,8 @@
 <span class="sd">            used to order nodes</span>
 <span class="sd">        id: int</span>
 <span class="sd">            refers to the order of discovery and storage (PointPile)</span>
-<span class="sd">        children: list of nodes</span>
+<span class="sd">        children: list of :class:TreeNode objects</span>
 <span class="sd">            children nodes. if None, a empty list is used.</span>
-
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="nb">id</span>
@@ -274,9 +273,10 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        --------</span>
-<span class="sd">        None if done.</span>
-<span class="sd">        rootid, node, (active_nodes, active_root_ids, active_node_values, active_node_ids)</span>
-<span class="sd">        otherwise</span>
+<span class="sd">        tuple or None:</span>
+<span class="sd">            None if done.</span>
+<span class="sd">            `rootid, node, (active_nodes, active_root_ids, active_node_values, active_node_ids)`</span>
+<span class="sd">            otherwise</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">active_nodes</span> <span class="o">==</span> <span class="p">[]:</span>
@@ -304,9 +304,15 @@
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active_nodes</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active_node_values</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="BreadthFirstIterator.expand_children_of"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.BreadthFirstIterator.expand_children_of">[docs]</a>    <span class="k">def</span> <span class="nf">expand_children_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rootid</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Replace the current node with its children.</span>
+        <span class="sd">&quot;&quot;&quot;Replace the current node with its children in the iterators</span>
+<span class="sd">        list of active nodes.</span>
 
-<span class="sd">        rootid and node have to come from the most recent call to next_node.</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        rootid: int</span>
+<span class="sd">            index of the root returned by the most recent call to :pyfunc:BreadthFirstIterator.next_node</span>
+<span class="sd">        node: :pyclass:TreeNode</span>
+<span class="sd">            node returned by the most recent call to :pyfunc:BreadthFirstIterator.next_node</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># print(&quot;replacing %.1f&quot; % node.value, len(node.children))</span>
         <span class="n">i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_index</span>
@@ -346,7 +352,13 @@
 
 
 <div class="viewcode-block" id="print_tree"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.print_tree">[docs]</a><span class="k">def</span> <span class="nf">print_tree</span><span class="p">(</span><span class="n">roots</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Tree:&#39;</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Print a pretty yet compact graphic of the tree.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Print a pretty yet compact graphic of the tree.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    roots: list of :pyclass:TreeNode</span>
+<span class="sd">        tree</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="nb">print</span><span class="p">()</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
     <span class="n">explorer</span> <span class="o">=</span> <span class="n">BreadthFirstIterator</span><span class="p">(</span><span class="n">roots</span><span class="p">)</span>
@@ -389,7 +401,17 @@
 
 
 <div class="viewcode-block" id="dump_tree"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.dump_tree">[docs]</a><span class="k">def</span> <span class="nf">dump_tree</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">roots</span><span class="p">,</span> <span class="n">pointpile</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Write a copy of the tree to a HDF5 file.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Write a copy of the tree to a HDF5 file.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    filename: str</span>
+<span class="sd">        output filename</span>
+<span class="sd">    roots: list of :pyclass:TreeNode</span>
+<span class="sd">        tree to store</span>
+<span class="sd">    pointpile: :class:PointPile</span>
+<span class="sd">        information on the node points</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">import</span> <span class="nn">h5py</span>
 
     <span class="n">nodes_from_ids</span> <span class="o">=</span> <span class="p">[]</span>
@@ -418,7 +440,20 @@
 
 
 <div class="viewcode-block" id="count_tree"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.count_tree">[docs]</a><span class="k">def</span> <span class="nf">count_tree</span><span class="p">(</span><span class="n">roots</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Return the maximum number of parallel edges and the total number of nodes.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Return the total number of nodes and maximum number of parallel edges.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    roots: list of :pyclass:TreeNode</span>
+<span class="sd">        tree</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    --------</span>
+<span class="sd">    count: int</span>
+<span class="sd">        total number of nodes</span>
+<span class="sd">    maxwidth: int</span>
+<span class="sd">        maximum number of active/parallel nodes encountered</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">explorer</span> <span class="o">=</span> <span class="n">BreadthFirstIterator</span><span class="p">(</span><span class="n">roots</span><span class="p">)</span>
     <span class="n">nnodes</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">maxwidth</span> <span class="o">=</span> <span class="mi">0</span>
@@ -434,14 +469,24 @@
 
 
 <div class="viewcode-block" id="count_tree_between"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.count_tree_between">[docs]</a><span class="k">def</span> <span class="nf">count_tree_between</span><span class="p">(</span><span class="n">roots</span><span class="p">,</span> <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Build basic tree statistics.</span>
+    <span class="sd">&quot;&quot;&quot;Return the total number of nodes and maximum number of parallel edges,</span>
+<span class="sd">    but only considering a interval of the tree.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    roots: list of :pyclass:TreeNode</span>
+<span class="sd">        tree</span>
+<span class="sd">    lo: float</span>
+<span class="sd">        lower value threshold</span>
+<span class="sd">    hi: float</span>
+<span class="sd">        upper value threshold</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    --------</span>
 <span class="sd">    nnodes: int</span>
-<span class="sd">        the total number of nodes in the value interval lo .. hi (inclusive).</span>
+<span class="sd">        total number of nodes in the value interval lo .. hi (inclusive).</span>
 <span class="sd">    maxwidth: int</span>
-<span class="sd">        the maximum number of parallel edges</span>
+<span class="sd">        maximum number of parallel edges</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">explorer</span> <span class="o">=</span> <span class="n">BreadthFirstIterator</span><span class="p">(</span><span class="n">roots</span><span class="p">)</span>
@@ -467,9 +512,16 @@
 
 
 <div class="viewcode-block" id="find_nodes_before"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.find_nodes_before">[docs]</a><span class="k">def</span> <span class="nf">find_nodes_before</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Identify all nodes that have children above value.</span>
+    <span class="sd">&quot;&quot;&quot;Identify all nodes that have children above *value*.</span>
 
-<span class="sd">    If a root child is above the value, its parent (root) is the leaf returned.</span>
+<span class="sd">    If a root child is above the value, its parent (*root*) is the leaf returned.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    root: :pyclass:TreeNode</span>
+<span class="sd">        tree</span>
+<span class="sd">    value: float</span>
+<span class="sd">        selection threshold</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    --------</span>
@@ -515,7 +567,7 @@
 <div class="viewcode-block" id="PointPile"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.PointPile">[docs]</a><span class="k">class</span> <span class="nc">PointPile</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;A in-memory linearized storage of point coordinates.</span>
 
-<span class="sd">    TreeNodes only store the logL value and id,</span>
+<span class="sd">    :pyclass:TreeNodes only store the logL value and id,</span>
 <span class="sd">    which is the index in the point pile. The point pile stores</span>
 <span class="sd">    the point coordinates.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -541,7 +593,20 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">pdim</span> <span class="o">=</span> <span class="n">pdim</span>
 
 <div class="viewcode-block" id="PointPile.add"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.PointPile.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">newpointu</span><span class="p">,</span> <span class="n">newpointp</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Save point `newpointu` (cube) / `newpointp` (parameters).&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Save point.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        -----------</span>
+<span class="sd">        newpointu: array</span>
+<span class="sd">            point (in u-space)</span>
+<span class="sd">        newpointp: array</span>
+<span class="sd">            point (in p-space)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        ---------</span>
+<span class="sd">        index: int</span>
+<span class="sd">            index of the new point in the pile</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nrows</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">us</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">us</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">us</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">chunksize</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">udim</span><span class="p">))))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">ps</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">chunksize</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pdim</span><span class="p">))))</span>
@@ -561,7 +626,22 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ps</span><span class="p">[</span><span class="n">i</span><span class="p">]</span></div>
 
 <div class="viewcode-block" id="PointPile.make_node"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.PointPile.make_node">[docs]</a>    <span class="k">def</span> <span class="nf">make_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Save point `u` (cube) / `p` (parameters), return a tree node.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Store point in pile, and create a new tree node that points to it.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        -----------</span>
+<span class="sd">        value: float</span>
+<span class="sd">            value to store in node (loglikelihood)</span>
+<span class="sd">        u: array</span>
+<span class="sd">            point (in u-space)</span>
+<span class="sd">        p: array</span>
+<span class="sd">            point (in p-space)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        ---------</span>
+<span class="sd">        node: :pyclass:TreeNode</span>
+<span class="sd">            node</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">TreeNode</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="n">index</span><span class="p">)</span></div></div>
 
@@ -782,9 +862,9 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        rootid: TreeNode</span>
+<span class="sd">        rootid: :pyclass:TreeNode</span>
 <span class="sd">            root node this `node` is from.</span>
-<span class="sd">        node: TreeNode</span>
+<span class="sd">        node: :pyclass:TreeNode</span>
 <span class="sd">            node being processed.</span>
 <span class="sd">        rootids: array of ints</span>
 <span class="sd">            for each parallel node, which root it belongs to.</span>
@@ -914,7 +994,36 @@
 
 
 <div class="viewcode-block" id="combine_results"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.combine_results">[docs]</a><span class="k">def</span> <span class="nf">combine_results</span><span class="p">(</span><span class="n">saved_logl</span><span class="p">,</span> <span class="n">saved_nodeids</span><span class="p">,</span> <span class="n">pointpile</span><span class="p">,</span> <span class="n">main_iterator</span><span class="p">,</span> <span class="n">mpi_comm</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Combine a sequence of likelihoods and nodes into a summary dictionary.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Combine a sequence of likelihoods and nodes into a summary dictionary.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    saved_logl: list of floats</span>
+<span class="sd">        loglikelihoods of dead points</span>
+<span class="sd">    saved_nodeids: list of ints</span>
+<span class="sd">        indices of dead points</span>
+<span class="sd">    pointpile: :pyclass:PointPile</span>
+<span class="sd">        Point pile.</span>
+<span class="sd">    main_iterator: :pyclass:BreadthFirstIterator</span>
+<span class="sd">        iterator used</span>
+<span class="sd">    mpi_comm:</span>
+<span class="sd">        MPI communicator object, or None if MPI is not used.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    --------</span>
+<span class="sd">    results: dict</span>
+<span class="sd">        All information of the run. Important keys:</span>
+<span class="sd">        Number of nested sampling iterations (niter), </span>
+<span class="sd">        Evidence estimate (logz), </span>
+<span class="sd">        Effective Sample Size (ess), </span>
+<span class="sd">        H (information gain),</span>
+<span class="sd">        weighted samples (weighted_samples),</span>
+<span class="sd">        equally weighted samples (samples),</span>
+<span class="sd">        best-fit point information (maximum_likelihood),</span>
+<span class="sd">        posterior summaries (posterior).</span>
+<span class="sd">        The rank order test score (insertion_order_MWW_test) is</span>
+<span class="sd">        included if the iterator has it.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">main_iterator</span><span class="o">.</span><span class="n">logweights</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">saved_logl</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">main_iterator</span><span class="o">.</span><span class="n">all_logZ</span><span class="p">)),</span> <span class="p">(</span>
         <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">main_iterator</span><span class="o">.</span><span class="n">logweights</span><span class="p">),</span>
@@ -1006,6 +1115,40 @@
     <span class="sd">&quot;&quot;&quot;Run MultiCounter through tree `root`.</span>
 
 <span class="sd">    Keeps track of, and returns ``(logz, logzerr, logv, nlive)``.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    root: :pyclass:TreeNode</span>
+<span class="sd">        Tree</span>
+<span class="sd">    pointpile: :pyclass:PointPile</span>
+<span class="sd">        Point pile</span>
+<span class="sd">    nbootstraps: int</span>
+<span class="sd">        Number of independent iterators</span>
+<span class="sd">    random: bool</span>
+<span class="sd">        Whether to randomly draw volume estimates</span>
+<span class="sd">    onNode: function</span>
+<span class="sd">        Function to call for every node.</span>
+<span class="sd">        receives current node and the iterator</span>
+<span class="sd">    verbose: bool</span>
+<span class="sd">        Whether to show a progress indicator on stderr</span>
+<span class="sd">    check_insertion_order: bool</span>
+<span class="sd">        Whether to perform a rolling insertion order rank test</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    --------</span>
+<span class="sd">    results: dict</span>
+<span class="sd">        Run information, see :pyfunc:combine_results</span>
+<span class="sd">    sequence: dict</span>
+<span class="sd">        Each entry of the dictionary is results[&#39;niter&#39;] long,</span>
+<span class="sd">        and contains the state of information at that iteration.</span>
+<span class="sd">        Important keys are:</span>
+<span class="sd">        Iteration number (niter),</span>
+<span class="sd">        Volume estimate (logvol), loglikelihood (logl), absolute logarithmic weight (logwt),</span>
+<span class="sd">        Relative weight (weights), point (samples),</span>
+<span class="sd">        Number of live points (nlive),</span>
+<span class="sd">        Evidence estimate (logz) and its uncertainty (logzerr),</span>
+<span class="sd">        Rank test score (insert_order).</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">roots</span> <span class="o">=</span> <span class="n">root</span><span class="o">.</span><span class="n">children</span>
 

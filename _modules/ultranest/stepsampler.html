@@ -202,12 +202,13 @@
 <span class="sd">    -----------</span>
 <span class="sd">    region: MLFriends object</span>
 <span class="sd">        current region (not used)</span>
-<span class="sd">    scale: float:</span>
+<span class="sd">    scale: float</span>
 <span class="sd">        length of direction vector</span>
 <span class="sd">    </span>
 <span class="sd">    Returns</span>
 <span class="sd">    --------</span>
-<span class="sd">    new direction vector</span>
+<span class="sd">    v: array</span>
+<span class="sd">        new direction vector</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">del</span> <span class="n">region</span>
     <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">ui</span><span class="p">))</span>
@@ -225,7 +226,8 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    --------</span>
-<span class="sd">    new direction vector</span>
+<span class="sd">    v: array</span>
+<span class="sd">        new direction vector</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">del</span> <span class="n">region</span>
     <span class="n">ndim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ui</span><span class="p">)</span>
@@ -254,7 +256,8 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    --------</span>
-<span class="sd">    new direction vector (in u-space)</span>
+<span class="sd">    v: array</span>
+<span class="sd">        new direction vector (in u-space)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">ndim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ui</span><span class="p">)</span>
     <span class="n">ti</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">ui</span><span class="p">)</span>
@@ -285,7 +288,8 @@
 <span class="sd">    </span>
 <span class="sd">    Returns</span>
 <span class="sd">    --------</span>
-<span class="sd">    new direction vector</span>
+<span class="sd">    v: array</span>
+<span class="sd">        new direction vector</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">ti_orig</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">ui</span><span class="p">)</span>
 
@@ -313,7 +317,8 @@
 
 <span class="sd">    Returns</span>
 <span class="sd">    --------</span>
-<span class="sd">    new direction vector</span>
+<span class="sd">    v: array</span>
+<span class="sd">        new direction vector</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">v1</span> <span class="o">=</span> <span class="n">generate_random_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">)</span>
     <span class="n">v1</span> <span class="o">/=</span> <span class="p">(</span><span class="n">v1</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">**</span><span class="mf">0.5</span>
@@ -354,7 +359,8 @@
 <span class="sd">    </span>
 <span class="sd">    Returns</span>
 <span class="sd">    --------</span>
-<span class="sd">    boolean whether point is inside the region</span>
+<span class="sd">    v: array</span>
+<span class="sd">        boolean whether point is inside the region</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">del</span> <span class="n">uold</span>
     <span class="k">return</span> <span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">unew</span><span class="p">)</span></div>
@@ -1015,7 +1021,8 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        --------</span>
-<span class="sd">        new direction vector (in u-space)</span>
+<span class="sd">        v: array</span>
+<span class="sd">            new direction vector (in u-space)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">generate_region_oriented_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">tscale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></div></div>
 
@@ -1037,7 +1044,8 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        --------</span>
-<span class="sd">        new direction vector (in u-space)</span>
+<span class="sd">        v: array</span>
+<span class="sd">            new direction vector (in u-space)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">ndim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ui</span><span class="p">)</span>
         <span class="n">ti</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">ui</span><span class="p">)</span>
@@ -1128,7 +1136,8 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        --------</span>
-<span class="sd">        new direction vector</span>
+<span class="sd">        v: array</span>
+<span class="sd">            new direction vector</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">ndim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ui</span><span class="p">)</span>
         <span class="n">ti</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">ui</span><span class="p">)</span>

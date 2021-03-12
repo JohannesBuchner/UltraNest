@@ -2279,7 +2279,7 @@ can ignore the rootids it does not know about.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>value</strong> – used to order nodes</p></li>
 <li><p><strong>id</strong> (<em>int</em>) – refers to the order of discovery and storage (PointPile)</p></li>
-<li><p><strong>children</strong> (<em>list of nodes</em>) – children nodes. if None, a empty list is used.</p></li>
+<li><p><strong>children</strong> (<em>list of :class:TreeNode objects</em>) – children nodes. if None, a empty list is used.</p></li>
 </ul>
 </dd>
 </dl>
@@ -2306,12 +2306,12 @@ The number of edges passing the node “in parallel” are “active”.</p>
 <p>Does not remove the node from active set.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><ul class="simple">
-<li><p><em>None if done.</em></p></li>
-<li><p><em>rootid, node, (active_nodes, active_root_ids, active_node_values, active_node_ids)</em></p></li>
-<li><p><em>otherwise</em></p></li>
-</ul>
-</p>
+<dd class="field-odd"><p>None if done.
+<cite>rootid, node, (active_nodes, active_root_ids, active_node_values, active_node_ids)</cite>
+otherwise</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>tuple or None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2325,8 +2325,16 @@ The number of edges passing the node “in parallel” are “active”.</p>
 <dl class="py method">
 <dt id="ultranest.netiter.BreadthFirstIterator.expand_children_of">
 <code class="sig-name descname">expand_children_of</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rootid</span></em>, <em class="sig-param"><span class="n">node</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/netiter.html#BreadthFirstIterator.expand_children_of"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.netiter.BreadthFirstIterator.expand_children_of" title="Permalink to this definition">¶</a></dt>
-<dd><p>Replace the current node with its children.</p>
-<p>rootid and node have to come from the most recent call to next_node.</p>
+<dd><p>Replace the current node with its children in the iterators
+list of active nodes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rootid</strong> (<em>int</em>) – index of the root returned by the most recent call to :pyfunc:BreadthFirstIterator.next_node</p></li>
+<li><p><strong>node</strong> (<em>:pyclass:TreeNode</em>) – node returned by the most recent call to :pyfunc:BreadthFirstIterator.next_node</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -2335,29 +2343,63 @@ The number of edges passing the node “in parallel” are “active”.</p>
 <dt id="ultranest.netiter.print_tree">
 <code class="sig-prename descclassname">ultranest.netiter.</code><code class="sig-name descname">print_tree</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">roots</span></em>, <em class="sig-param"><span class="n">title</span><span class="o">=</span><span class="default_value">'Tree:'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/netiter.html#print_tree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.netiter.print_tree" title="Permalink to this definition">¶</a></dt>
 <dd><p>Print a pretty yet compact graphic of the tree.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>roots</strong> (<em>list of :pyclass:TreeNode</em>) – tree</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="ultranest.netiter.dump_tree">
 <code class="sig-prename descclassname">ultranest.netiter.</code><code class="sig-name descname">dump_tree</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em>, <em class="sig-param"><span class="n">roots</span></em>, <em class="sig-param"><span class="n">pointpile</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/netiter.html#dump_tree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.netiter.dump_tree" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write a copy of the tree to a HDF5 file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> (<em>str</em>) – output filename</p></li>
+<li><p><strong>roots</strong> (<em>list of :pyclass:TreeNode</em>) – tree to store</p></li>
+<li><p><strong>pointpile</strong> (<em>:class:PointPile</em>) – information on the node points</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="ultranest.netiter.count_tree">
 <code class="sig-prename descclassname">ultranest.netiter.</code><code class="sig-name descname">count_tree</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">roots</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/netiter.html#count_tree"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.netiter.count_tree" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the maximum number of parallel edges and the total number of nodes.</p>
+<dd><p>Return the total number of nodes and maximum number of parallel edges.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>roots</strong> (<em>list of :pyclass:TreeNode</em>) – tree</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>count</strong> (<em>int</em>) – total number of nodes</p></li>
+<li><p><strong>maxwidth</strong> (<em>int</em>) – maximum number of active/parallel nodes encountered</p></li>
+</ul>
+</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="ultranest.netiter.count_tree_between">
 <code class="sig-prename descclassname">ultranest.netiter.</code><code class="sig-name descname">count_tree_between</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">roots</span></em>, <em class="sig-param"><span class="n">lo</span></em>, <em class="sig-param"><span class="n">hi</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/netiter.html#count_tree_between"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.netiter.count_tree_between" title="Permalink to this definition">¶</a></dt>
-<dd><p>Build basic tree statistics.</p>
+<dd><p>Return the total number of nodes and maximum number of parallel edges,
+but only considering a interval of the tree.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><ul class="simple">
-<li><p><strong>nnodes</strong> (<em>int</em>) – the total number of nodes in the value interval lo .. hi (inclusive).</p></li>
-<li><p><strong>maxwidth</strong> (<em>int</em>) – the maximum number of parallel edges</p></li>
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>roots</strong> (<em>list of :pyclass:TreeNode</em>) – tree</p></li>
+<li><p><strong>lo</strong> (<em>float</em>) – lower value threshold</p></li>
+<li><p><strong>hi</strong> (<em>float</em>) – upper value threshold</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>nnodes</strong> (<em>int</em>) – total number of nodes in the value interval lo .. hi (inclusive).</p></li>
+<li><p><strong>maxwidth</strong> (<em>int</em>) – maximum number of parallel edges</p></li>
 </ul>
 </p>
 </dd>
@@ -2367,11 +2409,17 @@ The number of edges passing the node “in parallel” are “active”.</p>
 <dl class="py function">
 <dt id="ultranest.netiter.find_nodes_before">
 <code class="sig-prename descclassname">ultranest.netiter.</code><code class="sig-name descname">find_nodes_before</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">root</span></em>, <em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/netiter.html#find_nodes_before"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.netiter.find_nodes_before" title="Permalink to this definition">¶</a></dt>
-<dd><p>Identify all nodes that have children above value.</p>
-<p>If a root child is above the value, its parent (root) is the leaf returned.</p>
+<dd><p>Identify all nodes that have children above <em>value</em>.</p>
+<p>If a root child is above the value, its parent (<em>root</em>) is the leaf returned.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><ul class="simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>root</strong> (<em>:pyclass:TreeNode</em>) – tree</p></li>
+<li><p><strong>value</strong> (<em>float</em>) – selection threshold</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
 <li><p><strong>list_of_parents</strong> (<em>list of nodes</em>) – parents</p></li>
 <li><p><strong>list_of_nforks</strong> (<em>list of floats</em>) – The list of number of forks experienced is:
 1 if direct descendent of one of the root node’s children,
@@ -2388,7 +2436,7 @@ where no node had more than one child.
 <em class="property">class </em><code class="sig-prename descclassname">ultranest.netiter.</code><code class="sig-name descname">PointPile</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">udim</span></em>, <em class="sig-param"><span class="n">pdim</span></em>, <em class="sig-param"><span class="n">chunksize</span><span class="o">=</span><span class="default_value">1000</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/netiter.html#PointPile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.netiter.PointPile" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>A in-memory linearized storage of point coordinates.</p>
-<p>TreeNodes only store the logL value and id,
+<p>:pyclass:TreeNodes only store the logL value and id,
 which is the index in the point pile. The point pile stores
 the point coordinates.</p>
 <p>Set up point pile.</p>
@@ -2404,7 +2452,21 @@ the point coordinates.</p>
 <dl class="py method">
 <dt id="ultranest.netiter.PointPile.add">
 <code class="sig-name descname">add</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">newpointu</span></em>, <em class="sig-param"><span class="n">newpointp</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/netiter.html#PointPile.add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.netiter.PointPile.add" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save point <cite>newpointu</cite> (cube) / <cite>newpointp</cite> (parameters).</p>
+<dd><p>Save point.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>newpointu</strong> (<em>array</em>) – point (in u-space)</p></li>
+<li><p><strong>newpointp</strong> (<em>array</em>) – point (in p-space)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>index</strong> – index of the new point in the pile</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -2422,7 +2484,22 @@ the point coordinates.</p>
 <dl class="py method">
 <dt id="ultranest.netiter.PointPile.make_node">
 <code class="sig-name descname">make_node</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em>, <em class="sig-param"><span class="n">u</span></em>, <em class="sig-param"><span class="n">p</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/netiter.html#PointPile.make_node"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.netiter.PointPile.make_node" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save point <cite>u</cite> (cube) / <cite>p</cite> (parameters), return a tree node.</p>
+<dd><p>Store point in pile, and create a new tree node that points to it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>value</strong> (<em>float</em>) – value to store in node (loglikelihood)</p></li>
+<li><p><strong>u</strong> (<em>array</em>) – point (in u-space)</p></li>
+<li><p><strong>p</strong> (<em>array</em>) – point (in p-space)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>node</strong> – node</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>:pyclass:TreeNode</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -2538,8 +2615,8 @@ should accumulate.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>rootid</strong> (<a class="reference internal" href="#ultranest.netiter.TreeNode" title="ultranest.netiter.TreeNode"><em>TreeNode</em></a>) – root node this <cite>node</cite> is from.</p></li>
-<li><p><strong>node</strong> (<a class="reference internal" href="#ultranest.netiter.TreeNode" title="ultranest.netiter.TreeNode"><em>TreeNode</em></a>) – node being processed.</p></li>
+<li><p><strong>rootid</strong> (<em>:pyclass:TreeNode</em>) – root node this <cite>node</cite> is from.</p></li>
+<li><p><strong>node</strong> (<em>:pyclass:TreeNode</em>) – node being processed.</p></li>
 <li><p><strong>rootids</strong> (<em>array of ints</em>) – for each parallel node, which root it belongs to.</p></li>
 <li><p><strong>parallel_values</strong> (<em>float array</em>) – loglikelihood values of nodes passing <cite>node</cite>.</p></li>
 </ul>
@@ -2553,6 +2630,33 @@ should accumulate.</p>
 <dt id="ultranest.netiter.combine_results">
 <code class="sig-prename descclassname">ultranest.netiter.</code><code class="sig-name descname">combine_results</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">saved_logl</span></em>, <em class="sig-param"><span class="n">saved_nodeids</span></em>, <em class="sig-param"><span class="n">pointpile</span></em>, <em class="sig-param"><span class="n">main_iterator</span></em>, <em class="sig-param"><span class="n">mpi_comm</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/netiter.html#combine_results"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.netiter.combine_results" title="Permalink to this definition">¶</a></dt>
 <dd><p>Combine a sequence of likelihoods and nodes into a summary dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>saved_logl</strong> (<em>list of floats</em>) – loglikelihoods of dead points</p></li>
+<li><p><strong>saved_nodeids</strong> (<em>list of ints</em>) – indices of dead points</p></li>
+<li><p><strong>pointpile</strong> (<em>:pyclass:PointPile</em>) – Point pile.</p></li>
+<li><p><strong>main_iterator</strong> (<em>:pyclass:BreadthFirstIterator</em>) – iterator used</p></li>
+<li><p><strong>mpi_comm</strong> – MPI communicator object, or None if MPI is not used.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>results</strong> – All information of the run. Important keys:
+Number of nested sampling iterations (niter),
+Evidence estimate (logz),
+Effective Sample Size (ess),
+H (information gain),
+weighted samples (weighted_samples),
+equally weighted samples (samples),
+best-fit point information (maximum_likelihood),
+posterior summaries (posterior).
+The rank order test score (insertion_order_MWW_test) is
+included if the iterator has it.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -2560,6 +2664,35 @@ should accumulate.</p>
 <code class="sig-prename descclassname">ultranest.netiter.</code><code class="sig-name descname">logz_sequence</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">root</span></em>, <em class="sig-param"><span class="n">pointpile</span></em>, <em class="sig-param"><span class="n">nbootstraps</span><span class="o">=</span><span class="default_value">12</span></em>, <em class="sig-param"><span class="n">random</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">onNode</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">check_insertion_order</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/netiter.html#logz_sequence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.netiter.logz_sequence" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run MultiCounter through tree <cite>root</cite>.</p>
 <p>Keeps track of, and returns <code class="docutils literal notranslate"><span class="pre">(logz,</span> <span class="pre">logzerr,</span> <span class="pre">logv,</span> <span class="pre">nlive)</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>root</strong> (<em>:pyclass:TreeNode</em>) – Tree</p></li>
+<li><p><strong>pointpile</strong> (<em>:pyclass:PointPile</em>) – Point pile</p></li>
+<li><p><strong>nbootstraps</strong> (<em>int</em>) – Number of independent iterators</p></li>
+<li><p><strong>random</strong> (<em>bool</em>) – Whether to randomly draw volume estimates</p></li>
+<li><p><strong>onNode</strong> (<em>function</em>) – Function to call for every node.
+receives current node and the iterator</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em>) – Whether to show a progress indicator on stderr</p></li>
+<li><p><strong>check_insertion_order</strong> (<em>bool</em>) – Whether to perform a rolling insertion order rank test</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>results</strong> (<em>dict</em>) – Run information, see :pyfunc:combine_results</p></li>
+<li><p><strong>sequence</strong> (<em>dict</em>) – Each entry of the dictionary is results[‘niter’] long,
+and contains the state of information at that iteration.
+Important keys are:
+Iteration number (niter),
+Volume estimate (logvol), loglikelihood (logl), absolute logarithmic weight (logwt),
+Relative weight (weights), point (samples),
+Number of live points (nlive),
+Evidence estimate (logz) and its uncertainty (logzerr),
+Rank test score (insert_order).</p></li>
+</ul>
+</p>
+</dd>
+</dl>
 </dd></dl>
 
 </div>
@@ -2590,10 +2723,10 @@ without detection of a insertion order problem.</p>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p><strong>zscore</strong></p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>z-score (float)</p>
+<dd class="field-odd"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
@@ -3396,14 +3529,14 @@ do not terminate at the same number of iterations.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>region</strong> (<em>MLFriends object</em>) – current region (not used)</p></li>
-<li><p><strong>scale</strong> (<em>float:</em>) – length of direction vector</p></li>
+<li><p><strong>scale</strong> (<em>float</em>) – length of direction vector</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p><strong>v</strong> – new direction vector</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>new direction vector</p>
+<dd class="field-odd"><p>array</p>
 </dd>
 </dl>
 </dd></dl>
@@ -3417,10 +3550,10 @@ do not terminate at the same number of iterations.</p>
 <dd class="field-odd"><p><strong>region</strong> (<em>MLFriends object</em>) – current region (not used)</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p><strong>v</strong> – new direction vector</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>new direction vector</p>
+<dd class="field-odd"><p>array</p>
 </dd>
 </dl>
 </dd></dl>
@@ -3440,10 +3573,10 @@ If not, the vector length in transformed space is <cite>tscale</cite>.</p>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p><strong>v</strong> – new direction vector (in u-space)</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>new direction vector (in u-space)</p>
+<dd class="field-odd"><p>array</p>
 </dd>
 </dl>
 </dd></dl>
@@ -3461,10 +3594,10 @@ If not, the vector length in transformed space is <cite>tscale</cite>.</p>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p><strong>v</strong> – new direction vector</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>new direction vector</p>
+<dd class="field-odd"><p>array</p>
 </dd>
 </dl>
 </dd></dl>
@@ -3482,10 +3615,10 @@ If not, the vector length in transformed space is <cite>tscale</cite>.</p>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p><strong>v</strong> – new direction vector</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>new direction vector</p>
+<dd class="field-odd"><p>array</p>
 </dd>
 </dl>
 </dd></dl>
@@ -3503,10 +3636,10 @@ If not, the vector length in transformed space is <cite>tscale</cite>.</p>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p><strong>v</strong> – boolean whether point is inside the region</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>boolean whether point is inside the region</p>
+<dd class="field-odd"><p>array</p>
 </dd>
 </dl>
 </dd></dl>
@@ -3902,10 +4035,10 @@ between live points</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p><strong>v</strong> – new direction vector (in u-space)</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>new direction vector (in u-space)</p>
+<dd class="field-odd"><p>array</p>
 </dd>
 </dl>
 </dd></dl>
@@ -3968,10 +4101,10 @@ between live points</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p><strong>v</strong> – new direction vector (in u-space)</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>new direction vector (in u-space)</p>
+<dd class="field-odd"><p>array</p>
 </dd>
 </dl>
 </dd></dl>
@@ -4029,14 +4162,14 @@ between live points</p></li>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>region</strong> (<em>MLFriends object</em>) – current region (not used)</p></li>
-<li><p><strong>scale</strong> (<em>float:</em>) – length of direction vector</p></li>
+<li><p><strong>scale</strong> (<em>float</em>) – length of direction vector</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p><strong>v</strong> – new direction vector</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>new direction vector</p>
+<dd class="field-odd"><p>array</p>
 </dd>
 </dl>
 </dd></dl>
@@ -4099,10 +4232,10 @@ between live points</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p><strong>v</strong> – new direction vector</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>new direction vector</p>
+<dd class="field-odd"><p>array</p>
 </dd>
 </dl>
 </dd></dl>
@@ -4157,10 +4290,10 @@ Three steps are made until the point is considered independent.</p>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p><strong>v</strong> – new direction vector</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>new direction vector</p>
+<dd class="field-odd"><p>array</p>
 </dd>
 </dl>
 </dd></dl>
@@ -4425,8 +4558,23 @@ h5_file_args are passed on to hdf5.File.</p>
 <dd><p>Set up the logging channel <cite>module_name</cite>.</p>
 <p>Append to <code class="docutils literal notranslate"><span class="pre">debug.log</span></code> in <cite>log_dir</cite> (if not <code class="docutils literal notranslate"><span class="pre">None</span></code>).
 Write to stdout with output level <cite>level</cite>.</p>
-<p>If logging handlers are already registered, no new handlers are
-registered.</p>
+<p>If logging handlers are already registered for this module,
+no new handlers are registered.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>module_name</strong> (<em>str</em>) – logger module</p></li>
+<li><p><strong>log_dir</strong> (<em>str</em>) – directory to write debug.log file into</p></li>
+<li><p><strong>level</strong> (<em>logging level</em>) – which level (and above) to log to stdout.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>logger instance</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>logger</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -4442,11 +4590,11 @@ registered.</p>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><em>dictionary of folder paths for different purposes.</em></p></li>
-<li><p><em>Keys are “run_dir” (the path), “info”, “results”, “chains”, “plots”.</em></p></li>
-</ul>
-</p>
+<dd class="field-even"><p><strong>folderpath</strong> – dictionary of folder paths for different purposes.
+Keys are “run_dir” (the path), “info”, “results”, “chains”, “plots”.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>
@@ -4509,10 +4657,10 @@ Another way to sample according to weights would be:</p>
 <dd class="field-odd"><p><strong>args</strong> (<em>iterable</em>) – Lists to concatenate.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
+<dd class="field-even"><p>Concatenation of the lists in args.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>Concatenation of the lists in args.</p>
+<dd class="field-odd"><p>list</p>
 </dd>
 </dl>
 </dd></dl>
@@ -4544,6 +4692,17 @@ Another way to sample according to weights would be:</p>
 <dd><p>Volume constant for an <cite>n</cite>-dimensional sphere.</p>
 <p>for <cite>n</cite> even:  $$    (2pi)^(n    /2) / (2 * 4 * … * n)$$
 for <cite>n</cite> odd :  $$2 * (2pi)^((n-1)/2) / (1 * 3 * … * n)$$</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>n</strong> (<em>int</em>) – Dimensionality</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>Volume</strong></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -4552,6 +4711,20 @@ for <cite>n</cite> odd :  $$2 * (2pi)^((n-1)/2) / (1 * 3 * … * n)$$</p>
 <dd><p>checks if one group of points <em>a</em> is an affine transform
 of another group of points <em>b</em>.</p>
 <p>The implementation currently returns False for rotations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>a</strong> (<em>array</em>) – transformed points</p></li>
+<li><p><strong>b</strong> (<em>array</em>) – original points</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>is_affine</strong></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -4560,8 +4733,26 @@ of another group of points <em>b</em>.</p>
 <dd><p>Normalised Kendall tau distance between two arrays,
 <em>values1</em> and <em>values2</em>, both of length N.</p>
 <p>see <a class="reference external" href="https://en.wikipedia.org/wiki/Kendall_tau_distance">https://en.wikipedia.org/wiki/Kendall_tau_distance</a></p>
-<p>You can optionally pass precomputed indices:
-i, j = np.meshgrid(np.arange(N), np.arange(N))</p>
+<p>You can optionally pass precomputed indices:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">N</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">N</span><span class="p">))</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>values1</strong> (<em>array of ints</em>) – ranks</p></li>
+<li><p><strong>values2</strong> (<em>array of ints</em>) – other ranks (same length as values1)</p></li>
+<li><p><strong>i</strong> (<em>array of ints</em>) – 2d indices selecting values1</p></li>
+<li><p><strong>j</strong> (<em>array of ints</em>) – 2d indices selecting values2</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>distance</strong></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
