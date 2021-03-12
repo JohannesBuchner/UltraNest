@@ -211,7 +211,22 @@
 
 
 <span class="k">def</span> <span class="nf">_get_cumsum_range</span><span class="p">(</span><span class="n">pi</span><span class="p">,</span> <span class="n">dp</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;From probabilities pi compute the quantile indices of `dp` and ``1-dp``.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Compute quantile indices from probabilities.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ------------</span>
+<span class="sd">    pi: array</span>
+<span class="sd">        probability of each item.</span>
+<span class="sd">    dp: float</span>
+<span class="sd">        Quantile (between 0 and 0.5).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    ---------</span>
+<span class="sd">    index_lo: int</span>
+<span class="sd">        Index of the item corresponding to quantile ``dp``.</span>
+<span class="sd">    index_hi: int</span>
+<span class="sd">        Index of the item corresponding to quantile ``1-dp``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">ci</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()</span>
     <span class="n">ilo</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">ci</span> <span class="o">&gt;</span> <span class="n">dp</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">ilo</span> <span class="o">=</span> <span class="n">ilo</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ilo</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span>

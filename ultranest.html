@@ -3399,6 +3399,12 @@ do not terminate at the same number of iterations.</p>
 <li><p><strong>scale</strong> (<em>float:</em>) – length of direction vector</p></li>
 </ul>
 </dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>new direction vector</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -3408,10 +3414,13 @@ do not terminate at the same number of iterations.</p>
 <dd><p>Draw a unit direction vector in direction of a random unit cube axes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>region</strong> (<em>MLFriends object</em>) – current region (not used)</p></li>
-<li><p><strong>scale</strong> (<em>float:</em>) – length of direction vector</p></li>
-</ul>
+<dd class="field-odd"><p><strong>region</strong> (<em>MLFriends object</em>) – current region (not used)</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>new direction vector</p>
 </dd>
 </dl>
 </dd></dl>
@@ -3420,8 +3429,23 @@ do not terminate at the same number of iterations.</p>
 <dt id="ultranest.stepsampler.generate_region_oriented_direction">
 <code class="sig-prename descclassname">ultranest.stepsampler.</code><code class="sig-name descname">generate_region_oriented_direction</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ui</span></em>, <em class="sig-param"><span class="n">region</span></em>, <em class="sig-param"><span class="n">tscale</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">scale</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#generate_region_oriented_direction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.generate_region_oriented_direction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Draw a random direction vector in direction of one of the <cite>region</cite> axes.</p>
-<p>The vector length is <cite>scale</cite> (if given).
+<p>If given, the vector length is <cite>scale</cite>.
 If not, the vector length in transformed space is <cite>tscale</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>region</strong> (<em>MLFriends object</em>) – current region</p></li>
+<li><p><strong>scale</strong> (<em>float</em>) – length of direction vector in u-space</p></li>
+<li><p><strong>tscale</strong> (<em>float</em>) – length of direction vector in t-space</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>new direction vector (in u-space)</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -3429,6 +3453,20 @@ If not, the vector length in transformed space is <cite>tscale</cite>.</p>
 <code class="sig-prename descclassname">ultranest.stepsampler.</code><code class="sig-name descname">generate_region_random_direction</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ui</span></em>, <em class="sig-param"><span class="n">region</span></em>, <em class="sig-param"><span class="n">scale</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#generate_region_random_direction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.generate_region_random_direction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Draw a direction vector in a random direction of the region.</p>
 <p>The vector length is <cite>scale</cite> (in unit cube space).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>region</strong> (<em>MLFriends object</em>) – current region</p></li>
+<li><p><strong>scale</strong> (<em>float:</em>) – length of direction vector</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>new direction vector</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -3443,6 +3481,12 @@ If not, the vector length in transformed space is <cite>tscale</cite>.</p>
 <li><p><strong>scale</strong> (<em>float</em>) – length of the vector.</p></li>
 </ul>
 </dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>new direction vector</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -3450,6 +3494,21 @@ If not, the vector length in transformed space is <cite>tscale</cite>.</p>
 <dt id="ultranest.stepsampler.inside_region">
 <code class="sig-prename descclassname">ultranest.stepsampler.</code><code class="sig-name descname">inside_region</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">region</span></em>, <em class="sig-param"><span class="n">unew</span></em>, <em class="sig-param"><span class="n">uold</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#inside_region"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.inside_region" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check if <cite>unew</cite> is inside region.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>region</strong> (<em>MLFriends object</em>) – current region</p></li>
+<li><p><strong>unew</strong> (<em>array</em>) – point to check</p></li>
+<li><p><strong>uold</strong> (<em>array</em>) – not used</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>boolean whether point is inside the region</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py class">
@@ -3500,24 +3559,41 @@ between live points</p></li>
 <dt id="ultranest.stepsampler.StepSampler.plot">
 <code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#StepSampler.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.StepSampler.plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot sampler statistics.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>str</em>) – Stores plot into <code class="docutils literal notranslate"><span class="pre">filename</span></code> and data into
+<code class="docutils literal notranslate"><span class="pre">filename</span> <span class="pre">+</span> <span class="pre">&quot;.txt.gz&quot;</span></code>.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="ultranest.stepsampler.StepSampler.move">
 <code class="sig-name descname">move</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ui</span></em>, <em class="sig-param"><span class="n">region</span></em>, <em class="sig-param"><span class="n">ndraw</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">plot</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#StepSampler.move"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.StepSampler.move" title="Permalink to this definition">¶</a></dt>
-<dd><p>Move around ui. Stub to be implemented.</p>
+<dd><p>Move around point <code class="docutils literal notranslate"><span class="pre">ui</span></code>. Stub to be implemented by child classes.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="ultranest.stepsampler.StepSampler.adjust_outside_region">
 <code class="sig-name descname">adjust_outside_region</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#StepSampler.adjust_outside_region"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.StepSampler.adjust_outside_region" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adjust proposal given that we landed outside region.</p>
+<dd><p>Adjust proposal, given that we landed outside region.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt id="ultranest.stepsampler.StepSampler.adjust_accept">
 <code class="sig-name descname">adjust_accept</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">accepted</span></em>, <em class="sig-param"><span class="n">unew</span></em>, <em class="sig-param"><span class="n">pnew</span></em>, <em class="sig-param"><span class="n">Lnew</span></em>, <em class="sig-param"><span class="n">nc</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#StepSampler.adjust_accept"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.StepSampler.adjust_accept" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adjust proposal given that we have been <cite>accepted</cite> at a new point after <cite>nc</cite> calls.</p>
+<dd><p>Adjust proposal, given that a new point was found after <cite>nc</cite> calls.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>accepted</strong> (<em>bool</em>) – Whether the most recent proposal was accepted</p></li>
+<li><p><strong>unew</strong> (<em>array</em>) – new point (in u-space)</p></li>
+<li><p><strong>pnew</strong> (<em>array</em>) – new point (in p-space)</p></li>
+<li><p><strong>Lnew</strong> (<em>float</em>) – loglikelihood of new point</p></li>
+<li><p><strong>nc</strong> (<em>int</em>) – number of likelihood function calls used.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -3535,6 +3611,15 @@ between live points</p></li>
 <dt id="ultranest.stepsampler.StepSampler.finalize_chain">
 <code class="sig-name descname">finalize_chain</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">region</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">Lmin</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">Ls</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#StepSampler.finalize_chain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.StepSampler.finalize_chain" title="Permalink to this definition">¶</a></dt>
 <dd><p>Store chain statistics and adapt proposal.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>region</strong> (<em>MLFriends object</em>) – current region</p></li>
+<li><p><strong>Lmin</strong> (<em>float</em>) – current loglikelihood threshold</p></li>
+<li><p><strong>Ls</strong> (<em>array</em>) – loglikelihood values of the live points</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -3547,6 +3632,14 @@ between live points</p></li>
 <dt id="ultranest.stepsampler.StepSampler.region_changed">
 <code class="sig-name descname">region_changed</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">Ls</span></em>, <em class="sig-param"><span class="n">region</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#StepSampler.region_changed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.StepSampler.region_changed" title="Permalink to this definition">¶</a></dt>
 <dd><p>React to change of region.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>region</strong> (<em>MLFriends object</em>) – current region</p></li>
+<li><p><strong>Ls</strong> (<em>array</em>) – loglikelihood values of the live points</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -3555,7 +3648,7 @@ between live points</p></li>
 <dt id="ultranest.stepsampler.CubeMHSampler">
 <em class="property">class </em><code class="sig-prename descclassname">ultranest.stepsampler.</code><code class="sig-name descname">CubeMHSampler</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nsteps</span></em>, <em class="sig-param"><span class="n">scale</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">adaptive_nsteps</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">max_nsteps</span><span class="o">=</span><span class="default_value">1000</span></em>, <em class="sig-param"><span class="n">region_filter</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">log</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#CubeMHSampler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.CubeMHSampler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ultranest.stepsampler.StepSampler" title="ultranest.stepsampler.StepSampler"><code class="xref py py-class docutils literal notranslate"><span class="pre">ultranest.stepsampler.StepSampler</span></code></a></p>
-<p>Simple step sampler, staggering around in cube space.</p>
+<p>Simple step sampler, staggering around in u-space.</p>
 <p>Initialise sampler.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -3597,7 +3690,16 @@ between live points</p></li>
 <dl class="py method">
 <dt id="ultranest.stepsampler.CubeMHSampler.move">
 <code class="sig-name descname">move</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ui</span></em>, <em class="sig-param"><span class="n">region</span></em>, <em class="sig-param"><span class="n">ndraw</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">plot</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#CubeMHSampler.move"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.CubeMHSampler.move" title="Permalink to this definition">¶</a></dt>
-<dd><p>Move in cube space.</p>
+<dd><p>Move in u-space with a Gaussian proposal.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ui</strong> (<em>array</em>) – current point</p></li>
+<li><p><strong>ndraw</strong> (<em>int</em>) – number of points to draw.</p></li>
+<li><p><strong>other parameters are ignored.</strong> (<em>All</em>) – </p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -3606,7 +3708,7 @@ between live points</p></li>
 <dt id="ultranest.stepsampler.RegionMHSampler">
 <em class="property">class </em><code class="sig-prename descclassname">ultranest.stepsampler.</code><code class="sig-name descname">RegionMHSampler</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nsteps</span></em>, <em class="sig-param"><span class="n">scale</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">adaptive_nsteps</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">max_nsteps</span><span class="o">=</span><span class="default_value">1000</span></em>, <em class="sig-param"><span class="n">region_filter</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">log</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#RegionMHSampler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.RegionMHSampler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#ultranest.stepsampler.StepSampler" title="ultranest.stepsampler.StepSampler"><code class="xref py py-class docutils literal notranslate"><span class="pre">ultranest.stepsampler.StepSampler</span></code></a></p>
-<p>Simple step sampler, staggering around in transformLayer space.</p>
+<p>Simple step sampler, staggering around in t-space.</p>
 <p>Initialise sampler.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -3648,7 +3750,16 @@ between live points</p></li>
 <dl class="py method">
 <dt id="ultranest.stepsampler.RegionMHSampler.move">
 <code class="sig-name descname">move</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ui</span></em>, <em class="sig-param"><span class="n">region</span></em>, <em class="sig-param"><span class="n">ndraw</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">plot</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#RegionMHSampler.move"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.RegionMHSampler.move" title="Permalink to this definition">¶</a></dt>
-<dd><p>Move in transformLayer space.</p>
+<dd><p>Move in t-space with a Gaussian proposal.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ui</strong> (<em>array</em>) – current point</p></li>
+<li><p><strong>ndraw</strong> (<em>int</em>) – number of points to draw.</p></li>
+<li><p><strong>other parameters are ignored.</strong> (<em>All</em>) – </p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -3706,12 +3817,20 @@ between live points</p></li>
 <dt id="ultranest.stepsampler.CubeSliceSampler.generate_direction">
 <code class="sig-name descname">generate_direction</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ui</span></em>, <em class="sig-param"><span class="n">region</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#CubeSliceSampler.generate_direction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.CubeSliceSampler.generate_direction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Start in a new direction, by choosing a random parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ui</strong> (<em>array</em>) – current point</p></li>
+<li><p><strong>region</strong> (<em>MLFriends object</em>) – current region</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt id="ultranest.stepsampler.CubeSliceSampler.adjust_accept">
 <code class="sig-name descname">adjust_accept</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">accepted</span></em>, <em class="sig-param"><span class="n">unew</span></em>, <em class="sig-param"><span class="n">pnew</span></em>, <em class="sig-param"><span class="n">Lnew</span></em>, <em class="sig-param"><span class="n">nc</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#CubeSliceSampler.adjust_accept"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.CubeSliceSampler.adjust_accept" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adjust proposal given that we have been <cite>accepted</cite> at a new point after <cite>nc</cite> calls.</p>
+<dd><p>see <a class="reference internal" href="#ultranest.stepsampler.StepSampler.adjust_accept" title="ultranest.stepsampler.StepSampler.adjust_accept"><code class="xref py py-meth docutils literal notranslate"><span class="pre">StepSampler.adjust_accept()</span></code></a></p>
 </dd></dl>
 
 <dl class="py method">
@@ -3723,7 +3842,7 @@ between live points</p></li>
 <dl class="py method">
 <dt id="ultranest.stepsampler.CubeSliceSampler.move">
 <code class="sig-name descname">move</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ui</span></em>, <em class="sig-param"><span class="n">region</span></em>, <em class="sig-param"><span class="n">ndraw</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">plot</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#CubeSliceSampler.move"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.CubeSliceSampler.move" title="Permalink to this definition">¶</a></dt>
-<dd><p>Advance the slice sampling move.</p>
+<dd><p>Advance the slice sampling move. see <a class="reference internal" href="#ultranest.stepsampler.StepSampler.move" title="ultranest.stepsampler.StepSampler.move"><code class="xref py py-meth docutils literal notranslate"><span class="pre">StepSampler.move()</span></code></a></p>
 </dd></dl>
 
 </dd></dl>
@@ -3774,7 +3893,21 @@ between live points</p></li>
 <dl class="py method">
 <dt id="ultranest.stepsampler.RegionSliceSampler.generate_direction">
 <code class="sig-name descname">generate_direction</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ui</span></em>, <em class="sig-param"><span class="n">region</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#RegionSliceSampler.generate_direction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.RegionSliceSampler.generate_direction" title="Permalink to this definition">¶</a></dt>
-<dd><p>Choose a random axis from region.transformLayer.</p>
+<dd><p>Choose a random axis in t-space.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ui</strong> (<em>array</em>) – current point (in u-space)</p></li>
+<li><p><strong>region</strong> (<em>MLFriends object</em>) – region to use for transformation</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>new direction vector (in u-space)</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -3825,7 +3958,22 @@ between live points</p></li>
 <dl class="py method">
 <dt id="ultranest.stepsampler.RegionSequentialSliceSampler.generate_direction">
 <code class="sig-name descname">generate_direction</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ui</span></em>, <em class="sig-param"><span class="n">region</span></em>, <em class="sig-param"><span class="n">scale</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#RegionSequentialSliceSampler.generate_direction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.RegionSequentialSliceSampler.generate_direction" title="Permalink to this definition">¶</a></dt>
-<dd><p>Choose from region.transformLayer the next axis iteratively.</p>
+<dd><p>Iteratively choose the next axis in t-space.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ui</strong> (<em>array</em>) – current point (in u-space)</p></li>
+<li><p><strong>region</strong> (<em>MLFriends object</em>) – region to use for transformation</p></li>
+<li><p><strong>scale</strong> (<em>float</em>) – length of direction vector</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>new direction vector (in u-space)</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -3875,8 +4023,22 @@ between live points</p></li>
 </dl>
 <dl class="py method">
 <dt id="ultranest.stepsampler.BallSliceSampler.generate_direction">
-<code class="sig-name descname">generate_direction</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ui</span></em>, <em class="sig-param"><span class="n">region</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#BallSliceSampler.generate_direction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.BallSliceSampler.generate_direction" title="Permalink to this definition">¶</a></dt>
-<dd><p>Choose a isotropically random direction from region.transformLayer.</p>
+<code class="sig-name descname">generate_direction</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">region</span></em>, <em class="sig-param"><span class="n">scale</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.stepsampler.BallSliceSampler.generate_direction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draw uniform direction vector in unit cube space of length <cite>scale</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>region</strong> (<em>MLFriends object</em>) – current region (not used)</p></li>
+<li><p><strong>scale</strong> (<em>float:</em>) – length of direction vector</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>new direction vector</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -3926,8 +4088,23 @@ between live points</p></li>
 </dl>
 <dl class="py method">
 <dt id="ultranest.stepsampler.RegionBallSliceSampler.generate_direction">
-<code class="sig-name descname">generate_direction</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ui</span></em>, <em class="sig-param"><span class="n">region</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#RegionBallSliceSampler.generate_direction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.RegionBallSliceSampler.generate_direction" title="Permalink to this definition">¶</a></dt>
-<dd><p>Choose a isotropically random direction from region.transformLayer.</p>
+<code class="sig-name descname">generate_direction</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">region</span></em>, <em class="sig-param"><span class="n">scale</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.stepsampler.RegionBallSliceSampler.generate_direction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draw a direction vector in a random direction of the region.</p>
+<p>The vector length is <cite>scale</cite> (in unit cube space).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>region</strong> (<em>MLFriends object</em>) – current region</p></li>
+<li><p><strong>scale</strong> (<em>float:</em>) – length of direction vector</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>new direction vector</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -3971,6 +4148,21 @@ Three steps are made until the point is considered independent.</p>
 <dt id="ultranest.stepsampler.SpeedVariableRegionSliceSampler.generate_direction">
 <code class="sig-name descname">generate_direction</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ui</span></em>, <em class="sig-param"><span class="n">region</span></em>, <em class="sig-param"><span class="n">scale</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#SpeedVariableRegionSliceSampler.generate_direction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.SpeedVariableRegionSliceSampler.generate_direction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a slice sampling direction, using only some of the axes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ui</strong> (<em>array</em>) – current point (in u-space)</p></li>
+<li><p><strong>region</strong> (<em>MLFriends object</em>) – region to use for transformation</p></li>
+<li><p><strong>scale</strong> (<em>float</em>) – length of direction vector</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>new direction vector</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -3981,14 +4173,51 @@ Three steps are made until the point is considered independent.</p>
 <dd><p>For a line from ui in direction v through an ellipsoid
 centered at ellipsoid_center with axes matrix ellipsoid_inv_axes,
 return the lower and upper intersection parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ui</strong> (<em>array</em>) – current point (in u-space)</p></li>
+<li><p><strong>v</strong> (<em>array</em>) – direction vector</p></li>
+<li><p><strong>ellipsoid_center</strong> (<em>array</em>) – center of the ellipsoid</p></li>
+<li><p><strong>ellipsoid_inv_axes</strong> (<em>array</em>) – ellipsoid axes matrix, as computed by :class:WrappingEllipsoid</p></li>
+<li><p><strong>ellipsoid_radius_square</strong> (<em>float</em>) – square of the ellipsoid radius</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>left</strong> (<em>float</em>) – distance to go until ellipsoid is intersected (non-positive)</p></li>
+<li><p><strong>right</strong> (<em>float</em>) – distance to go until ellipsoid is intersected (non-negative)</p></li>
+</ul>
+</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt id="ultranest.stepsampler.crop_bracket_at_unit_cube">
 <code class="sig-prename descclassname">ultranest.stepsampler.</code><code class="sig-name descname">crop_bracket_at_unit_cube</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ui</span></em>, <em class="sig-param"><span class="n">v</span></em>, <em class="sig-param"><span class="n">left</span></em>, <em class="sig-param"><span class="n">right</span></em>, <em class="sig-param"><span class="n">epsilon</span><span class="o">=</span><span class="default_value">1e-06</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#crop_bracket_at_unit_cube"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.crop_bracket_at_unit_cube" title="Permalink to this definition">¶</a></dt>
 <dd><p>A line segment from <em>ui</em> in direction <em>v</em> from t between <em>left</em> &lt;= 0 &lt;= <em>right</em>
-will be truncated by the unit cube. Returns newleft, newright, cropped_left, cropped_right,
-i.e., the new end parameters and whether cropping was applied.</p>
+will be truncated by the unit cube. Returns the bracket and whether cropping was applied.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ui</strong> (<em>array</em>) – current point (in u-space)</p></li>
+<li><p><strong>v</strong> (<em>array</em>) – direction vector</p></li>
+<li><p><strong>left</strong> (<em>float</em>) – bracket lower end (non-positive)</p></li>
+<li><p><strong>right</strong> (<em>float</em>) – bracket upper end (non-negative)</p></li>
+<li><p><strong>epsilon</strong> (<em>float</em>) – small number to allow for numerical effects</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>left</strong> (<em>float</em>) – new left</p></li>
+<li><p><strong>right</strong> (<em>float</em>) – new right</p></li>
+<li><p><strong>cropped_left</strong> (<em>bool</em>) – whether left was changed</p></li>
+<li><p><strong>cropped_right</strong> (<em>bool</em>) – whether right was changed</p></li>
+</ul>
+</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py class">
@@ -3998,6 +4227,7 @@ i.e., the new end parameters and whether cropping was applied.</p>
 <p>Accelerated hit-and-run/slice sampler, vectorised.</p>
 <p>Uses region ellipsoid to propose a sequence of points
 on a randomly drawn line.</p>
+<p>(in development)</p>
 <p>Initialise vectorised hit-and-run/slice sampler.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -4031,6 +4261,14 @@ between live points</p></li>
 <dt id="ultranest.stepsampler.AHARMSampler.region_changed">
 <code class="sig-name descname">region_changed</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">Ls</span></em>, <em class="sig-param"><span class="n">region</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#AHARMSampler.region_changed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.AHARMSampler.region_changed" title="Permalink to this definition">¶</a></dt>
 <dd><p>React to change of region.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>region</strong> (<em>MLFriends object</em>) – current region</p></li>
+<li><p><strong>Ls</strong> (<em>array</em>) – loglikelihood values of the live points</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
