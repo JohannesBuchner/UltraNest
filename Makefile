@@ -80,7 +80,7 @@ docs: ## generate Sphinx HTML documentation, including API docs
 	#nbstripout docs/*.ipynb
 	sphinx-apidoc -H API -o docs/ ultranest
 	$(MAKE) -C docs clean
-	$(MAKE) -C docs html
+	$(MAKE) -C docs html O=-jauto
 	sed --in-place '/href="ultranest\/mlfriends.html"/d' docs/build/html/_modules/index.html
 	$(BROWSER) docs/build/html/index.html
 
