@@ -137,9 +137,9 @@ can be generated that also fulfills the threshold.
 Region-based sampling uses rejection sampling using constructed geometries.
 
 UltraNest combines three region constructions, 
-and uses their intersection: 
-MLFriends [@Buchner2019c, based on RadFriends by @Buchner2014stats], 
-a bootstrapped single ellipsoid in u-space and another in v-space.
+and uses their intersection:
+1) MLFriends [@Buchner2019c], based on RadFriends [@Buchner2014stats], 
+2) a bootstrapped single ellipsoid in u-space and 3) another bootstrapped single ellipsoid in v-space.
 The last one drastically helps when one parameter constraint scales with another,
 (e.g., funnels).
 UltraNest dynamically chooses whether to draw samples 
