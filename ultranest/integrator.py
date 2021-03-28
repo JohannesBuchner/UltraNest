@@ -1411,7 +1411,7 @@ class ReactiveNestedSampler(object):
         logZmax = main_iterator.logZremain
         Lnext = logZmax - (main_iterator.logVolremaining + log(frac_remain)) - log(len(Ls))
         L1 = Ls[1] if len(Ls) > 1 else Ls[0]
-        Lmax1 = Ls[-2] if len(Ls) > 1 else Ls[-1]
+        Lmax1 = np.median(Ls)
         Lnext = max(min(Lnext, Lmax1), L1)
 
         # if the remainder dominates, return that range
