@@ -2593,7 +2593,7 @@ class ReactiveNestedSampler(object):
             main_iterator, mpi_comm=self.comm if self.use_mpi else None)
 
         results['ncall'] = int(self.ncall)
-        results['paramnames'] = self.paramnames
+        results['paramnames'] = self.paramnames + self.derivedparamnames
         results['logzerr_single'] = (main_iterator.all_H[0] / self.min_num_live_points)**0.5
 
         sequence, results2 = logz_sequence(self.root, self.pointpile, random=True, check_insertion_order=True)

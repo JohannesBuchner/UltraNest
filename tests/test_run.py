@@ -92,6 +92,27 @@ def test_reactive_run():
 
     sampler.plot()
 
+
+def test_reactive_run_extraparams():
+    from ultranest import ReactiveNestedSampler
+    np.random.seed(1)
+
+    def loglike(z):
+        return -0.5 * z[-1].sum()
+    loglike.ncalls = 0
+
+    def transform(x):
+        z = 10. * x - 5.
+        return np.append(z, np.abs(z).sum())
+
+    paramnames = ['Hinz', 'Kunz']
+
+    sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform,
+        derived_param_names=['ctr_distance'])
+    r = sampler.run()
+    assert r['samples'].shape[1] == 3
+    sampler.plot()
+
 def test_return_summary():
     from ultranest import ReactiveNestedSampler
     sigma = np.array([0.1, 0.01])
@@ -404,4 +425,5 @@ if __name__ == '__main__':
     #test_reactive_run_resume(dlogz=0.5, min_ess=1000)
     #test_reactive_run()
     #test_run()
-    test_reactive_run_warmstart_gauss()
+    #test_reactive_run_warmstart_gauss()
+    test_reactive_run_extraparams()

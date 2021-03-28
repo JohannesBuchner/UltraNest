@@ -311,11 +311,13 @@ def is_affine_transform(a, b):
     n, da = a.shape
     nb, db = b.shape
     assert n == nb
+    assert db >= da
+    
     n = (n // 2) * 2
     a1 = a[0:n:2]
     a2 = a[1:n:2]
-    b1 = b[0:n:2]
-    b2 = b[1:n:2]
+    b1 = b[0:n:2,:da]
+    b2 = b[1:n:2,:da]
     slopes = (b2 - b1) / (a2 - a1)
     if not np.allclose(slopes, slopes[0]):
         return False
