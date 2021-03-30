@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Tutorial: experimenting with models &mdash; UltraNest 3.2.0 documentation</title>
+  <title>Tutorial: Warm and hot start for rapid iterations &mdash; UltraNest 3.2.0 documentation</title>
   
 
   
@@ -163,7 +163,7 @@
     
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
         
-      <li>Tutorial: experimenting with models</li>
+      <li>Tutorial: Warm and hot start for rapid iterations</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -450,12 +450,13 @@ div.rendered_html tbody tr:hover {
     text-align: unset;
 }
 </style>
-<div class="section" id="Tutorial:-experimenting-with-models">
-<h1>Tutorial: experimenting with models<a class="headerlink" href="#Tutorial:-experimenting-with-models" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="Tutorial:-Warm-and-hot-start-for-rapid-iterations">
+<h1>Tutorial: Warm and hot start for rapid iterations<a class="headerlink" href="#Tutorial:-Warm-and-hot-start-for-rapid-iterations" title="Permalink to this headline">¶</a></h1>
 <p>In this tutorial you will learn:</p>
 <ul class="simple">
 <li><p>How to play with model variations</p></li>
-<li><p>How UltraNest can resume and reuse an existing run, even if you modify the data/likelihood</p></li>
+<li><p>Warm start: How UltraNest can resume and reuse an existing run, even if you modify the data/likelihood</p></li>
+<li><p>Hot start: How you can make UltraNest skip ahead to the posterior peak</p></li>
 </ul>
 <p>As a simple example, lets say we want to estimate the mean and standard deviation of a sample of points. Over time, more and more points are added.</p>
 <div class="section" id="Generate-some-data">
@@ -488,9 +489,8 @@ div.rendered_html tbody tr:hover {
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
-<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">Ndata</span><span class="p">),</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">yerr</span><span class="o">=</span><span class="n">sigma_true</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">);</span>
-
 </pre></div>
 </div>
 </div>
@@ -509,11 +509,41 @@ div.rendered_html tbody tr:hover {
 <div class="output_area docutils container">
 <img alt="_images/example-warmstart_4_1.svg" src="_images/example-warmstart_4_1.svg" /></div>
 </div>
+<p>We will ingest the data in chunks, with more and more information becoming available to us. Here are the chunks. We will first analyse the orange ones:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">Ndata</span><span class="p">),</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">yerr</span><span class="o">=</span><span class="n">sigma_true</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">Ndata</span><span class="p">)[:</span><span class="mi">10</span><span class="p">],</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">[:</span><span class="mi">10</span><span class="p">],</span> <span class="n">yerr</span><span class="o">=</span><span class="n">sigma_true</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">ls</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+<span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">vlines</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">Ndata</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span> <span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span><span class="p">,</span> <span class="n">linestyles</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+(41.621700406234716, 42.38764838803521)
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/example-warmstart_6_1.svg" src="_images/example-warmstart_6_1.svg" /></div>
+</div>
 </div>
 <div class="section" id="Model-setup">
 <h2>Model setup<a class="headerlink" href="#Model-setup" title="Permalink to this headline">¶</a></h2>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -536,10 +566,10 @@ div.rendered_html tbody tr:hover {
 </div>
 </div>
 </div>
-<div class="section" id="Adding-one-data-point-at-a-time,-no-warm-start">
-<h2>Adding one data point at a time, no warm start<a class="headerlink" href="#Adding-one-data-point-at-a-time,-no-warm-start" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="Adding-one-new-chunk-at-a-time,-no-warm-start">
+<h2>Adding one new chunk at a time, no warm start<a class="headerlink" href="#Adding-one-new-chunk-at-a-time,-no-warm-start" title="Permalink to this headline">¶</a></h2>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -634,10 +664,13 @@ Iteration with 190 data points
 </pre></div></div>
 </div>
 </div>
+</div>
+<div class="section" id="Warm-start">
+<h1>Warm start<a class="headerlink" href="#Warm-start" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="Adding-one-data-point-at-a-time,-with-warm-start">
 <h2>Adding one data point at a time, with warm start<a class="headerlink" href="#Adding-one-data-point-at-a-time,-with-warm-start" title="Permalink to this headline">¶</a></h2>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -821,10 +854,10 @@ Iteration with 190 data points
 </pre></div></div>
 </div>
 </div>
-<div class="section" id="Likelihood-evaluations-saved">
-<h2>Likelihood evaluations saved<a class="headerlink" href="#Likelihood-evaluations-saved" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="Likelihood-evaluations-saved-by-warm-start">
+<h2>Likelihood evaluations saved by warm start<a class="headerlink" href="#Likelihood-evaluations-saved-by-warm-start" title="Permalink to this headline">¶</a></h2>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -871,31 +904,294 @@ Iteration with 190 data points
 </pre></div></div>
 </div>
 <div class="nboutput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-&lt;matplotlib.collections.LineCollection at 0x7fb54a42b820&gt;
+&lt;matplotlib.collections.LineCollection at 0x7f998e65e4f0&gt;
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/example-warmstart_12_2.svg" src="_images/example-warmstart_12_2.svg" /></div>
+<img alt="_images/example-warmstart_15_2.svg" src="_images/example-warmstart_15_2.svg" /></div>
 </div>
+</div>
+<div class="section" id="Take-aways:">
+<h2>Take-aways:<a class="headerlink" href="#Take-aways:" title="Permalink to this headline">¶</a></h2>
+<p>Notice the time saving in the bottom panel by more than half. This benefit is <em>independent of problem dimension</em>. The cost savings are higher, the more similar the modified problem is.</p>
+</div>
+</div>
+<div class="section" id="Hot-start">
+<h1>Hot start<a class="headerlink" href="#Hot-start" title="Permalink to this headline">¶</a></h1>
+<p>We may already know roughly what the posterior looks like. If it is roughly gaussian, we can take advantage of this by running UltraNest on an auxiliary distribution.</p>
+<p>The speed-up depends on how the auxiliary distribution is defined. Therefore, this is left to the user, and not automatically derived. The following illustrates how to create a auxiliary distribution and work with it.</p>
+<div class="section" id="Guess-a-useful-covariance">
+<h2>Guess a useful covariance<a class="headerlink" href="#Guess-a-useful-covariance" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># take result from the second-to-last run</span>
+<span class="n">ref_result</span> <span class="o">=</span> <span class="n">reference_results</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">];</span>
+</pre></div>
+</div>
+</div>
+<p>Luckily, the posterior here is already very gaussian-like:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">corner</span>
+<span class="n">corner</span><span class="o">.</span><span class="n">corner</span><span class="p">(</span><span class="n">ref_result</span><span class="p">[</span><span class="s1">&#39;samples&#39;</span><span class="p">],</span> <span class="n">show_titles</span><span class="o">=</span><span class="kc">True</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img alt="_images/example-warmstart_22_0.svg" src="_images/example-warmstart_22_0.svg" /></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/example-warmstart_22_1.svg" src="_images/example-warmstart_22_1.svg" /></div>
+</div>
+<p><strong>Step 1</strong>: Identify the center and covariance (in u-space, i.e., before the prior transformation).</p>
+<p>You can also do this</p>
+<ul class="simple">
+<li><p>by looking at the data</p></li>
+<li><p>from posterior samples of a previous nested sampling or MCMC run</p></li>
+<li><p>with a minimizer such as <a class="reference external" href="https://johannesbuchner.github.io/snowline/">snowline</a>.</p></li>
+</ul>
+<p>We demonstrate the second method here:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ref_result</span><span class="p">[</span><span class="s1">&#39;weighted_samples&#39;</span><span class="p">][</span><span class="s1">&#39;weights&#39;</span><span class="p">]),</span> <span class="n">p</span><span class="o">=</span><span class="n">ref_result</span><span class="p">[</span><span class="s1">&#39;weighted_samples&#39;</span><span class="p">][</span><span class="s1">&#39;weights&#39;</span><span class="p">],</span> <span class="n">size</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span>
+<span class="n">u_posterior</span> <span class="o">=</span> <span class="n">ref_result</span><span class="p">[</span><span class="s1">&#39;weighted_samples&#39;</span><span class="p">][</span><span class="s1">&#39;upoints&#39;</span><span class="p">][</span><span class="n">indices</span><span class="p">,:]</span>
+<span class="n">ctr</span> <span class="o">=</span> <span class="n">u_posterior</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">u_posterior</span><span class="p">,</span> <span class="n">rowvar</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;center in unit cube coordinates:&quot;</span><span class="p">,</span> <span class="n">ctr</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;center in physical coordinates:&quot;</span><span class="p">,</span> <span class="n">prior_transform</span><span class="p">(</span><span class="n">ctr</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;covariance:&quot;</span><span class="p">,</span> <span class="n">cov</span><span class="p">)</span>
+
+<span class="n">invcov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">cov</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;precision matrix:&quot;</span><span class="p">,</span> <span class="n">invcov</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+center in unit cube coordinates: [0.52100284 0.24045724]
+center in physical coordinates: [42.00567336  0.09158597]
+covariance: [[1.32478596e-11 7.19535420e-12]
+ [7.19535420e-12 3.59544551e-05]]
+precision matrix: [[ 7.54838997e+10 -1.51061501e+04]
+ [-1.51061501e+04  2.78129679e+04]]
+</pre></div></div>
+</div>
+<p>Let us intentionally show the case where a poor distribution is chosen:</p>
+<p><strong>Step 2</strong>: Define the auxiliary distribution</p>
+<p>This is always the same, once you have chosen a center and covariance. Here we use a multivariate Student-t distribution with one degree of freedom.</p>
+<p>This allows heavier-tailed posterior distributions than a Gaussian, and is more forgiving if we mis-estimated the center or the covariance.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">ultranest.hotstart</span> <span class="kn">import</span> <span class="n">get_extended_auxiliary_problem</span>
+
+<span class="n">aux_log_likelihood</span><span class="p">,</span> <span class="n">aux_transform</span> <span class="o">=</span> <span class="n">get_extended_auxiliary_problem</span><span class="p">(</span>
+        <span class="n">log_likelihood</span><span class="p">,</span> <span class="n">prior_transform</span><span class="p">,</span> <span class="n">ctr</span><span class="p">,</span> <span class="n">invcov</span><span class="p">,</span>
+        <span class="n">enlargement_factor</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">parameters</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1">#aux_parameters = [&#39;aux_%d&#39; % (i + 1) for i, p in enumerate(parameters)]</span>
+<span class="n">aux_sampler</span> <span class="o">=</span> <span class="n">ReactiveNestedSampler</span><span class="p">(</span>
+    <span class="n">parameters</span><span class="p">,</span> <span class="n">aux_log_likelihood</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">aux_transform</span><span class="p">,</span>
+    <span class="n">derived_param_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;aux_logweight&#39;</span><span class="p">],</span>
+<span class="p">)</span>
+<span class="n">aux_results</span> <span class="o">=</span> <span class="n">aux_sampler</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">frac_remain</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">viz_callback</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[ultranest] Sampling 400 live points from prior ...
+[ultranest] Explored until L=2e+02
+[ultranest] Likelihood function evaluations: 1277
+[ultranest]   logZ = 188.2 +- 0.02678
+[ultranest] Effective samples strategy satisfied (ESS = 868.3, need &gt;400)
+[ultranest] Posterior uncertainty strategy is satisfied (KL: 0.46+-0.05 nat, need &lt;0.50 nat)
+[ultranest] Evidency uncertainty strategy is satisfied (dlogz=0.07, need &lt;0.5)
+[ultranest]   logZ error budget: single: 0.05 bs:0.03 tail:0.41 total:0.41 required:&lt;0.50
+[ultranest] done iterating.
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">getdist</span> <span class="kn">import</span> <span class="n">MCSamples</span><span class="p">,</span> <span class="n">plots</span>
+
+<span class="n">aux_dist_samples_full</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">aux_transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">parameters</span><span class="p">)))</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10000</span><span class="p">)])</span>
+<span class="n">aux_dist_samples</span> <span class="o">=</span> <span class="n">aux_dist_samples_full</span><span class="p">[</span><span class="n">aux_dist_samples_full</span><span class="p">[:,</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mf">1e100</span><span class="p">,:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+<span class="n">samples_o</span> <span class="o">=</span> <span class="n">MCSamples</span><span class="p">(</span><span class="n">samples</span><span class="o">=</span><span class="n">ref_result</span><span class="p">[</span><span class="s1">&#39;samples&#39;</span><span class="p">],</span>
+                       <span class="n">names</span><span class="o">=</span><span class="n">ref_result</span><span class="p">[</span><span class="s1">&#39;paramnames&#39;</span><span class="p">],</span>
+                       <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Cold start&#39;</span><span class="p">,</span>
+                       <span class="n">settings</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">smooth_scale_2D</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span> <span class="n">sampler</span><span class="o">=</span><span class="s1">&#39;nested&#39;</span><span class="p">)</span>
+<span class="n">samples_a</span> <span class="o">=</span> <span class="n">MCSamples</span><span class="p">(</span><span class="n">samples</span><span class="o">=</span><span class="n">aux_dist_samples</span><span class="p">,</span>
+                       <span class="n">names</span><span class="o">=</span><span class="n">ref_result</span><span class="p">[</span><span class="s1">&#39;paramnames&#39;</span><span class="p">],</span>
+                       <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Auxiliary distribution&#39;</span><span class="p">,</span>
+                       <span class="n">settings</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">smooth_scale_2D</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">sampler</span><span class="o">=</span><span class="s1">&#39;nested&#39;</span><span class="p">)</span>
+<span class="n">samples_g</span> <span class="o">=</span> <span class="n">MCSamples</span><span class="p">(</span><span class="n">samples</span><span class="o">=</span><span class="n">aux_results</span><span class="p">[</span><span class="s1">&#39;samples&#39;</span><span class="p">][:,:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                       <span class="n">names</span><span class="o">=</span><span class="n">aux_results</span><span class="p">[</span><span class="s1">&#39;paramnames&#39;</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                       <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Hot start&#39;</span><span class="p">,</span>
+                       <span class="n">settings</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">smooth_scale_2D</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span> <span class="n">sampler</span><span class="o">=</span><span class="s1">&#39;nested&#39;</span><span class="p">)</span>
+
+<span class="n">mcsamples</span> <span class="o">=</span> <span class="p">[</span><span class="n">samples_o</span><span class="p">,</span> <span class="n">samples_a</span><span class="p">,</span> <span class="n">samples_g</span><span class="p">]</span>
+
+<span class="n">g</span> <span class="o">=</span> <span class="n">plots</span><span class="o">.</span><span class="n">get_subplot_plotter</span><span class="p">(</span><span class="n">width_inch</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+<span class="n">g</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">num_plot_contours</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">g</span><span class="o">.</span><span class="n">triangle_plot</span><span class="p">(</span><span class="n">mcsamples</span><span class="p">,</span> <span class="n">filled</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">contour_colors</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">Set1</span><span class="o">.</span><span class="n">colors</span><span class="p">,</span>
+               <span class="n">param_limits</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="p">[(</span><span class="mf">41.9</span><span class="p">,</span> <span class="mf">42.1</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">)])))</span>
+
+
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+WARNING:root:auto bandwidth for mean very small or failed (h=0.00042989608796071,N_eff=7092.0). Using fallback (h=0.021030163950037872)
+WARNING:root:fine_bins not large enough to well sample smoothing scale - mean
+WARNING:root:fine_bins not large enough to well sample smoothing scale - scatter
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Removed no burn in
+Removed no burn in
+Removed no burn in
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/example-warmstart_30_2.svg" src="_images/example-warmstart_30_2.svg" /></div>
+</div>
+<p>In a good run, most auxiliary weights should be small (&lt;1). If they are not, you may need to increase the enlargement_factor.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">aux_results</span><span class="p">[</span><span class="s1">&#39;samples&#39;</span><span class="p">][:,</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span><span class="mi">40</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;ln(weights)&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Text(0.5, 0, &#39;ln(weights)&#39;)
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/example-warmstart_32_1.svg" src="_images/example-warmstart_32_1.svg" /></div>
+</div>
+</div>
+<div class="section" id="Speed-up-by-hot-start">
+<h2>Speed-up by hot start<a class="headerlink" href="#Speed-up-by-hot-start" title="Permalink to this headline">¶</a></h2>
+<p>Assuming we already obtained the covariance and mean for free, what is the additional cost of the hot start?</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;auxiliary sampler used </span><span class="si">%(ncall)d</span><span class="s2"> likelihood calls&quot;</span> <span class="o">%</span> <span class="n">aux_results</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+auxiliary sampler used 1277 likelihood calls
+</pre></div></div>
+</div>
+<p>Compare this to the full run with the same number of data points.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Speedup factor of hot start: </span><span class="si">%.1f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">reference_results</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;ncall&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">aux_results</span><span class="p">[</span><span class="s1">&#39;ncall&#39;</span><span class="p">]))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Speedup factor of hot start: 8.5
+</pre></div></div>
+</div>
+<p>This speed-up increases drastically if you have highly informative posteriors.</p>
 </div>
 <div class="section" id="Conclusion">
 <h2>Conclusion<a class="headerlink" href="#Conclusion" title="Permalink to this headline">¶</a></h2>
-<p>Notice the time saving in the bottom panel by more thanhalf. This benefit is <em>independent of problem dimension</em>. The cost savings are higher, the more similar the modified problem is.</p>
-<p>This feature allows you to:</p>
+<ul class="simple">
+<li><p>Warm start allows accelerated computation based on a different but similar UltraNest run.</p></li>
+<li><p>Hot start allows accelerated computation based on already approximately knowing the posterior peak.</p></li>
+</ul>
+<p>These feature allows you to:</p>
 <ul class="simple">
 <li><p>vary the data (change the analysis pipeline)</p></li>
 <li><p>vary model assumptions</p></li>
 </ul>
 <p><strong>without needing to start the computation from scratch</strong> (potentially costly).</p>
-<p>Warmstart (resume=‘resume-similar’) is <em>experimental</em> and it is recommended to do a full, clean run to obtain final, reliable results before publication.</p>
+<p>These features are experimental and feedback is appreciated. It is recommended to do a full, clean run to obtain final, reliable results before publication.</p>
 </div>
 </div>
 

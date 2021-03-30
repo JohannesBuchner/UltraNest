@@ -1,0 +1,390 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>ultranest.hotstart &mdash; UltraNest 3.2.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/icon.ico"/>
+  
+  
+  
+    <link rel="canonical" href="https://johannesbuchner.github.io/UltraNest/_modules/ultranest/hotstart.html"/>
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+        <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.18.0/dist/embed-amd.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> UltraNest
+          
+
+          
+            
+            <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                3.2.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../readme.html">UltraNest</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../method.html">Method</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../using-ultranest.html">Basic usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../priors.html">Specifying priors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../performance.html">Tour of the features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../issues.html">Frequently Asked Questions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../history.html">Release Notes</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorials:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../example-sine-line.html">Time series fitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-sine-modelcomparison.html">Model comparison</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-sine-highd.html">Higher-dimensional fitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-intrinsic-distribution.html">Tutorial: intrinsic distribution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-line.html">Tutorial: fitting a line</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-outliers.html">Tutorial: distribution with outliers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-sine-bayesian-workflow.html">Bayesian workflow</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">UltraNest</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content style-external-links">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>ultranest.hotstart</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for ultranest.hotstart</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Hot start helper functions.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy.stats</span>
+
+<div class="viewcode-block" id="get_auxiliary_problem"><a class="viewcode-back" href="../../ultranest.html#ultranest.hotstart.get_auxiliary_problem">[docs]</a><span class="k">def</span> <span class="nf">get_auxiliary_problem</span><span class="p">(</span><span class="n">loglike</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">ctr</span><span class="p">,</span> <span class="n">invcov</span><span class="p">,</span> <span class="n">enlargement_factor</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return a new loglike and transform based on an auxiliary distribution.</span>
+
+<span class="sd">    Given a likelihood and prior transform, and information about</span>
+<span class="sd">    the (expected) posterior peak, generates a auxiliary </span>
+<span class="sd">    likelihood and prior transform that is identical but</span>
+<span class="sd">    requires fewer nested sampling iterations.</span>
+
+<span class="sd">    This is achieved by deforming the prior space, and undoing that</span>
+<span class="sd">    transformation by correction weights in the likelihood.</span>
+
+<span class="sd">    The auxiliary distribution used for transformation/weighting is</span>
+<span class="sd">    a d-dimensional Student-t distribution.</span>
+
+<span class="sd">    Usage::</span>
+
+<span class="sd">        aux_loglikelihood, aux_aftertransform = get_auxiliary_problem(loglike, transform, ctr, invcov, enlargement_factor, df=1)</span>
+<span class="sd">        aux_sampler = ReactiveNestedSampler(parameters, aux_loglikelihood)</span>
+<span class="sd">        aux_results = aux_sampler.run()</span>
+<span class="sd">        posterior_samples = [aux_aftertransform(sample) for sample in aux_results[&#39;samples&#39;]]</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ------------</span>
+<span class="sd">    loglike: function</span>
+<span class="sd">        original likelihood function</span>
+<span class="sd">    transform: function</span>
+<span class="sd">        original prior transform function</span>
+<span class="sd">    ctr: array</span>
+<span class="sd">        Posterior center (in u-space).</span>
+<span class="sd">    invcov: array</span>
+<span class="sd">        Covariance of the posterior (in u-space).</span>
+<span class="sd">    enlargement_factor: float</span>
+<span class="sd">        Factor by which the scale of the auxiliary distribution is enlarged</span>
+<span class="sd">        in all dimensions.</span>
+
+<span class="sd">        For Gaussian-like posteriors, sqrt(ndim) seems to work,</span>
+<span class="sd">        Heavier tailed or non-elliptical distributions may need larger factors.</span>
+<span class="sd">    df: float</span>
+<span class="sd">        Number of degrees of freedom of the auxiliary student-t distribution.</span>
+<span class="sd">        The default is recommended. For truly gaussian posteriors,</span>
+<span class="sd">        the student-t can be made more gaussian (by df&gt;=30) for accelation.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    ---------</span>
+<span class="sd">    aux_loglike: function</span>
+<span class="sd">        auxiliary loglikelihood function.</span>
+<span class="sd">    aux_aftertransform: function</span>
+<span class="sd">        auxiliary transform function.</span>
+<span class="sd">        Takes d u-space coordinates, and returns d + 1 p-space parameters.</span>
+<span class="sd">        The first d return coordinates are identical to what ``transform`` would return.</span>
+<span class="sd">        The final coordinate is the correction weight.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">ndim</span><span class="p">,</span> <span class="o">=</span> <span class="n">ctr</span><span class="o">.</span><span class="n">shape</span>
+    <span class="k">assert</span> <span class="n">invcov</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">ndim</span><span class="p">,</span> <span class="n">ndim</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">df</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;Degrees of freedom must be above 1&#39;</span><span class="p">,</span> <span class="n">df</span><span class="p">)</span>
+
+    <span class="n">l</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigh</span><span class="p">(</span><span class="n">invcov</span><span class="p">)</span>
+    <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">enlargement_factor</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="mf">1.</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">l</span><span class="p">)))</span>
+    
+    <span class="n">rv_auxiliary1d</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">t</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">aux_rotator</span><span class="p">(</span><span class="n">coords</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ctr</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">rotation_matrix</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">aux_loglikelihood</span><span class="p">(</span><span class="n">u</span><span class="p">):</span>
+        <span class="c1"># get uniform gauss/t distributed values:</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">rv_auxiliary1d</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+        <span class="c1"># rotate &amp; stretch; transform into physical parameters</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">aux_rotator</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+        <span class="c1"># avoid outside regions</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span> <span class="p">(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+            <span class="k">return</span> <span class="o">-</span><span class="mf">1e300</span>
+        <span class="c1"># undo the effect of the auxiliary distribution</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="n">rv_auxiliary1d</span><span class="o">.</span><span class="n">logpdf</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">loglike</span><span class="p">(</span><span class="n">transform</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="o">-</span> <span class="n">l</span>
+    
+    <span class="k">def</span> <span class="nf">aux_aftertransform</span><span class="p">(</span><span class="n">u</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">transform</span><span class="p">(</span><span class="n">aux_rotator</span><span class="p">(</span><span class="n">rv_auxiliary1d</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">u</span><span class="p">)))</span>
+
+    <span class="k">return</span> <span class="n">aux_loglikelihood</span><span class="p">,</span> <span class="n">aux_aftertransform</span></div>
+
+<div class="viewcode-block" id="get_extended_auxiliary_problem"><a class="viewcode-back" href="../../ultranest.html#ultranest.hotstart.get_extended_auxiliary_problem">[docs]</a><span class="k">def</span> <span class="nf">get_extended_auxiliary_problem</span><span class="p">(</span><span class="n">loglike</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">ctr</span><span class="p">,</span> <span class="n">invcov</span><span class="p">,</span> <span class="n">enlargement_factor</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return a new loglike and transform based on an auxiliary distribution.</span>
+
+<span class="sd">    Given a likelihood and prior transform, and information about</span>
+<span class="sd">    the (expected) posterior peak, generates a auxiliary </span>
+<span class="sd">    likelihood and prior transform that is identical but</span>
+<span class="sd">    requires fewer nested sampling iterations.</span>
+
+<span class="sd">    This is achieved by deforming the prior space, and undoing that</span>
+<span class="sd">    transformation by correction weights in the likelihood.</span>
+
+<span class="sd">    The auxiliary distribution used for transformation/weighting is</span>
+<span class="sd">    a d-dimensional Student-t distribution.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ------------</span>
+<span class="sd">    loglike: function</span>
+<span class="sd">        original likelihood function</span>
+<span class="sd">    transform: function</span>
+<span class="sd">        original prior transform function</span>
+<span class="sd">    ctr: array</span>
+<span class="sd">        Posterior center (in u-space).</span>
+<span class="sd">    invcov: array</span>
+<span class="sd">        Covariance of the posterior (in u-space).</span>
+<span class="sd">    enlargement_factor: float</span>
+<span class="sd">        Factor by which the scale of the auxiliary distribution is enlarged</span>
+<span class="sd">        in all dimensions.</span>
+
+<span class="sd">        For Gaussian-like posteriors, sqrt(ndim) seems to work,</span>
+<span class="sd">        Heavier tailed or non-elliptical distributions may need larger factors.</span>
+<span class="sd">    df: float</span>
+<span class="sd">        Number of degrees of freedom of the auxiliary student-t distribution.</span>
+<span class="sd">        The default is recommended. For truly gaussian posteriors,</span>
+<span class="sd">        the student-t can be made more gaussian (by df&gt;=30) for accelation.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    ---------</span>
+<span class="sd">    aux_loglike: function</span>
+<span class="sd">        auxiliary loglikelihood function. Takes d + 1 parameters (see below).</span>
+<span class="sd">        The likelihood is the same as loglike, but adds weights.</span>
+<span class="sd">    aux_transform: function</span>
+<span class="sd">        auxiliary transform function.</span>
+<span class="sd">        Takes d u-space coordinates, and returns d + 1 p-space parameters.</span>
+<span class="sd">        The first d return coordinates are identical to what ``transform`` would return.</span>
+<span class="sd">        The final coordinate is the correction weight.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ndim</span><span class="p">,</span> <span class="o">=</span> <span class="n">ctr</span><span class="o">.</span><span class="n">shape</span>
+    <span class="k">assert</span> <span class="n">invcov</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">ndim</span><span class="p">,</span> <span class="n">ndim</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">df</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;Degrees of freedom must be above 1&#39;</span><span class="p">,</span> <span class="n">df</span><span class="p">)</span>
+    
+    <span class="n">l</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigh</span><span class="p">(</span><span class="n">invcov</span><span class="p">)</span>
+    <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">enlargement_factor</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="mf">1.</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">l</span><span class="p">)))</span>
+
+    <span class="n">rv_auxiliary1d</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">t</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+    <span class="n">weight_ref</span> <span class="o">=</span> <span class="n">rv_auxiliary1d</span><span class="o">.</span><span class="n">logpdf</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">ndim</span>
+    
+    <span class="k">def</span> <span class="nf">aux_transform</span><span class="p">(</span><span class="n">u</span><span class="p">):</span>
+        <span class="c1"># get uniform gauss/t distributed values:</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">rv_auxiliary1d</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+        <span class="c1"># rotate &amp; stretch; transform into physical parameters</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">ctr</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">rotation_matrix</span><span class="p">,</span> <span class="n">coords</span><span class="p">)</span>
+        <span class="c1"># avoid outside regions</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="ow">and</span> <span class="p">(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+            <span class="n">weight</span> <span class="o">=</span> <span class="o">-</span><span class="n">rv_auxiliary1d</span><span class="o">.</span><span class="n">logpdf</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">+</span> <span class="n">weight_ref</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">weight</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1e101</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">u</span> <span class="o">*</span> <span class="mi">0</span> <span class="o">+</span> <span class="mf">0.5</span>
+        <span class="c1"># add weight as a additional parameter</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">transform</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">weight</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">aux_loglikelihood</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="n">x_actual</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">weight</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="o">-</span><span class="mf">1e100</span> <span class="o">&lt;</span> <span class="n">weight</span> <span class="o">&lt;</span> <span class="mf">1e100</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">loglike</span><span class="p">(</span><span class="n">x_actual</span><span class="p">)</span> <span class="o">+</span> <span class="n">weight</span> <span class="o">-</span> <span class="n">weight_ref</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="o">-</span><span class="mf">1e300</span>
+
+    <span class="k">return</span> <span class="n">aux_loglikelihood</span><span class="p">,</span> <span class="n">aux_transform</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2014-2020, Johannes Buchner
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

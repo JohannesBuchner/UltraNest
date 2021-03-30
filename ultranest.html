@@ -114,6 +114,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#flatnuts">FLATNUTS</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#module-ultranest.hotstart">ultranest.hotstart module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-ultranest.integrator">ultranest.integrator module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-ultranest.mlfriends">ultranest.mlfriends module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id1">ultranest.mlfriends module</a></li>
@@ -900,6 +901,96 @@ rwd: bool whether we go backward</p>
 </dd></dl>
 
 </div>
+</div>
+<div class="section" id="module-ultranest.hotstart">
+<span id="ultranest-hotstart-module"></span><h2>ultranest.hotstart module<a class="headerlink" href="#module-ultranest.hotstart" title="Permalink to this headline">¶</a></h2>
+<p>Hot start helper functions.</p>
+<dl class="py function">
+<dt id="ultranest.hotstart.get_auxiliary_problem">
+<code class="sig-prename descclassname">ultranest.hotstart.</code><code class="sig-name descname">get_auxiliary_problem</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">loglike</span></em>, <em class="sig-param"><span class="n">transform</span></em>, <em class="sig-param"><span class="n">ctr</span></em>, <em class="sig-param"><span class="n">invcov</span></em>, <em class="sig-param"><span class="n">enlargement_factor</span></em>, <em class="sig-param"><span class="n">df</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/hotstart.html#get_auxiliary_problem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.hotstart.get_auxiliary_problem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a new loglike and transform based on an auxiliary distribution.</p>
+<p>Given a likelihood and prior transform, and information about
+the (expected) posterior peak, generates a auxiliary
+likelihood and prior transform that is identical but
+requires fewer nested sampling iterations.</p>
+<p>This is achieved by deforming the prior space, and undoing that
+transformation by correction weights in the likelihood.</p>
+<p>The auxiliary distribution used for transformation/weighting is
+a d-dimensional Student-t distribution.</p>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">aux_loglikelihood</span><span class="p">,</span> <span class="n">aux_aftertransform</span> <span class="o">=</span> <span class="n">get_auxiliary_problem</span><span class="p">(</span><span class="n">loglike</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">ctr</span><span class="p">,</span> <span class="n">invcov</span><span class="p">,</span> <span class="n">enlargement_factor</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">aux_sampler</span> <span class="o">=</span> <span class="n">ReactiveNestedSampler</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="n">aux_loglikelihood</span><span class="p">)</span>
+<span class="n">aux_results</span> <span class="o">=</span> <span class="n">aux_sampler</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<span class="n">posterior_samples</span> <span class="o">=</span> <span class="p">[</span><span class="n">aux_aftertransform</span><span class="p">(</span><span class="n">sample</span><span class="p">)</span> <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">aux_results</span><span class="p">[</span><span class="s1">&#39;samples&#39;</span><span class="p">]]</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>loglike</strong> (<em>function</em>) – original likelihood function</p></li>
+<li><p><strong>transform</strong> (<em>function</em>) – original prior transform function</p></li>
+<li><p><strong>ctr</strong> (<em>array</em>) – Posterior center (in u-space).</p></li>
+<li><p><strong>invcov</strong> (<em>array</em>) – Covariance of the posterior (in u-space).</p></li>
+<li><p><strong>enlargement_factor</strong> (<em>float</em>) – <p>Factor by which the scale of the auxiliary distribution is enlarged
+in all dimensions.</p>
+<p>For Gaussian-like posteriors, sqrt(ndim) seems to work,
+Heavier tailed or non-elliptical distributions may need larger factors.</p>
+</p></li>
+<li><p><strong>df</strong> (<em>float</em>) – Number of degrees of freedom of the auxiliary student-t distribution.
+The default is recommended. For truly gaussian posteriors,
+the student-t can be made more gaussian (by df&gt;=30) for accelation.</p></li>
+<li><p><strong>Returns</strong> – </p></li>
+<li><p><strong>---------</strong> – </p></li>
+<li><p><strong>aux_loglike</strong> (<em>function</em>) – auxiliary loglikelihood function.</p></li>
+<li><p><strong>aux_aftertransform</strong> (<em>function</em>) – auxiliary transform function.
+Takes d u-space coordinates, and returns d + 1 p-space parameters.
+The first d return coordinates are identical to what <code class="docutils literal notranslate"><span class="pre">transform</span></code> would return.
+The final coordinate is the correction weight.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="ultranest.hotstart.get_extended_auxiliary_problem">
+<code class="sig-prename descclassname">ultranest.hotstart.</code><code class="sig-name descname">get_extended_auxiliary_problem</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">loglike</span></em>, <em class="sig-param"><span class="n">transform</span></em>, <em class="sig-param"><span class="n">ctr</span></em>, <em class="sig-param"><span class="n">invcov</span></em>, <em class="sig-param"><span class="n">enlargement_factor</span></em>, <em class="sig-param"><span class="n">df</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/hotstart.html#get_extended_auxiliary_problem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.hotstart.get_extended_auxiliary_problem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a new loglike and transform based on an auxiliary distribution.</p>
+<p>Given a likelihood and prior transform, and information about
+the (expected) posterior peak, generates a auxiliary
+likelihood and prior transform that is identical but
+requires fewer nested sampling iterations.</p>
+<p>This is achieved by deforming the prior space, and undoing that
+transformation by correction weights in the likelihood.</p>
+<p>The auxiliary distribution used for transformation/weighting is
+a d-dimensional Student-t distribution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>loglike</strong> (<em>function</em>) – original likelihood function</p></li>
+<li><p><strong>transform</strong> (<em>function</em>) – original prior transform function</p></li>
+<li><p><strong>ctr</strong> (<em>array</em>) – Posterior center (in u-space).</p></li>
+<li><p><strong>invcov</strong> (<em>array</em>) – Covariance of the posterior (in u-space).</p></li>
+<li><p><strong>enlargement_factor</strong> (<em>float</em>) – <p>Factor by which the scale of the auxiliary distribution is enlarged
+in all dimensions.</p>
+<p>For Gaussian-like posteriors, sqrt(ndim) seems to work,
+Heavier tailed or non-elliptical distributions may need larger factors.</p>
+</p></li>
+<li><p><strong>df</strong> (<em>float</em>) – Number of degrees of freedom of the auxiliary student-t distribution.
+The default is recommended. For truly gaussian posteriors,
+the student-t can be made more gaussian (by df&gt;=30) for accelation.</p></li>
+<li><p><strong>Returns</strong> – </p></li>
+<li><p><strong>---------</strong> – </p></li>
+<li><p><strong>aux_loglike</strong> (<em>function</em>) – auxiliary loglikelihood function. Takes d + 1 parameters (see below).
+The likelihood is the same as loglike, but adds weights.</p></li>
+<li><p><strong>aux_transform</strong> (<em>function</em>) – auxiliary transform function.
+Takes d u-space coordinates, and returns d + 1 p-space parameters.
+The first d return coordinates are identical to what <code class="docutils literal notranslate"><span class="pre">transform</span></code> would return.
+The final coordinate is the correction weight.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </div>
 <div class="section" id="module-ultranest.integrator">
 <span id="ultranest-integrator-module"></span><h2>ultranest.integrator module<a class="headerlink" href="#module-ultranest.integrator" title="Permalink to this headline">¶</a></h2>

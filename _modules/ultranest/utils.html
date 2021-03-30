@@ -494,11 +494,13 @@
     <span class="n">n</span><span class="p">,</span> <span class="n">da</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span>
     <span class="n">nb</span><span class="p">,</span> <span class="n">db</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">shape</span>
     <span class="k">assert</span> <span class="n">n</span> <span class="o">==</span> <span class="n">nb</span>
+    <span class="k">assert</span> <span class="n">db</span> <span class="o">&gt;=</span> <span class="n">da</span>
+    
     <span class="n">n</span> <span class="o">=</span> <span class="p">(</span><span class="n">n</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
     <span class="n">a1</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">n</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
     <span class="n">a2</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">n</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
-    <span class="n">b1</span> <span class="o">=</span> <span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">n</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
-    <span class="n">b2</span> <span class="o">=</span> <span class="n">b</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">n</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">b1</span> <span class="o">=</span> <span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">n</span><span class="p">:</span><span class="mi">2</span><span class="p">,:</span><span class="n">da</span><span class="p">]</span>
+    <span class="n">b2</span> <span class="o">=</span> <span class="n">b</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="n">n</span><span class="p">:</span><span class="mi">2</span><span class="p">,:</span><span class="n">da</span><span class="p">]</span>
     <span class="n">slopes</span> <span class="o">=</span> <span class="p">(</span><span class="n">b2</span> <span class="o">-</span> <span class="n">b1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">a2</span> <span class="o">-</span> <span class="n">a1</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">slopes</span><span class="p">,</span> <span class="n">slopes</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
         <span class="k">return</span> <span class="kc">False</span>
