@@ -13,7 +13,7 @@ authors:
 affiliations:
  - name: Max Planck Institute for Extraterrestrial Physics, Giessenbachstrasse, 85741 Garching, Germany. 
    index: 1
- - name: Millenium Institute of Astrophysics, Vicuña MacKenna 4860, 7820436 Macul, Santiago, Chile . . . 
+ - name: Millenium Institute of Astrophysics, Vicuña MacKenna 4860, 7820436 Macul, Santiago, Chile
    index: 2
  - name: Pontificia Universidad Católica de Chile, Instituto de Astrofísica, Casilla 306, Santiago 22, Chile. 
    index: 3
@@ -43,7 +43,7 @@ While several open source Bayesian model fitting packages are available that
 can be easily tied to existing models,
 they are difficult to run such that the result is reliable and user interaction is minimized.
 A chicken-and-egg problem is that one does not know a priori the posterior distribution
-of a given likelihood, prior and data set, and cannot chose a sampler that performs well.
+of a given likelihood, prior and data set, and cannot choose a sampler that performs well.
 For example, Markov Chain Monte Carlo convergence checks may suggest good results,
 while in fact another distant but important posterior peak has remained unseen.
 Current and upcoming large astronomical surveys require characterising 
