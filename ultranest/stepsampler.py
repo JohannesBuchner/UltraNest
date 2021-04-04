@@ -76,16 +76,9 @@ def generate_region_oriented_direction(ui, region, tscale=1, scale=None):
     v: array
         new direction vector (in u-space)
     """
-    ndim = len(ui)
-    ti = region.transformLayer.transform(ui)
-
     # choose axis in transformed space:
-    j = np.random.randint(ndim)
-    tv = np.zeros(ndim)
-    tv[j] = tscale
-    # convert back to unit cube space:
-    uj = region.transformLayer.untransform(ti + tv)
-    v = uj - ui
+    j = np.random.randint(len(ui))
+    v = region.transformLayer.axes[j] * tscale
     if scale is not None:
         v *= scale / (v**2).sum()**0.5
     return v
@@ -545,16 +538,11 @@ class StepSampler(object):
         if Li is None and self.history:
             # try to resume from a previous point above the current contour
             for j, (uj, Lj) in enumerate(self.history[::-1]):
-                if Lj > Lmin and region.inside(uj.reshape((1,-1))) and (tregion is None or tregion.inside(transform(uj.reshape((1, -1))))):
+                is_inside = not self.region_filter or (region.inside(uj.reshape((1,-1))) and (tregion is None or tregion.inside(transform(uj.reshape((1, -1))))))
+                if Lj > Lmin and is_inside:
                     del ui, Li
                     ui, Li = uj, Lj
-                    # print("recovered off-track walk from point %d/%d " % (j+1, len(self.history)))
                     self.last = ui, Li
-
-                    # pj = transform(uj.reshape((1, -1)))
-                    # Lj2 = loglike(pj)[0]
-                    # assert Lj2 > Lmin, (Lj2, Lj, uj, pj)
-
                     break
             pass
 

@@ -17,7 +17,7 @@ from numpy import log, exp, logaddexp
 import numpy as np
 
 from .utils import create_logger, make_run_dir, resample_equal, vol_prefactor, vectorize, listify as _listify, is_affine_transform, normalised_kendall_tau_distance
-from ultranest.mlfriends import MLFriends, AffineLayer, ScalingLayer, find_nearby, WrappingEllipsoid
+from ultranest.mlfriends import MLFriends, AffineLayer, ScalingLayer, find_nearby, WrappingEllipsoid, RobustEllipsoidRegion
 from .store import HDF5PointStore, TextPointStore, NullPointStore
 from .viz import get_default_viz_callback, nicelogger
 from .ordertest import UniformOrderAccumulator
@@ -740,7 +740,7 @@ class NestedSampler(object):
                     ib = 0
 
                     nc = 0
-                    u, father = region.sample(nsamples=ndraw)
+                    u = region.sample(nsamples=ndraw)
                     nu = u.shape[0]
                     if nu == 0:
                         v = np.empty((0, self.x_dim))
@@ -753,23 +753,20 @@ class NestedSampler(object):
                         u = u[accepted,:]
                         v = v[accepted,:]
                         logl = logl[accepted]
-                        father = father[accepted]
+                        # father = father[accepted]
 
                     # collect results from all MPI members
                     if self.use_mpi:
-                        recv_father = self.comm.gather(father, root=0)
                         recv_samples = self.comm.gather(u, root=0)
                         recv_samplesv = self.comm.gather(v, root=0)
                         recv_likes = self.comm.gather(logl, root=0)
                         recv_nc = self.comm.gather(nc, root=0)
-                        recv_father = self.comm.bcast(recv_father, root=0)
                         recv_samples = self.comm.bcast(recv_samples, root=0)
                         recv_samplesv = self.comm.bcast(recv_samplesv, root=0)
                         recv_likes = self.comm.bcast(recv_likes, root=0)
                         recv_nc = self.comm.bcast(recv_nc, root=0)
                         samples = np.concatenate(recv_samples, axis=0)
                         samplesv = np.concatenate(recv_samplesv, axis=0)
-                        father = np.concatenate(recv_father, axis=0)
                         likes = np.concatenate(recv_likes, axis=0)
                         ncall += sum(recv_nc)
                     else:
@@ -1541,7 +1538,7 @@ class ReactiveNestedSampler(object):
     def _refill_samples(self, Lmin, ndraw, nit):
         """Get new samples from region."""
         nc = 0
-        u, father = self.region.sample(nsamples=ndraw)
+        u = self.region.sample(nsamples=ndraw)
         assert np.logical_and(u > 0, u < 1).all(), (u)
         nu = u.shape[0]
         if nu == 0:
@@ -1553,7 +1550,6 @@ class ReactiveNestedSampler(object):
                 # peel off first if multiple evaluation is not supported
                 nu = 1
                 u = u[:1,:]
-                father = father[:1]
 
             v = self.transform(u)
             logl = np.ones(nu) * -np.inf
@@ -1757,7 +1753,7 @@ class ReactiveNestedSampler(object):
             else:
                 self.transformLayer = ScalingLayer(wrapped_dims=self.wrapped_axes)
             self.transformLayer.optimize(active_u, active_u, minvol=minvol)
-            self.region = MLFriends(active_u, self.transformLayer)
+            self.region = self.region_class(active_u, self.transformLayer)
             self.region_nodes = active_node_ids.copy()
             assert self.region.maxradiussq is None
 
@@ -1840,7 +1836,7 @@ class ReactiveNestedSampler(object):
                         np.unique(nextTransformLayer.clusterids, return_counts=True)
                     )
 
-                nextregion = MLFriends(active_u, nextTransformLayer)
+                nextregion = self.region_class(active_u, nextTransformLayer)
                 assert np.isfinite(nextregion.unormed).all()
 
                 if not nextTransformLayer.nclusters < 20:
@@ -2049,6 +2045,7 @@ class ReactiveNestedSampler(object):
             cluster_num_live_points=40,
             insertion_test_window=10,
             insertion_test_zscore_threshold=2,
+            region_class=MLFriends,
     ):
         """Run until target convergence criteria are fulfilled.
 
@@ -2117,6 +2114,9 @@ class ReactiveNestedSampler(object):
         insertion_test_window: float
             Number of iterations after which the insertion order test is reset.
 
+        region_class: MLFriends or RobustEllipsoidRegion
+            Whether to use MLFriends+ellipsoidal+tellipsoidal region (better for multi-modal problems)
+            or just ellipsoidal sampling (faster for high-dimensional, gaussian-like problems).
         """
 
         for result in self.run_iter(
@@ -2133,6 +2133,7 @@ class ReactiveNestedSampler(object):
             viz_callback=viz_callback,
             insertion_test_window=insertion_test_window,
             insertion_test_zscore_threshold=insertion_test_zscore_threshold,
+            region_class=MLFriends,
         ):
             if self.log:
                 self.logger.debug("did a run_iter pass!")
@@ -2161,6 +2162,7 @@ class ReactiveNestedSampler(object):
             viz_callback='auto',
             insertion_test_window=10,
             insertion_test_zscore_threshold=2,
+            region_class=MLFriends
     ):
         """Iterate towards convergence.
 
@@ -2193,6 +2195,7 @@ class ReactiveNestedSampler(object):
         self.cluster_num_live_points = cluster_num_live_points
         self.sampling_slow_warned = False
         self.build_tregion = True
+        self.region_class = region_class
         update_interval_volume_log_fraction = log(update_interval_volume_fraction)
 
         if viz_callback == 'auto':
