@@ -4,6 +4,7 @@ import os
 import matplotlib.pyplot as plt
 from ultranest.utils import create_logger
 from ultranest import ReactiveNestedSampler
+from ultranest.mlfriends import MLFriends
 
 here = os.path.dirname(__file__)
 
@@ -83,6 +84,7 @@ class MockIntegrator(ReactiveNestedSampler):
         self.wrapped_axes = []
         self.log = True
         self.logger = create_logger("mock")
+        self.region_class = MLFriends
 
 
 def test_overclustering_eggbox_txt():
@@ -121,7 +123,7 @@ def test_overclustering_eggbox_txt():
             assert 14 < nclusters < 20, (nclusters, i)
 
 
-def test_overclustering_eggbox_update():
+def test_overclustering_eggbox_update(plot=False):
     np.random.seed(1)
     for i in [20, 23, 24, 27, 42]:
         print()
@@ -163,7 +165,7 @@ def test_overclustering_eggbox_update():
             # when nlive changes
             print("found lonely points", i, nclusters, np.unique(mock.transformLayer.clusterids, return_counts=True))
 
-        if False:
+        if plot:
             for xi0, yi0, xi, yi in zip(data['u0'][:,0], data['u0'][:,1], data['u'][:,0], data['u'][:,1]):
                 plt.plot([xi0, xi], [yi0, yi], 'x-', ms=2)
 
@@ -185,7 +187,7 @@ def test_overclustering_eggbox_update():
         for k in np.unique(mock.transformLayer.clusterids):
             x, y = mock.region.u[mock.transformLayer.clusterids == k].transpose()
             print('cluster %d/%d: %d points @ %.5f +- %.5f , %.5f +- %.5f' % (k, nclusters, len(x), x.mean(), x.std(), y.mean(), y.std()))
-        if False:
+        if plot:
             plt.title('nclusters: %d' % nclusters)
             for k in np.unique(mock.transformLayer.clusterids):
                 x, y = mock.region.u[mock.transformLayer.clusterids == k].transpose()
@@ -199,4 +201,5 @@ def test_overclustering_eggbox_update():
 
 if __name__ == '__main__':
     # test_clustering()
-    test_clusteringcase()
+    # test_clusteringcase()
+    test_overclustering_eggbox_update(plot=True)

@@ -33,7 +33,7 @@ def test_region_sampling_scaling(plot=False):
 
     for method in region.sampling_methods:
         print("sampling_method:", method)
-        newpoints, nc = method(nsamples=4000)
+        newpoints = method(nsamples=4000)
         lo1, lo2 = newpoints.min(axis=0)
         hi1, hi2 = newpoints.max(axis=0)
         assert 0.15 < lo1 < 0.25, (method.__name__, newpoints, lo1, hi1, lo2, hi2)
@@ -73,7 +73,7 @@ def test_region_sampling_affine(plot=False):
 
     for method in region.sampling_methods:
         print("sampling_method:", method)
-        newpoints, nc = method(nsamples=4000)
+        newpoints = method(nsamples=4000)
         lo1, lo2 = newpoints.min(axis=0)
         hi1, hi2 = newpoints.max(axis=0)
         assert 0 <= lo1 < 0.1, (method.__name__, newpoints, lo1, hi1, lo2, hi2)

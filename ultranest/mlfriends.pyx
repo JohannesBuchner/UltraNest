@@ -387,8 +387,8 @@ def bounding_ellipsoid(
     # combination of others). When this happens, we expand the ellipse
     # in the zero dimensions to fulfill the volume expected from
     # ``pointvol``.
-    #targetprod = (minvol / vol_prefactor(ndim))**2
-    cov = make_eigvals_positive(cov, minvol)
+    if minvol > 0:
+        cov = make_eigvals_positive(cov, minvol)
 
     return ctr, cov
 
@@ -481,6 +481,7 @@ class ScalingLayer(object):
         wrapped_points = self.wrap(points)
         self.mean = wrapped_points.mean(axis=0).reshape((1,-1))
         self.std = centered_points.std(axis=0).reshape((1,-1))
+        self.axes = np.diag(self.std)
         self.volscale = np.product(self.std)
         self.set_clusterids(clusterids=clusterids, npoints=len(points))
 
@@ -595,18 +596,14 @@ class AffineLayer(ScalingLayer):
         cov *= (len(self.ctr) + 2)
         self.cov = cov
         eigval, eigvec = np.linalg.eigh(cov)
-        #if not (eigval > 0).all():
-        #    raise np.linalg.LinAlgError("Points on a hyperplane")
-        #assert (eigval > 0).all(), (eigval, eigvec, cov, points, centered_points)
-        #eigvalmin = np.product(eigval[eigval > 0]) / minvol
         eigvalmin = eigval.max() * 1e-40
         eigval[eigval < eigvalmin] = eigvalmin
         a = np.linalg.inv(cov)
         self.volscale = np.linalg.det(a)**-0.5
 
-        #Lambda = np.diag(eigval)
         self.T = eigvec * eigval**-0.5
         self.invT = np.linalg.inv(self.T)
+        self.axes = self.invT
         #print('transform used:', self.T, self.invT, 'cov:', cov, 'eigen:', eigval, eigvec)
         self.set_clusterids(clusterids=clusterids, npoints=len(points))
 
@@ -845,23 +842,21 @@ class MLFriends(object):
             idx = rng.randint(N, size=N)
             selected[:] = False
             selected[idx] = True
-            ta = self.unormed[selected,:]
-            tb = self.unormed[~selected,:]
-            ua = self.u[selected,:]
-            ub = self.u[~selected,:]
 
             # compute distances from a to b
-            maxd = max(maxd, compute_maxradiussq(ta, tb))
+            maxd = max(maxd, compute_maxradiussq(
+                self.unormed[selected,:], 
+                self.unormed[~selected,:]))
 
             # compute enlargement of bounding ellipsoid
-            ctr, cov = bounding_ellipsoid(ua, minvol=(minvol / self.vol_prefactor)**2)
+            ctr, cov = bounding_ellipsoid(self.u[selected,:])
             a = np.linalg.inv(cov)  # inverse covariance
             # compute expansion factor
-            delta = ub - ctr
+            delta = self.u[~selected,:] - ctr
             #f = np.einsum('...i, ...i', np.tensordot(delta, a, axes=1), delta).max()
             f = np.einsum('ij,jk,ik->i', delta, a, delta).max()
             assert np.isfinite(f), (ctr, cov, self.unormed, f, delta, a)
-            assert f > 0, (f, len(ua), len(ub), delta, ctr, np.einsum('...i, ...i', np.tensordot(delta, a, axes=1), delta))
+            assert f > 0, (f, len(self.unormed), selected.sum(), delta, ctr, np.einsum('...i, ...i', np.tensordot(delta, a, axes=1), delta))
             maxf = max(maxf, f)
 
         assert maxd > 0, (maxd, self.u, self.unormed)
@@ -890,7 +885,7 @@ class MLFriends(object):
         wmask = np.logical_and(w > 0, w < 1).all(axis=1)
         wmask[wmask] = self.inside_ellipsoid(w[wmask])
 
-        return w[wmask,:], idx[vmask][wmask]
+        return w[wmask,:]
 
     def sample_from_boundingbox(self, nsamples=100):
         """Draw uniformly sampled points from MLFriends region.
@@ -908,7 +903,7 @@ class MLFriends(object):
         idnearby = np.empty(len(v), dtype=int)
         find_nearby(self.unormed, v, self.maxradiussq, idnearby)
         vmask = idnearby >= 0
-        return u[wmask,:][vmask,:], idnearby[vmask]
+        return u[wmask,:][vmask,:]
 
     def sample_from_transformed_boundingbox(self, nsamples=100):
         """Draw uniformly sampled points from MLFriends region.
@@ -929,7 +924,7 @@ class MLFriends(object):
         wmask = np.logical_and(w > 0, w < 1).all(axis=1)
         wmask[wmask] = self.inside_ellipsoid(w[wmask])
 
-        return w[wmask,:], idnearby[vmask][wmask]
+        return w[wmask,:]
 
     def sample_from_wrapping_ellipsoid(self, nsamples=100):
         """Draw uniformly sampled points from MLFriends region.
@@ -947,7 +942,7 @@ class MLFriends(object):
         assert self.enlarge > 0, self.enlarge
         u = z * self.enlarge**0.5 * np.random.uniform(size=(nsamples, 1))**(1./ndim)
 
-        w = self.ellipsoid_center + np.einsum('ij,kj->ki', self.ellipsoid_axes, u)
+        w = self.ellipsoid_center + np.dot(u, self.ellipsoid_axes_T)
         #assert self.inside_ellipsoid(w).all()
 
         wmask = np.logical_and(w > 0, w < 1).all(axis=1)
@@ -956,7 +951,7 @@ class MLFriends(object):
         find_nearby(self.unormed, v, self.maxradiussq, idnearby)
         vmask = idnearby >= 0
 
-        return w[wmask,:][vmask,:], idnearby[vmask]
+        return w[wmask,:][vmask,:]
 
     def sample(self, nsamples=100):
         """Draw uniformly sampled points from MLFriends region.
@@ -975,12 +970,12 @@ class MLFriends(object):
         idx: array of integers (nsamples)
             index of a point nearby (MLFriends.u)
         """
-        samples, idx = self.current_sampling_method(nsamples=nsamples)
+        samples = self.current_sampling_method(nsamples=nsamples)
         if len(samples) == 0:
             # no result, choose another method
             self.current_sampling_method = self.sampling_methods[np.random.randint(len(self.sampling_methods))]
             #print("switching to %s" % self.current_sampling_method)
-        return samples, idx
+        return samples
 
     def inside(self, pts):
         """Check if inside region.
@@ -1029,6 +1024,7 @@ class MLFriends(object):
         l, v = np.linalg.eigh(a)
         self.ellipsoid_axlens = 1. / np.sqrt(l)
         self.ellipsoid_axes = np.dot(v, np.diag(self.ellipsoid_axlens))
+        self.ellipsoid_axes_T = self.ellipsoid_axes.transpose()
 
         l2, v2 = np.linalg.eigh(cov)
         self.ellipsoid_inv_axlens = 1. / np.sqrt(l2)
@@ -1055,6 +1051,207 @@ class MLFriends(object):
         return compute_mean_pair_distance(self.unormed, self.transformLayer.clusterids)
 
 
+class RobustEllipsoidRegion(MLFriends):
+    """Ellipsoidal region.
+
+    Defines a region around nested sampling live points for
+
+    1. checking whether a proposed point likely also fulfills the
+       likelihood constraints
+    2. proposing new points.
+
+    Learns geometry of region from existing live points.
+    """
+
+    def __init__(self, u, transformLayer):
+        """Initialise region.
+
+        Parameters
+        -----------
+        u: array of vectors
+            live points
+        transformLayer: ScalingLayer or AffineLayer
+            whitening layer
+
+        """
+        if not np.logical_and(u > 0, u < 1).all():
+            raise ValueError("not all u values are between 0 and 1: %s" % u[~np.logical_and(u > 0, u < 1).all()])
+
+        self.u = u
+        self.set_transformLayer(transformLayer)
+
+        self.sampling_methods = [
+            self.sample_from_transformed_boundingbox,
+            self.sample_from_boundingbox,
+            self.sample_from_wrapping_ellipsoid
+        ]
+        self.current_sampling_method = self.sample_from_boundingbox
+        self.vol_prefactor = vol_prefactor(self.u.shape[1])
+
+    def sample_from_boundingbox(self, nsamples=100):
+        """Draw uniformly sampled points from MLFriends region.
+
+        Draws uniformly from bounding box around region.
+
+        Parameters as described in *sample()*.
+        """
+        N, ndim = self.u.shape
+        # draw from unit cube in prior space
+        u = np.random.uniform(size=(nsamples, ndim))
+        wmask = self.inside_ellipsoid(u)
+        # check if inside region in transformed space
+        v = self.transformLayer.transform(u[wmask,:])
+        vmask = np.logical_and(
+            v > (self.bbox_lo - self.maxradiussq).reshape((1, -1)),
+            v < (self.bbox_hi + self.maxradiussq).reshape((1, -1))
+        ).all(axis=1)
+        return u[wmask,:][vmask,:]
+
+    def sample_from_transformed_boundingbox(self, nsamples=100):
+        """Draw uniformly sampled points from MLFriends region.
+
+        Draws uniformly from bounding box around region (in whitened space).
+
+        Parameters as described in *sample()*.
+        """
+        N, ndim = self.u.shape
+        # draw from rectangle in transformed space
+        v = np.random.uniform(self.bbox_lo - self.maxradiussq, self.bbox_hi + self.maxradiussq, size=(nsamples, ndim))
+
+        # check if inside unit cube
+        w = self.transformLayer.untransform(v)
+        wmask = np.logical_and(w > 0, w < 1).all(axis=1)
+        wmask[wmask] = self.inside_ellipsoid(w[wmask])
+
+        return w[wmask,:]
+
+    def sample_from_wrapping_ellipsoid(self, nsamples=100):
+        """Draw uniformly sampled points from MLFriends region.
+
+        Draws uniformly from wrapping ellipsoid and filters with region.
+
+        Parameters as described in ``sample()``.
+        """
+        N, ndim = self.u.shape
+        # draw from rectangle in transformed space
+
+        z = np.random.normal(size=(nsamples, ndim))
+        assert ((z**2).sum(axis=1) > 0).all(), (z**2).sum(axis=1)
+        z /= ((z**2).sum(axis=1)**0.5).reshape((nsamples, 1))
+        assert self.enlarge > 0, self.enlarge
+        u = z * self.enlarge**0.5 * np.random.uniform(size=(nsamples, 1))**(1./ndim)
+
+        w = self.ellipsoid_center + np.dot(u, self.ellipsoid_axes_T)
+        #assert self.inside_ellipsoid(w).all()
+
+        wmask = np.logical_and(w > 0, w < 1).all(axis=1)
+        v = self.transformLayer.transform(w[wmask,:])
+        vmask = np.logical_and(
+            v > (self.bbox_lo - self.maxradiussq).reshape((1, -1)),
+            v < (self.bbox_hi + self.maxradiussq).reshape((1, -1))
+        ).all(axis=1)
+
+        return w[wmask,:][vmask]
+
+    def sample(self, nsamples=100):
+        """Draw uniformly sampled points from MLFriends region.
+
+        Switches automatically between the ``sampling_methods`` (attribute).
+
+        Parameters
+        ----------
+        nsamples: int
+            number of samples to draw
+        
+        Returns
+        -------
+        samples: array of shape (nsamples, dimension)
+            samples drawn
+        idx: array of integers (nsamples)
+            index of a point nearby (MLFriends.u)
+        """
+        samples = self.current_sampling_method(nsamples=nsamples)
+        if len(samples) == 0:
+            # no result, choose another method
+            self.current_sampling_method = self.sampling_methods[np.random.randint(len(self.sampling_methods))]
+            #print("switching to %s" % self.current_sampling_method)
+        return samples
+
+    def inside(self, pts):
+        """Check if inside region.
+
+        Parameters
+        ----------
+        pts: array of vectors
+            Points to check
+
+        Returns
+        ---------
+        is_inside: array of bools
+            True if inside MLFriends region and wrapping ellipsoid,
+            for each point in ``pts``.
+
+        """
+        # require points to be inside bounding ellipsoid
+        mask = self.inside_ellipsoid(pts)
+        
+        if mask.any():
+            # additionally require points to be near neighbours
+            v = self.transformLayer.transform(pts[mask,:])
+            vmask = np.logical_and(
+                v > (self.bbox_lo - self.maxradiussq).reshape((1, -1)),
+                v < (self.bbox_hi + self.maxradiussq).reshape((1, -1))
+            ).all(axis=1)
+            mask[mask] = vmask
+
+        return mask
+
+    def compute_enlargement(self, nbootstraps=50, minvol=0., rng=np.random):
+        """Return MLFriends radius and ellipsoid enlargement using bootstrapping.
+
+        The wrapping ellipsoid covariance is determined in each bootstrap round.
+
+        Parameters
+        ----------
+        nbootstraps: int
+            number of bootstrapping rounds
+        minvol: float
+            minimum volume to enforce to wrapping ellipsoid
+        rng:
+            random number generator
+
+        Returns
+        -------
+        max_distance: float
+            square radius of MLFriends algorithm
+        max_radius: float
+            square radius of enclosing ellipsoid.
+        """
+        N, ndim = self.u.shape
+        assert np.isfinite(self.unormed).all(), self.unormed
+        selected = np.empty(N, dtype=bool)
+        maxd = 1e300
+        maxf = 0.0
+
+        for i in range(nbootstraps):
+            idx = rng.randint(N, size=N)
+            selected[:] = False
+            selected[idx] = True
+
+            # compute enlargement of bounding ellipsoid
+            ctr, cov = bounding_ellipsoid(self.u[selected,:])
+            a = np.linalg.inv(cov)  # inverse covariance
+            # compute expansion factor
+            delta = self.u[~selected,:] - ctr
+            #f = np.einsum('...i, ...i', np.tensordot(delta, a, axes=1), delta).max()
+            f = np.einsum('ij,jk,ik->i', delta, a, delta).max()
+            assert np.isfinite(f), (ctr, cov, self.unormed, f, delta, a)
+            assert f > 0, (f, len(self.unormed), selected.sum(), delta, ctr, np.einsum('...i, ...i', np.tensordot(delta, a, axes=1), delta))
+            maxf = max(maxf, f)
+
+        assert maxd > 0, (maxd, self.u, self.unormed)
+        assert maxf > 0, (maxf, self.u, self.unormed)
+        return maxd, maxf
 
 class WrappingEllipsoid(object):
     """Ellipsoid which safely wraps points."""
