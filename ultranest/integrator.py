@@ -2133,7 +2133,7 @@ class ReactiveNestedSampler(object):
             viz_callback=viz_callback,
             insertion_test_window=insertion_test_window,
             insertion_test_zscore_threshold=insertion_test_zscore_threshold,
-            region_class=MLFriends,
+            region_class=region_class,
         ):
             if self.log:
                 self.logger.debug("did a run_iter pass!")

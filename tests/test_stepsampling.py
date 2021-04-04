@@ -127,7 +127,7 @@ def test_stepsampler(plot=False):
 def test_stepsampler_adapt_when_stuck(plot=False):
     # check that a stuck sampler can free itself
     np.random.seed(7)
-    us = np.random.normal(0.7, 0.001, size=(1000, len(paramnames)))
+    us = np.random.normal(0.7, 0.0001, size=(1000, len(paramnames)))
     region = make_region(len(paramnames), us=us)
     Ls = loglike_vectorized(us)
     Lmin = Ls.min()
@@ -145,7 +145,7 @@ def test_stepsampler_adapt_when_stuck(plot=False):
     
     new_scale = stepsampler.scale
     assert new_scale != old_scale
-    assert new_scale < 0.01, new_scale
+    assert new_scale < 0.01, (new_scale, unew)
     
     print('CubeSliceSampler')
     stepsampler = CubeSliceSampler(nsteps=1, region_filter=True)
@@ -161,7 +161,7 @@ def test_stepsampler_adapt_when_stuck(plot=False):
     
     new_scale = stepsampler.scale
     assert new_scale != old_scale
-    assert new_scale < 0.01, new_scale
+    assert new_scale < 0.01, (new_scale, unew)
 
 def test_stepsampler_regionmh_adapt(plot=False):
     np.random.seed(8)
@@ -193,87 +193,6 @@ def test_stepsampler_regionmh_adapt(plot=False):
                 assert stepsampler.nsteps != len(paramnames)
             else:
                 assert stepsampler.nsteps == len(paramnames)
-
-def test_pathsampler():
-    stepper = SamplingPathStepSampler(nresets=1, nsteps=4, log=True)
-    #stepper.scale = 0.01
-    origscale = stepper.scale
-    Lmin = -1.0
-    us = 0.5 + np.zeros((100, 2))
-    Ls = np.zeros(100)
-    region = make_region(2)
-    def transform(x): return x
-    def loglike(x): return 0*x[:,0]
-    def gradient(x):
-        j = np.argmax(np.abs(x - 0.5))
-        v = np.zeros(len(x))
-        v[j] = -1 if x[j] > 0.5 else 1
-        return v
-    
-    def nocall(x):
-        assert False
-    
-    stepper.generate_direction = lambda ui, region, scale: np.array([0.01, 0.01])
-    stepper.set_gradient(nocall)
-    assert stepper.iresets == 1
-    assert (stepper.naccepts, stepper.nrejects) == (0, 0), (stepper.naccepts, stepper.nrejects)
-    x, v, L, nc = stepper.__next__(region, Lmin, us, Ls, transform, loglike)
-    assert x is None, x
-    assert (stepper.naccepts, stepper.nrejects) == (1, 0), (stepper.naccepts, stepper.nrejects)
-    x, v, L, nc = stepper.__next__(region, Lmin, us, Ls, transform, loglike)
-    assert x is None, x
-    assert (stepper.naccepts, stepper.nrejects) == (2, 0), (stepper.naccepts, stepper.nrejects)
-    x, v, L, nc = stepper.__next__(region, Lmin, us, Ls, transform, loglike)
-    assert x is None, x
-    assert (stepper.naccepts, stepper.nrejects) == (3, 0), (stepper.naccepts, stepper.nrejects)
-    x, v, L, nc = stepper.__next__(region, Lmin, us, Ls, transform, loglike)
-    assert_allclose(x, [0.54, 0.54])
-    # check that path was reset
-    assert (stepper.naccepts, stepper.nrejects) == (0, 0), (stepper.naccepts, stepper.nrejects)
-    assert origscale < stepper.scale, (origscale, stepper.scale)
-    origscale = stepper.scale
-
-    print()
-    print("make reflect")
-    print()
-    stepper.set_gradient(gradient)
-    def loglike(x): return np.where(x[:,0] < 0.505, 0.0, -100)
-    x, v, L, nc = stepper.__next__(region, Lmin, us, Ls, transform, loglike)
-    assert x is None, x
-    assert (stepper.naccepts, stepper.nrejects) == (1, 0), (stepper.naccepts, stepper.nrejects)
-    x, v, L, nc = stepper.__next__(region, Lmin, us, Ls, transform, loglike)
-    assert x is None, x
-    assert (stepper.naccepts, stepper.nrejects) == (2, 0), (stepper.naccepts, stepper.nrejects)
-    x, v, L, nc = stepper.__next__(region, Lmin, us, Ls, transform, loglike)
-    assert x is None, x
-    assert (stepper.naccepts, stepper.nrejects) == (3, 0), (stepper.naccepts, stepper.nrejects)
-    x, v, L, nc = stepper.__next__(region, Lmin, us, Ls, transform, loglike)
-    assert_allclose(x, [0.47, 0.55])
-    assert origscale < stepper.scale, (origscale, stepper.scale)
-    assert (stepper.naccepts, stepper.nrejects) == (0, 0), (stepper.naccepts, stepper.nrejects)
-
-    print()
-    print("make stuck")
-    print()
-    # make stuck
-    origscale = stepper.scale
-    def loglike(x): return -100 + 0*x[:,0]
-    x, v, L, nc = stepper.__next__(region, Lmin, us, Ls, transform, loglike)
-    assert x is None, x
-    assert stepper.nstuck == 0
-    assert (stepper.naccepts, stepper.nrejects) == (0, 1), (stepper.naccepts, stepper.nrejects)
-    x, v, L, nc = stepper.__next__(region, Lmin, us, Ls, transform, loglike)
-    assert x is None, x
-    assert (stepper.naccepts, stepper.nrejects) == (0, 2), (stepper.naccepts, stepper.nrejects)
-    assert stepper.nstuck == 0
-    x, v, L, nc = stepper.__next__(region, Lmin, us, Ls, transform, loglike)
-    assert x is None, x
-    assert stepper.nstuck == 1
-    assert (stepper.naccepts, stepper.nrejects) == (0, 3), (stepper.naccepts, stepper.nrejects)
-    x, v, L, nc = stepper.__next__(region, Lmin, us, Ls, transform, loglike)
-    assert_allclose(x, [0.50, 0.50])
-    assert (stepper.naccepts, stepper.nrejects) == (0, 0), (stepper.naccepts, stepper.nrejects)
-    assert origscale > stepper.scale, (origscale, stepper.scale, "should shrink scale")
 
 def assert_point_touches_ellipsoid(ucurrent, v, t, ellipsoid_center, ellipsoid_invcov, enlarge):
     unext = ucurrent + v * t
@@ -391,6 +310,7 @@ def test_aharm_sampler():
     Ls = loglike(us)
     Lmin = Ls.min()
     transformLayer = ScalingLayer()
+    transformLayer.optimize(us, us)
     region = MLFriends(us, transformLayer)
     region.maxradiussq, region.enlarge = region.compute_enlargement()
     region.create_ellipsoid()
@@ -429,6 +349,7 @@ def run_aharm_sampler():
         Lmin = Ls.min()
         
         transformLayer = ScalingLayer()
+        transformLayer.optimize(us, us)
         region = MLFriends(us, transformLayer)
         region.maxradiussq, region.enlarge = region.compute_enlargement()
         region.create_ellipsoid()

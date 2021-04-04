@@ -481,7 +481,7 @@ class ScalingLayer(object):
         wrapped_points = self.wrap(points)
         self.mean = wrapped_points.mean(axis=0).reshape((1,-1))
         self.std = centered_points.std(axis=0).reshape((1,-1))
-        self.axes = np.diag(self.std)
+        self.axes = np.diag(self.std[0])
         self.volscale = np.product(self.std)
         self.set_clusterids(clusterids=clusterids, npoints=len(points))
 
@@ -849,7 +849,7 @@ class MLFriends(object):
                 self.unormed[~selected,:]))
 
             # compute enlargement of bounding ellipsoid
-            ctr, cov = bounding_ellipsoid(self.u[selected,:])
+            ctr, cov = bounding_ellipsoid(self.u[selected,:], minvol=minvol)
             a = np.linalg.inv(cov)  # inverse covariance
             # compute expansion factor
             delta = self.u[~selected,:] - ctr

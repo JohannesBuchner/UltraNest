@@ -33,7 +33,7 @@ def generate_random_direction(ui, region, scale=1):
     return v
 
 
-def generate_cube_oriented_direction(ui, region):
+def generate_cube_oriented_direction(ui, region, scale=1):
     """Draw a unit direction vector in direction of a random unit cube axes.
 
     Parameters
@@ -52,11 +52,11 @@ def generate_cube_oriented_direction(ui, region):
     j = np.random.randint(ndim)
     # use doubling procedure to identify left and right maxima borders
     v = np.zeros(ndim)
-    v[j] = 1.0
+    v[j] = scale
     return v
 
 
-def generate_region_oriented_direction(ui, region, tscale=1, scale=None):
+def generate_region_oriented_direction(ui, region, scale=1):
     """Draw a random direction vector in direction of one of the `region` axes.
 
     If given, the vector length is `scale`.
@@ -67,8 +67,6 @@ def generate_region_oriented_direction(ui, region, tscale=1, scale=None):
     region: MLFriends object
         current region
     scale: float
-        length of direction vector in u-space
-    tscale: float
         length of direction vector in t-space
 
     Returns
@@ -78,9 +76,7 @@ def generate_region_oriented_direction(ui, region, tscale=1, scale=None):
     """
     # choose axis in transformed space:
     j = np.random.randint(len(ui))
-    v = region.transformLayer.axes[j] * tscale
-    if scale is not None:
-        v *= scale / (v**2).sum()**0.5
+    v = region.transformLayer.axes[j] * scale
     return v
 
 
@@ -94,22 +90,17 @@ def generate_region_random_direction(ui, region, scale=1):
     region: MLFriends object
         current region
     scale: float:
-        length of direction vector
+        length of direction vector (in t-space)
     
     Returns
     --------
     v: array
         new direction vector
     """
-    ti_orig = region.transformLayer.transform(ui)
-
     # choose axis in transformed space:
-    ti = np.random.normal(ti_orig, 1)
-    # ti *= scale / (ti**2).sum()**0.5
-    # convert back to unit cube space:
-    uj = region.transformLayer.untransform(ti)
-    v = uj - ui
-    v *= scale / (v**2).sum()**0.5
+    v1 = np.random.normal(0, 1, size=len(ui))
+    v1 *= scale / (v1**2).sum()**0.5
+    v = np.dot(region.transformLayer.axes, v1)
     return v
 
 
@@ -239,8 +230,9 @@ class StepSampler(object):
     """
 
     def __init__(
-        self, nsteps, scale=1.0, adaptive_nsteps=False, max_nsteps=1000,
-        region_filter=False, log=False
+        self, nsteps, generate_direction,
+        scale=1.0, adaptive_nsteps=False, max_nsteps=1000,
+        region_filter=False, log=False,
     ):
         """Initialise sampler.
 
@@ -297,6 +289,7 @@ class StepSampler(object):
         self.last = None, None
         self.nudge = 1.1**(1. / self.nsteps)
         self.nsteps_nudge = 1.01
+        self.generate_direction = generate_direction
         adaptive_nsteps_options = {
             False: None,
             'move-distance': adapt_proposal_move_distances,
@@ -617,8 +610,8 @@ class StepSampler(object):
         return None, None, None, nc
 
 
-class CubeMHSampler(StepSampler):
-    """Simple step sampler, staggering around in u-space."""
+class MHSampler(StepSampler):
+    """Gaussian Random Walk."""
 
     def move(self, ui, region, ndraw=1, plot=False):
         """Move in u-space with a Gaussian proposal.
@@ -633,34 +626,19 @@ class CubeMHSampler(StepSampler):
         All other parameters are ignored.
         """
         # propose in that direction
-        jitter = np.random.normal(0, 1, size=(min(10, ndraw), len(ui))) * self.scale
+        direction = self.generate_direction(ui, region, scale=self.scale)
+        jitter = direction * np.random.normal(0, 1, size=(min(10, ndraw), 1))
         unew = ui.reshape((1, -1)) + jitter
         return unew
 
+def CubeMHSampler(*args, **kwargs):
+    return MHSampler(*args, **kwargs, generate_direction=generate_random_direction)
 
-class RegionMHSampler(StepSampler):
-    """Simple step sampler, staggering around in t-space."""
-
-    def move(self, ui, region, ndraw=1, plot=False):
-        """Move in t-space with a Gaussian proposal.
-
-        Parameters
-        ----------
-        ui: array
-            current point
-        ndraw: int
-            number of points to draw.
-
-        All other parameters are ignored.
-        """
-        ti = region.transformLayer.transform(ui)
-        jitter = np.random.normal(0, 1, size=(min(10, ndraw), len(ui))) * self.scale
-        tnew = ti.reshape((1, -1)) + jitter
-        unew = region.transformLayer.untransform(tnew)
-        return unew
+def RegionMHSampler(*args, **kwargs):
+    return MHSampler(*args, **kwargs, generate_direction=generate_region_random_direction)
 
 
-class CubeSliceSampler(StepSampler):
+class SliceSampler(StepSampler):
     """Slice sampler, respecting the region."""
 
     def new_chain(self, region=None):
@@ -673,18 +651,6 @@ class CubeSliceSampler(StepSampler):
         self.history = []
         self.last = None, None
         self.nrejects = 0
-
-    def generate_direction(self, ui, region):
-        """Start in a new direction, by choosing a random parameter.
-
-        Parameters
-        ----------
-        ui: array
-            current point
-        region: MLFriends object
-            current region
-        """
-        return generate_cube_oriented_direction(ui, region)
 
     def adjust_accept(self, accepted, unew, pnew, Lnew, nc):
         """see :py:meth:`StepSampler.adjust_accept`"""
@@ -789,31 +755,30 @@ class CubeSliceSampler(StepSampler):
                 self.interval = (v, left, right, u)
 
 
-class RegionSliceSampler(CubeSliceSampler):
+def CubeSliceSampler(*args, **kwargs):
     """Slice sampler, randomly picking region axes."""
-
-    def generate_direction(self, ui, region):
-        """Choose a random axis in t-space.
-
-        Parameters
-        -----------
-        ui: array
-            current point (in u-space)
-        region: MLFriends object
-            region to use for transformation
-
-        Returns
-        --------
-        v: array
-            new direction vector (in u-space)
-        """
-        return generate_region_oriented_direction(ui, region, tscale=self.scale, scale=None)
+    return SliceSampler(*args, **kwargs, generate_direction=generate_cube_oriented_direction)
 
 
-class RegionSequentialSliceSampler(CubeSliceSampler):
-    """Slice sampler, sequentially iterating region axes."""
+def RegionSliceSampler(*args, **kwargs):
+    """Slice sampler, randomly picking region axes."""
+    return SliceSampler(*args, **kwargs, generate_direction=generate_region_oriented_direction)
 
-    def generate_direction(self, ui, region, scale=1):
+
+def BallSliceSampler(*args, **kwargs):
+    """Hit & run sampler. Choose random directions in space."""
+    return SliceSampler(*args, **kwargs, generate_direction=generate_random_direction)
+
+
+def RegionBallSliceSampler(*args, **kwargs):
+    """Hit & run sampler. Choose random directions according to region."""
+    return SliceSampler(*args, **kwargs, generate_direction=generate_region_random_direction)
+
+
+class SequentialDirectionGenerator(object):
+    def __init__(self):
+        self.axis_index = 0
+    def __call__(self, ui, region, scale=1):
         """Iteratively choose the next axis in t-space.
 
         Parameters
@@ -844,26 +809,16 @@ class RegionSequentialSliceSampler(CubeSliceSampler):
         v *= scale / (v**2).sum()**0.5
         return v
 
-
-class BallSliceSampler(CubeSliceSampler):
-    """Hit & run sampler. Choose random directions in space."""
-
-    generate_direction = generate_random_direction
+def RegionSequentialSliceSampler(*args, **kwargs):
+    """Slice sampler, sequentially iterating region axes."""
+    return SliceSampler(*args, **kwargs, generate_direction=SequentialDirectionGenerator())
 
 
-class RegionBallSliceSampler(CubeSliceSampler):
-    """Hit & run sampler. Choose random directions according to region."""
-
-    generate_direction = generate_region_random_direction
-
-
-class SpeedVariableRegionSliceSampler(CubeSliceSampler):
-    """Slice sampler, in region axes.
-
-    Updates only some dimensions at a time, completely user-definable.
+class SpeedVariableGenerator(object):
+    """Propose directions in region, but only some dimensions at a time, completely user-definable.
     """
 
-    def __init__(self, step_matrix):
+    def __init__(self, step_matrix, generate_direction=generate_region_random_direction):
         """Initialise sampler.
 
         Parameters
@@ -899,13 +854,15 @@ class SpeedVariableRegionSliceSampler(CubeSliceSampler):
             2-9 2/3 times and parameter 5-9 in every step.
             Three steps are made until the point is considered independent.
 
+        generate_direction: function
+            direction proposal function.
         """
-        nsteps = len(step_matrix)
-
-        StepSampler.__init__(self, nsteps=nsteps)
         self.step_matrix = step_matrix
+        self.nsteps = len(self.step_matrix)
+        self.axis_index = 0
+        self.generate_direction = generate_direction
 
-    def generate_direction(self, ui, region, scale=1):
+    def __call__(self, ui, region, scale=1):
         """Generate a slice sampling direction, using only some of the axes.
 
         Parameters
@@ -923,26 +880,32 @@ class SpeedVariableRegionSliceSampler(CubeSliceSampler):
             new direction vector
         """
         ndim = len(ui)
-        ti = region.transformLayer.transform(ui)
-
-        # choose random axis in transformed space
-        j = np.random.randint(ndim)
-        tv = np.zeros(ndim)
-        tv[j] = 1.0
-        # convert back to unit cube space:
-        uj = region.transformLayer.untransform(ti + tv * 1e-3)
-        uk = ui.copy()
-
+        
+        v = self.generate_direction(ui=ui, region=region, scale=scale)
         j = self.axis_index % self.nsteps
         self.axis_index = j + 1
         # only update active dimensions
         active_dims = self.step_matrix[j]
         # project uj onto ui. vary only active dimensions
-        uk[active_dims] = uj[active_dims]  # if this fails, a boolean array with the wrong number of columns was passed
+        uk = np.zeros(ndim)
+        uk[active_dims] = v[active_dims]  # if this fails, user passed a faulty step_matrix
+        return uk
 
-        v = uk - ui
-        v *= scale / (v**2).sum()**0.5
-        return v
+
+def SpeedVariableRegionSliceSampler(step_matrix, *args, **kwargs):
+    """Slice sampler, in region axes.
+
+    Updates only some dimensions at a time, completely user-definable.
+    """
+    
+    
+    return SliceSampler(*args, **kwargs, 
+        nsteps=kwargs.pop('nsteps', len(step_matrix)),
+        generate_direction=SpeedVariableGenerator(
+            step_matrix=step_matrix,
+            generate_direction=kwargs.pop('generate_direction', generate_region_random_direction)
+        )
+    )
 
 
 def ellipsoid_bracket(ui, v, ellipsoid_center, ellipsoid_inv_axes, ellipsoid_radius_square):
