@@ -126,7 +126,7 @@ def vectorize(function):
 
 
 """Square root of a small number."""
-SQRTEPS = (float(np.finfo(np.float64).eps))**0.5
+SQRTEPS = (float(np.finfo(float).eps))**0.5
 
 
 def resample_equal(samples, weights, rstate=None):
@@ -182,7 +182,7 @@ def resample_equal(samples, weights, rstate=None):
     # make N subdivisions, and choose positions with a consistent random offset
     positions = (rstate.random() + np.arange(N)) / N
 
-    idx = np.zeros(N, dtype=np.int)
+    idx = np.zeros(N, dtype=int)
     cumulative_sum = np.cumsum(weights)
     i, j = 0, 0
     while i < N:

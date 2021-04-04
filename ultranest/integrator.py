@@ -340,7 +340,7 @@ def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform,
     points2 = pointstore2.fileobj['points'][:][mask,:]
     del pointstore2.fileobj['points']
     pointstore2.fileobj.create_dataset(
-        'points', dtype=np.float,
+        'points', dtype=np.float64,
         shape=(0, pointstore2.ncols), maxshape=(None, pointstore2.ncols))
     pointstore2.fileobj['points'].resize(len(points2), axis=0)
     pointstore2.fileobj['points'][:] = points2

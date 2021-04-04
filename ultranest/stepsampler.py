@@ -182,6 +182,62 @@ def inside_region(region, unew, uold):
     del uold
     return region.inside(unew)
 
+def adapt_proposal_total_distances(region, history, mean_pair_distance, ndim):
+    # compute mean vector of each proposed jump
+    # compute total distance of all jumps
+    tproposed = region.transformLayer.transform(np.asarray([u for u, _ in history]))
+    assert len(tproposed.sum(axis=1)) == len(tproposed)
+    d2 = ((((tproposed[0] - tproposed)**2).sum(axis=1))**0.5).sum()
+    far_enough = d2 > mean_pair_distance / ndim
+
+    return far_enough, [d2, mean_pair_distance]
+
+def adapt_proposal_total_distances_NN(region, history, mean_pair_distance, ndim):
+    # compute mean vector of each proposed jump
+    # compute total distance of all jumps
+    tproposed = region.transformLayer.transform(np.asarray([u for u, _ in history]))
+    assert len(tproposed.sum(axis=1)) == len(tproposed)
+    d2 = ((((tproposed[0] - tproposed)**2).sum(axis=1))**0.5).sum()
+    far_enough = d2 > region.maxradiussq**0.5
+
+    return far_enough, [d2, region.maxradiussq**0.5]
+
+def adapt_proposal_summed_distances(region, history, mean_pair_distance, ndim):
+    # compute sum of distances from each jump
+    tproposed = region.transformLayer.transform(np.asarray([u for u, _ in history]))
+    d2 = (((tproposed[1:,:] - tproposed[:-1,:])**2).sum(axis=1)**0.5).sum()
+    far_enough = d2 > mean_pair_distance / ndim
+
+    return far_enough, [d2, mean_pair_distance]
+
+def adapt_proposal_summed_distances_NN(region, history, mean_pair_distance, ndim):
+    # compute sum of distances from each jump
+    tproposed = region.transformLayer.transform(np.asarray([u for u, _ in history]))
+    d2 = (((tproposed[1:,:] - tproposed[:-1,:])**2).sum(axis=1)**0.5).sum()
+    far_enough = d2 > region.maxradiussq**0.5
+
+    return far_enough, [d2, region.maxradiussq**0.5]
+
+def adapt_proposal_move_distances(region, history, mean_pair_distance, ndim):
+    # compute distance from start to end
+    ustart, _ = history[0]
+    ufinal, _ = history[-1]
+    tstart, tfinal = region.transformLayer.transform(np.vstack((ustart, ufinal)))
+    d2 = ((tstart - tfinal)**2).sum()
+    far_enough = d2 > region.maxradiussq
+
+    return far_enough, [d2, region.maxradiussq**0.5]
+
+def adapt_proposal_move_distances_midway(region, history, mean_pair_distance, ndim):
+    # compute distance from start to end
+    ustart, _ = history[0]
+    middle = max(1, len(history) // 2)
+    ufinal, _ = history[middle]
+    tstart, tfinal = region.transformLayer.transform(np.vstack((ustart, ufinal)))
+    d2 = ((tstart - tfinal)**2).sum()
+    far_enough = d2 > region.maxradiussq
+
+    return far_enough, [d2, region.maxradiussq**0.5]
 
 class StepSampler(object):
     """Base class for a simple step sampler, staggering around.
@@ -213,7 +269,7 @@ class StepSampler(object):
             * 'move-distance-midway': distance between
               start point and position in the middle of the chain
               exceeds the mean distance between pairs of live points.
-            * 'proposal-distance': mean square distance of
+            * 'proposal-total-distances': mean square distance of
               proposed vectors exceeds the mean distance
               between pairs of live points.
             * 'proposal-total-distances-NN': mean distance
@@ -248,19 +304,22 @@ class StepSampler(object):
         self.last = None, None
         self.nudge = 1.1**(1. / self.nsteps)
         self.nsteps_nudge = 1.01
-        adaptive_nsteps_options = [
-            False,
-            'proposal-total-distances-NN', 'proposal-summed-distances-NN',
-            'proposal-total-distances', 'proposal-summed-distances',
-            'move-distance', 'move-distance-midway', 'proposal-summed-distances-min-NN',
-            'proposal-variance-min', 'proposal-variance-min-NN'
-        ]
+        adaptive_nsteps_options = {
+            False: None,
+            'move-distance': adapt_proposal_move_distances,
+            'move-distance-midway': adapt_proposal_move_distances_midway,
+            'proposal-total-distances': adapt_proposal_total_distances, 
+            'proposal-total-distances-NN': adapt_proposal_total_distances_NN,
+            'proposal-summed-distances': adapt_proposal_summed_distances,
+            'proposal-summed-distances-NN': adapt_proposal_summed_distances_NN,
+        }
 
-        if adaptive_nsteps not in adaptive_nsteps_options:
+        if adaptive_nsteps not in adaptive_nsteps_options.keys():
             raise ValueError("adaptive_nsteps must be one of: %s, not '%s'" % (adaptive_nsteps_options, adaptive_nsteps))
         self.adaptive_nsteps = adaptive_nsteps
+        self.adaptive_nsteps_function = adaptive_nsteps_options[adaptive_nsteps]
         self.adaptive_nsteps_needs_mean_pair_distance = self.adaptive_nsteps in (
-            'proposal-total-distances', 'proposal-summed-distances', 'proposal-variance-min'
+            'proposal-total-distances', 'proposal-summed-distances',
         )
         self.mean_pair_distance = np.nan
         self.region_filter = region_filter
@@ -377,89 +436,8 @@ class StepSampler(object):
         if self.adaptive_nsteps_needs_mean_pair_distance:
             assert np.isfinite(self.mean_pair_distance)
         ndim = region.u.shape[1]
-        if self.adaptive_nsteps == 'proposal-total-distances':
-            # compute mean vector of each proposed jump
-            # compute total distance of all jumps
-            tproposed = region.transformLayer.transform(np.asarray([u for u, _ in self.history]))
-            assert len(tproposed.sum(axis=1)) == len(tproposed)
-            d2 = ((((tproposed[0] - tproposed)**2).sum(axis=1))**0.5).sum()
-            far_enough = d2 > self.mean_pair_distance / ndim
-
-            self.logstat[-1] = self.logstat[-1] + [d2, self.mean_pair_distance]
-            # print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, self.mean_pair_distance, d2)
-        elif self.adaptive_nsteps == 'proposal-total-distances-NN':
-            # compute mean vector of each proposed jump
-            # compute total distance of all jumps
-            tproposed = region.transformLayer.transform(np.asarray([u for u, _ in self.history]))
-            assert len(tproposed.sum(axis=1)) == len(tproposed)
-            d2 = ((((tproposed[0] - tproposed)**2).sum(axis=1))**0.5).sum()
-            far_enough = d2 > region.maxradiussq**0.5
-
-            self.logstat[-1] = self.logstat[-1] + [d2, region.maxradiussq**0.5]
-            # print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)
-        elif self.adaptive_nsteps == 'proposal-summed-distances':
-            # compute sum of distances from each jump
-            tproposed = region.transformLayer.transform(np.asarray([u for u, _ in self.history]))
-            d2 = (((tproposed[1:,:] - tproposed[:-1,:])**2).sum(axis=1)**0.5).sum()
-            far_enough = d2 > self.mean_pair_distance / ndim
-            # print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, self.mean_pair_distance, d2)
-
-            self.logstat[-1] = self.logstat[-1] + [d2, self.mean_pair_distance]
-        elif self.adaptive_nsteps == 'proposal-summed-distances-NN':
-            # compute sum of distances from each jump
-            tproposed = region.transformLayer.transform(np.asarray([u for u, _ in self.history]))
-            d2 = (((tproposed[1:,:] - tproposed[:-1,:])**2).sum(axis=1)**0.5).sum()
-            far_enough = d2 > region.maxradiussq**0.5
-
-            self.logstat[-1] = self.logstat[-1] + [d2, region.maxradiussq**0.5]
-            # print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)
-        elif self.adaptive_nsteps == 'proposal-summed-distances-min-NN':
-            # compute sum of distances from each jump
-            tproposed = region.transformLayer.transform(np.asarray([u for u, _ in self.history]))
-            d2 = (np.abs(tproposed[1:,:] - tproposed[:-1,:]).sum(axis=1)).min()
-            far_enough = d2 > region.maxradiussq**0.5
-
-            self.logstat[-1] = self.logstat[-1] + [d2, region.maxradiussq**0.5]
-            # print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)
-        elif self.adaptive_nsteps == 'proposal-variance-min':
-            # compute sum of distances from each jump
-            tproposed = region.transformLayer.transform(np.asarray([u for u, _ in self.history]))
-            d2 = tproposed.std(axis=0).min()
-            far_enough = d2 > self.mean_pair_distance / ndim
-
-            self.logstat[-1] = self.logstat[-1] + [d2, self.mean_pair_distance]
-            # print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)
-        elif self.adaptive_nsteps == 'proposal-variance-min-NN':
-            # compute sum of distances from each jump
-            tproposed = region.transformLayer.transform(np.asarray([u for u, _ in self.history]))
-            d2 = tproposed.std(axis=0).min()
-            far_enough = d2 > region.maxradiussq**0.5
-
-            self.logstat[-1] = self.logstat[-1] + [d2, region.maxradiussq**0.5]
-            # print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)
-        elif self.adaptive_nsteps == 'move-distance':
-            # compute distance from start to end
-            ustart, _ = self.history[0]
-            ufinal, _ = self.history[-1]
-            tstart, tfinal = region.transformLayer.transform(np.vstack((ustart, ufinal)))
-            d2 = ((tstart - tfinal)**2).sum()
-            far_enough = d2 > region.maxradiussq
-
-            self.logstat[-1] = self.logstat[-1] + [d2, region.maxradiussq**0.5]
-            # print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)
-        elif self.adaptive_nsteps == 'move-distance-midway':
-            # compute distance from start to end
-            ustart, _ = self.history[0]
-            middle = max(1, len(self.history) // 2)
-            ufinal, _ = self.history[middle]
-            tstart, tfinal = region.transformLayer.transform(np.vstack((ustart, ufinal)))
-            d2 = ((tstart - tfinal)**2).sum()
-            far_enough = d2 > region.maxradiussq
-
-            self.logstat[-1] = self.logstat[-1] + [d2, region.maxradiussq**0.5]
-            # print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)
-        else:
-            assert False, self.adaptive_nsteps
+        far_enough, extra_info = self.adaptive_nsteps_function(region, self.history, self.mean_pair_distance, ndim)
+        self.logstat[-1] += extra_info
 
         # adjust nsteps
         if far_enough:
