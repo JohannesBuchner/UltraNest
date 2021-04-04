@@ -28,7 +28,22 @@ __all__ = ['ReactiveNestedSampler', 'NestedSampler', 'read_file']
 
 
 def _get_cumsum_range(pi, dp):
-    """From probabilities pi compute the quantile indices of `dp` and ``1-dp``."""
+    """Compute quantile indices from probabilities.
+
+    Parameters
+    ------------
+    pi: array
+        probability of each item.
+    dp: float
+        Quantile (between 0 and 0.5).
+
+    Returns:
+    ---------
+    index_lo: int
+        Index of the item corresponding to quantile ``dp``.
+    index_hi: int
+        Index of the item corresponding to quantile ``1-dp``.
+    """
     ci = pi.cumsum()
     ilo = np.where(ci > dp)[0]
     ilo = ilo[0] if len(ilo) > 0 else 0
@@ -1396,7 +1411,7 @@ class ReactiveNestedSampler(object):
         logZmax = main_iterator.logZremain
         Lnext = logZmax - (main_iterator.logVolremaining + log(frac_remain)) - log(len(Ls))
         L1 = Ls[1] if len(Ls) > 1 else Ls[0]
-        Lmax1 = Ls[-2] if len(Ls) > 1 else Ls[-1]
+        Lmax1 = np.median(Ls)
         Lnext = max(min(Lnext, Lmax1), L1)
 
         # if the remainder dominates, return that range
@@ -2547,7 +2562,7 @@ class ReactiveNestedSampler(object):
             main_iterator, mpi_comm=self.comm if self.use_mpi else None)
 
         results['ncall'] = int(self.ncall)
-        results['paramnames'] = self.paramnames
+        results['paramnames'] = self.paramnames + self.derivedparamnames
         results['logzerr_single'] = (main_iterator.all_H[0] / self.min_num_live_points)**0.5
 
         sequence, results2 = logz_sequence(self.root, self.pointpile, random=True, check_insertion_order=True)

@@ -18,6 +18,10 @@ Fit and compare complex models reliably and rapidly with advanced sampling techn
         :target: https://github.com/JohannesBuchner/UltraNest/
         :alt: Github repository
 
+.. image:: https://joss.theoj.org/papers/10.21105/joss.03001/status.svg
+        :target: https://doi.org/10.21105/joss.03001
+        :alt: Software paper
+
 Correctness. Speed. Ease of use. 🦔
 
 About

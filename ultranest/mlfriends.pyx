@@ -16,9 +16,20 @@ cdef count_nearby(np.ndarray[np.float_t, ndim=2] apts,
     np.float_t radiussq,
     np.ndarray[np.int_t, ndim=1] nnearby
 ):
-    """Count the number of points in `a` within square radius `radiussq` for each point `b` in `bpts`.
+    """Count the number of points in ``apts`` within square radius ``radiussq`` for each point ``b`` in `bpts``.
 
-    The number is written to `nnearby` (of same length as bpts).
+    The number is written to ``nnearby`` (of same length as ``bpts``).
+
+    Parameters
+    ----------
+    apts: array
+        points
+    bpts: array
+        points
+    radiussq: float
+        square of the MLFriends radius
+    nnearby: array of ints
+        The result will be written here.
     """
     cdef size_t na = apts.shape[0]
     cdef size_t nb = bpts.shape[0]
@@ -40,8 +51,6 @@ cdef count_nearby(np.ndarray[np.float_t, ndim=2] apts,
             if d <= radiussq:
                 nnearby[j] += 1
 
-    #return nnearby
-
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -53,7 +62,19 @@ def find_nearby(np.ndarray[np.float_t, ndim=2] apts,
     """Gets the index of a point in `a` within square radius `radiussq`, for each point `b` in `bpts`.
 
     The number is written to `nnearby` (of same length as `bpts`).
-    If none is found, -1 is returned.
+    If none is found, -1 is written.
+
+    Parameters
+    ----------
+    apts: array
+        points
+    bpts: array
+        points
+    radiussq: float
+        square of the MLFriends radius
+    nnearby: array of ints
+        The result will be written here.
+
     """
     cdef size_t na = apts.shape[0]
     cdef size_t nb = bpts.shape[0]
@@ -76,15 +97,22 @@ def find_nearby(np.ndarray[np.float_t, ndim=2] apts,
                 nnearby[j] = i
                 break
 
-    #return nnearby
-
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
 cdef float compute_maxradiussq(np.ndarray[np.float_t, ndim=2] apts, np.ndarray[np.float_t, ndim=2] bpts):
-    """Measure shortest euclidean distance to any point in `apts`, for each point `b` in `bpts`.
+    """Measure the euclidean distance to the nearest point in `apts`, for each point `b` in `bpts`.
 
-    Returns the square of the maximum over these.
+    Parameters
+    ----------
+    apts: array
+        points
+    bpts: array
+        points
+
+    Returns
+    ---------
+    array containing the square euclidean distance for each point in bpts.
     """
     cdef size_t na = apts.shape[0]
     cdef size_t nb = bpts.shape[0]
@@ -119,9 +147,19 @@ def compute_mean_pair_distance(
     np.ndarray[np.float_t, ndim=2] pts,
     np.ndarray[np.int_t, ndim=1] clusterids
 ):
-    """Count the number of points in `a` within square radius `radiussq` for each point `b` in `bpts`.
+    """Compute the average distance between pairs of points.
+    Pairs from different clusters are excluded in the computation.
 
-    The number is written to `nnearby` (of same length as bpts).
+    Parameters
+    ----------
+    pts: array
+        points
+    clusterids: array of ints or None
+        for each point, index of the associated cluster.
+
+    Returns
+    ---------
+    mean distance between point pairs.
     """
     cdef size_t na = pts.shape[0]
     cdef size_t ndim = pts.shape[1]
@@ -157,24 +195,7 @@ cdef _update_clusters(
     np.float_t maxradiussq,
     np.ndarray[np.int_t, ndim=1] clusterids,
 ):
-    """Clusters `upoints`, so that clusters are distinct if no member pair is within a radius of sqrt(`maxradiussq`)
-
-    clusterids are the cluster indices of each point
-    clusterids re-uses the existing ids to assign new cluster ids
-
-    clustering is performed on a transformed coordinate space (`tpoints`).
-    Returned values are based on upoints.
-
-    Returns
-    ---------
-    nclusters: int
-        the number of clusters found, which is also clusterids.max()
-    new_clusterids: array of int
-        the new clusterids for each point
-    overlapped_points:
-        upoints with their cluster centers subtracted.
-
-    """
+    """same signature as ``update_clusters()``, see there."""
     #print("clustering with maxradiussq %f..." % maxradiussq)
     assert upoints.shape[0] == tpoints.shape[0], ('different number of points', upoints.shape[0], tpoints.shape[0])
     assert upoints.shape[1] == tpoints.shape[1], ('different dimensionality of points', upoints.shape[1], tpoints.shape[1])
@@ -247,13 +268,19 @@ def update_clusters(
     np.float_t maxradiussq,
     clusterids = None,
 ):
-    """Clusters `upoints`, so that clusters are distinct if no member pair is within a radius of sqrt(`maxradiussq`)
+    """Clusters `upoints`, so that clusters are distinct if no 
+    member pair is within a radius of sqrt(`maxradiussq`).
 
-    clusterids are the cluster indices of each point
-    clusterids re-uses the existing ids to assign new cluster ids
-
-    clustering is performed on a transformed coordinate space (`tpoints`).
-    Returned values are based on upoints.
+    Parameters
+    ----------
+    upoints: array
+        points (in u-space)
+    tpoints: array
+        points (in t-space)
+    maxradiussq: float
+        square of the MLFriends radius
+    clusterids: array of ints or None
+        for each point, index of the associated cluster.
 
     Returns
     ---------
@@ -264,6 +291,10 @@ def update_clusters(
     overlapped_points:
         upoints with their cluster centers subtracted.
 
+    The existing cluster ids are re-used when assigning new clusters,
+    if possible.
+    Clustering is performed on a transformed coordinate space (`tpoints`).
+    Returned values are based on upoints.
     """
     if clusterids is None:
         clusterids = np.zeros(len(tpoints), dtype=int)
@@ -277,9 +308,19 @@ def make_eigvals_positive(
     np.float_t targetprod
 ):
     """For the symmetric square matrix ``a``, increase any zero eigenvalues
-    to fulfill the given target product of eigenvalues.
+    to fulfill a target product of eigenvalues.
 
-    Returns a (possibly) new matrix."""
+    Parameters
+    ----------
+    a: array
+        covariance matrix
+    targetprod: array
+        target product of eigenvalues
+
+    Returns
+    ---------
+    covariance matrix
+    """
 
     assert np.isfinite(a).all(), a
     try:
@@ -365,7 +406,15 @@ class ScalingLayer(object):
         self.clusterids = clusterids
 
     def optimize_wrap(self, points):
-        """Find largest gap in live points and wrap parameter space there.
+        """Optimization for wrapped/circular parameters.
+        Does nothing if there are no wrapped/circular parameters.
+
+        Parameters
+        ----------
+        points: array
+            points to use for optimization (in u-space)
+
+        Find largest gap in live points and wrap parameter space there.
 
         For example, if a wrapped axis has::
 
@@ -375,11 +424,9 @@ class ScalingLayer(object):
         is::
 
             |      ********      |
-
-        Does nothing if there are no wrapped/circular parameters.
         """
         if not self.has_wraps:
-            return points
+            return 
 
         N, ndims = points.shape
         self.wrap_cuts = []
@@ -418,6 +465,17 @@ class ScalingLayer(object):
         """Optimize layer.
 
         Estimates mean and std of points.
+
+        Parameters
+        ----------
+        points: array
+            points to use for optimize (in u-space)
+        centered_points: array
+            points with their cluster center subtracted
+        clusterids: array of ints
+            for each point, which cluster they belong to
+        minvol:
+            ignored
         """
         self.optimize_wrap(points)
         wrapped_points = self.wrap(points)
@@ -438,7 +496,18 @@ class ScalingLayer(object):
     def create_new(self, upoints, maxradiussq, minvol=0.):
         """Learn next layer from this optimized layer's clustering.
 
-        Returns a new, optimized ScalingLayer.
+        Parameters
+        ----------
+        upoints: array
+            points to use for optimize (in u-space)
+        maxradiussq: float
+            square of the MLFriends radius
+        minvol: float
+            Minimum volume to regularize sample covariance
+
+        Returns
+        ---------
+        A new, optimized ScalingLayer.
         """
         # perform clustering in transformed space
         uwpoints = self.wrap(upoints)
@@ -504,9 +573,20 @@ class AffineLayer(ScalingLayer):
     def optimize(self, points, centered_points, clusterids=None, minvol=0.):
         """Optimize layer.
 
-        Estimates covariance of `centered_points`. `minvol` sets the
+        Estimates covariance of ``centered_points``. ``minvol`` sets the
         smallest allowed size of the covariance to avoid numerical
         collapse.
+
+        Parameters
+        ----------
+        points: array
+            points to use for optimize (in u-space)
+        centered_points: array
+            points with their cluster center subtracted
+        clusterids: array of ints
+            for each point, which cluster they belong to
+        minvol: float
+            Minimum volume to regularize sample covariance
         """
         self.optimize_wrap(points)
         wrapped_points = self.wrap(points)
@@ -533,7 +613,18 @@ class AffineLayer(ScalingLayer):
     def create_new(self, upoints, maxradiussq, minvol=0.):
         """Learn next layer from this optimized layer's clustering.
 
-        Returns a new, optimized AffineLayer.
+        Parameters
+        ----------
+        upoints: array
+            points to use for optimize (in u-space)
+        maxradiussq: float
+            square of the MLFriends radius
+        minvol: float
+            Minimum volume to regularize sample covariance
+
+        Returns
+        ---------
+        A new, optimized AffineLayer.
         """
         # perform clustering in transformed space
         uwpoints = self.wrap(upoints)
@@ -563,10 +654,19 @@ class AffineLayer(ScalingLayer):
 
 
 def vol_prefactor(np.int_t n):
-    """Volume constant for an `n`-dimensional sphere.
+    """Volume constant for an ``n``-dimensional sphere.
 
-    for `n` even:  $$    (2pi)^(n    /2) / (2 * 4 * ... * n)$$
-    for `n` odd :  $$2 * (2pi)^((n-1)/2) / (1 * 3 * ... * n)$$
+    for ``n`` even:  $$    (2pi)^(n    /2) / (2 * 4 * ... * n)$$
+    for ``n`` odd :  $$2 * (2pi)^((n-1)/2) / (1 * 3 * ... * n)$$
+
+    Parameters
+    ----------
+    n: int
+        dimensionality
+
+    Returns
+    ---------
+    volume (float)
     """
     if n % 2 == 0:
         f = 1.
@@ -603,7 +703,7 @@ def _inside_ellipsoid(
     Returns
     ---------
     is_inside: array of bools
-        True if inside wrapping for each point in `points`.
+        True if inside wrapping for each point in ``points``.
     """
     # compute distance vector to center
     d = points - ellipsoid_center
@@ -633,7 +733,7 @@ class MLFriends(object):
         u: array of vectors
             live points
         transformLayer: ScalingLayer or AffineLayer
-            whitenin layer
+            whitening layer
 
         """
         if not np.logical_and(u > 0, u < 1).all():
@@ -659,6 +759,10 @@ class MLFriends(object):
         * the number of live points
         * their overlap
         * the intersection with the unit cube borders
+
+        Returns
+        -------
+        volume (float)
         """
         r = self.maxradiussq**0.5
         N, ndim = self.u.shape
@@ -666,7 +770,14 @@ class MLFriends(object):
         return np.log(self.transformLayer.volscale) + np.log(r) * ndim #+ np.log(vol_prefactor(ndim))
 
     def set_transformLayer(self, transformLayer):
-        """Update transformation layer. Invalidates attribute `maxradius`."""
+        """Update transformation layer. Invalidates attribute `maxradius`.
+
+        Parameters
+        ----------
+        transformLayer: ScalingLayer or AffineLayer
+            t-space transformation layer
+
+        """
         self.transformLayer = transformLayer
         self.unormed = self.transformLayer.transform(self.u)
         assert np.isfinite(self.unormed).all(), (self.unormed, self.u)
@@ -675,7 +786,17 @@ class MLFriends(object):
         self.maxradiussq = None
 
     def compute_maxradiussq(self, nbootstraps=50):
-        """Return MLFriends radius after `nbootstraps` bootstrapping rounds"""
+        """Run MLFriends bootstrapping
+
+        Parameters
+        ----------
+        nbootstraps: int
+            number of bootstrapping rounds
+
+        Returns
+        -------
+        square radius that safely encloses all live points.
+        """
         N, ndim = self.u.shape
         selected = np.empty(N, dtype=bool)
         maxd = 0
@@ -694,9 +815,25 @@ class MLFriends(object):
         return maxd
 
     def compute_enlargement(self, nbootstraps=50, minvol=0., rng=np.random):
-        """Return MLFriends radius and ellipsoid enlargement after `nbootstraps` bootstrapping rounds.
+        """Return MLFriends radius and ellipsoid enlargement using bootstrapping.
 
         The wrapping ellipsoid covariance is determined in each bootstrap round.
+
+        Parameters
+        ----------
+        nbootstraps: int
+            number of bootstrapping rounds
+        minvol: float
+            minimum volume to enforce to wrapping ellipsoid
+        rng:
+            random number generator
+
+        Returns
+        -------
+        max_distance: float
+            square radius of MLFriends algorithm
+        max_radius: float
+            square radius of enclosing ellipsoid.
         """
         N, ndim = self.u.shape
         assert np.isfinite(self.unormed).all(), self.unormed
@@ -735,6 +872,8 @@ class MLFriends(object):
         """Draw uniformly sampled points from MLFriends region.
 
         Chooses randomly from points and their ellipsoids.
+
+        Parameters as described in *sample()*.
         """
         N, ndim = self.u.shape
         # generate points near random existing points
@@ -757,6 +896,8 @@ class MLFriends(object):
         """Draw uniformly sampled points from MLFriends region.
 
         Draws uniformly from bounding box around region.
+
+        Parameters as described in *sample()*.
         """
         N, ndim = self.u.shape
         # draw from unit cube in prior space
@@ -773,6 +914,8 @@ class MLFriends(object):
         """Draw uniformly sampled points from MLFriends region.
 
         Draws uniformly from bounding box around region (in whitened space).
+
+        Parameters as described in *sample()*.
         """
         N, ndim = self.u.shape
         # draw from rectangle in transformed space
@@ -792,6 +935,8 @@ class MLFriends(object):
         """Draw uniformly sampled points from MLFriends region.
 
         Draws uniformly from wrapping ellipsoid and filters with region.
+
+        Parameters as described in ``sample()``.
         """
         N, ndim = self.u.shape
         # draw from rectangle in transformed space
@@ -816,7 +961,19 @@ class MLFriends(object):
     def sample(self, nsamples=100):
         """Draw uniformly sampled points from MLFriends region.
 
-        Switches automatically between the `sampling_methods` (attribute).
+        Switches automatically between the ``sampling_methods`` (attribute).
+
+        Parameters
+        ----------
+        nsamples: int
+            number of samples to draw
+        
+        Returns
+        -------
+        samples: array of shape (nsamples, dimension)
+            samples drawn
+        idx: array of integers (nsamples)
+            index of a point nearby (MLFriends.u)
         """
         samples, idx = self.current_sampling_method(nsamples=nsamples)
         if len(samples) == 0:
@@ -837,7 +994,7 @@ class MLFriends(object):
         ---------
         is_inside: array of bools
             True if inside MLFriends region and wrapping ellipsoid,
-            for each point in *pts*.
+            for each point in ``pts``.
 
         """
         # require points to be inside bounding ellipsoid
@@ -853,7 +1010,13 @@ class MLFriends(object):
         return mask
 
     def create_ellipsoid(self, minvol=0.0):
-        """Create wrapping ellipsoid and store its center and covariance."""
+        """Create wrapping ellipsoid and store its center and covariance.
+
+        Parameters
+        ----------
+        minvol: float
+            If positive, make sure ellipsoid has at least this volume.
+        """
         assert self.enlarge is not None
         # compute enlargement of bounding ellipsoid
         ctr, cov = bounding_ellipsoid(self.u, minvol=minvol)

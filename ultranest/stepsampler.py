@@ -15,7 +15,17 @@ from .utils import listify as _listify
 def generate_random_direction(ui, region, scale=1):
     """Draw uniform direction vector in unit cube space of length `scale`.
 
-    Region is not used.
+    Parameters
+    -----------
+    region: MLFriends object
+        current region (not used)
+    scale: float
+        length of direction vector
+    
+    Returns
+    --------
+    v: array
+        new direction vector
     """
     del region
     v = np.random.normal(0, 1, size=len(ui))
@@ -26,7 +36,15 @@ def generate_random_direction(ui, region, scale=1):
 def generate_cube_oriented_direction(ui, region):
     """Draw a unit direction vector in direction of a random unit cube axes.
 
-    `region` is not used.
+    Parameters
+    -----------
+    region: MLFriends object
+        current region (not used)
+
+    Returns
+    --------
+    v: array
+        new direction vector
     """
     del region
     ndim = len(ui)
@@ -41,8 +59,22 @@ def generate_cube_oriented_direction(ui, region):
 def generate_region_oriented_direction(ui, region, tscale=1, scale=None):
     """Draw a random direction vector in direction of one of the `region` axes.
 
-    The vector length is `scale` (if given).
+    If given, the vector length is `scale`.
     If not, the vector length in transformed space is `tscale`.
+
+    Parameters
+    -----------
+    region: MLFriends object
+        current region
+    scale: float
+        length of direction vector in u-space
+    tscale: float
+        length of direction vector in t-space
+
+    Returns
+    --------
+    v: array
+        new direction vector (in u-space)
     """
     ndim = len(ui)
     ti = region.transformLayer.transform(ui)
@@ -63,6 +95,18 @@ def generate_region_random_direction(ui, region, scale=1):
     """Draw a direction vector in a random direction of the region.
 
     The vector length is `scale` (in unit cube space).
+
+    Parameters
+    -----------
+    region: MLFriends object
+        current region
+    scale: float:
+        length of direction vector
+    
+    Returns
+    --------
+    v: array
+        new direction vector
     """
     ti_orig = region.transformLayer.transform(ui)
 
@@ -88,6 +132,10 @@ def generate_mixture_random_direction(ui, region, scale=1, uniform_weight=1e-6):
     scale: float
         length of the vector.
 
+    Returns
+    --------
+    v: array
+        new direction vector
     """
     v1 = generate_random_direction(ui, region)
     v1 /= (v1**2).sum()**0.5
@@ -115,7 +163,22 @@ def _inside_region(region, unew, uold):
 
 
 def inside_region(region, unew, uold):
-    """Check if `unew` is inside region."""
+    """Check if `unew` is inside region.
+
+    Parameters
+    -----------
+    region: MLFriends object
+        current region
+    unew: array
+        point to check
+    uold: array
+        not used
+    
+    Returns
+    --------
+    v: array
+        boolean whether point is inside the region
+    """
     del uold
     return region.inside(unew)
 
@@ -209,14 +272,20 @@ class StepSampler(object):
             self.logstat_labels += ['jump-distance', 'reference-distance']
 
     def __str__(self):
-        """Get string representation."""
         if not self.adaptive_nsteps:
             return type(self).__name__ + '(nsteps=%d)' % self.nsteps
         else:
             return type(self).__name__ + '(adaptive_nsteps=%s)' % self.adaptive_nsteps
 
     def plot(self, filename):
-        """Plot sampler statistics."""
+        """Plot sampler statistics.
+
+        Parameters
+        -----------
+        filename: str
+            Stores plot into ``filename`` and data into
+            ``filename + ".txt.gz"``.
+        """
         if len(self.logstat) == 0:
             return
 
@@ -240,11 +309,11 @@ class StepSampler(object):
         plt.close()
 
     def move(self, ui, region, ndraw=1, plot=False):
-        """Move around ui. Stub to be implemented."""
+        """Move around point ``ui``. Stub to be implemented by child classes."""
         raise NotImplementedError()
 
     def adjust_outside_region(self):
-        """Adjust proposal given that we landed outside region."""
+        """Adjust proposal, given that we landed outside region."""
         print("ineffective proposal scale (%g). shrinking..." % self.scale)
 
         # Usually the region is very generous.
@@ -262,7 +331,21 @@ class StepSampler(object):
             self.logstat.append([-1.0, self.scale, self.nsteps])
 
     def adjust_accept(self, accepted, unew, pnew, Lnew, nc):
-        """Adjust proposal given that we have been `accepted` at a new point after `nc` calls."""
+        """Adjust proposal, given that a new point was found after `nc` calls.
+
+        Parameters
+        -----------
+        accepted: bool
+            Whether the most recent proposal was accepted
+        unew: array
+            new point (in u-space)
+        pnew: array
+            new point (in p-space)
+        Lnew: float
+            loglikelihood of new point
+        nc: int
+            number of likelihood function calls used.
+        """
         if accepted:
             self.next_scale *= self.nudge
             self.last = unew, Lnew
@@ -274,7 +357,14 @@ class StepSampler(object):
         assert self.next_scale > 0, self.next_scale
 
     def adapt_nsteps(self, region):
-        """ change nsteps """
+        """
+        Adapt the number of steps.
+
+        Parameters
+        -----------
+        region: MLFriends object
+            current region
+        """
         if not self.adaptive_nsteps:
             return
         elif len(self.history) < self.nsteps:
@@ -379,7 +469,17 @@ class StepSampler(object):
         self.nsteps = max(1, min(self.max_nsteps, self.nsteps))
 
     def finalize_chain(self, region=None, Lmin=None, Ls=None):
-        """Store chain statistics and adapt proposal."""
+        """Store chain statistics and adapt proposal.
+
+        Parameters
+        -----------
+        region: MLFriends object
+            current region
+        Lmin: float
+            current loglikelihood threshold
+        Ls: array
+            loglikelihood values of the live points
+        """
         self.logstat.append([self.nrejects / self.nsteps, self.scale, self.nsteps])
         if self.log:
             ustart, Lstart = self.history[0]
@@ -418,7 +518,15 @@ class StepSampler(object):
         self.nrejects = 0
 
     def region_changed(self, Ls, region):
-        """React to change of region. """
+        """React to change of region. 
+
+        Parameters
+        -----------
+        region: MLFriends object
+            current region
+        Ls: array
+            loglikelihood values of the live points
+        """
 
         if self.adaptive_nsteps_needs_mean_pair_distance:
             self.mean_pair_distance = region.compute_mean_pair_distance()
@@ -544,10 +652,20 @@ class StepSampler(object):
 
 
 class CubeMHSampler(StepSampler):
-    """Simple step sampler, staggering around in cube space."""
+    """Simple step sampler, staggering around in u-space."""
 
     def move(self, ui, region, ndraw=1, plot=False):
-        """Move in cube space."""
+        """Move in u-space with a Gaussian proposal.
+
+        Parameters
+        ----------
+        ui: array
+            current point
+        ndraw: int
+            number of points to draw.
+
+        All other parameters are ignored.
+        """
         # propose in that direction
         jitter = np.random.normal(0, 1, size=(min(10, ndraw), len(ui))) * self.scale
         unew = ui.reshape((1, -1)) + jitter
@@ -555,10 +673,20 @@ class CubeMHSampler(StepSampler):
 
 
 class RegionMHSampler(StepSampler):
-    """Simple step sampler, staggering around in transformLayer space."""
+    """Simple step sampler, staggering around in t-space."""
 
     def move(self, ui, region, ndraw=1, plot=False):
-        """Move in transformLayer space."""
+        """Move in t-space with a Gaussian proposal.
+
+        Parameters
+        ----------
+        ui: array
+            current point
+        ndraw: int
+            number of points to draw.
+
+        All other parameters are ignored.
+        """
         ti = region.transformLayer.transform(ui)
         jitter = np.random.normal(0, 1, size=(min(10, ndraw), len(ui))) * self.scale
         tnew = ti.reshape((1, -1)) + jitter
@@ -581,11 +709,19 @@ class CubeSliceSampler(StepSampler):
         self.nrejects = 0
 
     def generate_direction(self, ui, region):
-        """Start in a new direction, by choosing a random parameter."""
+        """Start in a new direction, by choosing a random parameter.
+
+        Parameters
+        ----------
+        ui: array
+            current point
+        region: MLFriends object
+            current region
+        """
         return generate_cube_oriented_direction(ui, region)
 
     def adjust_accept(self, accepted, unew, pnew, Lnew, nc):
-        """Adjust proposal given that we have been `accepted` at a new point after `nc` calls."""
+        """see :py:meth:`StepSampler.adjust_accept`"""
         v, left, right, u = self.interval
         if not self.found_left:
             if accepted:
@@ -627,7 +763,7 @@ class CubeSliceSampler(StepSampler):
         self.adjust_accept(False, unew=None, pnew=None, Lnew=None, nc=0)
 
     def move(self, ui, region, ndraw=1, plot=False):
-        """Advance the slice sampling move."""
+        """Advance the slice sampling move. see :py:meth:`StepSampler.move`"""
         if self.interval is None:
             v = self.generate_direction(ui, region)
 
@@ -691,7 +827,20 @@ class RegionSliceSampler(CubeSliceSampler):
     """Slice sampler, randomly picking region axes."""
 
     def generate_direction(self, ui, region):
-        """Choose a random axis from region.transformLayer."""
+        """Choose a random axis in t-space.
+
+        Parameters
+        -----------
+        ui: array
+            current point (in u-space)
+        region: MLFriends object
+            region to use for transformation
+
+        Returns
+        --------
+        v: array
+            new direction vector (in u-space)
+        """
         return generate_region_oriented_direction(ui, region, tscale=self.scale, scale=None)
 
 
@@ -699,7 +848,22 @@ class RegionSequentialSliceSampler(CubeSliceSampler):
     """Slice sampler, sequentially iterating region axes."""
 
     def generate_direction(self, ui, region, scale=1):
-        """Choose from region.transformLayer the next axis iteratively."""
+        """Iteratively choose the next axis in t-space.
+
+        Parameters
+        -----------
+        ui: array
+            current point (in u-space)
+        region: MLFriends object
+            region to use for transformation
+        scale: float
+            length of direction vector
+
+        Returns
+        --------
+        v: array
+            new direction vector (in u-space)
+        """
         ndim = len(ui)
         ti = region.transformLayer.transform(ui)
 
@@ -718,17 +882,13 @@ class RegionSequentialSliceSampler(CubeSliceSampler):
 class BallSliceSampler(CubeSliceSampler):
     """Hit & run sampler. Choose random directions in space."""
 
-    def generate_direction(self, ui, region):
-        """Choose a isotropically random direction from region.transformLayer."""
-        return generate_random_direction(ui, region)
+    generate_direction = generate_random_direction
 
 
 class RegionBallSliceSampler(CubeSliceSampler):
     """Hit & run sampler. Choose random directions according to region."""
 
-    def generate_direction(self, ui, region):
-        """Choose a isotropically random direction from region.transformLayer."""
-        return generate_region_random_direction(ui, region)
+    generate_direction = generate_region_random_direction
 
 
 class SpeedVariableRegionSliceSampler(CubeSliceSampler):
@@ -780,7 +940,22 @@ class SpeedVariableRegionSliceSampler(CubeSliceSampler):
         self.step_matrix = step_matrix
 
     def generate_direction(self, ui, region, scale=1):
-        """Generate a slice sampling direction, using only some of the axes."""
+        """Generate a slice sampling direction, using only some of the axes.
+
+        Parameters
+        -----------
+        ui: array
+            current point (in u-space)
+        region: MLFriends object
+            region to use for transformation
+        scale: float
+            length of direction vector
+
+        Returns
+        --------
+        v: array
+            new direction vector
+        """
         ndim = len(ui)
         ti = region.transformLayer.transform(ui)
 
@@ -807,7 +982,28 @@ class SpeedVariableRegionSliceSampler(CubeSliceSampler):
 def ellipsoid_bracket(ui, v, ellipsoid_center, ellipsoid_inv_axes, ellipsoid_radius_square):
     """ For a line from ui in direction v through an ellipsoid
     centered at ellipsoid_center with axes matrix ellipsoid_inv_axes,
-    return the lower and upper intersection parameter."""
+    return the lower and upper intersection parameter.
+
+    Parameters
+    -----------
+    ui: array
+        current point (in u-space)
+    v: array
+        direction vector
+    ellipsoid_center: array
+        center of the ellipsoid
+    ellipsoid_inv_axes: array
+        ellipsoid axes matrix, as computed by :class:WrappingEllipsoid
+    ellipsoid_radius_square: float
+        square of the ellipsoid radius
+
+    Returns
+    --------
+    left: float
+        distance to go until ellipsoid is intersected (non-positive)
+    right: float
+        distance to go until ellipsoid is intersected (non-negative)
+    """
     vell = np.dot(v, ellipsoid_inv_axes)
     # ui in ellipsoid
     xell = np.dot(ui - ellipsoid_center, ellipsoid_inv_axes)
@@ -826,8 +1022,31 @@ def ellipsoid_bracket(ui, v, ellipsoid_center, ellipsoid_inv_axes, ellipsoid_rad
 
 def crop_bracket_at_unit_cube(ui, v, left, right, epsilon=1e-6):
     """A line segment from *ui* in direction *v* from t between *left* <= 0 <= *right*
-    will be truncated by the unit cube. Returns newleft, newright, cropped_left, cropped_right,
-    i.e., the new end parameters and whether cropping was applied.
+    will be truncated by the unit cube. Returns the bracket and whether cropping was applied.
+
+    Parameters
+    -----------
+    ui: array
+        current point (in u-space)
+    v: array
+        direction vector
+    left: float
+        bracket lower end (non-positive)
+    right: float
+        bracket upper end (non-negative)
+    epsilon: float
+        small number to allow for numerical effects
+
+    Returns
+    --------
+    left: float
+        new left
+    right: float
+        new right
+    cropped_left: bool
+        whether left was changed
+    cropped_right: bool
+        whether right was changed
     """
     assert (ui > 0).all(), ui
     assert (ui < 1).all(), ui
@@ -1076,6 +1295,8 @@ class AHARMSampler(StepSampler):
 
     Uses region ellipsoid to propose a sequence of points
     on a randomly drawn line.
+
+    (in development)
     """
 
     def __init__(
