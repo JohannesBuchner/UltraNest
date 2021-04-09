@@ -882,13 +882,17 @@ class RegionSequentialSliceSampler(CubeSliceSampler):
 class BallSliceSampler(CubeSliceSampler):
     """Hit & run sampler. Choose random directions in space."""
 
-    generate_direction = generate_random_direction
+    def generate_direction(self, ui, region, scale=1):
+        return generate_random_direction(ui, region, scale=scale)
+    generate_direction.__doc__ = generate_random_direction.__doc__
 
 
 class RegionBallSliceSampler(CubeSliceSampler):
     """Hit & run sampler. Choose random directions according to region."""
 
-    generate_direction = generate_region_random_direction
+    def generate_direction(self, ui, region, scale=1):
+        return generate_region_random_direction(ui, region, scale=scale)
+    generate_direction.__doc__ = generate_region_random_direction.__doc__
 
 
 class SpeedVariableRegionSliceSampler(CubeSliceSampler):

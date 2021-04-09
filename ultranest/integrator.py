@@ -1932,16 +1932,17 @@ class ReactiveNestedSampler(object):
             self.tregion = None
         else:
             try:
-                tregion = WrappingEllipsoid(active_p)
-                f = tregion.compute_enlargement(
-                    nbootstraps=max(1, nbootstraps // self.mpi_size))
-                if self.use_mpi:
-                    recv_enlarge = self.comm.gather(f, root=0)
-                    recv_enlarge = self.comm.bcast(recv_enlarge, root=0)
-                    f = np.max(recv_enlarge)
-                tregion.enlarge = f
-                tregion.create_ellipsoid()
-                self.tregion = tregion
+                with np.errstate(invalid="raise"):
+                    tregion = WrappingEllipsoid(active_p)
+                    f = tregion.compute_enlargement(
+                        nbootstraps=max(1, nbootstraps // self.mpi_size))
+                    if self.use_mpi:
+                        recv_enlarge = self.comm.gather(f, root=0)
+                        recv_enlarge = self.comm.bcast(recv_enlarge, root=0)
+                        f = np.max(recv_enlarge)
+                    tregion.enlarge = f
+                    tregion.create_ellipsoid()
+                    self.tregion = tregion
             except FloatingPointError:
                 if self.log:
                     self.logger.debug("not updating t-ellipsoid", exc_info=True)
