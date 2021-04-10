@@ -216,7 +216,7 @@
     <span class="k">return</span> <span class="n">v</span></div>
 
 
-<div class="viewcode-block" id="generate_cube_oriented_direction"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.generate_cube_oriented_direction">[docs]</a><span class="k">def</span> <span class="nf">generate_cube_oriented_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
+<div class="viewcode-block" id="generate_cube_oriented_direction"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.generate_cube_oriented_direction">[docs]</a><span class="k">def</span> <span class="nf">generate_cube_oriented_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Draw a unit direction vector in direction of a random unit cube axes.</span>
 
 <span class="sd">    Parameters</span>
@@ -235,11 +235,11 @@
     <span class="n">j</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">ndim</span><span class="p">)</span>
     <span class="c1"># use doubling procedure to identify left and right maxima borders</span>
     <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">ndim</span><span class="p">)</span>
-    <span class="n">v</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="n">v</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">scale</span>
     <span class="k">return</span> <span class="n">v</span></div>
 
 
-<div class="viewcode-block" id="generate_region_oriented_direction"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.generate_region_oriented_direction">[docs]</a><span class="k">def</span> <span class="nf">generate_region_oriented_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">tscale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="generate_region_oriented_direction"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.generate_region_oriented_direction">[docs]</a><span class="k">def</span> <span class="nf">generate_region_oriented_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Draw a random direction vector in direction of one of the `region` axes.</span>
 
 <span class="sd">    If given, the vector length is `scale`.</span>
@@ -250,8 +250,6 @@
 <span class="sd">    region: MLFriends object</span>
 <span class="sd">        current region</span>
 <span class="sd">    scale: float</span>
-<span class="sd">        length of direction vector in u-space</span>
-<span class="sd">    tscale: float</span>
 <span class="sd">        length of direction vector in t-space</span>
 
 <span class="sd">    Returns</span>
@@ -259,18 +257,9 @@
 <span class="sd">    v: array</span>
 <span class="sd">        new direction vector (in u-space)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">ndim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ui</span><span class="p">)</span>
-    <span class="n">ti</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">ui</span><span class="p">)</span>
-
     <span class="c1"># choose axis in transformed space:</span>
-    <span class="n">j</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">ndim</span><span class="p">)</span>
-    <span class="n">tv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">ndim</span><span class="p">)</span>
-    <span class="n">tv</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">tscale</span>
-    <span class="c1"># convert back to unit cube space:</span>
-    <span class="n">uj</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">untransform</span><span class="p">(</span><span class="n">ti</span> <span class="o">+</span> <span class="n">tv</span><span class="p">)</span>
-    <span class="n">v</span> <span class="o">=</span> <span class="n">uj</span> <span class="o">-</span> <span class="n">ui</span>
-    <span class="k">if</span> <span class="n">scale</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">v</span> <span class="o">*=</span> <span class="n">scale</span> <span class="o">/</span> <span class="p">(</span><span class="n">v</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">**</span><span class="mf">0.5</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ui</span><span class="p">))</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">axes</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">*</span> <span class="n">scale</span>
     <span class="k">return</span> <span class="n">v</span></div>
 
 
@@ -284,22 +273,17 @@
 <span class="sd">    region: MLFriends object</span>
 <span class="sd">        current region</span>
 <span class="sd">    scale: float:</span>
-<span class="sd">        length of direction vector</span>
+<span class="sd">        length of direction vector (in t-space)</span>
 <span class="sd">    </span>
 <span class="sd">    Returns</span>
 <span class="sd">    --------</span>
 <span class="sd">    v: array</span>
 <span class="sd">        new direction vector</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">ti_orig</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">ui</span><span class="p">)</span>
-
     <span class="c1"># choose axis in transformed space:</span>
-    <span class="n">ti</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">ti_orig</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-    <span class="c1"># ti *= scale / (ti**2).sum()**0.5</span>
-    <span class="c1"># convert back to unit cube space:</span>
-    <span class="n">uj</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">untransform</span><span class="p">(</span><span class="n">ti</span><span class="p">)</span>
-    <span class="n">v</span> <span class="o">=</span> <span class="n">uj</span> <span class="o">-</span> <span class="n">ui</span>
-    <span class="n">v</span> <span class="o">*=</span> <span class="n">scale</span> <span class="o">/</span> <span class="p">(</span><span class="n">v</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">**</span><span class="mf">0.5</span>
+    <span class="n">v1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">ui</span><span class="p">))</span>
+    <span class="n">v1</span> <span class="o">*=</span> <span class="n">scale</span> <span class="o">/</span> <span class="p">(</span><span class="n">v1</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">**</span><span class="mf">0.5</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">axes</span><span class="p">,</span> <span class="n">v1</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">v</span></div>
 
 
@@ -365,6 +349,62 @@
     <span class="k">del</span> <span class="n">uold</span>
     <span class="k">return</span> <span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">unew</span><span class="p">)</span></div>
 
+<div class="viewcode-block" id="adapt_proposal_total_distances"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.adapt_proposal_total_distances">[docs]</a><span class="k">def</span> <span class="nf">adapt_proposal_total_distances</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">,</span> <span class="n">ndim</span><span class="p">):</span>
+    <span class="c1"># compute mean vector of each proposed jump</span>
+    <span class="c1"># compute total distance of all jumps</span>
+    <span class="n">tproposed</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">u</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">history</span><span class="p">]))</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">tproposed</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">tproposed</span><span class="p">)</span>
+    <span class="n">d2</span> <span class="o">=</span> <span class="p">((((</span><span class="n">tproposed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">tproposed</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">**</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">far_enough</span> <span class="o">=</span> <span class="n">d2</span> <span class="o">&gt;</span> <span class="n">mean_pair_distance</span> <span class="o">/</span> <span class="n">ndim</span>
+
+    <span class="k">return</span> <span class="n">far_enough</span><span class="p">,</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="adapt_proposal_total_distances_NN"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.adapt_proposal_total_distances_NN">[docs]</a><span class="k">def</span> <span class="nf">adapt_proposal_total_distances_NN</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">,</span> <span class="n">ndim</span><span class="p">):</span>
+    <span class="c1"># compute mean vector of each proposed jump</span>
+    <span class="c1"># compute total distance of all jumps</span>
+    <span class="n">tproposed</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">u</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">history</span><span class="p">]))</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">tproposed</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">tproposed</span><span class="p">)</span>
+    <span class="n">d2</span> <span class="o">=</span> <span class="p">((((</span><span class="n">tproposed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">tproposed</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">**</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">far_enough</span> <span class="o">=</span> <span class="n">d2</span> <span class="o">&gt;</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span>
+
+    <span class="k">return</span> <span class="n">far_enough</span><span class="p">,</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="adapt_proposal_summed_distances"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.adapt_proposal_summed_distances">[docs]</a><span class="k">def</span> <span class="nf">adapt_proposal_summed_distances</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">,</span> <span class="n">ndim</span><span class="p">):</span>
+    <span class="c1"># compute sum of distances from each jump</span>
+    <span class="n">tproposed</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">u</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">history</span><span class="p">]))</span>
+    <span class="n">d2</span> <span class="o">=</span> <span class="p">(((</span><span class="n">tproposed</span><span class="p">[</span><span class="mi">1</span><span class="p">:,:]</span> <span class="o">-</span> <span class="n">tproposed</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,:])</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">far_enough</span> <span class="o">=</span> <span class="n">d2</span> <span class="o">&gt;</span> <span class="n">mean_pair_distance</span> <span class="o">/</span> <span class="n">ndim</span>
+
+    <span class="k">return</span> <span class="n">far_enough</span><span class="p">,</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="adapt_proposal_summed_distances_NN"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.adapt_proposal_summed_distances_NN">[docs]</a><span class="k">def</span> <span class="nf">adapt_proposal_summed_distances_NN</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">,</span> <span class="n">ndim</span><span class="p">):</span>
+    <span class="c1"># compute sum of distances from each jump</span>
+    <span class="n">tproposed</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">u</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">history</span><span class="p">]))</span>
+    <span class="n">d2</span> <span class="o">=</span> <span class="p">(((</span><span class="n">tproposed</span><span class="p">[</span><span class="mi">1</span><span class="p">:,:]</span> <span class="o">-</span> <span class="n">tproposed</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,:])</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">far_enough</span> <span class="o">=</span> <span class="n">d2</span> <span class="o">&gt;</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span>
+
+    <span class="k">return</span> <span class="n">far_enough</span><span class="p">,</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="adapt_proposal_move_distances"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.adapt_proposal_move_distances">[docs]</a><span class="k">def</span> <span class="nf">adapt_proposal_move_distances</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">,</span> <span class="n">ndim</span><span class="p">):</span>
+    <span class="c1"># compute distance from start to end</span>
+    <span class="n">ustart</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">history</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">ufinal</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">tstart</span><span class="p">,</span> <span class="n">tfinal</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">ustart</span><span class="p">,</span> <span class="n">ufinal</span><span class="p">)))</span>
+    <span class="n">d2</span> <span class="o">=</span> <span class="p">((</span><span class="n">tstart</span> <span class="o">-</span> <span class="n">tfinal</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">far_enough</span> <span class="o">=</span> <span class="n">d2</span> <span class="o">&gt;</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span>
+
+    <span class="k">return</span> <span class="n">far_enough</span><span class="p">,</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="adapt_proposal_move_distances_midway"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.adapt_proposal_move_distances_midway">[docs]</a><span class="k">def</span> <span class="nf">adapt_proposal_move_distances_midway</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">,</span> <span class="n">ndim</span><span class="p">):</span>
+    <span class="c1"># compute distance from start to end</span>
+    <span class="n">ustart</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">history</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">middle</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">history</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">ufinal</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">history</span><span class="p">[</span><span class="n">middle</span><span class="p">]</span>
+    <span class="n">tstart</span><span class="p">,</span> <span class="n">tfinal</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">ustart</span><span class="p">,</span> <span class="n">ufinal</span><span class="p">)))</span>
+    <span class="n">d2</span> <span class="o">=</span> <span class="p">((</span><span class="n">tstart</span> <span class="o">-</span> <span class="n">tfinal</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">far_enough</span> <span class="o">=</span> <span class="n">d2</span> <span class="o">&gt;</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span>
+
+    <span class="k">return</span> <span class="n">far_enough</span><span class="p">,</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span><span class="p">]</span></div>
 
 <div class="viewcode-block" id="StepSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.StepSampler">[docs]</a><span class="k">class</span> <span class="nc">StepSampler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Base class for a simple step sampler, staggering around.</span>
@@ -373,8 +413,9 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">adaptive_nsteps</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">max_nsteps</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
-        <span class="n">region_filter</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">False</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">,</span> <span class="n">generate_direction</span><span class="p">,</span>
+        <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">adaptive_nsteps</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">max_nsteps</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+        <span class="n">region_filter</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Initialise sampler.</span>
 
@@ -396,7 +437,7 @@
 <span class="sd">            * &#39;move-distance-midway&#39;: distance between</span>
 <span class="sd">              start point and position in the middle of the chain</span>
 <span class="sd">              exceeds the mean distance between pairs of live points.</span>
-<span class="sd">            * &#39;proposal-distance&#39;: mean square distance of</span>
+<span class="sd">            * &#39;proposal-total-distances&#39;: mean square distance of</span>
 <span class="sd">              proposed vectors exceeds the mean distance</span>
 <span class="sd">              between pairs of live points.</span>
 <span class="sd">            * &#39;proposal-total-distances-NN&#39;: mean distance</span>
@@ -431,19 +472,23 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">last</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nudge</span> <span class="o">=</span> <span class="mf">1.1</span><span class="o">**</span><span class="p">(</span><span class="mf">1.</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_nudge</span> <span class="o">=</span> <span class="mf">1.01</span>
-        <span class="n">adaptive_nsteps_options</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="kc">False</span><span class="p">,</span>
-            <span class="s1">&#39;proposal-total-distances-NN&#39;</span><span class="p">,</span> <span class="s1">&#39;proposal-summed-distances-NN&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;proposal-total-distances&#39;</span><span class="p">,</span> <span class="s1">&#39;proposal-summed-distances&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;move-distance&#39;</span><span class="p">,</span> <span class="s1">&#39;move-distance-midway&#39;</span><span class="p">,</span> <span class="s1">&#39;proposal-summed-distances-min-NN&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;proposal-variance-min&#39;</span><span class="p">,</span> <span class="s1">&#39;proposal-variance-min-NN&#39;</span>
-        <span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span> <span class="o">=</span> <span class="n">generate_direction</span>
+        <span class="n">adaptive_nsteps_options</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="kc">False</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s1">&#39;move-distance&#39;</span><span class="p">:</span> <span class="n">adapt_proposal_move_distances</span><span class="p">,</span>
+            <span class="s1">&#39;move-distance-midway&#39;</span><span class="p">:</span> <span class="n">adapt_proposal_move_distances_midway</span><span class="p">,</span>
+            <span class="s1">&#39;proposal-total-distances&#39;</span><span class="p">:</span> <span class="n">adapt_proposal_total_distances</span><span class="p">,</span> 
+            <span class="s1">&#39;proposal-total-distances-NN&#39;</span><span class="p">:</span> <span class="n">adapt_proposal_total_distances_NN</span><span class="p">,</span>
+            <span class="s1">&#39;proposal-summed-distances&#39;</span><span class="p">:</span> <span class="n">adapt_proposal_summed_distances</span><span class="p">,</span>
+            <span class="s1">&#39;proposal-summed-distances-NN&#39;</span><span class="p">:</span> <span class="n">adapt_proposal_summed_distances_NN</span><span class="p">,</span>
+        <span class="p">}</span>
 
-        <span class="k">if</span> <span class="n">adaptive_nsteps</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">adaptive_nsteps_options</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">adaptive_nsteps</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">adaptive_nsteps_options</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;adaptive_nsteps must be one of: </span><span class="si">%s</span><span class="s2">, not &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">adaptive_nsteps_options</span><span class="p">,</span> <span class="n">adaptive_nsteps</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="o">=</span> <span class="n">adaptive_nsteps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps_function</span> <span class="o">=</span> <span class="n">adaptive_nsteps_options</span><span class="p">[</span><span class="n">adaptive_nsteps</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps_needs_mean_pair_distance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="ow">in</span> <span class="p">(</span>
-            <span class="s1">&#39;proposal-total-distances&#39;</span><span class="p">,</span> <span class="s1">&#39;proposal-summed-distances&#39;</span><span class="p">,</span> <span class="s1">&#39;proposal-variance-min&#39;</span>
+            <span class="s1">&#39;proposal-total-distances&#39;</span><span class="p">,</span> <span class="s1">&#39;proposal-summed-distances&#39;</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mean_pair_distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">region_filter</span> <span class="o">=</span> <span class="n">region_filter</span>
@@ -560,89 +605,8 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps_needs_mean_pair_distance</span><span class="p">:</span>
             <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mean_pair_distance</span><span class="p">)</span>
         <span class="n">ndim</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="o">==</span> <span class="s1">&#39;proposal-total-distances&#39;</span><span class="p">:</span>
-            <span class="c1"># compute mean vector of each proposed jump</span>
-            <span class="c1"># compute total distance of all jumps</span>
-            <span class="n">tproposed</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">u</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">]))</span>
-            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">tproposed</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">tproposed</span><span class="p">)</span>
-            <span class="n">d2</span> <span class="o">=</span> <span class="p">((((</span><span class="n">tproposed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">tproposed</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">**</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-            <span class="n">far_enough</span> <span class="o">=</span> <span class="n">d2</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_pair_distance</span> <span class="o">/</span> <span class="n">ndim</span>
-
-            <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_pair_distance</span><span class="p">]</span>
-            <span class="c1"># print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, self.mean_pair_distance, d2)</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="o">==</span> <span class="s1">&#39;proposal-total-distances-NN&#39;</span><span class="p">:</span>
-            <span class="c1"># compute mean vector of each proposed jump</span>
-            <span class="c1"># compute total distance of all jumps</span>
-            <span class="n">tproposed</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">u</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">]))</span>
-            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">tproposed</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">tproposed</span><span class="p">)</span>
-            <span class="n">d2</span> <span class="o">=</span> <span class="p">((((</span><span class="n">tproposed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">tproposed</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">**</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-            <span class="n">far_enough</span> <span class="o">=</span> <span class="n">d2</span> <span class="o">&gt;</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span>
-
-            <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span><span class="p">]</span>
-            <span class="c1"># print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="o">==</span> <span class="s1">&#39;proposal-summed-distances&#39;</span><span class="p">:</span>
-            <span class="c1"># compute sum of distances from each jump</span>
-            <span class="n">tproposed</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">u</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">]))</span>
-            <span class="n">d2</span> <span class="o">=</span> <span class="p">(((</span><span class="n">tproposed</span><span class="p">[</span><span class="mi">1</span><span class="p">:,:]</span> <span class="o">-</span> <span class="n">tproposed</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,:])</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-            <span class="n">far_enough</span> <span class="o">=</span> <span class="n">d2</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_pair_distance</span> <span class="o">/</span> <span class="n">ndim</span>
-            <span class="c1"># print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, self.mean_pair_distance, d2)</span>
-
-            <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_pair_distance</span><span class="p">]</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="o">==</span> <span class="s1">&#39;proposal-summed-distances-NN&#39;</span><span class="p">:</span>
-            <span class="c1"># compute sum of distances from each jump</span>
-            <span class="n">tproposed</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">u</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">]))</span>
-            <span class="n">d2</span> <span class="o">=</span> <span class="p">(((</span><span class="n">tproposed</span><span class="p">[</span><span class="mi">1</span><span class="p">:,:]</span> <span class="o">-</span> <span class="n">tproposed</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,:])</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-            <span class="n">far_enough</span> <span class="o">=</span> <span class="n">d2</span> <span class="o">&gt;</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span>
-
-            <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span><span class="p">]</span>
-            <span class="c1"># print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="o">==</span> <span class="s1">&#39;proposal-summed-distances-min-NN&#39;</span><span class="p">:</span>
-            <span class="c1"># compute sum of distances from each jump</span>
-            <span class="n">tproposed</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">u</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">]))</span>
-            <span class="n">d2</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">tproposed</span><span class="p">[</span><span class="mi">1</span><span class="p">:,:]</span> <span class="o">-</span> <span class="n">tproposed</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,:])</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
-            <span class="n">far_enough</span> <span class="o">=</span> <span class="n">d2</span> <span class="o">&gt;</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span>
-
-            <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span><span class="p">]</span>
-            <span class="c1"># print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="o">==</span> <span class="s1">&#39;proposal-variance-min&#39;</span><span class="p">:</span>
-            <span class="c1"># compute sum of distances from each jump</span>
-            <span class="n">tproposed</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">u</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">]))</span>
-            <span class="n">d2</span> <span class="o">=</span> <span class="n">tproposed</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
-            <span class="n">far_enough</span> <span class="o">=</span> <span class="n">d2</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_pair_distance</span> <span class="o">/</span> <span class="n">ndim</span>
-
-            <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_pair_distance</span><span class="p">]</span>
-            <span class="c1"># print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="o">==</span> <span class="s1">&#39;proposal-variance-min-NN&#39;</span><span class="p">:</span>
-            <span class="c1"># compute sum of distances from each jump</span>
-            <span class="n">tproposed</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">u</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">]))</span>
-            <span class="n">d2</span> <span class="o">=</span> <span class="n">tproposed</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
-            <span class="n">far_enough</span> <span class="o">=</span> <span class="n">d2</span> <span class="o">&gt;</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span>
-
-            <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span><span class="p">]</span>
-            <span class="c1"># print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="o">==</span> <span class="s1">&#39;move-distance&#39;</span><span class="p">:</span>
-            <span class="c1"># compute distance from start to end</span>
-            <span class="n">ustart</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">ufinal</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-            <span class="n">tstart</span><span class="p">,</span> <span class="n">tfinal</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">ustart</span><span class="p">,</span> <span class="n">ufinal</span><span class="p">)))</span>
-            <span class="n">d2</span> <span class="o">=</span> <span class="p">((</span><span class="n">tstart</span> <span class="o">-</span> <span class="n">tfinal</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-            <span class="n">far_enough</span> <span class="o">=</span> <span class="n">d2</span> <span class="o">&gt;</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span>
-
-            <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span><span class="p">]</span>
-            <span class="c1"># print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)</span>
-        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="o">==</span> <span class="s1">&#39;move-distance-midway&#39;</span><span class="p">:</span>
-            <span class="c1"># compute distance from start to end</span>
-            <span class="n">ustart</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">middle</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
-            <span class="n">ufinal</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="n">middle</span><span class="p">]</span>
-            <span class="n">tstart</span><span class="p">,</span> <span class="n">tfinal</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">ustart</span><span class="p">,</span> <span class="n">ufinal</span><span class="p">)))</span>
-            <span class="n">d2</span> <span class="o">=</span> <span class="p">((</span><span class="n">tstart</span> <span class="o">-</span> <span class="n">tfinal</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-            <span class="n">far_enough</span> <span class="o">=</span> <span class="n">d2</span> <span class="o">&gt;</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span>
-
-            <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span><span class="p">]</span>
-            <span class="c1"># print(self.adaptive_nsteps, self.nsteps, self.nrejects, far_enough, region.maxradiussq**0.5, d2)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span>
+        <span class="n">far_enough</span><span class="p">,</span> <span class="n">extra_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps_function</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_pair_distance</span><span class="p">,</span> <span class="n">ndim</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">extra_info</span>
 
         <span class="c1"># adjust nsteps</span>
         <span class="k">if</span> <span class="n">far_enough</span><span class="p">:</span>
@@ -750,16 +714,11 @@
         <span class="k">if</span> <span class="n">Li</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">:</span>
             <span class="c1"># try to resume from a previous point above the current contour</span>
             <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="p">(</span><span class="n">uj</span><span class="p">,</span> <span class="n">Lj</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
-                <span class="k">if</span> <span class="n">Lj</span> <span class="o">&gt;</span> <span class="n">Lmin</span> <span class="ow">and</span> <span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">uj</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)))</span> <span class="ow">and</span> <span class="p">(</span><span class="n">tregion</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">tregion</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">transform</span><span class="p">(</span><span class="n">uj</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))))):</span>
+                <span class="n">is_inside</span> <span class="o">=</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">region_filter</span> <span class="ow">or</span> <span class="p">(</span><span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">uj</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)))</span> <span class="ow">and</span> <span class="p">(</span><span class="n">tregion</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">tregion</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">transform</span><span class="p">(</span><span class="n">uj</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))))))</span>
+                <span class="k">if</span> <span class="n">Lj</span> <span class="o">&gt;</span> <span class="n">Lmin</span> <span class="ow">and</span> <span class="n">is_inside</span><span class="p">:</span>
                     <span class="k">del</span> <span class="n">ui</span><span class="p">,</span> <span class="n">Li</span>
                     <span class="n">ui</span><span class="p">,</span> <span class="n">Li</span> <span class="o">=</span> <span class="n">uj</span><span class="p">,</span> <span class="n">Lj</span>
-                    <span class="c1"># print(&quot;recovered off-track walk from point %d/%d &quot; % (j+1, len(self.history)))</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">last</span> <span class="o">=</span> <span class="n">ui</span><span class="p">,</span> <span class="n">Li</span>
-
-                    <span class="c1"># pj = transform(uj.reshape((1, -1)))</span>
-                    <span class="c1"># Lj2 = loglike(pj)[0]</span>
-                    <span class="c1"># assert Lj2 &gt; Lmin, (Lj2, Lj, uj, pj)</span>
-
                     <span class="k">break</span>
             <span class="k">pass</span>
 
@@ -834,10 +793,10 @@
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">nc</span></div>
 
 
-<div class="viewcode-block" id="CubeMHSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.CubeMHSampler">[docs]</a><span class="k">class</span> <span class="nc">CubeMHSampler</span><span class="p">(</span><span class="n">StepSampler</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Simple step sampler, staggering around in u-space.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="MHSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.MHSampler">[docs]</a><span class="k">class</span> <span class="nc">MHSampler</span><span class="p">(</span><span class="n">StepSampler</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Gaussian Random Walk.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="CubeMHSampler.move"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.CubeMHSampler.move">[docs]</a>    <span class="k">def</span> <span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="MHSampler.move"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.MHSampler.move">[docs]</a>    <span class="k">def</span> <span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Move in u-space with a Gaussian proposal.</span>
 
 <span class="sd">        Parameters</span>
@@ -850,37 +809,22 @@
 <span class="sd">        All other parameters are ignored.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># propose in that direction</span>
-        <span class="n">jitter</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">ndraw</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">ui</span><span class="p">)))</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span>
+        <span class="n">direction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">)</span>
+        <span class="n">jitter</span> <span class="o">=</span> <span class="n">direction</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">ndraw</span><span class="p">),</span> <span class="mi">1</span><span class="p">))</span>
         <span class="n">unew</span> <span class="o">=</span> <span class="n">ui</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span> <span class="o">+</span> <span class="n">jitter</span>
         <span class="k">return</span> <span class="n">unew</span></div></div>
 
+<div class="viewcode-block" id="CubeMHSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.CubeMHSampler">[docs]</a><span class="k">def</span> <span class="nf">CubeMHSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">MHSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">generate_direction</span><span class="o">=</span><span class="n">generate_random_direction</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="RegionMHSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.RegionMHSampler">[docs]</a><span class="k">class</span> <span class="nc">RegionMHSampler</span><span class="p">(</span><span class="n">StepSampler</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Simple step sampler, staggering around in t-space.&quot;&quot;&quot;</span>
-
-<div class="viewcode-block" id="RegionMHSampler.move"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.RegionMHSampler.move">[docs]</a>    <span class="k">def</span> <span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Move in t-space with a Gaussian proposal.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        ui: array</span>
-<span class="sd">            current point</span>
-<span class="sd">        ndraw: int</span>
-<span class="sd">            number of points to draw.</span>
-
-<span class="sd">        All other parameters are ignored.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">ti</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">ui</span><span class="p">)</span>
-        <span class="n">jitter</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">ndraw</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">ui</span><span class="p">)))</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span>
-        <span class="n">tnew</span> <span class="o">=</span> <span class="n">ti</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span> <span class="o">+</span> <span class="n">jitter</span>
-        <span class="n">unew</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">untransform</span><span class="p">(</span><span class="n">tnew</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">unew</span></div></div>
+<div class="viewcode-block" id="RegionMHSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.RegionMHSampler">[docs]</a><span class="k">def</span> <span class="nf">RegionMHSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">MHSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">generate_direction</span><span class="o">=</span><span class="n">generate_region_random_direction</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="CubeSliceSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.CubeSliceSampler">[docs]</a><span class="k">class</span> <span class="nc">CubeSliceSampler</span><span class="p">(</span><span class="n">StepSampler</span><span class="p">):</span>
+<div class="viewcode-block" id="SliceSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.SliceSampler">[docs]</a><span class="k">class</span> <span class="nc">SliceSampler</span><span class="p">(</span><span class="n">StepSampler</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Slice sampler, respecting the region.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="CubeSliceSampler.new_chain"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.CubeSliceSampler.new_chain">[docs]</a>    <span class="k">def</span> <span class="nf">new_chain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="SliceSampler.new_chain"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.SliceSampler.new_chain">[docs]</a>    <span class="k">def</span> <span class="nf">new_chain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Starts a new path, reset slice.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">found_left</span> <span class="o">=</span> <span class="kc">False</span>
@@ -891,19 +835,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">last</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nrejects</span> <span class="o">=</span> <span class="mi">0</span></div>
 
-<div class="viewcode-block" id="CubeSliceSampler.generate_direction"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.CubeSliceSampler.generate_direction">[docs]</a>    <span class="k">def</span> <span class="nf">generate_direction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Start in a new direction, by choosing a random parameter.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        ui: array</span>
-<span class="sd">            current point</span>
-<span class="sd">        region: MLFriends object</span>
-<span class="sd">            current region</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">generate_cube_oriented_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="CubeSliceSampler.adjust_accept"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.CubeSliceSampler.adjust_accept">[docs]</a>    <span class="k">def</span> <span class="nf">adjust_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">accepted</span><span class="p">,</span> <span class="n">unew</span><span class="p">,</span> <span class="n">pnew</span><span class="p">,</span> <span class="n">Lnew</span><span class="p">,</span> <span class="n">nc</span><span class="p">):</span>
+<div class="viewcode-block" id="SliceSampler.adjust_accept"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.SliceSampler.adjust_accept">[docs]</a>    <span class="k">def</span> <span class="nf">adjust_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">accepted</span><span class="p">,</span> <span class="n">unew</span><span class="p">,</span> <span class="n">pnew</span><span class="p">,</span> <span class="n">Lnew</span><span class="p">,</span> <span class="n">nc</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;see :py:meth:`StepSampler.adjust_accept`&quot;&quot;&quot;</span>
         <span class="n">v</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">u</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">interval</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">found_left</span><span class="p">:</span>
@@ -941,11 +873,11 @@
 
                 <span class="bp">self</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="CubeSliceSampler.adjust_outside_region"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.CubeSliceSampler.adjust_outside_region">[docs]</a>    <span class="k">def</span> <span class="nf">adjust_outside_region</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="SliceSampler.adjust_outside_region"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.SliceSampler.adjust_outside_region">[docs]</a>    <span class="k">def</span> <span class="nf">adjust_outside_region</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Adjust proposal given that we landed outside region.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">adjust_accept</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="n">unew</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pnew</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">Lnew</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nc</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="CubeSliceSampler.move"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.CubeSliceSampler.move">[docs]</a>    <span class="k">def</span> <span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="SliceSampler.move"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.SliceSampler.move">[docs]</a>    <span class="k">def</span> <span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Advance the slice sampling move. see :py:meth:`StepSampler.move`&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">interval</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">)</span>
@@ -1006,31 +938,30 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="RegionSliceSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.RegionSliceSampler">[docs]</a><span class="k">class</span> <span class="nc">RegionSliceSampler</span><span class="p">(</span><span class="n">CubeSliceSampler</span><span class="p">):</span>
+<div class="viewcode-block" id="CubeSliceSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.CubeSliceSampler">[docs]</a><span class="k">def</span> <span class="nf">CubeSliceSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Slice sampler, randomly picking region axes.&quot;&quot;&quot;</span>
-
-<div class="viewcode-block" id="RegionSliceSampler.generate_direction"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.RegionSliceSampler.generate_direction">[docs]</a>    <span class="k">def</span> <span class="nf">generate_direction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Choose a random axis in t-space.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        -----------</span>
-<span class="sd">        ui: array</span>
-<span class="sd">            current point (in u-space)</span>
-<span class="sd">        region: MLFriends object</span>
-<span class="sd">            region to use for transformation</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        --------</span>
-<span class="sd">        v: array</span>
-<span class="sd">            new direction vector (in u-space)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">generate_region_oriented_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">tscale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></div></div>
+    <span class="k">return</span> <span class="n">SliceSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">generate_direction</span><span class="o">=</span><span class="n">generate_cube_oriented_direction</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="RegionSequentialSliceSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.RegionSequentialSliceSampler">[docs]</a><span class="k">class</span> <span class="nc">RegionSequentialSliceSampler</span><span class="p">(</span><span class="n">CubeSliceSampler</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Slice sampler, sequentially iterating region axes.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="RegionSliceSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.RegionSliceSampler">[docs]</a><span class="k">def</span> <span class="nf">RegionSliceSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Slice sampler, randomly picking region axes.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">SliceSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">generate_direction</span><span class="o">=</span><span class="n">generate_region_oriented_direction</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="RegionSequentialSliceSampler.generate_direction"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.RegionSequentialSliceSampler.generate_direction">[docs]</a>    <span class="k">def</span> <span class="nf">generate_direction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+
+<div class="viewcode-block" id="BallSliceSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.BallSliceSampler">[docs]</a><span class="k">def</span> <span class="nf">BallSliceSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Hit &amp; run sampler. Choose random directions in space.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">SliceSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">generate_direction</span><span class="o">=</span><span class="n">generate_random_direction</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="RegionBallSliceSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.RegionBallSliceSampler">[docs]</a><span class="k">def</span> <span class="nf">RegionBallSliceSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Hit &amp; run sampler. Choose random directions according to region.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">SliceSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">generate_direction</span><span class="o">=</span><span class="n">generate_region_random_direction</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SequentialDirectionGenerator"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.SequentialDirectionGenerator">[docs]</a><span class="k">class</span> <span class="nc">SequentialDirectionGenerator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">axis_index</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Iteratively choose the next axis in t-space.</span>
 
 <span class="sd">        Parameters</span>
@@ -1059,28 +990,18 @@
         <span class="n">uj</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">untransform</span><span class="p">(</span><span class="n">ti</span> <span class="o">+</span> <span class="n">tv</span> <span class="o">*</span> <span class="mf">1e-3</span><span class="p">)</span>
         <span class="n">v</span> <span class="o">=</span> <span class="n">uj</span> <span class="o">-</span> <span class="n">ui</span>
         <span class="n">v</span> <span class="o">*=</span> <span class="n">scale</span> <span class="o">/</span> <span class="p">(</span><span class="n">v</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">**</span><span class="mf">0.5</span>
-        <span class="k">return</span> <span class="n">v</span></div></div>
+        <span class="k">return</span> <span class="n">v</span></div>
+
+<div class="viewcode-block" id="RegionSequentialSliceSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.RegionSequentialSliceSampler">[docs]</a><span class="k">def</span> <span class="nf">RegionSequentialSliceSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Slice sampler, sequentially iterating region axes.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">SliceSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">generate_direction</span><span class="o">=</span><span class="n">SequentialDirectionGenerator</span><span class="p">())</span></div>
 
 
-<div class="viewcode-block" id="BallSliceSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.BallSliceSampler">[docs]</a><span class="k">class</span> <span class="nc">BallSliceSampler</span><span class="p">(</span><span class="n">CubeSliceSampler</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Hit &amp; run sampler. Choose random directions in space.&quot;&quot;&quot;</span>
-
-    <span class="n">generate_direction</span> <span class="o">=</span> <span class="n">generate_random_direction</span></div>
-
-
-<div class="viewcode-block" id="RegionBallSliceSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.RegionBallSliceSampler">[docs]</a><span class="k">class</span> <span class="nc">RegionBallSliceSampler</span><span class="p">(</span><span class="n">CubeSliceSampler</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Hit &amp; run sampler. Choose random directions according to region.&quot;&quot;&quot;</span>
-
-    <span class="n">generate_direction</span> <span class="o">=</span> <span class="n">generate_region_random_direction</span></div>
-
-
-<div class="viewcode-block" id="SpeedVariableRegionSliceSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.SpeedVariableRegionSliceSampler">[docs]</a><span class="k">class</span> <span class="nc">SpeedVariableRegionSliceSampler</span><span class="p">(</span><span class="n">CubeSliceSampler</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Slice sampler, in region axes.</span>
-
-<span class="sd">    Updates only some dimensions at a time, completely user-definable.</span>
+<div class="viewcode-block" id="SpeedVariableGenerator"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.SpeedVariableGenerator">[docs]</a><span class="k">class</span> <span class="nc">SpeedVariableGenerator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Propose directions in region, but only some dimensions at a time, completely user-definable.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_matrix</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_matrix</span><span class="p">,</span> <span class="n">generate_direction</span><span class="o">=</span><span class="n">generate_region_random_direction</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Initialise sampler.</span>
 
 <span class="sd">        Parameters</span>
@@ -1116,13 +1037,15 @@
 <span class="sd">            2-9 2/3 times and parameter 5-9 in every step.</span>
 <span class="sd">            Three steps are made until the point is considered independent.</span>
 
+<span class="sd">        generate_direction: function</span>
+<span class="sd">            direction proposal function.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">nsteps</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">step_matrix</span><span class="p">)</span>
-
-        <span class="n">StepSampler</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nsteps</span><span class="o">=</span><span class="n">nsteps</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">step_matrix</span> <span class="o">=</span> <span class="n">step_matrix</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">step_matrix</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">axis_index</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span> <span class="o">=</span> <span class="n">generate_direction</span>
 
-<div class="viewcode-block" id="SpeedVariableRegionSliceSampler.generate_direction"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.SpeedVariableRegionSliceSampler.generate_direction">[docs]</a>    <span class="k">def</span> <span class="nf">generate_direction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Generate a slice sampling direction, using only some of the axes.</span>
 
 <span class="sd">        Parameters</span>
@@ -1140,26 +1063,32 @@
 <span class="sd">            new direction vector</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">ndim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ui</span><span class="p">)</span>
-        <span class="n">ti</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">ui</span><span class="p">)</span>
-
-        <span class="c1"># choose random axis in transformed space</span>
-        <span class="n">j</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">ndim</span><span class="p">)</span>
-        <span class="n">tv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">ndim</span><span class="p">)</span>
-        <span class="n">tv</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
-        <span class="c1"># convert back to unit cube space:</span>
-        <span class="n">uj</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">untransform</span><span class="p">(</span><span class="n">ti</span> <span class="o">+</span> <span class="n">tv</span> <span class="o">*</span> <span class="mf">1e-3</span><span class="p">)</span>
-        <span class="n">uk</span> <span class="o">=</span> <span class="n">ui</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-
+        
+        <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span><span class="p">(</span><span class="n">ui</span><span class="o">=</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">scale</span><span class="p">)</span>
         <span class="n">j</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">axis_index</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">axis_index</span> <span class="o">=</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span>
         <span class="c1"># only update active dimensions</span>
         <span class="n">active_dims</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">step_matrix</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
         <span class="c1"># project uj onto ui. vary only active dimensions</span>
-        <span class="n">uk</span><span class="p">[</span><span class="n">active_dims</span><span class="p">]</span> <span class="o">=</span> <span class="n">uj</span><span class="p">[</span><span class="n">active_dims</span><span class="p">]</span>  <span class="c1"># if this fails, a boolean array with the wrong number of columns was passed</span>
+        <span class="n">uk</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">ndim</span><span class="p">)</span>
+        <span class="n">uk</span><span class="p">[</span><span class="n">active_dims</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="n">active_dims</span><span class="p">]</span>  <span class="c1"># if this fails, user passed a faulty step_matrix</span>
+        <span class="k">return</span> <span class="n">uk</span></div>
 
-        <span class="n">v</span> <span class="o">=</span> <span class="n">uk</span> <span class="o">-</span> <span class="n">ui</span>
-        <span class="n">v</span> <span class="o">*=</span> <span class="n">scale</span> <span class="o">/</span> <span class="p">(</span><span class="n">v</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">**</span><span class="mf">0.5</span>
-        <span class="k">return</span> <span class="n">v</span></div></div>
+
+<div class="viewcode-block" id="SpeedVariableRegionSliceSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.SpeedVariableRegionSliceSampler">[docs]</a><span class="k">def</span> <span class="nf">SpeedVariableRegionSliceSampler</span><span class="p">(</span><span class="n">step_matrix</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Slice sampler, in region axes.</span>
+
+<span class="sd">    Updates only some dimensions at a time, completely user-definable.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    
+    <span class="k">return</span> <span class="n">SliceSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> 
+        <span class="n">nsteps</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;nsteps&#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">step_matrix</span><span class="p">)),</span>
+        <span class="n">generate_direction</span><span class="o">=</span><span class="n">SpeedVariableGenerator</span><span class="p">(</span>
+            <span class="n">step_matrix</span><span class="o">=</span><span class="n">step_matrix</span><span class="p">,</span>
+            <span class="n">generate_direction</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;generate_direction&#39;</span><span class="p">,</span> <span class="n">generate_region_random_direction</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="ellipsoid_bracket"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.ellipsoid_bracket">[docs]</a><span class="k">def</span> <span class="nf">ellipsoid_bracket</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">ellipsoid_center</span><span class="p">,</span> <span class="n">ellipsoid_inv_axes</span><span class="p">,</span> <span class="n">ellipsoid_radius_square</span><span class="p">):</span>
