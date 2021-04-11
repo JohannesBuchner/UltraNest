@@ -166,8 +166,6 @@ def get_extended_auxiliary_problem(loglike, transform, ctr, invcov, enlargement_
 
     return aux_loglikelihood, aux_transform
 
-from scipy.special import logsumexp    
-
 def reuse_samples(
     param_names, loglike, points, logl, logw=None, 
     logz=0.0, logzerr=0.0, upoints=None,
