@@ -2,6 +2,7 @@
 
 import numpy as np
 import scipy.stats
+from .utils import vectorize, resample_equal
 
 def get_auxiliary_problem(loglike, transform, ctr, invcov, enlargement_factor, df=1):
     """Return a new loglike and transform based on an auxiliary distribution.
@@ -164,3 +165,78 @@ def get_extended_auxiliary_problem(loglike, transform, ctr, invcov, enlargement_
             return -1e300
 
     return aux_loglikelihood, aux_transform
+
+from scipy.special import logsumexp    
+
+def reuse_samples(
+    param_names, loglike, points, logl, logw=None, 
+    logz=0.0, logzerr=0.0, upoints=None,
+    batchsize=128, vectorized=False, log_weight_threshold=-10,
+    **kwargs
+):
+    if not vectorized:
+        loglike = vectorize(loglike)
+
+    Npoints, ndim = points.shape
+    if logw is None:
+        # assume equally distributed if no weights given
+        logw = np.zeros(Npoints) - np.log(Npoints)
+    logl_new = np.zeros(Npoints) - np.inf
+    logw_new = np.zeros(Npoints) - np.inf
+    assert logl.shape == (Npoints,)
+    assert logw.shape == (Npoints,)
+
+    # process points, highest weight first:
+    indices = np.argsort(logl + logw)[::-1]
+    ncall = 0
+    for i in range(int(np.ceil(Npoints / batchsize))):
+        batch = indices[i * batchsize : (i + 1) * batchsize]
+        logl_new[batch] = loglike(points[batch,:])
+        logw_new[batch] = logw[batch] + logl_new[batch]
+        ncall += len(batch)
+        if (logw_new[batch] < np.nanmax(logw_new) - np.log(Npoints) + log_weight_threshold).all():
+            print("skipping", i)
+            break
+
+    logw_new0 = logw_new.max()
+    w = np.exp(logw_new - logw_new0)
+    print("weights:", w)
+    logz_new = np.log(w.sum()) + logw_new0
+    w /= w.sum()
+    ess = len(w) / (1.0 + ((len(w) * w - 1)**2).sum() / len(w))
+
+    integral_uncertainty_estimator = (((w - 1 / Npoints)**2).sum() / (Npoints - 1))**0.5
+    logzerr_new = np.log(1 + integral_uncertainty_estimator)
+    logzerr_new_total = (logzerr_new**2 + logzerr**2)**0.5
+
+    samples = resample_equal(points, w)
+    information_gain_bits = []
+    for i in range(ndim):
+        H, _ = np.histogram(points[:,i], weights=w, density=True, bins=np.linspace(0, 1, 40))
+        information_gain_bits.append(float((np.log2(1 / ((H + 0.001) * 40)) / 40).sum()))
+
+    j = logl_new.argmax()
+    return dict(
+        ncall=ncall,
+        niter=Npoints,
+        logz=logz_new, logzerr=logzerr_new_total,
+        ess=ess,
+        posterior=dict(
+            mean=samples.mean(axis=0).tolist(),
+            stdev=samples.std(axis=0).tolist(),
+            median=np.percentile(samples, 50, axis=0).tolist(),
+            errlo=np.percentile(samples, 15.8655, axis=0).tolist(),
+            errup=np.percentile(samples, 84.1345, axis=0).tolist(),
+            information_gain_bits=information_gain_bits,
+        ),
+        weighted_samples=dict(
+            upoints=upoints, points=points, weights=w, logw=logw,
+            logl=logl_new),
+        samples=samples,
+        maximum_likelihood=dict(
+            logl=logl_new[j],
+            point=points[j,:].tolist(),
+            point_untransformed=upoints[j,:].tolist() if upoints is not None else None,
+        ),
+        param_names=param_names,
+    )
