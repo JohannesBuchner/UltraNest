@@ -109,11 +109,15 @@ class PredictionBand(object):
 
     def get_line(self, q=0.5):
         """Over prediction space x, get quantile *q*. Default is median."""
+        if not 0 <= q <= 1:
+            raise ValueError("quantile q must be between 0 and 1, not %s" % q)
         assert len(self.ys) > 0, self.ys
         return scipy.stats.mstats.mquantiles(self.ys, q, axis=0)[0]
 
     def shade(self, q=0.341, **kwargs):
         """Plot a shaded region between 0.5-q and 0.5+q. Default is 1 sigma."""
+        if not 0 <= q <= 0.5:
+            raise ValueError("quantile distance from the median, q, must be between 0 and 0.5, not %s. For a 99% quantile range, use q=0.48." % q)
         shadeargs = dict(self.shadeargs)
         shadeargs.update(kwargs)
         lo = self.get_line(0.5 - q)
