@@ -291,8 +291,8 @@ So it is appropriate to write something like::
 
     We derive posterior probability distributions and the Bayesian
     evidence with the nested sampling Monte Carlo algorithm
-    MLFriends (Buchner, 2014; 2019) using
-    UltraNest\footnote{\url{https://johannesbuchner.github.io/UltraNest/}} (Buchner 2021).
+    MLFriends (Buchner, 2014; 2019) using the
+    UltraNest\footnote{\url{https://johannesbuchner.github.io/UltraNest/}} package (Buchner 2021).
 
 If you use the corner plot, also cite ``corner``.
 If you use the trace or run plot, also cite ``dynesty``.
