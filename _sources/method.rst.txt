@@ -86,6 +86,7 @@ For an introduction of constrained-likelihood prior sampling methods and verific
 
 * Buchner, J. (2014): A statistical test for Nested Sampling algorithms
 * Higson, E.; Handley, W.; Hobson, M. & Lasenby, A. (2019) NESTCHECK: diagnostic tests for nested sampling calculations
+* Buchner, J. (2021): Nested Sampling Methods
 
 On analysing many data sets:
 
