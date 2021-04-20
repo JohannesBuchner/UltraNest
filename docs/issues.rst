@@ -278,21 +278,31 @@ emcee requires MCMC convergence checks which are tricky to get correct.
 How should I cite UltraNest?
 ------------------------------
 
-The main method (MLFriends) is described in:
+The main algorithm (MLFriends) is described in:
 
 * Buchner, J. (2014): `A statistical test for Nested Sampling algorithms <https://arxiv.org/abs/1407.5459>`_ (`bibtex <https://scholar.googleusercontent.com/scholar.bib?q=info:yTXfZFtI_vYJ:scholar.google.com/&output=citation&scisdr=CgXWBaaNEK7YkjRrxRc:AAGBfm0AAAAAX8Nu3Rcw9Cl4oM-O20oJrdlLRUQB2IhI&scisig=AAGBfm0AAAAAX8Nu3ftd-SBQKMLTBDogxM9U1n9uLKdi&scisf=4&ct=citation&cd=-1&hl=en&scfhb=1>`__)
 * Buchner, J. (2019): `Collaborative Nested Sampling: Big Data versus Complex Physical Models <https://arxiv.org/abs/1707.04476>`_ (`bibtex <https://ui.adsabs.harvard.edu/abs/2019PASP..131j8005B/exportcitation>`__)
 
-So it is appropriate to write something like
+The UltraNest software package is presented in:
 
-.. code-block:: none
+* Buchner, J. (2021): `UltraNest -- a robust, general purpose Bayesian inference engine <https://arxiv.org/abs/2101.09604>`_ (`bibtex <https://ui.adsabs.harvard.edu/abs/2021arXiv210109604B/exportcitation>`__)
+
+So it is appropriate to write something like::
 
     We derive posterior probability distributions and the Bayesian
     evidence with the nested sampling Monte Carlo algorithm
     MLFriends (Buchner, 2014; 2019) using
-    UltraNest\footnote{\url{https://johannesbuchner.github.io/UltraNest/}}.
-
-A paper presenting UltraNest implementation details is in preparation.
+    UltraNest\footnote{\url{https://johannesbuchner.github.io/UltraNest/}} (Buchner 2021).
 
 If you use the corner plot, also cite ``corner``.
 If you use the trace or run plot, also cite ``dynesty``.
+
+Below are references for nested sampling in general. 
+
+* Skilling, J. (2004): `Nested sampling <https://aip.scitation.org/doi/abs/10.1063/1.1835238>`_ (`bibtex <https://scholar.googleusercontent.com/scholar.bib?q=info:GmwWqzssMkkJ:scholar.google.com/&output=citation&scisdr=CgXYiBeiEMaTm_3KeVQ:AAGBfm0AAAAAYH7MYVQr0IWk3cGY_rySOzhvz51rrDuz&scisig=AAGBfm0AAAAAYH7MYdBK9Zj-2qYmMSqs5Fz3rlc0G5Px&scisf=4&ct=citation&cd=-1&hl=de>`__)
+* Buchner, J. (2021): `Nested sampling methods <https://arxiv.org/abs/2101.09675>`_ (`bibtex <https://ui.adsabs.harvard.edu/abs/2021arXiv210109675B/exportcitation>`__)
+
+These are useful when referring to the algorithm framework, 
+if you want to discuss its benefits in general (for example, the global parameter space exploration,
+dealing well with multiple modes). The second also contrasts
+different implementations.
