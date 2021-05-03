@@ -363,7 +363,8 @@ def _update_region_bootstrap(region, nbootstraps, minvol=0., comm=None, mpi_size
         r, f = region.compute_enlargement(
             minvol=minvol,
             nbootstraps=max(1, nbootstraps // mpi_size))
-    except np.linalg.LinAlgError:
+        e = None
+    except np.linalg.LinAlgError as e:
         r, f = np.nan, np.nan
 
     if comm is not None:
@@ -376,6 +377,12 @@ def _update_region_bootstrap(region, nbootstraps, minvol=0., comm=None, mpi_size
         recv_enlarge = comm.gather(f, root=0)
         recv_enlarge = comm.bcast(recv_enlarge, root=0)
         f = np.max(recv_enlarge[:nbootstraps])
+
+    if not np.isfinite(r) and not np.isfinite(r):
+        if e is None:
+            raise np.linalg.LinAlgError("compute_enlargement failed")
+        else:
+            raise e
 
     region.maxradiussq = r
     region.enlarge = f
