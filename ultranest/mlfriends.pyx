@@ -856,7 +856,8 @@ class MLFriends(object):
             #f = np.einsum('...i, ...i', np.tensordot(delta, a, axes=1), delta).max()
             f = np.einsum('ij,jk,ik->i', delta, a, delta).max()
             assert np.isfinite(f), (ctr, cov, self.unormed, f, delta, a)
-            assert f > 0, (f, len(self.unormed), selected.sum(), delta, ctr, np.einsum('...i, ...i', np.tensordot(delta, a, axes=1), delta))
+            if not f > 0:
+                raise np.linalg.LinAlgError("Distances are not positive")
             maxf = max(maxf, f)
 
         assert maxd > 0, (maxd, self.u, self.unormed)
@@ -1246,7 +1247,8 @@ class RobustEllipsoidRegion(MLFriends):
             #f = np.einsum('...i, ...i', np.tensordot(delta, a, axes=1), delta).max()
             f = np.einsum('ij,jk,ik->i', delta, a, delta).max()
             assert np.isfinite(f), (ctr, cov, self.unormed, f, delta, a)
-            assert f > 0, (f, len(self.unormed), selected.sum(), delta, ctr, np.einsum('...i, ...i', np.tensordot(delta, a, axes=1), delta))
+            if not f > 0:
+                raise np.linalg.LinAlgError("Distances are not positive")
             maxf = max(maxf, f)
 
         assert maxd > 0, (maxd, self.u, self.unormed)
@@ -1288,7 +1290,8 @@ class WrappingEllipsoid(object):
             # compute expansion factor
             delta = ub - ctr
             f = np.einsum('...i, ...i', np.tensordot(delta, a, axes=1), delta).max()
-            assert np.isfinite(f), (ctr, cov, f, delta, a)
+            if not f > 0:
+                raise np.linalg.LinAlgError("Distances are not positive")
             maxf = max(maxf, f)
 
         assert maxf > 0, (maxf, self.u)

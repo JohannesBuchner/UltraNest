@@ -359,9 +359,12 @@ def _update_region_bootstrap(region, nbootstraps, minvol=0., comm=None, mpi_size
     the bootstraps over the *mpi_size* processes.
     """
     assert nbootstraps > 0, nbootstraps
-    r, f = region.compute_enlargement(
-        minvol=minvol,
-        nbootstraps=max(1, nbootstraps // mpi_size))
+    try:
+        r, f = region.compute_enlargement(
+            minvol=minvol,
+            nbootstraps=max(1, nbootstraps // mpi_size))
+    except np.linalg.LinAlgError:
+        r, f = np.nan, np.nan
 
     if comm is not None:
         recv_maxradii = comm.gather(r, root=0)
