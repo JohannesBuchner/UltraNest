@@ -359,12 +359,14 @@ def _update_region_bootstrap(region, nbootstraps, minvol=0., comm=None, mpi_size
     the bootstraps over the *mpi_size* processes.
     """
     assert nbootstraps > 0, nbootstraps
+    # catch potential errors so MPI syncing still works
+    e = None
     try:
         r, f = region.compute_enlargement(
             minvol=minvol,
             nbootstraps=max(1, nbootstraps // mpi_size))
-        e = None
-    except np.linalg.LinAlgError as e:
+    except np.linalg.LinAlgError as e1:
+        e = e1
         r, f = np.nan, np.nan
 
     if comm is not None:
@@ -377,8 +379,9 @@ def _update_region_bootstrap(region, nbootstraps, minvol=0., comm=None, mpi_size
         recv_enlarge = comm.gather(f, root=0)
         recv_enlarge = comm.bcast(recv_enlarge, root=0)
         f = np.max(recv_enlarge[:nbootstraps])
-
+    
     if not np.isfinite(r) and not np.isfinite(r):
+        # reraise error if needed
         if e is None:
             raise np.linalg.LinAlgError("compute_enlargement failed")
         else:
