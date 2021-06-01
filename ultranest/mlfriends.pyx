@@ -842,6 +842,8 @@ class MLFriends(object):
             idx = rng.randint(N, size=N)
             selected[:] = False
             selected[idx] = True
+            if selected.all() or not selected.any():
+                continue
 
             # compute distances from a to b
             maxd = max(maxd, compute_maxradiussq(
