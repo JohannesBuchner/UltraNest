@@ -61,7 +61,7 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/JohannesBuchner/ultranest',
-    version='3.2.0',
+    version='3.2.1',
     zip_safe=False,
     cmdclass={'build_ext': build_ext},
 )
