@@ -2,6 +2,7 @@ from PIL import Image
 from PIL import ImageFont
 from PIL import ImageDraw
 
+import sys
 import time
 import numpy as np
 import numpy
@@ -31,15 +32,20 @@ def sample_character(char, path='OpenSans-Bold.ttf', fontsize=60, width_per_cell
 
     return arr.T
 
-#word = 'ULTRANEST'
-word = 'II'
+words = {len(w)*2:w for w in 'II NEST ULTRANEST NESTED-SAMPLING-WITH-ULTRANEST'.split()}
+print("available words:", words)
+word = words[int(sys.argv[1])]
+#word = 'II' # 4d
+#word = 'NEST' # 8d
+#word = 'ULTRANEST' # 18d
+#word = 'NESTED-SAMPLING-WITH-ULTRANEST' # 60d
 characters = [sample_character(c, 'comic') for c in word]
 
-for i, c in enumerate(characters):
-    plt.subplot(len(characters), 1, i+1)
-    plt.imshow(c.T >= c.max() / 2)
-plt.savefig('letters.png', bbox_inches='tight')
-plt.close()
+#for i, c in enumerate(characters):
+#    plt.subplot(len(characters), 1, i+1)
+#    plt.imshow(c.T >= c.max() / 2)
+#plt.savefig('letters.png', bbox_inches='tight')
+#plt.close()
 
 startpoint = []
 borders = []
@@ -75,11 +81,13 @@ for c in characters:
             c[:,::-1] / 10,
             'linear', bounds_error=True)
     )
-    print("   ", interpolators[-1]((i[0] * xscale, j[0] * yscale)))
-#    plt.subplot(len(characters), 1, len(borders)+1)
-#    plt.imshow(c)
-#plt.savefig('letters.png', bbox_inches='tight')
-#plt.close()
+    print("   ", interpolators[-1]((i[0] * xscale, j[0] * yscale)), c.max() / 10. * 0.4)
+plt.figure(figsize=(2+len(characters), 4))
+for i, c in enumerate(characters):
+    plt.subplot(1, len(characters), i + 1)
+    plt.imshow(c.T / 10 > c.max() / 10. * 0.4)
+plt.savefig('letters.png', bbox_inches='tight')
+plt.close()
 
 startpoint = np.array(startpoint)
 paramnames = ['p%d' % (i+1) for i in range(len(characters)*2)]
@@ -188,7 +196,7 @@ step_matrix=np.arange(nparams).reshape((-1, 1))
 K = 10
 samplers = [
     ('mh', 100000, ultranest.stepsampler.MHSampler(nsteps=K, generate_direction=ultranest.stepsampler.generate_random_direction)),
-    ('regionmh', 100000, ultranest.stepsampler.MHSampler(nsteps=K, generate_direction=ultranest.stepsampler.generate_region_random_direction)),
+    #('regionmh', 100000, ultranest.stepsampler.MHSampler(nsteps=K, generate_direction=ultranest.stepsampler.generate_region_random_direction)),
     ('cubeslice', 10000, ultranest.stepsampler.SliceSampler(nsteps=K, generate_direction=ultranest.stepsampler.generate_cube_oriented_direction)),
     ('regionslice', 10000, ultranest.stepsampler.SliceSampler(nsteps=K, generate_direction=ultranest.stepsampler.generate_region_oriented_direction)),
     ('regionball', 10000, ultranest.stepsampler.SliceSampler(nsteps=K, generate_direction=ultranest.stepsampler.generate_region_random_direction)),
@@ -204,7 +212,7 @@ samplers = [
 def get_samples(samplername, nsteps, nparams, seed=1):
     np.random.seed(seed)
     for samplernamei, _, sampler in samplers:
-        if samplername == samplername:
+        if samplername == samplernamei:
             tstart = time.time()
             samples, ncalls = fetch_samples(
                 startpoint=startpoint,
@@ -221,28 +229,28 @@ def main():
 
     for samplername, nsteps, sampler in samplers:
         print("checking sampler: %s" % samplername, sampler)
-        samples, ncalls, T = get_samples(samplername, nsteps, nparams)
+        l = None
+        for seed in 1,:
+            samples, ncalls, T = get_samples(samplername, nsteps, nparams, seed=seed)
+            discovery_indices = frac_filled(samples) + 1
+            print("discovery indices:", discovery_indices, "average cost per step:", ncalls[-1] / nsteps)
+            if l is None:
+                l, = plt.plot(discovery_indices * ncalls[-1] / nsteps, np.arange(len(discovery_indices)), label=samplername)
+            else:
+                plt.plot(discovery_indices * ncalls[-1] / nsteps, np.arange(len(discovery_indices)), color=l.get_color())
 
-        #samples, naccepts = mcmc(flat_indicator, startpoint, nsteps, 0.1)
-        #print('acceptance rate: %.2f%%' % (naccepts * 100 / nsteps))
-
-        #u = np.random.uniform(size=(1000000, nparams))
-        #L = loglikelihood(u)
-        #i = np.argmax(L)
-        #print('guessed point:', L[i], u[i,:])
-
-        discovery_indices = frac_filled(samples)
-        print("discovery indices:", discovery_indices, "average cost per step:", ncalls[-1] / nsteps)
-        plt.plot(discovery_indices * ncalls[-1] / nsteps, np.arange(len(discovery_indices)), label=samplername)
         plt.legend(loc='best')
         plt.xscale('log')
+        plt.yscale('log')
         plt.xlim(1, None)
+        plt.xlabel('Number of model evaluations')
+        plt.ylabel('Number of regions discovered')
         plt.savefig('letters_discovery.pdf', bbox_inches='tight')
         
-        import corner
-        corner.corner(samples, truths=startpoint)
-        plt.savefig('letters_sampled_%s.pdf' % samplername, bbox_inches='tight')
-        plt.close()
+        #import corner
+        #corner.corner(samples, truths=startpoint)
+        #plt.savefig('letters_sampled_%s.pdf' % samplername, bbox_inches='tight')
+        #plt.close()
 
 if __name__ == '__main__':
     main()
