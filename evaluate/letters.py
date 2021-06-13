@@ -13,6 +13,22 @@ import matplotlib.pyplot as plt
 import joblib
 mem = joblib.Memory('.', verbose=False)
 
+def floodfill_distance(array, i0, j0):
+    N, M = array.shape
+    index = np.zeros((N, M), dtype=int)
+    counter = 1
+    index[i0,j0] = counter
+    while True:
+        active = index == counter
+        i, j = np.where(active)
+        if len(i) == 0:
+            return index
+        counter += 1
+        index[inside_filtered((N, M), i - 1, j)] = counter
+        index[inside_filtered((N, M), i + 1, j)] = counter
+        index[inside_filtered((N, M), i, j - 1)] = counter
+        index[inside_filtered((N, M), i, j - 1)] = counter
+
 def sample_character(char, path='OpenSans-Bold.ttf', fontsize=60, width_per_cell=0.5, num_samples=1000, center_coords=(0,0), manifold_type="e"):
 
     """
@@ -32,7 +48,7 @@ def sample_character(char, path='OpenSans-Bold.ttf', fontsize=60, width_per_cell
 
     return arr.T
 
-words = {len(w)*2:w for w in 'II NEST ULTRANEST NESTED-SAMPLING-WITH-ULTRANEST'.split()}
+words = {len(w)*2:w for w in r'W II NEST ULTRANEST SSSSS NESTED-SAMPLING-WITH-ULTRANEST'.split()}
 print("available words:", words)
 word = words[int(sys.argv[1])]
 #word = 'II' # 4d
@@ -72,20 +88,23 @@ for c in characters:
     startpoint += [i[0] * xscale, j[0] * yscale]
     borders.append((ylo * yscale, yhi * yscale, xlo * xscale, xhi * xscale))
     print('maxval:', c.max(), 'border:', borders[-1], 'start guess:', startpoint[-2:])
-    Lmin += c.max() / 10. * 0.4
     interpolators.append(
         scipy.interpolate.RegularGridInterpolator(
             # flip x and y, to correct for transposition
             (np.linspace(0, 1, c.shape[1]), np.linspace(0, 1, c.shape[0])), 
             # reverse y-axis, to correct for transposition
-            c[:,::-1] / 10,
+            c[:,::-1],
             'linear', bounds_error=True)
     )
+    #masks.append(floodfill_distance(c[:,::-1] >= c.max() / 2), i[0], j[0])
+    Lmin += -0.5 * (256 - interpolators[-1](startpoint[-2:]))**2
     print("   ", interpolators[-1]((i[0] * xscale, j[0] * yscale)), c.max() / 10. * 0.4)
+
+Lmin -= 1e-4
 plt.figure(figsize=(2+len(characters), 4))
 for i, c in enumerate(characters):
     plt.subplot(1, len(characters), i + 1)
-    plt.imshow(c.T / 10 > c.max() / 10. * 0.4)
+    plt.imshow(c.T > c.max() * 0.4)
 plt.savefig('letters.png', bbox_inches='tight')
 plt.close()
 
@@ -96,20 +115,19 @@ nparams = len(paramnames)
 def loglikelihood(params):
     like = 0.0
     for i, interpolator in enumerate(interpolators):
-        like += interpolator(params[:, i*2:(i+1)*2])
+        like += -0.5 * (256 - interpolator(params[:, i*2:(i+1)*2]))**2
     return like
 
 def transform(x): return x
 
 def flat_indicator(params):
-    if (params >= 0).all() and (params <= 1).all():
+    if (params > 0).all() and (params < 1).all():
         like = 0.0
         for i, interpolator in enumerate(interpolators):
-            like += interpolator(params[i*2:(i+1)*2])
+            like += -0.5 * (256 - interpolator(params[i*2:(i+1)*2]))**2
         if like >= Lmin:
             return 0.
     return -np.inf
-
 
 def frac_filled(samples):
     key = 0
@@ -151,10 +169,13 @@ def mcmc(logfunction, x0, nsteps, sigma_p):
 from ultranest.mlfriends import MLFriends, AffineLayer
 
 def setup_region(startpoint):
+    print("finding some initial live points...")
     samples, naccepts = mcmc(flat_indicator, startpoint, 40000, 1e-5)
     us = samples[::100,:]
     Ls = loglikelihood(us)
-    print('unique live points:', len(np.unique(Ls)), len(us), naccepts)
+    Nuniq = len(np.unique(Ls))
+    print('unique live points:', Nuniq, len(us), naccepts)
+    assert Nuniq > 1
     transformLayer = AffineLayer()
     transformLayer.optimize(us, us)
     region = MLFriends(us, transformLayer)
@@ -192,19 +213,25 @@ def fetch_samples(sampler, startpoint, nsteps):
         
     return samples, ncalls
 
+from ultranest.stepsampler import generate_cube_oriented_direction, generate_region_oriented_direction, generate_region_random_direction, generate_random_direction
+from ultranest.stepsampler import SliceSampler, MHSampler, OrthogonalProposalGenerator
 step_matrix=np.arange(nparams).reshape((-1, 1))
-K = 10
+K = max(10, nparams)
+
 samplers = [
-    ('mh', 100000, ultranest.stepsampler.MHSampler(nsteps=K, generate_direction=ultranest.stepsampler.generate_random_direction)),
-    #('regionmh', 100000, ultranest.stepsampler.MHSampler(nsteps=K, generate_direction=ultranest.stepsampler.generate_region_random_direction)),
-    ('cubeslice', 10000, ultranest.stepsampler.SliceSampler(nsteps=K, generate_direction=ultranest.stepsampler.generate_cube_oriented_direction)),
-    ('regionslice', 10000, ultranest.stepsampler.SliceSampler(nsteps=K, generate_direction=ultranest.stepsampler.generate_region_oriented_direction)),
-    ('regionball', 10000, ultranest.stepsampler.SliceSampler(nsteps=K, generate_direction=ultranest.stepsampler.generate_region_random_direction)),
-    #('seqregionslice', 10000, ultranest.stepsampler.SliceSampler(nsteps=K,
-    #    generate_direction=ultranest.stepsampler.SpeedVariableGenerator(step_matrix=step_matrix, generate_direction=ultranest.stepsampler.generate_region_oriented_direction))
+    ('mh', 100000 * nparams, MHSampler(nsteps=K, generate_direction= generate_random_direction)),
+    #('regionmh', 100000,  MHSampler(nsteps=K, generate_direction= generate_region_random_direction)),
+    ('cubeslice', 10000 * nparams,  SliceSampler(nsteps=K, generate_direction=generate_cube_oriented_direction)),
+    ('regionslice', 10000 * nparams,  SliceSampler(nsteps=K, generate_direction=generate_region_oriented_direction)),
+    ('regionball', 10000 * nparams,  SliceSampler(nsteps=K, generate_direction=generate_region_random_direction)),
+    ('cubeslice-orth', 10000 * nparams,  SliceSampler(nsteps=K, generate_direction=OrthogonalProposalGenerator(generate_cube_oriented_direction))),
+    ('regionslice-orth', 10000 * nparams,  SliceSampler(nsteps=K, generate_direction=OrthogonalProposalGenerator(generate_region_oriented_direction))),
+    ('regionball-orth', 10000 * nparams,  SliceSampler(nsteps=K, generate_direction=OrthogonalProposalGenerator(generate_region_random_direction))),
+    #('seqregionslice', 100000 * nparams,  SliceSampler(nsteps=K,
+    #    generate_direction= SpeedVariableGenerator(step_matrix=step_matrix, generate_direction= generate_region_oriented_direction))
     #),
-    #('seqcubeslice', 10000, ultranest.stepsampler.SliceSampler(nsteps=K,
-    #    generate_direction=ultranest.stepsampler.SpeedVariableGenerator(step_matrix=step_matrix, generate_direction=ultranest.stepsampler.generate_cube_oriented_direction))
+    #('seqcubeslice', 10000,  SliceSampler(nsteps=K,
+    #    generate_direction= SpeedVariableGenerator(step_matrix=step_matrix, generate_direction= generate_cube_oriented_direction))
     #)
 ]
 
@@ -225,32 +252,43 @@ def get_samples(samplername, nsteps, nparams, seed=1):
 def main():
     print('start point:', loglikelihood(np.asarray([startpoint])), startpoint, Lmin)
     print('start point:', flat_indicator(startpoint), startpoint)
+    assert flat_indicator(startpoint) == 0.0
     # generate live points
 
     for samplername, nsteps, sampler in samplers:
         print("checking sampler: %s" % samplername, sampler)
         l = None
-        for seed in 1,:
-            samples, ncalls, T = get_samples(samplername, nsteps, nparams, seed=seed)
-            discovery_indices = frac_filled(samples) + 1
-            print("discovery indices:", discovery_indices, "average cost per step:", ncalls[-1] / nsteps)
-            if l is None:
-                l, = plt.plot(discovery_indices * ncalls[-1] / nsteps, np.arange(len(discovery_indices)), label=samplername)
-            else:
-                plt.plot(discovery_indices * ncalls[-1] / nsteps, np.arange(len(discovery_indices)), color=l.get_color())
+        samples, ncalls, T = get_samples(samplername, nsteps, nparams)
+        discovery_indices = frac_filled(samples) + 1
+        ndiscovered = np.arange(len(discovery_indices)) + 1
+        cost = discovery_indices * ncalls[-1] / nsteps
+        print("discovery indices:", discovery_indices, "average cost per step:", ncalls[-1] / nsteps)
+        if l is None:
+            l, = plt.plot(cost, ndiscovered, label=samplername)
+        else:
+            plt.plot(cost, ndiscovered, color=l.get_color())
+        print(cost.max())
 
-        plt.legend(loc='best')
+        plt.legend(loc='best', title='%s (%d dim)' % (word, nparams), prop=dict(size=8))
         plt.xscale('log')
         plt.yscale('log')
-        plt.xlim(1, None)
+        #plt.xlim(1, None)
         plt.xlabel('Number of model evaluations')
         plt.ylabel('Number of regions discovered')
-        plt.savefig('letters_discovery.pdf', bbox_inches='tight')
+        plt.savefig('letters_discovery_%d.pdf' % nparams, bbox_inches='tight')
         
         #import corner
         #corner.corner(samples, truths=startpoint)
         #plt.savefig('letters_sampled_%s.pdf' % samplername, bbox_inches='tight')
         #plt.close()
+        
+        plt.figure()
+        r, pvalue = scipy.stats.spearmanr(samples)
+        r[np.arange(nparams),np.arange(nparams)] = 0
+        plt.imshow(r)
+        plt.colorbar()
+        plt.savefig('letters_corr.pdf', bbox_inches='tight')
+        plt.close()
 
 if __name__ == '__main__':
     main()
