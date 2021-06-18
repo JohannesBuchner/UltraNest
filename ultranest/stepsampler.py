@@ -973,124 +973,7 @@ def SpeedVariableRegionSliceSampler(step_matrix, *args, **kwargs):
         )
     )
 
-
-def ellipsoid_bracket(ui, v, ellipsoid_center, ellipsoid_inv_axes, ellipsoid_radius_square):
-    """ For a line from ui in direction v through an ellipsoid
-    centered at ellipsoid_center with axes matrix ellipsoid_inv_axes,
-    return the lower and upper intersection parameter.
-
-    Parameters
-    -----------
-    ui: array
-        current point (in u-space)
-    v: array
-        direction vector
-    ellipsoid_center: array
-        center of the ellipsoid
-    ellipsoid_inv_axes: array
-        ellipsoid axes matrix, as computed by :class:WrappingEllipsoid
-    ellipsoid_radius_square: float
-        square of the ellipsoid radius
-
-    Returns
-    --------
-    left: float
-        distance to go until ellipsoid is intersected (non-positive)
-    right: float
-        distance to go until ellipsoid is intersected (non-negative)
-    """
-    vell = np.dot(v, ellipsoid_inv_axes)
-    # ui in ellipsoid
-    xell = np.dot(ui - ellipsoid_center, ellipsoid_inv_axes)
-    a = np.dot(vell, vell)
-    b = 2 * np.dot(vell, xell)
-    c = np.dot(xell, xell) - ellipsoid_radius_square
-    assert c <= 0, ("outside ellipsoid", c)
-    intersect = b**2 - 4 * a * c
-    assert intersect >= 0, ("no intersection", intersect, c)
-    d1 = (-b + intersect**0.5) / (2 * a)
-    d2 = (-b - intersect**0.5) / (2 * a)
-    left = min(0, d1, d2)
-    right = max(0, d1, d2)
-    return left, right
-
-
-def crop_bracket_at_unit_cube(ui, v, left, right, epsilon=1e-6):
-    """A line segment from *ui* in direction *v* from t between *left* <= 0 <= *right*
-    will be truncated by the unit cube. Returns the bracket and whether cropping was applied.
-
-    Parameters
-    -----------
-    ui: array
-        current point (in u-space)
-    v: array
-        direction vector
-    left: float
-        bracket lower end (non-positive)
-    right: float
-        bracket upper end (non-negative)
-    epsilon: float
-        small number to allow for numerical effects
-
-    Returns
-    --------
-    left: float
-        new left
-    right: float
-        new right
-    cropped_left: bool
-        whether left was changed
-    cropped_right: bool
-        whether right was changed
-    """
-    assert (ui > 0).all(), ui
-    assert (ui < 1).all(), ui
-    leftu = left * v + ui
-    rightu = right * v + ui
-    # print("crop: current ends:", leftu, rightu)
-    cropped_left = False
-    leftbelow = leftu <= 0
-    if leftbelow.any():
-        # choose left so that point is > 0 in all axes
-        # 0 = left * v + ui
-        del left
-        left = (-ui[leftbelow] / v[leftbelow]).max() * (1 - epsilon)
-        del leftu
-        leftu = left * v + ui
-        cropped_left |= True
-        assert (leftu >= 0).all(), leftu
-    leftabove = leftu >= 1
-    if leftabove.any():
-        del left
-        left = ((1 - ui[leftabove]) / v[leftabove]).max() * (1 - epsilon)
-        del leftu
-        leftu = left * v + ui
-        cropped_left |= True
-        assert (leftu <= 1).all(), leftu
-
-    cropped_right = False
-    rightabove = rightu >= 1
-    if rightabove.any():
-        # choose right so that point is < 1 in all axes
-        # 1 = left * v + ui
-        del right
-        right = ((1 - ui[rightabove]) / v[rightabove]).min() * (1 - epsilon)
-        del rightu
-        rightu = right * v + ui
-        cropped_right |= True
-        assert (rightu <= 1).all(), rightu
-
-    rightbelow = rightu <= 0
-    if rightbelow.any():
-        del right
-        right = (-ui[rightbelow] / v[rightbelow]).min() * (1 - epsilon)
-        del rightu
-        rightu = right * v + ui
-        cropped_right |= True
-        assert (rightu >= 0).all(), rightu
-
-    assert left <= 0 <= right, (left, right)
-    return left, right, cropped_left, cropped_right
+from .mlfriends import get_cropped_ellipsoid_bracket
 
 def _prepare_steps(
     nsteps_done, nsteps, directions, ndraw,
@@ -1122,8 +1005,7 @@ def _prepare_steps(
     if left is None or right is None:
         # in each, find the end points using the expanded ellipsoid
         assert region.inside_ellipsoid(ucurrent.reshape((1, ndim))), ('current point outside ellipsoid!')
-        left, right = ellipsoid_bracket(ucurrent, v, region.ellipsoid_center, region.ellipsoid_inv_axes, region.enlarge)
-        left, right, _, _ = crop_bracket_at_unit_cube(ucurrent, v, left, right)
+        left, right = get_cropped_ellipsoid_bracket(ucurrent, v, region)
         assert (ucurrent + v * left <= 1).all(), (
             ucurrent, v, region.ellipsoid_center, region.ellipsoid_inv_axes, region.ellipsoid_invcov, region.enlarge)
         assert (ucurrent + v * right <= 1).all(), (
@@ -1229,7 +1111,7 @@ def _evaluate_with_filter(
         L = loglike(t_point_sequence)
     Lmask = L > Lmin
 
-    i = np.where(point_expectation != Lmask)[0]
+    i, = np.where(point_expectation != Lmask)
     if verbose:
         print("reality:", Lmask)
         print("difference:", point_expectation == Lmask)

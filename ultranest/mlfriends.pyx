@@ -1330,3 +1330,136 @@ class WrappingEllipsoid(object):
 
         """
         return _inside_ellipsoid(u, self.ellipsoid_center, self.ellipsoid_invcov, self.enlarge)
+
+
+
+cdef _ellipsoid_bracket(
+    np.ndarray[np.float_t, ndim=1] ui,
+    np.ndarray[np.float_t, ndim=1] v,
+    np.ndarray[np.float_t, ndim=1] ellipsoid_center,
+    np.ndarray[np.float_t, ndim=2] ellipsoid_inv_axes,
+    float ellipsoid_radius_square
+):
+    """ For a line from ui in direction v through an ellipsoid
+    centered at ellipsoid_center with axes matrix ellipsoid_inv_axes,
+    return the lower and upper intersection parameter.
+
+    Parameters
+    -----------
+    ui: array
+        current point (in u-space)
+    v: array
+        direction vector
+    ellipsoid_center: array
+        center of the ellipsoid
+    ellipsoid_inv_axes: array
+        ellipsoid axes matrix, as computed by :class:WrappingEllipsoid
+    ellipsoid_radius_square: float
+        square of the ellipsoid radius
+
+    Returns
+    --------
+    left: float
+        distance to go until ellipsoid is intersected (non-positive)
+    right: float
+        distance to go until ellipsoid is intersected (non-negative)
+    """
+    vell = np.dot(v, ellipsoid_inv_axes)
+    # ui in ellipsoid
+    xell = np.dot(ui - ellipsoid_center, ellipsoid_inv_axes)
+    a = np.dot(vell, vell)
+    b = 2 * np.dot(vell, xell)
+    c = np.dot(xell, xell) - ellipsoid_radius_square
+    assert c <= 0, ("outside ellipsoid", c)
+    intersect = b**2 - 4 * a * c
+    assert intersect >= 0, ("no intersection", intersect, c)
+    d1 = (-b + intersect**0.5) / (2 * a)
+    d2 = (-b - intersect**0.5) / (2 * a)
+    left = min(0, d1, d2)
+    right = max(0, d1, d2)
+    return left, right
+
+
+cdef _crop_bracket_at_unit_cube(
+    np.ndarray[np.float_t, ndim=1] ui,
+    np.ndarray[np.float_t, ndim=1] v,
+    float left, float right, float epsilon=1e-6
+):
+    """A line segment from *ui* in direction *v* from t between *left* <= 0 <= *right*
+    will be truncated by the unit cube. Returns the bracket and whether cropping was applied.
+
+    Parameters
+    -----------
+    ui: array
+        current point (in u-space)
+    v: array
+        direction vector
+    left: float
+        bracket lower end (non-positive)
+    right: float
+        bracket upper end (non-negative)
+    epsilon: float
+        small number to allow for numerical effects
+
+    Returns
+    --------
+    left: float
+        new left
+    right: float
+        new right
+    cropped_left: bool
+        whether left was changed
+    cropped_right: bool
+        whether right was changed
+    """
+    assert (ui > 0).all(), ui
+    assert (ui < 1).all(), ui
+    leftu = left * v + ui
+    rightu = right * v + ui
+    # print("crop: current ends:", leftu, rightu)
+    cropped_left = False
+    leftbelow = leftu <= 0
+    if leftbelow.any():
+        # choose left so that point is > 0 in all axes
+        # 0 = left * v + ui
+        left = (-ui[leftbelow] / v[leftbelow]).max() * (1 - epsilon)
+        leftu = left * v + ui
+        cropped_left |= True
+        assert (leftu >= 0).all(), leftu
+    leftabove = leftu >= 1
+    if leftabove.any():
+        left = ((1 - ui[leftabove]) / v[leftabove]).max() * (1 - epsilon)
+        leftu = left * v + ui
+        cropped_left |= True
+        assert (leftu <= 1).all(), leftu
+
+    cropped_right = False
+    rightabove = rightu >= 1
+    if rightabove.any():
+        # choose right so that point is < 1 in all axes
+        # 1 = left * v + ui
+        right = ((1 - ui[rightabove]) / v[rightabove]).min() * (1 - epsilon)
+        rightu = right * v + ui
+        cropped_right |= True
+        assert (rightu <= 1).all(), rightu
+
+    rightbelow = rightu <= 0
+    if rightbelow.any():
+        right = (-ui[rightbelow] / v[rightbelow]).min() * (1 - epsilon)
+        rightu = right * v + ui
+        cropped_right |= True
+        assert (rightu >= 0).all(), rightu
+
+    assert left <= 0 <= right, (left, right)
+    return left, right, cropped_left, cropped_right
+
+def ellipsoid_bracket(ucurrent, v, ellipsoid_center, ellipsoid_inv_axes, enlarge):
+    return _ellipsoid_bracket(ucurrent, v, ellipsoid_center, ellipsoid_inv_axes, enlarge)
+
+def crop_bracket_at_unit_cube(ucurrent, v, left, right):
+    return _crop_bracket_at_unit_cube(ucurrent, v, left, right)
+
+def get_cropped_ellipsoid_bracket(ucurrent, v, region):
+    left, right = _ellipsoid_bracket(ucurrent, v, region.ellipsoid_center, region.ellipsoid_inv_axes, region.enlarge)
+    left, right, _, _ = _crop_bracket_at_unit_cube(ucurrent, v, left, right)
+    return left, right
