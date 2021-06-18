@@ -162,7 +162,7 @@ def TVnorm(samples):
     return KL
 """
 
-@mem.cache
+#@mem.cache
 def mcmc(logfunction, x0, nsteps, sigma_p):
     samples = np.empty((nsteps, len(x0)))
     logL0 = logfunction(x0)
@@ -248,7 +248,7 @@ samplers = [
     #)
 ]
 
-@mem.cache
+#@mem.cache
 def get_samples(samplername, nsteps, nparams, seed=1):
     np.random.seed(seed)
     for samplernamei, _, sampler in samplers:

@@ -2,7 +2,8 @@ import numpy as np
 from ultranest.mlfriends import ScalingLayer, AffineLayer, MLFriends
 from ultranest import ReactiveNestedSampler
 from ultranest.stepsampler import RegionMHSampler, CubeMHSampler, CubeSliceSampler, RegionSliceSampler, SpeedVariableRegionSliceSampler, AHARMSampler, RegionBallSliceSampler
-from ultranest.stepsampler import generate_region_random_direction, ellipsoid_bracket, crop_bracket_at_unit_cube
+from ultranest.stepsampler import generate_region_random_direction
+from ultranest.mlfriends import ellipsoid_bracket, crop_bracket_at_unit_cube
 from ultranest.pathsampler import SamplingPathStepSampler
 from numpy.testing import assert_allclose
 
