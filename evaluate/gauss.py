@@ -193,14 +193,14 @@ step_matrix=np.arange(nparams).reshape((-1, 1))
 K = max(10, nparams)
 
 samplers = [
-    ('mh', 100000 * nparams, MHSampler(nsteps=K, generate_direction=generate_random_direction)),
+    ('mh', 100000, MHSampler(nsteps=K, generate_direction=generate_random_direction)),
     #('regionmh', 100000,  MHSampler(nsteps=K, generate_direction= generate_region_random_direction)),
-    ('cubeslice', 10000 * nparams,  SliceSampler(nsteps=K, generate_direction=generate_cube_oriented_direction)),
-    ('regionslice', 10000 * nparams,  SliceSampler(nsteps=K, generate_direction=generate_region_oriented_direction)),
-    ('regionball', 10000 * nparams,  SliceSampler(nsteps=K, generate_direction=generate_region_random_direction)),
-    ('cubeslice-orth', 10000 * nparams,  SliceSampler(nsteps=K, generate_direction=OrthogonalProposalGenerator(generate_cube_oriented_direction))),
-    ('regionslice-orth', 10000 * nparams,  SliceSampler(nsteps=K, generate_direction=OrthogonalProposalGenerator(generate_region_oriented_direction))),
-    ('regionball-orth', 10000 * nparams,  SliceSampler(nsteps=K, generate_direction=OrthogonalProposalGenerator(generate_region_random_direction))),
+    ('cubeslice', 100000,  SliceSampler(nsteps=K, generate_direction=generate_cube_oriented_direction)),
+    ('regionslice', 100000,  SliceSampler(nsteps=K, generate_direction=generate_region_oriented_direction)),
+    ('regionball', 100000,  SliceSampler(nsteps=K, generate_direction=generate_region_random_direction)),
+    ('cubeslice-orth', 100000,  SliceSampler(nsteps=K, generate_direction=OrthogonalProposalGenerator(generate_cube_oriented_direction))),
+    ('regionslice-orth', 100000,  SliceSampler(nsteps=K, generate_direction=OrthogonalProposalGenerator(generate_region_oriented_direction))),
+    ('regionball-orth', 100000,  SliceSampler(nsteps=K, generate_direction=OrthogonalProposalGenerator(generate_region_random_direction))),
     #('seqregionslice', 100000, ultranest.stepsampler.SliceSampler(nsteps=K,
     #    generate_direction=ultranest.stepsampler.SpeedVariableGenerator(step_matrix=step_matrix, generate_direction=ultranest.stepsampler.generate_region_oriented_direction))
     #),
@@ -254,6 +254,14 @@ def main():
         import corner
         corner.corner(samples, truths=startpoint)
         plt.savefig('gauss_sampled_%s.pdf' % ndim, bbox_inches='tight')
+        plt.close()
+
+        plt.figure()
+        r, pvalue = scipy.stats.spearmanr(samples)
+        r[np.arange(nparams),np.arange(nparams)] = 0
+        plt.imshow(r)
+        plt.colorbar()
+        plt.savefig('gauss_corr.pdf', bbox_inches='tight')
         plt.close()
 
 if __name__ == '__main__':

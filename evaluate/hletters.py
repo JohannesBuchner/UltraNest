@@ -13,22 +13,6 @@ import matplotlib.pyplot as plt
 import joblib
 mem = joblib.Memory('.', verbose=False)
 
-def floodfill_distance(array, i0, j0):
-    N, M = array.shape
-    index = np.zeros((N, M), dtype=int)
-    counter = 1
-    index[i0,j0] = counter
-    while True:
-        active = index == counter
-        i, j = np.where(active)
-        if len(i) == 0:
-            return index
-        counter += 1
-        index[inside_filtered((N, M), i - 1, j)] = counter
-        index[inside_filtered((N, M), i + 1, j)] = counter
-        index[inside_filtered((N, M), i, j - 1)] = counter
-        index[inside_filtered((N, M), i, j - 1)] = counter
-
 def sample_character(char, path='OpenSans-Bold.ttf', fontsize=60, width_per_cell=0.5, num_samples=1000, center_coords=(0,0), manifold_type="e"):
 
     """
@@ -102,11 +86,11 @@ for c in characters:
     Lmin += -0.5 * (256 - interpolators[-1](startpoint[-2:]))**2
     print("   ", interpolators[-1]((i[0] * xscale, j[0] * yscale)), c.max() / 10. * 0.4)
 
-Lmin -= 1e-4
+Lmin = -0.5 * (256 - 256 // 3)**2
 plt.figure(figsize=(2+len(characters), 4))
 for i, c in enumerate(characters):
     plt.subplot(1, len(characters), i + 1)
-    plt.imshow(c.T > c.max() * 0.4)
+    plt.imshow(c.T > 256 // 3)
 plt.savefig('letters.png', bbox_inches='tight')
 plt.close()
 
@@ -115,20 +99,19 @@ paramnames = ['p%d' % (i+1) for i in range(len(characters)*2)]
 nparams = len(paramnames)
 
 def loglikelihood(params):
-    like = 0.0
+    likes = np.zeros((len(interpolators), params.shape[0]))
     for i, interpolator in enumerate(interpolators):
-        like += -0.5 * (256 - interpolator(params[:, i*2:(i+1)*2]))**2
-    return like
+        likes[i] = -0.5 * (256 - interpolator(params[:, i*2:(i+1)*2]))**2
+    return np.min(likes, axis=0)
 
 def transform(x): return x
 
 def flat_indicator(params):
     if (params > 0).all() and (params < 1).all():
-        like = 0.0
         for i, interpolator in enumerate(interpolators):
-            like += -0.5 * (256 - interpolator(params[i*2:(i+1)*2]))**2
-        if like >= Lmin:
-            return 0.
+            if interpolator(params[i*2:(i+1)*2]) < 256 // 3:
+                return -np.inf
+        return 0.
     return -np.inf
 
 def calc_keys(samples):
@@ -206,6 +189,8 @@ def setup_region(startpoint):
     transformLayer = AffineLayer()
     transformLayer.optimize(us, us)
     region = MLFriends(us, transformLayer)
+    region.maxradiussq, region.enlarge = region.compute_enlargement()
+    region.create_ellipsoid()
     return us, Ls, region
 
 import ultranest.stepsampler
@@ -219,15 +204,15 @@ def fetch_samples(sampler, startpoint, nsteps):
     for i in tqdm.trange(nsteps):
         u = None
         while u is None:
-            u, p, L, nc = sampler.__next__(region, Lmin, us, Ls, transform, loglikelihood)
+            u, p, L, nc = sampler.__next__(region, Lmin, us, Ls, transform, loglikelihood, verbose=False, ndraw=10)
             nc_cum += nc
         samples[i,:] = u
         ncalls[i] = nc_cum
-        assert L > Lmin
+        assert L > Lmin, (L, Lmin)
         # replace a live point
         k = np.random.randint(Nlive)
         if k == 0:
-            print("scale:", sampler.scale, "span:", us.max(axis=0) - us.min(axis=0))
+            print("scale:", getattr(sampler, 'scale', None), "span:", us.max(axis=0) - us.min(axis=0))
         us[k,:] = u
         Ls[k] = L
         if i % Nlive == Nlive - 1:
@@ -241,19 +226,20 @@ def fetch_samples(sampler, startpoint, nsteps):
     return samples, ncalls
 
 from ultranest.stepsampler import generate_cube_oriented_direction, generate_region_oriented_direction, generate_region_random_direction, generate_random_direction
-from ultranest.stepsampler import SliceSampler, MHSampler, OrthogonalProposalGenerator
+from ultranest.stepsampler import SliceSampler, MHSampler, OrthogonalProposalGenerator, AHARMSampler
 step_matrix=np.arange(nparams).reshape((-1, 1))
 K = max(10, nparams)
 
 samplers = [
-    ('mh', 100000 * nparams, MHSampler(nsteps=K, generate_direction= generate_random_direction)),
-    #('regionmh', 100000,  MHSampler(nsteps=K, generate_direction= generate_region_random_direction)),
-    ('cubeslice', 10000 * nparams,  SliceSampler(nsteps=K, generate_direction=generate_cube_oriented_direction)),
-    ('regionslice', 10000 * nparams,  SliceSampler(nsteps=K, generate_direction=generate_region_oriented_direction)),
-    ('regionball', 10000 * nparams,  SliceSampler(nsteps=K, generate_direction=generate_region_random_direction)),
-    ('cubeslice-orth', 10000 * nparams,  SliceSampler(nsteps=K, generate_direction=OrthogonalProposalGenerator(generate_cube_oriented_direction))),
-    ('regionslice-orth', 10000 * nparams,  SliceSampler(nsteps=K, generate_direction=OrthogonalProposalGenerator(generate_region_oriented_direction))),
-    ('regionball-orth', 10000 * nparams,  SliceSampler(nsteps=K, generate_direction=OrthogonalProposalGenerator(generate_region_random_direction))),
+    #('mh', 10000 * nparams, MHSampler(nsteps=K, generate_direction= generate_random_direction)),
+    ##('regionmh', 100000,  MHSampler(nsteps=K, generate_direction= generate_region_random_direction)),
+    #('cubeslice', 10000 * nparams,  SliceSampler(nsteps=K, generate_direction=generate_cube_oriented_direction)),
+    #('regionslice', 1000 * nparams,  SliceSampler(nsteps=K, generate_direction=generate_region_oriented_direction)),
+    #('regionball', 1000 * nparams,  SliceSampler(nsteps=K, generate_direction=generate_region_random_direction)),
+    ('acubeslice', 10000 * nparams,  AHARMSampler(nsteps=K, generate_direction=generate_cube_oriented_direction, orthogonalise=False)),
+    #('cubeslice-orth', 1000 * nparams,  SliceSampler(nsteps=K, generate_direction=OrthogonalProposalGenerator(generate_cube_oriented_direction))),
+    #('regionslice-orth', 1000 * nparams,  SliceSampler(nsteps=K, generate_direction=OrthogonalProposalGenerator(generate_region_oriented_direction))),
+    #('regionball-orth', 1000 * nparams,  SliceSampler(nsteps=K, generate_direction=OrthogonalProposalGenerator(generate_region_random_direction))),
     #('seqregionslice', 100000 * nparams,  SliceSampler(nsteps=K,
     #    generate_direction= SpeedVariableGenerator(step_matrix=step_matrix, generate_direction= generate_region_oriented_direction))
     #),
@@ -302,20 +288,20 @@ def main():
         #plt.xlim(1, None)
         plt.xlabel('Number of model evaluations')
         plt.ylabel('Number of regions discovered')
-        plt.savefig('letters_discovery_%d.pdf' % nparams, bbox_inches='tight')
+        plt.savefig('hletters_discovery_%d.pdf' % nparams, bbox_inches='tight')
         
-        #import corner
-        #corner.corner(samples, truths=startpoint)
-        #plt.savefig('letters_sampled_%s.pdf' % samplername, bbox_inches='tight')
-        #plt.close()
+        import corner
+        corner.corner(samples, truths=startpoint)
+        plt.savefig('hletters_sampled_%s.pdf' % samplername, bbox_inches='tight')
+        plt.close()
         
-        plt.figure()
+        """plt.figure()
         r, pvalue = scipy.stats.spearmanr(samples)
         r[np.arange(nparams),np.arange(nparams)] = 0
         plt.imshow(r)
         plt.colorbar()
         plt.savefig('letters_corr.pdf', bbox_inches='tight')
-        plt.close()
+        plt.close()"""
 
 if __name__ == '__main__':
     main()
