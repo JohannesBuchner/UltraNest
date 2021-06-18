@@ -982,7 +982,6 @@ def _prepare_steps(
 ):
     point_sequence = np.empty((ndraw, ndim))
     point_expectation = np.zeros(ndraw, dtype=bool)
-    intervals = []
     nsteps_prepared = 0
     if verbose:
         print("loop:", nsteps_prepared, nsteps_done, 'of', nsteps)
@@ -994,28 +993,28 @@ def _prepare_steps(
         print("from", ucurrent)
     assert (ucurrent >= 0).all(), ucurrent
     assert (ucurrent <= 1).all(), ucurrent
-    assert region.inside_ellipsoid(ucurrent.reshape((1, ndim))), (
-        'cannot start from outside ellipsoid!', region.inside_ellipsoid(ucurrent.reshape((1, ndim))))
+    #assert region.inside_ellipsoid(ucurrent.reshape((1, ndim))), (
+    #    'cannot start from outside ellipsoid!', region.inside_ellipsoid(ucurrent.reshape((1, ndim))))
     if region_filter:
         assert region.inside(ucurrent.reshape((1, ndim))), (
             'cannot start from outside region!', region.inside(ucurrent.reshape((1, ndim))))
-    assert loglike(transform(ucurrent.reshape((1, ndim)))) >= Lmin, (
-        'cannot start from outside!', loglike(transform(ucurrent.reshape((1, ndim)))), Lmin)
+    #assert loglike(transform(ucurrent.reshape((1, ndim)))) >= Lmin, (
+    #    'cannot start from outside!', loglike(transform(ucurrent.reshape((1, ndim)))), Lmin)
 
     if left is None or right is None:
         # in each, find the end points using the expanded ellipsoid
-        assert region.inside_ellipsoid(ucurrent.reshape((1, ndim))), ('current point outside ellipsoid!')
+        # assert region.inside_ellipsoid(ucurrent.reshape((1, ndim))), ('current point outside ellipsoid!')
         left, right = get_cropped_ellipsoid_bracket(ucurrent, v, region)
-        assert (ucurrent + v * left <= 1).all(), (
-            ucurrent, v, region.ellipsoid_center, region.ellipsoid_inv_axes, region.ellipsoid_invcov, region.enlarge)
-        assert (ucurrent + v * right <= 1).all(), (
-            ucurrent, v, region.ellipsoid_center, region.ellipsoid_inv_axes, region.ellipsoid_invcov, region.enlarge)
-        assert (ucurrent + v * left >= 0).all(), (
-            ucurrent, v, region.ellipsoid_center, region.ellipsoid_inv_axes, region.ellipsoid_invcov, region.enlarge)
-        assert (ucurrent + v * right >= 0).all(), (
-            ucurrent, v, region.ellipsoid_center, region.ellipsoid_inv_axes, region.ellipsoid_invcov, region.enlarge)
+        #assert (ucurrent + v * left <= 1).all(), (
+        #    ucurrent, v, region.ellipsoid_center, region.ellipsoid_inv_axes, region.ellipsoid_invcov, region.enlarge)
+        #assert (ucurrent + v * right <= 1).all(), (
+        #    ucurrent, v, region.ellipsoid_center, region.ellipsoid_inv_axes, region.ellipsoid_invcov, region.enlarge)
+        #assert (ucurrent + v * left >= 0).all(), (
+        #    ucurrent, v, region.ellipsoid_center, region.ellipsoid_inv_axes, region.ellipsoid_invcov, region.enlarge)
+        #assert (ucurrent + v * right >= 0).all(), (
+        #    ucurrent, v, region.ellipsoid_center, region.ellipsoid_inv_axes, region.ellipsoid_invcov, region.enlarge)
 
-        assert left <= 0 <= right, (left, right)
+        # assert left <= 0 <= right, (left, right)
         if verbose:
             print("   ellipsoid bracket found:", left, right)
 
@@ -1028,14 +1027,13 @@ def _prepare_steps(
             print("preparing step: %d from %s" % (i, ucurrent))
 
         # sample in each a point until presumed success:
-        assert region.inside_ellipsoid(ucurrent.reshape((1, ndim))), ('current point outside ellipsoid!')
+        #assert region.inside_ellipsoid(ucurrent.reshape((1, ndim))), ('current point outside ellipsoid!')
         t = np.random.uniform(left, right)
         unext = ucurrent + v * t
         assert (unext >= 0).all(), unext
         assert (unext <= 1).all(), unext
-        assert region.inside_ellipsoid(unext.reshape((1, ndim))), ('proposal landed outside ellipsoid!', t, left, right)
+        #assert region.inside_ellipsoid(unext.reshape((1, ndim))), ('proposal landed outside ellipsoid!', t, left, right)
         
-        intervals.append((nsteps_prepared, ucurrent, v, left, right, t))
         point_sequence[i] = unext
         #   shrink interval
         if t > 0:
@@ -1043,13 +1041,14 @@ def _prepare_steps(
         else:
             left = t
 
+    next_interval = ucurrent, left, right
     nsteps_prepared = ndraw
 
     if verbose:
         print("proposed sequence:", point_sequence)
         print("expectations:", point_expectation)
 
-    return point_sequence, point_expectation, intervals, nsteps_prepared
+    return point_sequence, point_expectation, next_interval, nsteps_prepared
 
 
 def _evaluate_with_filter(
@@ -1292,7 +1291,7 @@ class AHARMSampler(StepSampler):
 
         del ui
         # prepare a sequence of points until nsteps are reached
-        point_sequence, point_expectation, intervals, nsteps_prepared = _prepare_steps(
+        point_sequence, point_expectation, self.current_interval, nsteps_prepared = _prepare_steps(
             self.nsteps_done, self.nsteps, self.directions, ndraw,
             self.current_interval, loglike, transform, region, ndim, self.region_filter, 
             Lmin, verbose
@@ -1307,10 +1306,8 @@ class AHARMSampler(StepSampler):
         self.nrejects += (~Lmask).sum()
         if not Lmask.any():
             if verbose:
-                print("none accepted; updating interval", intervals[-1])
+                print("none accepted; updating interval", self.current_interval)
             # need to call again
-            nsteps_prepared, ucurrent, v, left, right, t = intervals[-1]
-            self.current_interval = ucurrent, left, right
         else:
             # accept, start new direction from accepted point
             self.nsteps_done += 1
