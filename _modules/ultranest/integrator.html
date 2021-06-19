@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ultranest.integrator &mdash; UltraNest 3.2.0 documentation</title>
+  <title>ultranest.integrator &mdash; UltraNest 3.3.0 documentation</title>
   
 
   
@@ -70,7 +70,7 @@
             
             
               <div class="version">
-                3.2.0
+                3.3.0
               </div>
             
           
@@ -542,9 +542,15 @@
 <span class="sd">    the bootstraps over the *mpi_size* processes.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">assert</span> <span class="n">nbootstraps</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">nbootstraps</span>
-    <span class="n">r</span><span class="p">,</span> <span class="n">f</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">compute_enlargement</span><span class="p">(</span>
-        <span class="n">minvol</span><span class="o">=</span><span class="n">minvol</span><span class="p">,</span>
-        <span class="n">nbootstraps</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nbootstraps</span> <span class="o">//</span> <span class="n">mpi_size</span><span class="p">))</span>
+    <span class="c1"># catch potential errors so MPI syncing still works</span>
+    <span class="n">e</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">r</span><span class="p">,</span> <span class="n">f</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">compute_enlargement</span><span class="p">(</span>
+            <span class="n">minvol</span><span class="o">=</span><span class="n">minvol</span><span class="p">,</span>
+            <span class="n">nbootstraps</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">nbootstraps</span> <span class="o">//</span> <span class="n">mpi_size</span><span class="p">))</span>
+    <span class="k">except</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">LinAlgError</span> <span class="k">as</span> <span class="n">e1</span><span class="p">:</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="n">e1</span>
+        <span class="n">r</span><span class="p">,</span> <span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
 
     <span class="k">if</span> <span class="n">comm</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">recv_maxradii</span> <span class="o">=</span> <span class="n">comm</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
@@ -556,6 +562,13 @@
         <span class="n">recv_enlarge</span> <span class="o">=</span> <span class="n">comm</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="n">recv_enlarge</span> <span class="o">=</span> <span class="n">comm</span><span class="o">.</span><span class="n">bcast</span><span class="p">(</span><span class="n">recv_enlarge</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">recv_enlarge</span><span class="p">[:</span><span class="n">nbootstraps</span><span class="p">])</span>
+    
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">r</span><span class="p">):</span>
+        <span class="c1"># reraise error if needed</span>
+        <span class="k">if</span> <span class="n">e</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">LinAlgError</span><span class="p">(</span><span class="s2">&quot;compute_enlargement failed&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span>
 
     <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span> <span class="o">=</span> <span class="n">r</span>
     <span class="n">region</span><span class="o">.</span><span class="n">enlarge</span> <span class="o">=</span> <span class="n">f</span>
