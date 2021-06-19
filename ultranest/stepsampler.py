@@ -982,17 +982,16 @@ def _prepare_steps(
 ):
     point_sequence = np.empty((ndraw, ndim))
     point_expectation = np.zeros(ndraw, dtype=bool)
-    nsteps_prepared = 0
     if verbose:
-        print("loop:", nsteps_prepared, nsteps_done, 'of', nsteps)
-    v = directions[nsteps_done + nsteps_prepared]
+        print("loop:", nsteps_done, 'of', nsteps)
+    v = directions[nsteps_done]
     if verbose:
         print("direction:", v)
     ucurrent, left, right = current_interval
     if verbose:
         print("from", ucurrent)
-    assert (ucurrent >= 0).all(), ucurrent
-    assert (ucurrent <= 1).all(), ucurrent
+    #assert (ucurrent >= 0).all(), ucurrent
+    #assert (ucurrent <= 1).all(), ucurrent
     #assert region.inside_ellipsoid(ucurrent.reshape((1, ndim))), (
     #    'cannot start from outside ellipsoid!', region.inside_ellipsoid(ucurrent.reshape((1, ndim))))
     if region_filter:
@@ -1018,20 +1017,20 @@ def _prepare_steps(
         if verbose:
             print("   ellipsoid bracket found:", left, right)
 
-    assert (ucurrent >= 0).all(), ucurrent
-    assert (ucurrent <= 1).all(), ucurrent
-    assert ucurrent.shape == (ndim,), ucurrent
-    assert v.shape == (ndim,), ucurrent
+    #assert ucurrent.shape == (ndim,), ucurrent
+    #assert v.shape == (ndim,), ucurrent
+    ts = np.random.uniform(0, 1, size=ndraw)
     for i in range(ndraw):
         if verbose:
             print("preparing step: %d from %s" % (i, ucurrent))
 
         # sample in each a point until presumed success:
         #assert region.inside_ellipsoid(ucurrent.reshape((1, ndim))), ('current point outside ellipsoid!')
-        t = np.random.uniform(left, right)
+        #t = -ts[i] * left if ts[i] < 0 else ts[i] * right
+        t = ts[i] * (right - left) + left
         unext = ucurrent + v * t
-        assert (unext >= 0).all(), unext
-        assert (unext <= 1).all(), unext
+        # assert (unext >= 0).all(), unext
+        # assert (unext <= 1).all(), unext
         #assert region.inside_ellipsoid(unext.reshape((1, ndim))), ('proposal landed outside ellipsoid!', t, left, right)
         
         point_sequence[i] = unext
@@ -1366,17 +1365,3 @@ class AHARMSampler(StepSampler):
         self.last = None, None
         self.history = []
         self.nrejects = 0
-
-"""
-    def generate_new_interval(self, ui, region):
-        v = self.generate_direction(ui, region)
-        assert region.inside_ellipsoid(ui.reshape((1, -1)))
-        assert (ui > 0).all(), ui
-        assert (ui < 1).all(), ui
-
-        # use region ellipsoid to identify limits
-        # rotate line so that ellipsoid is a sphere
-        left, right = ellipsoid_bracket(ui, v, region.ellipsoid_center, region.ellipsoid_inv_axes, region.enlarge)
-        left, right, _, _ = crop_bracket_at_unit_cube(ui, v, left, right)
-        self.interval = (v, left, right, 0)
-"""

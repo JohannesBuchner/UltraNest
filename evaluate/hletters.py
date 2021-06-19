@@ -162,7 +162,7 @@ def TVnorm(samples):
     return KL
 """
 
-#@mem.cache
+@mem.cache
 def mcmc(logfunction, x0, nsteps, sigma_p):
     samples = np.empty((nsteps, len(x0)))
     logL0 = logfunction(x0)
@@ -204,7 +204,7 @@ def fetch_samples(sampler, startpoint, nsteps):
     for i in tqdm.trange(nsteps):
         u = None
         while u is None:
-            u, p, L, nc = sampler.__next__(region, Lmin, us, Ls, transform, loglikelihood, verbose=False, ndraw=10)
+            u, p, L, nc = sampler.__next__(region, Lmin, us, Ls, transform, loglikelihood, ndraw=10)
             nc_cum += nc
         samples[i,:] = u
         ncalls[i] = nc_cum
@@ -231,11 +231,11 @@ step_matrix=np.arange(nparams).reshape((-1, 1))
 K = max(10, nparams)
 
 samplers = [
-    #('mh', 10000 * nparams, MHSampler(nsteps=K, generate_direction= generate_random_direction)),
+    ('mh', 10000 * nparams, MHSampler(nsteps=K, generate_direction= generate_random_direction)),
     ##('regionmh', 100000,  MHSampler(nsteps=K, generate_direction= generate_region_random_direction)),
-    #('cubeslice', 10000 * nparams,  SliceSampler(nsteps=K, generate_direction=generate_cube_oriented_direction)),
+    ('cubeslice', 10000 * nparams,  SliceSampler(nsteps=K, generate_direction=generate_cube_oriented_direction)),
     #('regionslice', 1000 * nparams,  SliceSampler(nsteps=K, generate_direction=generate_region_oriented_direction)),
-    #('regionball', 1000 * nparams,  SliceSampler(nsteps=K, generate_direction=generate_region_random_direction)),
+    ('regionball', 10000 * nparams,  SliceSampler(nsteps=K, generate_direction=generate_region_random_direction)),
     ('acubeslice', 10000 * nparams,  AHARMSampler(nsteps=K, generate_direction=generate_cube_oriented_direction, orthogonalise=False)),
     #('cubeslice-orth', 1000 * nparams,  SliceSampler(nsteps=K, generate_direction=OrthogonalProposalGenerator(generate_cube_oriented_direction))),
     #('regionslice-orth', 1000 * nparams,  SliceSampler(nsteps=K, generate_direction=OrthogonalProposalGenerator(generate_region_oriented_direction))),
@@ -248,7 +248,7 @@ samplers = [
     #)
 ]
 
-#@mem.cache
+@mem.cache
 def get_samples(samplername, nsteps, nparams, seed=1):
     np.random.seed(seed)
     for samplernamei, _, sampler in samplers:
