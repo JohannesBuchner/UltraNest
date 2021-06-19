@@ -620,8 +620,8 @@ class MultiCounter(object):
         self.ncounters = len(self.rootids)
 
         self.check_insertion_order = check_insertion_order
-        self.insertion_order_threshold = 2
-        self.insertion_order_accumulator = [UniformOrderAccumulator(self.rootids.shape[1]) for _ in range(self.rootids.shape[0])]
+        self.insertion_order_threshold = 4
+        self.insertion_order_accumulator = UniformOrderAccumulator(self.rootids.shape[1])
 
         self.reset(len(self.rootids))
 
@@ -643,8 +643,8 @@ class MultiCounter(object):
         self.remainder_ratio = 1.0
         self.remainder_fraction = 1.0
 
-        [acc.reset() for acc in self.insertion_order_accumulator]
-        self.insertion_order_runs = [[] for _ in range(nentries)]
+        self.insertion_order_accumulator.reset()
+        self.insertion_order_runs = []
 
     @property
     def logZ_bs(self):
@@ -658,17 +658,20 @@ class MultiCounter(object):
 
     @property
     def insertion_order_runlength(self):
-        shortest_runs = []
-        for runs in self.insertion_order_runs[:1]:
-            if len(runs) == 0:
-                shortest_runs.append(np.inf)
-            else:
-                shortest_runs.append(min(runs))
-        return np.median(shortest_runs)
+        runs = self.insertion_order_runs
+        if len(runs) == 0:
+            return np.inf
+        else:
+            return min(runs)
 
     @property
     def insertion_order_converged(self):
-        return len(self.insertion_order_runs[0]) == 0
+        # we expect run lengths not shorter than 300000 for 4sigma
+        # if we get many more than expected from the number of iterations
+        # the run has not converged
+        niter = len(self.logweights)
+        expected_number = max(1, int(np.ceil(niter / 10**(5.5))))
+        return len(self.insertion_order_runs) <= expected_number
 
     def passing_node(self, rootid, node, rootids, parallel_values):
         """Accumulate node to the integration.
@@ -763,18 +766,16 @@ class MultiCounter(object):
 
             if self.check_insertion_order and len(np.unique(parallel_values)) == len(parallel_values):
                 order_max = nlive.max() + 1
-                for i, acc in enumerate(self.insertion_order_accumulator):
-                    if not active[i]:
-                        continue
-                    parallel_values_here = parallel_values[self.rootids[i, rootids]]
-                    for child in node.children:
-                        # rootids is 400 ints pointing to the root id where each parallel_values is from
-                        # self.rootids[i] says which rootids belong to this bootstrap
-                        # need which of the parallel_values are active here
-                        acc.add((parallel_values_here < child.value).sum(), nlive[i])
-                        if abs(acc.zscore) > self.insertion_order_threshold:
-                            self.insertion_order_runs[i].append(len(acc))
-                            acc.reset()
+                acc = self.insertion_order_accumulator
+                parallel_values_here = parallel_values[self.rootids[0, rootids]]
+                for child in node.children:
+                    # rootids is 400 ints pointing to the root id where each parallel_values is from
+                    # self.rootids[i] says which rootids belong to this bootstrap
+                    # need which of the parallel_values are active here
+                    acc.add((parallel_values_here < child.value).sum(), nlive0)
+                    if abs(acc.zscore) > self.insertion_order_threshold:
+                        self.insertion_order_runs.append(len(acc))
+                        acc.reset()
 
         else:
             # contracting!
