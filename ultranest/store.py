@@ -157,6 +157,7 @@ class HDF5PointStore(FilePointStore):
 
     The format is a HDF5 file, which grows as needed.
     """
+
     FILES_OPENED = []
 
     def __init__(self, filepath, ncols, **h5_file_args):
@@ -169,7 +170,7 @@ class HDF5PointStore(FilePointStore):
         self.ncols = int(ncols)
         self.stack_empty = True
         h5_file_args['mode'] = h5_file_args.get('mode', 'a')
-        
+
         # An annoying part of jupyter notebooks is that they keep all the variables
         # This means a old pointstore can survive, as we don't usually close them
         # Opening a new one with the same path will then fail with

@@ -23,7 +23,6 @@ from __future__ import print_function, division
 import numpy as np
 from numpy import log, log1p, exp, logaddexp
 import math
-import operator
 import sys
 from .utils import resample_equal
 from .ordertest import UniformOrderAccumulator
@@ -121,8 +120,7 @@ class BreadthFirstIterator(object):
         assert len(self.active_nodes) == len(self.active_node_values)
 
     def expand_children_of(self, rootid, node):
-        """Replace the current node with its children in the iterators
-        list of active nodes.
+        """Replace the current node with its children in the iterators list of active nodes.
 
         Parameters
         ----------
@@ -164,7 +162,7 @@ class BreadthFirstIterator(object):
 
 
 def _stringify_lanes(lanes, char='║'):
-    """ unicode-draw lanes, fill with vertical stripes or spaces """
+    """unicode-draw lanes, fill with vertical stripes or spaces."""
     return ''.join([' ' if n is None else char for n in lanes])
 
 
@@ -286,7 +284,9 @@ def count_tree(roots):
 
 
 def count_tree_between(roots, lo, hi):
-    """Return the total number of nodes and maximum number of parallel edges,
+    """Compute basic statistics about a tree.
+
+    Return the total number of nodes and maximum number of parallel edges,
     but only considering a interval of the tree.
 
     Parameters
@@ -621,7 +621,7 @@ class MultiCounter(object):
 
         self.check_insertion_order = check_insertion_order
         self.insertion_order_threshold = 4
-        self.insertion_order_accumulator = UniformOrderAccumulator(self.rootids.shape[1])
+        self.insertion_order_accumulator = UniformOrderAccumulator()
 
         self.reset(len(self.rootids))
 
@@ -658,6 +658,22 @@ class MultiCounter(object):
 
     @property
     def insertion_order_runlength(self):
+        """Get shortest insertion order test run.
+
+        Returns
+        --------
+        shortest_run_length: int
+            Shortest insertion order test run length.
+
+        The MWW (U-test) statistic is considered at each iteration.
+        When it exceeds a threshold (4 sigma by default, `insertion_order_threshold`),
+        the statistic is reset. The run length is recorded.
+        This property returns the shortest run length of all recorded
+        so far, or infinity otherwise.
+
+        At 4 sigma, run lengths no shorter than 10^5.5 are expected
+        in unbiased runs.
+        """
         runs = self.insertion_order_runs
         if len(runs) == 0:
             return np.inf
@@ -666,6 +682,27 @@ class MultiCounter(object):
 
     @property
     def insertion_order_converged(self):
+        """Check convergence.
+
+        Returns
+        --------
+        converged: bool
+            Whether the run is unbiased according to a U-test.
+
+        The MWW (U-test) statistic is considered at each iteration.
+        When it exceeds a threshold (4 sigma by default, `insertion_order_threshold`),
+        the statistic is reset. The run length is recorded.
+        This property returns the shortest run length of all recorded
+        so far, or infinity otherwise.
+
+        At 4 sigma, run lengths no shorter than 10^5.5 are expected
+        in unbiased runs. If the number of runs exceeds the number
+        of iterations divided by 10^5.5, the run is likely unbiased
+        and thus not converged.
+
+        If not converged, the step sampler may need to use more steps,
+        or the problem needs to be  reparametrized.
+        """
         # we expect run lengths not shorter than 300000 for 4sigma
         # if we get many more than expected from the number of iterations
         # the run has not converged
@@ -765,7 +802,6 @@ class MultiCounter(object):
             self.logVolremaining = self.all_logVolremaining[0]
 
             if self.check_insertion_order and len(np.unique(parallel_values)) == len(parallel_values):
-                order_max = nlive.max() + 1
                 acc = self.insertion_order_accumulator
                 parallel_values_here = parallel_values[self.rootids[0, rootids]]
                 for child in node.children:
@@ -826,14 +862,14 @@ def combine_results(saved_logl, saved_nodeids, pointpile, main_iterator, mpi_com
         iterator used
     mpi_comm:
         MPI communicator object, or None if MPI is not used.
-    
+
     Returns
     --------
     results: dict
         All information of the run. Important keys:
-        Number of nested sampling iterations (niter), 
-        Evidence estimate (logz), 
-        Effective Sample Size (ess), 
+        Number of nested sampling iterations (niter),
+        Evidence estimate (logz),
+        Effective Sample Size (ess),
         H (information gain),
         weighted samples (weighted_samples),
         equally weighted samples (samples),
@@ -842,7 +878,6 @@ def combine_results(saved_logl, saved_nodeids, pointpile, main_iterator, mpi_com
         The rank order test score (insertion_order_MWW_test) is
         included if the iterator has it.
     """
-
     assert np.shape(main_iterator.logweights) == (len(saved_logl), len(main_iterator.all_logZ)), (
         np.shape(main_iterator.logweights),
         np.shape(saved_logl),
@@ -1005,7 +1040,6 @@ def logz_sequence(root, pointpile, nbootstraps=12, random=True, onNode=None, ver
             # first time they are all the same
             logzerr.append(main_iterator.logZerr_bs)
 
-        insert_order_value = 0.0
         if len(np.unique(active_values)) == len(active_values) and len(node.children) > 0:
             child_insertion_order = (active_values > node.children[0].value).sum()
             insert_order.append(2 * (child_insertion_order + 1.) / len(active_values))

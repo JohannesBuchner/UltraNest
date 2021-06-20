@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 
 def nearest_box_intersection_line(ray_origin, ray_direction, fwd=True):
-    """Compute intersection of a line (ray) and a unit box (0:1 in all axes).
+    r"""Compute intersection of a line (ray) and a unit box (0:1 in all axes).
 
     Based on
     http://www.iquilezles.org/www/articles/intersectors/intersectors.htm
@@ -463,7 +463,8 @@ class ContourSamplingPath(object):
 
     def interpolate(self, i):
         """Interpolate point with index `i` on path."""
-        return interpolate(i, self.samplingpath.points,
+        return interpolate(
+            i, self.samplingpath.points,
             fwd_possible=self.samplingpath.fwd_possible,
             rwd_possible=self.samplingpath.rwd_possible,
             contourpath=self)

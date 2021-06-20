@@ -57,7 +57,7 @@ def create_logger(module_name, log_dir=None, level=logging.INFO):
 
 
 def _makedirs(name):
-    """python2-compatible makedir """
+    """python2-compatible makedir."""
     # for Python2 compatibility:
     try:
         os.makedirs(name)
@@ -118,7 +118,7 @@ def make_run_dir(log_dir, run_num=None, append_run_num=True):
 def vectorize(function):
     """Vectorize likelihood or prior_transform function."""
     def vectorized(args):
-        """ vectorized version of function"""
+        """Vectorized version of function."""
         return np.asarray([function(arg) for arg in args])
 
     vectorized.__name__ = function.__name__
@@ -198,7 +198,7 @@ def resample_equal(samples, weights, rstate=None):
 
 def listify(*args):
     """
-    concatenate args, which are (made to be) lists
+    Concatenate args, which are (made to be) lists.
 
     Parameters
     ----------
@@ -291,8 +291,7 @@ def vol_prefactor(n):
 
 def is_affine_transform(a, b):
     """
-    checks if one group of points *a* is an affine transform
-    of another group of points *b*.
+    Check if one points *a* and *b* are related by an affine transform.
 
     The implementation currently returns False for rotations.
 
@@ -312,7 +311,7 @@ def is_affine_transform(a, b):
     nb, db = b.shape
     assert n == nb
     assert db >= da
-    
+
     n = (n // 2) * 2
     a1 = a[0:n:2]
     a2 = a[1:n:2]
@@ -329,9 +328,8 @@ def is_affine_transform(a, b):
 
 def normalised_kendall_tau_distance(values1, values2, i=None, j=None):
     """
-    Normalised Kendall tau distance between two arrays, 
-    *values1* and *values2*, both of length N.
-    
+    Normalised Kendall tau distance between two equally sized arrays.
+
     see https://en.wikipedia.org/wiki/Kendall_tau_distance
 
     You can optionally pass precomputed indices::
@@ -364,10 +362,9 @@ def normalised_kendall_tau_distance(values1, values2, i=None, j=None):
     return ndisordered / (N * (N - 1))
 
 
-
 def _merge_transform_loglike_gradient_function(transform, loglike, gradient):
     def transform_loglike_gradient(u):
-        """combine transform, likelihood and gradient function"""
+        """Combine transform, likelihood and gradient function."""
         p = transform(u.reshape((1, -1)))
         return p[0], loglike(p)[0], gradient(u)
     return transform_loglike_gradient
@@ -375,9 +372,9 @@ def _merge_transform_loglike_gradient_function(transform, loglike, gradient):
 
 def verify_gradient(ndim, transform, loglike, gradient, verbose=False, combination=False):
     """
-    check with numerical differentiation if the gradient function
-    is plausibly correct. Raises AssertError otherwise.
+    Check with numerical differentiation if gradient function is plausibly correct.
 
+    Raises AssertError if not fulfilled.
     All functions are vectorized.
 
     Parameters
