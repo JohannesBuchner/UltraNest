@@ -3,7 +3,7 @@ import numpy as np
 from ultranest.ordertest import UniformOrderAccumulator, infinite_U_zscore
 
 def test_invalid_order():
-	sample_acc = UniformOrderAccumulator(3)
+	sample_acc = UniformOrderAccumulator()
 	sample_acc.add(2, 3)
 	try:
 		sample_acc.add(4, 3)
@@ -12,7 +12,7 @@ def test_invalid_order():
 		pass
 
 def test_diff_expand():
-	sample_acc = UniformOrderAccumulator(3)
+	sample_acc = UniformOrderAccumulator()
 	sample_acc.add(1, 3)
 	sample_acc.add(4, 5)
 	sample_acc.add(5, 6)
@@ -24,7 +24,7 @@ def test_order_correctness():
 	nruns = []
 	for frac in 1, 0.9:
 		print("frac:", frac)
-		sample_acc = UniformOrderAccumulator(Nlive)
+		sample_acc = UniformOrderAccumulator()
 		runlength = []
 		samples = []
 		for i in range(N):

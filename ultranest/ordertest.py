@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
+Mann-Whitney-Wilcoxon U test for a uniform distribution of integers.
 
 This implements the same idea as https://arxiv.org/abs/2006.03371
 except their KS test is problematic because the variable (insertion order)
@@ -25,8 +26,7 @@ __all__ = ['infinite_U_zscore', 'UniformOrderAccumulator']
 
 def infinite_U_zscore(sample, B):
     """
-    Compute Mann-Whitney-Wilcoxon U test for a 
-    *sample* of integers to be uniformly distributed between 0 and *B*.
+    Compute Mann-Whitney-Wilcoxon U test for a *sample* of integers to be uniformly distributed between 0 and *B*.
 
     Parameters
     ----------
@@ -44,15 +44,18 @@ def infinite_U_zscore(sample, B):
 
 
 class UniformOrderAccumulator():
+    """Mann-Whitney-Wilcoxon U test accumulator.
+
+    Stores rank orders (1 to N), for comparison with a uniform order.
     """
-    Store orders (1 to N), for comparison with a uniform order.
-    """
-    def __init__(self, N):
+
+    def __init__(self):
+        """Initiate empty accumulator."""
         self.N = 0
         self.U = 0.0
 
     def reset(self):
-        """Set all counts to zero. """
+        """Set all counts to zero."""
         self.N = 0
         self.U = 0.0
 
@@ -74,7 +77,7 @@ class UniformOrderAccumulator():
 
     @property
     def zscore(self):
-        """ Mann-Whitney-Wilcoxon U test z-score, against a uniform distribution. """
+        """z-score of the null hypothesis (uniform distribution) probability."""
         N = self.N
         if N == 0:
             return 0.0
@@ -83,4 +86,5 @@ class UniformOrderAccumulator():
         return (self.U - m_U) / sigma_U_corr
 
     def __len__(self):
+        """Return number of samples accumulated so far."""
         return self.N

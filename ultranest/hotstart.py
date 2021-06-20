@@ -4,11 +4,12 @@ import numpy as np
 import scipy.stats
 from .utils import vectorize, resample_equal
 
+
 def get_auxiliary_problem(loglike, transform, ctr, invcov, enlargement_factor, df=1):
     """Return a new loglike and transform based on an auxiliary distribution.
 
     Given a likelihood and prior transform, and information about
-    the (expected) posterior peak, generates a auxiliary 
+    the (expected) posterior peak, generates a auxiliary
     likelihood and prior transform that is identical but
     requires fewer nested sampling iterations.
 
@@ -56,14 +57,13 @@ def get_auxiliary_problem(loglike, transform, ctr, invcov, enlargement_factor, d
         The first d return coordinates are identical to what ``transform`` would return.
         The final coordinate is the correction weight.
     """
-
     ndim, = ctr.shape
     assert invcov.shape == (ndim, ndim)
     assert df >= 1, ('Degrees of freedom must be above 1', df)
 
     l, v = np.linalg.eigh(invcov)
     rotation_matrix = np.dot(v, enlargement_factor * np.diag(1. / np.sqrt(l)))
-    
+
     rv_auxiliary1d = scipy.stats.t(df)
 
     def aux_rotator(coords):
@@ -78,19 +78,20 @@ def get_auxiliary_problem(loglike, transform, ctr, invcov, enlargement_factor, d
         if not (x > 0).all() or not (x < 1).all():
             return -1e300
         # undo the effect of the auxiliary distribution
-        l = rv_auxiliary1d.logpdf(coords).sum()
-        return loglike(transform(x)) - l
-    
+        loglike = rv_auxiliary1d.logpdf(coords).sum()
+        return loglike(transform(x)) - loglike
+
     def aux_aftertransform(u):
         return transform(aux_rotator(rv_auxiliary1d.ppf(u)))
 
     return aux_loglikelihood, aux_aftertransform
 
+
 def get_extended_auxiliary_problem(loglike, transform, ctr, invcov, enlargement_factor, df=1):
     """Return a new loglike and transform based on an auxiliary distribution.
 
     Given a likelihood and prior transform, and information about
-    the (expected) posterior peak, generates a auxiliary 
+    the (expected) posterior peak, generates a auxiliary
     likelihood and prior transform that is identical but
     requires fewer nested sampling iterations.
 
@@ -135,13 +136,13 @@ def get_extended_auxiliary_problem(loglike, transform, ctr, invcov, enlargement_
     ndim, = ctr.shape
     assert invcov.shape == (ndim, ndim)
     assert df >= 1, ('Degrees of freedom must be above 1', df)
-    
+
     l, v = np.linalg.eigh(invcov)
     rotation_matrix = np.dot(v, enlargement_factor * np.diag(1. / np.sqrt(l)))
 
     rv_auxiliary1d = scipy.stats.t(df)
     weight_ref = rv_auxiliary1d.logpdf(0) * ndim
-    
+
     def aux_transform(u):
         # get uniform gauss/t distributed values:
         coords = rv_auxiliary1d.ppf(u)
@@ -166,12 +167,53 @@ def get_extended_auxiliary_problem(loglike, transform, ctr, invcov, enlargement_
 
     return aux_loglikelihood, aux_transform
 
+
 def reuse_samples(
-    param_names, loglike, points, logl, logw=None, 
+    param_names, loglike, points, logl, logw=None,
     logz=0.0, logzerr=0.0, upoints=None,
     batchsize=128, vectorized=False, log_weight_threshold=-10,
     **kwargs
 ):
+    """
+    Reweight existing nested sampling run onto a new loglikelihood.
+
+    Parameters
+    ------------
+    param_names: list of strings
+        Names of the parameters
+    loglike: function
+        New likelihood function
+    points: np.array of shape (npoints, ndim)
+        Equally weighted (unless logw is passed) posterior points
+    logl: np.array(npoints)
+        Previously likelihood values of points
+    logw: np.array(npoints)
+        Log-weights of existing points.
+    logz: float
+        Previous evidence / marginal likelihood value.
+    logzerr: float
+        Previous evidence / marginal likelihood uncertainty.
+    upoints: np.array of shape (npoints, ndim)
+        Posterior points before transformation.
+    vectorized: bool
+        Whether loglike function is vectorized
+    batchsize: int
+        Number of points simultaneously passed to vectorized loglike function
+    log_weight_threshold: float
+        Lowest log-weight to consider
+
+    Returns:
+    ---------
+    results: dict
+        All information of the run. Important keys:
+        Number of nested sampling iterations (niter),
+        Evidence estimate (logz),
+        Effective Sample Size (ess),
+        weighted samples (weighted_samples),
+        equally weighted samples (samples),
+        best-fit point information (maximum_likelihood),
+        posterior summaries (posterior).
+    """
     if not vectorized:
         loglike = vectorize(loglike)
 
@@ -188,7 +230,7 @@ def reuse_samples(
     indices = np.argsort(logl + logw)[::-1]
     ncall = 0
     for i in range(int(np.ceil(Npoints / batchsize))):
-        batch = indices[i * batchsize : (i + 1) * batchsize]
+        batch = indices[i * batchsize:(i + 1) * batchsize]
         logl_new[batch] = loglike(points[batch,:])
         logw_new[batch] = logw[batch] + logl_new[batch]
         ncall += len(batch)

@@ -16,7 +16,8 @@ import warnings
 from numpy import log, exp, logaddexp
 import numpy as np
 
-from .utils import create_logger, make_run_dir, resample_equal, vol_prefactor, vectorize, listify as _listify, is_affine_transform, normalised_kendall_tau_distance
+from .utils import create_logger, make_run_dir, resample_equal, vol_prefactor, vectorize, listify as _listify
+from .utils import is_affine_transform, normalised_kendall_tau_distance
 from ultranest.mlfriends import MLFriends, AffineLayer, ScalingLayer, find_nearby, WrappingEllipsoid, RobustEllipsoidRegion
 from .store import HDF5PointStore, TextPointStore, NullPointStore
 from .viz import get_default_viz_callback, nicelogger
@@ -127,9 +128,10 @@ def _explore_iterator_batch(explorer, pop, x_dim, num_params, pointpile, batchsi
         yield batch
 
 
-
-def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform,
-    max_tau=0, verbose=False, ndraw=400):
+def resume_from_similar_file(
+    log_dir, x_dim, loglikelihood, transform,
+    max_tau=0, verbose=False, ndraw=400
+):
     """
     Change a stored UltraNest run to a modified loglikelihood/transform.
 
@@ -150,7 +152,7 @@ def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform,
     max_tau: float
         Allowed dissimilarity in the live point ordering, quantified as
         normalised Kendall tau distance.
-        
+
         max_tau=0 is the very conservative choice of stopping the warm start
         when the live point order differs.
         Near 1 are completely different live point orderings.
@@ -191,7 +193,7 @@ def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform,
     pointpile2 = PointPile(x_dim, num_params)
 
     def pop(Lmin):
-        """ find matching sample from points file """
+        """Find matching sample from points file."""
         # look forward to see if there is an exact match
         # if we do not use the exact matches
         #   this causes a shift in the loglikelihoods
@@ -273,8 +275,7 @@ def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform,
                     print("stopping, number of live points differ (%d vs %d)" % (len(active_values), len(active_values2)))
                     good_state = False
                 break
-            
-            
+
             if len(active_values) != len(indices1):
                 indices1, indices2 = np.meshgrid(np.arange(len(active_values)), np.arange(len(active_values2)))
             tau = normalised_kendall_tau_distance(active_values, active_values2, indices1, indices2)
@@ -289,8 +290,8 @@ def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform,
             if verbose == 2:
                 print(niter, tau)
             if good_state:
-                #print("        (%.1e)   L=%.1f" % (last_good_like, Lmin2))
-                #assert last_good_like < Lmin2, (last_good_like, Lmin2)
+                # print("        (%.1e)   L=%.1f" % (last_good_like, Lmin2))
+                # assert last_good_like < Lmin2, (last_good_like, Lmin2)
                 last_good_like = Lmin2
                 last_good_state = niter
             else:
@@ -306,7 +307,7 @@ def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform,
                 logl_new = logls_new[j]
                 j += 1
 
-                #print(j, Lmin2, '->', logl_new, 'instead of', Lmin, '->', [c.value for c in node2.children])
+                # print(j, Lmin2, '->', logl_new, 'instead of', Lmin, '->', [c.value for c in node2.children])
                 child2 = pointpile2.make_node(logl_new, u, v)
                 node2.children.append(child2)
                 if logl_new > Lmin2:
@@ -314,8 +315,8 @@ def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform,
                 else:
                     if verbose == 2:
                         print("cannot use new point because it would decrease likelihood (%.1f->%.1f)" % (Lmin2, logl_new))
-                    #good_state = False
-                    #break
+                    # good_state = False
+                    # break
 
             main_iterator2.passing_node(node2, active_nodes2)
 
@@ -352,7 +353,8 @@ def resume_from_similar_file(log_dir, x_dim, loglikelihood, transform,
 
 def _update_region_bootstrap(region, nbootstraps, minvol=0., comm=None, mpi_size=1):
     """
-    update *region* with *nbootstraps* rounds of excluding points randomly.
+    Update *region* with *nbootstraps* rounds of excluding points randomly.
+
     Stiffen ellipsoid size using the minimum volume *minvol*.
 
     If the mpi communicator *comm* is not None, use MPI to distribute
@@ -379,7 +381,7 @@ def _update_region_bootstrap(region, nbootstraps, minvol=0., comm=None, mpi_size
         recv_enlarge = comm.gather(f, root=0)
         recv_enlarge = comm.bcast(recv_enlarge, root=0)
         f = np.max(recv_enlarge[:nbootstraps])
-    
+
     if not np.isfinite(r) and not np.isfinite(r):
         # reraise error if needed
         if e is None:
@@ -472,7 +474,7 @@ class NestedSampler(object):
         assert np.isfinite(logl).all(), ("Error in loglikelihood function: returned non-finite number: %s for input u=%s p=%s" % (logl, u, p))
 
         def safe_loglike(x):
-            """ wrapped likelihood function """
+            """Call likelihood function safely wrapped to avoid non-finite values."""
             x = np.asarray(x)
             logl = loglike(x)
             assert np.isfinite(logl).all(), (
@@ -1004,7 +1006,7 @@ class ReactiveNestedSampler(object):
 
         warmstart_max_tau: float
             Maximum disorder to accept when resume='resume-similar';
-            Live points are reused as long as the live point order 
+            Live points are reused as long as the live point order
             is below this normalised Kendall tau distance.
             Values from 0 (highly conservative) to 1 (extremely negligent).
         """
@@ -1129,7 +1131,8 @@ class ReactiveNestedSampler(object):
             np.random.seed(seed)
 
     def _check_likelihood_function(self, transform, loglike, num_test_samples):
-        """Tests the `transform` and `loglike`lihood functions.
+        """Test the `transform` and `loglike`lihood functions.
+
         `num_test_samples` samples are used to check whether they work and give the correct output.
 
         returns whether the most recently stored point (if any)
@@ -1195,7 +1198,7 @@ class ReactiveNestedSampler(object):
         """
 
         def safe_loglike(x):
-            """ safe wrapper of likelihood function """
+            """Safe wrapper of likelihood function."""
             x = np.asarray(x)
             if len(x.shape) == 1:
                 assert x.shape[0] == self.x_dim
@@ -1215,7 +1218,7 @@ class ReactiveNestedSampler(object):
             self.transform = lambda x: x
         elif make_safe:
             def safe_transform(x):
-                """ safe wrapper of transform function """
+                """Safe wrapper of transform function."""
                 x = np.asarray(x)
                 if len(x.shape) == 1:
                     assert x.shape[0] == self.x_dim
@@ -1672,7 +1675,7 @@ class ReactiveNestedSampler(object):
                 else:
                     u, v, logl, nc, quality = self._refill_samples(Lmin, ndraw, nit)
                 nit += 1
-            
+
                 if logl is None:
                     u = np.empty((0, self.x_dim))
                     v = np.empty((0, self.num_params))
@@ -1724,8 +1727,8 @@ class ReactiveNestedSampler(object):
         bootstrap_rootids=None, active_rootids=None,
         nbootstraps=30, minvol=0., active_p=None
     ):
-        """Build a new MLFriends region from `active_u`,
-        and wrapping ellipsoid.
+        """Build a new MLFriends region from `active_u`, and wrapping ellipsoid.
+
         Both are safely built using bootstrapping, so that the
         region can be used for sampling and rejecting points.
         If MPI is enabled, this computation is parallelised.
@@ -2058,7 +2061,7 @@ class ReactiveNestedSampler(object):
             min_num_live_points=400,
             cluster_num_live_points=40,
             insertion_test_window=10,
-            insertion_test_zscore_threshold=2,
+            insertion_test_zscore_threshold=4,
             region_class=MLFriends,
     ):
         """Run until target convergence criteria are fulfilled.
@@ -2125,14 +2128,13 @@ class ReactiveNestedSampler(object):
             z-score used as a threshold for the insertion order test.
             Set to infinity to disable.
 
-        insertion_test_window: float
+        insertion_test_window: int
             Number of iterations after which the insertion order test is reset.
 
         region_class: MLFriends or RobustEllipsoidRegion
             Whether to use MLFriends+ellipsoidal+tellipsoidal region (better for multi-modal problems)
             or just ellipsoidal sampling (faster for high-dimensional, gaussian-like problems).
         """
-
         for result in self.run_iter(
             update_interval_volume_fraction=update_interval_volume_fraction,
             update_interval_ncall=update_interval_ncall,
@@ -2174,7 +2176,7 @@ class ReactiveNestedSampler(object):
             cluster_num_live_points=40,
             show_status=True,
             viz_callback='auto',
-            insertion_test_window=10,
+            insertion_test_window=10000,
             insertion_test_zscore_threshold=2,
             region_class=MLFriends
     ):
@@ -2262,7 +2264,7 @@ class ReactiveNestedSampler(object):
                 nbootstraps=max(1, self.num_bootstraps // self.mpi_size),
                 random=False, check_insertion_order=False)
             main_iterator.Lmax = max(Lmax, max(n.value for n in roots))
-            insertion_test = UniformOrderAccumulator(nroots)
+            insertion_test = UniformOrderAccumulator()
             insertion_test_runs = []
             insertion_test_quality = np.inf
             insertion_test_direction = 0
@@ -2394,7 +2396,7 @@ class ReactiveNestedSampler(object):
                             insertion_test_quality = insertion_test.N
                             insertion_test_direction = np.sign(insertion_test.zscore)
                             insertion_test.reset()
-                        elif insertion_test.N > nlive * insertion_test_window:
+                        elif insertion_test.N > insertion_test_window:
                             insertion_test_quality = np.inf
                             insertion_test_direction = 0
                             insertion_test.reset()
@@ -2787,7 +2789,7 @@ def read_file(log_dir, x_dim, num_bootstraps=20, random=True, verbose=False, che
     pointpile = PointPile(x_dim, num_params)
 
     def pop(Lmin):
-        """ find matching sample from points file """
+        """Find matching sample from points file."""
         # look forward to see if there is an exact match
         # if we do not use the exact matches
         #   this causes a shift in the loglikelihoods
@@ -2812,11 +2814,11 @@ def read_file(log_dir, x_dim, num_bootstraps=20, random=True, verbose=False, che
     root = TreeNode(id=-1, value=-np.inf, children=roots)
 
     def onNode(node, main_iterator):
-        """ insert (single) child of node if available """
+        """Insert (single) child of node if available."""
         while True:
             _, row = pop(node.value)
             if row is None:
-                 break
+                break
             if row is not None:
                 logl = row[1]
                 u = row[3:3 + x_dim]
