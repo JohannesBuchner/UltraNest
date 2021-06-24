@@ -1018,24 +1018,26 @@ def _prepare_steps(
         if verbose:
             print("   ellipsoid bracket found:", left, right)
 
-    assert (ucurrent >= 0).all(), ucurrent
-    assert (ucurrent <= 1).all(), ucurrent
-    assert ucurrent.shape == (ndim,), ucurrent
-    assert v.shape == (ndim,), ucurrent
-    ts = np.random.uniform(-1, 1, size=ndraw)
-    for i in range(ndraw):
+    #assert (ucurrent >= 0).all(), ucurrent
+    #assert (ucurrent <= 1).all(), ucurrent
+    #assert ucurrent.shape == (ndim,), ucurrent
+    #assert v.shape == (ndim,), ucurrent
+    ts = np.random.uniform(0, 1, size=ndraw + 1)
+    i = 0
+    while i < ndraw:
         if verbose:
             print("preparing step: %d from %s" % (i, ucurrent))
 
         # sample in each a point until presumed success:
         #assert region.inside_ellipsoid(ucurrent.reshape((1, ndim))), ('current point outside ellipsoid!')
-        t = -ts[i] * left if ts[i] < 0 else ts[i] * right
+        #t = -ts[i] * left if ts[i] < 0 else ts[i] * right
+        #t = np.random.uniform(left, right)
+        t = ts[i] * right + (1 - ts[i]) * left
         unext = ucurrent + v * t
-        assert (unext >= 0).all(), unext
-        assert (unext <= 1).all(), unext
-        #assert region.inside_ellipsoid(unext.reshape((1, ndim))), ('proposal landed outside ellipsoid!', t, left, right)
-        
-        point_sequence[i] = unext
+        if ((unext > 0).all() and (unext < 1).all()):
+            # this is an acceptable point
+            point_sequence[i] = unext
+            i += 1
         #   shrink interval
         if t > 0:
             right = t
@@ -1129,7 +1131,7 @@ class AHARMSampler(StepSampler):
     def __init__(
         self, nsteps, adaptive_nsteps=False, max_nsteps=1000,
         region_filter=False, log=False, generate_direction=generate_region_random_direction,
-        orthogonalise=True,
+        orthogonalise=True, max_ndraw=10,
     ):
         """Initialise vectorised hit-and-run/slice sampler.
 
@@ -1151,6 +1153,9 @@ class AHARMSampler(StepSampler):
 
         max_nsteps: int
             Maximum number of steps the adaptive_nsteps can reach.
+
+        max_ndraw: int
+            Maximum number of proposals to pass to vectorized likelihood function
 
         region_filter: bool
             if True, use region to check if a proposed point can be inside
@@ -1189,13 +1194,14 @@ class AHARMSampler(StepSampler):
         self.scale = 1.0 # is not used, but we have it for consistency with the other samplers
         self.adaptive_nsteps_needs_mean_pair_distance = False
         self.orthogonalise = orthogonalise
+        self.max_ndraw = max_ndraw
 
         self.logstat = []
         self.logstat_labels = ['rejection_rate', 'steps']
         if adaptive_nsteps:
             self.logstat_labels += ['jump-distance', 'reference-distance']
 
-    def __next__(self, region, Lmin, us, Ls, transform, loglike, ndraw=128, plot=False, tregion=None, verbose=False):
+    def __next__(self, region, Lmin, us, Ls, transform, loglike, ndraw=10, plot=False, tregion=None, verbose=False):
         """Get next point.
 
         Parameters
@@ -1220,6 +1226,7 @@ class AHARMSampler(StepSampler):
             optional ellipsoid in transformed space for rejecting proposals
 
         """
+        ndraw = min(10, self.max_ndraw)
         # find most recent point in history conforming to current Lmin
         #print("__next__ called with last=", self.last)
         ui, Li = self.last
@@ -1305,6 +1312,9 @@ class AHARMSampler(StepSampler):
         del point_expectation
 
         self.nrejects += (~Lmask).sum()
+        if plot:
+            plt.plot(point_sequence[:,0], point_sequence[:,1], 'o ', color='k')
+            plt.plot(point_sequence[Lmask,0], point_sequence[Lmask,1], 's ', color='g')
         if not Lmask.any():
             if verbose:
                 print("none accepted; updating interval", self.current_interval)

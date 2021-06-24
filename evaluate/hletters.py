@@ -162,7 +162,7 @@ def TVnorm(samples):
     return KL
 """
 
-#@mem.cache
+@mem.cache
 def mcmc(logfunction, x0, nsteps, sigma_p):
     samples = np.empty((nsteps, len(x0)))
     logL0 = logfunction(x0)
@@ -204,7 +204,7 @@ def fetch_samples(sampler, startpoint, nsteps):
     for i in tqdm.trange(nsteps):
         u = None
         while u is None:
-            u, p, L, nc = sampler.__next__(region, Lmin, us, Ls, transform, loglikelihood, verbose=False, ndraw=10)
+            u, p, L, nc = sampler.__next__(region, Lmin, us, Ls, transform, loglikelihood)
             nc_cum += nc
         samples[i,:] = u
         ncalls[i] = nc_cum
@@ -215,12 +215,18 @@ def fetch_samples(sampler, startpoint, nsteps):
             print("scale:", getattr(sampler, 'scale', None), "span:", us.max(axis=0) - us.min(axis=0))
         us[k,:] = u
         Ls[k] = L
-        if i % Nlive == Nlive - 1:
+        if i % Nlive == 10:
+            if False:
+                plt.figure(figsize=(5,5))
+                plt.plot(us[:,0], us[:,1], 'o ')
+                plt.savefig('hletters_samples_%05d.png' % i, bbox_inches='tight')
+                plt.close()
             # update region:
             transformLayer = AffineLayer()
             transformLayer.optimize(us, us)
             region = MLFriends(us, transformLayer)
             region.maxradiussq, region.enlarge = region.compute_enlargement()
+            region.enlarge *= 40
             region.create_ellipsoid()
         
     return samples, ncalls
@@ -231,12 +237,14 @@ step_matrix=np.arange(nparams).reshape((-1, 1))
 K = max(10, nparams)
 
 samplers = [
-    #('mh', 10000 * nparams, MHSampler(nsteps=K, generate_direction= generate_random_direction)),
-    ##('regionmh', 100000,  MHSampler(nsteps=K, generate_direction= generate_region_random_direction)),
-    #('cubeslice', 10000 * nparams,  SliceSampler(nsteps=K, generate_direction=generate_cube_oriented_direction)),
-    #('regionslice', 1000 * nparams,  SliceSampler(nsteps=K, generate_direction=generate_region_oriented_direction)),
-    #('regionball', 1000 * nparams,  SliceSampler(nsteps=K, generate_direction=generate_region_random_direction)),
-    ('acubeslice', 10000 * nparams,  AHARMSampler(nsteps=K, generate_direction=generate_cube_oriented_direction, orthogonalise=False)),
+    ('mh', 10000 * nparams, MHSampler(nsteps=K, generate_direction= generate_random_direction)),
+    #('regionmh', 100000,  MHSampler(nsteps=K, generate_direction= generate_region_random_direction)),
+    ('cubeslice', 10000 * nparams,  SliceSampler(nsteps=K, generate_direction=generate_cube_oriented_direction)),
+    ('regionslice', 10000 * nparams,  SliceSampler(nsteps=K, generate_direction=generate_region_oriented_direction)),
+    ('regionball', 10000 * nparams,  SliceSampler(nsteps=K, generate_direction=generate_region_random_direction)),
+    ('acubeslice1', 10000 * nparams,  AHARMSampler(nsteps=K, generate_direction=generate_cube_oriented_direction, orthogonalise=False, max_ndraw=1)),
+    ('acubeslice10', 10000 * nparams,  AHARMSampler(nsteps=K, generate_direction=generate_cube_oriented_direction, orthogonalise=False, max_ndraw=10)),
+    ('aregionball1', 10000 * nparams,  AHARMSampler(nsteps=K, generate_direction=generate_region_random_direction, orthogonalise=True, max_ndraw=1)),
     #('cubeslice-orth', 1000 * nparams,  SliceSampler(nsteps=K, generate_direction=OrthogonalProposalGenerator(generate_cube_oriented_direction))),
     #('regionslice-orth', 1000 * nparams,  SliceSampler(nsteps=K, generate_direction=OrthogonalProposalGenerator(generate_region_oriented_direction))),
     #('regionball-orth', 1000 * nparams,  SliceSampler(nsteps=K, generate_direction=OrthogonalProposalGenerator(generate_region_random_direction))),
@@ -248,7 +256,7 @@ samplers = [
     #)
 ]
 
-#@mem.cache
+@mem.cache
 def get_samples(samplername, nsteps, nparams, seed=1):
     np.random.seed(seed)
     for samplernamei, _, sampler in samplers:

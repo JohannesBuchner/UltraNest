@@ -1332,7 +1332,8 @@ class WrappingEllipsoid(object):
         return _inside_ellipsoid(u, self.ellipsoid_center, self.ellipsoid_invcov, self.enlarge)
 
 
-
+@cython.boundscheck(False)
+@cython.wraparound(False)
 cdef _ellipsoid_bracket(
     np.ndarray[np.float_t, ndim=1] ui,
     np.ndarray[np.float_t, ndim=1] v,
@@ -1380,6 +1381,8 @@ cdef _ellipsoid_bracket(
     return left, right
 
 
+@cython.boundscheck(False)
+@cython.wraparound(False)
 cdef _crop_bracket_at_unit_cube(
     np.ndarray[np.float_t, ndim=1] ui,
     np.ndarray[np.float_t, ndim=1] v,
@@ -1412,8 +1415,8 @@ cdef _crop_bracket_at_unit_cube(
     cropped_right: bool
         whether right was changed
     """
-    assert (ui > 0).all(), ui
-    assert (ui < 1).all(), ui
+    #assert (ui > 0).all(), ui
+    #assert (ui < 1).all(), ui
     leftu = left * v + ui
     rightu = right * v + ui
     # print("crop: current ends:", leftu, rightu)
@@ -1424,14 +1427,14 @@ cdef _crop_bracket_at_unit_cube(
         # 0 = left * v + ui
         left = (-ui[leftbelow] / v[leftbelow]).max() * (1 - epsilon)
         leftu = left * v + ui
-        cropped_left |= True
-        assert (leftu >= 0).all(), leftu
+        cropped_left = True
+        #assert (leftu >= 0).all(), leftu
     leftabove = leftu >= 1
     if leftabove.any():
         left = ((1 - ui[leftabove]) / v[leftabove]).max() * (1 - epsilon)
-        leftu = left * v + ui
-        cropped_left |= True
-        assert (leftu <= 1).all(), leftu
+        #leftu = left * v + ui
+        cropped_left = True
+        #assert (leftu <= 1).all(), leftu
 
     cropped_right = False
     rightabove = rightu >= 1
@@ -1440,17 +1443,17 @@ cdef _crop_bracket_at_unit_cube(
         # 1 = left * v + ui
         right = ((1 - ui[rightabove]) / v[rightabove]).min() * (1 - epsilon)
         rightu = right * v + ui
-        cropped_right |= True
-        assert (rightu <= 1).all(), rightu
+        cropped_right = True
+        #assert (rightu <= 1).all(), rightu
 
     rightbelow = rightu <= 0
     if rightbelow.any():
         right = (-ui[rightbelow] / v[rightbelow]).min() * (1 - epsilon)
-        rightu = right * v + ui
-        cropped_right |= True
-        assert (rightu >= 0).all(), rightu
+        #rightu = right * v + ui
+        cropped_right = True
+        #assert (rightu >= 0).all(), rightu
 
-    assert left <= 0 <= right, (left, right)
+    #assert left <= 0 <= right, (left, right)
     return left, right, cropped_left, cropped_right
 
 def ellipsoid_bracket(ucurrent, v, ellipsoid_center, ellipsoid_inv_axes, enlarge):
