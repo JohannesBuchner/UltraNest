@@ -34,6 +34,29 @@ def test_run():
     sampler.plot()
 
 
+def test_dlogz_reactive_run_SLOW():
+    from ultranest import ReactiveNestedSampler
+    import ultranest.mlfriends
+
+    def loglike(y):
+        return -0.5 * np.sum(((y - 0.5)/0.001)**2, axis=1)
+
+    paramnames = ['Hinz', 'Kunz']
+
+    sampler = ReactiveNestedSampler(paramnames, loglike, vectorized=True)
+    print("running for ess")
+    firstresults = sampler.run(min_num_live_points=50, cluster_num_live_points=0, max_num_improvement_loops=3, min_ess=10000, viz_callback=None)
+    print()
+    print({k:v for k, v in firstresults.items() if 'logzerr' in k})
+    print()
+    assert firstresults['logzerr'] > 0.1 * 2
+    print("running again for logz")
+    for niter, results in enumerate(sampler.run_iter(min_num_live_points=1, cluster_num_live_points=0, max_num_improvement_loops=10, dlogz=0.1, viz_callback=None, region_class=ultranest.mlfriends.RobustEllipsoidRegion)):
+        print("logzerr in iteration %d" % niter, results['logzerr'])
+    print()
+    print({k:v for k, v in results.items() if 'logzerr' in k})
+    assert results['logzerr'] < 0.1 * 2
+
 def test_reactive_run():
     from ultranest import ReactiveNestedSampler
     np.random.seed(1)
@@ -426,4 +449,5 @@ if __name__ == '__main__':
     #test_reactive_run()
     #test_run()
     #test_reactive_run_warmstart_gauss()
-    test_reactive_run_extraparams()
+    #test_reactive_run_extraparams()
+    test_dlogz_reactive_run()

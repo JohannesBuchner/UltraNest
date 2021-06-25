@@ -1522,9 +1522,45 @@ class ReactiveNestedSampler(object):
 
         tail_fraction = w[np.asarray(main_iterator.istail)].sum() / w.sum()
         logzerr_tail = logaddexp(log(tail_fraction) + main_iterator.logZ, main_iterator.logZ) - main_iterator.logZ
-        if (deltalogZ > dlogz).any() and (main_iterator.logZerr_bs**2 + logzerr_tail**2)**0.5 > dlogz:
-            niter = len(saved_logl)
-            Nlive_min = niter**0.5 / dlogz
+        maxlogzerr = max(main_iterator.logZerr, deltalogZ.max(), main_iterator.logZerr_bs)
+        if maxlogzerr > dlogz:
+            if logzerr_tail > maxlogzerr:
+                if self.log:
+                    self.logger.info("logz error is dominated by tail. Decrease frac_remain to make progress.")
+            # very convervative estimation using all iterations
+            # this punishes short intervals with many live points
+            niter_max = len(saved_logl)
+            Nlive_min = int(np.ceil(niter_max**0.5 / dlogz))
+            if self.log:
+                self.logger.debug("  conservative estimate says at least %d live points are needed to reach dlogz goal", Nlive_min)
+
+            # better estimation:
+
+            # get only until where logz bulk is (random sample here)
+            itmax = np.random.choice(len(w), p=w)
+            # back out nlive sequence (width changed by (1 - exp(-1/N))*(exp(-1/N)) )
+            logweights = np.array(main_iterator.logweights[:itmax])
+            with np.errstate(divide='ignore', invalid='ignore'):
+                widthratio = 1 - np.exp(logweights[1:,0] - logweights[:-1,0])
+                nlive = 1. / np.log((1 - np.sqrt(1 - 4 * widthratio)) / (2 * widthratio))
+                nlive[~(nlive > 1)] = 1
+
+            # build iteration groups
+            nlive_sets, niter = np.unique(nlive.astype(int), return_counts=True)
+            if self.log:
+                self.logger.debug(
+                    "  number of live points vary between %.0f and %.0f, most (%d/%d iterations) have %d",
+                    nlive.min(), nlive.max(), niter.max(), itmax, nlive_sets[niter.argmax()])
+            for nlive_floor in nlive_sets:
+                # estimate error if this was the minimum nlive applied
+                nlive_adjusted = np.where(nlive_sets < nlive_floor, nlive_floor, nlive_sets)
+                deltalogZ_expected = (niter / nlive_adjusted**2.0).sum()**0.5
+                if deltalogZ_expected < dlogz:
+                    # achievable with Nlive_min
+                    Nlive_min = int(nlive_floor)
+                    if self.log:
+                        self.logger.debug("  at least %d live points are needed to reach dlogz goal", Nlive_min)
+                    break
 
         if self.log and Nlive_min > 0:
             self.logger.info(
@@ -1533,7 +1569,7 @@ class ReactiveNestedSampler(object):
         elif self.log:
             self.logger.info(
                 "Evidency uncertainty strategy is satisfied (dlogz=%.2f, need <%s)",
-                deltalogZ.max(), dlogz)
+                (main_iterator.logZerr_bs**2 + logzerr_tail**2)**0.5, dlogz)
         if self.log:
             self.logger.info(
                 '  logZ error budget: single: %.2f bs:%.2f tail:%.2f total:%.2f required:<%.2f',
@@ -2193,8 +2229,9 @@ class ReactiveNestedSampler(object):
         # fewer than 1000 iterations is quite unlikely
         if min_num_live_points < 1000**0.5 / dlogz:
             min_num_live_points = int(np.ceil(1000**0.5 / dlogz))
-            self.log.info("To achieve the desired logz accuracy, min_num_live_points was increased to %d" % (
-                min_num_live_points))
+            if self.log:
+                self.logger.info("To achieve the desired logz accuracy, min_num_live_points was increased to %d" % (
+                    min_num_live_points))
 
         if self.log_to_pointstore:
             if len(self.pointstore.stack) > 0:
@@ -2533,8 +2570,9 @@ class ReactiveNestedSampler(object):
                 self.logger.info('  logZ = %.4g +- %.4g', main_iterator.logZ_bs, main_iterator.logZerr_bs)
 
             saved_logl = np.asarray(saved_logl)
-            dlogz_min_num_live_points, (Llo_KL, Lhi_KL), (Llo_ess, Lhi_ess) = self._find_strategy(saved_logl, main_iterator, dlogz=dlogz, dKL=dKL, min_ess=min_ess)
-            #if dlogz_min_num_live_points > 0:
+            # reactive nested sampling: see where we have to improve
+            dlogz_min_num_live_points, (Llo_KL, Lhi_KL), (Llo_ess, Lhi_ess) = self._find_strategy(
+                saved_logl, main_iterator, dlogz=dlogz, dKL=dKL, min_ess=min_ess)
             Llo = min(Llo_ess, Llo_KL)
             Lhi = max(Lhi_ess, Lhi_KL)
             # to avoid numerical issues when all likelihood values are the same
@@ -2547,7 +2585,7 @@ class ReactiveNestedSampler(object):
                 recv_Lhi = self.comm.bcast(recv_Lhi, root=0)
                 recv_dlogz_min_num_live_points = self.comm.gather(dlogz_min_num_live_points, root=0)
                 recv_dlogz_min_num_live_points = self.comm.bcast(recv_dlogz_min_num_live_points, root=0)
-                
+
                 Llo = min(recv_Llo)
                 Lhi = max(recv_Lhi)
                 dlogz_min_num_live_points = max(recv_dlogz_min_num_live_points)
@@ -2557,10 +2595,11 @@ class ReactiveNestedSampler(object):
                 self.min_num_live_points = dlogz_min_num_live_points
                 self._widen_roots(self.min_num_live_points)
 
-            if Llo <= Lhi:
+            elif Llo <= Lhi:
                 # if self.log:
                 #     print_tree(roots, title="Tree before forking:")
                 parents, parent_weights = find_nodes_before(self.root, Llo)
+                # double the width / live points:
                 _, width = count_tree_between(self.root.children, Llo, Lhi)
                 nnodes_needed = width * 2
                 if self.log:

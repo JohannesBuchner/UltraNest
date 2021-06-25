@@ -305,7 +305,7 @@ import time
 import pytest
 
 
-@pytest.mark.parametrize("nlive", [100, 400, 2000])
+@pytest.mark.parametrize("nlive", [100])
 def test_singleblock(nlive):
 	assert os.path.exists(testfile), ("%s does not exist" % testfile)
 	print("="*80)

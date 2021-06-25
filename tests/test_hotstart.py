@@ -23,7 +23,7 @@ def log_likelihood(params):
     mean, sigma = params
     return scipy.stats.norm.logpdf(y, mean, sigma).sum()
 
-def test_hotstart():
+def test_hotstart_SLOW():
     np.random.seed(2)
     ctr = np.array([(42.0 + 1000) / 2000, (log10(0.1) + 2) / 4])
     cov = np.diag([0.01 / 2000, (log10(0.1) + 2) / 4 - (log10(0.09) + 2) / 4])**2
