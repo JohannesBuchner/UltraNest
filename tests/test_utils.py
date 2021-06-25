@@ -1,7 +1,7 @@
 import numpy as np
 import tempfile
 import os
-from ultranest.utils import vectorize, is_affine_transform, normalised_kendall_tau_distance
+from ultranest.utils import vectorize, is_affine_transform, normalised_kendall_tau_distance, make_run_dir
 from numpy.testing import assert_allclose
 
 
@@ -46,3 +46,20 @@ def test_tau():
 		raise Exception("expect error")
 	except AssertionError:
 		pass
+
+
+def test_make_log_dirs():
+	import shutil
+	try:
+		filepath = tempfile.mkdtemp()
+		make_run_dir(filepath, max_run_num=3)
+		assert os.path.exists(os.path.join(filepath, 'run1'))
+		make_run_dir(filepath, max_run_num=3)
+		assert os.path.exists(os.path.join(filepath, 'run2'))
+		try:
+			make_run_dir(filepath, max_run_num=3)
+			assert False
+		except ValueError:
+			pass
+	finally:
+		shutil.rmtree(filepath)
