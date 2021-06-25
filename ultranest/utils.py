@@ -90,6 +90,8 @@ def make_run_dir(log_dir, run_num=None, append_run_num=True):
     _makedirs(log_dir)
 
     if run_num is None or run_num == '':
+        # loop over existing folders of the form log_dir/runX
+        # to find next available run_num (up to the hardcoded maximum of 1000)
         for run_num in range(1,1000):
             if os.path.isdir(os.path.join(log_dir, 'run%s' % run_num)):
                 continue
