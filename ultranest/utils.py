@@ -68,7 +68,7 @@ def _makedirs(name):
     # os.makedirs(name, exist_ok=True)
 
 
-def make_run_dir(log_dir, run_num=None, append_run_num=True):
+def make_run_dir(log_dir, run_num=None, append_run_num=True, max_run_num=10000):
     """Generate a new numbered directory for this run to store output.
 
     Parameters
@@ -76,9 +76,11 @@ def make_run_dir(log_dir, run_num=None, append_run_num=True):
     log_dir: str
         base path
     run_num: int
-        folder to add to path, such as prefix/1/
+        folder to add to path, such as prefix/run1/
     append_run_num: bool
         If true, set run_num to next unused number
+    max_run_num: int
+        Maximum number of automatic run subfolders
 
     Returns
     -------
@@ -90,8 +92,15 @@ def make_run_dir(log_dir, run_num=None, append_run_num=True):
     _makedirs(log_dir)
 
     if run_num is None or run_num == '':
-        run_num = (sum(os.path.isdir(os.path.join(log_dir,i))
-                       for i in os.listdir(log_dir)) + 1)
+        # loop over existing folders (or files) of the form log_dir/runX
+        # to find next available run_num (up to the hardcoded maximum of 1000)
+        for run_num in range(1, max_run_num):
+            if os.path.exists(os.path.join(log_dir, 'run%s' % run_num)):
+                continue
+            else:
+                break
+         else:
+             raise ValueError("log directory '%s' already contains maximum number of run subdirectories (%d)" % (log_dir, max_run_num))
     if append_run_num:
         run_dir = os.path.join(log_dir, 'run%s' % run_num)
     else:
