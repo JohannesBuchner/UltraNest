@@ -697,8 +697,8 @@ class MultiCounter(object):
 
         At 4 sigma, run lengths no shorter than 10^5.5 are expected
         in unbiased runs. If the number of runs exceeds the number
-        of iterations divided by 10^5.5, the run is likely unbiased
-        and thus not converged.
+        of iterations divided by 10^5.5, the run is likely biased
+        and not converged.
 
         If not converged, the step sampler may need to use more steps,
         or the problem needs to be  reparametrized.
