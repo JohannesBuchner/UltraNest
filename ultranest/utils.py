@@ -99,8 +99,8 @@ def make_run_dir(log_dir, run_num=None, append_run_num=True, max_run_num=10000):
                 continue
             else:
                 break
-         else:
-             raise ValueError("log directory '%s' already contains maximum number of run subdirectories (%d)" % (log_dir, max_run_num))
+        else:
+            raise ValueError("log directory '%s' already contains maximum number of run subdirectories (%d)" % (log_dir, max_run_num))
     if append_run_num:
         run_dir = os.path.join(log_dir, 'run%s' % run_num)
     else:
