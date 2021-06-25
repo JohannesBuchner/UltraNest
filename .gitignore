@@ -64,6 +64,8 @@ instance/
 
 # Sphinx documentation
 docs/_build/
+docs/joblib/
+docs/example*.py
 
 # PyBuilder
 target/
@@ -108,3 +110,13 @@ ENV/
 *.png
 *.log
 *.npz
+
+# cache
+joblib/
+# profiling
+prof*
+# patches
+*.patch
+testfeatures/*.done
+# old files
+*.orig

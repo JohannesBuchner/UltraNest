@@ -73,7 +73,7 @@ def test_stepsampler_regionslice(plot=False):
     assert b.sum() > 1
 
 
-def test_stepsampler_variable_speed(plot=False):
+def test_stepsampler_variable_speed_SLOW(plot=False):
     matrices = [
         np.array([[True, True, True], [False, True, True], [False, False, True]]),
         [Ellipsis, slice(1,None), slice(2,4)]
