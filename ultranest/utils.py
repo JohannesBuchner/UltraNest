@@ -76,7 +76,7 @@ def make_run_dir(log_dir, run_num=None, append_run_num=True, max_run_num=10000):
     log_dir: str
         base path
     run_num: int
-        folder to add to path, such as prefix/1/
+        folder to add to path, such as prefix/run1/
     append_run_num: bool
         If true, set run_num to next unused number
     max_run_num: int
