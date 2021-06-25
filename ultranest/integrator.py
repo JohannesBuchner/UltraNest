@@ -1515,9 +1515,7 @@ class ReactiveNestedSampler(object):
             self.logger.info("Posterior uncertainty strategy is satisfied (KL: %.2f+-%.2f nat, need <%.2f nat)",
                              KLtot.mean(), dKLtot.max(), dKL)
 
-        Llo_Z = np.inf
-        Lhi_Z = -np.inf
-        # compute difference between lnZ cumsum
+        Nlive_min = 0
         p = exp(logw)
         p /= p.sum(axis=0).reshape((1, -1))
         deltalogZ = np.abs(main_iterator.all_logZ[1:] - main_iterator.logZ)
@@ -1525,20 +1523,13 @@ class ReactiveNestedSampler(object):
         tail_fraction = w[np.asarray(main_iterator.istail)].sum() / w.sum()
         logzerr_tail = logaddexp(log(tail_fraction) + main_iterator.logZ, main_iterator.logZ) - main_iterator.logZ
         if (deltalogZ > dlogz).any() and (main_iterator.logZerr_bs**2 + logzerr_tail**2)**0.5 > dlogz:
-            for i, (pi, deltalogZi) in enumerate(zip(p.transpose(), deltalogZ)):
-                if deltalogZi > dlogz:
-                    # break up samples with too much weight
-                    samples = np.random.choice(len(ref_logw), p=pi, size=400)
-                    # if self.log:
-                    #     self.logger.info('   - deltalogZi[%d] = %.2f: need to improve near %.2f..%.2f' % (
-                    #         i, deltalogZi, saved_logl[samples].min(), saved_logl[samples].max()))
-                    Llo_Z = min(Llo_Z, saved_logl[samples].min())
-                    Lhi_Z = max(Lhi_Z, saved_logl[samples].max())
+            niter = len(saved_logl)
+            Nlive_min = niter**0.5 / dlogz
 
-        if self.log and Lhi_Z > Llo_Z:
+        if self.log and Nlive_min > 0:
             self.logger.info(
-                "Evidency uncertainty strategy wants to improve: %.2f..%.2f (dlogz from %.2f to %.2f, need <%s)",
-                Llo_Z, Lhi_Z, deltalogZ.mean(), deltalogZ.max(), dlogz)
+                "Evidency uncertainty strategy wants %d minimum live points (dlogz from %.2f to %.2f, need <%s)",
+                Nlive_min, deltalogZ.mean(), deltalogZ.max(), dlogz)
         elif self.log:
             self.logger.info(
                 "Evidency uncertainty strategy is satisfied (dlogz=%.2f, need <%s)",
@@ -1549,7 +1540,7 @@ class ReactiveNestedSampler(object):
                 main_iterator.logZerr, main_iterator.logZerr_bs, logzerr_tail,
                 (main_iterator.logZerr_bs**2 + logzerr_tail**2)**0.5, dlogz)
 
-        return (Llo_Z, Lhi_Z), (Llo_KL, Lhi_KL), (Llo_ess, Lhi_ess)
+        return Nlive_min, (Llo_KL, Lhi_KL), (Llo_ess, Lhi_ess)
 
     def _refill_samples(self, Lmin, ndraw, nit):
         """Get new samples from region."""
@@ -2197,6 +2188,14 @@ class ReactiveNestedSampler(object):
             raise ValueError("To achieve the desired logz accuracy, set frac_remain to a value much smaller than %s (currently: %s)" % (
                 exp(-dlogz) - 1, frac_remain))
 
+        # the error is approximately dlogz = sqrt(iterations) / Nlive
+        # so we need a minimum, which depends on the number of iterations
+        # fewer than 1000 iterations is quite unlikely
+        if min_num_live_points < 1000**0.5 / dlogz:
+            min_num_live_points = int(np.ceil(1000**0.5 / dlogz))
+            self.log.info("To achieve the desired logz accuracy, min_num_live_points was increased to %d" % (
+                min_num_live_points))
+
         if self.log_to_pointstore:
             if len(self.pointstore.stack) > 0:
                 self.logger.info("Resuming from %d stored points", len(self.pointstore.stack))
@@ -2534,9 +2533,10 @@ class ReactiveNestedSampler(object):
                 self.logger.info('  logZ = %.4g +- %.4g', main_iterator.logZ_bs, main_iterator.logZerr_bs)
 
             saved_logl = np.asarray(saved_logl)
-            (Llo_Z, Lhi_Z), (Llo_KL, Lhi_KL), (Llo_ess, Lhi_ess) = self._find_strategy(saved_logl, main_iterator, dlogz=dlogz, dKL=dKL, min_ess=min_ess)
-            Llo = min(Llo_ess, Llo_KL, Llo_Z)
-            Lhi = max(Lhi_ess, Lhi_KL, Lhi_Z)
+            dlogz_min_num_live_points, (Llo_KL, Lhi_KL), (Llo_ess, Lhi_ess) = self._find_strategy(saved_logl, main_iterator, dlogz=dlogz, dKL=dKL, min_ess=min_ess)
+            #if dlogz_min_num_live_points > 0:
+            Llo = min(Llo_ess, Llo_KL)
+            Lhi = max(Lhi_ess, Lhi_KL)
             # to avoid numerical issues when all likelihood values are the same
             Lhi = min(Lhi, saved_logl.max() - 0.001)
 
@@ -2545,8 +2545,17 @@ class ReactiveNestedSampler(object):
                 recv_Llo = self.comm.bcast(recv_Llo, root=0)
                 recv_Lhi = self.comm.gather(Lhi, root=0)
                 recv_Lhi = self.comm.bcast(recv_Lhi, root=0)
+                recv_dlogz_min_num_live_points = self.comm.gather(dlogz_min_num_live_points, root=0)
+                recv_dlogz_min_num_live_points = self.comm.bcast(recv_dlogz_min_num_live_points, root=0)
+                
                 Llo = min(recv_Llo)
                 Lhi = max(recv_Lhi)
+                dlogz_min_num_live_points = max(recv_dlogz_min_num_live_points)
+
+            if dlogz_min_num_live_points > self.min_num_live_points:
+                # more live points needed throughout to reach target
+                self.min_num_live_points = dlogz_min_num_live_points
+                self._widen_roots(self.min_num_live_points)
 
             if Llo <= Lhi:
                 # if self.log:
