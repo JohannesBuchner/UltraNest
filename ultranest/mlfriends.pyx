@@ -750,7 +750,7 @@ class MLFriends(object):
 
     def estimate_volume(self):
         """Estimate the order of magnitude of the volume around a single point
-        given the current transformLayer and
+        given the current transformLayer.
 
         Does not account for:
         * the number of live points
@@ -759,7 +759,8 @@ class MLFriends(object):
 
         Returns
         -------
-        volume (float)
+        volume: float
+            Volume
         """
         r = self.maxradiussq**0.5
         N, ndim = self.u.shape
@@ -1102,13 +1103,7 @@ class RobustEllipsoidRegion(MLFriends):
         # draw from unit cube in prior space
         u = np.random.uniform(size=(nsamples, ndim))
         wmask = self.inside_ellipsoid(u)
-        # check if inside region in transformed space
-        v = self.transformLayer.transform(u[wmask,:])
-        vmask = np.logical_and(
-            v > (self.bbox_lo - self.maxradiussq).reshape((1, -1)),
-            v < (self.bbox_hi + self.maxradiussq).reshape((1, -1))
-        ).all(axis=1)
-        return u[wmask,:][vmask,:]
+        return u[wmask,:]
 
     def sample_from_transformed_boundingbox(self, nsamples=100):
         """Draw uniformly sampled points from MLFriends region.
@@ -1148,13 +1143,7 @@ class RobustEllipsoidRegion(MLFriends):
         #assert self.inside_ellipsoid(w).all()
 
         wmask = np.logical_and(w > 0, w < 1).all(axis=1)
-        v = self.transformLayer.transform(w[wmask,:])
-        vmask = np.logical_and(
-            v > (self.bbox_lo - self.maxradiussq).reshape((1, -1)),
-            v < (self.bbox_hi + self.maxradiussq).reshape((1, -1))
-        ).all(axis=1)
-
-        return w[wmask,:][vmask]
+        return w[wmask,:]
 
     def sample(self, nsamples=100):
         """Draw uniformly sampled points from MLFriends region.
@@ -1196,18 +1185,7 @@ class RobustEllipsoidRegion(MLFriends):
 
         """
         # require points to be inside bounding ellipsoid
-        mask = self.inside_ellipsoid(pts)
-        
-        if mask.any():
-            # additionally require points to be near neighbours
-            v = self.transformLayer.transform(pts[mask,:])
-            vmask = np.logical_and(
-                v > (self.bbox_lo - self.maxradiussq).reshape((1, -1)),
-                v < (self.bbox_hi + self.maxradiussq).reshape((1, -1))
-            ).all(axis=1)
-            mask[mask] = vmask
-
-        return mask
+        return self.inside_ellipsoid(pts)
 
     def compute_enlargement(self, nbootstraps=50, minvol=0., rng=np.random):
         """Return MLFriends radius and ellipsoid enlargement using bootstrapping.
@@ -1256,6 +1234,23 @@ class RobustEllipsoidRegion(MLFriends):
         assert maxd > 0, (maxd, self.u, self.unormed)
         assert maxf > 0, (maxf, self.u, self.unormed)
         return maxd, maxf
+
+    def estimate_volume(self):
+        """Estimate the volume of the ellipsoid.
+
+        Does not account for the intersection with the unit cube borders.
+
+        Returns
+        -------
+        logvolume: float
+            logarithm of the volume.
+        """
+        ndim = len(self.ellipsoid_cov)
+        sign, logvol = np.linalg.slogdet(self.ellipsoid_cov)
+        if sign > 0:
+            return logvol + ndim * np.log(self.enlarge)
+        else:
+            return -1e300
 
 class WrappingEllipsoid(object):
     """Ellipsoid which safely wraps points."""
