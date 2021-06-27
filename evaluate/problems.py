@@ -121,6 +121,7 @@ def volume_multigauss(loglike, ndim):
     return nsphere_volume(radius, ndim)
 
 def warmup_multigauss(ndim):
+    # sample when they are just separated
     if np.random.uniform() < 0.5:
         ctr = 0.4
     else:
@@ -195,6 +196,3 @@ def get_problem(problemname, ndim):
         return loglike_shell, gradient_shell, volume_shell, warmup_shell
     
     raise Exception("Problem '%s' unknown" % problemname)
-
-
-
