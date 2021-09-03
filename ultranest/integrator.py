@@ -2020,6 +2020,8 @@ class ReactiveNestedSampler(object):
             return False
 
         if not live_points_healthy:
+            if self.log:
+                self.logger.debug("not expanding, because live points are linearly dependent")
             return False
 
         # some reasons to stop:
@@ -2034,6 +2036,8 @@ class ReactiveNestedSampler(object):
 
         # in a plateau, only shrink (Fowlie+2020)
         if (Lmin == parallel_values).sum() > 1:
+            if self.log:
+                self.logger.debug("Plateau detected at L=%e, not replacing live point." % Lmin)
             return False
 
         expand_node = False
