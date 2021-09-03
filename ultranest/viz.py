@@ -292,7 +292,8 @@ class LivePointsWidget(object):
         if self.grid is None:
             self.initialize(paramnames, width)
 
-        indices = ((p - plo_rounded) * width / (phi_rounded - plo_rounded).reshape((1, -1))).astype(int)
+        with np.errstate(invalid="ignore"):
+            indices = ((p - plo_rounded) * width / (phi_rounded - plo_rounded).reshape((1, -1))).astype(int)
         indices[indices >= width] = width - 1
         indices[indices < 0] = 0
         ndim = len(plo)
