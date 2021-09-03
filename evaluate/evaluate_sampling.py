@@ -7,9 +7,9 @@ import matplotlib.pyplot as plt
 import scipy.stats
 
 from ultranest.mlfriends import ScalingLayer, AffineLayer, MLFriends, RobustEllipsoidRegion
-from ultranest.stepsampler import RegionMHSampler, CubeMHSampler
+from ultranest.stepsampler import RegionMHSampler, CubeMHSampler, DEMCSampler
 from ultranest.stepsampler import CubeSliceSampler, RegionSliceSampler, RegionBallSliceSampler, RegionSequentialSliceSampler, SpeedVariableRegionSliceSampler
-from ultranest.stepsampler import AHARMSampler
+from ultranest.stepsampler import AHARMSampler, generate_region_random_direction, generate_random_direction, generate_region_oriented_direction
 from ultranest.ordertest import UniformOrderAccumulator
 
 from problems import transform, get_problem
@@ -62,7 +62,7 @@ def update_region(ndim, region, us, minvol):
                 nextregion.create_ellipsoid(minvol=minvol)
             if nextregion.estimate_volume() <= region.estimate_volume():
                 assert region.ellipsoid_center is not None
-                print("region updated", nextregion.estimate_volume(), nextregion.enlarge)
+                # print("region updated", nextregion.estimate_volume(), nextregion.enlarge)
                 return nextregion, True
         except Warning as w:
             print("not updating region because: %s" % w)
@@ -163,18 +163,26 @@ def main(args):
     problemname = args.problem
     
     samplerclasses = [CubeMHSampler, CubeSliceSampler, RegionSliceSampler, RegionBallSliceSampler]
-    nsteps_set = sorted({1,4,16,max(16,ndim//2),max(16,ndim),max(16,ndim*2)}, reverse=True)
+    nsteps_set = sorted({1,2,4,16,max(16,ndim//2),max(16,ndim),max(16,ndim*2)}, reverse=True)
+    #nsteps_set = sorted({1,2,4}, reverse=True)
     samplers = [
         (samplerclass.__name__.lower().replace('sampler','') + '-%d' % nsteps, samplerclass(nsteps=nsteps)) 
         for samplerclass in samplerclasses for nsteps in nsteps_set]
-    samplers += [
-        (samplerclass.__name__.lower().replace('sampler','') + '-adaptMD', samplerclass(nsteps=400, adapt_nsteps='move-distance')) 
-        for samplerclass in samplerclasses for nsteps in nsteps_set]
+    #for name, generate_direction in ('regionball', generate_region_random_direction), ('ball', generate_random_direction):
+    #    #, generate_region_oriented_direction, generate_cube_oriented_direction:
+    #    samplers += [('a_%s-%d' % (name, nsteps), AHARMSampler(generate_direction=generate_direction, nsteps=nsteps)) for nsteps in nsteps_set]
+    for name, generate_direction in ('regionball', generate_region_random_direction), ('regionslice', generate_region_oriented_direction),:
+        samplers += [('a_%sE16-%d' % (name, nsteps), AHARMSampler(generate_direction=generate_direction, nsteps=nsteps, enlargement_factor=16)) for nsteps in nsteps_set]
+    for name, generate_direction in ('regionslice', generate_region_oriented_direction),:
+        samplers += [('a_%sE4-%d' % (name, nsteps), AHARMSampler(generate_direction=generate_direction, nsteps=nsteps, enlargement_factor=4)) for nsteps in nsteps_set]
+    #samplers += [
+    #    (samplerclass.__name__.lower().replace('sampler','') + '-adaptMD', samplerclass(nsteps=400, adaptive_nsteps='move-distance')) 
+    #    for samplerclass in samplerclasses]
     if ndim < 14:
         samplers.insert(0, ('MLFriends', MLFriendsSampler()))
     colors = {}
     linestyles = {1:':', 2:':', 4:'--', 16:'-', 32:'-', 64:'-', -1:'-'}
-    markers = {1:'x', 2:'x', 4:'^', 16:'o', 32:'s', 64:'s', -1:'o'}
+    markers = {1:'x', 2:'x', 4:'^', 16:'o', 32:'s', 64:'s', -1:'s'}
     for isteps, ls, m in (max(1, ndim // 2), ':', 'x'), (ndim, '--', '^'), (ndim+1, '--', '^'), (ndim * 2, '-', 'o'), (ndim * 4, '-.', '^'), (ndim * 8, '-', 'v'), (ndim * 16, '-', '>'):
         if isteps not in markers:
             markers[isteps] = m
@@ -190,10 +198,10 @@ def main(args):
     axstep1 = plt.subplot(1, 3, 1)
     axstep2 = plt.subplot(1, 3, 2)
     axstep3 = plt.subplot(1, 3, 3)
-    lastspeed = None, None, None
+    lastspeed = None, None, None, None
     for samplername, sampler in samplers:
         samplergroup = samplername.split('-')[0]
-        if lastspeed[0] is not None and lastspeed[0] == samplergroup and lastspeed[1] < 0.01:
+        if lastspeed[0] is not None and lastspeed[0] == samplergroup and lastspeed[1] < 0.005:
             print("skipping %s ..." % samplername)
             continue
         else:
@@ -219,19 +227,21 @@ def main(args):
             if len(shrinkages) * len(shrinkage_here) >= num_total_steps - 10:
                 break
         shrinkage = np.concatenate(tuple(shrinkages))
+        efficiency = 100 * len(shrinkages) / ncalls
         
         label = samplername + ' %d evals' % ncalls
         if Lsequence_ref is None:
             label_ref = label
             Lsequence_ref = Lsequence
             ls = '-'
-            color = 'pink'
+            colors[samplergroup] = color = 'pink'
         else:
             color = colors.get(samplergroup)
             ls = '-' if sampler.adaptive_nsteps else linestyles[sampler.nsteps]
             l, = axL.plot(Lsequence_ref, Lsequence, label=label, color=color, linestyle=ls, lw=1)
-            colors[samplergroup] = l.get_color()
-        
+            colors[samplergroup] = color = l.get_color()
+            #print(samplergroup, colors[samplergroup])
+
         # convert to a uniformly distributed variable, according to expectations
         cdf_expected = 1 - (1 - shrinkage)**(ndim * nlive)
         axS.hist(cdf_expected, cumulative=True, density=True, 
@@ -241,11 +251,10 @@ def main(args):
         #bias = cdf_expected.mean()
         _, bias = scipy.stats.kstest(cdf_expected, 'uniform')
         print("%s p-value:%.4f, from %d shrinkage samples" % (samplername, bias, len(shrinkage)))
-        axspeed.plot(bias, ncalls, markers[1 if sampler.adaptive_nsteps else sampler.nsteps], label=label, color=color)
+        axspeed.plot(bias, ncalls, markers[-1 if sampler.adaptive_nsteps else sampler.nsteps], label=label, color=color)
         if lastspeed[0] == samplergroup:
             # connect to previous
             axspeed.plot([lastspeed[1], bias], [lastspeed[2], ncalls], '-', color=color)
-        lastspeed = [samplergroup, bias, ncalls]
         
         stepsizesq, angular_step, radial_step = steps.transpose()
         assert len(stepsizesq) == len(Lsequence), (len(stepsizesq), len(Lsequence))
@@ -256,6 +265,7 @@ def main(args):
         assert (vol > 0).all(), vol
         assert (vol <= 1).all(), vol
         relstepsize = stepsizesq**0.5 / vol**(1. / ndim)
+        avg_relstepsize = np.median(relstepsize)
         relradial_step = radial_step / vol**(1. / ndim)
         axstep1.hist(relstepsize[np.isfinite(relstepsize)], bins=1000, cumulative=True, density=True, 
             histtype='step',
@@ -267,9 +277,20 @@ def main(args):
             histtype='step', 
             label=label, color=color, ls=ls)
         sampler.plot(filename = 'evaluate_sampling_%s_%dd_N%d_%s.png' % (args.problem, ndim, nlive, samplergroup))
-        if bias < 0.05:
-            axstepspeed.plot(ncalls, np.median(relstepsize), markers[1 if sampler.adaptive_nsteps else sampler.nsteps], label=label, color=color)
-    
+        if bias < 0.01:
+            pass
+            #axstepspeed.plot(efficiency, avg_relstepsize, 'o', ms=10, mec='r', mfc='none', mew=2)
+        else:
+            axstepspeed.plot(
+                efficiency, avg_relstepsize,
+                markers[-1 if sampler.adaptive_nsteps else sampler.nsteps],
+                label=label, color=color)
+            if lastspeed[0] is not None and lastspeed[0] == samplergroup:
+                axstepspeed.plot(
+                    [efficiency, 100 * len(shrinkages) / lastspeed[2]], 
+                    [avg_relstepsize, lastspeed[3]], '-', color=color)
+        lastspeed = [samplergroup, bias, ncalls, np.median(relstepsize)]
+
     print('range:', Lsequence_ref[0], Lsequence_ref[-1])
     axL.plot([Lsequence_ref[0], Lsequence_ref[-1]], [Lsequence_ref[0], Lsequence_ref[-1]], '-', color='k', lw=1, label=label_ref)
     axL.set_xlabel('logL (reference)')
@@ -294,7 +315,7 @@ def main(args):
     print("plotting to %s ..." % filename)
     plt.savefig(filename, bbox_inches='tight')
     plt.close()
-    
+
     plt.figure('speed')
     plt.xlabel('p-value')
     plt.ylabel('# of function evaluations')
@@ -315,8 +336,8 @@ def main(args):
     plt.close()
 
     plt.figure('stepspeed')
-    plt.ylabel('median Euclidean distance')
-    plt.xlabel('# of function evaluations')
+    plt.ylabel('distance')
+    plt.xlabel('efficiency')
     plt.xscale('log')
     plt.yscale('log')
     plt.legend(loc='best', prop=dict(size=6), fancybox=True, framealpha=0.5)

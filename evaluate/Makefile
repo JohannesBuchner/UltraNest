@@ -47,3 +47,5 @@ evaluate_sampling_shell_10d_N400_shrinkage.pdf: evaluate_sampling.py
 	${PYTHON} evaluate_sampling.py --problem=shell --x_dim=10 --nsteps=3300
 
 shell: evaluate_sampling_shell_2d_N400_shrinkage.pdf evaluate_sampling_shell_10d_N400_shrinkage.pdf
+
+highd: evaluate_sampling_asymgauss_100d_N400_shrinkage.pdf evaluate_sampling_pyramid_100d_N400_shrinkage.pdf
