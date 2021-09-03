@@ -62,6 +62,11 @@ def main(args):
             log_dir = args.log_dir + 'RNS-%dd' % (ndim)
         if adaptive_nsteps:
             log_dir = log_dir + '-adapt%s' % (adaptive_nsteps)
+        import ultranest.mlfriends
+        region_class = ultranest.mlfriends.MLFriends
+        if args.no_mlfriends:
+            log_dir = log_dir + '-ell'
+            region_class = ultranest.mlfriends.RobustEllipsoidRegion
         
         from ultranest import ReactiveNestedSampler
         sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, 
@@ -87,7 +92,8 @@ def main(args):
             verify_gradient(ndim, transform, loglike, gradient)
             sampler.stepsampler = ultranest.dychmc.DynamicCHMCSampler(ndim=ndim, nsteps=args.slice_steps, 
                 transform=transform, loglike=loglike, gradient=gradient, adaptive_nsteps=adaptive_nsteps)
-        sampler.run(frac_remain=0.5, min_num_live_points=args.num_live_points, max_num_improvement_loops=1)
+        sampler.run(frac_remain=0.5, min_num_live_points=args.num_live_points, max_num_improvement_loops=1,
+            region_class=region_class)
         sampler.print_results()
         if sampler.stepsampler is not None:
             sampler.stepsampler.plot(filename = log_dir + '/stepsampler_stats_region.pdf')
@@ -119,6 +125,7 @@ if __name__ == '__main__':
     parser.add_argument('--dychmc', action='store_true')
     parser.add_argument('--slice_steps', type=int, default=100)
     parser.add_argument('--adapt_steps', type=str)
+    parser.add_argument('--no-mlfriends', action='store_true')
 
     args = parser.parse_args()
     main(args)
