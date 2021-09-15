@@ -441,3 +441,18 @@ def verify_gradient(ndim, transform, loglike, gradient, verbose=False, combinati
             print("expectation was L=", Lexpected, ", given", Lref, grad, eps)
         assert np.allclose(Lprime, Lexpected, atol=0.1 / ndim), \
             (u, uprime, theta, thetaprime, grad, eps * grad / L, L, Lprime, Lexpected)
+
+def todo_points_for_this_process(mpi_rank, num_live_points_missing, mpi_size):
+    """
+    Calculates number of living points to be evaluated by this process.
+
+    Parameters
+    ----------
+    mpi_rank : int
+        process id
+    num_live_points_missing : int
+        number of live points to be splitted
+    mpi_size : int
+        total number of processes
+    """
+    return (num_live_points_missing + mpi_size - 1 - mpi_rank) // mpi_size
