@@ -186,7 +186,70 @@ def compute_mean_pair_distance(
     assert np.isfinite(total_dist), total_dist
     return total_dist / Npairs
 
+@cython.boundscheck(False)
+@cython.wraparound(False)
+def local_covariance(
+    np.ndarray[np.float_t, ndim=2] tpoints,
+    np.float_t maxradiussq,
+    np.ndarray[np.float_t, ndim=2] upoints,
+):
+    """Compute the covariance of upoints, but only using pairs 
+    where the distance in tpoints is less than maxradiussq"""
+    assert upoints.shape[0] == tpoints.shape[0], ('different number of points', upoints.shape[0], tpoints.shape[0])
+    assert upoints.shape[1] == tpoints.shape[1], ('different dimensionality of points', upoints.shape[1], tpoints.shape[1])
+    cdef size_t na = upoints.shape[0]
+    cdef size_t ndim = upoints.shape[1]
 
+    cdef unsigned long i, j, i_ctr, k1, k2, k
+    cdef np.float_t Npairs = 0
+    cdef int nnearby
+    cdef np.float_t pair_dist
+
+    cov = np.zeros((ndim, ndim))
+    neighbourhood = np.zeros(na, dtype=bool)
+    center = np.zeros(ndim)
+
+    # try out each point as a center
+    for i_ctr in range(na):
+        nnearby = 0
+        # look for nearby points and estimate the center
+        for k in range(ndim):
+            center[k] = 0
+
+        for i in range(na):
+            pair_dist = 0.0
+            for k in range(ndim):
+                pair_dist += (tpoints[i,k] - tpoints[i_ctr,k])**2
+            if pair_dist < maxradiussq:
+                for k in range(ndim):
+                    center[k] += upoints[i,k]
+                neighbourhood[i] = True
+                nnearby += 1
+            else:
+                neighbourhood[i] = False
+        
+        for k in range(ndim):
+            center[k] /= nnearby
+        
+        if nnearby > 2:
+            # now compute the local covariance using difference to the mean
+            for i in range(na):
+                if neighbourhood[i]:
+                    # find another point:
+                    Npairs += 1. / nnearby
+                    for k1 in range(ndim):
+                        for k2 in range(k1, ndim):
+                            cov[k1,k2] += (upoints[i,k1] - center[k1]) * (upoints[i,k2] - center[k2]) / nnearby
+
+    # normalise the covariance, and make it symmetric
+    for k1 in range(ndim):
+        for k2 in range(k1, ndim):
+            cov[k1,k2] /= Npairs
+            cov[k2,k1] = cov[k1,k2]
+
+    return cov
+
+    
 @cython.boundscheck(False)
 @cython.wraparound(False)
 cdef _update_clusters(
@@ -232,10 +295,9 @@ cdef _update_clusters(
             # start a new cluster
             currentclusterid = currentclusterid + 1
             i = np.where(nonmembermask)[0][0]
-            if clusterids is not None:
-                existing = clusterids == currentclusterid
-                if existing.any():
-                    i = np.where(existing)[0][0]
+            existing = clusterids == currentclusterid
+            if existing.any():
+                i = np.where(existing)[0][0]
 
             clusteridxs[i] = currentclusterid
 
@@ -571,7 +633,7 @@ class AffineLayer(ScalingLayer):
         self.has_wraps = len(wrapped_dims) > 0
         self.clusterids = clusterids
 
-    def optimize(self, points, centered_points, clusterids=None, minvol=0.):
+    def optimize(self, points, centered_points, clusterids=None, minvol=0., cov=None):
         """Optimize layer.
 
         Estimates covariance of ``centered_points``. ``minvol`` sets the
@@ -592,7 +654,8 @@ class AffineLayer(ScalingLayer):
         self.optimize_wrap(points)
         wrapped_points = self.wrap(points)
         self.ctr = np.mean(wrapped_points, axis=0)
-        cov = np.cov(centered_points, rowvar=0)
+        if cov is None:
+            cov = np.cov(centered_points, rowvar=0)
         cov *= (len(self.ctr) + 2)
         self.cov = cov
         eigval, eigvec = np.linalg.eigh(cov)
@@ -629,7 +692,8 @@ class AffineLayer(ScalingLayer):
         nclusters, clusteridxs, overlapped_uwpoints = update_clusters(uwpoints, tpoints, maxradiussq, self.clusterids)
         #clusteridxs = track_clusters(clusteridxs, self.clusterids)
         s = AffineLayer(nclusters=nclusters, wrapped_dims=self.wrapped_dims, clusterids=clusteridxs)
-        s.optimize(upoints, overlapped_uwpoints, minvol=minvol)
+        cov = None # local_covariance(tpoints, maxradiussq, uwpoints)
+        s.optimize(upoints, overlapped_uwpoints, minvol=minvol, cov=cov)
         return s
 
     def transform(self, u):
@@ -1246,9 +1310,9 @@ class RobustEllipsoidRegion(MLFriends):
             logarithm of the volume.
         """
         ndim = len(self.ellipsoid_cov)
-        sign, logvol = np.linalg.slogdet(self.ellipsoid_cov)
-        if sign > 0:
-            return logvol + ndim * np.log(self.enlarge)
+        sign, logvol = np.linalg.slogdet(self.ellipsoid_axes_T)
+        if sign != 0:
+            return logvol + 0.5 * np.log(self.enlarge) * ndim
         else:
             return -1e300
 
@@ -1457,7 +1521,7 @@ def ellipsoid_bracket(ucurrent, v, ellipsoid_center, ellipsoid_inv_axes, enlarge
 def crop_bracket_at_unit_cube(ucurrent, v, left, right):
     return _crop_bracket_at_unit_cube(ucurrent, v, left, right)
 
-def get_cropped_ellipsoid_bracket(ucurrent, v, region):
-    left, right = _ellipsoid_bracket(ucurrent, v, region.ellipsoid_center, region.ellipsoid_inv_axes, region.enlarge)
+def get_cropped_ellipsoid_bracket(ucurrent, v, region, enlargement_factor=1):
+    left, right = _ellipsoid_bracket(ucurrent, v, region.ellipsoid_center, region.ellipsoid_inv_axes, region.enlarge * enlargement_factor)
     left, right, _, _ = _crop_bracket_at_unit_cube(ucurrent, v, left, right)
     return left, right

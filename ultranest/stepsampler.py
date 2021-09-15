@@ -640,6 +640,49 @@ def RegionMHSampler(*args, **kwargs):
     return MHSampler(*args, **kwargs, generate_direction=generate_region_random_direction)
 
 
+class DifferentialSampler(StepSampler):
+    """Differential Evolution Markov Chain Monte Carlo."""
+
+    def move(self, ui, region, ndraw=1, plot=False):
+        """Move in u-space with a Gaussian proposal.
+
+        Parameters
+        ----------
+        ui: array
+            current point
+        ndraw: int
+            number of points to draw.
+        region: MLFriends or RobustEllipsoidRegion
+            Region containing current live points.
+
+        All other parameters are ignored.
+        """
+        # propose in that direction
+        nlive, ndim = region.u.shape
+        
+        R1 = np.random.randint(nlive - 1)
+        if R1 >= self.starti:
+            R1 += 1
+        R2 = np.random.randint(nlive - 2)
+        if R2 >= self.starti:
+            R2 += 1
+        if R2 >= R1:
+            R2 += 1
+        direction = (region.u[R2,:] - region.u[R1,:]) * self.scale
+        unew = self.generate_direction((ui + direction).reshape((1, -1)) + np.zeros((ndraw, 1)), region, scale=self.scale)
+        return unew
+
+def DEMCSampler(scale=0.98, epsilon=0.001, *args, **kwargs):
+    """Differential Evolution Markov Chain Monte Carlo with normal jitter"""
+    def normal_jitter(ui, region, scale=1):
+        return ui + epsilon * np.random.multivariate_normal(
+            np.zeros(ui.shape[-1]),
+            region.ellipsoid_cov,
+            size=1 if ui.ndim == 1 else ui.shape[0])
+    return DifferentialSampler(*args, **kwargs, generate_direction=normal_jitter)
+
+
+
 class SliceSampler(StepSampler):
     """Slice sampler, respecting the region."""
 
@@ -978,7 +1021,7 @@ from .mlfriends import get_cropped_ellipsoid_bracket
 def _prepare_steps(
     nsteps_done, nsteps, directions, ndraw,
     current_interval, loglike, transform, region, ndim, region_filter, 
-    Lmin, verbose,
+    Lmin, verbose, enlargement_factor=1
 ):
     point_sequence = np.empty((ndraw, ndim))
     point_expectation = np.zeros(ndraw, dtype=bool)
@@ -991,8 +1034,8 @@ def _prepare_steps(
     ucurrent, left, right = current_interval
     if verbose:
         print("from", ucurrent)
-    assert (ucurrent >= 0).all(), ucurrent
-    assert (ucurrent <= 1).all(), ucurrent
+    assert (ucurrent > 0).all(), ucurrent
+    assert (ucurrent < 1).all(), ucurrent
     #assert region.inside_ellipsoid(ucurrent.reshape((1, ndim))), (
     #    'cannot start from outside ellipsoid!', region.inside_ellipsoid(ucurrent.reshape((1, ndim))))
     if region_filter:
@@ -1004,7 +1047,7 @@ def _prepare_steps(
     if left is None or right is None:
         # in each, find the end points using the expanded ellipsoid
         # assert region.inside_ellipsoid(ucurrent.reshape((1, ndim))), ('current point outside ellipsoid!')
-        left, right = get_cropped_ellipsoid_bracket(ucurrent, v, region)
+        left, right = get_cropped_ellipsoid_bracket(ucurrent, v, region, enlargement_factor=enlargement_factor)
         #assert (ucurrent + v * left <= 1).all(), (
         #    ucurrent, v, region.ellipsoid_center, region.ellipsoid_inv_axes, region.ellipsoid_invcov, region.enlarge)
         #assert (ucurrent + v * right <= 1).all(), (
@@ -1131,7 +1174,7 @@ class AHARMSampler(StepSampler):
     def __init__(
         self, nsteps, adaptive_nsteps=False, max_nsteps=1000,
         region_filter=False, log=False, generate_direction=generate_region_random_direction,
-        orthogonalise=True, max_ndraw=10,
+        orthogonalise=True, max_ndraw=10, enlargement_factor=1,
     ):
         """Initialise vectorised hit-and-run/slice sampler.
 
@@ -1195,6 +1238,7 @@ class AHARMSampler(StepSampler):
         self.adaptive_nsteps_needs_mean_pair_distance = False
         self.orthogonalise = orthogonalise
         self.max_ndraw = max_ndraw
+        self.enlargement_factor = enlargement_factor
 
         self.logstat = []
         self.logstat_labels = ['rejection_rate', 'steps']
@@ -1230,11 +1274,11 @@ class AHARMSampler(StepSampler):
         # find most recent point in history conforming to current Lmin
         #print("__next__ called with last=", self.last)
         ui, Li = self.last
-        if Li is not None and not Li >= Lmin:
+        if Li is not None and not Li > Lmin:
             print("wandered out of L constraint; resetting", ui[0])
             ui, Li = None, None
 
-        if ui is not None and not region.inside_ellipsoid(ui.reshape((1, -1))):
+        if ui is not None and self.region_filter and not region.inside_ellipsoid(ui.reshape((1, -1))):
             print("wandered out of ellipsoid; resetting", ui[0])
             ui, Li = None, None
 
@@ -1244,7 +1288,6 @@ class AHARMSampler(StepSampler):
                 if Lj > Lmin and region.inside(uj.reshape((1,-1))) and (tregion is None or tregion.inside(transform(uj.reshape((1, -1))))):
                     ui, Li = uj, Lj
                     print("recovering at point %d/%d " % (j+1, len(self.history)))
-                    assert False
                     self.last = ui, Li
 
                     # pj = transform(uj.reshape((1, -1)))
@@ -1264,12 +1307,16 @@ class AHARMSampler(StepSampler):
             self.nrejects = 0
 
             # choose a new random starting point
-            i = np.random.randint(len(us))
-            self.starti = i
-            ui = us[i,:]
-            assert region.inside_ellipsoid(ui.reshape((1, -1)))
-            assert np.logical_and(ui > 0, ui < 1).all(), ui
-            Li = Ls[i]
+            while True:
+                i = np.random.randint(len(us))
+                self.starti = i
+                ui = us[i,:]
+                if self.region_filter:
+                    assert region.inside_ellipsoid(ui.reshape((1, -1)))
+                assert np.logical_and(ui > 0, ui < 1).all(), ui
+                Li = Ls[i]
+                if Li > Lmin:
+                    break
             self.last = ui, Li
             self.history.append((ui.copy(), Li.copy()))
             del i
@@ -1302,7 +1349,7 @@ class AHARMSampler(StepSampler):
         point_sequence, point_expectation, self.current_interval, nsteps_prepared = _prepare_steps(
             self.nsteps_done, self.nsteps, self.directions, ndraw,
             self.current_interval, loglike, transform, region, ndim, self.region_filter, 
-            Lmin, verbose
+            Lmin, verbose, enlargement_factor=self.enlargement_factor
         )
         point_sequence, t_point_sequence, L, Lmask, indices_deviating, nc, truncated = _evaluate_with_filter(
             self.region_filter, loglike, transform, Lmin, region, tregion,
@@ -1377,17 +1424,3 @@ class AHARMSampler(StepSampler):
         self.last = None, None
         self.history = []
         self.nrejects = 0
-
-"""
-    def generate_new_interval(self, ui, region):
-        v = self.generate_direction(ui, region)
-        assert region.inside_ellipsoid(ui.reshape((1, -1)))
-        assert (ui > 0).all(), ui
-        assert (ui < 1).all(), ui
-
-        # use region ellipsoid to identify limits
-        # rotate line so that ellipsoid is a sphere
-        left, right = ellipsoid_bracket(ui, v, region.ellipsoid_center, region.ellipsoid_inv_axes, region.enlarge)
-        left, right, _, _ = crop_bracket_at_unit_cube(ui, v, left, right)
-        self.interval = (v, left, right, 0)
-"""
