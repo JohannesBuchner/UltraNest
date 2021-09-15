@@ -17,7 +17,7 @@ from numpy import log, exp, logaddexp
 import numpy as np
 
 from .utils import create_logger, make_run_dir, resample_equal, vol_prefactor, vectorize, listify as _listify
-from .utils import is_affine_transform, normalised_kendall_tau_distance, todo_points_for_this_process
+from .utils import is_affine_transform, normalised_kendall_tau_distance, distributed_work_chunk_size
 from ultranest.mlfriends import MLFriends, AffineLayer, ScalingLayer, find_nearby, WrappingEllipsoid, RobustEllipsoidRegion
 from .store import HDF5PointStore, TextPointStore, NullPointStore
 from .viz import get_default_viz_callback, nicelogger
@@ -1337,7 +1337,7 @@ class ReactiveNestedSampler(object):
         if self.log and num_live_points_missing > 0:
             self.logger.info('Sampling %d live points from prior ...', num_live_points_missing)
         if num_live_points_missing > 0:
-            num_live_points_todo = todo_points_for_this_process(self.mpi_rank, num_live_points_missing, self.mpi_size)
+            num_live_points_todo = distributed_work_chunk_size(num_live_points_missing, self.mpi_rank, self.mpi_size)
 
             active_u = np.random.uniform(size=(num_live_points_todo, self.x_dim))
             active_v = self.transform(active_u)

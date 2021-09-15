@@ -442,17 +442,18 @@ def verify_gradient(ndim, transform, loglike, gradient, verbose=False, combinati
         assert np.allclose(Lprime, Lexpected, atol=0.1 / ndim), \
             (u, uprime, theta, thetaprime, grad, eps * grad / L, L, Lprime, Lexpected)
 
-def todo_points_for_this_process(mpi_rank, num_live_points_missing, mpi_size):
+def distributed_work_chunk_size(num_total_tasks, mpi_rank, mpi_size):
     """
-    Calculates number of living points to be evaluated by this process.
+    Computes the number of tasks for process number `mpi_rank`, so that
+    `num_total_tasks` tasks are spread uniformly among `mpi_size` processes.
 
     Parameters
     ----------
+    num_total_tasks : int
+        total number of tasks to be split
     mpi_rank : int
         process id
-    num_live_points_missing : int
-        number of live points to be splitted
     mpi_size : int
         total number of processes
     """
-    return (num_live_points_missing + mpi_size - 1 - mpi_rank) // mpi_size
+    return (num_total_tasks + mpi_size - 1 - mpi_rank) // mpi_size
