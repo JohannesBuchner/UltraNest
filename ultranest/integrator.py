@@ -1337,12 +1337,8 @@ class ReactiveNestedSampler(object):
         if self.log and num_live_points_missing > 0:
             self.logger.info('Sampling %d live points from prior ...', num_live_points_missing)
         if num_live_points_missing > 0:
-            if self.mpi_rank != 0:
-                num_live_points_todo = num_live_points_missing // self.mpi_size
-            else:
-                # rank 0 picks up what the others did not do
-                num_live_points_todo = num_live_points_missing - (num_live_points_missing // self.mpi_size) * (self.mpi_size - 1)
-
+            num_live_points_todo = (num_live_points_missing + self.mpi_size - 1 - self.mpi_rank) // self.mpi_size
+ 
             active_u = np.random.uniform(size=(num_live_points_todo, self.x_dim))
             active_v = self.transform(active_u)
             active_logl = self.loglike(active_v)
