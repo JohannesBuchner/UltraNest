@@ -2,8 +2,9 @@ import numpy as np
 import tempfile
 import os
 from ultranest.utils import vectorize, is_affine_transform, normalised_kendall_tau_distance, make_run_dir
+from ultranest.utils import distributed_work_chunk_size
 from numpy.testing import assert_allclose
-
+import pytest
 
 def test_vectorize():
 	
@@ -63,3 +64,12 @@ def test_make_log_dirs():
 			pass
 	finally:
 		shutil.rmtree(filepath)
+
+@pytest.mark.parametrize("mpi_size", [1, 4, 10, 37, 53, 100, 1000, 513])
+@pytest.mark.parametrize("num_live_points_missing", [0, 1, 4, 10, 17, 31, 100, 1000, 513])
+def test_distributed_work_chunk_size(mpi_size, num_live_points_missing):
+    processes = range(mpi_size)
+    todo = [distributed_work_chunk_size(num_live_points_missing, rank, mpi_size) for rank in processes]
+    assert sum(todo) == num_live_points_missing
+    assert max(todo) - min(todo) in {0, 1}
+

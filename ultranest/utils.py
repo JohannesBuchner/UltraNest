@@ -441,3 +441,19 @@ def verify_gradient(ndim, transform, loglike, gradient, verbose=False, combinati
             print("expectation was L=", Lexpected, ", given", Lref, grad, eps)
         assert np.allclose(Lprime, Lexpected, atol=0.1 / ndim), \
             (u, uprime, theta, thetaprime, grad, eps * grad / L, L, Lprime, Lexpected)
+
+def distributed_work_chunk_size(num_total_tasks, mpi_rank, mpi_size):
+    """
+    Computes the number of tasks for process number `mpi_rank`, so that
+    `num_total_tasks` tasks are spread uniformly among `mpi_size` processes.
+
+    Parameters
+    ----------
+    num_total_tasks : int
+        total number of tasks to be split
+    mpi_rank : int
+        process id
+    mpi_size : int
+        total number of processes
+    """
+    return (num_total_tasks + mpi_size - 1 - mpi_rank) // mpi_size
