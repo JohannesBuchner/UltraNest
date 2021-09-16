@@ -2687,7 +2687,7 @@ class ReactiveNestedSampler(object):
             dump_tree(os.path.join(self.logs['results'], 'tree.hdf5'),
                       self.root.children, self.pointpile)
 
-    def print_results(self, logZ=True, posterior=True):
+    def print_results(self, logZ=True, posterior=True, use_unicode=True):
         """Give summary of marginal likelihood and parameters."""
         if self.log:
             print()
@@ -2704,12 +2704,31 @@ class ReactiveNestedSampler(object):
                 sigma = v.std()
                 med = v.mean()
                 if sigma == 0:
-                    i = 3
+                    j = 3
                 else:
-                    i = max(0, int(-np.floor(np.log10(sigma))) + 1)
-                fmt = '%%.%df' % i
-                fmts = '\t'.join(['    %-20s' + fmt + " +- " + fmt])
-                print(fmts % (p, med, sigma))
+                    j = max(0, int(-np.floor(np.log10(sigma))) + 1)
+                fmt = '%%.%df' % j
+                try:
+                    if not use_unicode:
+                        raise UnicodeEncodeError("")
+                    # make fancy terminal visualisation on a best-effort basis
+                    ' ▁▂▃▄▅▆▇██'.encode(sys.stdout.encoding)
+                    H, edges = np.histogram(v, bins=40)
+                    # add a bit of padding, but not outside parameter limits
+                    lo, hi = edges[0], edges[-1]
+                    step = edges[1] - lo
+                    lo = max(self.transform_limits[i,0], lo - 2 * step)
+                    hi = min(self.transform_limits[i,1], hi + 2 * step)
+                    H, edges = np.histogram(v, bins=np.linspace(lo, hi, 40))
+                    lo, hi = edges[0], edges[-1]
+                    
+                    dist = ''.join([' ▁▂▃▄▅▆▇██'[i] for i in np.ceil(H * 7 / H.max()).astype(int)])
+                    print('    %-20s: %-6s│%s│%-6s    %s +- %s' % (p, fmt % lo, dist, fmt % hi, fmt % med, fmt % sigma))
+                except:
+                    fmts = '    %-20s' + fmt + " +- " + fmt
+                    print(fmts % (p, med, sigma))
+            print()
+
 
     def plot(self):
         """Make corner, run and trace plots."""
