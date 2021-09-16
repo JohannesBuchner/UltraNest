@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ultranest.store &mdash; UltraNest 3.3.0 documentation</title>
+  <title>ultranest.store &mdash; UltraNest 3.3.2 documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
-        <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.18.0/dist/embed-amd.js"></script>
+        <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.20.0/dist/embed-amd.js"></script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
@@ -70,7 +70,7 @@
             
             
               <div class="version">
-                3.3.0
+                3.3.2
               </div>
             
           
@@ -340,6 +340,7 @@
 
 <span class="sd">    The format is a HDF5 file, which grows as needed.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">FILES_OPENED</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">ncols</span><span class="p">,</span> <span class="o">**</span><span class="n">h5_file_args</span><span class="p">):</span>
@@ -352,7 +353,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">ncols</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ncols</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stack_empty</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="n">h5_file_args</span><span class="p">[</span><span class="s1">&#39;mode&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">h5_file_args</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;mode&#39;</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span>
-        
+
         <span class="c1"># An annoying part of jupyter notebooks is that they keep all the variables</span>
         <span class="c1"># This means a old pointstore can survive, as we don&#39;t usually close them</span>
         <span class="c1"># Opening a new one with the same path will then fail with</span>

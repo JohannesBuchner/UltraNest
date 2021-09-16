@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ultranest package &mdash; UltraNest 3.3.0 documentation</title>
+  <title>ultranest package &mdash; UltraNest 3.3.2 documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
-        <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.18.0/dist/embed-amd.js"></script>
+        <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.20.0/dist/embed-amd.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -72,7 +72,7 @@
             
             
               <div class="version">
-                3.3.0
+                3.3.2
               </div>
             
           
@@ -994,7 +994,35 @@ The final coordinate is the correction weight.</p></li>
 <dl class="py function">
 <dt id="ultranest.hotstart.reuse_samples">
 <code class="sig-prename descclassname">ultranest.hotstart.</code><code class="sig-name descname">reuse_samples</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">param_names</span></em>, <em class="sig-param"><span class="n">loglike</span></em>, <em class="sig-param"><span class="n">points</span></em>, <em class="sig-param"><span class="n">logl</span></em>, <em class="sig-param"><span class="n">logw</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">logz</span><span class="o">=</span><span class="default_value">0.0</span></em>, <em class="sig-param"><span class="n">logzerr</span><span class="o">=</span><span class="default_value">0.0</span></em>, <em class="sig-param"><span class="n">upoints</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">batchsize</span><span class="o">=</span><span class="default_value">128</span></em>, <em class="sig-param"><span class="n">vectorized</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">log_weight_threshold</span><span class="o">=</span><span class="default_value">- 10</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/hotstart.html#reuse_samples"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.hotstart.reuse_samples" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Reweight existing nested sampling run onto a new loglikelihood.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>param_names</strong> (<em>list of strings</em>) – Names of the parameters</p></li>
+<li><p><strong>loglike</strong> (<em>function</em>) – New likelihood function</p></li>
+<li><p><strong>points</strong> (<em>np.array of shape</em><em> (</em><em>npoints</em><em>, </em><em>ndim</em><em>)</em>) – Equally weighted (unless logw is passed) posterior points</p></li>
+<li><p><strong>logl</strong> (<em>np.array</em><em>(</em><em>npoints</em><em>)</em>) – Previously likelihood values of points</p></li>
+<li><p><strong>logw</strong> (<em>np.array</em><em>(</em><em>npoints</em><em>)</em>) – Log-weights of existing points.</p></li>
+<li><p><strong>logz</strong> (<em>float</em>) – Previous evidence / marginal likelihood value.</p></li>
+<li><p><strong>logzerr</strong> (<em>float</em>) – Previous evidence / marginal likelihood uncertainty.</p></li>
+<li><p><strong>upoints</strong> (<em>np.array of shape</em><em> (</em><em>npoints</em><em>, </em><em>ndim</em><em>)</em>) – Posterior points before transformation.</p></li>
+<li><p><strong>vectorized</strong> (<em>bool</em>) – Whether loglike function is vectorized</p></li>
+<li><p><strong>batchsize</strong> (<em>int</em>) – Number of points simultaneously passed to vectorized loglike function</p></li>
+<li><p><strong>log_weight_threshold</strong> (<em>float</em>) – Lowest log-weight to consider</p></li>
+<li><p><strong>Returns</strong> – </p></li>
+<li><p><strong>---------</strong> – </p></li>
+<li><p><strong>results</strong> (<em>dict</em>) – All information of the run. Important keys:
+Number of nested sampling iterations (niter),
+Evidence estimate (logz),
+Effective Sample Size (ess),
+weighted samples (weighted_samples),
+equally weighted samples (samples),
+best-fit point information (maximum_likelihood),
+posterior summaries (posterior).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 </div>
 <div class="section" id="module-ultranest.integrator">
@@ -1053,7 +1081,7 @@ Values from 0 (highly conservative) to 1 (extremely negligent).</p></li>
 </dl>
 <dl class="py method">
 <dt id="ultranest.integrator.ReactiveNestedSampler.run">
-<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param">update_interval_volume_fraction=0.8</em>, <em class="sig-param">update_interval_ncall=None</em>, <em class="sig-param">log_interval=None</em>, <em class="sig-param">show_status=True</em>, <em class="sig-param">viz_callback='auto'</em>, <em class="sig-param">dlogz=0.5</em>, <em class="sig-param">dKL=0.5</em>, <em class="sig-param">frac_remain=0.01</em>, <em class="sig-param">Lepsilon=0.001</em>, <em class="sig-param">min_ess=400</em>, <em class="sig-param">max_iters=None</em>, <em class="sig-param">max_ncalls=None</em>, <em class="sig-param">max_num_improvement_loops=-1</em>, <em class="sig-param">min_num_live_points=400</em>, <em class="sig-param">cluster_num_live_points=40</em>, <em class="sig-param">insertion_test_window=10</em>, <em class="sig-param">insertion_test_zscore_threshold=2</em>, <em class="sig-param">region_class=&lt;class 'ultranest.mlfriends.MLFriends'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/integrator.html#ReactiveNestedSampler.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.integrator.ReactiveNestedSampler.run" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param">update_interval_volume_fraction=0.8</em>, <em class="sig-param">update_interval_ncall=None</em>, <em class="sig-param">log_interval=None</em>, <em class="sig-param">show_status=True</em>, <em class="sig-param">viz_callback='auto'</em>, <em class="sig-param">dlogz=0.5</em>, <em class="sig-param">dKL=0.5</em>, <em class="sig-param">frac_remain=0.01</em>, <em class="sig-param">Lepsilon=0.001</em>, <em class="sig-param">min_ess=400</em>, <em class="sig-param">max_iters=None</em>, <em class="sig-param">max_ncalls=None</em>, <em class="sig-param">max_num_improvement_loops=-1</em>, <em class="sig-param">min_num_live_points=400</em>, <em class="sig-param">cluster_num_live_points=40</em>, <em class="sig-param">insertion_test_window=10</em>, <em class="sig-param">insertion_test_zscore_threshold=4</em>, <em class="sig-param">region_class=&lt;class 'ultranest.mlfriends.MLFriends'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/integrator.html#ReactiveNestedSampler.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.integrator.ReactiveNestedSampler.run" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run until target convergence criteria are fulfilled.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1086,7 +1114,7 @@ This number limits the number of improvement loops.</p></li>
 <li><p><strong>cluster_num_live_points</strong> (<em>int</em>) – require at least this many live points per detected cluster</p></li>
 <li><p><strong>insertion_test_zscore_threshold</strong> (<em>float</em>) – z-score used as a threshold for the insertion order test.
 Set to infinity to disable.</p></li>
-<li><p><strong>insertion_test_window</strong> (<em>float</em>) – Number of iterations after which the insertion order test is reset.</p></li>
+<li><p><strong>insertion_test_window</strong> (<em>int</em>) – Number of iterations after which the insertion order test is reset.</p></li>
 <li><p><strong>region_class</strong> (<a class="reference internal" href="#id6" title="ultranest.mlfriends.MLFriends"><em>MLFriends</em></a><em> or </em><a class="reference internal" href="#id20" title="ultranest.mlfriends.RobustEllipsoidRegion"><em>RobustEllipsoidRegion</em></a>) – Whether to use MLFriends+ellipsoidal+tellipsoidal region (better for multi-modal problems)
 or just ellipsoidal sampling (faster for high-dimensional, gaussian-like problems).</p></li>
 </ul>
@@ -1096,7 +1124,7 @@ or just ellipsoidal sampling (faster for high-dimensional, gaussian-like problem
 
 <dl class="py method">
 <dt id="ultranest.integrator.ReactiveNestedSampler.run_iter">
-<code class="sig-name descname">run_iter</code><span class="sig-paren">(</span><em class="sig-param">update_interval_volume_fraction=0.2</em>, <em class="sig-param">update_interval_ncall=None</em>, <em class="sig-param">log_interval=None</em>, <em class="sig-param">dlogz=0.5</em>, <em class="sig-param">dKL=0.5</em>, <em class="sig-param">frac_remain=0.01</em>, <em class="sig-param">Lepsilon=0.001</em>, <em class="sig-param">min_ess=400</em>, <em class="sig-param">max_iters=None</em>, <em class="sig-param">max_ncalls=None</em>, <em class="sig-param">max_num_improvement_loops=-1</em>, <em class="sig-param">min_num_live_points=400</em>, <em class="sig-param">cluster_num_live_points=40</em>, <em class="sig-param">show_status=True</em>, <em class="sig-param">viz_callback='auto'</em>, <em class="sig-param">insertion_test_window=10</em>, <em class="sig-param">insertion_test_zscore_threshold=2</em>, <em class="sig-param">region_class=&lt;class 'ultranest.mlfriends.MLFriends'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/integrator.html#ReactiveNestedSampler.run_iter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.integrator.ReactiveNestedSampler.run_iter" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">run_iter</code><span class="sig-paren">(</span><em class="sig-param">update_interval_volume_fraction=0.2</em>, <em class="sig-param">update_interval_ncall=None</em>, <em class="sig-param">log_interval=None</em>, <em class="sig-param">dlogz=0.5</em>, <em class="sig-param">dKL=0.5</em>, <em class="sig-param">frac_remain=0.01</em>, <em class="sig-param">Lepsilon=0.001</em>, <em class="sig-param">min_ess=400</em>, <em class="sig-param">max_iters=None</em>, <em class="sig-param">max_ncalls=None</em>, <em class="sig-param">max_num_improvement_loops=-1</em>, <em class="sig-param">min_num_live_points=400</em>, <em class="sig-param">cluster_num_live_points=40</em>, <em class="sig-param">show_status=True</em>, <em class="sig-param">viz_callback='auto'</em>, <em class="sig-param">insertion_test_window=10000</em>, <em class="sig-param">insertion_test_zscore_threshold=2</em>, <em class="sig-param">region_class=&lt;class 'ultranest.mlfriends.MLFriends'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/integrator.html#ReactiveNestedSampler.run_iter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.integrator.ReactiveNestedSampler.run_iter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Iterate towards convergence.</p>
 <p>Use as an iterator like so:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">sampler</span><span class="o">.</span><span class="n">run_iter</span><span class="p">(</span><span class="o">...</span><span class="p">):</span>
@@ -1268,7 +1296,7 @@ ReactiveNestedSampler.run return values</p></li>
 <dl class="py class">
 <dt id="ultranest.mlfriends.AffineLayer">
 <em class="property">class </em><code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">AffineLayer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ctr</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">T</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">invT</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">nclusters</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">wrapped_dims</span><span class="o">=</span><span class="default_value">[]</span></em>, <em class="sig-param"><span class="n">clusterids</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.mlfriends.AffineLayer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#id27" title="ultranest.mlfriends.ScalingLayer"><code class="xref py py-class docutils literal notranslate"><span class="pre">ultranest.mlfriends.ScalingLayer</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#id28" title="ultranest.mlfriends.ScalingLayer"><code class="xref py py-class docutils literal notranslate"><span class="pre">ultranest.mlfriends.ScalingLayer</span></code></a></p>
 <p>Affine whitening transformation.</p>
 <p>Learns the covariance of points.</p>
 <p>Initialise layer.</p>
@@ -1356,7 +1384,7 @@ likelihood constraints</p></li>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>u</strong> (<em>array of vectors</em>) – live points</p></li>
-<li><p><strong>transformLayer</strong> (<a class="reference internal" href="#id27" title="ultranest.mlfriends.ScalingLayer"><em>ScalingLayer</em></a><em> or </em><a class="reference internal" href="#id0" title="ultranest.mlfriends.AffineLayer"><em>AffineLayer</em></a>) – whitening layer</p></li>
+<li><p><strong>transformLayer</strong> (<a class="reference internal" href="#id28" title="ultranest.mlfriends.ScalingLayer"><em>ScalingLayer</em></a><em> or </em><a class="reference internal" href="#id0" title="ultranest.mlfriends.AffineLayer"><em>AffineLayer</em></a>) – whitening layer</p></li>
 </ul>
 </dd>
 </dl>
@@ -1420,17 +1448,17 @@ likelihood constraints</p></li>
 <dt id="ultranest.mlfriends.MLFriends.estimate_volume">
 <code class="sig-name descname">estimate_volume</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.mlfriends.MLFriends.estimate_volume" title="Permalink to this definition">¶</a></dt>
 <dd><p>Estimate the order of magnitude of the volume around a single point
-given the current transformLayer and</p>
+given the current transformLayer.</p>
 <p>Does not account for:
 * the number of live points
 * their overlap
 * the intersection with the unit cube borders</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p></p>
+<dd class="field-odd"><p><strong>volume</strong> – Volume</p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p>volume (float)</p>
+<dd class="field-even"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1527,7 +1555,7 @@ for each point in <code class="docutils literal notranslate"><span class="pre">p
 <dd><p>Update transformation layer. Invalidates attribute <cite>maxradius</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>transformLayer</strong> (<a class="reference internal" href="#id27" title="ultranest.mlfriends.ScalingLayer"><em>ScalingLayer</em></a><em> or </em><a class="reference internal" href="#id0" title="ultranest.mlfriends.AffineLayer"><em>AffineLayer</em></a>) – t-space transformation layer</p>
+<dd class="field-odd"><p><strong>transformLayer</strong> (<a class="reference internal" href="#id28" title="ultranest.mlfriends.ScalingLayer"><em>ScalingLayer</em></a><em> or </em><a class="reference internal" href="#id0" title="ultranest.mlfriends.AffineLayer"><em>AffineLayer</em></a>) – t-space transformation layer</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1551,7 +1579,7 @@ likelihood constraints</p></li>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>u</strong> (<em>array of vectors</em>) – live points</p></li>
-<li><p><strong>transformLayer</strong> (<a class="reference internal" href="#id27" title="ultranest.mlfriends.ScalingLayer"><em>ScalingLayer</em></a><em> or </em><a class="reference internal" href="#id0" title="ultranest.mlfriends.AffineLayer"><em>AffineLayer</em></a>) – whitening layer</p></li>
+<li><p><strong>transformLayer</strong> (<a class="reference internal" href="#id28" title="ultranest.mlfriends.ScalingLayer"><em>ScalingLayer</em></a><em> or </em><a class="reference internal" href="#id0" title="ultranest.mlfriends.AffineLayer"><em>AffineLayer</em></a>) – whitening layer</p></li>
 </ul>
 </dd>
 </dl>
@@ -1574,6 +1602,21 @@ likelihood constraints</p></li>
 <li><p><strong>max_radius</strong> (<em>float</em>) – square radius of enclosing ellipsoid.</p></li>
 </ul>
 </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="ultranest.mlfriends.RobustEllipsoidRegion.estimate_volume">
+<code class="sig-name descname">estimate_volume</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.mlfriends.RobustEllipsoidRegion.estimate_volume" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimate the volume of the ellipsoid.</p>
+<p>Does not account for the intersection with the unit cube borders.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>logvolume</strong> – logarithm of the volume.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1695,8 +1738,8 @@ Does nothing if there are no wrapped/circular parameters.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>points</strong> (<em>array</em>) – points to use for optimization (in u-space)</p></li>
 <li><p><strong>largest gap in live points and wrap parameter space there.</strong> (<em>Find</em>) – </p></li>
-<li><p><strong>example</strong> (<em>For</em>) – <a href="#id46"><span class="problematic" id="id47">|*****           ****|</span></a></p></li>
-<li><p><strong>a wrapped axis has::</strong> (<em>if</em>) – <a href="#id48"><span class="problematic" id="id49">|*****           ****|</span></a></p></li>
+<li><p><strong>example</strong> (<em>For</em>) – <a href="#id47"><span class="problematic" id="id48">|*****           ****|</span></a></p></li>
+<li><p><strong>a wrapped axis has::</strong> (<em>if</em>) – <a href="#id49"><span class="problematic" id="id50">|*****           ****|</span></a></p></li>
 <li><p><strong>would identify the middle</strong> (<em>it</em>) – </p></li>
 <li><p><strong>it</strong> (<em>subtract</em>) – </p></li>
 <li><p><strong>that the new space</strong> (<em>so</em>) – </p></li>
@@ -1921,7 +1964,7 @@ for <code class="docutils literal notranslate"><span class="pre">n</span></code>
 <dl class="py class">
 <dt id="id0">
 <em class="property">class </em><code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">AffineLayer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ctr</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">T</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">invT</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">nclusters</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">wrapped_dims</span><span class="o">=</span><span class="default_value">[]</span></em>, <em class="sig-param"><span class="n">clusterids</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id0" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#id27" title="ultranest.mlfriends.ScalingLayer"><code class="xref py py-class docutils literal notranslate"><span class="pre">ultranest.mlfriends.ScalingLayer</span></code></a></p>
+<dd><p>Bases: <a class="reference internal" href="#id28" title="ultranest.mlfriends.ScalingLayer"><code class="xref py py-class docutils literal notranslate"><span class="pre">ultranest.mlfriends.ScalingLayer</span></code></a></p>
 <p>Affine whitening transformation.</p>
 <p>Learns the covariance of points.</p>
 <p>Initialise layer.</p>
@@ -2009,7 +2052,7 @@ likelihood constraints</p></li>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>u</strong> (<em>array of vectors</em>) – live points</p></li>
-<li><p><strong>transformLayer</strong> (<a class="reference internal" href="#id27" title="ultranest.mlfriends.ScalingLayer"><em>ScalingLayer</em></a><em> or </em><a class="reference internal" href="#id0" title="ultranest.mlfriends.AffineLayer"><em>AffineLayer</em></a>) – whitening layer</p></li>
+<li><p><strong>transformLayer</strong> (<a class="reference internal" href="#id28" title="ultranest.mlfriends.ScalingLayer"><em>ScalingLayer</em></a><em> or </em><a class="reference internal" href="#id0" title="ultranest.mlfriends.AffineLayer"><em>AffineLayer</em></a>) – whitening layer</p></li>
 </ul>
 </dd>
 </dl>
@@ -2073,17 +2116,17 @@ likelihood constraints</p></li>
 <dt id="id11">
 <code class="sig-name descname">estimate_volume</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id11" title="Permalink to this definition">¶</a></dt>
 <dd><p>Estimate the order of magnitude of the volume around a single point
-given the current transformLayer and</p>
+given the current transformLayer.</p>
 <p>Does not account for:
 * the number of live points
 * their overlap
 * the intersection with the unit cube borders</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p></p>
+<dd class="field-odd"><p><strong>volume</strong> – Volume</p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p>volume (float)</p>
+<dd class="field-even"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2180,7 +2223,7 @@ for each point in <code class="docutils literal notranslate"><span class="pre">p
 <dd><p>Update transformation layer. Invalidates attribute <cite>maxradius</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>transformLayer</strong> (<a class="reference internal" href="#id27" title="ultranest.mlfriends.ScalingLayer"><em>ScalingLayer</em></a><em> or </em><a class="reference internal" href="#id0" title="ultranest.mlfriends.AffineLayer"><em>AffineLayer</em></a>) – t-space transformation layer</p>
+<dd class="field-odd"><p><strong>transformLayer</strong> (<a class="reference internal" href="#id28" title="ultranest.mlfriends.ScalingLayer"><em>ScalingLayer</em></a><em> or </em><a class="reference internal" href="#id0" title="ultranest.mlfriends.AffineLayer"><em>AffineLayer</em></a>) – t-space transformation layer</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2204,7 +2247,7 @@ likelihood constraints</p></li>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>u</strong> (<em>array of vectors</em>) – live points</p></li>
-<li><p><strong>transformLayer</strong> (<a class="reference internal" href="#id27" title="ultranest.mlfriends.ScalingLayer"><em>ScalingLayer</em></a><em> or </em><a class="reference internal" href="#id0" title="ultranest.mlfriends.AffineLayer"><em>AffineLayer</em></a>) – whitening layer</p></li>
+<li><p><strong>transformLayer</strong> (<a class="reference internal" href="#id28" title="ultranest.mlfriends.ScalingLayer"><em>ScalingLayer</em></a><em> or </em><a class="reference internal" href="#id0" title="ultranest.mlfriends.AffineLayer"><em>AffineLayer</em></a>) – whitening layer</p></li>
 </ul>
 </dd>
 </dl>
@@ -2233,7 +2276,22 @@ likelihood constraints</p></li>
 
 <dl class="py method">
 <dt id="id22">
-<code class="sig-name descname">inside</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pts</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id22" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">estimate_volume</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id22" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimate the volume of the ellipsoid.</p>
+<p>Does not account for the intersection with the unit cube borders.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>logvolume</strong> – logarithm of the volume.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="id23">
+<code class="sig-name descname">inside</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pts</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id23" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check if inside region.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -2250,8 +2308,8 @@ for each point in <code class="docutils literal notranslate"><span class="pre">p
 </dd></dl>
 
 <dl class="py method">
-<dt id="id23">
-<code class="sig-name descname">sample</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nsamples</span><span class="o">=</span><span class="default_value">100</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id23" title="Permalink to this definition">¶</a></dt>
+<dt id="id24">
+<code class="sig-name descname">sample</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nsamples</span><span class="o">=</span><span class="default_value">100</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id24" title="Permalink to this definition">¶</a></dt>
 <dd><p>Draw uniformly sampled points from MLFriends region.</p>
 <p>Switches automatically between the <code class="docutils literal notranslate"><span class="pre">sampling_methods</span></code> (attribute).</p>
 <dl class="field-list simple">
@@ -2269,24 +2327,24 @@ for each point in <code class="docutils literal notranslate"><span class="pre">p
 </dd></dl>
 
 <dl class="py method">
-<dt id="id24">
-<code class="sig-name descname">sample_from_boundingbox</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nsamples</span><span class="o">=</span><span class="default_value">100</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id24" title="Permalink to this definition">¶</a></dt>
+<dt id="id25">
+<code class="sig-name descname">sample_from_boundingbox</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nsamples</span><span class="o">=</span><span class="default_value">100</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id25" title="Permalink to this definition">¶</a></dt>
 <dd><p>Draw uniformly sampled points from MLFriends region.</p>
 <p>Draws uniformly from bounding box around region.</p>
 <p>Parameters as described in <em>sample()</em>.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="id25">
-<code class="sig-name descname">sample_from_transformed_boundingbox</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nsamples</span><span class="o">=</span><span class="default_value">100</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id25" title="Permalink to this definition">¶</a></dt>
+<dt id="id26">
+<code class="sig-name descname">sample_from_transformed_boundingbox</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nsamples</span><span class="o">=</span><span class="default_value">100</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id26" title="Permalink to this definition">¶</a></dt>
 <dd><p>Draw uniformly sampled points from MLFriends region.</p>
 <p>Draws uniformly from bounding box around region (in whitened space).</p>
 <p>Parameters as described in <em>sample()</em>.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="id26">
-<code class="sig-name descname">sample_from_wrapping_ellipsoid</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nsamples</span><span class="o">=</span><span class="default_value">100</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id26" title="Permalink to this definition">¶</a></dt>
+<dt id="id27">
+<code class="sig-name descname">sample_from_wrapping_ellipsoid</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nsamples</span><span class="o">=</span><span class="default_value">100</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id27" title="Permalink to this definition">¶</a></dt>
 <dd><p>Draw uniformly sampled points from MLFriends region.</p>
 <p>Draws uniformly from wrapping ellipsoid and filters with region.</p>
 <p>Parameters as described in <code class="docutils literal notranslate"><span class="pre">sample()</span></code>.</p>
@@ -2295,14 +2353,14 @@ for each point in <code class="docutils literal notranslate"><span class="pre">p
 </dd></dl>
 
 <dl class="py class">
-<dt id="id27">
-<em class="property">class </em><code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">ScalingLayer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mean</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">std</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">nclusters</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">wrapped_dims</span><span class="o">=</span><span class="default_value">[]</span></em>, <em class="sig-param"><span class="n">clusterids</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id27" title="Permalink to this definition">¶</a></dt>
+<dt id="id28">
+<em class="property">class </em><code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">ScalingLayer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mean</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">std</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">nclusters</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">wrapped_dims</span><span class="o">=</span><span class="default_value">[]</span></em>, <em class="sig-param"><span class="n">clusterids</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id28" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Simple transformation layer that only shifts and scales each axis.</p>
 <p>Initialise layer.</p>
 <dl class="py method">
-<dt id="id28">
-<code class="sig-name descname">create_new</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">upoints</span></em>, <em class="sig-param"><span class="n">maxradiussq</span></em>, <em class="sig-param"><span class="n">minvol</span><span class="o">=</span><span class="default_value">0.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id28" title="Permalink to this definition">¶</a></dt>
+<dt id="id29">
+<code class="sig-name descname">create_new</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">upoints</span></em>, <em class="sig-param"><span class="n">maxradiussq</span></em>, <em class="sig-param"><span class="n">minvol</span><span class="o">=</span><span class="default_value">0.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id29" title="Permalink to this definition">¶</a></dt>
 <dd><p>Learn next layer from this optimized layer’s clustering.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -2322,8 +2380,8 @@ for each point in <code class="docutils literal notranslate"><span class="pre">p
 </dd></dl>
 
 <dl class="py method">
-<dt id="id29">
-<code class="sig-name descname">optimize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">points</span></em>, <em class="sig-param"><span class="n">centered_points</span></em>, <em class="sig-param"><span class="n">clusterids</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">minvol</span><span class="o">=</span><span class="default_value">0.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id29" title="Permalink to this definition">¶</a></dt>
+<dt id="id30">
+<code class="sig-name descname">optimize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">points</span></em>, <em class="sig-param"><span class="n">centered_points</span></em>, <em class="sig-param"><span class="n">clusterids</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">minvol</span><span class="o">=</span><span class="default_value">0.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id30" title="Permalink to this definition">¶</a></dt>
 <dd><p>Optimize layer.</p>
 <p>Estimates mean and std of points.</p>
 <dl class="field-list simple">
@@ -2339,8 +2397,8 @@ for each point in <code class="docutils literal notranslate"><span class="pre">p
 </dd></dl>
 
 <dl class="py method">
-<dt id="id30">
-<code class="sig-name descname">optimize_wrap</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">points</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id30" title="Permalink to this definition">¶</a></dt>
+<dt id="id31">
+<code class="sig-name descname">optimize_wrap</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">points</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id31" title="Permalink to this definition">¶</a></dt>
 <dd><p>Optimization for wrapped/circular parameters.
 Does nothing if there are no wrapped/circular parameters.</p>
 <dl class="field-list simple">
@@ -2348,8 +2406,8 @@ Does nothing if there are no wrapped/circular parameters.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>points</strong> (<em>array</em>) – points to use for optimization (in u-space)</p></li>
 <li><p><strong>largest gap in live points and wrap parameter space there.</strong> (<em>Find</em>) – </p></li>
-<li><p><strong>example</strong> (<em>For</em>) – <a href="#id50"><span class="problematic" id="id51">|*****           ****|</span></a></p></li>
-<li><p><strong>a wrapped axis has::</strong> (<em>if</em>) – <a href="#id52"><span class="problematic" id="id53">|*****           ****|</span></a></p></li>
+<li><p><strong>example</strong> (<em>For</em>) – <a href="#id51"><span class="problematic" id="id52">|*****           ****|</span></a></p></li>
+<li><p><strong>a wrapped axis has::</strong> (<em>if</em>) – <a href="#id53"><span class="problematic" id="id54">|*****           ****|</span></a></p></li>
 <li><p><strong>would identify the middle</strong> (<em>it</em>) – </p></li>
 <li><p><strong>it</strong> (<em>subtract</em>) – </p></li>
 <li><p><strong>that the new space</strong> (<em>so</em>) – </p></li>
@@ -2363,40 +2421,40 @@ Does nothing if there are no wrapped/circular parameters.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="id31">
-<code class="sig-name descname">set_clusterids</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">clusterids</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">npoints</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id31" title="Permalink to this definition">¶</a></dt>
+<dt id="id32">
+<code class="sig-name descname">set_clusterids</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">clusterids</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">npoints</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id32" title="Permalink to this definition">¶</a></dt>
 <dd><p>Updates the cluster id assigned to each point.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="id32">
-<code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">u</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id32" title="Permalink to this definition">¶</a></dt>
+<dt id="id33">
+<code class="sig-name descname">transform</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">u</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id33" title="Permalink to this definition">¶</a></dt>
 <dd><p>Transform points from cube space to a whitened space.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="id33">
-<code class="sig-name descname">untransform</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ww</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id33" title="Permalink to this definition">¶</a></dt>
+<dt id="id34">
+<code class="sig-name descname">untransform</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ww</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id34" title="Permalink to this definition">¶</a></dt>
 <dd><p>Transform points from whitened space back to cube space.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="id34">
-<code class="sig-name descname">unwrap</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">wpoints</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id34" title="Permalink to this definition">¶</a></dt>
+<dt id="id35">
+<code class="sig-name descname">unwrap</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">wpoints</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id35" title="Permalink to this definition">¶</a></dt>
 <dd><p>Undo wrapping for circular parameters.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="id35">
-<code class="sig-name descname">wrap</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">points</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id35" title="Permalink to this definition">¶</a></dt>
+<dt id="id36">
+<code class="sig-name descname">wrap</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">points</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id36" title="Permalink to this definition">¶</a></dt>
 <dd><p>Wrap points for circular parameters.</p>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
-<dt id="id36">
-<em class="property">class </em><code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">WrappingEllipsoid</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">u</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id36" title="Permalink to this definition">¶</a></dt>
+<dt id="id37">
+<em class="property">class </em><code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">WrappingEllipsoid</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">u</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id37" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Ellipsoid which safely wraps points.</p>
 <p>Initialise region.</p>
@@ -2406,21 +2464,21 @@ Does nothing if there are no wrapped/circular parameters.</p>
 </dd>
 </dl>
 <dl class="py method">
-<dt id="id37">
-<code class="sig-name descname">compute_enlargement</code><span class="sig-paren">(</span><em class="sig-param">nbootstraps=50</em>, <em class="sig-param">rng=&lt;module 'numpy.random' from '/home/user/.local/lib/python3.8/site-packages/numpy/random/__init__.py'&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#id37" title="Permalink to this definition">¶</a></dt>
+<dt id="id38">
+<code class="sig-name descname">compute_enlargement</code><span class="sig-paren">(</span><em class="sig-param">nbootstraps=50</em>, <em class="sig-param">rng=&lt;module 'numpy.random' from '/home/user/.local/lib/python3.8/site-packages/numpy/random/__init__.py'&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#id38" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return ellipsoid enlargement after <cite>nbootstraps</cite> bootstrapping rounds.</p>
 <p>The wrapping ellipsoid covariance is determined in each bootstrap round.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="id38">
-<code class="sig-name descname">create_ellipsoid</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">minvol</span><span class="o">=</span><span class="default_value">0.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id38" title="Permalink to this definition">¶</a></dt>
+<dt id="id39">
+<code class="sig-name descname">create_ellipsoid</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">minvol</span><span class="o">=</span><span class="default_value">0.0</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id39" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create wrapping ellipsoid and store its center and covariance.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="id39">
-<code class="sig-name descname">inside</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">u</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id39" title="Permalink to this definition">¶</a></dt>
+<dt id="id40">
+<code class="sig-name descname">inside</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">u</span></em><span class="sig-paren">)</span><a class="headerlink" href="#id40" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check if inside wrapping ellipsoid.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -2438,8 +2496,8 @@ Does nothing if there are no wrapped/circular parameters.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="id40">
-<code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">bounding_ellipsoid</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id40" title="Permalink to this definition">¶</a></dt>
+<dt id="id41">
+<code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">bounding_ellipsoid</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id41" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate bounding ellipsoid containing a set of points x.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -2459,8 +2517,8 @@ minvol is True.</p></li>
 </dd></dl>
 
 <dl class="py function">
-<dt id="id41">
-<code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">compute_mean_pair_distance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id41" title="Permalink to this definition">¶</a></dt>
+<dt id="id42">
+<code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">compute_mean_pair_distance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id42" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute the average distance between pairs of points.
 Pairs from different clusters are excluded in the computation.</p>
 <dl class="field-list simple">
@@ -2480,8 +2538,8 @@ Pairs from different clusters are excluded in the computation.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="id42">
-<code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">find_nearby</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id42" title="Permalink to this definition">¶</a></dt>
+<dt id="id43">
+<code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">find_nearby</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id43" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets the index of a point in <cite>a</cite> within square radius <cite>radiussq</cite>, for each point <cite>b</cite> in <cite>bpts</cite>.</p>
 <p>The number is written to <cite>nnearby</cite> (of same length as <cite>bpts</cite>).
 If none is found, -1 is written.</p>
@@ -2498,8 +2556,8 @@ If none is found, -1 is written.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="id43">
-<code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">make_eigvals_positive</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id43" title="Permalink to this definition">¶</a></dt>
+<dt id="id44">
+<code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">make_eigvals_positive</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id44" title="Permalink to this definition">¶</a></dt>
 <dd><p>For the symmetric square matrix <code class="docutils literal notranslate"><span class="pre">a</span></code>, increase any zero eigenvalues
 to fulfill a target product of eigenvalues.</p>
 <dl class="field-list simple">
@@ -2519,8 +2577,8 @@ to fulfill a target product of eigenvalues.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="id44">
-<code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">update_clusters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id44" title="Permalink to this definition">¶</a></dt>
+<dt id="id45">
+<code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">update_clusters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id45" title="Permalink to this definition">¶</a></dt>
 <dd><p>Clusters <cite>upoints</cite>, so that clusters are distinct if no
 member pair is within a radius of sqrt(<cite>maxradiussq</cite>).</p>
 <dl class="field-list simple">
@@ -2548,8 +2606,8 @@ member pair is within a radius of sqrt(<cite>maxradiussq</cite>).</p>
 </dd></dl>
 
 <dl class="py function">
-<dt id="id45">
-<code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">vol_prefactor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id45" title="Permalink to this definition">¶</a></dt>
+<dt id="id46">
+<code class="sig-prename descclassname">ultranest.mlfriends.</code><code class="sig-name descname">vol_prefactor</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id46" title="Permalink to this definition">¶</a></dt>
 <dd><p>Volume constant for an <code class="docutils literal notranslate"><span class="pre">n</span></code>-dimensional sphere.</p>
 <p>for <code class="docutils literal notranslate"><span class="pre">n</span></code> even:  $$    (2pi)^(n    /2) / (2 * 4 * … * n)$$
 for <code class="docutils literal notranslate"><span class="pre">n</span></code> odd :  $$2 * (2pi)^((n-1)/2) / (1 * 3 * … * n)$$</p>
@@ -2637,8 +2695,7 @@ otherwise</p>
 <dl class="py method">
 <dt id="ultranest.netiter.BreadthFirstIterator.expand_children_of">
 <code class="sig-name descname">expand_children_of</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rootid</span></em>, <em class="sig-param"><span class="n">node</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/netiter.html#BreadthFirstIterator.expand_children_of"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.netiter.BreadthFirstIterator.expand_children_of" title="Permalink to this definition">¶</a></dt>
-<dd><p>Replace the current node with its children in the iterators
-list of active nodes.</p>
+<dd><p>Replace the current node with its children in the iterators list of active nodes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -2698,7 +2755,8 @@ list of active nodes.</p>
 <dl class="py function">
 <dt id="ultranest.netiter.count_tree_between">
 <code class="sig-prename descclassname">ultranest.netiter.</code><code class="sig-name descname">count_tree_between</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">roots</span></em>, <em class="sig-param"><span class="n">lo</span></em>, <em class="sig-param"><span class="n">hi</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/netiter.html#count_tree_between"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.netiter.count_tree_between" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the total number of nodes and maximum number of parallel edges,
+<dd><p>Compute basic statistics about a tree.</p>
+<p>Return the total number of nodes and maximum number of parallel edges,
 but only considering a interval of the tree.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -2910,12 +2968,48 @@ if True, draw a random sample</p></li>
 <dl class="py method">
 <dt id="ultranest.netiter.MultiCounter.insertion_order_runlength">
 <em class="property">property </em><code class="sig-name descname">insertion_order_runlength</code><a class="headerlink" href="#ultranest.netiter.MultiCounter.insertion_order_runlength" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Get shortest insertion order test run.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><strong>shortest_run_length</strong> (<em>int</em>) – Shortest insertion order test run length.</p></li>
+<li><p><em>The MWW (U-test) statistic is considered at each iteration.</em></p></li>
+<li><p>When it exceeds a threshold (4 sigma by default, <cite>insertion_order_threshold</cite>),</p></li>
+<li><p><em>the statistic is reset. The run length is recorded.</em></p></li>
+<li><p><em>This property returns the shortest run length of all recorded</em></p></li>
+<li><p><em>so far, or infinity otherwise.</em></p></li>
+<li><p><em>At 4 sigma, run lengths no shorter than 10^5.5 are expected</em></p></li>
+<li><p><em>in unbiased runs.</em></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="ultranest.netiter.MultiCounter.insertion_order_converged">
 <em class="property">property </em><code class="sig-name descname">insertion_order_converged</code><a class="headerlink" href="#ultranest.netiter.MultiCounter.insertion_order_converged" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Check convergence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><strong>converged</strong> (<em>bool</em>) – Whether the run is unbiased according to a U-test.</p></li>
+<li><p><em>The MWW (U-test) statistic is considered at each iteration.</em></p></li>
+<li><p>When it exceeds a threshold (4 sigma by default, <cite>insertion_order_threshold</cite>),</p></li>
+<li><p><em>the statistic is reset. The run length is recorded.</em></p></li>
+<li><p><em>This property returns the shortest run length of all recorded</em></p></li>
+<li><p><em>so far, or infinity otherwise.</em></p></li>
+<li><p><em>At 4 sigma, run lengths no shorter than 10^5.5 are expected</em></p></li>
+<li><p><em>in unbiased runs. If the number of runs exceeds the number</em></p></li>
+<li><p><em>of iterations divided by 10^5.5, the run is likely biased</em></p></li>
+<li><p><em>and not converged.</em></p></li>
+<li><p><em>If not converged, the step sampler may need to use more steps,</em></p></li>
+<li><p><em>or the problem needs to be  reparametrized.</em></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt id="ultranest.netiter.MultiCounter.passing_node">
@@ -3010,6 +3104,7 @@ Rank test score (insert_order).</p></li>
 </div>
 <div class="section" id="module-ultranest.ordertest">
 <span id="ultranest-ordertest-module"></span><h2>ultranest.ordertest module<a class="headerlink" href="#module-ultranest.ordertest" title="Permalink to this headline">¶</a></h2>
+<p>Mann-Whitney-Wilcoxon U test for a uniform distribution of integers.</p>
 <p>This implements the same idea as <a class="reference external" href="https://arxiv.org/abs/2006.03371">https://arxiv.org/abs/2006.03371</a>
 except their KS test is problematic because the variable (insertion order)
 is not continuous. Instead, this implements a Mann-Whitney-Wilcoxon
@@ -3025,8 +3120,7 @@ without detection of a insertion order problem.</p>
 <dl class="py function">
 <dt id="ultranest.ordertest.infinite_U_zscore">
 <code class="sig-prename descclassname">ultranest.ordertest.</code><code class="sig-name descname">infinite_U_zscore</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sample</span></em>, <em class="sig-param"><span class="n">B</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/ordertest.html#infinite_U_zscore"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.ordertest.infinite_U_zscore" title="Permalink to this definition">¶</a></dt>
-<dd><p>Compute Mann-Whitney-Wilcoxon U test for a
-<em>sample</em> of integers to be uniformly distributed between 0 and <em>B</em>.</p>
+<dd><p>Compute Mann-Whitney-Wilcoxon U test for a <em>sample</em> of integers to be uniformly distributed between 0 and <em>B</em>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -3045,9 +3139,11 @@ without detection of a insertion order problem.</p>
 
 <dl class="py class">
 <dt id="ultranest.ordertest.UniformOrderAccumulator">
-<em class="property">class </em><code class="sig-prename descclassname">ultranest.ordertest.</code><code class="sig-name descname">UniformOrderAccumulator</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">N</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/ordertest.html#UniformOrderAccumulator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.ordertest.UniformOrderAccumulator" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">ultranest.ordertest.</code><code class="sig-name descname">UniformOrderAccumulator</code><a class="reference internal" href="_modules/ultranest/ordertest.html#UniformOrderAccumulator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.ordertest.UniformOrderAccumulator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Store orders (1 to N), for comparison with a uniform order.</p>
+<p>Mann-Whitney-Wilcoxon U test accumulator.</p>
+<p>Stores rank orders (1 to N), for comparison with a uniform order.</p>
+<p>Initiate empty accumulator.</p>
 <dl class="py method">
 <dt id="ultranest.ordertest.UniformOrderAccumulator.reset">
 <code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/ordertest.html#UniformOrderAccumulator.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.ordertest.UniformOrderAccumulator.reset" title="Permalink to this definition">¶</a></dt>
@@ -3071,7 +3167,7 @@ without detection of a insertion order problem.</p>
 <dl class="py method">
 <dt id="ultranest.ordertest.UniformOrderAccumulator.zscore">
 <em class="property">property </em><code class="sig-name descname">zscore</code><a class="headerlink" href="#ultranest.ordertest.UniformOrderAccumulator.zscore" title="Permalink to this definition">¶</a></dt>
-<dd><p>Mann-Whitney-Wilcoxon U test z-score, against a uniform distribution.</p>
+<dd><p>z-score of the null hypothesis (uniform distribution) probability.</p>
 </dd></dl>
 
 </dd></dl>
@@ -4618,14 +4714,15 @@ no new handlers are registered.</p>
 
 <dl class="py function">
 <dt id="ultranest.utils.make_run_dir">
-<code class="sig-prename descclassname">ultranest.utils.</code><code class="sig-name descname">make_run_dir</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">log_dir</span></em>, <em class="sig-param"><span class="n">run_num</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">append_run_num</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/utils.html#make_run_dir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.utils.make_run_dir" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">ultranest.utils.</code><code class="sig-name descname">make_run_dir</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">log_dir</span></em>, <em class="sig-param"><span class="n">run_num</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">append_run_num</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">max_run_num</span><span class="o">=</span><span class="default_value">10000</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/utils.html#make_run_dir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.utils.make_run_dir" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a new numbered directory for this run to store output.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>log_dir</strong> (<em>str</em>) – base path</p></li>
-<li><p><strong>run_num</strong> (<em>int</em>) – folder to add to path, such as prefix/1/</p></li>
+<li><p><strong>run_num</strong> (<em>int</em>) – folder to add to path, such as prefix/run1/</p></li>
 <li><p><strong>append_run_num</strong> (<em>bool</em>) – If true, set run_num to next unused number</p></li>
+<li><p><strong>max_run_num</strong> (<em>int</em>) – Maximum number of automatic run subfolders</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -4690,7 +4787,7 @@ Another way to sample according to weights would be:</p>
 <dl class="py function">
 <dt id="ultranest.utils.listify">
 <code class="sig-prename descclassname">ultranest.utils.</code><code class="sig-name descname">listify</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/utils.html#listify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.utils.listify" title="Permalink to this definition">¶</a></dt>
-<dd><p>concatenate args, which are (made to be) lists</p>
+<dd><p>Concatenate args, which are (made to be) lists.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>args</strong> (<em>iterable</em>) – Lists to concatenate.</p>
@@ -4747,8 +4844,7 @@ for <cite>n</cite> odd :  $$2 * (2pi)^((n-1)/2) / (1 * 3 * … * n)$$</p>
 <dl class="py function">
 <dt id="ultranest.utils.is_affine_transform">
 <code class="sig-prename descclassname">ultranest.utils.</code><code class="sig-name descname">is_affine_transform</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span></em>, <em class="sig-param"><span class="n">b</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/utils.html#is_affine_transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.utils.is_affine_transform" title="Permalink to this definition">¶</a></dt>
-<dd><p>checks if one group of points <em>a</em> is an affine transform
-of another group of points <em>b</em>.</p>
+<dd><p>Check if one points <em>a</em> and <em>b</em> are related by an affine transform.</p>
 <p>The implementation currently returns False for rotations.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -4769,8 +4865,7 @@ of another group of points <em>b</em>.</p>
 <dl class="py function">
 <dt id="ultranest.utils.normalised_kendall_tau_distance">
 <code class="sig-prename descclassname">ultranest.utils.</code><code class="sig-name descname">normalised_kendall_tau_distance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">values1</span></em>, <em class="sig-param"><span class="n">values2</span></em>, <em class="sig-param"><span class="n">i</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">j</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/utils.html#normalised_kendall_tau_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.utils.normalised_kendall_tau_distance" title="Permalink to this definition">¶</a></dt>
-<dd><p>Normalised Kendall tau distance between two arrays,
-<em>values1</em> and <em>values2</em>, both of length N.</p>
+<dd><p>Normalised Kendall tau distance between two equally sized arrays.</p>
 <p>see <a class="reference external" href="https://en.wikipedia.org/wiki/Kendall_tau_distance">https://en.wikipedia.org/wiki/Kendall_tau_distance</a></p>
 <p>You can optionally pass precomputed indices:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">N</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">N</span><span class="p">))</span>
@@ -4797,9 +4892,9 @@ of another group of points <em>b</em>.</p>
 <dl class="py function">
 <dt id="ultranest.utils.verify_gradient">
 <code class="sig-prename descclassname">ultranest.utils.</code><code class="sig-name descname">verify_gradient</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ndim</span></em>, <em class="sig-param"><span class="n">transform</span></em>, <em class="sig-param"><span class="n">loglike</span></em>, <em class="sig-param"><span class="n">gradient</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">combination</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/utils.html#verify_gradient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.utils.verify_gradient" title="Permalink to this definition">¶</a></dt>
-<dd><p>check with numerical differentiation if the gradient function
-is plausibly correct. Raises AssertError otherwise.</p>
-<p>All functions are vectorized.</p>
+<dd><p>Check with numerical differentiation if gradient function is plausibly correct.</p>
+<p>Raises AssertError if not fulfilled.
+All functions are vectorized.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -4812,6 +4907,22 @@ Takes a single point and returns a single vector.</p></li>
 <li><p><strong>combination</strong> (<em>bool</em>) – if true, the gradient function should return a tuple of:
 (transformed parameters, loglikelihood, gradient) for a
 given unit cube point.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="ultranest.utils.distributed_work_chunk_size">
+<code class="sig-prename descclassname">ultranest.utils.</code><code class="sig-name descname">distributed_work_chunk_size</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">num_total_tasks</span></em>, <em class="sig-param"><span class="n">mpi_rank</span></em>, <em class="sig-param"><span class="n">mpi_size</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/utils.html#distributed_work_chunk_size"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.utils.distributed_work_chunk_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the number of tasks for process number <cite>mpi_rank</cite>, so that
+<cite>num_total_tasks</cite> tasks are spread uniformly among <cite>mpi_size</cite> processes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_total_tasks</strong> (<em>int</em>) – total number of tasks to be split</p></li>
+<li><p><strong>mpi_rank</strong> (<em>int</em>) – process id</p></li>
+<li><p><strong>mpi_size</strong> (<em>int</em>) – total number of processes</p></li>
 </ul>
 </dd>
 </dl>

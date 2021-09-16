@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ultranest.integrator &mdash; UltraNest 3.3.0 documentation</title>
+  <title>ultranest.integrator &mdash; UltraNest 3.3.2 documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
-        <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.18.0/dist/embed-amd.js"></script>
+        <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.20.0/dist/embed-amd.js"></script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
@@ -70,7 +70,7 @@
             
             
               <div class="version">
-                3.3.0
+                3.3.2
               </div>
             
           
@@ -199,7 +199,8 @@
 <span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">log</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">logaddexp</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
-<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">create_logger</span><span class="p">,</span> <span class="n">make_run_dir</span><span class="p">,</span> <span class="n">resample_equal</span><span class="p">,</span> <span class="n">vol_prefactor</span><span class="p">,</span> <span class="n">vectorize</span><span class="p">,</span> <span class="n">listify</span> <span class="k">as</span> <span class="n">_listify</span><span class="p">,</span> <span class="n">is_affine_transform</span><span class="p">,</span> <span class="n">normalised_kendall_tau_distance</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">create_logger</span><span class="p">,</span> <span class="n">make_run_dir</span><span class="p">,</span> <span class="n">resample_equal</span><span class="p">,</span> <span class="n">vol_prefactor</span><span class="p">,</span> <span class="n">vectorize</span><span class="p">,</span> <span class="n">listify</span> <span class="k">as</span> <span class="n">_listify</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">is_affine_transform</span><span class="p">,</span> <span class="n">normalised_kendall_tau_distance</span><span class="p">,</span> <span class="n">distributed_work_chunk_size</span>
 <span class="kn">from</span> <span class="nn">ultranest.mlfriends</span> <span class="kn">import</span> <span class="n">MLFriends</span><span class="p">,</span> <span class="n">AffineLayer</span><span class="p">,</span> <span class="n">ScalingLayer</span><span class="p">,</span> <span class="n">find_nearby</span><span class="p">,</span> <span class="n">WrappingEllipsoid</span><span class="p">,</span> <span class="n">RobustEllipsoidRegion</span>
 <span class="kn">from</span> <span class="nn">.store</span> <span class="kn">import</span> <span class="n">HDF5PointStore</span><span class="p">,</span> <span class="n">TextPointStore</span><span class="p">,</span> <span class="n">NullPointStore</span>
 <span class="kn">from</span> <span class="nn">.viz</span> <span class="kn">import</span> <span class="n">get_default_viz_callback</span><span class="p">,</span> <span class="n">nicelogger</span>
@@ -310,9 +311,10 @@
         <span class="k">yield</span> <span class="n">batch</span>
 
 
-
-<span class="k">def</span> <span class="nf">resume_from_similar_file</span><span class="p">(</span><span class="n">log_dir</span><span class="p">,</span> <span class="n">x_dim</span><span class="p">,</span> <span class="n">loglikelihood</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span>
-    <span class="n">max_tau</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="mi">400</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">resume_from_similar_file</span><span class="p">(</span>
+    <span class="n">log_dir</span><span class="p">,</span> <span class="n">x_dim</span><span class="p">,</span> <span class="n">loglikelihood</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span>
+    <span class="n">max_tau</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="mi">400</span>
+<span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Change a stored UltraNest run to a modified loglikelihood/transform.</span>
 
@@ -333,7 +335,7 @@
 <span class="sd">    max_tau: float</span>
 <span class="sd">        Allowed dissimilarity in the live point ordering, quantified as</span>
 <span class="sd">        normalised Kendall tau distance.</span>
-<span class="sd">        </span>
+
 <span class="sd">        max_tau=0 is the very conservative choice of stopping the warm start</span>
 <span class="sd">        when the live point order differs.</span>
 <span class="sd">        Near 1 are completely different live point orderings.</span>
@@ -374,7 +376,7 @@
     <span class="n">pointpile2</span> <span class="o">=</span> <span class="n">PointPile</span><span class="p">(</span><span class="n">x_dim</span><span class="p">,</span> <span class="n">num_params</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">pop</span><span class="p">(</span><span class="n">Lmin</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; find matching sample from points file &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Find matching sample from points file.&quot;&quot;&quot;</span>
         <span class="c1"># look forward to see if there is an exact match</span>
         <span class="c1"># if we do not use the exact matches</span>
         <span class="c1">#   this causes a shift in the loglikelihoods</span>
@@ -456,8 +458,7 @@
                     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;stopping, number of live points differ (</span><span class="si">%d</span><span class="s2"> vs </span><span class="si">%d</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">active_values</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">active_values2</span><span class="p">)))</span>
                     <span class="n">good_state</span> <span class="o">=</span> <span class="kc">False</span>
                 <span class="k">break</span>
-            
-            
+
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">active_values</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">indices1</span><span class="p">):</span>
                 <span class="n">indices1</span><span class="p">,</span> <span class="n">indices2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">active_values</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">active_values2</span><span class="p">)))</span>
             <span class="n">tau</span> <span class="o">=</span> <span class="n">normalised_kendall_tau_distance</span><span class="p">(</span><span class="n">active_values</span><span class="p">,</span> <span class="n">active_values2</span><span class="p">,</span> <span class="n">indices1</span><span class="p">,</span> <span class="n">indices2</span><span class="p">)</span>
@@ -472,8 +473,8 @@
             <span class="k">if</span> <span class="n">verbose</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="n">niter</span><span class="p">,</span> <span class="n">tau</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">good_state</span><span class="p">:</span>
-                <span class="c1">#print(&quot;        (%.1e)   L=%.1f&quot; % (last_good_like, Lmin2))</span>
-                <span class="c1">#assert last_good_like &lt; Lmin2, (last_good_like, Lmin2)</span>
+                <span class="c1"># print(&quot;        (%.1e)   L=%.1f&quot; % (last_good_like, Lmin2))</span>
+                <span class="c1"># assert last_good_like &lt; Lmin2, (last_good_like, Lmin2)</span>
                 <span class="n">last_good_like</span> <span class="o">=</span> <span class="n">Lmin2</span>
                 <span class="n">last_good_state</span> <span class="o">=</span> <span class="n">niter</span>
             <span class="k">else</span><span class="p">:</span>
@@ -489,7 +490,7 @@
                 <span class="n">logl_new</span> <span class="o">=</span> <span class="n">logls_new</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
                 <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
 
-                <span class="c1">#print(j, Lmin2, &#39;-&gt;&#39;, logl_new, &#39;instead of&#39;, Lmin, &#39;-&gt;&#39;, [c.value for c in node2.children])</span>
+                <span class="c1"># print(j, Lmin2, &#39;-&gt;&#39;, logl_new, &#39;instead of&#39;, Lmin, &#39;-&gt;&#39;, [c.value for c in node2.children])</span>
                 <span class="n">child2</span> <span class="o">=</span> <span class="n">pointpile2</span><span class="o">.</span><span class="n">make_node</span><span class="p">(</span><span class="n">logl_new</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
                 <span class="n">node2</span><span class="o">.</span><span class="n">children</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">child2</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">logl_new</span> <span class="o">&gt;</span> <span class="n">Lmin2</span><span class="p">:</span>
@@ -497,8 +498,8 @@
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">verbose</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
                         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;cannot use new point because it would decrease likelihood (</span><span class="si">%.1f</span><span class="s2">-&gt;</span><span class="si">%.1f</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">Lmin2</span><span class="p">,</span> <span class="n">logl_new</span><span class="p">))</span>
-                    <span class="c1">#good_state = False</span>
-                    <span class="c1">#break</span>
+                    <span class="c1"># good_state = False</span>
+                    <span class="c1"># break</span>
 
             <span class="n">main_iterator2</span><span class="o">.</span><span class="n">passing_node</span><span class="p">(</span><span class="n">node2</span><span class="p">,</span> <span class="n">active_nodes2</span><span class="p">)</span>
 
@@ -535,7 +536,8 @@
 
 <span class="k">def</span> <span class="nf">_update_region_bootstrap</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">nbootstraps</span><span class="p">,</span> <span class="n">minvol</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">comm</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mpi_size</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    update *region* with *nbootstraps* rounds of excluding points randomly.</span>
+<span class="sd">    Update *region* with *nbootstraps* rounds of excluding points randomly.</span>
+
 <span class="sd">    Stiffen ellipsoid size using the minimum volume *minvol*.</span>
 
 <span class="sd">    If the mpi communicator *comm* is not None, use MPI to distribute</span>
@@ -562,7 +564,7 @@
         <span class="n">recv_enlarge</span> <span class="o">=</span> <span class="n">comm</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="n">recv_enlarge</span> <span class="o">=</span> <span class="n">comm</span><span class="o">.</span><span class="n">bcast</span><span class="p">(</span><span class="n">recv_enlarge</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">recv_enlarge</span><span class="p">[:</span><span class="n">nbootstraps</span><span class="p">])</span>
-    
+
     <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">r</span><span class="p">):</span>
         <span class="c1"># reraise error if needed</span>
         <span class="k">if</span> <span class="n">e</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -655,7 +657,7 @@
         <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">logl</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="p">(</span><span class="s2">&quot;Error in loglikelihood function: returned non-finite number: </span><span class="si">%s</span><span class="s2"> for input u=</span><span class="si">%s</span><span class="s2"> p=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">logl</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
 
         <span class="k">def</span> <span class="nf">safe_loglike</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-            <span class="sd">&quot;&quot;&quot; wrapped likelihood function &quot;&quot;&quot;</span>
+            <span class="sd">&quot;&quot;&quot;Call likelihood function safely wrapped to avoid non-finite values.&quot;&quot;&quot;</span>
             <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
             <span class="n">logl</span> <span class="o">=</span> <span class="n">loglike</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
             <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">logl</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="p">(</span>
@@ -1187,7 +1189,7 @@
 
 <span class="sd">        warmstart_max_tau: float</span>
 <span class="sd">            Maximum disorder to accept when resume=&#39;resume-similar&#39;;</span>
-<span class="sd">            Live points are reused as long as the live point order </span>
+<span class="sd">            Live points are reused as long as the live point order</span>
 <span class="sd">            is below this normalised Kendall tau distance.</span>
 <span class="sd">            Values from 0 (highly conservative) to 1 (extremely negligent).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1312,7 +1314,8 @@
             <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_check_likelihood_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">num_test_samples</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Tests the `transform` and `loglike`lihood functions.</span>
+        <span class="sd">&quot;&quot;&quot;Test the `transform` and `loglike`lihood functions.</span>
+
 <span class="sd">        `num_test_samples` samples are used to check whether they work and give the correct output.</span>
 
 <span class="sd">        returns whether the most recently stored point (if any)</span>
@@ -1378,7 +1381,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">def</span> <span class="nf">safe_loglike</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-            <span class="sd">&quot;&quot;&quot; safe wrapper of likelihood function &quot;&quot;&quot;</span>
+            <span class="sd">&quot;&quot;&quot;Safe wrapper of likelihood function.&quot;&quot;&quot;</span>
             <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="k">assert</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_dim</span>
@@ -1398,7 +1401,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">transform</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span>
         <span class="k">elif</span> <span class="n">make_safe</span><span class="p">:</span>
             <span class="k">def</span> <span class="nf">safe_transform</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-                <span class="sd">&quot;&quot;&quot; safe wrapper of transform function &quot;&quot;&quot;</span>
+                <span class="sd">&quot;&quot;&quot;Safe wrapper of transform function.&quot;&quot;&quot;</span>
                 <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
                     <span class="k">assert</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_dim</span>
@@ -1517,11 +1520,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="ow">and</span> <span class="n">num_live_points_missing</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Sampling </span><span class="si">%d</span><span class="s1"> live points from prior ...&#39;</span><span class="p">,</span> <span class="n">num_live_points_missing</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">num_live_points_missing</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mpi_rank</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">num_live_points_todo</span> <span class="o">=</span> <span class="n">num_live_points_missing</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">mpi_size</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="c1"># rank 0 picks up what the others did not do</span>
-                <span class="n">num_live_points_todo</span> <span class="o">=</span> <span class="n">num_live_points_missing</span> <span class="o">-</span> <span class="p">(</span><span class="n">num_live_points_missing</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">mpi_size</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mpi_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">num_live_points_todo</span> <span class="o">=</span> <span class="n">distributed_work_chunk_size</span><span class="p">(</span><span class="n">num_live_points_missing</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mpi_rank</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mpi_size</span><span class="p">)</span>
 
             <span class="n">active_u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">num_live_points_todo</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_dim</span><span class="p">))</span>
             <span class="n">active_v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">active_u</span><span class="p">)</span>
@@ -1695,41 +1694,68 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Posterior uncertainty strategy is satisfied (KL: </span><span class="si">%.2f</span><span class="s2">+-</span><span class="si">%.2f</span><span class="s2"> nat, need &lt;</span><span class="si">%.2f</span><span class="s2"> nat)&quot;</span><span class="p">,</span>
                              <span class="n">KLtot</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">dKLtot</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">dKL</span><span class="p">)</span>
 
-        <span class="n">Llo_Z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
-        <span class="n">Lhi_Z</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
-        <span class="c1"># compute difference between lnZ cumsum</span>
+        <span class="n">Nlive_min</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">p</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="n">logw</span><span class="p">)</span>
         <span class="n">p</span> <span class="o">/=</span> <span class="n">p</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
         <span class="n">deltalogZ</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">main_iterator</span><span class="o">.</span><span class="n">all_logZ</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">main_iterator</span><span class="o">.</span><span class="n">logZ</span><span class="p">)</span>
 
         <span class="n">tail_fraction</span> <span class="o">=</span> <span class="n">w</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">main_iterator</span><span class="o">.</span><span class="n">istail</span><span class="p">)]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">w</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
         <span class="n">logzerr_tail</span> <span class="o">=</span> <span class="n">logaddexp</span><span class="p">(</span><span class="n">log</span><span class="p">(</span><span class="n">tail_fraction</span><span class="p">)</span> <span class="o">+</span> <span class="n">main_iterator</span><span class="o">.</span><span class="n">logZ</span><span class="p">,</span> <span class="n">main_iterator</span><span class="o">.</span><span class="n">logZ</span><span class="p">)</span> <span class="o">-</span> <span class="n">main_iterator</span><span class="o">.</span><span class="n">logZ</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">deltalogZ</span> <span class="o">&gt;</span> <span class="n">dlogz</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span> <span class="ow">and</span> <span class="p">(</span><span class="n">main_iterator</span><span class="o">.</span><span class="n">logZerr_bs</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">logzerr_tail</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span> <span class="o">&gt;</span> <span class="n">dlogz</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">pi</span><span class="p">,</span> <span class="n">deltalogZi</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">transpose</span><span class="p">(),</span> <span class="n">deltalogZ</span><span class="p">)):</span>
-                <span class="k">if</span> <span class="n">deltalogZi</span> <span class="o">&gt;</span> <span class="n">dlogz</span><span class="p">:</span>
-                    <span class="c1"># break up samples with too much weight</span>
-                    <span class="n">samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ref_logw</span><span class="p">),</span> <span class="n">p</span><span class="o">=</span><span class="n">pi</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>
-                    <span class="c1"># if self.log:</span>
-                    <span class="c1">#     self.logger.info(&#39;   - deltalogZi[%d] = %.2f: need to improve near %.2f..%.2f&#39; % (</span>
-                    <span class="c1">#         i, deltalogZi, saved_logl[samples].min(), saved_logl[samples].max()))</span>
-                    <span class="n">Llo_Z</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">Llo_Z</span><span class="p">,</span> <span class="n">saved_logl</span><span class="p">[</span><span class="n">samples</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">())</span>
-                    <span class="n">Lhi_Z</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">Lhi_Z</span><span class="p">,</span> <span class="n">saved_logl</span><span class="p">[</span><span class="n">samples</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+        <span class="n">maxlogzerr</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">main_iterator</span><span class="o">.</span><span class="n">logZerr</span><span class="p">,</span> <span class="n">deltalogZ</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">main_iterator</span><span class="o">.</span><span class="n">logZerr_bs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">maxlogzerr</span> <span class="o">&gt;</span> <span class="n">dlogz</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">logzerr_tail</span> <span class="o">&gt;</span> <span class="n">maxlogzerr</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;logz error is dominated by tail. Decrease frac_remain to make progress.&quot;</span><span class="p">)</span>
+            <span class="c1"># very convervative estimation using all iterations</span>
+            <span class="c1"># this punishes short intervals with many live points</span>
+            <span class="n">niter_max</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">saved_logl</span><span class="p">)</span>
+            <span class="n">Nlive_min</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">niter_max</span><span class="o">**</span><span class="mf">0.5</span> <span class="o">/</span> <span class="n">dlogz</span><span class="p">))</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;  conservative estimate says at least </span><span class="si">%d</span><span class="s2"> live points are needed to reach dlogz goal&quot;</span><span class="p">,</span> <span class="n">Nlive_min</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="ow">and</span> <span class="n">Lhi_Z</span> <span class="o">&gt;</span> <span class="n">Llo_Z</span><span class="p">:</span>
+            <span class="c1"># better estimation:</span>
+
+            <span class="c1"># get only until where logz bulk is (random sample here)</span>
+            <span class="n">itmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">w</span><span class="p">),</span> <span class="n">p</span><span class="o">=</span><span class="n">w</span><span class="p">)</span>
+            <span class="c1"># back out nlive sequence (width changed by (1 - exp(-1/N))*(exp(-1/N)) )</span>
+            <span class="n">logweights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">main_iterator</span><span class="o">.</span><span class="n">logweights</span><span class="p">[:</span><span class="n">itmax</span><span class="p">])</span>
+            <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">invalid</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">):</span>
+                <span class="n">widthratio</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">logweights</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">logweights</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">nlive</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">widthratio</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">widthratio</span><span class="p">))</span>
+                <span class="n">nlive</span><span class="p">[</span><span class="o">~</span><span class="p">(</span><span class="n">nlive</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">1</span>
+
+            <span class="c1"># build iteration groups</span>
+            <span class="n">nlive_sets</span><span class="p">,</span> <span class="n">niter</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">nlive</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span> <span class="n">return_counts</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                    <span class="s2">&quot;  number of live points vary between </span><span class="si">%.0f</span><span class="s2"> and </span><span class="si">%.0f</span><span class="s2">, most (</span><span class="si">%d</span><span class="s2">/</span><span class="si">%d</span><span class="s2"> iterations) have </span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span>
+                    <span class="n">nlive</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">nlive</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">niter</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">itmax</span><span class="p">,</span> <span class="n">nlive_sets</span><span class="p">[</span><span class="n">niter</span><span class="o">.</span><span class="n">argmax</span><span class="p">()])</span>
+            <span class="k">for</span> <span class="n">nlive_floor</span> <span class="ow">in</span> <span class="n">nlive_sets</span><span class="p">:</span>
+                <span class="c1"># estimate error if this was the minimum nlive applied</span>
+                <span class="n">nlive_adjusted</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">nlive_sets</span> <span class="o">&lt;</span> <span class="n">nlive_floor</span><span class="p">,</span> <span class="n">nlive_floor</span><span class="p">,</span> <span class="n">nlive_sets</span><span class="p">)</span>
+                <span class="n">deltalogZ_expected</span> <span class="o">=</span> <span class="p">(</span><span class="n">niter</span> <span class="o">/</span> <span class="n">nlive_adjusted</span><span class="o">**</span><span class="mf">2.0</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">**</span><span class="mf">0.5</span>
+                <span class="k">if</span> <span class="n">deltalogZ_expected</span> <span class="o">&lt;</span> <span class="n">dlogz</span><span class="p">:</span>
+                    <span class="c1"># achievable with Nlive_min</span>
+                    <span class="n">Nlive_min</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">nlive_floor</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;  at least </span><span class="si">%d</span><span class="s2"> live points are needed to reach dlogz goal&quot;</span><span class="p">,</span> <span class="n">Nlive_min</span><span class="p">)</span>
+                    <span class="k">break</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="ow">and</span> <span class="n">Nlive_min</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-                <span class="s2">&quot;Evidency uncertainty strategy wants to improve: </span><span class="si">%.2f</span><span class="s2">..</span><span class="si">%.2f</span><span class="s2"> (dlogz from </span><span class="si">%.2f</span><span class="s2"> to </span><span class="si">%.2f</span><span class="s2">, need &lt;</span><span class="si">%s</span><span class="s2">)&quot;</span><span class="p">,</span>
-                <span class="n">Llo_Z</span><span class="p">,</span> <span class="n">Lhi_Z</span><span class="p">,</span> <span class="n">deltalogZ</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">deltalogZ</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">dlogz</span><span class="p">)</span>
+                <span class="s2">&quot;Evidency uncertainty strategy wants </span><span class="si">%d</span><span class="s2"> minimum live points (dlogz from </span><span class="si">%.2f</span><span class="s2"> to </span><span class="si">%.2f</span><span class="s2">, need &lt;</span><span class="si">%s</span><span class="s2">)&quot;</span><span class="p">,</span>
+                <span class="n">Nlive_min</span><span class="p">,</span> <span class="n">deltalogZ</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="n">deltalogZ</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">dlogz</span><span class="p">)</span>
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
                 <span class="s2">&quot;Evidency uncertainty strategy is satisfied (dlogz=</span><span class="si">%.2f</span><span class="s2">, need &lt;</span><span class="si">%s</span><span class="s2">)&quot;</span><span class="p">,</span>
-                <span class="n">deltalogZ</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">dlogz</span><span class="p">)</span>
+                <span class="p">(</span><span class="n">main_iterator</span><span class="o">.</span><span class="n">logZerr_bs</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">logzerr_tail</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">dlogz</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
                 <span class="s1">&#39;  logZ error budget: single: </span><span class="si">%.2f</span><span class="s1"> bs:</span><span class="si">%.2f</span><span class="s1"> tail:</span><span class="si">%.2f</span><span class="s1"> total:</span><span class="si">%.2f</span><span class="s1"> required:&lt;</span><span class="si">%.2f</span><span class="s1">&#39;</span><span class="p">,</span>
                 <span class="n">main_iterator</span><span class="o">.</span><span class="n">logZerr</span><span class="p">,</span> <span class="n">main_iterator</span><span class="o">.</span><span class="n">logZerr_bs</span><span class="p">,</span> <span class="n">logzerr_tail</span><span class="p">,</span>
                 <span class="p">(</span><span class="n">main_iterator</span><span class="o">.</span><span class="n">logZerr_bs</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">logzerr_tail</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">dlogz</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="p">(</span><span class="n">Llo_Z</span><span class="p">,</span> <span class="n">Lhi_Z</span><span class="p">),</span> <span class="p">(</span><span class="n">Llo_KL</span><span class="p">,</span> <span class="n">Lhi_KL</span><span class="p">),</span> <span class="p">(</span><span class="n">Llo_ess</span><span class="p">,</span> <span class="n">Lhi_ess</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Nlive_min</span><span class="p">,</span> <span class="p">(</span><span class="n">Llo_KL</span><span class="p">,</span> <span class="n">Lhi_KL</span><span class="p">),</span> <span class="p">(</span><span class="n">Llo_ess</span><span class="p">,</span> <span class="n">Lhi_ess</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_refill_samples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">,</span> <span class="n">ndraw</span><span class="p">,</span> <span class="n">nit</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get new samples from region.&quot;&quot;&quot;</span>
@@ -1812,6 +1838,10 @@
 <span class="sd">            loglikelihoods of current live points</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">active_u</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">(),</span> \
+            <span class="p">(</span><span class="s2">&quot;None of the live points satisfies the current region!&quot;</span><span class="p">,</span>
+             <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">unormed</span><span class="p">,</span> <span class="n">active_u</span><span class="p">)</span>
+
         <span class="n">nit</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
             <span class="n">ib</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ib</span>
@@ -1838,10 +1868,6 @@
                 <span class="c1"># skip if we already know it is not useful</span>
                 <span class="n">ib</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">likes</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">else</span> <span class="mi">1</span>
 
-            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">active_u</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">(),</span> \
-                <span class="p">(</span><span class="s2">&quot;None of the live points satisfies the current region!&quot;</span><span class="p">,</span>
-                 <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">unormed</span><span class="p">,</span> <span class="n">active_u</span><span class="p">)</span>
-
             <span class="n">use_stepsampler</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stepsampler</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
             <span class="k">while</span> <span class="n">ib</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">):</span>
                 <span class="n">ib</span> <span class="o">=</span> <span class="mi">0</span>
@@ -1855,7 +1881,7 @@
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">logl</span><span class="p">,</span> <span class="n">nc</span><span class="p">,</span> <span class="n">quality</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_refill_samples</span><span class="p">(</span><span class="n">Lmin</span><span class="p">,</span> <span class="n">ndraw</span><span class="p">,</span> <span class="n">nit</span><span class="p">)</span>
                 <span class="n">nit</span> <span class="o">+=</span> <span class="mi">1</span>
-            
+
                 <span class="k">if</span> <span class="n">logl</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_dim</span><span class="p">))</span>
                     <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_params</span><span class="p">))</span>
@@ -1907,8 +1933,8 @@
         <span class="n">bootstrap_rootids</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">active_rootids</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">nbootstraps</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">minvol</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">active_p</span><span class="o">=</span><span class="kc">None</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Build a new MLFriends region from `active_u`,</span>
-<span class="sd">        and wrapping ellipsoid.</span>
+        <span class="sd">&quot;&quot;&quot;Build a new MLFriends region from `active_u`, and wrapping ellipsoid.</span>
+
 <span class="sd">        Both are safely built using bootstrapping, so that the</span>
 <span class="sd">        region can be used for sampling and rejecting points.</span>
 <span class="sd">        If MPI is enabled, this computation is parallelised.</span>
@@ -2177,6 +2203,8 @@
             <span class="k">return</span> <span class="kc">False</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">live_points_healthy</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;not expanding, because live points are linearly dependent&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">False</span>
 
         <span class="c1"># some reasons to stop:</span>
@@ -2191,6 +2219,8 @@
 
         <span class="c1"># in a plateau, only shrink (Fowlie+2020)</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">Lmin</span> <span class="o">==</span> <span class="n">parallel_values</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Plateau detected at L=</span><span class="si">%e</span><span class="s2">, not replacing live point.&quot;</span> <span class="o">%</span> <span class="n">Lmin</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">False</span>
 
         <span class="n">expand_node</span> <span class="o">=</span> <span class="kc">False</span>
@@ -2241,7 +2271,7 @@
             <span class="n">min_num_live_points</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span>
             <span class="n">cluster_num_live_points</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span>
             <span class="n">insertion_test_window</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-            <span class="n">insertion_test_zscore_threshold</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="n">insertion_test_zscore_threshold</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
             <span class="n">region_class</span><span class="o">=</span><span class="n">MLFriends</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Run until target convergence criteria are fulfilled.</span>
@@ -2308,14 +2338,13 @@
 <span class="sd">            z-score used as a threshold for the insertion order test.</span>
 <span class="sd">            Set to infinity to disable.</span>
 
-<span class="sd">        insertion_test_window: float</span>
+<span class="sd">        insertion_test_window: int</span>
 <span class="sd">            Number of iterations after which the insertion order test is reset.</span>
 
 <span class="sd">        region_class: MLFriends or RobustEllipsoidRegion</span>
 <span class="sd">            Whether to use MLFriends+ellipsoidal+tellipsoidal region (better for multi-modal problems)</span>
 <span class="sd">            or just ellipsoidal sampling (faster for high-dimensional, gaussian-like problems).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_iter</span><span class="p">(</span>
             <span class="n">update_interval_volume_fraction</span><span class="o">=</span><span class="n">update_interval_volume_fraction</span><span class="p">,</span>
             <span class="n">update_interval_ncall</span><span class="o">=</span><span class="n">update_interval_ncall</span><span class="p">,</span>
@@ -2357,7 +2386,7 @@
             <span class="n">cluster_num_live_points</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span>
             <span class="n">show_status</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="n">viz_callback</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span>
-            <span class="n">insertion_test_window</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+            <span class="n">insertion_test_window</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
             <span class="n">insertion_test_zscore_threshold</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
             <span class="n">region_class</span><span class="o">=</span><span class="n">MLFriends</span>
     <span class="p">):</span>
@@ -2377,6 +2406,15 @@
         <span class="k">if</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="n">frac_remain</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">dlogz</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;To achieve the desired logz accuracy, set frac_remain to a value much smaller than </span><span class="si">%s</span><span class="s2"> (currently: </span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span>
                 <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">dlogz</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">frac_remain</span><span class="p">))</span>
+
+        <span class="c1"># the error is approximately dlogz = sqrt(iterations) / Nlive</span>
+        <span class="c1"># so we need a minimum, which depends on the number of iterations</span>
+        <span class="c1"># fewer than 1000 iterations is quite unlikely</span>
+        <span class="k">if</span> <span class="n">min_num_live_points</span> <span class="o">&lt;</span> <span class="mi">1000</span><span class="o">**</span><span class="mf">0.5</span> <span class="o">/</span> <span class="n">dlogz</span><span class="p">:</span>
+            <span class="n">min_num_live_points</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="mi">1000</span><span class="o">**</span><span class="mf">0.5</span> <span class="o">/</span> <span class="n">dlogz</span><span class="p">))</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;To achieve the desired logz accuracy, min_num_live_points was increased to </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+                    <span class="n">min_num_live_points</span><span class="p">))</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_to_pointstore</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pointstore</span><span class="o">.</span><span class="n">stack</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -2445,7 +2483,7 @@
                 <span class="n">nbootstraps</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_bootstraps</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">mpi_size</span><span class="p">),</span>
                 <span class="n">random</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">check_insertion_order</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
             <span class="n">main_iterator</span><span class="o">.</span><span class="n">Lmax</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">Lmax</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">roots</span><span class="p">))</span>
-            <span class="n">insertion_test</span> <span class="o">=</span> <span class="n">UniformOrderAccumulator</span><span class="p">(</span><span class="n">nroots</span><span class="p">)</span>
+            <span class="n">insertion_test</span> <span class="o">=</span> <span class="n">UniformOrderAccumulator</span><span class="p">()</span>
             <span class="n">insertion_test_runs</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="n">insertion_test_quality</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
             <span class="n">insertion_test_direction</span> <span class="o">=</span> <span class="mi">0</span>
@@ -2577,7 +2615,7 @@
                             <span class="n">insertion_test_quality</span> <span class="o">=</span> <span class="n">insertion_test</span><span class="o">.</span><span class="n">N</span>
                             <span class="n">insertion_test_direction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">insertion_test</span><span class="o">.</span><span class="n">zscore</span><span class="p">)</span>
                             <span class="n">insertion_test</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-                        <span class="k">elif</span> <span class="n">insertion_test</span><span class="o">.</span><span class="n">N</span> <span class="o">&gt;</span> <span class="n">nlive</span> <span class="o">*</span> <span class="n">insertion_test_window</span><span class="p">:</span>
+                        <span class="k">elif</span> <span class="n">insertion_test</span><span class="o">.</span><span class="n">N</span> <span class="o">&gt;</span> <span class="n">insertion_test_window</span><span class="p">:</span>
                             <span class="n">insertion_test_quality</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
                             <span class="n">insertion_test_direction</span> <span class="o">=</span> <span class="mi">0</span>
                             <span class="n">insertion_test</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
@@ -2715,9 +2753,11 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;  logZ = </span><span class="si">%.4g</span><span class="s1"> +- </span><span class="si">%.4g</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">main_iterator</span><span class="o">.</span><span class="n">logZ_bs</span><span class="p">,</span> <span class="n">main_iterator</span><span class="o">.</span><span class="n">logZerr_bs</span><span class="p">)</span>
 
             <span class="n">saved_logl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">saved_logl</span><span class="p">)</span>
-            <span class="p">(</span><span class="n">Llo_Z</span><span class="p">,</span> <span class="n">Lhi_Z</span><span class="p">),</span> <span class="p">(</span><span class="n">Llo_KL</span><span class="p">,</span> <span class="n">Lhi_KL</span><span class="p">),</span> <span class="p">(</span><span class="n">Llo_ess</span><span class="p">,</span> <span class="n">Lhi_ess</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_strategy</span><span class="p">(</span><span class="n">saved_logl</span><span class="p">,</span> <span class="n">main_iterator</span><span class="p">,</span> <span class="n">dlogz</span><span class="o">=</span><span class="n">dlogz</span><span class="p">,</span> <span class="n">dKL</span><span class="o">=</span><span class="n">dKL</span><span class="p">,</span> <span class="n">min_ess</span><span class="o">=</span><span class="n">min_ess</span><span class="p">)</span>
-            <span class="n">Llo</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">Llo_ess</span><span class="p">,</span> <span class="n">Llo_KL</span><span class="p">,</span> <span class="n">Llo_Z</span><span class="p">)</span>
-            <span class="n">Lhi</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">Lhi_ess</span><span class="p">,</span> <span class="n">Lhi_KL</span><span class="p">,</span> <span class="n">Lhi_Z</span><span class="p">)</span>
+            <span class="c1"># reactive nested sampling: see where we have to improve</span>
+            <span class="n">dlogz_min_num_live_points</span><span class="p">,</span> <span class="p">(</span><span class="n">Llo_KL</span><span class="p">,</span> <span class="n">Lhi_KL</span><span class="p">),</span> <span class="p">(</span><span class="n">Llo_ess</span><span class="p">,</span> <span class="n">Lhi_ess</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_strategy</span><span class="p">(</span>
+                <span class="n">saved_logl</span><span class="p">,</span> <span class="n">main_iterator</span><span class="p">,</span> <span class="n">dlogz</span><span class="o">=</span><span class="n">dlogz</span><span class="p">,</span> <span class="n">dKL</span><span class="o">=</span><span class="n">dKL</span><span class="p">,</span> <span class="n">min_ess</span><span class="o">=</span><span class="n">min_ess</span><span class="p">)</span>
+            <span class="n">Llo</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">Llo_ess</span><span class="p">,</span> <span class="n">Llo_KL</span><span class="p">)</span>
+            <span class="n">Lhi</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">Lhi_ess</span><span class="p">,</span> <span class="n">Lhi_KL</span><span class="p">)</span>
             <span class="c1"># to avoid numerical issues when all likelihood values are the same</span>
             <span class="n">Lhi</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">Lhi</span><span class="p">,</span> <span class="n">saved_logl</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="mf">0.001</span><span class="p">)</span>
 
@@ -2726,13 +2766,23 @@
                 <span class="n">recv_Llo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">bcast</span><span class="p">(</span><span class="n">recv_Llo</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
                 <span class="n">recv_Lhi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="n">Lhi</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
                 <span class="n">recv_Lhi</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">bcast</span><span class="p">(</span><span class="n">recv_Lhi</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">recv_dlogz_min_num_live_points</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="n">dlogz_min_num_live_points</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">recv_dlogz_min_num_live_points</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">bcast</span><span class="p">(</span><span class="n">recv_dlogz_min_num_live_points</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
                 <span class="n">Llo</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">recv_Llo</span><span class="p">)</span>
                 <span class="n">Lhi</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">recv_Lhi</span><span class="p">)</span>
+                <span class="n">dlogz_min_num_live_points</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">recv_dlogz_min_num_live_points</span><span class="p">)</span>
 
-            <span class="k">if</span> <span class="n">Llo</span> <span class="o">&lt;=</span> <span class="n">Lhi</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">dlogz_min_num_live_points</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_num_live_points</span><span class="p">:</span>
+                <span class="c1"># more live points needed throughout to reach target</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">min_num_live_points</span> <span class="o">=</span> <span class="n">dlogz_min_num_live_points</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_widen_roots</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_num_live_points</span><span class="p">)</span>
+
+            <span class="k">elif</span> <span class="n">Llo</span> <span class="o">&lt;=</span> <span class="n">Lhi</span><span class="p">:</span>
                 <span class="c1"># if self.log:</span>
                 <span class="c1">#     print_tree(roots, title=&quot;Tree before forking:&quot;)</span>
                 <span class="n">parents</span><span class="p">,</span> <span class="n">parent_weights</span> <span class="o">=</span> <span class="n">find_nodes_before</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="p">,</span> <span class="n">Llo</span><span class="p">)</span>
+                <span class="c1"># double the width / live points:</span>
                 <span class="n">_</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="n">count_tree_between</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">children</span><span class="p">,</span> <span class="n">Llo</span><span class="p">,</span> <span class="n">Lhi</span><span class="p">)</span>
                 <span class="n">nnodes_needed</span> <span class="o">=</span> <span class="n">width</span> <span class="o">*</span> <span class="mi">2</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
@@ -2970,7 +3020,7 @@
     <span class="n">pointpile</span> <span class="o">=</span> <span class="n">PointPile</span><span class="p">(</span><span class="n">x_dim</span><span class="p">,</span> <span class="n">num_params</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">pop</span><span class="p">(</span><span class="n">Lmin</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; find matching sample from points file &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Find matching sample from points file.&quot;&quot;&quot;</span>
         <span class="c1"># look forward to see if there is an exact match</span>
         <span class="c1"># if we do not use the exact matches</span>
         <span class="c1">#   this causes a shift in the loglikelihoods</span>
@@ -2995,11 +3045,11 @@
     <span class="n">root</span> <span class="o">=</span> <span class="n">TreeNode</span><span class="p">(</span><span class="nb">id</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">value</span><span class="o">=-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">children</span><span class="o">=</span><span class="n">roots</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">onNode</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">main_iterator</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; insert (single) child of node if available &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Insert (single) child of node if available.&quot;&quot;&quot;</span>
         <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
             <span class="n">_</span><span class="p">,</span> <span class="n">row</span> <span class="o">=</span> <span class="n">pop</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">row</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                 <span class="k">break</span>
+                <span class="k">break</span>
             <span class="k">if</span> <span class="n">row</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">logl</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
                 <span class="n">u</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">3</span> <span class="o">+</span> <span class="n">x_dim</span><span class="p">]</span>

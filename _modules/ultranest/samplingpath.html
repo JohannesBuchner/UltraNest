@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ultranest.samplingpath &mdash; UltraNest 3.3.0 documentation</title>
+  <title>ultranest.samplingpath &mdash; UltraNest 3.3.2 documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
-        <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.18.0/dist/embed-amd.js"></script>
+        <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.20.0/dist/embed-amd.js"></script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
@@ -70,7 +70,7 @@
             
             
               <div class="version">
-                3.3.0
+                3.3.2
               </div>
             
           
@@ -193,7 +193,7 @@
 
 
 <div class="viewcode-block" id="nearest_box_intersection_line"><a class="viewcode-back" href="../../ultranest.html#ultranest.samplingpath.nearest_box_intersection_line">[docs]</a><span class="k">def</span> <span class="nf">nearest_box_intersection_line</span><span class="p">(</span><span class="n">ray_origin</span><span class="p">,</span> <span class="n">ray_direction</span><span class="p">,</span> <span class="n">fwd</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Compute intersection of a line (ray) and a unit box (0:1 in all axes).</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute intersection of a line (ray) and a unit box (0:1 in all axes).</span>
 
 <span class="sd">    Based on</span>
 <span class="sd">    http://www.iquilezles.org/www/articles/intersectors/intersectors.htm</span>
@@ -646,7 +646,8 @@
 
 <div class="viewcode-block" id="ContourSamplingPath.interpolate"><a class="viewcode-back" href="../../ultranest.html#ultranest.samplingpath.ContourSamplingPath.interpolate">[docs]</a>    <span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Interpolate point with index `i` on path.&quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">samplingpath</span><span class="o">.</span><span class="n">points</span><span class="p">,</span>
+        <span class="k">return</span> <span class="n">interpolate</span><span class="p">(</span>
+            <span class="n">i</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">samplingpath</span><span class="o">.</span><span class="n">points</span><span class="p">,</span>
             <span class="n">fwd_possible</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">samplingpath</span><span class="o">.</span><span class="n">fwd_possible</span><span class="p">,</span>
             <span class="n">rwd_possible</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">samplingpath</span><span class="o">.</span><span class="n">rwd_possible</span><span class="p">,</span>
             <span class="n">contourpath</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span></div>

@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ultranest.hotstart &mdash; UltraNest 3.3.0 documentation</title>
+  <title>ultranest.hotstart &mdash; UltraNest 3.3.2 documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
-        <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.18.0/dist/embed-amd.js"></script>
+        <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.20.0/dist/embed-amd.js"></script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
@@ -70,7 +70,7 @@
             
             
               <div class="version">
-                3.3.0
+                3.3.2
               </div>
             
           
@@ -187,11 +187,12 @@
 <span class="kn">import</span> <span class="nn">scipy.stats</span>
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">vectorize</span><span class="p">,</span> <span class="n">resample_equal</span>
 
+
 <div class="viewcode-block" id="get_auxiliary_problem"><a class="viewcode-back" href="../../ultranest.html#ultranest.hotstart.get_auxiliary_problem">[docs]</a><span class="k">def</span> <span class="nf">get_auxiliary_problem</span><span class="p">(</span><span class="n">loglike</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">ctr</span><span class="p">,</span> <span class="n">invcov</span><span class="p">,</span> <span class="n">enlargement_factor</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Return a new loglike and transform based on an auxiliary distribution.</span>
 
 <span class="sd">    Given a likelihood and prior transform, and information about</span>
-<span class="sd">    the (expected) posterior peak, generates a auxiliary </span>
+<span class="sd">    the (expected) posterior peak, generates a auxiliary</span>
 <span class="sd">    likelihood and prior transform that is identical but</span>
 <span class="sd">    requires fewer nested sampling iterations.</span>
 
@@ -239,14 +240,13 @@
 <span class="sd">        The first d return coordinates are identical to what ``transform`` would return.</span>
 <span class="sd">        The final coordinate is the correction weight.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="n">ndim</span><span class="p">,</span> <span class="o">=</span> <span class="n">ctr</span><span class="o">.</span><span class="n">shape</span>
     <span class="k">assert</span> <span class="n">invcov</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">ndim</span><span class="p">,</span> <span class="n">ndim</span><span class="p">)</span>
     <span class="k">assert</span> <span class="n">df</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;Degrees of freedom must be above 1&#39;</span><span class="p">,</span> <span class="n">df</span><span class="p">)</span>
 
     <span class="n">l</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigh</span><span class="p">(</span><span class="n">invcov</span><span class="p">)</span>
     <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">enlargement_factor</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="mf">1.</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">l</span><span class="p">)))</span>
-    
+
     <span class="n">rv_auxiliary1d</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">t</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">aux_rotator</span><span class="p">(</span><span class="n">coords</span><span class="p">):</span>
@@ -261,19 +261,20 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span> <span class="p">(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
             <span class="k">return</span> <span class="o">-</span><span class="mf">1e300</span>
         <span class="c1"># undo the effect of the auxiliary distribution</span>
-        <span class="n">l</span> <span class="o">=</span> <span class="n">rv_auxiliary1d</span><span class="o">.</span><span class="n">logpdf</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">loglike</span><span class="p">(</span><span class="n">transform</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="o">-</span> <span class="n">l</span>
-    
+        <span class="n">loglike</span> <span class="o">=</span> <span class="n">rv_auxiliary1d</span><span class="o">.</span><span class="n">logpdf</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">loglike</span><span class="p">(</span><span class="n">transform</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="o">-</span> <span class="n">loglike</span>
+
     <span class="k">def</span> <span class="nf">aux_aftertransform</span><span class="p">(</span><span class="n">u</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">transform</span><span class="p">(</span><span class="n">aux_rotator</span><span class="p">(</span><span class="n">rv_auxiliary1d</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">u</span><span class="p">)))</span>
 
     <span class="k">return</span> <span class="n">aux_loglikelihood</span><span class="p">,</span> <span class="n">aux_aftertransform</span></div>
 
+
 <div class="viewcode-block" id="get_extended_auxiliary_problem"><a class="viewcode-back" href="../../ultranest.html#ultranest.hotstart.get_extended_auxiliary_problem">[docs]</a><span class="k">def</span> <span class="nf">get_extended_auxiliary_problem</span><span class="p">(</span><span class="n">loglike</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">ctr</span><span class="p">,</span> <span class="n">invcov</span><span class="p">,</span> <span class="n">enlargement_factor</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Return a new loglike and transform based on an auxiliary distribution.</span>
 
 <span class="sd">    Given a likelihood and prior transform, and information about</span>
-<span class="sd">    the (expected) posterior peak, generates a auxiliary </span>
+<span class="sd">    the (expected) posterior peak, generates a auxiliary</span>
 <span class="sd">    likelihood and prior transform that is identical but</span>
 <span class="sd">    requires fewer nested sampling iterations.</span>
 
@@ -318,13 +319,13 @@
     <span class="n">ndim</span><span class="p">,</span> <span class="o">=</span> <span class="n">ctr</span><span class="o">.</span><span class="n">shape</span>
     <span class="k">assert</span> <span class="n">invcov</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">ndim</span><span class="p">,</span> <span class="n">ndim</span><span class="p">)</span>
     <span class="k">assert</span> <span class="n">df</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;Degrees of freedom must be above 1&#39;</span><span class="p">,</span> <span class="n">df</span><span class="p">)</span>
-    
+
     <span class="n">l</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigh</span><span class="p">(</span><span class="n">invcov</span><span class="p">)</span>
     <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">enlargement_factor</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="mf">1.</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">l</span><span class="p">)))</span>
 
     <span class="n">rv_auxiliary1d</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">t</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
     <span class="n">weight_ref</span> <span class="o">=</span> <span class="n">rv_auxiliary1d</span><span class="o">.</span><span class="n">logpdf</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">ndim</span>
-    
+
     <span class="k">def</span> <span class="nf">aux_transform</span><span class="p">(</span><span class="n">u</span><span class="p">):</span>
         <span class="c1"># get uniform gauss/t distributed values:</span>
         <span class="n">coords</span> <span class="o">=</span> <span class="n">rv_auxiliary1d</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
@@ -349,12 +350,53 @@
 
     <span class="k">return</span> <span class="n">aux_loglikelihood</span><span class="p">,</span> <span class="n">aux_transform</span></div>
 
+
 <div class="viewcode-block" id="reuse_samples"><a class="viewcode-back" href="../../ultranest.html#ultranest.hotstart.reuse_samples">[docs]</a><span class="k">def</span> <span class="nf">reuse_samples</span><span class="p">(</span>
-    <span class="n">param_names</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">points</span><span class="p">,</span> <span class="n">logl</span><span class="p">,</span> <span class="n">logw</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+    <span class="n">param_names</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">points</span><span class="p">,</span> <span class="n">logl</span><span class="p">,</span> <span class="n">logw</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">logz</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">logzerr</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">upoints</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">batchsize</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">vectorized</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">log_weight_threshold</span><span class="o">=-</span><span class="mi">10</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span>
 <span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reweight existing nested sampling run onto a new loglikelihood.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ------------</span>
+<span class="sd">    param_names: list of strings</span>
+<span class="sd">        Names of the parameters</span>
+<span class="sd">    loglike: function</span>
+<span class="sd">        New likelihood function</span>
+<span class="sd">    points: np.array of shape (npoints, ndim)</span>
+<span class="sd">        Equally weighted (unless logw is passed) posterior points</span>
+<span class="sd">    logl: np.array(npoints)</span>
+<span class="sd">        Previously likelihood values of points</span>
+<span class="sd">    logw: np.array(npoints)</span>
+<span class="sd">        Log-weights of existing points.</span>
+<span class="sd">    logz: float</span>
+<span class="sd">        Previous evidence / marginal likelihood value.</span>
+<span class="sd">    logzerr: float</span>
+<span class="sd">        Previous evidence / marginal likelihood uncertainty.</span>
+<span class="sd">    upoints: np.array of shape (npoints, ndim)</span>
+<span class="sd">        Posterior points before transformation.</span>
+<span class="sd">    vectorized: bool</span>
+<span class="sd">        Whether loglike function is vectorized</span>
+<span class="sd">    batchsize: int</span>
+<span class="sd">        Number of points simultaneously passed to vectorized loglike function</span>
+<span class="sd">    log_weight_threshold: float</span>
+<span class="sd">        Lowest log-weight to consider</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    ---------</span>
+<span class="sd">    results: dict</span>
+<span class="sd">        All information of the run. Important keys:</span>
+<span class="sd">        Number of nested sampling iterations (niter),</span>
+<span class="sd">        Evidence estimate (logz),</span>
+<span class="sd">        Effective Sample Size (ess),</span>
+<span class="sd">        weighted samples (weighted_samples),</span>
+<span class="sd">        equally weighted samples (samples),</span>
+<span class="sd">        best-fit point information (maximum_likelihood),</span>
+<span class="sd">        posterior summaries (posterior).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">vectorized</span><span class="p">:</span>
         <span class="n">loglike</span> <span class="o">=</span> <span class="n">vectorize</span><span class="p">(</span><span class="n">loglike</span><span class="p">)</span>
 
@@ -371,7 +413,7 @@
     <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">logl</span> <span class="o">+</span> <span class="n">logw</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">ncall</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">Npoints</span> <span class="o">/</span> <span class="n">batchsize</span><span class="p">))):</span>
-        <span class="n">batch</span> <span class="o">=</span> <span class="n">indices</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="n">batchsize</span> <span class="p">:</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">batchsize</span><span class="p">]</span>
+        <span class="n">batch</span> <span class="o">=</span> <span class="n">indices</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="n">batchsize</span><span class="p">:(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">batchsize</span><span class="p">]</span>
         <span class="n">logl_new</span><span class="p">[</span><span class="n">batch</span><span class="p">]</span> <span class="o">=</span> <span class="n">loglike</span><span class="p">(</span><span class="n">points</span><span class="p">[</span><span class="n">batch</span><span class="p">,:])</span>
         <span class="n">logw_new</span><span class="p">[</span><span class="n">batch</span><span class="p">]</span> <span class="o">=</span> <span class="n">logw</span><span class="p">[</span><span class="n">batch</span><span class="p">]</span> <span class="o">+</span> <span class="n">logl_new</span><span class="p">[</span><span class="n">batch</span><span class="p">]</span>
         <span class="n">ncall</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>

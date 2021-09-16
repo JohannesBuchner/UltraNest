@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ultranest.netiter &mdash; UltraNest 3.3.0 documentation</title>
+  <title>ultranest.netiter &mdash; UltraNest 3.3.2 documentation</title>
   
 
   
@@ -37,7 +37,7 @@
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
-        <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.18.0/dist/embed-amd.js"></script>
+        <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.20.0/dist/embed-amd.js"></script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
@@ -70,7 +70,7 @@
             
             
               <div class="version">
-                3.3.0
+                3.3.2
               </div>
             
           
@@ -206,7 +206,6 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">log</span><span class="p">,</span> <span class="n">log1p</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">logaddexp</span>
 <span class="kn">import</span> <span class="nn">math</span>
-<span class="kn">import</span> <span class="nn">operator</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">resample_equal</span>
 <span class="kn">from</span> <span class="nn">.ordertest</span> <span class="kn">import</span> <span class="n">UniformOrderAccumulator</span>
@@ -304,8 +303,7 @@
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active_nodes</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active_node_values</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="BreadthFirstIterator.expand_children_of"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.BreadthFirstIterator.expand_children_of">[docs]</a>    <span class="k">def</span> <span class="nf">expand_children_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rootid</span><span class="p">,</span> <span class="n">node</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Replace the current node with its children in the iterators</span>
-<span class="sd">        list of active nodes.</span>
+        <span class="sd">&quot;&quot;&quot;Replace the current node with its children in the iterators list of active nodes.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -347,7 +345,7 @@
 
 
 <span class="k">def</span> <span class="nf">_stringify_lanes</span><span class="p">(</span><span class="n">lanes</span><span class="p">,</span> <span class="n">char</span><span class="o">=</span><span class="s1">&#39;║&#39;</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; unicode-draw lanes, fill with vertical stripes or spaces &quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;unicode-draw lanes, fill with vertical stripes or spaces.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39; &#39;</span> <span class="k">if</span> <span class="n">n</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">char</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">lanes</span><span class="p">])</span>
 
 
@@ -469,7 +467,9 @@
 
 
 <div class="viewcode-block" id="count_tree_between"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.count_tree_between">[docs]</a><span class="k">def</span> <span class="nf">count_tree_between</span><span class="p">(</span><span class="n">roots</span><span class="p">,</span> <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Return the total number of nodes and maximum number of parallel edges,</span>
+    <span class="sd">&quot;&quot;&quot;Compute basic statistics about a tree.</span>
+
+<span class="sd">    Return the total number of nodes and maximum number of parallel edges,</span>
 <span class="sd">    but only considering a interval of the tree.</span>
 
 <span class="sd">    Parameters</span>
@@ -804,7 +804,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">check_insertion_order</span> <span class="o">=</span> <span class="n">check_insertion_order</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">insertion_order_threshold</span> <span class="o">=</span> <span class="mi">4</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">insertion_order_accumulator</span> <span class="o">=</span> <span class="n">UniformOrderAccumulator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rootids</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">insertion_order_accumulator</span> <span class="o">=</span> <span class="n">UniformOrderAccumulator</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rootids</span><span class="p">))</span>
 
@@ -841,6 +841,22 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">insertion_order_runlength</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get shortest insertion order test run.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        --------</span>
+<span class="sd">        shortest_run_length: int</span>
+<span class="sd">            Shortest insertion order test run length.</span>
+
+<span class="sd">        The MWW (U-test) statistic is considered at each iteration.</span>
+<span class="sd">        When it exceeds a threshold (4 sigma by default, `insertion_order_threshold`),</span>
+<span class="sd">        the statistic is reset. The run length is recorded.</span>
+<span class="sd">        This property returns the shortest run length of all recorded</span>
+<span class="sd">        so far, or infinity otherwise.</span>
+
+<span class="sd">        At 4 sigma, run lengths no shorter than 10^5.5 are expected</span>
+<span class="sd">        in unbiased runs.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">runs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">insertion_order_runs</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">runs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
@@ -849,6 +865,27 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">insertion_order_converged</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check convergence.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        --------</span>
+<span class="sd">        converged: bool</span>
+<span class="sd">            Whether the run is unbiased according to a U-test.</span>
+
+<span class="sd">        The MWW (U-test) statistic is considered at each iteration.</span>
+<span class="sd">        When it exceeds a threshold (4 sigma by default, `insertion_order_threshold`),</span>
+<span class="sd">        the statistic is reset. The run length is recorded.</span>
+<span class="sd">        This property returns the shortest run length of all recorded</span>
+<span class="sd">        so far, or infinity otherwise.</span>
+
+<span class="sd">        At 4 sigma, run lengths no shorter than 10^5.5 are expected</span>
+<span class="sd">        in unbiased runs. If the number of runs exceeds the number</span>
+<span class="sd">        of iterations divided by 10^5.5, the run is likely biased</span>
+<span class="sd">        and not converged.</span>
+
+<span class="sd">        If not converged, the step sampler may need to use more steps,</span>
+<span class="sd">        or the problem needs to be  reparametrized.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># we expect run lengths not shorter than 300000 for 4sigma</span>
         <span class="c1"># if we get many more than expected from the number of iterations</span>
         <span class="c1"># the run has not converged</span>
@@ -948,7 +985,6 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">logVolremaining</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_logVolremaining</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_insertion_order</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">parallel_values</span><span class="p">))</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">parallel_values</span><span class="p">):</span>
-                <span class="n">order_max</span> <span class="o">=</span> <span class="n">nlive</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span>
                 <span class="n">acc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">insertion_order_accumulator</span>
                 <span class="n">parallel_values_here</span> <span class="o">=</span> <span class="n">parallel_values</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">rootids</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">rootids</span><span class="p">]]</span>
                 <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
@@ -1009,14 +1045,14 @@
 <span class="sd">        iterator used</span>
 <span class="sd">    mpi_comm:</span>
 <span class="sd">        MPI communicator object, or None if MPI is not used.</span>
-<span class="sd">    </span>
+
 <span class="sd">    Returns</span>
 <span class="sd">    --------</span>
 <span class="sd">    results: dict</span>
 <span class="sd">        All information of the run. Important keys:</span>
-<span class="sd">        Number of nested sampling iterations (niter), </span>
-<span class="sd">        Evidence estimate (logz), </span>
-<span class="sd">        Effective Sample Size (ess), </span>
+<span class="sd">        Number of nested sampling iterations (niter),</span>
+<span class="sd">        Evidence estimate (logz),</span>
+<span class="sd">        Effective Sample Size (ess),</span>
 <span class="sd">        H (information gain),</span>
 <span class="sd">        weighted samples (weighted_samples),</span>
 <span class="sd">        equally weighted samples (samples),</span>
@@ -1025,7 +1061,6 @@
 <span class="sd">        The rank order test score (insertion_order_MWW_test) is</span>
 <span class="sd">        included if the iterator has it.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">main_iterator</span><span class="o">.</span><span class="n">logweights</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">saved_logl</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">main_iterator</span><span class="o">.</span><span class="n">all_logZ</span><span class="p">)),</span> <span class="p">(</span>
         <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">main_iterator</span><span class="o">.</span><span class="n">logweights</span><span class="p">),</span>
         <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">saved_logl</span><span class="p">),</span>
@@ -1188,7 +1223,6 @@
             <span class="c1"># first time they are all the same</span>
             <span class="n">logzerr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">main_iterator</span><span class="o">.</span><span class="n">logZerr_bs</span><span class="p">)</span>
 
-        <span class="n">insert_order_value</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">active_values</span><span class="p">))</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">active_values</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">child_insertion_order</span> <span class="o">=</span> <span class="p">(</span><span class="n">active_values</span> <span class="o">&gt;</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
             <span class="n">insert_order</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">child_insertion_order</span> <span class="o">+</span> <span class="mf">1.</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">active_values</span><span class="p">))</span>
