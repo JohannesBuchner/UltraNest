@@ -1655,6 +1655,10 @@ class ReactiveNestedSampler(object):
             loglikelihoods of current live points
 
         """
+        assert self.region.inside(active_u).any(), \
+            ("None of the live points satisfies the current region!",
+             self.region.maxradiussq, self.region.u, self.region.unormed, active_u)
+
         nit = 0
         while True:
             ib = self.ib
@@ -1680,10 +1684,6 @@ class ReactiveNestedSampler(object):
                 self.samplesv = next_point[:,3 + self.x_dim:3 + self.x_dim + self.num_params]
                 # skip if we already know it is not useful
                 ib = 0 if np.isfinite(self.likes[0]) else 1
-
-            assert self.region.inside(active_u).any(), \
-                ("None of the live points satisfies the current region!",
-                 self.region.maxradiussq, self.region.u, self.region.unormed, active_u)
 
             use_stepsampler = self.stepsampler is not None
             while ib >= len(self.samples):
