@@ -876,7 +876,7 @@ class NestedSampler(object):
 
         return self.results
 
-    def print_results(self, logZ=True, posterior=True):
+    def print_results(self):
         """Give summary of marginal likelihood and parameters."""
         print()
         print('logZ = %(logz).3f +- %(logzerr).3f' % self.results)
@@ -2687,8 +2687,15 @@ class ReactiveNestedSampler(object):
             dump_tree(os.path.join(self.logs['results'], 'tree.hdf5'),
                       self.root.children, self.pointpile)
 
-    def print_results(self, logZ=True, posterior=True, use_unicode=True):
-        """Give summary of marginal likelihood and parameters."""
+    def print_results(self, use_unicode=True):
+        """Give summary of marginal likelihood and parameter posteriors.
+
+        Parameters
+        ----------
+        use_unicode: bool
+            Whether to print a unicode plot of the posterior distributions
+
+        """
         if self.log:
             print()
             print('logZ = %(logz).3f +- %(logzerr).3f' % self.results)
@@ -2731,7 +2738,14 @@ class ReactiveNestedSampler(object):
 
 
     def plot(self):
-        """Make corner, run and trace plots."""
+        """Make corner, run and trace plots.
+
+        calls:
+        
+        * plot_corner()
+        * plot_run()
+        * plot_trace()
+        """
         self.plot_corner()
         self.plot_run()
         self.plot_trace()
