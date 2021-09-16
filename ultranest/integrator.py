@@ -2386,7 +2386,7 @@ class ReactiveNestedSampler(object):
 
                         _, cluster_sizes = np.unique(self.region.transformLayer.clusterids, return_counts=True)
                         nclusters = (cluster_sizes > 1).sum()
-                        region_sequence.append((Lmin, nlive, nclusters))
+                        region_sequence.append((Lmin, nlive, nclusters, np.max(active_values)))
 
                         # next_update_interval_ncall = self.ncall + (update_interval_ncall or nlive)
                         next_update_interval_volume = main_iterator.logVolremaining + update_interval_volume_log_fraction
@@ -2554,14 +2554,14 @@ class ReactiveNestedSampler(object):
 
             Lmax = main_iterator.Lmax
             if len(region_sequence) > 0:
-                Lmin, nlive, nclusters = region_sequence[-1]
+                Lmin, nlive, nclusters, Lhi = region_sequence[-1]
                 nnodes_needed = cluster_num_live_points * nclusters
                 if nlive < nnodes_needed:
-                    Llo, Lhi, target_min_num_children_new = self._expand_nodes_before(Lmin, nnodes_needed, update_interval_ncall or nlive)
+                    Llo, _, target_min_num_children_new = self._expand_nodes_before(Lmin, nnodes_needed, update_interval_ncall or nlive)
                     target_min_num_children.update(target_min_num_children_new)
                     # if self.log:
                     #     print_tree(self.root.children[::10])
-                    minimal_widths.append((Llo, Lmin, nnodes_needed))
+                    minimal_widths.append((Llo, Lhi, nnodes_needed))
                     Llo, Lhi = -np.inf, np.inf
                     continue
 
