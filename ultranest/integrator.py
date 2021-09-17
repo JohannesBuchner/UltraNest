@@ -1360,7 +1360,7 @@ class ReactiveNestedSampler(object):
                 active_u = np.concatenate(recv_samples, axis=0)
                 active_v = np.concatenate(recv_samplesv, axis=0)
                 active_logl = np.concatenate(recv_likes, axis=0)
-     
+
             assert active_logl.shape == (num_live_points_missing,), (active_logl.shape, num_live_points_missing)
 
             if self.log_to_pointstore:
