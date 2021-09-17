@@ -1338,11 +1338,16 @@ class ReactiveNestedSampler(object):
             self.logger.info('Sampling %d live points from prior ...', num_live_points_missing)
         if num_live_points_missing > 0:
             num_live_points_todo = distributed_work_chunk_size(num_live_points_missing, self.mpi_rank, self.mpi_size)
-
-            active_u = np.random.uniform(size=(num_live_points_todo, self.x_dim))
-            active_v = self.transform(active_u)
-            active_logl = self.loglike(active_v)
             self.ncall += num_live_points_missing
+
+            if num_live_points_todo > 0:
+                active_u = np.random.uniform(size=(num_live_points_todo, self.x_dim))
+                active_v = self.transform(active_u)
+                active_logl = self.loglike(active_v)
+            else:
+                active_u = np.empty((0, self.x_dim))
+                active_v = np.empty((0, self.num_params))
+                active_logl = np.empty((0,))
 
             if self.use_mpi:
                 recv_samples = self.comm.gather(active_u, root=0)
