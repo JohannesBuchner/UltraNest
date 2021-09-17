@@ -1338,11 +1338,16 @@ class ReactiveNestedSampler(object):
             self.logger.info('Sampling %d live points from prior ...', num_live_points_missing)
         if num_live_points_missing > 0:
             num_live_points_todo = distributed_work_chunk_size(num_live_points_missing, self.mpi_rank, self.mpi_size)
-
-            active_u = np.random.uniform(size=(num_live_points_todo, self.x_dim))
-            active_v = self.transform(active_u)
-            active_logl = self.loglike(active_v)
             self.ncall += num_live_points_missing
+
+            if num_live_points_todo > 0:
+                active_u = np.random.uniform(size=(num_live_points_todo, self.x_dim))
+                active_v = self.transform(active_u)
+                active_logl = self.loglike(active_v)
+            else:
+                active_u = np.empty((0, self.x_dim))
+                active_v = np.empty((0, self.num_params))
+                active_logl = np.empty((0,))
 
             if self.use_mpi:
                 recv_samples = self.comm.gather(active_u, root=0)
@@ -1351,11 +1356,11 @@ class ReactiveNestedSampler(object):
                 recv_samples = self.comm.bcast(recv_samples, root=0)
                 recv_samplesv = self.comm.bcast(recv_samplesv, root=0)
                 recv_likes = self.comm.bcast(recv_likes, root=0)
-                
-                active_u = np.concatenate([u for u in recv_samples if u.size > 0], axis=0)
-                active_v = np.concatenate([v for v in recv_samplesv if v.size > 0], axis=0)
-                active_logl = np.concatenate([logl for logl in recv_likes if logl.size > 0], axis=0)
 
+                active_u = np.concatenate(recv_samples, axis=0)
+                active_v = np.concatenate(recv_samplesv, axis=0)
+                active_logl = np.concatenate(recv_likes, axis=0)
+     
             assert active_logl.shape == (num_live_points_missing,), (active_logl.shape, num_live_points_missing)
 
             if self.log_to_pointstore:
