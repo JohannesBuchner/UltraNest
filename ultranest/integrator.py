@@ -1351,10 +1351,10 @@ class ReactiveNestedSampler(object):
                 recv_samples = self.comm.bcast(recv_samples, root=0)
                 recv_samplesv = self.comm.bcast(recv_samplesv, root=0)
                 recv_likes = self.comm.bcast(recv_likes, root=0)
-
-                active_u = np.concatenate(recv_samples, axis=0)
-                active_v = np.concatenate(recv_samplesv, axis=0)
-                active_logl = np.concatenate(recv_likes, axis=0)
+                
+                active_u = np.concatenate([u for u in recv_samples if u.size > 0], axis=0)
+                active_v = np.concatenate([v for v in recv_samplesv if v.size > 0], axis=0)
+                active_logl = np.concatenate([logl for logl in recv_likes if logl.size > 0], axis=0)
 
             assert active_logl.shape == (num_live_points_missing,), (active_logl.shape, num_live_points_missing)
 
