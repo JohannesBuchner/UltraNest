@@ -130,6 +130,8 @@ def vectorize(function):
         """Vectorized version of function."""
         return np.asarray([function(arg) for arg in args])
 
+    # give a user-friendly name to the vectorized version of the function
+    # getattr works around methods, which do not have __name__
     vectorized.__name__ = getattr(function, '__name__', vectorized.__name__)
     return vectorized
 
