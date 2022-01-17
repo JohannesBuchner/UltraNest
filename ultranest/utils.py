@@ -130,7 +130,7 @@ def vectorize(function):
         """Vectorized version of function."""
         return np.asarray([function(arg) for arg in args])
 
-    vectorized.__name__ = function.__name__
+    vectorized.__name__ = getattr(function, '__name__', vectorized.__name__)
     return vectorized
 
 
