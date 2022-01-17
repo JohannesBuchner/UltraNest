@@ -1539,3 +1539,187 @@ class AHARMSampler(StepSampler):
         left, right = ellipsoid_bracket(ui, v, region.ellipsoid_center, region.ellipsoid_inv_axes, region.enlarge)
         left, right, _, _ = crop_bracket_at_unit_cube(ui, v, left, right)
         self.interval = (v, left, right, 0)
+
+
+import operator
+firstitemgetter = operator.itemgetter(0)
+
+class PopulationSliceSampler():
+    def __init__(self, popsize, nsteps, generate_direction, scale=1.0):
+        self.nsteps = nsteps
+        self.nrejects = 0
+        self.scale = scale
+        self.currentu = []
+        self.currentL = []
+        self.currentt = []
+        self.currentv = []
+        self.generation = []
+        self.current_left = []
+        self.current_right = []
+        self.searching_left = []
+        self.searching_right = []
+        self.nextu = None
+
+        self.popsize = popsize
+        self.generate_direction = generate_direction
+
+    def _check(self):
+        assert self.popsize == len(self.currentu)
+        assert self.popsize == len(self.currentL)
+        assert self.popsize == len(self.currentv)
+        assert self.popsize == len(self.current_left)
+        assert self.popsize == len(self.current_right)
+        assert self.popsize == len(self.generation)
+        assert self.popsize == len(self.currentt)
+        assert np.isfinite(self.currentu).all(), self.currentu
+        assert np.isfinite(self.currentL).all(), self.currentL
+        #assert np.isfinite(self.currentt).all(), self.currentt
+        assert np.isfinite(self.currentv).all(), self.currentv
+        assert np.isfinite(self.current_left).all(), self.current_left
+        assert np.isfinite(self.current_right).all(), self.current_right
+
+    def region_changed(self, Ls, region):
+        # self.scale = region.us.std(axis=1).mean()
+        pass
+
+    def evolve(self, transform, loglike, Lmin, log=False):
+        self._check()
+        # define three mutually exclusive states: 
+        # stepping out to the left, to the right, bisecting on the slice
+        search_right = np.logical_and(~self.searching_left, self.searching_right)
+        bisecting = ~np.logical_or(self.searching_left, self.searching_right)
+        if log:
+            print("states: %d < %d > %d  | %d total" % (self.searching_left.sum(), bisecting.sum(), search_right.sum(), len(self.currentu)))
+        
+        # handle the three cases:
+        if self.nextu is None:
+            self.nextu = self.currentu.copy()
+        assert self.nextu.shape == self.currentu.shape, (self.nextu.shape, self.currentu.shape)
+        
+        unew = self.nextu
+        if self.searching_left.any():
+            unew[self.searching_left,:] = self.currentu[self.searching_left,:] + self.currentv[self.searching_left,:] * self.current_left[self.searching_left].reshape((-1,1))
+        if search_right.any():
+            unew[search_right,:] = self.currentu[search_right,:] + self.currentv[search_right,:] * self.current_right[search_right].reshape((-1,1))
+        if bisecting.any():
+            self.currentt[bisecting] = np.random.uniform(self.current_left[bisecting], self.current_right[bisecting])
+            unew[bisecting,:] = self.currentu[bisecting,:] + self.currentv[bisecting,:] * self.currentt[bisecting].reshape((-1,1))
+        assert np.isfinite(unew).all(), unew
+        
+        acceptable = np.logical_and(unew > 0, unew < 1).all(axis=1)
+        if acceptable.any():
+            pnew = transform(unew[acceptable,:])
+            Lnew = loglike(pnew)
+        else:
+            if log: print("empty try!", acceptable.shape, len(unew))
+            pnew = np.empty((0,1))
+            Lnew = np.empty(0)
+        accepted = np.zeros_like(acceptable)
+        accepted[acceptable] = Lnew > Lmin
+        rejected = ~accepted
+        # handle cases:
+        # step out, if still accepting
+        self.current_left[np.logical_and(self.searching_left, accepted)] *= 2
+        self.current_right[np.logical_and(search_right, accepted)] *= 2
+        if log:
+            print("    acceptance rate: %.2f%%" % (100 * accepted.mean()), 
+                  np.logical_and(self.searching_left, accepted).sum(),
+                  np.logical_and(search_right, accepted).sum(),
+                  np.logical_and(self.searching_left, rejected).sum(),
+                  np.logical_and(search_right, rejected).sum(),)
+        # done stepping out, if rejected
+        self.searching_left[np.logical_and(self.searching_left, rejected)] = False
+        self.searching_right[np.logical_and(search_right, rejected)] = False
+        # adjust guess length
+        self.scale = (abs(self.current_left.mean()) + abs(self.current_right.mean())) / 2
+        
+        # bisecting, rejected or not acceptable
+        bisectshrink = np.logical_and(bisecting, rejected)
+        bisectshrinkleft = np.logical_and(bisecting, self.currentt < 0)
+        bisectshrinkright = np.logical_and(bisecting, ~(self.currentt < 0))
+        if bisectshrinkleft.any():
+            self.current_left[bisectshrinkleft] = self.currentt[bisectshrinkleft]
+        if bisectshrinkright.any():
+            self.current_right[bisectshrinkright] = self.currentt[bisectshrinkright]
+        # bisect accepted: start new slice and new generation there
+        success = np.logical_and(bisecting, accepted)
+        if success.any():
+            self.currentt[success] = np.nan
+            #if log: print(self.currentu[success,:], unew[success,:])
+            self.currentu[success,:] = unew[success,:]
+            self.currentL[success] = Lnew[success[acceptable]]
+            self.generation[success] += 1
+        self._check()
+        if log:
+            print("    bisect results:",
+                  bisectshrink.sum(),
+                  bisectshrinkleft.sum(),
+                  bisectshrinkright.sum(),
+                  success.sum()
+                 )
+        
+        return unew[success,:], pnew[success[acceptable],:], Lnew[success[acceptable]], self.generation[success]
+        
+    def __next__(self, region, Lmin, us, Ls, transform, loglike, ndraw=10, plot=False, tregion=None, log=False):
+        if len(self.currentL) > 0:
+            # remove those cut away by Lmin increase
+            mask_survivors = self.currentL > Lmin
+            if log: print("keeping %d" % mask_survivors.sum())
+            if not mask_survivors.all():
+                self.currentu = self.currentu[mask_survivors,:]
+                self.currentL = self.currentL[mask_survivors]
+                self.currentt = self.currentt[mask_survivors]
+                self.currentv = self.currentv[mask_survivors,:]
+                self.generation = self.generation[mask_survivors]
+                self.searching_left = self.searching_left[mask_survivors]
+                self.searching_right = self.searching_right[mask_survivors]
+                self.current_left = self.current_left[mask_survivors]
+                self.current_right = self.current_right[mask_survivors]
+
+        # repopulate with new samples
+        nmissing = self.popsize - len(self.currentu)
+        if nmissing > 0:
+            if log: print("repopulate %d" % nmissing)
+            # pick some of the current live points as starting points
+            i = np.random.randint(len(us), size=nmissing)
+            concatenate = np.concatenate if len(self.currentu) > 0 else firstitemgetter
+            self.currentL = concatenate((Ls[i], self.currentL))
+            self.currentu = concatenate((us[i,:], self.currentu))
+            # empty values for the rest:
+            self.currentv = concatenate((np.zeros_like(us[i,:]) + np.nan, self.currentv))
+            self.currentt = concatenate((np.zeros(nmissing) + np.nan, self.currentt))
+            self.generation = concatenate((np.zeros(nmissing, dtype=int), self.generation))
+            self.searching_left  = concatenate((np.zeros(nmissing, dtype=bool), self.searching_left))
+            self.searching_right = concatenate((np.zeros(nmissing, dtype=bool), self.searching_right))
+            self.current_left = concatenate((np.zeros(nmissing), self.current_left))
+            self.current_right = concatenate((np.zeros(nmissing), self.current_right))
+
+        # find those where bracket is undefined:
+        mask_starting = ~np.isfinite(self.currentt)
+        if mask_starting.any():
+            self.current_left[mask_starting] = -self.scale
+            self.current_right[mask_starting] = self.scale
+            self.searching_left[mask_starting] = True
+            self.searching_right[mask_starting] = True
+            self.currentt[mask_starting] = 0
+            # choose direction for new slice
+            self.currentv[mask_starting,:] = self.generate_direction(self.currentu[mask_starting,:], region, scale=self.scale)
+
+        self._check()
+        
+        # advance the population
+        currentu, currentp, currentL, generation = self.evolve(transform, loglike, Lmin)
+
+        # harvest one individual if possible
+        mask_ripe = generation >= self.nsteps
+        # if np.random.uniform()<0.001:
+        #     print(mask_ripe.sum(), self.generation.mean(), self.generation.min(), self.generation.max(), "|")
+        if mask_ripe.any():
+            j = np.where(mask_ripe)[0][np.random.randint(mask_ripe.sum())]
+            u, p, L, nc = currentu[j,:], currentp[j,:], currentL[j], self.generation[j]
+            # reset this one to start again
+            self.generation[j] = 0
+            return u, p, L, self.popsize
+        else:
+            # print("E", end="\r")
+            return None, None, None, self.popsize

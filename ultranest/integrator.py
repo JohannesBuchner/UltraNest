@@ -1660,9 +1660,10 @@ class ReactiveNestedSampler(object):
             loglikelihoods of current live points
 
         """
-        assert self.region.inside(active_u).any(), \
-            ("None of the live points satisfies the current region!",
-             self.region.maxradiussq, self.region.u, self.region.unormed, active_u)
+        # this is extremely cautious and slows down performance in high-d
+        # assert self.region.inside(active_u).any(), \
+        #     ("None of the live points satisfies the current region!",
+        #      self.region.maxradiussq, self.region.u, self.region.unormed, active_u)
 
         nit = 0
         while True:
