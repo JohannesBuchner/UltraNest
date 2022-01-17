@@ -18,7 +18,7 @@ import numpy as np
 
 from .utils import create_logger, make_run_dir, resample_equal, vol_prefactor, vectorize, listify as _listify
 from .utils import is_affine_transform, normalised_kendall_tau_distance, distributed_work_chunk_size
-from ultranest.mlfriends import MLFriends, AffineLayer, ScalingLayer, find_nearby, WrappingEllipsoid
+from ultranest.mlfriends import MLFriends, AffineLayer, ScalingLayer, find_nearby, WrappingEllipsoid, RobustEllipsoidRegion
 from .store import HDF5PointStore, TextPointStore, NullPointStore
 from .viz import get_default_viz_callback
 from .ordertest import UniformOrderAccumulator
@@ -2935,8 +2935,8 @@ class ReactiveNestedSampler(object):
                     # add a bit of padding, but not outside parameter limits
                     lo, hi = edges[0], edges[-1]
                     step = edges[1] - lo
-                    lo = max(min(lo, self.transform_limits[i,0]), lo - 2 * step)
-                    hi = min(max(hi, self.transform_limits[i,1]), hi + 2 * step)
+                    lo = max(self.transform_limits[i,0], lo - 2 * step)
+                    hi = min(self.transform_limits[i,1], hi + 2 * step)
                     H, edges = np.histogram(v, bins=np.linspace(lo, hi, 40))
                     lo, hi = edges[0], edges[-1]
 
@@ -2946,6 +2946,7 @@ class ReactiveNestedSampler(object):
                     fmts = '    %-20s' + fmt + " +- " + fmt
                     print(fmts % (p, med, sigma))
             print()
+
 
     def plot(self):
         """Make corner, run and trace plots.
