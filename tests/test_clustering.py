@@ -4,7 +4,7 @@ import os
 import matplotlib.pyplot as plt
 from ultranest.utils import create_logger
 from ultranest import ReactiveNestedSampler
-from ultranest.mlfriends import MLFriends
+from ultranest.mlfriends import MLFriends, AffineLayer
 
 here = os.path.dirname(__file__)
 
@@ -85,6 +85,7 @@ class MockIntegrator(ReactiveNestedSampler):
         self.log = True
         self.logger = create_logger("mock")
         self.region_class = MLFriends
+        self.transform_layer_class = AffineLayer
 
 
 def test_overclustering_eggbox_txt():

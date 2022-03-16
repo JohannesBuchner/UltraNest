@@ -10,12 +10,18 @@ from Cython.Build import cythonize
 from distutils.extension import Extension
 from Cython.Distutils import build_ext
 
-extra_include_dirs = []
+extra_include_dirs = ['.']
 try:
     import numpy
-    extra_include_dirs = [numpy.get_include()]
+    extra_include_dirs += [numpy.get_include()]
 except:
     pass
+
+ext_args = dict(
+    include_dirs=extra_include_dirs,
+    extra_compile_args=['-O3'],
+    extra_link_args=['-O3'],
+)
 
 
 with open('README.rst') as readme_file:
@@ -49,8 +55,12 @@ setup(
     ],
     description="Fit and compare complex models reliably and rapidly. Advanced Nested Sampling.",
     install_requires=requirements,
-    ext_modules = [Extension('ultranest.mlfriends', ["ultranest/mlfriends.pyx"], 
-        include_dirs=['.'] + extra_include_dirs)],
+    ext_modules = cythonize([
+        Extension('ultranest.mlfriends', ["ultranest/mlfriends.pyx"], 
+            **ext_args),
+        Extension('ultranest.stepfuncs', ["ultranest/stepfuncs.pyx"], 
+            **ext_args),
+    ]),
     license="GNU General Public License v3",
     long_description=readme + '\n\n' + history,
     include_package_data=True,

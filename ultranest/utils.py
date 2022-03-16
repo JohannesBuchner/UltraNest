@@ -459,3 +459,27 @@ def distributed_work_chunk_size(num_total_tasks, mpi_rank, mpi_size):
         total number of processes
     """
     return (num_total_tasks + mpi_size - 1 - mpi_rank) // mpi_size
+
+
+def submasks(mask, *masks):
+    """
+    Get indices for an array, so that
+    array[indices] is equivalent to a[mask][mask1][mask2].
+
+    Parameters
+    ----------
+    mask : np.array(dtype=bool)
+        selection of some array
+    masks : list of np.array(dtype=bool)
+        each further mask is a subselection
+
+    Returns
+    -------
+    indices : np.array(dtype=int)
+        indices which select the subselection in the original array
+
+    """
+    indices, = np.where(mask)
+    for othermask in masks:
+        indices = indices[othermask]
+    return indices

@@ -1252,6 +1252,95 @@ class RobustEllipsoidRegion(MLFriends):
         else:
             return -1e300
 
+class SimpleRegion(RobustEllipsoidRegion):
+    """Axis-aligned ellipsoidal region.
+
+    Defines a region around nested sampling live points for
+
+    1. checking whether a proposed point likely also fulfills the
+       likelihood constraints
+    2. proposing new points.
+
+    Learns geometry of region from existing live points.
+    """
+
+    def create_ellipsoid(self, minvol=0.0):
+        """Create wrapping ellipsoid and store its center and covariance.
+
+        Parameters
+        ----------
+        minvol: float
+            If positive, make sure ellipsoid has at least this volume.
+        """
+        assert self.enlarge is not None
+        # compute enlargement of bounding ellipsoid
+        ctr = np.mean(self.u, axis=0)
+        var = np.var(self.u, axis=0)
+        a = np.diag(1. / var)
+        cov = np.diag(var)
+
+        self.ellipsoid_center = ctr
+        self.ellipsoid_invcov = a
+        self.ellipsoid_cov = cov
+
+        l, v = np.linalg.eigh(a)
+        self.ellipsoid_axlens = 1. / np.sqrt(l)
+        self.ellipsoid_axes = np.dot(v, np.diag(self.ellipsoid_axlens))
+        self.ellipsoid_axes_T = self.ellipsoid_axes.transpose()
+
+        l2, v2 = np.linalg.eigh(cov)
+        self.ellipsoid_inv_axlens = 1. / np.sqrt(l2)
+        self.ellipsoid_inv_axes = np.dot(v2, np.diag(self.ellipsoid_inv_axlens))
+
+
+
+    def compute_enlargement(self, nbootstraps=50, minvol=0., rng=np.random):
+        """Return MLFriends radius and ellipsoid enlargement using bootstrapping.
+
+        The wrapping ellipsoid covariance is determined in each bootstrap round.
+
+        Parameters
+        ----------
+        nbootstraps: int
+            number of bootstrapping rounds
+        minvol: float
+            minimum volume to enforce to wrapping ellipsoid
+        rng:
+            random number generator
+
+        Returns
+        -------
+        max_distance: float
+            square radius of MLFriends algorithm
+        max_radius: float
+            square radius of enclosing ellipsoid.
+        """
+        N, ndim = self.u.shape
+        assert np.isfinite(self.unormed).all(), self.unormed
+        selected = np.empty(N, dtype=bool)
+        maxd = 1e300
+        maxf = 0.0
+
+        for i in range(nbootstraps):
+            idx = rng.randint(N, size=N)
+            selected[:] = False
+            selected[idx] = True
+
+            # compute enlargement of bounding ellipsoid
+            ctr = np.mean(self.u[selected,:], axis=0)
+            var = np.var(self.u[selected,:], axis=0)
+            # compute expansion factor
+            f = np.sum((self.u[~selected,:] - ctr.reshape((1, -1)) / var)**2, axis=0).max()
+            assert np.isfinite(f), (ctr, var, self.unormed, f)
+            if not f > 0:
+                raise np.linalg.LinAlgError("Distances are not positive")
+            maxf = max(maxf, f)
+
+        assert maxd > 0, (maxd, self.u, self.unormed)
+        assert maxf > 0, (maxf, self.u, self.unormed)
+        return maxd, maxf
+
+
 class WrappingEllipsoid(object):
     """Ellipsoid which safely wraps points."""
 

@@ -1015,6 +1015,7 @@ class ReactiveNestedSampler(object):
 
         self.sampler = 'reactive-nested'
         self.x_dim = x_dim
+        self.transform_layer_class = AffineLayer if x_dim > 1 else ScalingLayer
         self.derivedparamnames = derived_param_names
         self.num_bootstraps = int(num_bootstraps)
         num_derived = len(self.derivedparamnames)
@@ -1670,6 +1671,7 @@ class ReactiveNestedSampler(object):
             if ib >= len(self.samples) and self.use_point_stack:
                 # root checks the point store
                 next_point = np.zeros((1, 3 + self.x_dim + self.num_params)) * np.nan
+                # print("1", self.mpi_rank, next_point)
 
                 if self.log_to_pointstore:
                     _, stored_point = self.pointstore.pop(Lmin)
@@ -1677,13 +1679,17 @@ class ReactiveNestedSampler(object):
                         next_point[0,:] = stored_point
                     else:
                         next_point[0,:] = -np.inf
+                    # print("2", self.mpi_rank, next_point)
                     self.use_point_stack = not self.pointstore.stack_empty
 
                 if self.use_mpi:  # and informs everyone
                     self.use_point_stack = self.comm.bcast(self.use_point_stack, root=0)
+                    # print("3", self.mpi_rank, next_point)
                     next_point = self.comm.bcast(next_point, root=0)
 
                 # unpack
+                if np.ndim(next_point) != 2:
+                    print("XXXX ", self.mpi_rank, next_point, self.use_point_stack)
                 self.likes = next_point[:,1]
                 self.samples = next_point[:,3:3 + self.x_dim]
                 self.samplesv = next_point[:,3 + self.x_dim:3 + self.x_dim + self.num_params]
@@ -1792,10 +1798,7 @@ class ReactiveNestedSampler(object):
         if self.region is None:
             # if self.log:
             #    self.logger.debug("building first region ...")
-            if self.x_dim > 1:
-                self.transformLayer = AffineLayer(wrapped_dims=self.wrapped_axes)
-            else:
-                self.transformLayer = ScalingLayer(wrapped_dims=self.wrapped_axes)
+            self.transformLayer = self.transform_layer_class(wrapped_dims=self.wrapped_axes)
             self.transformLayer.optimize(active_u, active_u, minvol=minvol)
             self.region = self.region_class(active_u, self.transformLayer)
             self.region_nodes = active_node_ids.copy()
@@ -2318,7 +2321,7 @@ class ReactiveNestedSampler(object):
             self.ib = 0
             self.samples = []
             if self.draw_multiple:
-                ndraw = 100
+                ndraw = self.ndraw_min
             else:
                 ndraw = 40
             self.pointstore.reset()
@@ -2485,8 +2488,8 @@ class ReactiveNestedSampler(object):
                                 np.inf if ncall_here == 0 else it_here * 100 / ncall_here,
                                 nlive))
                             sys.stdout.flush()
-                        self.logger.debug('iteration=%d, ncalls=%d, logz=%.2f, remainder_fraction=%.4f%%, Lmin=%.2f, Lmax=%.2f' % (
-                            it, self.ncall, main_iterator.logZ,
+                        self.logger.debug('iteration=%d, ncalls=%d, regioncalls=%d, ndraw=%d, logz=%.2f, remainder_fraction=%.4f%%, Lmin=%.2f, Lmax=%.2f' % (
+                            it, self.ncall, self.ncall_region, ndraw, main_iterator.logZ,
                             100 * main_iterator.remainder_fraction, Lmin, main_iterator.Lmax))
 
                         # if efficiency becomes low, bulk-process larger arrays

@@ -167,6 +167,78 @@ def get_extended_auxiliary_problem(loglike, transform, ctr, invcov, enlargement_
 
     return aux_loglikelihood, aux_transform
 
+def get_extended_auxiliary_independent_problem(loglike, transform, ctr, err, df=1):
+    """Return a new loglike and transform based on an auxiliary distribution.
+
+    Given a likelihood and prior transform, and information about
+    the (expected) posterior peak, generates a auxiliary
+    likelihood and prior transform that is identical but
+    requires fewer nested sampling iterations.
+
+    This is achieved by deforming the prior space, and undoing that
+    transformation by correction weights in the likelihood.
+
+    The auxiliary distribution used for transformation/weighting is
+    a independent Student-t distribution for each parameter.
+
+    Usage::
+
+        aux_loglikelihood, aux_transform = get_auxiliary_problem(loglike, transform, ctr, invcov, enlargement_factor, df=1)
+        aux_sampler = ReactiveNestedSampler(parameters, aux_loglikelihood, transform=aux_transform, derived_param_names=['logweight'])
+        aux_results = aux_sampler.run()
+        posterior_samples = aux_results['samples'][:,-1]
+
+    Parameters
+    ------------
+    loglike: function
+        original likelihood function
+    transform: function
+        original prior transform function
+    ctr: array
+        Posterior center (in u-space).
+    err: array
+        Standard deviation around the posterior center (in u-space).
+    df: float
+        Number of degrees of freedom of the auxiliary student-t distribution.
+        The default is recommended. For truly gaussian posteriors,
+        the student-t can be made more gaussian (by df>=30) for accelation.
+
+    Returns:
+    ---------
+    aux_loglike: function
+        auxiliary loglikelihood function.
+    aux_transform: function
+        auxiliary transform function.
+        Takes d u-space coordinates, and returns d + 1 p-space parameters.
+        The first d return coordinates are identical to what ``transform`` would return.
+        The final coordinate is the log of the correction weight.
+    """
+    ndim, = np.shape(ctr)
+    assert np.shape(err) == (ndim,)
+    assert df >= 1, ('Degrees of freedom must be above 1', df)
+
+    rv_aux = scipy.stats.t(df, ctr, err)
+    # handle the case where the aux distribution extends beyond the unit cube
+    aux_lo = rv_aux.cdf(0)
+    aux_hi = rv_aux.cdf(1)
+    aux_w = aux_hi - aux_lo
+    weight_ref = rv_aux.logpdf(ctr).sum()
+
+    def aux_transform(u):
+        # get uniform gauss/t distributed values:
+        x = rv_aux.ppf(u * aux_w + aux_lo)
+        weight = -rv_aux.logpdf(x).sum() + weight_ref
+        return np.append(transform(x), weight)
+
+    def aux_loglikelihood(x):
+        x_actual = x[:-1]
+        weight = x[-1]
+        if -1e100 < weight < 1e100:
+            return loglike(x_actual) + weight - weight_ref
+        else:
+            return -1e300
+
+    return aux_loglikelihood, aux_transform
 
 def reuse_samples(
     param_names, loglike, points, logl, logw=None,
