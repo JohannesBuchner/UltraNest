@@ -127,6 +127,12 @@ def main(args):
         resume='resume' if args.resume else 'overwrite',
         wrapped_params=wrapped_params,
     )
+    if args.axis_aligned:
+        transform_layer_class = ScalingLayer
+        region_class = SimpleRegion
+    else:
+        region_class = [MLFriends, RobustEllipsoidRegion](int(args.ellipsoidal))
+    sampler.transform_layer_class = transform_layer_class
     print("MPI:", sampler.mpi_size, sampler.mpi_rank)
     for result in sampler.run_iter(
         update_interval_volume_fraction=args.update_interval_iter_fraction,
@@ -138,6 +144,7 @@ def main(args):
         cluster_num_live_points=args.cluster_num_live_points,
         min_num_live_points=args.num_live_points,
         max_ncalls=int(args.max_ncalls),
+        region_class=[MLFriends, RobustEllipsoidRegion](int(args.ellipsoidal)),
     ):
         sampler.print_results()
         print(
