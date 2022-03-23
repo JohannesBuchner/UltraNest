@@ -87,10 +87,14 @@ docs: ## generate Sphinx HTML documentation, including API docs
 servedocs: docs ## compile the docs watching for changes
 	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
 
-release: dist ## package and upload a release
+release-test: install
 	rm -rf logs/features-*
+	# grep iterated examples/runfeatures.sh | sed 's,python3,,g' | xargs -rt --max-lines=1 mpiexec -np 3 coverage run --parallel-mode
+	# grep -v iterated examples/runfeatures.sh | sed 's,python3,,g' | xargs -rt --max-lines=1 mpiexec -np 5 coverage run --parallel-mode
 	echo testfeatures/runsettings-*-iterated.json | xargs --max-args=1 mpiexec -np 3 coverage run --parallel-mode examples/testfeatures.py
-	bash -c 'echo $$RANDOM' | xargs mpiexec -np 5 coverage run --parallel-mode examples/testfeatures.py --random --seed
+	grep -- --random examples/runfeatures.sh | xargs mpiexec -np 5 coverage run --parallel-mode examples/testfeatures.py --random --seed
+
+release: release-test ## package and upload a release
 	twine upload -s dist/*.tar.gz
 
 dist: clean ## builds source and wheel package
@@ -99,4 +103,4 @@ dist: clean ## builds source and wheel package
 	ls -l dist
 
 install: clean ## install the package to the active Python's site-packages
-	$(PYTHON) setup.py install
+	$(PYTHON) setup.py install --user
