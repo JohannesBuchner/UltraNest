@@ -374,7 +374,7 @@ def generate_random_direction(ui, region, scale=1):
     del region
     nsamples, ndim = ui.shape
     v = np.random.normal(size=(nsamples, ndim))
-    v *= scale / np.linalg.norm(v, axis=1)
+    v *= scale / np.linalg.norm(v, axis=1).reshape((nsamples, 1))
     return v
 
 
@@ -423,6 +423,6 @@ def generate_region_random_direction(ui, region, scale=1):
     nsamples, ndim = ui.shape
     # choose axis in transformed space:
     v1 = np.random.normal(size=(nsamples, ndim))
-    v1 *= scale / np.linalg.norm(v1, axis=1)
+    v1 *= scale / np.linalg.norm(v1, axis=1).reshape((nsamples, 1))
     v = np.einsum('ij,kj->ki', region.transformLayer.axes, v1)
     return v
