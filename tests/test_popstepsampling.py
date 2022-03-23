@@ -1,6 +1,6 @@
 import numpy as np
 from ultranest import ReactiveNestedSampler
-from ultranest.popstepsampler import PopulationSliceSampler, generate_unit_directions
+from ultranest.popstepsampler import PopulationSliceSampler, generate_cube_oriented_direction
 
 def loglike_vectorized(z):
     a = np.array([-0.5 * sum([((xi - 0.7 + i*0.001)/0.1)**2 for i, xi in enumerate(x)]) for x in z])
@@ -25,7 +25,7 @@ def test_stepsampler_cubeslice(plot=False):
 
     sampler.stepsampler = PopulationSliceSampler(
         popsize=popsize, nsteps=nsteps, 
-        generate_direction=generate_unit_directions,
+        generate_direction=generate_cube_oriented_direction,
     )
     r = sampler.run(viz_callback=None, log_interval=50)
     sampler.print_results()

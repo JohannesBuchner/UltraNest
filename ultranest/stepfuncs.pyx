@@ -273,41 +273,6 @@ def evolve(
         nc
     )
 
-cdef _fill_directions(
-    np.ndarray[np.float_t, ndim=2] v,
-    np.ndarray[np.int_t, ndim=1] indices,
-    float scale
-):
-    cdef size_t nsamples = v.shape[0]
-    cdef size_t ndim = v.shape[0]
-    cdef size_t i
-    for i in range(nsamples):
-        v[i, indices[i]] = scale
-
-def generate_unit_directions(ui, region, scale=1):
-    """randomly chose a axis vector.
-
-    Parameters
-    ----------
-    ui: np.array((npoints, ndim), dtype=float)
-        starting points (not used)
-    region:
-        not used
-    scale: float
-        length of returned vector
-
-    Returns
-    ---------
-    v: np.array((npoints, ndim), dtype=float)
-        Random axis vectors of length `scale`, one for each starting point.
-    """
-    nsamples, ndim = ui.shape
-    v = np.zeros((nsamples, ndim))
-    # choose axis
-    j = np.random.randint(ndim, size=nsamples)
-    _fill_directions(v, j, scale)
-    return v
-
 def step_back(Lmin, allL, generation, currentt, log=False):
     """Revert walkers which have wandered astray.
 
@@ -354,3 +319,110 @@ def step_back(Lmin, allL, generation, currentt, log=False):
         problematic = np.any(below_threshold_parent, axis=1)
         if not problematic.any():
             break
+
+
+cdef _fill_directions(
+    np.ndarray[np.float_t, ndim=2] v,
+    np.ndarray[np.int_t, ndim=1] indices,
+    float scale
+):
+    cdef size_t nsamples = v.shape[0]
+    cdef size_t ndim = v.shape[0]
+    cdef size_t i
+    for i in range(nsamples):
+        v[i, indices[i]] = scale
+
+def generate_cube_oriented_direction(ui, region, scale=1):
+    """Draw a unit direction vector in direction of a random unit cube axes.
+
+    Parameters
+    ----------
+    ui: np.array((npoints, ndim), dtype=float)
+        starting points (not used)
+    region:
+        not used
+    scale: float
+        length of returned vector
+
+    Returns
+    ---------
+    v: np.array((npoints, ndim), dtype=float)
+        Random axis vectors of length `scale`, one for each starting point.
+    """
+    nsamples, ndim = ui.shape
+    v = np.zeros((nsamples, ndim))
+    # choose axis
+    j = np.random.randint(ndim, size=nsamples)
+    _fill_directions(v, j, scale)
+    return v
+
+def generate_random_direction(ui, region, scale=1):
+    """Draw uniform direction vector in unit cube space of length `scale`.
+
+    Parameters
+    -----------
+    region: MLFriends object
+        current region (not used)
+    scale: float
+        length of direction vector
+    
+    Returns
+    --------
+    v: array
+        new direction vector
+    """
+    del region
+    nsamples, ndim = ui.shape
+    v = np.random.normal(size=(nsamples, ndim))
+    v *= scale / np.linalg.norm(v, axis=1)
+    return v
+
+
+def generate_region_oriented_direction(ui, region, scale=1):
+    """Draw a random direction vector in direction of one of the `region` axes.
+
+    If given, the vector length is `scale`.
+    If not, the vector length in transformed space is `tscale`.
+
+    Parameters
+    -----------
+    region: MLFriends object
+        current region
+    scale: float
+        length of direction vector in t-space
+
+    Returns
+    --------
+    v: array
+        new direction vector (in u-space)
+    """
+    nsamples, ndim = ui.shape
+    # choose axis in transformed space:
+    j = np.random.randint(ndim, size=nsamples)
+    v = region.transformLayer.axes[j] * scale
+    return v
+
+
+def generate_region_random_direction(ui, region, scale=1):
+    """Draw a direction vector in a random direction of the region.
+
+    The vector length is `scale` (in unit cube space).
+
+    Parameters
+    -----------
+    region: MLFriends object
+        current region
+    scale: float:
+        length of direction vector (in t-space)
+    
+    Returns
+    --------
+    v: array
+        new direction vector
+    """
+    nsamples, ndim = ui.shape
+    # choose axis in transformed space:
+    v1 = np.random.normal(size=(nsamples, ndim))
+    v1 *= scale / np.linalg.norm(v1, axis=1)
+    v = np.einsum('ij,kj->ki', region.transformLayer.axes, v1)
+    return v

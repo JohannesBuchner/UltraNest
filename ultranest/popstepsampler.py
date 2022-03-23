@@ -3,7 +3,9 @@
 
 import numpy as np
 from ultranest.utils import submasks
-from ultranest.stepfuncs import evolve, step_back, generate_unit_directions
+from ultranest.stepfuncs import evolve, step_back
+from ultranest.stepfuncs import generate_cube_oriented_direction, \
+   generate_random_direction, generate_region_oriented_direction, generate_region_random_direction
 
 
 class PopulationSliceSampler():
@@ -311,5 +313,3 @@ class PopulationSliceSampler():
             return u, p, L, nc
         else:
             return None, None, None, nc
-
-__dir__ = [PopulationSliceSampler, generate_unit_directions]
