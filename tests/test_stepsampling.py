@@ -1,7 +1,7 @@
 import numpy as np
 from ultranest.mlfriends import ScalingLayer, AffineLayer, MLFriends
 from ultranest import ReactiveNestedSampler
-from ultranest.stepsampler import RegionMHSampler, CubeMHSampler, CubeSliceSampler, RegionSliceSampler, SpeedVariableRegionSliceSampler, AHARMSampler, RegionBallSliceSampler
+from ultranest.stepsampler import RegionMHSampler, CubeMHSampler, CubeSliceSampler, RegionSliceSampler, SpeedVariableRegionSliceSampler, RegionBallSliceSampler
 from ultranest.stepsampler import generate_region_random_direction, ellipsoid_bracket, crop_bracket_at_unit_cube
 from ultranest.pathsampler import SamplingPathStepSampler
 from numpy.testing import assert_allclose
@@ -297,74 +297,6 @@ def test_crop_bracket(plot=False):
     assert (ucurrent + v * left >= 0).all(), (ucurrent, v, ellipsoid_center, ellipsoid_inv_axes, enlarge)
     assert (ucurrent + v * right >= 0).all(), (ucurrent, v, ellipsoid_center, ellipsoid_inv_axes, enlarge)
 
-def test_aharm_sampler():
-    def loglike(theta):
-        return -0.5 * (((theta - 0.5)/0.01)**2).sum(axis=1)
-    def transform(x):
-        return x
-
-    seed = 1
-    Nlive = 10
-    np.random.seed(seed)
-    us = np.random.uniform(size=(Nlive, 2))
-    Ls = loglike(us)
-    Lmin = Ls.min()
-    transformLayer = ScalingLayer()
-    transformLayer.optimize(us, us)
-    region = MLFriends(us, transformLayer)
-    region.maxradiussq, region.enlarge = region.compute_enlargement()
-    region.create_ellipsoid()
-    assert region.inside(us).all()
-    nsteps = 10
-    sampler = AHARMSampler(nsteps=nsteps, region_filter=True)
-
-    nfunccalls = 0
-    ncalls = 0
-    while True:
-        u, p, L, nc = sampler.__next__(region, Lmin, us, Ls, transform, loglike)
-        nfunccalls += 1
-        ncalls += nc
-        if u is not None:
-            break
-        if nfunccalls > 100 + nsteps:
-            assert False, ('infinite loop?', seed, nsteps, Nlive)
-    print("done in %d function calls, %d likelihood evals" % (nfunccalls, ncalls))
-    
-
-def run_aharm_sampler():
-    for seed in [733] + list(range(10)):
-        print()
-        print("SEED=%d" % seed)
-        print()
-        np.random.seed(seed)
-        nsteps = max(1, int(10**np.random.uniform(0, 3)))
-        Nlive = int(10**np.random.uniform(1.5, 3))
-        print("Nlive=%d nsteps=%d" % (Nlive, nsteps))
-        sampler = AHARMSampler(nsteps, adaptive_nsteps=False, region_filter=False)
-        us = np.random.uniform(0.6, 0.8, size=(4000, 2))
-        Ls = loglike_vectorized(us)
-        i = np.argsort(Ls)[-Nlive:]
-        us = us[i,:]
-        Ls = Ls[i]
-        Lmin = Ls.min()
-        
-        transformLayer = ScalingLayer()
-        transformLayer.optimize(us, us)
-        region = MLFriends(us, transformLayer)
-        region.maxradiussq, region.enlarge = region.compute_enlargement()
-        region.create_ellipsoid()
-        nfunccalls = 0
-        ncalls = 0
-        while True:
-            u, p, L, nc = sampler.__next__(region, Lmin, us, Ls, transform, loglike)
-            nfunccalls += 1
-            ncalls += nc
-            if u is not None:
-                break
-            if nfunccalls > 100 + nsteps:
-                assert False, ('infinite loop?', seed, nsteps, Nlive)
-        print("done in %d function calls, %d likelihood evals" % (nfunccalls, ncalls))
-
 
 if __name__ == '__main__':
     #test_stepsampler_cubemh(plot=True)
@@ -372,6 +304,5 @@ if __name__ == '__main__':
     #test_stepsampler_de(plot=False)
     #test_stepsampler_cubeslice(plot=True)
     #test_stepsampler_regionslice(plot=True)
-    run_aharm_sampler()
-    #test_ellipsoid_bracket()
+    test_ellipsoid_bracket()
     #test_crop_bracket(plot=True)
