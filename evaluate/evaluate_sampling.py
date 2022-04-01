@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from ultranest.mlfriends import ScalingLayer, AffineLayer, MLFriends
 from ultranest.stepsampler import RegionMHSampler, CubeMHSampler
 from ultranest.stepsampler import CubeSliceSampler, RegionSliceSampler, RegionBallSliceSampler, RegionSequentialSliceSampler, SpeedVariableRegionSliceSampler
-from ultranest.stepsampler import AHARMSampler
+#from ultranest.stepsampler import AHARMSampler
 #from ultranest.stepsampler import OtherSamplerProxy, SamplingPathSliceSampler, SamplingPathStepSampler
 #from ultranest.stepsampler import GeodesicSliceSampler, RegionGeodesicSliceSampler
 import tqdm
@@ -29,11 +29,11 @@ def quantify_step(a, b):
     return [stepsize, angular_step, radial_step]
 
 #@mem.cache
-def evaluate_warmed_sampler(problemname, ndim, nlive, nsteps, sampler):
+def evaluate_warmed_sampler(problemname, ndim, nlive, nsteps, sampler, seed=1):
     loglike, grad, volume, warmup = get_problem(problemname, ndim=ndim)
     if hasattr(sampler, 'set_gradient'):
         sampler.set_gradient(grad)
-    np.random.seed(1)
+    np.random.seed(seed)
     def multi_loglike(xs):
         return np.asarray([loglike(x) for x in xs])
     us = np.array([warmup(ndim) for i in range(nlive)])
@@ -107,6 +107,7 @@ class MLFriendsSampler(object):
     
     def __next__(self, region, Lmin, us, Ls, transform, loglike):
         u, father = region.sample(nsamples=self.ndraw)
+        assert u.ndim > 1, (self.ndraw, region, u.shape)
         nu = u.shape[0]
         self.starti = np.random.randint(len(us))
         if nu > 0:
@@ -136,7 +137,7 @@ def main(args):
         #CubeMHSampler(nsteps=16), #CubeMHSampler(nsteps=4), CubeMHSampler(nsteps=1),
         #RegionMHSampler(nsteps=16), #RegionMHSampler(nsteps=4), RegionMHSampler(nsteps=1),
         ##DESampler(nsteps=16), DESampler(nsteps=4), #DESampler(nsteps=1),
-        #CubeSliceSampler(nsteps=2*ndim), CubeSliceSampler(nsteps=ndim), CubeSliceSampler(nsteps=max(1, ndim//2)),
+        CubeSliceSampler(nsteps=2*ndim), #CubeSliceSampler(nsteps=ndim), CubeSliceSampler(nsteps=max(1, ndim//2)),
         #RegionSliceSampler(nsteps=ndim), RegionSliceSampler(nsteps=max(1, ndim//2)),
         #RegionSliceSampler(nsteps=2), RegionSliceSampler(nsteps=4), 
         #RegionSliceSampler(nsteps=ndim), RegionSliceSampler(nsteps=4*ndim),
@@ -145,11 +146,6 @@ def main(args):
 
         #SpeedVariableRegionSliceSampler([Ellipsis]*ndim), SpeedVariableRegionSliceSampler([slice(i, ndim) for i in range(ndim)]),
         #SpeedVariableRegionSliceSampler([Ellipsis]*ndim + [slice(1 + ndim//2, None)]*ndim), 
-        
-        AHARMSampler(nsteps=64),
-        AHARMSampler(nsteps=64, adaptive_nsteps='move-distance'),
-        AHARMSampler(nsteps=64, region_filter=False),
-        AHARMSampler(nsteps=64, orthogonalise=True),
     ]
     if ndim < 14:
         samplers.insert(0, MLFriendsSampler())
