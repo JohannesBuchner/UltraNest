@@ -73,9 +73,11 @@ def generate_corrgauss_problem(ndim, gamma=0.95):
     np.fill_diagonal(M, 1)
     Minv = np.linalg.inv(M)
     Mdet = np.linalg.det(M)
-    center = np.ones(ndim) * 0.5
+    center = np.zeros(ndim)
 
     loglike_asymgauss, gradient_asymgauss, volume_asymgauss, warmup_asymgauss = generate_asymgauss_problem(ndim)
+    
+    from ultranest.mlfriends import AffineLayer
     
     layer = AffineLayer(center, M, Minv)
     
@@ -83,12 +85,12 @@ def generate_corrgauss_problem(ndim, gamma=0.95):
         # the gaussian is defined in our aux coordinate system:
         y = warmup_asymgauss(ndim)
         # so transform to these
-        return layer.transform(y)
+        return layer.transform(y - 0.5) + 0.5
     
     def loglike_corrgauss(x):
         """  gaussian problem """
         # transform back to aux coordinate system, where gaussian is nice
-        y = layer.untransform(x)
+        y = layer.untransform(x - 0.5) + 0.5
         return loglike_asymgauss(y)
 
     def volume_corrgauss(loglike, ndim):
@@ -97,7 +99,7 @@ def generate_corrgauss_problem(ndim, gamma=0.95):
         return volume_asymgauss(loglike, ndim)
 
     def gradient_corrgauss(x):
-        y = layer.untransform(x)
+        y = layer.untransform(x - 0.5) + 0.5
         return gradient_to_center(y)
     
     return loglike_corrgauss, gradient_corrgauss, volume_corrgauss, warmup_corrgauss

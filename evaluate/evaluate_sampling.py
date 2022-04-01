@@ -106,8 +106,7 @@ class MLFriendsSampler(object):
         self.adaptive_nsteps = False
     
     def __next__(self, region, Lmin, us, Ls, transform, loglike):
-        u, father = region.sample(nsamples=self.ndraw)
-        assert u.ndim > 1, (self.ndraw, region, u.shape)
+        u = region.sample(nsamples=self.ndraw)
         nu = u.shape[0]
         self.starti = np.random.randint(len(us))
         if nu > 0:
