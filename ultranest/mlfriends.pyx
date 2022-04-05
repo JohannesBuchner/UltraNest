@@ -1404,6 +1404,19 @@ class WrappingEllipsoid(object):
         self.ellipsoid_axlens = 1. / np.sqrt(l)
         self.ellipsoid_axes = np.dot(v, np.diag(self.ellipsoid_axlens))
 
+    def update_center(self, ctr):
+        """Update ellipsoid center, considering fixed dimensions.
+
+        Parameters
+        ----------
+        ctr: vector
+            new center
+
+        """
+        if self.variable_dims is Ellipsis:
+            self.ellipsoid_center = ctr
+        else:
+            self.ellipsoid_center = ctr[self.variable_dims]
 
     def inside(self, u):
         """Check if inside wrapping ellipsoid.

@@ -164,23 +164,31 @@ def test_ellipsoids():
         region = MLFriends(points, transformLayer)
         region.maxradiussq, region.enlarge = region.compute_enlargement(nbootstraps=30)
         region.create_ellipsoid()
-        assert region.inside(points).all()
+        inside = region.inside(points)
+        assert inside.shape == (len(points),), (inside.shape, points.shape)
+        assert inside.all()
         
         region = RobustEllipsoidRegion(points, transformLayer)
         region.maxradiussq, region.enlarge = region.compute_enlargement(nbootstraps=30)
         region.create_ellipsoid()
-        assert region.inside(points).all()
+        inside = region.inside(points)
+        assert inside.shape == (len(points),), (inside.shape, points.shape)
+        assert inside.all()
         
         region = SimpleRegion(points, transformLayer)
         region.maxradiussq, region.enlarge = region.compute_enlargement(nbootstraps=30)
         region.create_ellipsoid()
-        assert region.inside(points).all()
+        inside = region.inside(points)
+        assert inside.shape == (len(points),), (inside.shape, points.shape)
+        assert inside.all()
         
         tregion = WrappingEllipsoid(tpoints)
         print(tregion.variable_dims)
         tregion.enlarge = tregion.compute_enlargement(nbootstraps=30)
         tregion.create_ellipsoid()
-        assert tregion.inside(tpoints).all()
+        inside = tregion.inside(tpoints)
+        assert inside.shape == (len(tpoints),), (inside.shape, tpoints.shape)
+        assert inside.all()
     
 
 if __name__ == '__main__':

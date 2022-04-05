@@ -2455,7 +2455,7 @@ class ReactiveNestedSampler(object):
                     # move also the ellipsoid
                     self.region.ellipsoid_center = np.mean(self.region.u, axis=0)
                     if self.tregion:
-                        self.tregion.ellipsoid_center = np.mean(active_p, axis=0)
+                        self.tregion.update_center(np.mean(active_p, axis=0))
 
                     # if we track the cluster assignment, then in the next round
                     # the ids with the same members are likely to have the same id

@@ -23,7 +23,7 @@ def generate_random_direction(ui, region, scale=1):
         current region (not used)
     scale: float
         length of direction vector
-    
+
     Returns
     --------
     v: array
@@ -92,9 +92,9 @@ def generate_cube_oriented_differential_direction(ui, region, scale=1):
         i2 = np.random.randint(nlive - 1)
         if i2 >= i:
             i2 += 1
-        
+
         v[j] = (region.u[i,j] - region.u[i2,j]) * scale
-    
+
     return v
 
 
@@ -121,10 +121,11 @@ def generate_differential_direction(ui, region, scale=1):
     i2 = np.random.randint(nlive - 1)
     if i2 >= i:
         i2 += 1
-    
+
     # use doubling procedure to identify left and right maxima borders
     v = (region.u[i,:] - region.u[i2,:]) * scale
     return v
+
 
 def generate_partial_differential_direction(ui, region, scale=1):
     """Draw a unit direction vector in direction of a random unit cube axes.
@@ -192,7 +193,7 @@ def generate_region_random_direction(ui, region, scale=1):
         current region
     scale: float:
         length of direction vector (in t-space)
-    
+
     Returns
     --------
     v: array
@@ -226,7 +227,6 @@ def generate_mixture_random_direction(ui, region, scale=1):
         return generate_differential_direction(ui, region, scale=scale)
     else:
         return generate_region_oriented_direction(ui, region, scale=scale)
-    return v
 
 
 def _inside_region(region, unew, uold):
@@ -256,7 +256,7 @@ def inside_region(region, unew, uold):
         point to check
     uold: array
         not used
-    
+
     Returns
     --------
     v: array
@@ -264,6 +264,7 @@ def inside_region(region, unew, uold):
     """
     del uold
     return region.inside(unew)
+
 
 def adapt_proposal_total_distances(region, history, mean_pair_distance, ndim):
     # compute mean vector of each proposed jump
@@ -275,6 +276,7 @@ def adapt_proposal_total_distances(region, history, mean_pair_distance, ndim):
 
     return far_enough, [d2, mean_pair_distance]
 
+
 def adapt_proposal_total_distances_NN(region, history, mean_pair_distance, ndim):
     # compute mean vector of each proposed jump
     # compute total distance of all jumps
@@ -285,6 +287,7 @@ def adapt_proposal_total_distances_NN(region, history, mean_pair_distance, ndim)
 
     return far_enough, [d2, region.maxradiussq**0.5]
 
+
 def adapt_proposal_summed_distances(region, history, mean_pair_distance, ndim):
     # compute sum of distances from each jump
     tproposed = region.transformLayer.transform(np.asarray([u for u, _ in history]))
@@ -293,6 +296,7 @@ def adapt_proposal_summed_distances(region, history, mean_pair_distance, ndim):
 
     return far_enough, [d2, mean_pair_distance]
 
+
 def adapt_proposal_summed_distances_NN(region, history, mean_pair_distance, ndim):
     # compute sum of distances from each jump
     tproposed = region.transformLayer.transform(np.asarray([u for u, _ in history]))
@@ -300,6 +304,7 @@ def adapt_proposal_summed_distances_NN(region, history, mean_pair_distance, ndim
     far_enough = d2 > region.maxradiussq**0.5
 
     return far_enough, [d2, region.maxradiussq**0.5]
+
 
 def adapt_proposal_move_distances(region, history, mean_pair_distance, ndim):
     # compute distance from start to end
@@ -311,6 +316,7 @@ def adapt_proposal_move_distances(region, history, mean_pair_distance, ndim):
 
     return far_enough, [d2, region.maxradiussq**0.5]
 
+
 def adapt_proposal_move_distances_midway(region, history, mean_pair_distance, ndim):
     # compute distance from start to end
     ustart, _ = history[0]
@@ -321,6 +327,7 @@ def adapt_proposal_move_distances_midway(region, history, mean_pair_distance, nd
     far_enough = d2 > region.maxradiussq
 
     return far_enough, [d2, region.maxradiussq**0.5]
+
 
 class StepSampler(object):
     """Base class for a simple step sampler, staggering around.
@@ -347,18 +354,27 @@ class StepSampler(object):
             always doubling nsteps, until Z is stable.
 
         generate_direction: function
-            direction proposal function. Available are:
+            direction proposal function.
+
+            Available are:
 
             * :py:func:`generate_cube_oriented_direction` (slice sampling)
             * :py:func:`generate_region_oriented_direction` (slice sampling on the whitened parameter space)
+            * :py:class:`SequentialDirectionGenerator` (sequential slice sampling on the whitened parameter space)
             * :py:func:`generate_random_direction` (hit-and-run sampling)
             * :py:func:`generate_region_random_direction` (hit-and-run sampling on the whitened parameter space)
             * :py:func:`generate_cube_oriented_differential_direction` (slice sampling with better proposal scale)
             * :py:func:`generate_differential_direction` (differential evolution slice proposal)
             * :py:func:`generate_partial_differential_direction` (differential evolution slice proposal on only 10% of the parameters)
             * :py:func:`generate_mixture_random_direction` (generate_differential_direction and generate_cube_oriented_differential_direction)
-            
-            When in doubt, use :py:func:`generate_mixture_random_direction`.
+
+            Additionally, :py:class:`OrthogonalDirectionGenerator` 
+            can be applied to a generate_direction.
+
+            When in doubt, try :py:func:`generate_mixture_random_direction`.
+            It combines efficient moves along the live point distribution,
+            with robustness against collapse to a subspace.
+            :py:func:`generate_cube_oriented_direction` works well too.
 
         adaptive_nsteps: False, 'proposal-distance', 'move-distance'
             Strategy to adapt the number of steps. The strategies
@@ -385,7 +401,7 @@ class StepSampler(object):
 
             Adapting can give usable results. However, strictly speaking,
             detailed balance is not maintained, so the results can be biased.
-            You can use the logstat property to find out the `nsteps` learned 
+            You can use the logstat property to find out the `nsteps` learned
             from one run (third column), and use the largest value for `nsteps`
             of a fresh run.
 
@@ -415,7 +431,7 @@ class StepSampler(object):
             False: None,
             'move-distance': adapt_proposal_move_distances,
             'move-distance-midway': adapt_proposal_move_distances_midway,
-            'proposal-total-distances': adapt_proposal_total_distances, 
+            'proposal-total-distances': adapt_proposal_total_distances,
             'proposal-total-distances-NN': adapt_proposal_total_distances_NN,
             'proposal-summed-distances': adapt_proposal_summed_distances,
             'proposal-summed-distances-NN': adapt_proposal_summed_distances_NN,
@@ -595,12 +611,12 @@ class StepSampler(object):
         self.nrejects = 0
 
     def new_chain(self, region=None):
-        """Starts a new path, reset statistics."""
+        """Start a new path, reset statistics."""
         self.history = []
         self.nrejects = 0
 
     def region_changed(self, Ls, region):
-        """React to change of region. 
+        """React to change of region.
 
         Parameters
         -----------
@@ -609,7 +625,6 @@ class StepSampler(object):
         Ls: array
             loglikelihood values of the live points
         """
-
         if self.adaptive_nsteps_needs_mean_pair_distance:
             self.mean_pair_distance = region.compute_mean_pair_distance()
             # print("region changed. new mean_pair_distance: %g" % self.mean_pair_distance)
@@ -738,10 +753,14 @@ class MHSampler(StepSampler):
         unew = ui.reshape((1, -1)) + jitter
         return unew
 
+
 def CubeMHSampler(*args, **kwargs):
+    """Gaussian Metropolis-Hastings sampler, using unit cube."""
     return MHSampler(*args, **kwargs, generate_direction=generate_random_direction)
 
+
 def RegionMHSampler(*args, **kwargs):
+    """Gaussian Metropolis-Hastings sampler, using region."""
     return MHSampler(*args, **kwargs, generate_direction=generate_region_random_direction)
 
 
@@ -749,7 +768,7 @@ class SliceSampler(StepSampler):
     """Slice sampler, respecting the region."""
 
     def new_chain(self, region=None):
-        """Starts a new path, reset slice."""
+        """Start a new path, reset slice."""
         self.interval = None
         self.found_left = False
         self.found_right = False
@@ -882,7 +901,9 @@ def RegionBallSliceSampler(*args, **kwargs):
 
 class SequentialDirectionGenerator(object):
     def __init__(self):
+        """Sequentially proposes one region axes after the next."""
         self.axis_index = 0
+
     def __call__(self, ui, region, scale=1):
         """Iteratively choose the next axis in t-space.
 
@@ -914,6 +935,7 @@ class SequentialDirectionGenerator(object):
         v *= scale / (v**2).sum()**0.5
         return v
 
+
 def RegionSequentialSliceSampler(*args, **kwargs):
     """Slice sampler, sequentially iterating region axes."""
     return SliceSampler(*args, **kwargs, generate_direction=SequentialDirectionGenerator())
@@ -921,7 +943,7 @@ def RegionSequentialSliceSampler(*args, **kwargs):
 
 class OrthogonalDirectionGenerator(object):
     def __init__(self, generate_direction):
-        """Orthogonalizes vectors.
+        """Orthogonalizes proposal vectors.
 
         Parameters
         -----------
@@ -1029,7 +1051,7 @@ class SpeedVariableGenerator(object):
             new direction vector
         """
         ndim = len(ui)
-        
+
         v = self.generate_direction(ui=ui, region=region, scale=scale)
         j = self.axis_index % self.nsteps
         self.axis_index = j + 1
@@ -1046,9 +1068,9 @@ def SpeedVariableRegionSliceSampler(step_matrix, *args, **kwargs):
 
     Updates only some dimensions at a time, completely user-definable.
     """
-    
-    
-    return SliceSampler(*args, **kwargs, 
+
+    return SliceSampler(
+        *args, **kwargs,
         nsteps=kwargs.pop('nsteps', len(step_matrix)),
         generate_direction=SpeedVariableGenerator(
             step_matrix=step_matrix,
@@ -1058,7 +1080,9 @@ def SpeedVariableRegionSliceSampler(step_matrix, *args, **kwargs):
 
 
 def ellipsoid_bracket(ui, v, ellipsoid_center, ellipsoid_inv_axes, ellipsoid_radius_square):
-    """ For a line from ui in direction v through an ellipsoid
+    """Find line-ellipsoid intersection points.
+
+    For a line from ui in direction v through an ellipsoid
     centered at ellipsoid_center with axes matrix ellipsoid_inv_axes,
     return the lower and upper intersection parameter.
 
@@ -1099,7 +1123,9 @@ def ellipsoid_bracket(ui, v, ellipsoid_center, ellipsoid_inv_axes, ellipsoid_rad
 
 
 def crop_bracket_at_unit_cube(ui, v, left, right, epsilon=1e-6):
-    """A line segment from *ui* in direction *v* from t between *left* <= 0 <= *right*
+    """Find line-cube intersection points.
+
+    A line segment from *ui* in direction *v* from t between *left* <= 0 <= *right*
     will be truncated by the unit cube. Returns the bracket and whether cropping was applied.
 
     Parameters
