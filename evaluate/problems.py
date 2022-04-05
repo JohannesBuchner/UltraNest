@@ -96,7 +96,7 @@ def generate_corrgauss_problem(ndim, gamma=0.95):
     def volume_corrgauss(loglike, ndim):
         # volume is defined in aux coordinate system
         # we hope that no intersection with unit cube happens
-        return volume_asymgauss(loglike, ndim)
+        return volume_asymgauss(loglike, ndim) / Mdet
 
     def gradient_corrgauss(x):
         y = layer.untransform(x - 0.5) + 0.5

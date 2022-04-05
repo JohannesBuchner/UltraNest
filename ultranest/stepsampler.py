@@ -17,6 +17,8 @@ def generate_random_direction(ui, region, scale=1):
 
     Parameters
     -----------
+    ui: array
+        starting point
     region: MLFriends object
         current region (not used)
     scale: float
@@ -38,8 +40,12 @@ def generate_cube_oriented_direction(ui, region, scale=1):
 
     Parameters
     -----------
+    ui: array
+        starting point
     region: MLFriends object
         current region (not used)
+    scale: float
+        factor to multiple the vector
 
     Returns
     --------
@@ -56,18 +62,111 @@ def generate_cube_oriented_direction(ui, region, scale=1):
     return v
 
 
-def generate_region_oriented_direction(ui, region, scale=1):
-    """Draw a random direction vector in direction of one of the `region` axes.
+def generate_cube_oriented_differential_direction(ui, region, scale=1):
+    """Draw a unit direction vector in direction of a random unit cube axes.
 
-    If given, the vector length is `scale`.
-    If not, the vector length in transformed space is `tscale`.
+    Guess the length from the difference of two points in that axis.
 
     Parameters
     -----------
+    ui: array
+        starting point
     region: MLFriends object
         current region
     scale: float
-        length of direction vector in t-space
+        factor to multiple the vector
+
+    Returns
+    --------
+    v: array
+        new direction vector
+    """
+    nlive, ndim = region.u.shape
+    v = np.zeros(ndim)
+
+    # choose axis
+    j = np.random.randint(ndim)
+    # choose pair
+    while v[j] == 0:
+        i = np.random.randint(nlive)
+        i2 = np.random.randint(nlive - 1)
+        if i2 >= i:
+            i2 += 1
+        
+        v[j] = (region.u[i,j] - region.u[i2,j]) * scale
+    
+    return v
+
+
+def generate_differential_direction(ui, region, scale=1):
+    """Draw a vector using the difference between two points.
+
+    Parameters
+    -----------
+    ui: array
+        starting point
+    region: MLFriends object
+        current region
+    scale: float
+        factor to multiple the vector
+
+    Returns
+    --------
+    v: array
+        new direction vector
+    """
+    nlive, ndim = region.u.shape
+    # choose pair
+    i = np.random.randint(nlive)
+    i2 = np.random.randint(nlive - 1)
+    if i2 >= i:
+        i2 += 1
+    
+    # use doubling procedure to identify left and right maxima borders
+    v = (region.u[i,:] - region.u[i2,:]) * scale
+    return v
+
+def generate_partial_differential_direction(ui, region, scale=1):
+    """Draw a unit direction vector in direction of a random unit cube axes.
+
+    Parameters
+    -----------
+    ui: array
+        starting point
+    region: MLFriends object
+        current region
+    scale: float
+        factor to multiple the vector
+
+    Returns
+    --------
+    v: array
+        new direction vector
+    """
+    nlive, ndim = region.u.shape
+    # choose pair
+    i = np.random.randint(nlive)
+    i2 = np.random.randint(nlive - 1)
+    if i2 >= i:
+        i2 += 1
+    mask = np.random.uniform(size=ndim) < 0.1
+    # use doubling procedure to identify left and right maxima borders
+    v = np.zeros(ndim)
+    v[mask] = (region.u[i,mask] - region.u[i2,mask]) * scale
+    return v
+
+
+def generate_region_oriented_direction(ui, region, scale=1):
+    """Draw a random direction vector in direction of one of the `region` axes.
+
+    Parameters
+    -----------
+    ui: array
+        starting point
+    region: MLFriends object
+        current region
+    scale: float
+        factor to multiple the vector
 
     Returns
     --------
@@ -87,6 +186,8 @@ def generate_region_random_direction(ui, region, scale=1):
 
     Parameters
     -----------
+    ui: array
+        starting point
     region: MLFriends object
         current region
     scale: float:
@@ -99,13 +200,13 @@ def generate_region_random_direction(ui, region, scale=1):
     """
     # choose axis in transformed space:
     v1 = np.random.normal(0, 1, size=len(ui))
-    v1 *= scale / (v1**2).sum()**0.5
+    v1 *= scale / np.linalg.norm(v1)
     v = np.dot(region.transformLayer.axes, v1)
     return v
 
 
-def generate_mixture_random_direction(ui, region, scale=1, uniform_weight=1e-6):
-    """Draw from a mix of a ball proposal and a region-shaped proposal.
+def generate_mixture_random_direction(ui, region, scale=1):
+    """Draw either from a region-direction or a unit axis.
 
     Parameters
     -----------
@@ -121,12 +222,10 @@ def generate_mixture_random_direction(ui, region, scale=1, uniform_weight=1e-6):
     v: array
         new direction vector
     """
-    v1 = generate_random_direction(ui, region)
-    v1 /= (v1**2).sum()**0.5
-    v2 = generate_region_random_direction(ui, region)
-    v2 /= (v2**2).sum()**0.5
-    v = (v1 * uniform_weight + v2 * (1 - uniform_weight))
-    v *= scale * (v2**2).sum()**0.5
+    if np.random.uniform() < 0.5:
+        return generate_differential_direction(ui, region, scale=scale)
+    else:
+        return generate_region_oriented_direction(ui, region, scale=scale)
     return v
 
 
@@ -795,6 +894,50 @@ class SequentialDirectionGenerator(object):
 def RegionSequentialSliceSampler(*args, **kwargs):
     """Slice sampler, sequentially iterating region axes."""
     return SliceSampler(*args, **kwargs, generate_direction=SequentialDirectionGenerator())
+
+
+class OrthogonalDirectionGenerator(object):
+    def __init__(self, generate_direction):
+        """Orthogonalizes vectors.
+
+        Parameters
+        -----------
+        generate_direction: function
+            direction proposal to orthogonalize
+        """
+        self.axis_index = 0
+        self.generate_direction = generate_direction
+        self.directions = None
+
+    def __call__(self, ui, region, scale=1):
+        """Iteratively return a orthogonalized vector.
+
+        Parameters
+        -----------
+        ui: array
+            current point (in u-space)
+        region: MLFriends object
+            region to use for transformation
+        scale: float
+            length of direction vector
+
+        Returns
+        --------
+        v: array
+            new direction vector (in u-space)
+        """
+        ndim = len(ui)
+        if self.directions is None or self.axis_index >= ndim:
+            proposed_directions = np.empty((ndim, ndim))
+            for i in range(ndim):
+                proposed_directions[i] = self.generate_direction(ui, region, scale=scale)
+            q, r = np.linalg.qr(proposed_directions)
+            self.directions = np.dot(q, np.diag(np.diag(r)))
+            self.axis_index = 0
+
+        v = self.directions[self.axis_index]
+        self.axis_index += 1
+        return v
 
 
 class SpeedVariableGenerator(object):

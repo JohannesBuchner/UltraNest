@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from ultranest.mlfriends import ScalingLayer, AffineLayer, MLFriends
+from ultranest.mlfriends import ScalingLayer, AffineLayer, RobustEllipsoidRegion
 from ultranest.stepsampler import RegionMHSampler, CubeMHSampler
 from ultranest.stepsampler import CubeSliceSampler, RegionSliceSampler, RegionBallSliceSampler, RegionSequentialSliceSampler, SpeedVariableRegionSliceSampler
 #from ultranest.stepsampler import AHARMSampler
@@ -8,28 +8,28 @@ from ultranest.stepsampler import CubeSliceSampler, RegionSliceSampler, RegionBa
 #from ultranest.stepsampler import GeodesicSliceSampler, RegionGeodesicSliceSampler
 import tqdm
 import joblib
-import warnings
+import warnings, traceback
 from problems import transform, get_problem
 
-#mem = joblib.Memory('.', verbose=False)
+mem = joblib.Memory('.', verbose=False)
 
 def quantify_step(a, b):
     # euclidean step distance
-    stepsize = ((a - b)**2).sum()
+    stepsize = np.linalg.norm(a - b)
     # assuming a 
     center = 0.5
     da = a - center
     db = b - center
-    ra = ((da**2).sum())**0.5
-    rb = ((db**2).sum())**0.5
+    ra = np.linalg.norm(da)
+    rb = np.linalg.norm(db)
     # compute angle between vectors da, db
     angular_step = np.arccos(np.dot(da, db) / (ra * rb))
     # compute step in radial direction
     radial_step = np.abs(ra - rb)
     return [stepsize, angular_step, radial_step]
 
-#@mem.cache
-def evaluate_warmed_sampler(problemname, ndim, nlive, nsteps, sampler, seed=1):
+@mem.cache
+def evaluate_warmed_sampler(problemname, ndim, nlive, nsteps, sampler, seed=1, region_class=RobustEllipsoidRegion):
     loglike, grad, volume, warmup = get_problem(problemname, ndim=ndim)
     if hasattr(sampler, 'set_gradient'):
         sampler.set_gradient(grad)
@@ -38,7 +38,7 @@ def evaluate_warmed_sampler(problemname, ndim, nlive, nsteps, sampler, seed=1):
         return np.asarray([loglike(x) for x in xs])
     us = np.array([warmup(ndim) for i in range(nlive)])
     Ls = np.array([loglike(u) for u in us])
-    vol0 = max((volume(Li, ndim) for Li in Ls))
+    vol0 = volume(Ls.min(), ndim)
     nwarmup = 3 * nlive
     
     if ndim > 1:
@@ -46,7 +46,7 @@ def evaluate_warmed_sampler(problemname, ndim, nlive, nsteps, sampler, seed=1):
     else:
         transformLayer = ScalingLayer()
     transformLayer.optimize(us, us)
-    region = MLFriends(us, transformLayer)
+    region = region_class(us, transformLayer)
     region.maxradiussq, region.enlarge = region.compute_enlargement(nbootstraps=30)
     region.create_ellipsoid(minvol=vol0)
     assert region.ellipsoid_center is not None
@@ -61,9 +61,9 @@ def evaluate_warmed_sampler(problemname, ndim, nlive, nsteps, sampler, seed=1):
             with warnings.catch_warnings(), np.errstate(all='raise'):
                 try:
                     nextTransformLayer = transformLayer.create_new(us, region.maxradiussq, minvol=minvol)
-                    nextregion = MLFriends(us, nextTransformLayer)
+                    nextregion = region_class(us, nextTransformLayer)
                     nextregion.maxradiussq, nextregion.enlarge = nextregion.compute_enlargement(nbootstraps=30)
-                    if nextregion.estimate_volume() <= region.estimate_volume():
+                    if isinstance(nextregion, RobustEllipsoidRegion) or nextregion.estimate_volume() <= region.estimate_volume():
                         nextregion.create_ellipsoid(minvol=minvol)
                         region = nextregion
                         transformLayer = region.transformLayer
@@ -203,15 +203,15 @@ def main(args):
             axspeed.plot([lastspeed[1], cdf_expected.mean()], [lastspeed[2], ncalls], '-', color=color)
         lastspeed = [samplername, cdf_expected.mean(), ncalls]
         
-        stepsizesq, angular_step, radial_step = steps.transpose()
-        assert len(stepsizesq) == len(Lsequence), (len(stepsizesq), len(Lsequence))
+        stepsize, angular_step, radial_step = steps.transpose()
+        assert len(stepsize) == len(Lsequence), (len(stepsize), len(Lsequence))
         # here we estimate the volume differently: from the expected shrinkage per iteration
         it = np.arange(len(stepsizesq))
         vol = (1 - 1. / nlive)**it
         assert np.isfinite(vol).all(), vol
         assert (vol > 0).all(), vol
         assert (vol <= 1).all(), vol
-        relstepsize = stepsizesq**0.5 / vol**(1. / ndim)
+        relstepsize = stepsize / vol**(1. / ndim)
         relradial_step = radial_step / vol**(1. / ndim)
         axstep1.hist(relstepsize[np.isfinite(relstepsize)], bins=1000, cumulative=True, density=True, 
             histtype='step',
