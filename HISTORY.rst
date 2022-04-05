@@ -2,6 +2,30 @@
 Release Notes
 ==============
 
+3.4.0 (2022-04-05)
+------------------
+
+* add differential evolution proposal for slice sampling, recommend it
+* fix revert of step sampler when run out of constraint, in MPI
+* add SimpleRegion: axis-aligned ellipsoidal for very high-d.
+
+
+3.3.3 (2022-04-05)
+------------------
+
+* pretty marginal posterior plot to stdout
+* avoid non-terminations when logzerr cannot be reached
+
+3.3.0 (2022-04-05)
+------------------
+
+* add RobustEllipsoidRegion: ellipsoidal without MLFriends for high-d.
+* add WrappingEllipsoid: for additional rejection.
+* bug fixes on rank order test
+* add resume-similar
+* modular step samplers
+
+
 3.0.0 (2020-10-03)
 ------------------
 
