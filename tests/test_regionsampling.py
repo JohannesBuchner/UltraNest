@@ -2,6 +2,7 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 from ultranest.mlfriends import ScalingLayer, AffineLayer, MLFriends
+from ultranest.mlfriends import RobustEllipsoidRegion, SimpleRegion, WrappingEllipsoid
 from numpy.testing import assert_allclose
 
 here = os.path.dirname(__file__)
@@ -141,6 +142,48 @@ def test_region_mean_distances():
     assert np.isclose(meandist, d / N), (meandist, d, N)
 
 
+def test_ellipsoids():
+    tpoints = np.random.uniform(0.4, 0.6, size=(1000, 1))
+    tregion = WrappingEllipsoid(tpoints)
+    print(tregion.variable_dims)
+    tregion.enlarge = tregion.compute_enlargement(nbootstraps=30)
+    tregion.create_ellipsoid()
+    
+    for umax in 0.6, 0.5:
+        print()
+        print(umax)
+        points = np.random.uniform(0.4, 0.6, size=(1000, 3))
+        points = points[points[:,0] < umax]
+        tpoints = points * 10
+        tpoints[:,0] = np.floor(tpoints[:,0])
+        print(points, tpoints)
+
+        transformLayer = AffineLayer(wrapped_dims=[])
+        transformLayer.optimize(points, points)
+
+        region = MLFriends(points, transformLayer)
+        region.maxradiussq, region.enlarge = region.compute_enlargement(nbootstraps=30)
+        region.create_ellipsoid()
+        assert region.inside(points).all()
+        
+        region = RobustEllipsoidRegion(points, transformLayer)
+        region.maxradiussq, region.enlarge = region.compute_enlargement(nbootstraps=30)
+        region.create_ellipsoid()
+        assert region.inside(points).all()
+        
+        region = SimpleRegion(points, transformLayer)
+        region.maxradiussq, region.enlarge = region.compute_enlargement(nbootstraps=30)
+        region.create_ellipsoid()
+        assert region.inside(points).all()
+        
+        tregion = WrappingEllipsoid(tpoints)
+        print(tregion.variable_dims)
+        tregion.enlarge = tregion.compute_enlargement(nbootstraps=30)
+        tregion.create_ellipsoid()
+        assert tregion.inside(tpoints).all()
+    
+
 if __name__ == '__main__':
-    test_region_sampling_scaling(plot=True)
-    test_region_sampling_affine(plot=True)
+    #test_region_sampling_scaling(plot=True)
+    #test_region_sampling_affine(plot=True)
+    test_ellipsoids()
