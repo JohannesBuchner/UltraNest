@@ -328,11 +328,11 @@ def make_eigvals_positive(
     except np.linalg.LinAlgError as e:
         print(a, targetprod)
         raise e
-    mask = w < 1.e-10
+    mask = w < max(1.e-10, 1e-300**(1. / len(a)))
     if np.any(mask):
         nzprod = np.product(w[~mask])  # product of nonzero eigenvalues
         nzeros = mask.sum()  # number of zero eigenvalues
-        w[mask] = (targetprod / nzprod) ** (1./nzeros)  # adjust zero eigvals
+        w[mask] = (targetprod / nzprod) ** (1. / nzeros)  # adjust zero eigvals
         a = np.dot(np.dot(v, np.diag(w)), np.linalg.inv(v))  # re-form cov
 
     return a
@@ -482,7 +482,7 @@ class ScalingLayer(object):
         self.mean = wrapped_points.mean(axis=0).reshape((1,-1))
         self.std = centered_points.std(axis=0).reshape((1,-1))
         self.axes = np.diag(self.std[0])
-        self.volscale = np.product(self.std)
+        self.logvolscale = np.sum(np.log(self.std))
         self.set_clusterids(clusterids=clusterids, npoints=len(points))
 
     def set_clusterids(self, clusterids=None, npoints=None):
@@ -599,7 +599,7 @@ class AffineLayer(ScalingLayer):
         eigvalmin = eigval.max() * 1e-40
         eigval[eigval < eigvalmin] = eigvalmin
         a = np.linalg.inv(cov)
-        self.volscale = np.linalg.det(a)**-0.5
+        self.logvolscale = np.linalg.slogdet(a)[1] * -0.5
 
         self.T = eigvec * eigval**-0.5
         self.invT = np.linalg.inv(self.T)
@@ -765,7 +765,7 @@ class MLFriends(object):
         r = self.maxradiussq**0.5
         N, ndim = self.u.shape
         # how large is a sphere of size r in untransformed coordinates?
-        return np.log(self.transformLayer.volscale) + np.log(r) * ndim #+ np.log(vol_prefactor(ndim))
+        return self.transformLayer.logvolscale + np.log(r) * ndim #+ np.log(vol_prefactor(ndim))
 
     def set_transformLayer(self, transformLayer):
         """Update transformation layer. Invalidates attribute `maxradius`.
@@ -1353,13 +1353,19 @@ class WrappingEllipsoid(object):
             live points
         """
         self.u = u
+        # allow some parameters to have exactly the same value
+        # this can occur with grid / categorical parameters
+        self.variable_dims = np.std(self.u, axis=0) > 0
+        if self.variable_dims.all():
+            self.variable_dims = Ellipsis
 
     def compute_enlargement(self, nbootstraps=50, rng=np.random):
         """Return ellipsoid enlargement after `nbootstraps` bootstrapping rounds.
 
         The wrapping ellipsoid covariance is determined in each bootstrap round.
         """
-        N, ndim = self.u.shape
+        N = len(self.u)
+        v = self.u[:,self.variable_dims]
         selected = np.empty(N, dtype=bool)
         maxf = 0.0
 
@@ -1367,8 +1373,8 @@ class WrappingEllipsoid(object):
             idx = rng.randint(N, size=N)
             selected[:] = False
             selected[idx] = True
-            ua = self.u[selected,:]
-            ub = self.u[~selected,:]
+            ua = v[selected,:]
+            ub = v[~selected,:]
 
             # compute enlargement of bounding ellipsoid
             ctr, cov = bounding_ellipsoid(ua)
@@ -1380,14 +1386,14 @@ class WrappingEllipsoid(object):
                 raise np.linalg.LinAlgError("Distances are not positive")
             maxf = max(maxf, f)
 
-        assert maxf > 0, (maxf, self.u)
+        assert maxf > 0, (maxf, self.u, self.active_dims)
         return maxf
 
     def create_ellipsoid(self, minvol=0.0):
         """Create wrapping ellipsoid and store its center and covariance."""
         assert self.enlarge is not None
         # compute enlargement of bounding ellipsoid
-        ctr, cov = bounding_ellipsoid(self.u, minvol=minvol)
+        ctr, cov = bounding_ellipsoid(self.u[:,self.variable_dims], minvol=minvol)
         a = np.linalg.inv(cov)
 
         self.ellipsoid_center = ctr
@@ -1413,4 +1419,11 @@ class WrappingEllipsoid(object):
             True if inside wrapping ellipsoid, for each point in `pts`.
 
         """
-        return _inside_ellipsoid(u, self.ellipsoid_center, self.ellipsoid_invcov, self.enlarge)
+        # check the variable subspace with the ellipsoid
+        inside_variable = _inside_ellipsoid(u[:,self.variable_dims], self.ellipsoid_center, self.ellipsoid_invcov, self.enlarge)
+        if self.variable_dims is Ellipsis:
+            return inside_variable
+        else:
+            # the remaining dims must be exactly equal
+            inside_fixed = np.all(self.u[0, ~self.variable_dims] == u[:,~self.variable_dims], axis=1)
+            return np.logical_and(inside_fixed, inside_variable)

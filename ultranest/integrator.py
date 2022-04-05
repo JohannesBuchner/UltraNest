@@ -1898,10 +1898,10 @@ class ReactiveNestedSampler(object):
                 # verify correctness:
                 nextregion.create_ellipsoid(minvol=minvol)
 
-                # check if live points are numerically colliding or become linearly dependent
+                # check if live points are numerically colliding or linearly dependent
                 self.live_points_healthy = len(active_u) > self.x_dim and \
                     np.all(np.sum(active_u[1:] != active_u[0], axis=0) > self.x_dim) and \
-                    np.linalg.matrix_rank(nextregion.ellipsoid_cov)
+                    np.linalg.matrix_rank(nextregion.ellipsoid_cov) == self.x_dim
 
                 assert (nextregion.u == active_u).all()
                 assert np.allclose(nextregion.unormed, nextregion.transformLayer.transform(active_u))
