@@ -1068,13 +1068,13 @@ def SpeedVariableRegionSliceSampler(step_matrix, *args, **kwargs):
 
     Updates only some dimensions at a time, completely user-definable.
     """
-
+    generate_direction = kwargs.pop('generate_direction', generate_region_random_direction)
     return SliceSampler(
         *args, **kwargs,
         nsteps=kwargs.pop('nsteps', len(step_matrix)),
         generate_direction=SpeedVariableGenerator(
             step_matrix=step_matrix,
-            generate_direction=kwargs.pop('generate_direction', generate_region_random_direction)
+            generate_direction=generate_direction
         )
     )
 
