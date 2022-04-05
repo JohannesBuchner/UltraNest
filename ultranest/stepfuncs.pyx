@@ -4,7 +4,7 @@
 
 import numpy as np
 cimport numpy as np
-from numpy import pi, nan as np_nan
+from numpy import nan as np_nan
 cimport cython
 from cython.parallel import prange
 
@@ -16,7 +16,6 @@ cdef _within_unit_cube(
 ):
     cdef size_t popsize = u.shape[0]
     cdef size_t ndim = u.shape[1]
-    cdef np.uint8_t good
     cdef size_t i, j
 
     for i in range(popsize):
@@ -327,7 +326,6 @@ cdef _fill_directions(
     float scale
 ):
     cdef size_t nsamples = v.shape[0]
-    cdef size_t ndim = v.shape[0]
     cdef size_t i
     for i in range(nsamples):
         v[i, indices[i]] = scale

@@ -11,7 +11,8 @@ cimport cython
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cdef count_nearby(np.ndarray[np.float_t, ndim=2] apts,
+cdef count_nearby(
+    np.ndarray[np.float_t, ndim=2] apts,
     np.ndarray[np.float_t, ndim=2] bpts,
     np.float_t radiussq,
     np.ndarray[np.int_t, ndim=1] nnearby
@@ -360,7 +361,6 @@ def bounding_ellipsoid(
     """
     # Function taken from nestle, MIT licensed, (C) kbarbary
 
-    npoints = x.shape[0]
     ndim = x.shape[1]
 
     # Calculate covariance of points
