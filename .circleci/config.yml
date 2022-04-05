@@ -6,7 +6,7 @@ jobs:
   build:
     
     docker:
-      - image: cimg/python:3.10
+      - image: cimg/base:2021.04
     
     steps: 
       
@@ -17,7 +17,7 @@ jobs:
       
       - run: sudo ln -s /usr/lib/python3/dist-packages/numpy/core/include/numpy/ /usr/include/numpy
 
-      - run: python3 -m pip install --user -r pip-requirements.txt pytest-html coveralls pyyaml mpi4py
+      - run: sudo python3 -m pip install -r pip-requirements.txt pytest-html coveralls pyyaml mpi4py
       - run: mkdir -p test-reports
 
       - run: python3 -m pip install -e .
