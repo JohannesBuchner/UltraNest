@@ -10,15 +10,11 @@ Release Notes
 * add SimpleRegion: axis-aligned ellipsoidal for very high-d.
 
 
-3.3.3 (2022-04-05)
+3.3.3 (2021-09-17)
 ------------------
 
 * pretty marginal posterior plot to stdout
 * avoid non-terminations when logzerr cannot be reached
-
-3.3.0 (2022-04-05)
-------------------
-
 * add RobustEllipsoidRegion: ellipsoidal without MLFriends for high-d.
 * add WrappingEllipsoid: for additional rejection.
 * bug fixes on rank order test
