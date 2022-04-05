@@ -2736,7 +2736,7 @@ class ReactiveNestedSampler(object):
                     hi = min(self.transform_limits[i,1], hi + 2 * step)
                     H, edges = np.histogram(v, bins=np.linspace(lo, hi, 40))
                     lo, hi = edges[0], edges[-1]
-                    
+
                     dist = ''.join([' ▁▂▃▄▅▆▇██'[i] for i in np.ceil(H * 7 / H.max()).astype(int)])
                     print('    %-20s: %-6s│%s│%-6s    %s +- %s' % (p, fmt % lo, dist, fmt % hi, fmt % med, fmt % sigma))
                 except:
@@ -2744,12 +2744,11 @@ class ReactiveNestedSampler(object):
                     print(fmts % (p, med, sigma))
             print()
 
-
     def plot(self):
         """Make corner, run and trace plots.
 
         calls:
-        
+
         * plot_corner()
         * plot_run()
         * plot_trace()

@@ -167,6 +167,7 @@ def get_extended_auxiliary_problem(loglike, transform, ctr, invcov, enlargement_
 
     return aux_loglikelihood, aux_transform
 
+
 def get_extended_auxiliary_independent_problem(loglike, transform, ctr, err, df=1):
     """Return a new loglike and transform based on an auxiliary distribution.
 
@@ -239,6 +240,7 @@ def get_extended_auxiliary_independent_problem(loglike, transform, ctr, err, df=
             return -1e300
 
     return aux_loglikelihood, aux_transform
+
 
 def reuse_samples(
     param_names, loglike, points, logl, logw=None,
