@@ -223,9 +223,12 @@ and allows the user to specify the problem dimension and a few sampler parameter
         vectorized=True)
 
     if args.slice:
-        # set up step sampler. Here, we use a slice sampler:
+        # set up step sampler. Here, we use a differential evolution slice sampler:
         import ultranest.stepsampler
-        sampler.stepsampler = ultranest.stepsampler.RegionSliceSampler(nsteps=args.slice_steps)
+        sampler.stepsampler = ultranest.stepsampler.SliceSampler(
+            nsteps=args.slice_steps,
+            generate_direction=ultranest.stepsampler.generate_mixture_random_direction,
+        )
 
     # run sampler, with a few custom arguments:
     sampler.run(dlogz=0.5 + 0.1 * ndim,

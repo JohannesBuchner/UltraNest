@@ -343,8 +343,25 @@ class StepSampler(object):
         nsteps: int
             number of accepted steps until the sample is considered independent.
 
+            To find the right value, run nested sampling several time,
+            always doubling nsteps, until Z is stable.
+
+        generate_direction: function
+            direction proposal function. Available are:
+
+            * :py:func:`generate_cube_oriented_direction` (slice sampling)
+            * :py:func:`generate_region_oriented_direction` (slice sampling on the whitened parameter space)
+            * :py:func:`generate_random_direction` (hit-and-run sampling)
+            * :py:func:`generate_region_random_direction` (hit-and-run sampling on the whitened parameter space)
+            * :py:func:`generate_cube_oriented_differential_direction` (slice sampling with better proposal scale)
+            * :py:func:`generate_differential_direction` (differential evolution slice proposal)
+            * :py:func:`generate_partial_differential_direction` (differential evolution slice proposal on only 10% of the parameters)
+            * :py:func:`generate_mixture_random_direction` (generate_differential_direction and generate_cube_oriented_differential_direction)
+            
+            When in doubt, use :py:func:`generate_mixture_random_direction`.
+
         adaptive_nsteps: False, 'proposal-distance', 'move-distance'
-            Select a strategy to adapt the number of steps. The strategies
+            Strategy to adapt the number of steps. The strategies
             make sure that:
 
             * 'move-distance' (recommended): distance between
@@ -365,6 +382,12 @@ class StepSampler(object):
             * 'proposal-summed-distances-min-NN': smallest distance
               between chain points exceeds mean distance
               between pairs of live points.
+
+            Adapting can give usable results. However, strictly speaking,
+            detailed balance is not maintained, so the results can be biased.
+            You can use the logstat property to find out the `nsteps` learned 
+            from one run (third column), and use the largest value for `nsteps`
+            of a fresh run.
 
         max_nsteps: int
             Maximum number of steps the adaptive_nsteps can reach.
