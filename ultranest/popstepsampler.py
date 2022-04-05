@@ -58,6 +58,10 @@ class PopulationSliceSampler():
         self.popsize = popsize
         self.generate_direction = generate_direction
 
+    def __str__(self):
+        return 'PopulationSliceSampler(popsize=%d, nsteps=%d, generate_direction=%s, scale=%.g)' % (
+                self.popsize, self.nsteps, self.generate_direction, self.scale)
+
     def region_changed(self, Ls, region):
         """notification that the region changed. Currently not used."""
         # self.scale = region.us.std(axis=1).mean()
@@ -111,7 +115,8 @@ class PopulationSliceSampler():
         self.allL[starting,0] = Ls[i]
         self.generation[starting] = 0
 
-    def __str__(self):
+    @property
+    def status(self):
         s1 = ('G:' + ''.join(['%d' % g if g >= 0 else '_' for g in self.generation]))
         s2 = ('S:' + ''.join(['S' if not np.isfinite(self.currentt[i]) else 'L' if self.searching_left[i] else 'R' if self.searching_right[i] else 'B'
             for i in range(self.popsize)]))

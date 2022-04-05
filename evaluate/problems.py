@@ -67,6 +67,43 @@ def generate_asymgauss_problem(ndim):
     return loglike_asymgauss, gradient_asymgauss, volume_asymgauss, warmup_asymgauss
 
 
+def generate_corrgauss_problem(ndim, gamma=0.95):
+    mean = np.zeros(ndim)
+    M = np.ones((ndim, ndim)) * gamma
+    np.fill_diagonal(M, 1)
+    Minv = np.linalg.inv(M)
+    Mdet = np.linalg.det(M)
+    center = np.zeros(ndim)
+
+    loglike_asymgauss, gradient_asymgauss, volume_asymgauss, warmup_asymgauss = generate_asymgauss_problem(ndim)
+    
+    from ultranest.mlfriends import AffineLayer
+    
+    layer = AffineLayer(center, M, Minv)
+    
+    def warmup_corrgauss(ndim):
+        # the gaussian is defined in our aux coordinate system:
+        y = warmup_asymgauss(ndim)
+        # so transform to these
+        return layer.transform(y - 0.5) + 0.5
+    
+    def loglike_corrgauss(x):
+        """  gaussian problem """
+        # transform back to aux coordinate system, where gaussian is nice
+        y = layer.untransform(x - 0.5) + 0.5
+        return loglike_asymgauss(y)
+
+    def volume_corrgauss(loglike, ndim):
+        # volume is defined in aux coordinate system
+        # we hope that no intersection with unit cube happens
+        return volume_asymgauss(loglike, ndim) / Mdet
+
+    def gradient_corrgauss(x):
+        y = layer.untransform(x - 0.5) + 0.5
+        return gradient_to_center(y)
+    
+    return loglike_corrgauss, gradient_corrgauss, volume_corrgauss, warmup_corrgauss
+
 
 def loglike_pyramid(x): 
     """ hyper-pyramid problem (squares) """
@@ -187,6 +224,8 @@ def get_problem(problemname, ndim):
         return loglike_gauss, gradient_gauss, volume_gauss, warmup_gauss
     elif problemname == 'asymgauss':
         return generate_asymgauss_problem(ndim)
+    elif problemname == 'corrgauss':
+        return generate_corrgauss_problem(ndim)
     elif problemname == 'pyramid':
         return loglike_pyramid, gradient_pyramid, volume_pyramid, warmup_pyramid
     elif problemname == 'multigauss':
@@ -195,6 +234,3 @@ def get_problem(problemname, ndim):
         return loglike_shell, gradient_shell, volume_shell, warmup_shell
     
     raise Exception("Problem '%s' unknown" % problemname)
-
-
-
