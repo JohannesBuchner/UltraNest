@@ -6,7 +6,7 @@ jobs:
   build:
     
     docker:
-      - image: cimg/python:latest
+      - image: cimg/python
     
     steps: 
       
