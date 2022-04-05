@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ultranest.hotstart &mdash; UltraNest 3.3.2 documentation</title>
+  <title>ultranest.hotstart &mdash; UltraNest 3.4.0 documentation</title>
   
 
   
@@ -70,7 +70,7 @@
             
             
               <div class="version">
-                3.3.2
+                3.4.0
               </div>
             
           
@@ -338,6 +338,80 @@
             <span class="n">weight</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1e101</span>
             <span class="n">x</span> <span class="o">=</span> <span class="n">u</span> <span class="o">*</span> <span class="mi">0</span> <span class="o">+</span> <span class="mf">0.5</span>
         <span class="c1"># add weight as a additional parameter</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">transform</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">weight</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">aux_loglikelihood</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="n">x_actual</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">weight</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="o">-</span><span class="mf">1e100</span> <span class="o">&lt;</span> <span class="n">weight</span> <span class="o">&lt;</span> <span class="mf">1e100</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">loglike</span><span class="p">(</span><span class="n">x_actual</span><span class="p">)</span> <span class="o">+</span> <span class="n">weight</span> <span class="o">-</span> <span class="n">weight_ref</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="o">-</span><span class="mf">1e300</span>
+
+    <span class="k">return</span> <span class="n">aux_loglikelihood</span><span class="p">,</span> <span class="n">aux_transform</span></div>
+
+
+<div class="viewcode-block" id="get_extended_auxiliary_independent_problem"><a class="viewcode-back" href="../../ultranest.html#ultranest.hotstart.get_extended_auxiliary_independent_problem">[docs]</a><span class="k">def</span> <span class="nf">get_extended_auxiliary_independent_problem</span><span class="p">(</span><span class="n">loglike</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">ctr</span><span class="p">,</span> <span class="n">err</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return a new loglike and transform based on an auxiliary distribution.</span>
+
+<span class="sd">    Given a likelihood and prior transform, and information about</span>
+<span class="sd">    the (expected) posterior peak, generates a auxiliary</span>
+<span class="sd">    likelihood and prior transform that is identical but</span>
+<span class="sd">    requires fewer nested sampling iterations.</span>
+
+<span class="sd">    This is achieved by deforming the prior space, and undoing that</span>
+<span class="sd">    transformation by correction weights in the likelihood.</span>
+
+<span class="sd">    The auxiliary distribution used for transformation/weighting is</span>
+<span class="sd">    a independent Student-t distribution for each parameter.</span>
+
+<span class="sd">    Usage::</span>
+
+<span class="sd">        aux_loglikelihood, aux_transform = get_auxiliary_problem(loglike, transform, ctr, invcov, enlargement_factor, df=1)</span>
+<span class="sd">        aux_sampler = ReactiveNestedSampler(parameters, aux_loglikelihood, transform=aux_transform, derived_param_names=[&#39;logweight&#39;])</span>
+<span class="sd">        aux_results = aux_sampler.run()</span>
+<span class="sd">        posterior_samples = aux_results[&#39;samples&#39;][:,-1]</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ------------</span>
+<span class="sd">    loglike: function</span>
+<span class="sd">        original likelihood function</span>
+<span class="sd">    transform: function</span>
+<span class="sd">        original prior transform function</span>
+<span class="sd">    ctr: array</span>
+<span class="sd">        Posterior center (in u-space).</span>
+<span class="sd">    err: array</span>
+<span class="sd">        Standard deviation around the posterior center (in u-space).</span>
+<span class="sd">    df: float</span>
+<span class="sd">        Number of degrees of freedom of the auxiliary student-t distribution.</span>
+<span class="sd">        The default is recommended. For truly gaussian posteriors,</span>
+<span class="sd">        the student-t can be made more gaussian (by df&gt;=30) for accelation.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    ---------</span>
+<span class="sd">    aux_loglike: function</span>
+<span class="sd">        auxiliary loglikelihood function.</span>
+<span class="sd">    aux_transform: function</span>
+<span class="sd">        auxiliary transform function.</span>
+<span class="sd">        Takes d u-space coordinates, and returns d + 1 p-space parameters.</span>
+<span class="sd">        The first d return coordinates are identical to what ``transform`` would return.</span>
+<span class="sd">        The final coordinate is the log of the correction weight.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ndim</span><span class="p">,</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">ctr</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">err</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="n">ndim</span><span class="p">,)</span>
+    <span class="k">assert</span> <span class="n">df</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;Degrees of freedom must be above 1&#39;</span><span class="p">,</span> <span class="n">df</span><span class="p">)</span>
+
+    <span class="n">rv_aux</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">t</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">ctr</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
+    <span class="c1"># handle the case where the aux distribution extends beyond the unit cube</span>
+    <span class="n">aux_lo</span> <span class="o">=</span> <span class="n">rv_aux</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">aux_hi</span> <span class="o">=</span> <span class="n">rv_aux</span><span class="o">.</span><span class="n">cdf</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">aux_w</span> <span class="o">=</span> <span class="n">aux_hi</span> <span class="o">-</span> <span class="n">aux_lo</span>
+    <span class="n">weight_ref</span> <span class="o">=</span> <span class="n">rv_aux</span><span class="o">.</span><span class="n">logpdf</span><span class="p">(</span><span class="n">ctr</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">aux_transform</span><span class="p">(</span><span class="n">u</span><span class="p">):</span>
+        <span class="c1"># get uniform gauss/t distributed values:</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">rv_aux</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">u</span> <span class="o">*</span> <span class="n">aux_w</span> <span class="o">+</span> <span class="n">aux_lo</span><span class="p">)</span>
+        <span class="n">weight</span> <span class="o">=</span> <span class="o">-</span><span class="n">rv_aux</span><span class="o">.</span><span class="n">logpdf</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">+</span> <span class="n">weight_ref</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">transform</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">weight</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">aux_loglikelihood</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>

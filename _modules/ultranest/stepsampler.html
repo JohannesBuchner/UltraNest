@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ultranest.stepsampler &mdash; UltraNest 3.3.2 documentation</title>
+  <title>ultranest.stepsampler &mdash; UltraNest 3.4.0 documentation</title>
   
 
   
@@ -70,7 +70,7 @@
             
             
               <div class="version">
-                3.3.2
+                3.4.0
               </div>
             
           
@@ -200,11 +200,13 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    -----------</span>
+<span class="sd">    ui: array</span>
+<span class="sd">        starting point</span>
 <span class="sd">    region: MLFriends object</span>
 <span class="sd">        current region (not used)</span>
 <span class="sd">    scale: float</span>
 <span class="sd">        length of direction vector</span>
-<span class="sd">    </span>
+
 <span class="sd">    Returns</span>
 <span class="sd">    --------</span>
 <span class="sd">    v: array</span>
@@ -221,8 +223,12 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    -----------</span>
+<span class="sd">    ui: array</span>
+<span class="sd">        starting point</span>
 <span class="sd">    region: MLFriends object</span>
 <span class="sd">        current region (not used)</span>
+<span class="sd">    scale: float</span>
+<span class="sd">        factor to multiple the vector</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    --------</span>
@@ -239,18 +245,112 @@
     <span class="k">return</span> <span class="n">v</span></div>
 
 
-<div class="viewcode-block" id="generate_region_oriented_direction"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.generate_region_oriented_direction">[docs]</a><span class="k">def</span> <span class="nf">generate_region_oriented_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Draw a random direction vector in direction of one of the `region` axes.</span>
+<div class="viewcode-block" id="generate_cube_oriented_differential_direction"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.generate_cube_oriented_differential_direction">[docs]</a><span class="k">def</span> <span class="nf">generate_cube_oriented_differential_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Draw a unit direction vector in direction of a random unit cube axes.</span>
 
-<span class="sd">    If given, the vector length is `scale`.</span>
-<span class="sd">    If not, the vector length in transformed space is `tscale`.</span>
+<span class="sd">    Guess the length from the difference of two points in that axis.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    -----------</span>
+<span class="sd">    ui: array</span>
+<span class="sd">        starting point</span>
 <span class="sd">    region: MLFriends object</span>
 <span class="sd">        current region</span>
 <span class="sd">    scale: float</span>
-<span class="sd">        length of direction vector in t-space</span>
+<span class="sd">        factor to multiple the vector</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    --------</span>
+<span class="sd">    v: array</span>
+<span class="sd">        new direction vector</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">nlive</span><span class="p">,</span> <span class="n">ndim</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">ndim</span><span class="p">)</span>
+
+    <span class="c1"># choose axis</span>
+    <span class="n">j</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">ndim</span><span class="p">)</span>
+    <span class="c1"># choose pair</span>
+    <span class="k">while</span> <span class="n">v</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">nlive</span><span class="p">)</span>
+        <span class="n">i2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">nlive</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">i2</span> <span class="o">&gt;=</span> <span class="n">i</span><span class="p">:</span>
+            <span class="n">i2</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="n">v</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="n">i2</span><span class="p">,</span><span class="n">j</span><span class="p">])</span> <span class="o">*</span> <span class="n">scale</span>
+
+    <span class="k">return</span> <span class="n">v</span></div>
+
+
+<div class="viewcode-block" id="generate_differential_direction"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.generate_differential_direction">[docs]</a><span class="k">def</span> <span class="nf">generate_differential_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Draw a vector using the difference between two points.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    ui: array</span>
+<span class="sd">        starting point</span>
+<span class="sd">    region: MLFriends object</span>
+<span class="sd">        current region</span>
+<span class="sd">    scale: float</span>
+<span class="sd">        factor to multiple the vector</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    --------</span>
+<span class="sd">    v: array</span>
+<span class="sd">        new direction vector</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">nlive</span><span class="p">,</span> <span class="n">ndim</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="o">.</span><span class="n">shape</span>
+    <span class="c1"># choose pair</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">nlive</span><span class="p">)</span>
+    <span class="n">i2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">nlive</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">i2</span> <span class="o">&gt;=</span> <span class="n">i</span><span class="p">:</span>
+        <span class="n">i2</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="c1"># use doubling procedure to identify left and right maxima borders</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="p">(</span><span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span> <span class="o">-</span> <span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="n">i2</span><span class="p">,:])</span> <span class="o">*</span> <span class="n">scale</span>
+    <span class="k">return</span> <span class="n">v</span></div>
+
+
+<div class="viewcode-block" id="generate_partial_differential_direction"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.generate_partial_differential_direction">[docs]</a><span class="k">def</span> <span class="nf">generate_partial_differential_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Draw a unit direction vector in direction of a random unit cube axes.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    ui: array</span>
+<span class="sd">        starting point</span>
+<span class="sd">    region: MLFriends object</span>
+<span class="sd">        current region</span>
+<span class="sd">    scale: float</span>
+<span class="sd">        factor to multiple the vector</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    --------</span>
+<span class="sd">    v: array</span>
+<span class="sd">        new direction vector</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">nlive</span><span class="p">,</span> <span class="n">ndim</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="o">.</span><span class="n">shape</span>
+    <span class="c1"># choose pair</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">nlive</span><span class="p">)</span>
+    <span class="n">i2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">nlive</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">i2</span> <span class="o">&gt;=</span> <span class="n">i</span><span class="p">:</span>
+        <span class="n">i2</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">ndim</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">0.1</span>
+    <span class="c1"># use doubling procedure to identify left and right maxima borders</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">ndim</span><span class="p">)</span>
+    <span class="n">v</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">mask</span><span class="p">]</span> <span class="o">-</span> <span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="n">i2</span><span class="p">,</span><span class="n">mask</span><span class="p">])</span> <span class="o">*</span> <span class="n">scale</span>
+    <span class="k">return</span> <span class="n">v</span></div>
+
+
+<div class="viewcode-block" id="generate_region_oriented_direction"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.generate_region_oriented_direction">[docs]</a><span class="k">def</span> <span class="nf">generate_region_oriented_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Draw a random direction vector in direction of one of the `region` axes.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    ui: array</span>
+<span class="sd">        starting point</span>
+<span class="sd">    region: MLFriends object</span>
+<span class="sd">        current region</span>
+<span class="sd">    scale: float</span>
+<span class="sd">        factor to multiple the vector</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    --------</span>
@@ -270,11 +370,13 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    -----------</span>
+<span class="sd">    ui: array</span>
+<span class="sd">        starting point</span>
 <span class="sd">    region: MLFriends object</span>
 <span class="sd">        current region</span>
 <span class="sd">    scale: float:</span>
 <span class="sd">        length of direction vector (in t-space)</span>
-<span class="sd">    </span>
+
 <span class="sd">    Returns</span>
 <span class="sd">    --------</span>
 <span class="sd">    v: array</span>
@@ -282,13 +384,13 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># choose axis in transformed space:</span>
     <span class="n">v1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">ui</span><span class="p">))</span>
-    <span class="n">v1</span> <span class="o">*=</span> <span class="n">scale</span> <span class="o">/</span> <span class="p">(</span><span class="n">v1</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">**</span><span class="mf">0.5</span>
+    <span class="n">v1</span> <span class="o">*=</span> <span class="n">scale</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">v1</span><span class="p">)</span>
     <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">axes</span><span class="p">,</span> <span class="n">v1</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">v</span></div>
 
 
-<div class="viewcode-block" id="generate_mixture_random_direction"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.generate_mixture_random_direction">[docs]</a><span class="k">def</span> <span class="nf">generate_mixture_random_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">uniform_weight</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Draw from a mix of a ball proposal and a region-shaped proposal.</span>
+<div class="viewcode-block" id="generate_mixture_random_direction"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.generate_mixture_random_direction">[docs]</a><span class="k">def</span> <span class="nf">generate_mixture_random_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Draw either from a region-direction or a unit axis.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    -----------</span>
@@ -304,13 +406,10 @@
 <span class="sd">    v: array</span>
 <span class="sd">        new direction vector</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">v1</span> <span class="o">=</span> <span class="n">generate_random_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">)</span>
-    <span class="n">v1</span> <span class="o">/=</span> <span class="p">(</span><span class="n">v1</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">**</span><span class="mf">0.5</span>
-    <span class="n">v2</span> <span class="o">=</span> <span class="n">generate_region_random_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">)</span>
-    <span class="n">v2</span> <span class="o">/=</span> <span class="p">(</span><span class="n">v2</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">**</span><span class="mf">0.5</span>
-    <span class="n">v</span> <span class="o">=</span> <span class="p">(</span><span class="n">v1</span> <span class="o">*</span> <span class="n">uniform_weight</span> <span class="o">+</span> <span class="n">v2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">uniform_weight</span><span class="p">))</span>
-    <span class="n">v</span> <span class="o">*=</span> <span class="n">scale</span> <span class="o">*</span> <span class="p">(</span><span class="n">v2</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">**</span><span class="mf">0.5</span>
-    <span class="k">return</span> <span class="n">v</span></div>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">0.5</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">generate_differential_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">scale</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">generate_region_oriented_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">scale</span><span class="p">)</span></div>
 
 
 <span class="k">def</span> <span class="nf">_inside_region</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">unew</span><span class="p">,</span> <span class="n">uold</span><span class="p">):</span>
@@ -340,7 +439,7 @@
 <span class="sd">        point to check</span>
 <span class="sd">    uold: array</span>
 <span class="sd">        not used</span>
-<span class="sd">    </span>
+
 <span class="sd">    Returns</span>
 <span class="sd">    --------</span>
 <span class="sd">    v: array</span>
@@ -348,6 +447,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">del</span> <span class="n">uold</span>
     <span class="k">return</span> <span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">unew</span><span class="p">)</span></div>
+
 
 <div class="viewcode-block" id="adapt_proposal_total_distances"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.adapt_proposal_total_distances">[docs]</a><span class="k">def</span> <span class="nf">adapt_proposal_total_distances</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">,</span> <span class="n">ndim</span><span class="p">):</span>
     <span class="c1"># compute mean vector of each proposed jump</span>
@@ -359,6 +459,7 @@
 
     <span class="k">return</span> <span class="n">far_enough</span><span class="p">,</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">]</span></div>
 
+
 <div class="viewcode-block" id="adapt_proposal_total_distances_NN"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.adapt_proposal_total_distances_NN">[docs]</a><span class="k">def</span> <span class="nf">adapt_proposal_total_distances_NN</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">,</span> <span class="n">ndim</span><span class="p">):</span>
     <span class="c1"># compute mean vector of each proposed jump</span>
     <span class="c1"># compute total distance of all jumps</span>
@@ -369,6 +470,7 @@
 
     <span class="k">return</span> <span class="n">far_enough</span><span class="p">,</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span><span class="p">]</span></div>
 
+
 <div class="viewcode-block" id="adapt_proposal_summed_distances"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.adapt_proposal_summed_distances">[docs]</a><span class="k">def</span> <span class="nf">adapt_proposal_summed_distances</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">,</span> <span class="n">ndim</span><span class="p">):</span>
     <span class="c1"># compute sum of distances from each jump</span>
     <span class="n">tproposed</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">u</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">history</span><span class="p">]))</span>
@@ -377,6 +479,7 @@
 
     <span class="k">return</span> <span class="n">far_enough</span><span class="p">,</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">]</span></div>
 
+
 <div class="viewcode-block" id="adapt_proposal_summed_distances_NN"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.adapt_proposal_summed_distances_NN">[docs]</a><span class="k">def</span> <span class="nf">adapt_proposal_summed_distances_NN</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">,</span> <span class="n">ndim</span><span class="p">):</span>
     <span class="c1"># compute sum of distances from each jump</span>
     <span class="n">tproposed</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">u</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">history</span><span class="p">]))</span>
@@ -384,6 +487,7 @@
     <span class="n">far_enough</span> <span class="o">=</span> <span class="n">d2</span> <span class="o">&gt;</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span>
 
     <span class="k">return</span> <span class="n">far_enough</span><span class="p">,</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span><span class="p">]</span></div>
+
 
 <div class="viewcode-block" id="adapt_proposal_move_distances"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.adapt_proposal_move_distances">[docs]</a><span class="k">def</span> <span class="nf">adapt_proposal_move_distances</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">,</span> <span class="n">ndim</span><span class="p">):</span>
     <span class="c1"># compute distance from start to end</span>
@@ -395,6 +499,7 @@
 
     <span class="k">return</span> <span class="n">far_enough</span><span class="p">,</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span><span class="p">]</span></div>
 
+
 <div class="viewcode-block" id="adapt_proposal_move_distances_midway"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.adapt_proposal_move_distances_midway">[docs]</a><span class="k">def</span> <span class="nf">adapt_proposal_move_distances_midway</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">,</span> <span class="n">ndim</span><span class="p">):</span>
     <span class="c1"># compute distance from start to end</span>
     <span class="n">ustart</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">history</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -405,6 +510,7 @@
     <span class="n">far_enough</span> <span class="o">=</span> <span class="n">d2</span> <span class="o">&gt;</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span>
 
     <span class="k">return</span> <span class="n">far_enough</span><span class="p">,</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span><span class="p">]</span></div>
+
 
 <div class="viewcode-block" id="StepSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.StepSampler">[docs]</a><span class="k">class</span> <span class="nc">StepSampler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Base class for a simple step sampler, staggering around.</span>
@@ -427,8 +533,34 @@
 <span class="sd">        nsteps: int</span>
 <span class="sd">            number of accepted steps until the sample is considered independent.</span>
 
+<span class="sd">            To find the right value, run nested sampling several time,</span>
+<span class="sd">            always doubling nsteps, until Z is stable.</span>
+
+<span class="sd">        generate_direction: function</span>
+<span class="sd">            direction proposal function.</span>
+
+<span class="sd">            Available are:</span>
+
+<span class="sd">            * :py:func:`generate_cube_oriented_direction` (slice sampling)</span>
+<span class="sd">            * :py:func:`generate_region_oriented_direction` (slice sampling on the whitened parameter space)</span>
+<span class="sd">            * :py:class:`SequentialDirectionGenerator` (sequential slice sampling on the whitened parameter space)</span>
+<span class="sd">            * :py:func:`generate_random_direction` (hit-and-run sampling)</span>
+<span class="sd">            * :py:func:`generate_region_random_direction` (hit-and-run sampling on the whitened parameter space)</span>
+<span class="sd">            * :py:func:`generate_cube_oriented_differential_direction` (slice sampling with better proposal scale)</span>
+<span class="sd">            * :py:func:`generate_differential_direction` (differential evolution slice proposal)</span>
+<span class="sd">            * :py:func:`generate_partial_differential_direction` (differential evolution slice proposal on only 10% of the parameters)</span>
+<span class="sd">            * :py:func:`generate_mixture_random_direction` (generate_differential_direction and generate_cube_oriented_differential_direction)</span>
+
+<span class="sd">            Additionally, :py:class:`OrthogonalDirectionGenerator` </span>
+<span class="sd">            can be applied to a generate_direction.</span>
+
+<span class="sd">            When in doubt, try :py:func:`generate_mixture_random_direction`.</span>
+<span class="sd">            It combines efficient moves along the live point distribution,</span>
+<span class="sd">            with robustness against collapse to a subspace.</span>
+<span class="sd">            :py:func:`generate_cube_oriented_direction` works well too.</span>
+
 <span class="sd">        adaptive_nsteps: False, &#39;proposal-distance&#39;, &#39;move-distance&#39;</span>
-<span class="sd">            Select a strategy to adapt the number of steps. The strategies</span>
+<span class="sd">            Strategy to adapt the number of steps. The strategies</span>
 <span class="sd">            make sure that:</span>
 
 <span class="sd">            * &#39;move-distance&#39; (recommended): distance between</span>
@@ -450,6 +582,12 @@
 <span class="sd">              between chain points exceeds mean distance</span>
 <span class="sd">              between pairs of live points.</span>
 
+<span class="sd">            Adapting can give usable results. However, strictly speaking,</span>
+<span class="sd">            detailed balance is not maintained, so the results can be biased.</span>
+<span class="sd">            You can use the logstat property to find out the `nsteps` learned</span>
+<span class="sd">            from one run (third column), and use the largest value for `nsteps`</span>
+<span class="sd">            of a fresh run.</span>
+
 <span class="sd">        max_nsteps: int</span>
 <span class="sd">            Maximum number of steps the adaptive_nsteps can reach.</span>
 
@@ -469,7 +607,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="mf">1.0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_nsteps</span> <span class="o">=</span> <span class="n">max_nsteps</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">next_scale</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">last</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nudge</span> <span class="o">=</span> <span class="mf">1.1</span><span class="o">**</span><span class="p">(</span><span class="mf">1.</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_nudge</span> <span class="o">=</span> <span class="mf">1.01</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span> <span class="o">=</span> <span class="n">generate_direction</span>
@@ -477,7 +614,7 @@
             <span class="kc">False</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
             <span class="s1">&#39;move-distance&#39;</span><span class="p">:</span> <span class="n">adapt_proposal_move_distances</span><span class="p">,</span>
             <span class="s1">&#39;move-distance-midway&#39;</span><span class="p">:</span> <span class="n">adapt_proposal_move_distances_midway</span><span class="p">,</span>
-            <span class="s1">&#39;proposal-total-distances&#39;</span><span class="p">:</span> <span class="n">adapt_proposal_total_distances</span><span class="p">,</span> 
+            <span class="s1">&#39;proposal-total-distances&#39;</span><span class="p">:</span> <span class="n">adapt_proposal_total_distances</span><span class="p">,</span>
             <span class="s1">&#39;proposal-total-distances-NN&#39;</span><span class="p">:</span> <span class="n">adapt_proposal_total_distances_NN</span><span class="p">,</span>
             <span class="s1">&#39;proposal-summed-distances&#39;</span><span class="p">:</span> <span class="n">adapt_proposal_summed_distances</span><span class="p">,</span>
             <span class="s1">&#39;proposal-summed-distances-NN&#39;</span><span class="p">:</span> <span class="n">adapt_proposal_summed_distances_NN</span><span class="p">,</span>
@@ -552,7 +689,6 @@
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">&gt;</span> <span class="mi">0</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_scale</span> <span class="o">&gt;</span> <span class="mi">0</span>
         <span class="c1"># reset chain</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">last</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
@@ -576,7 +712,6 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">accepted</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">next_scale</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nudge</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">last</span> <span class="o">=</span> <span class="n">unew</span><span class="p">,</span> <span class="n">Lnew</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">unew</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">Lnew</span><span class="o">.</span><span class="n">copy</span><span class="p">()))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">next_scale</span> <span class="o">/=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nudge</span><span class="o">**</span><span class="mi">10</span>
@@ -655,17 +790,16 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">next_scale</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">nudge</span><span class="o">**</span><span class="mi">10</span>
         <span class="c1"># print(&quot;updating scale: %g -&gt; %g&quot; % (self.scale, self.next_scale))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_scale</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">last</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nrejects</span> <span class="o">=</span> <span class="mi">0</span></div>
 
 <div class="viewcode-block" id="StepSampler.new_chain"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.StepSampler.new_chain">[docs]</a>    <span class="k">def</span> <span class="nf">new_chain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Starts a new path, reset statistics.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Start a new path, reset statistics.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nrejects</span> <span class="o">=</span> <span class="mi">0</span></div>
 
 <div class="viewcode-block" id="StepSampler.region_changed"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.StepSampler.region_changed">[docs]</a>    <span class="k">def</span> <span class="nf">region_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Ls</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;React to change of region. </span>
+        <span class="sd">&quot;&quot;&quot;React to change of region.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        -----------</span>
@@ -674,7 +808,6 @@
 <span class="sd">        Ls: array</span>
 <span class="sd">            loglikelihood values of the live points</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps_needs_mean_pair_distance</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">mean_pair_distance</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">compute_mean_pair_distance</span><span class="p">()</span></div>
             <span class="c1"># print(&quot;region changed. new mean_pair_distance: %g&quot; % self.mean_pair_distance)</span>
@@ -705,25 +838,15 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># find most recent point in history conforming to current Lmin</span>
-        <span class="n">ui</span><span class="p">,</span> <span class="n">Li</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">last</span>
-        <span class="k">if</span> <span class="n">Li</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">Li</span> <span class="o">&gt;=</span> <span class="n">Lmin</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;wandered out of L constraint; resetting&quot;</span><span class="p">,</span> <span class="n">ui</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-            <span class="k">del</span> <span class="n">ui</span><span class="p">,</span> <span class="n">Li</span>
-            <span class="n">ui</span><span class="p">,</span> <span class="n">Li</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
-
-        <span class="k">if</span> <span class="n">Li</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">:</span>
-            <span class="c1"># try to resume from a previous point above the current contour</span>
-            <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="p">(</span><span class="n">uj</span><span class="p">,</span> <span class="n">Lj</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
-                <span class="n">is_inside</span> <span class="o">=</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">region_filter</span> <span class="ow">or</span> <span class="p">(</span><span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">uj</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)))</span> <span class="ow">and</span> <span class="p">(</span><span class="n">tregion</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">tregion</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">transform</span><span class="p">(</span><span class="n">uj</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))))))</span>
-                <span class="k">if</span> <span class="n">Lj</span> <span class="o">&gt;</span> <span class="n">Lmin</span> <span class="ow">and</span> <span class="n">is_inside</span><span class="p">:</span>
-                    <span class="k">del</span> <span class="n">ui</span><span class="p">,</span> <span class="n">Li</span>
-                    <span class="n">ui</span><span class="p">,</span> <span class="n">Li</span> <span class="o">=</span> <span class="n">uj</span><span class="p">,</span> <span class="n">Lj</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">last</span> <span class="o">=</span> <span class="n">ui</span><span class="p">,</span> <span class="n">Li</span>
-                    <span class="k">break</span>
-            <span class="k">pass</span>
-
-        <span class="c1"># select starting point</span>
-        <span class="k">if</span> <span class="n">Li</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="p">(</span><span class="n">uj</span><span class="p">,</span> <span class="n">Lj</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">Lj</span> <span class="o">&gt;</span> <span class="n">Lmin</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[:</span><span class="n">j</span><span class="p">]</span>
+                <span class="c1"># print(&quot;wandered out of L constraint; reverting&quot;, ui[0])</span>
+                <span class="k">break</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">ui</span><span class="p">,</span> <span class="n">Li</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># select starting point</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">new_chain</span><span class="p">(</span><span class="n">region</span><span class="p">)</span>
             <span class="c1"># choose a new random starting point</span>
             <span class="c1"># mask = region.inside(us)</span>
@@ -731,7 +854,6 @@
             <span class="c1">#    region.maxradiussq, region.u, region.unormed, us)</span>
             <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">us</span><span class="p">))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">starti</span> <span class="o">=</span> <span class="n">i</span>
-            <span class="k">del</span> <span class="n">Li</span><span class="p">,</span> <span class="n">ui</span>
             <span class="n">ui</span> <span class="o">=</span> <span class="n">us</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span>
             <span class="c1"># print(&quot;starting at&quot;, ui[0])</span>
             <span class="c1"># assert np.logical_and(ui &gt; 0, ui &lt; 1).all(), ui</span>
@@ -814,10 +936,14 @@
         <span class="n">unew</span> <span class="o">=</span> <span class="n">ui</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span> <span class="o">+</span> <span class="n">jitter</span>
         <span class="k">return</span> <span class="n">unew</span></div></div>
 
+
 <div class="viewcode-block" id="CubeMHSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.CubeMHSampler">[docs]</a><span class="k">def</span> <span class="nf">CubeMHSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Gaussian Metropolis-Hastings sampler, using unit cube.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">MHSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">generate_direction</span><span class="o">=</span><span class="n">generate_random_direction</span><span class="p">)</span></div>
 
+
 <div class="viewcode-block" id="RegionMHSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.RegionMHSampler">[docs]</a><span class="k">def</span> <span class="nf">RegionMHSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Gaussian Metropolis-Hastings sampler, using region.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">MHSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">generate_direction</span><span class="o">=</span><span class="n">generate_region_random_direction</span><span class="p">)</span></div>
 
 
@@ -825,14 +951,13 @@
     <span class="sd">&quot;&quot;&quot;Slice sampler, respecting the region.&quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="SliceSampler.new_chain"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.SliceSampler.new_chain">[docs]</a>    <span class="k">def</span> <span class="nf">new_chain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Starts a new path, reset slice.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Start a new path, reset slice.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">found_left</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">found_right</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">axis_index</span> <span class="o">=</span> <span class="mi">0</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">last</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nrejects</span> <span class="o">=</span> <span class="mi">0</span></div>
 
 <div class="viewcode-block" id="SliceSampler.adjust_accept"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.SliceSampler.adjust_accept">[docs]</a>    <span class="k">def</span> <span class="nf">adjust_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">accepted</span><span class="p">,</span> <span class="n">unew</span><span class="p">,</span> <span class="n">pnew</span><span class="p">,</span> <span class="n">Lnew</span><span class="p">,</span> <span class="n">nc</span><span class="p">):</span>
@@ -859,7 +984,6 @@
                 <span class="c1"># start with a new interval next time</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="kc">None</span>
 
-                <span class="bp">self</span><span class="o">.</span><span class="n">last</span> <span class="o">=</span> <span class="n">unew</span><span class="p">,</span> <span class="n">Lnew</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">unew</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">Lnew</span><span class="o">.</span><span class="n">copy</span><span class="p">()))</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">nrejects</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -960,7 +1084,9 @@
 
 <div class="viewcode-block" id="SequentialDirectionGenerator"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.SequentialDirectionGenerator">[docs]</a><span class="k">class</span> <span class="nc">SequentialDirectionGenerator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Sequentially proposes one region axes after the next.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">axis_index</span> <span class="o">=</span> <span class="mi">0</span>
+
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Iteratively choose the next axis in t-space.</span>
 
@@ -992,9 +1118,54 @@
         <span class="n">v</span> <span class="o">*=</span> <span class="n">scale</span> <span class="o">/</span> <span class="p">(</span><span class="n">v</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">**</span><span class="mf">0.5</span>
         <span class="k">return</span> <span class="n">v</span></div>
 
+
 <div class="viewcode-block" id="RegionSequentialSliceSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.RegionSequentialSliceSampler">[docs]</a><span class="k">def</span> <span class="nf">RegionSequentialSliceSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Slice sampler, sequentially iterating region axes.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">SliceSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">generate_direction</span><span class="o">=</span><span class="n">SequentialDirectionGenerator</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="OrthogonalDirectionGenerator"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.OrthogonalDirectionGenerator">[docs]</a><span class="k">class</span> <span class="nc">OrthogonalDirectionGenerator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">generate_direction</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Orthogonalizes proposal vectors.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        -----------</span>
+<span class="sd">        generate_direction: function</span>
+<span class="sd">            direction proposal to orthogonalize</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">axis_index</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span> <span class="o">=</span> <span class="n">generate_direction</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">directions</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Iteratively return a orthogonalized vector.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        -----------</span>
+<span class="sd">        ui: array</span>
+<span class="sd">            current point (in u-space)</span>
+<span class="sd">        region: MLFriends object</span>
+<span class="sd">            region to use for transformation</span>
+<span class="sd">        scale: float</span>
+<span class="sd">            length of direction vector</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        --------</span>
+<span class="sd">        v: array</span>
+<span class="sd">            new direction vector (in u-space)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ndim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ui</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">directions</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">axis_index</span> <span class="o">&gt;=</span> <span class="n">ndim</span><span class="p">:</span>
+            <span class="n">proposed_directions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">ndim</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndim</span><span class="p">):</span>
+                <span class="n">proposed_directions</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">scale</span><span class="p">)</span>
+            <span class="n">q</span><span class="p">,</span> <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">qr</span><span class="p">(</span><span class="n">proposed_directions</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">directions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">q</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">r</span><span class="p">)))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">axis_index</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">directions</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">axis_index</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">axis_index</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">v</span></div>
 
 
 <div class="viewcode-block" id="SpeedVariableGenerator"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.SpeedVariableGenerator">[docs]</a><span class="k">class</span> <span class="nc">SpeedVariableGenerator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -1063,7 +1234,7 @@
 <span class="sd">            new direction vector</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">ndim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ui</span><span class="p">)</span>
-        
+
         <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span><span class="p">(</span><span class="n">ui</span><span class="o">=</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">scale</span><span class="p">)</span>
         <span class="n">j</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">axis_index</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">axis_index</span> <span class="o">=</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span>
@@ -1080,9 +1251,9 @@
 
 <span class="sd">    Updates only some dimensions at a time, completely user-definable.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    
-    
-    <span class="k">return</span> <span class="n">SliceSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> 
+
+    <span class="k">return</span> <span class="n">SliceSampler</span><span class="p">(</span>
+        <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
         <span class="n">nsteps</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;nsteps&#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">step_matrix</span><span class="p">)),</span>
         <span class="n">generate_direction</span><span class="o">=</span><span class="n">SpeedVariableGenerator</span><span class="p">(</span>
             <span class="n">step_matrix</span><span class="o">=</span><span class="n">step_matrix</span><span class="p">,</span>
@@ -1092,7 +1263,9 @@
 
 
 <div class="viewcode-block" id="ellipsoid_bracket"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.ellipsoid_bracket">[docs]</a><span class="k">def</span> <span class="nf">ellipsoid_bracket</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">ellipsoid_center</span><span class="p">,</span> <span class="n">ellipsoid_inv_axes</span><span class="p">,</span> <span class="n">ellipsoid_radius_square</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; For a line from ui in direction v through an ellipsoid</span>
+    <span class="sd">&quot;&quot;&quot;Find line-ellipsoid intersection points.</span>
+
+<span class="sd">    For a line from ui in direction v through an ellipsoid</span>
 <span class="sd">    centered at ellipsoid_center with axes matrix ellipsoid_inv_axes,</span>
 <span class="sd">    return the lower and upper intersection parameter.</span>
 
@@ -1133,7 +1306,9 @@
 
 
 <div class="viewcode-block" id="crop_bracket_at_unit_cube"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.crop_bracket_at_unit_cube">[docs]</a><span class="k">def</span> <span class="nf">crop_bracket_at_unit_cube</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">epsilon</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;A line segment from *ui* in direction *v* from t between *left* &lt;= 0 &lt;= *right*</span>
+    <span class="sd">&quot;&quot;&quot;Find line-cube intersection points.</span>
+
+<span class="sd">    A line segment from *ui* in direction *v* from t between *left* &lt;= 0 &lt;= *right*</span>
 <span class="sd">    will be truncated by the unit cube. Returns the bracket and whether cropping was applied.</span>
 
 <span class="sd">    Parameters</span>
@@ -1208,520 +1383,6 @@
 
     <span class="k">assert</span> <span class="n">left</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">right</span><span class="p">,</span> <span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">cropped_left</span><span class="p">,</span> <span class="n">cropped_right</span></div>
-
-<span class="k">def</span> <span class="nf">_prepare_steps</span><span class="p">(</span>
-    <span class="n">nsteps_done</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">,</span> <span class="n">directions</span><span class="p">,</span> <span class="n">ndraw</span><span class="p">,</span>
-    <span class="n">current_interval</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">ndim</span><span class="p">,</span> <span class="n">region_filter</span><span class="p">,</span> 
-    <span class="n">Lmin</span><span class="p">,</span> <span class="n">verbose</span><span class="p">,</span>
-<span class="p">):</span>
-    <span class="n">point_sequence</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">point_expectation</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">intervals</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="n">nsteps_prepared</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="k">while</span> <span class="n">nsteps_prepared</span> <span class="o">+</span> <span class="n">nsteps_done</span> <span class="o">&lt;</span> <span class="n">nsteps</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">point_sequence</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">ndraw</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;loop:&quot;</span><span class="p">,</span> <span class="n">nsteps_prepared</span><span class="p">,</span> <span class="n">nsteps_done</span><span class="p">,</span> <span class="s1">&#39;of&#39;</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">)</span>
-        <span class="n">v</span> <span class="o">=</span> <span class="n">directions</span><span class="p">[</span><span class="n">nsteps_done</span> <span class="o">+</span> <span class="n">nsteps_prepared</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;direction:&quot;</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">point_sequence</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">ucurrent</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span> <span class="o">=</span> <span class="n">current_interval</span>
-            <span class="k">assert</span> <span class="p">(</span><span class="n">ucurrent</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">ucurrent</span>
-            <span class="k">assert</span> <span class="p">(</span><span class="n">ucurrent</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">ucurrent</span>
-            <span class="k">assert</span> <span class="n">region</span><span class="o">.</span><span class="n">inside_ellipsoid</span><span class="p">(</span><span class="n">ucurrent</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))),</span> <span class="p">(</span>
-                <span class="s1">&#39;cannot start from outside ellipsoid!&#39;</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">inside_ellipsoid</span><span class="p">(</span><span class="n">ucurrent</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))))</span>
-            <span class="k">if</span> <span class="n">region_filter</span><span class="p">:</span>
-                <span class="k">assert</span> <span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">ucurrent</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))),</span> <span class="p">(</span>
-                    <span class="s1">&#39;cannot start from outside region!&#39;</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">ucurrent</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))))</span>
-            <span class="k">assert</span> <span class="n">loglike</span><span class="p">(</span><span class="n">transform</span><span class="p">(</span><span class="n">ucurrent</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))))</span> <span class="o">&gt;=</span> <span class="n">Lmin</span><span class="p">,</span> <span class="p">(</span>
-                <span class="s1">&#39;cannot start from outside!&#39;</span><span class="p">,</span> <span class="n">loglike</span><span class="p">(</span><span class="n">transform</span><span class="p">(</span><span class="n">ucurrent</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndim</span><span class="p">)))),</span> <span class="n">Lmin</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">left</span><span class="p">,</span> <span class="n">right</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
-        <span class="k">assert</span> <span class="p">(</span><span class="n">ucurrent</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">ucurrent</span>
-        <span class="k">assert</span> <span class="p">(</span><span class="n">ucurrent</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">ucurrent</span>
-        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;preparing step: </span><span class="si">%d</span><span class="s2"> from </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">nsteps_prepared</span> <span class="o">+</span> <span class="n">nsteps_done</span><span class="p">,</span> <span class="n">ucurrent</span><span class="p">))</span>
-
-        <span class="k">if</span> <span class="n">left</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">right</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="c1"># in each, find the end points using the expanded ellipsoid</span>
-            <span class="k">assert</span> <span class="n">region</span><span class="o">.</span><span class="n">inside_ellipsoid</span><span class="p">(</span><span class="n">ucurrent</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))),</span> <span class="p">(</span><span class="s1">&#39;current point outside ellipsoid!&#39;</span><span class="p">)</span>
-            <span class="n">left</span><span class="p">,</span> <span class="n">right</span> <span class="o">=</span> <span class="n">ellipsoid_bracket</span><span class="p">(</span><span class="n">ucurrent</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_center</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_inv_axes</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">enlarge</span><span class="p">)</span>
-            <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">crop_bracket_at_unit_cube</span><span class="p">(</span><span class="n">ucurrent</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">)</span>
-            <span class="k">assert</span> <span class="p">(</span><span class="n">ucurrent</span> <span class="o">+</span> <span class="n">v</span> <span class="o">*</span> <span class="n">left</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="p">(</span>
-                <span class="n">ucurrent</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_center</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_inv_axes</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_invcov</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">enlarge</span><span class="p">)</span>
-            <span class="k">assert</span> <span class="p">(</span><span class="n">ucurrent</span> <span class="o">+</span> <span class="n">v</span> <span class="o">*</span> <span class="n">right</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="p">(</span>
-                <span class="n">ucurrent</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_center</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_inv_axes</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_invcov</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">enlarge</span><span class="p">)</span>
-            <span class="k">assert</span> <span class="p">(</span><span class="n">ucurrent</span> <span class="o">+</span> <span class="n">v</span> <span class="o">*</span> <span class="n">left</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="p">(</span>
-                <span class="n">ucurrent</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_center</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_inv_axes</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_invcov</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">enlarge</span><span class="p">)</span>
-            <span class="k">assert</span> <span class="p">(</span><span class="n">ucurrent</span> <span class="o">+</span> <span class="n">v</span> <span class="o">*</span> <span class="n">right</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="p">(</span>
-                <span class="n">ucurrent</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_center</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_inv_axes</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_invcov</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">enlarge</span><span class="p">)</span>
-
-            <span class="k">assert</span> <span class="n">left</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">right</span><span class="p">,</span> <span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   ellipsoid bracket found:&quot;</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">)</span>
-
-        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-            <span class="c1"># sample in each a point until presumed success:</span>
-            <span class="k">assert</span> <span class="n">region</span><span class="o">.</span><span class="n">inside_ellipsoid</span><span class="p">(</span><span class="n">ucurrent</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))),</span> <span class="p">(</span><span class="s1">&#39;current point outside ellipsoid!&#39;</span><span class="p">)</span>
-            <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">)</span>
-            <span class="n">unext</span> <span class="o">=</span> <span class="n">ucurrent</span> <span class="o">+</span> <span class="n">v</span> <span class="o">*</span> <span class="n">t</span>
-            <span class="k">assert</span> <span class="p">(</span><span class="n">unext</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">unext</span>
-            <span class="k">assert</span> <span class="p">(</span><span class="n">unext</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">unext</span>
-            <span class="k">assert</span> <span class="n">region</span><span class="o">.</span><span class="n">inside_ellipsoid</span><span class="p">(</span><span class="n">unext</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))),</span> <span class="p">(</span><span class="s1">&#39;proposal landed outside ellipsoid!&#39;</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">)</span>
-
-            <span class="c1"># compute distance vector to center</span>
-            <span class="n">d</span> <span class="o">=</span> <span class="n">unext</span> <span class="o">-</span> <span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_center</span>
-            <span class="c1"># distance in normalised coordates: vector . matrix . vector</span>
-            <span class="c1"># where the matrix is the ellipsoid inverse covariance</span>
-            <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;j,jk,k-&gt;&#39;</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_invcov</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   proposed slice point&quot;</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
-
-            <span class="n">likely_inside</span> <span class="o">=</span> <span class="n">r</span> <span class="o">&lt;=</span> <span class="mi">1</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">likely_inside</span> <span class="ow">and</span> <span class="n">r</span> <span class="o">&lt;=</span> <span class="n">region</span><span class="o">.</span><span class="n">enlarge</span><span class="p">:</span>
-                <span class="c1"># The exception is, when a point is between projected ellipsoid center and current point</span>
-                <span class="c1"># then it is also likely inside (if still inside the ellipsoid)</span>
-
-                <span class="c1"># project ellipsoid center onto line</span>
-                <span class="c1"># region.ellipsoid_center = ucurrent + tc * v</span>
-                <span class="n">tc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_center</span> <span class="o">-</span> <span class="n">ucurrent</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
-                <span class="c1"># current point is at 0 by definition</span>
-                <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="n">t</span> <span class="o">&lt;</span> <span class="n">tc</span> <span class="ow">or</span> <span class="n">tc</span> <span class="o">&lt;</span> <span class="n">t</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   proposed point is further inside than current point&quot;</span><span class="p">)</span>
-                    <span class="n">likely_inside</span> <span class="o">=</span> <span class="kc">True</span>
-                <span class="c1">#    print(&quot;   proposed point %.3f is going towards center %.3f&quot; % (t, tc))</span>
-                <span class="c1"># else:</span>
-                <span class="c1">#    print(&quot;   proposed point %.3f is going away from center %.3f&quot; % (t, tc))</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="c1"># another exception is that points very close to the current point</span>
-                    <span class="c1"># are very likely also inside</span>
-                    <span class="c1"># to find that out, project all live points on the line</span>
-                    <span class="n">tall</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">einsum</span><span class="p">(</span><span class="s1">&#39;ij,j-&gt;i&#39;</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">u</span> <span class="o">-</span> <span class="n">ucurrent</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
-                    <span class="c1"># find the range and identify a small part of it</span>
-                    <span class="n">epsilon_nearby</span> <span class="o">=</span> <span class="mf">1e-6</span>
-                    <span class="k">if</span> <span class="n">tc</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">tall</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">tall</span><span class="o">.</span><span class="n">min</span><span class="p">())</span> <span class="o">*</span> <span class="n">epsilon_nearby</span><span class="p">:</span>
-                        <span class="n">likely_inside</span> <span class="o">=</span> <span class="kc">True</span>
-                        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   proposed point is very nearby&quot;</span><span class="p">)</span>
-
-            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   proposed point </span><span class="si">%s</span><span class="s2"> (</span><span class="si">%f</span><span class="s2">) is likely </span><span class="si">%s</span><span class="s2"> (r=</span><span class="si">%f</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">unext</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="s1">&#39;inside&#39;</span> <span class="k">if</span> <span class="n">likely_inside</span> <span class="k">else</span> <span class="s1">&#39;outside&#39;</span><span class="p">,</span> <span class="n">r</span><span class="p">))</span>
-            <span class="n">intervals</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">nsteps_prepared</span><span class="p">,</span> <span class="n">ucurrent</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">t</span><span class="p">))</span>
-            <span class="n">point_sequence</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">unext</span><span class="p">)</span>
-            <span class="n">point_expectation</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">likely_inside</span><span class="p">)</span>
-            <span class="c1">#   If point radius in ellipsoid is &lt;1, presume that it will be successful</span>
-            <span class="k">if</span> <span class="n">likely_inside</span><span class="p">:</span>
-                <span class="n">nsteps_prepared</span> <span class="o">+=</span> <span class="mi">1</span>
-                <span class="n">ucurrent</span> <span class="o">=</span> <span class="n">unext</span>
-                <span class="k">assert</span> <span class="n">region</span><span class="o">.</span><span class="n">inside_ellipsoid</span><span class="p">(</span><span class="n">ucurrent</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))),</span> <span class="p">(</span><span class="s1">&#39;current point outside ellipsoid!&#39;</span><span class="p">)</span>
-                <span class="k">break</span>
-
-            <span class="c1">#   Else, presume it will be unsuccessful, and sample another point</span>
-            <span class="c1">#   shrink interval</span>
-            <span class="k">if</span> <span class="n">t</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">right</span> <span class="o">=</span> <span class="n">t</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">left</span> <span class="o">=</span> <span class="n">t</span>
-
-    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">point_sequence</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">point_expectation</span><span class="p">)</span>
-    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">point_sequence</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">intervals</span><span class="p">)</span>
-    <span class="k">assert</span> <span class="n">nsteps_prepared</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">point_sequence</span><span class="p">)</span>
-
-    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">point_sequence</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">point_sequence</span><span class="p">),</span> <span class="n">ndraw</span><span class="p">,</span> <span class="n">nsteps_prepared</span><span class="p">,</span> <span class="n">nsteps_done</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;proposed sequence:&quot;</span><span class="p">,</span> <span class="n">point_sequence</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;expectations:&quot;</span><span class="p">,</span> <span class="n">point_expectation</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">point_sequence</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">point_expectation</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span> <span class="n">intervals</span><span class="p">,</span> <span class="n">nsteps_prepared</span>
-
-
-<span class="k">def</span> <span class="nf">_evaluate_with_filter</span><span class="p">(</span>
-    <span class="n">region_filter</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">tregion</span><span class="p">,</span>
-    <span class="n">point_sequence</span><span class="p">,</span> <span class="n">point_expectation</span><span class="p">,</span> 
-    <span class="n">verbose</span>
-<span class="p">):</span>
-    <span class="n">truncated</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="c1"># region-filter, transform, tregion-filter, and evaluate the likelihood</span>
-    <span class="k">if</span> <span class="n">region_filter</span><span class="p">:</span>
-        <span class="n">mask_inside</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">point_sequence</span><span class="p">)</span>
-        <span class="c1"># identify first point that was expected to be inside, but was marked outside-of-region</span>
-        <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">point_expectation</span><span class="p">,</span> <span class="o">~</span><span class="n">mask_inside</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;region filter says:&quot;</span><span class="p">,</span> <span class="n">mask_inside</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">imax</span> <span class="o">=</span> <span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
-            <span class="c1"># truncate there</span>
-            <span class="n">point_sequence</span> <span class="o">=</span> <span class="n">point_sequence</span><span class="p">[:</span><span class="n">imax</span><span class="p">]</span>
-            <span class="n">point_expectation</span> <span class="o">=</span> <span class="n">point_expectation</span><span class="p">[:</span><span class="n">imax</span><span class="p">]</span>
-            <span class="n">mask_inside</span> <span class="o">=</span> <span class="n">mask_inside</span><span class="p">[:</span><span class="n">imax</span><span class="p">]</span>
-            <span class="n">truncated</span> <span class="o">|=</span> <span class="kc">True</span>
-            <span class="k">del</span> <span class="n">imax</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">mask_inside</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
-            <span class="k">return</span> <span class="kc">None</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">mask_inside</span> <span class="o">=</span> <span class="kc">None</span>
-
-    <span class="n">t_point_sequence</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">point_sequence</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">region_filter</span> <span class="ow">and</span> <span class="n">tregion</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">tmask</span> <span class="o">=</span> <span class="n">tregion</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">t_point_sequence</span><span class="p">)</span>
-        <span class="c1"># identify first point that was expected to be inside, but was marked outside-of-region</span>
-        <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">point_expectation</span><span class="p">,</span> <span class="o">~</span><span class="n">tmask</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;tregion filter says:&quot;</span><span class="p">,</span> <span class="n">tmask</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
-        <span class="n">mask_inside</span><span class="p">[</span><span class="o">~</span><span class="n">tmask</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="k">del</span> <span class="n">tmask</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">imax</span> <span class="o">=</span> <span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
-            <span class="c1"># truncate there</span>
-            <span class="n">point_sequence</span> <span class="o">=</span> <span class="n">point_sequence</span><span class="p">[:</span><span class="n">imax</span><span class="p">]</span>
-            <span class="n">point_expectation</span> <span class="o">=</span> <span class="n">point_expectation</span><span class="p">[:</span><span class="n">imax</span><span class="p">]</span>
-            <span class="n">t_point_sequence</span> <span class="o">=</span> <span class="n">t_point_sequence</span><span class="p">[:</span><span class="n">imax</span><span class="p">]</span>
-            <span class="n">mask_inside</span> <span class="o">=</span> <span class="n">mask_inside</span><span class="p">[:</span><span class="n">imax</span><span class="p">]</span>
-            <span class="n">truncated</span> <span class="o">|=</span> <span class="kc">True</span>
-            <span class="k">del</span> <span class="n">imax</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">mask_inside</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
-            <span class="k">return</span> <span class="kc">None</span>
-
-    <span class="c1"># we expect the last point to be an accept, otherwise we would not terminate the sequence</span>
-    <span class="k">assert</span> <span class="n">point_expectation</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-    <span class="k">if</span> <span class="n">region_filter</span><span class="p">:</span>
-        <span class="c1"># set filtered ones to -np.inf</span>
-        <span class="n">L</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">t_point_sequence</span><span class="p">))</span> <span class="o">*</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
-        <span class="n">nc</span> <span class="o">=</span> <span class="n">mask_inside</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-        <span class="n">L</span><span class="p">[</span><span class="n">mask_inside</span><span class="p">]</span> <span class="o">=</span> <span class="n">loglike</span><span class="p">(</span><span class="n">t_point_sequence</span><span class="p">[</span><span class="n">mask_inside</span><span class="p">,:])</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">nc</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">point_sequence</span><span class="p">)</span>
-        <span class="n">L</span> <span class="o">=</span> <span class="n">loglike</span><span class="p">(</span><span class="n">t_point_sequence</span><span class="p">)</span>
-    <span class="n">Lmask</span> <span class="o">=</span> <span class="n">L</span> <span class="o">&gt;</span> <span class="n">Lmin</span>
-
-    <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">point_expectation</span> <span class="o">!=</span> <span class="n">Lmask</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;reality:&quot;</span><span class="p">,</span> <span class="n">Lmask</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;difference:&quot;</span><span class="p">,</span> <span class="n">point_expectation</span> <span class="o">==</span> <span class="n">Lmask</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">point_sequence</span><span class="p">,</span> <span class="n">t_point_sequence</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">Lmask</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">nc</span><span class="p">,</span> <span class="n">truncated</span>
-
-<div class="viewcode-block" id="AHARMSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.AHARMSampler">[docs]</a><span class="k">class</span> <span class="nc">AHARMSampler</span><span class="p">(</span><span class="n">StepSampler</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Accelerated hit-and-run/slice sampler, vectorised.</span>
-
-<span class="sd">    Uses region ellipsoid to propose a sequence of points</span>
-<span class="sd">    on a randomly drawn line.</span>
-
-<span class="sd">    (in development)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">,</span> <span class="n">adaptive_nsteps</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">max_nsteps</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
-        <span class="n">region_filter</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="n">generate_region_random_direction</span><span class="p">,</span>
-        <span class="n">orthogonalise</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Initialise vectorised hit-and-run/slice sampler.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        -----------</span>
-<span class="sd">        nsteps: int</span>
-<span class="sd">            number of accepted steps until the sample is considered independent.</span>
-
-<span class="sd">        adaptive_nsteps: False, &#39;proposal-distance&#39;, &#39;move-distance&#39;</span>
-<span class="sd">            Select a strategy to adapt the number of steps. The strategies</span>
-<span class="sd">            make sure that:</span>
-
-<span class="sd">            * &#39;move-distance&#39; (recommended): distance between</span>
-<span class="sd">              start point and final position exceeds the mean distance</span>
-<span class="sd">              between pairs of live points.</span>
-<span class="sd">            * &#39;move-distance-midway&#39;: distance between</span>
-<span class="sd">              start point and position in the middle of the chain</span>
-<span class="sd">              exceeds the mean distance between pairs of live points.</span>
-
-<span class="sd">        max_nsteps: int</span>
-<span class="sd">            Maximum number of steps the adaptive_nsteps can reach.</span>
-
-<span class="sd">        region_filter: bool</span>
-<span class="sd">            if True, use region to check if a proposed point can be inside</span>
-<span class="sd">            before calling likelihood.</span>
-
-<span class="sd">        direction: function</span>
-<span class="sd">            function that draws slice direction given a point and</span>
-<span class="sd">            the current region.</span>
-
-<span class="sd">        orthogonalise: bool</span>
-<span class="sd">            If true, make subsequent proposed directions orthogonal</span>
-<span class="sd">            to each other.</span>
-
-<span class="sd">        log: file</span>
-<span class="sd">            log file for sampler statistics, such as acceptance rate,</span>
-<span class="sd">            proposal scale, number of steps, jump distance and distance</span>
-<span class="sd">            between live points</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">=</span> <span class="n">nsteps</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">nrejects</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">max_nsteps</span> <span class="o">=</span> <span class="n">max_nsteps</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">last</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span> <span class="o">=</span> <span class="n">direction</span>
-        <span class="n">adaptive_nsteps_options</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="kc">False</span><span class="p">,</span>
-            <span class="s1">&#39;move-distance&#39;</span><span class="p">,</span> <span class="s1">&#39;move-distance-midway&#39;</span><span class="p">,</span>
-        <span class="p">]</span>
-
-        <span class="k">if</span> <span class="n">adaptive_nsteps</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">adaptive_nsteps_options</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;adaptive_nsteps must be one of: </span><span class="si">%s</span><span class="s2">, not &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">adaptive_nsteps_options</span><span class="p">,</span> <span class="n">adaptive_nsteps</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="o">=</span> <span class="n">adaptive_nsteps</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">region_filter</span> <span class="o">=</span> <span class="n">region_filter</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="o">=</span> <span class="n">log</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps_needs_mean_pair_distance</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_nudge</span> <span class="o">=</span> <span class="mf">1.01</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">orthogonalise</span> <span class="o">=</span> <span class="n">orthogonalise</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;rejection_rate&#39;</span><span class="p">,</span> <span class="s1">&#39;steps&#39;</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">adaptive_nsteps</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;jump-distance&#39;</span><span class="p">,</span> <span class="s1">&#39;reference-distance&#39;</span><span class="p">]</span>
-
-    <span class="k">def</span> <span class="fm">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">,</span> <span class="n">us</span><span class="p">,</span> <span class="n">Ls</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">tregion</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Get next point.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        region: MLFriends</span>
-<span class="sd">            region.</span>
-<span class="sd">        Lmin: float</span>
-<span class="sd">            loglikelihood threshold</span>
-<span class="sd">        us: array of vectors</span>
-<span class="sd">            current live points</span>
-<span class="sd">        Ls: array of floats</span>
-<span class="sd">            current live point likelihoods</span>
-<span class="sd">        transform: function</span>
-<span class="sd">            transform function</span>
-<span class="sd">        loglike: function</span>
-<span class="sd">            loglikelihood function</span>
-<span class="sd">        ndraw: int</span>
-<span class="sd">            number of draws to attempt simultaneously.</span>
-<span class="sd">        plot: bool</span>
-<span class="sd">            whether to produce debug plots.</span>
-<span class="sd">        tregion: WrappingEllipsoid</span>
-<span class="sd">            optional ellipsoid in transformed space for rejecting proposals</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># find most recent point in history conforming to current Lmin</span>
-        <span class="n">ui</span><span class="p">,</span> <span class="n">Li</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">last</span>
-        <span class="k">if</span> <span class="n">Li</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">Li</span> <span class="o">&gt;=</span> <span class="n">Lmin</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;wandered out of L constraint; resetting&quot;</span><span class="p">,</span> <span class="n">ui</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-            <span class="n">ui</span><span class="p">,</span> <span class="n">Li</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
-
-        <span class="k">if</span> <span class="n">ui</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">region</span><span class="o">.</span><span class="n">inside_ellipsoid</span><span class="p">(</span><span class="n">ui</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))):</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;wandered out of ellipsoid; resetting&quot;</span><span class="p">,</span> <span class="n">ui</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-            <span class="n">ui</span><span class="p">,</span> <span class="n">Li</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
-
-        <span class="k">if</span> <span class="n">Li</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">:</span>
-            <span class="c1"># try to resume from a previous point above the current contour</span>
-            <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="p">(</span><span class="n">uj</span><span class="p">,</span> <span class="n">Lj</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
-                <span class="k">if</span> <span class="n">Lj</span> <span class="o">&gt;</span> <span class="n">Lmin</span> <span class="ow">and</span> <span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">uj</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)))</span> <span class="ow">and</span> <span class="p">(</span><span class="n">tregion</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">tregion</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">transform</span><span class="p">(</span><span class="n">uj</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))))):</span>
-                    <span class="n">ui</span><span class="p">,</span> <span class="n">Li</span> <span class="o">=</span> <span class="n">uj</span><span class="p">,</span> <span class="n">Lj</span>
-                    <span class="c1"># print(&quot;recovering at point %d/%d &quot; % (j+1, len(self.history)))</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">last</span> <span class="o">=</span> <span class="n">ui</span><span class="p">,</span> <span class="n">Li</span>
-
-                    <span class="c1"># pj = transform(uj.reshape((1, -1)))</span>
-                    <span class="c1"># Lj2 = loglike(pj)[0]</span>
-                    <span class="c1"># assert Lj2 &gt; Lmin, (Lj2, Lj, uj, pj)</span>
-                    <span class="k">assert</span> <span class="n">region</span><span class="o">.</span><span class="n">inside_ellipsoid</span><span class="p">(</span><span class="n">ui</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)))</span>
-
-                    <span class="k">break</span>
-            <span class="k">pass</span>
-
-        <span class="c1"># select starting point</span>
-        <span class="n">ndim</span> <span class="o">=</span> <span class="n">us</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">Li</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">directions</span> <span class="o">=</span> <span class="kc">None</span>
-
-            <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">last</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">nrejects</span> <span class="o">=</span> <span class="mi">0</span>
-
-            <span class="c1"># choose a new random starting point</span>
-            <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">us</span><span class="p">))</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">starti</span> <span class="o">=</span> <span class="n">i</span>
-            <span class="n">ui</span> <span class="o">=</span> <span class="n">us</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span>
-            <span class="k">assert</span> <span class="n">region</span><span class="o">.</span><span class="n">inside_ellipsoid</span><span class="p">(</span><span class="n">ui</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)))</span>
-            <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">ui</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">ui</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">ui</span>
-            <span class="n">Li</span> <span class="o">=</span> <span class="n">Ls</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">ui</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">Li</span><span class="o">.</span><span class="n">copy</span><span class="p">()))</span>
-            <span class="k">del</span> <span class="n">i</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;starting at&quot;</span><span class="p">,</span> <span class="n">ui</span><span class="p">)</span>
-            <span class="c1"># set initially nleft = nsteps</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_done</span> <span class="o">=</span> <span class="mi">0</span>
-
-            <span class="c1"># generate nsteps directions</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">directions</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">):</span>
-                <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">directions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">directions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directions</span><span class="p">)</span>
-
-            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;directions:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">directions</span><span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">orthogonalise</span><span class="p">:</span>
-                <span class="c1"># orthogonalise relative to this previous direction</span>
-                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">//</span> <span class="n">ndim</span><span class="p">):</span>
-                    <span class="c1"># go back only ndim steps, then start fresh</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">directions</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="n">ndim</span><span class="p">:(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">ndim</span><span class="p">],</span> <span class="n">_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">qr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directions</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="n">ndim</span><span class="p">:(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">ndim</span><span class="p">])</span>
-
-            <span class="k">assert</span> <span class="p">(</span><span class="n">ui</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">ui</span>
-            <span class="k">assert</span> <span class="p">(</span><span class="n">ui</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">ui</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">current_interval</span> <span class="o">=</span> <span class="n">ui</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">region_filter</span><span class="p">:</span>
-                <span class="k">assert</span> <span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">ui</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))),</span> <span class="p">(</span><span class="s1">&#39;cannot start from outside region!&#39;</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">ui</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))))</span>
-
-        <span class="k">del</span> <span class="n">ui</span>
-        <span class="n">nc</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-            <span class="c1"># prepare a sequence of points until nsteps are reached</span>
-            <span class="n">point_sequence</span><span class="p">,</span> <span class="n">point_expectation</span><span class="p">,</span> <span class="n">intervals</span><span class="p">,</span> <span class="n">nsteps_prepared</span> <span class="o">=</span> <span class="n">_prepare_steps</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_done</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">directions</span><span class="p">,</span> <span class="n">ndraw</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">current_interval</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">ndim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">region_filter</span><span class="p">,</span> 
-                <span class="n">Lmin</span><span class="p">,</span> <span class="n">verbose</span>
-            <span class="p">)</span>
-            <span class="n">point_sequence</span><span class="p">,</span> <span class="n">t_point_sequence</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">Lmask</span><span class="p">,</span> <span class="n">indices_deviating</span><span class="p">,</span> <span class="n">nc_here</span><span class="p">,</span> <span class="n">truncated</span> <span class="o">=</span> <span class="n">_evaluate_with_filter</span><span class="p">(</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">region_filter</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">tregion</span><span class="p">,</span>
-                <span class="n">point_sequence</span><span class="p">,</span> <span class="n">point_expectation</span><span class="p">,</span> 
-                <span class="n">verbose</span>
-            <span class="p">)</span>
-            <span class="k">del</span> <span class="n">point_expectation</span>
-            <span class="n">nc</span> <span class="o">+=</span> <span class="n">nc_here</span>
-
-            <span class="bp">self</span><span class="o">.</span><span class="n">nrejects</span> <span class="o">+=</span> <span class="p">(</span><span class="o">~</span><span class="n">Lmask</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-            <span class="c1">#print(&quot;calling likelihood with %5d prepared points, accepted:&quot; % (</span>
-            <span class="c1">#    len(point_sequence)), &#39;=&#39; * (i[0] + Lmask[i[0]] * 1 if len(i) &gt; 0 else len(Lmask)))</span>
-            <span class="c1"># identify first point that was unexpected</span>
-            <span class="n">any_deviating</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">indices_deviating</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
-            <span class="k">if</span> <span class="n">any_deviating</span> <span class="ow">and</span> <span class="n">nsteps_prepared</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_done</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">:</span>
-                <span class="c1"># everything according to prediction.</span>
-                <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;everything according to prediction and done&quot;</span><span class="p">)</span>
-                <span class="c1"># done, return last point</span>
-                <span class="k">for</span> <span class="n">ui</span><span class="p">,</span> <span class="n">Li</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">point_sequence</span><span class="p">[</span><span class="n">Lmask</span><span class="p">],</span> <span class="n">L</span><span class="p">[</span><span class="n">Lmask</span><span class="p">]):</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">ui</span><span class="p">,</span> <span class="n">Li</span><span class="p">))</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">finalize_chain</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="n">region</span><span class="p">,</span> <span class="n">Lmin</span><span class="o">=</span><span class="n">Lmin</span><span class="p">,</span> <span class="n">Ls</span><span class="o">=</span><span class="n">Ls</span><span class="p">)</span>
-                <span class="k">return</span> <span class="n">point_sequence</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">t_point_sequence</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">L</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">nc</span>
-            <span class="k">elif</span> <span class="n">any_deviating</span><span class="p">:</span>
-                <span class="c1"># everything according to prediction.</span>
-                <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;everything according to prediction&quot;</span><span class="p">)</span>
-                <span class="c1"># continue from last point</span>
-                <span class="k">for</span> <span class="n">ui</span><span class="p">,</span> <span class="n">Li</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">point_sequence</span><span class="p">[</span><span class="n">Lmask</span><span class="p">],</span> <span class="n">L</span><span class="p">[</span><span class="n">Lmask</span><span class="p">]):</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">ui</span><span class="p">,</span> <span class="n">Li</span><span class="p">))</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_done</span> <span class="o">+=</span> <span class="n">nsteps_prepared</span>
-                <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_done</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">),</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps_done</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">))</span>
-                <span class="n">nsteps_prepared</span><span class="p">,</span> <span class="n">ucurrent</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">intervals</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-                <span class="k">assert</span> <span class="p">(</span><span class="n">ucurrent</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">ucurrent</span>
-                <span class="k">assert</span> <span class="p">(</span><span class="n">ucurrent</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">ucurrent</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">current_interval</span> <span class="o">=</span> <span class="n">ucurrent</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">region_filter</span><span class="p">:</span>
-                    <span class="k">assert</span> <span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">ucurrent</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))),</span> <span class="p">(</span><span class="s1">&#39;suggested point outside region!&#39;</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">ucurrent</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))))</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="c1"># point i unexpectedly inside or outside</span>
-                <span class="n">imax</span> <span class="o">=</span> <span class="n">indices_deviating</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                <span class="k">for</span> <span class="n">ui</span><span class="p">,</span> <span class="n">Li</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">point_sequence</span><span class="p">[:</span><span class="n">imax</span><span class="p">][</span><span class="n">Lmask</span><span class="p">[:</span><span class="n">imax</span><span class="p">]],</span> <span class="n">L</span><span class="p">[:</span><span class="n">imax</span><span class="p">][</span><span class="n">Lmask</span><span class="p">[:</span><span class="n">imax</span><span class="p">]]):</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">ui</span><span class="p">,</span> <span class="n">Li</span><span class="p">))</span>
-                <span class="n">nsteps_prepared</span><span class="p">,</span> <span class="n">ucurrent</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">t</span> <span class="o">=</span> <span class="n">intervals</span><span class="p">[</span><span class="n">imax</span><span class="p">]</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">region_filter</span><span class="p">:</span>
-                    <span class="k">assert</span> <span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">ucurrent</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))),</span> <span class="p">(</span><span class="s1">&#39;suggested point outside region!&#39;</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">ucurrent</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))))</span>
-                <span class="k">assert</span> <span class="p">(</span><span class="n">ucurrent</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">ucurrent</span>
-                <span class="k">assert</span> <span class="p">(</span><span class="n">ucurrent</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">ucurrent</span>
-                <span class="k">if</span> <span class="n">point_expectation</span><span class="p">[</span><span class="n">imax</span><span class="p">]:</span>
-                    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;following prediction until </span><span class="si">%d</span><span class="s2">, which was unexpectedly rejected&quot;</span> <span class="o">%</span> <span class="n">imax</span><span class="p">)</span>
-                    <span class="c1"># expected point to lie inside, but rejected</span>
-                    <span class="c1"># need to repair interval</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_done</span> <span class="o">+=</span> <span class="n">nsteps_prepared</span>
-                    <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_done</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">),</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps_done</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">))</span>
-                    <span class="k">if</span> <span class="n">t</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                        <span class="n">right</span> <span class="o">=</span> <span class="n">t</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="n">left</span> <span class="o">=</span> <span class="n">t</span>
-                    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2"> steps done, continuing from unexpected outside point&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_done</span><span class="p">,</span> <span class="n">imax</span><span class="p">,</span> <span class="n">point_sequence</span><span class="p">[</span><span class="n">imax</span><span class="p">],</span> <span class="s2">&quot;interval:&quot;</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">current_interval</span> <span class="o">=</span> <span class="n">ucurrent</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;following prediction until </span><span class="si">%d</span><span class="s2">, which was unexpectedly accepted&quot;</span> <span class="o">%</span> <span class="n">imax</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="n">imax</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">point_sequence</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">truncated</span><span class="p">:</span>
-                        <span class="k">assert</span> <span class="kc">False</span>
-                    <span class="n">ucurrent</span> <span class="o">=</span> <span class="n">point_sequence</span><span class="p">[</span><span class="n">imax</span><span class="p">]</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">region_filter</span><span class="p">:</span>
-                        <span class="k">assert</span> <span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">ucurrent</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))),</span> <span class="p">(</span><span class="s1">&#39;accepted point outside region!&#39;</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">ucurrent</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))))</span>
-                    <span class="c1"># expected point to lie outside, but actually inside</span>
-                    <span class="c1"># adopt as point and continue</span>
-                    <span class="c1"># print(len(self.history), self.nsteps_done, nsteps_prepared, Lmask[:imax].sum())</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_done</span> <span class="o">+=</span> <span class="n">nsteps_prepared</span> <span class="o">+</span> <span class="mi">1</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">ucurrent</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">L</span><span class="p">[</span><span class="n">imax</span><span class="p">]))</span>
-                    <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_done</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">),</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps_done</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">))</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">current_interval</span> <span class="o">=</span> <span class="n">ucurrent</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_done</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">:</span>
-                        <span class="c1"># last point was inside, so we are actually done there</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">finalize_chain</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="n">region</span><span class="p">,</span> <span class="n">Lmin</span><span class="o">=</span><span class="n">Lmin</span><span class="p">,</span> <span class="n">Ls</span><span class="o">=</span><span class="n">Ls</span><span class="p">)</span>
-                        <span class="k">return</span> <span class="n">point_sequence</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">t_point_sequence</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">L</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">nc</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2"> steps done, continuing from unexpected inside point&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_done</span><span class="p">,</span> <span class="n">imax</span><span class="p">,</span> <span class="n">point_sequence</span><span class="p">[</span><span class="n">imax</span><span class="p">])</span>
-
-            <span class="c1"># need to exit here to only do one likelihood evaluation</span>
-            <span class="c1"># per function call</span>
-            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;breaking&quot;</span><span class="p">)</span>
-            <span class="k">break</span>
-
-        <span class="c1"># do not have a independent sample yet</span>
-        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">nc</span>
-
-<div class="viewcode-block" id="AHARMSampler.region_changed"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.AHARMSampler.region_changed">[docs]</a>    <span class="k">def</span> <span class="nf">region_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Ls</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
-        <span class="k">assert</span> <span class="n">region</span><span class="o">.</span><span class="n">inside_ellipsoid</span><span class="p">(</span><span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
-        <span class="n">ui</span><span class="p">,</span> <span class="n">Li</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">last</span>
-        <span class="k">if</span> <span class="n">ui</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">ui</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))):</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;wandered out of ellipsoid; resetting&quot;</span><span class="p">,</span> <span class="n">ui</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">last</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
-
-<div class="viewcode-block" id="AHARMSampler.finalize_chain"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.AHARMSampler.finalize_chain">[docs]</a>    <span class="k">def</span> <span class="nf">finalize_chain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">Lmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">Ls</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Store chain statistics and adapt proposal.&quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">nrejects</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">])</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
-            <span class="n">ustart</span><span class="p">,</span> <span class="n">Lstart</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="n">ufinal</span><span class="p">,</span> <span class="n">Lfinal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-            <span class="c1"># mean_pair_distance = region.compute_mean_pair_distance()</span>
-            <span class="n">mean_pair_distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-            <span class="n">tstart</span><span class="p">,</span> <span class="n">tfinal</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">ustart</span><span class="p">,</span> <span class="n">ufinal</span><span class="p">)))</span>
-            <span class="c1"># L index of start and end</span>
-            <span class="c1"># Ls_sorted = np.sort(Ls)</span>
-            <span class="n">iLstart</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Ls</span> <span class="o">&gt;</span> <span class="n">Lstart</span><span class="p">)</span>
-            <span class="n">iLfinal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Ls</span> <span class="o">&gt;</span> <span class="n">Lfinal</span><span class="p">)</span>
-            <span class="c1"># nearest neighbor index of start and end</span>
-            <span class="n">itstart</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">((</span><span class="n">region</span><span class="o">.</span><span class="n">unormed</span> <span class="o">-</span> <span class="n">tstart</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)))</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-            <span class="n">itfinal</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">((</span><span class="n">region</span><span class="o">.</span><span class="n">unormed</span> <span class="o">-</span> <span class="n">tfinal</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)))</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-            <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">,</span> <span class="p">[</span><span class="n">_listify</span><span class="p">(</span>
-                <span class="p">[</span><span class="n">Lmin</span><span class="p">],</span> <span class="n">ustart</span><span class="p">,</span> <span class="n">ufinal</span><span class="p">,</span> <span class="n">tstart</span><span class="p">,</span> <span class="n">tfinal</span><span class="p">,</span>
-                <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">,</span>
-                 <span class="n">iLstart</span><span class="p">,</span> <span class="n">iLfinal</span><span class="p">,</span> <span class="n">itstart</span><span class="p">,</span> <span class="n">itfinal</span><span class="p">])])</span>
-
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">adapt_nsteps</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="n">region</span><span class="p">)</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">last</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">nrejects</span> <span class="o">=</span> <span class="mi">0</span></div>
-
-<div class="viewcode-block" id="AHARMSampler.generate_new_interval"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.AHARMSampler.generate_new_interval">[docs]</a>    <span class="k">def</span> <span class="nf">generate_new_interval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
-        <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="n">region</span><span class="o">.</span><span class="n">inside_ellipsoid</span><span class="p">(</span><span class="n">ui</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)))</span>
-        <span class="k">assert</span> <span class="p">(</span><span class="n">ui</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">ui</span>
-        <span class="k">assert</span> <span class="p">(</span><span class="n">ui</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">ui</span>
-
-        <span class="c1"># use region ellipsoid to identify limits</span>
-        <span class="c1"># rotate line so that ellipsoid is a sphere</span>
-        <span class="n">left</span><span class="p">,</span> <span class="n">right</span> <span class="o">=</span> <span class="n">ellipsoid_bracket</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_center</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_inv_axes</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">enlarge</span><span class="p">)</span>
-        <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">crop_bracket_at_unit_cube</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span></div></div>
 </pre></div>
 
            </div>

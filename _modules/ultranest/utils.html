@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ultranest.utils &mdash; UltraNest 3.3.2 documentation</title>
+  <title>ultranest.utils &mdash; UltraNest 3.4.0 documentation</title>
   
 
   
@@ -70,7 +70,7 @@
             
             
               <div class="version">
-                3.3.2
+                3.4.0
               </div>
             
           
@@ -313,7 +313,9 @@
         <span class="sd">&quot;&quot;&quot;Vectorized version of function.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">function</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">])</span>
 
-    <span class="n">vectorized</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="n">function</span><span class="o">.</span><span class="vm">__name__</span>
+    <span class="c1"># give a user-friendly name to the vectorized version of the function</span>
+    <span class="c1"># getattr works around methods, which do not have __name__</span>
+    <span class="n">vectorized</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="s1">&#39;__name__&#39;</span><span class="p">,</span> <span class="n">vectorized</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">vectorized</span></div>
 
 
@@ -640,6 +642,30 @@
 <span class="sd">        total number of processes</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">num_total_tasks</span> <span class="o">+</span> <span class="n">mpi_size</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">mpi_rank</span><span class="p">)</span> <span class="o">//</span> <span class="n">mpi_size</span></div>
+
+
+<div class="viewcode-block" id="submasks"><a class="viewcode-back" href="../../ultranest.html#ultranest.utils.submasks">[docs]</a><span class="k">def</span> <span class="nf">submasks</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="o">*</span><span class="n">masks</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get indices for an array, so that</span>
+<span class="sd">    array[indices] is equivalent to a[mask][mask1][mask2].</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    mask : np.array(dtype=bool)</span>
+<span class="sd">        selection of some array</span>
+<span class="sd">    masks : list of np.array(dtype=bool)</span>
+<span class="sd">        each further mask is a subselection</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    indices : np.array(dtype=int)</span>
+<span class="sd">        indices which select the subselection in the original array</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">indices</span><span class="p">,</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">othermask</span> <span class="ow">in</span> <span class="n">masks</span><span class="p">:</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="n">indices</span><span class="p">[</span><span class="n">othermask</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">indices</span></div>
 </pre></div>
 
            </div>

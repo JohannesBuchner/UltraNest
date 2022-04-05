@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Release Notes &mdash; UltraNest 3.3.2 documentation</title>
+  <title>Release Notes &mdash; UltraNest 3.4.0 documentation</title>
   
 
   
@@ -72,7 +72,7 @@
             
             
               <div class="version">
-                3.3.2
+                3.4.0
               </div>
             
           
@@ -109,11 +109,13 @@
 <li class="toctree-l1"><a class="reference internal" href="issues.html">Frequently Asked Questions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Release Notes</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#id1">3.0.0 (2020-10-03)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id2">2.2.0 (2020-02-07)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id3">2.1.0 (2020-02-07)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id4">2.0.0 (2019-10-03)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id5">1.0.0 (2014)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id1">3.4.0 (2022-04-05)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id2">3.3.3 (2021-09-17)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id3">3.0.0 (2020-10-03)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id4">2.2.0 (2020-02-07)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id5">2.1.0 (2020-02-07)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id6">2.0.0 (2019-10-03)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id7">1.0.0 (2014)</a></li>
 </ul>
 </li>
 </ul>
@@ -216,7 +218,27 @@
 <div class="section" id="release-notes">
 <h1>Release Notes<a class="headerlink" href="#release-notes" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="id1">
-<h2>3.0.0 (2020-10-03)<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<h2>3.4.0 (2022-04-05)<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>add differential evolution proposal for slice sampling, recommend it</p></li>
+<li><p>fix revert of step sampler when run out of constraint, in MPI</p></li>
+<li><p>add SimpleRegion: axis-aligned ellipsoidal for very high-d.</p></li>
+</ul>
+</div>
+<div class="section" id="id2">
+<h2>3.3.3 (2021-09-17)<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>pretty marginal posterior plot to stdout</p></li>
+<li><p>avoid non-terminations when logzerr cannot be reached</p></li>
+<li><p>add RobustEllipsoidRegion: ellipsoidal without MLFriends for high-d.</p></li>
+<li><p>add WrappingEllipsoid: for additional rejection.</p></li>
+<li><p>bug fixes on rank order test</p></li>
+<li><p>add resume-similar</p></li>
+<li><p>modular step samplers</p></li>
+</ul>
+</div>
+<div class="section" id="id3">
+<h2>3.0.0 (2020-10-03)<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>Accelerated Hit-and-Run Sampler added</p></li>
 <li><p>Support for other languages (C, C++, Julia, Fortran) added</p></li>
@@ -225,26 +247,26 @@
 <li><p>Rejection sampling with transformed ellipsoid added</p></li>
 </ul>
 </div>
-<div class="section" id="id2">
-<h2>2.2.0 (2020-02-07)<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id4">
+<h2>2.2.0 (2020-02-07)<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>allow reading UltraNest outputs without ReactiveNestedSampler instance</p></li>
 </ul>
 </div>
-<div class="section" id="id3">
-<h2>2.1.0 (2020-02-07)<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id5">
+<h2>2.1.0 (2020-02-07)<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>adaptive number of steps for slice and hit-and-run samplers.</p></li>
 </ul>
 </div>
-<div class="section" id="id4">
-<h2>2.0.0 (2019-10-03)<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id6">
+<h2>2.0.0 (2019-10-03)<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>First release.</p></li>
 </ul>
 </div>
-<div class="section" id="id5">
-<h2>1.0.0 (2014)<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id7">
+<h2>1.0.0 (2014)<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>A simpler version referenced in Buchner et al. (2014),
 combining RadFriends with an optional Metropolis-Hastings proposal.</p></li>
