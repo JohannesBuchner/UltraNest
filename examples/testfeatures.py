@@ -112,7 +112,7 @@ def main(args):
             L2 = np.log(0.5 * rv2a.pdf(theta[:,1]) + 0.5 * rv2b.pdf(theta[:,1]))
             Lrest = np.sum([rv.logpdf(t) for rv, t in zip(rv_rest, theta[:,2:].transpose())], axis=0)
             like = L1 + L2 + Lrest
-            like = np.where(like < -300, -300 - ((np.asarray(theta) - 0.5)**2).sum(), like)
+            like = np.where(like < -1e100, -1e100 - ((np.asarray(theta) - 0.5)**2).sum(), like)
             assert like.shape == (len(theta),), (like.shape, theta.shape)
             return like
 
