@@ -280,7 +280,7 @@ How should I cite UltraNest?
 
 The main algorithm (MLFriends) is described in:
 
-* Buchner, J. (2014): `A statistical test for Nested Sampling algorithms <https://arxiv.org/abs/1407.5459>`_ (`bibtex <https://scholar.googleusercontent.com/scholar.bib?q=info:yTXfZFtI_vYJ:scholar.google.com/&output=citation&scisdr=CgXWBaaNEK7YkjRrxRc:AAGBfm0AAAAAX8Nu3Rcw9Cl4oM-O20oJrdlLRUQB2IhI&scisig=AAGBfm0AAAAAX8Nu3ftd-SBQKMLTBDogxM9U1n9uLKdi&scisf=4&ct=citation&cd=-1&hl=en&scfhb=1>`__)
+* Buchner, J. (2014): `A statistical test for Nested Sampling algorithms <https://arxiv.org/abs/1407.5459>`_ (`bibtex <https://ui.adsabs.harvard.edu/abs/2016S%26C....26..383B/exportcitation>`__)
 * Buchner, J. (2019): `Collaborative Nested Sampling: Big Data versus Complex Physical Models <https://arxiv.org/abs/1707.04476>`_ (`bibtex <https://ui.adsabs.harvard.edu/abs/2019PASP..131j8005B/exportcitation>`__)
 
 The UltraNest software package is presented in:

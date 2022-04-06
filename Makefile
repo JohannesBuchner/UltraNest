@@ -89,12 +89,12 @@ servedocs: docs ## compile the docs watching for changes
 
 release-test: install
 	rm -rf logs/features-*
-	grep -v iterated examples/runfeatures.sh | sed 's,python3,,g' | OMP_NUM_THREADS=4 xargs -rt --max-lines=1 mpiexec -np 5 coverage run --parallel-mode
-	grep    iterated examples/runfeatures.sh | sed 's,python3,,g' | OMP_NUM_THREADS=4 xargs -rt --max-lines=1 mpiexec -np 3 coverage run --parallel-mode
+	grep -v iterated examples/runfeatures.sh | sed 's,python3,mpiexec -np 5 coverage3 run --parallel-mode,g' | OMP_NUM_THREADS=4 bash
+	grep    iterated examples/runfeatures.sh | sed 's,python3,mpiexec -np 3 coverage3 run --parallel-mode,g' | OMP_NUM_THREADS=4 bash
 	#echo testfeatures/runsettings-*-iterated.json | xargs --max-args=1 mpiexec -np 3 coverage run --parallel-mode examples/testfeatures.py
 	#grep -- --random examples/runfeatures.sh | sed s,python3,,g | xargs -rt --max-lines=1 mpiexec -np 5 coverage run --parallel-mode 
 
-release: release-test ## package and upload a release
+release: release-test dist ## package and upload a release
 	twine upload -s dist/*.tar.gz
 
 dist: clean ## builds source and wheel package
