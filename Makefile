@@ -1,4 +1,4 @@
-.PHONY: clean clean-test clean-pyc clean-build docs help
+.PHONY: clean clean-test clean-pyc clean-build docs servedocs help install release release-test dist 
 .DEFAULT_GOAL := help
 
 define BROWSER_PYSCRIPT
