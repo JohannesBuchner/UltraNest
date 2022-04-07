@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ultranest.stepsampler &mdash; UltraNest 3.4.0 documentation</title>
+  <title>ultranest.stepsampler &mdash; UltraNest 3.4.4 documentation</title>
   
 
   
@@ -70,7 +70,7 @@
             
             
               <div class="version">
-                3.4.0
+                3.4.4
               </div>
             
           
@@ -1251,13 +1251,13 @@
 
 <span class="sd">    Updates only some dimensions at a time, completely user-definable.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
+    <span class="n">generate_direction</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;generate_direction&#39;</span><span class="p">,</span> <span class="n">generate_region_random_direction</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">SliceSampler</span><span class="p">(</span>
         <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
         <span class="n">nsteps</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;nsteps&#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">step_matrix</span><span class="p">)),</span>
         <span class="n">generate_direction</span><span class="o">=</span><span class="n">SpeedVariableGenerator</span><span class="p">(</span>
             <span class="n">step_matrix</span><span class="o">=</span><span class="n">step_matrix</span><span class="p">,</span>
-            <span class="n">generate_direction</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;generate_direction&#39;</span><span class="p">,</span> <span class="n">generate_region_random_direction</span><span class="p">)</span>
+            <span class="n">generate_direction</span><span class="o">=</span><span class="n">generate_direction</span>
         <span class="p">)</span>
     <span class="p">)</span></div>
 
