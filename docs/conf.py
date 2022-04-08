@@ -94,7 +94,7 @@ todo_include_todos = False
 autosectionlabel_prefix_document = True
 
 # avoid time-out when running the doc
-nbsphinx_timeout = 45 * 60
+nbsphinx_timeout = 4 * 60 * 60
 
 nbsphinx_execute_arguments = [
     "--InlineBackend.figure_formats={'svg', 'pdf'}",
