@@ -11,7 +11,6 @@ jobs:
     steps: 
       
       - checkout
-      - run: sudo apt-get install linkchecker
+      - run: pip install linkchecker
       - run: ls
       - run: linkchecker --ignore-url '.*fonts.*.eot' *.html
-
