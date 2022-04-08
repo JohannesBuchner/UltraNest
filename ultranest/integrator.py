@@ -2732,8 +2732,8 @@ class ReactiveNestedSampler(object):
                     # add a bit of padding, but not outside parameter limits
                     lo, hi = edges[0], edges[-1]
                     step = edges[1] - lo
-                    lo = max(self.transform_limits[i,0], lo - 2 * step)
-                    hi = min(self.transform_limits[i,1], hi + 2 * step)
+                    lo = max(min(lo, self.transform_limits[i,0]), lo - 2 * step)
+                    hi = min(max(hi, self.transform_limits[i,1]), hi + 2 * step)
                     H, edges = np.histogram(v, bins=np.linspace(lo, hi, 40))
                     lo, hi = edges[0], edges[-1]
 
