@@ -82,6 +82,7 @@ docs: ## generate Sphinx HTML documentation, including API docs
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html O=-jauto
 	sed --in-place '/href="ultranest\/mlfriends.html"/d' docs/build/html/_modules/index.html
+	sed --in-place '/href="ultranest\/stepfuncs.html"/d' docs/build/html/_modules/index.html
 	$(BROWSER) docs/build/html/index.html
 
 servedocs: docs ## compile the docs watching for changes
