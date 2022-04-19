@@ -24,6 +24,7 @@ from .viz import get_default_viz_callback, nicelogger
 from .ordertest import UniformOrderAccumulator
 from .netiter import PointPile, SingleCounter, MultiCounter, BreadthFirstIterator, TreeNode, count_tree_between, find_nodes_before, logz_sequence
 from .netiter import dump_tree, combine_results
+import .hotstart.get_extended_auxiliary_problem as _get_hotstart_auxiliary_problem
 
 __all__ = ['ReactiveNestedSampler', 'NestedSampler', 'read_file']
 
@@ -126,6 +127,98 @@ def _explore_iterator_batch(explorer, pop, x_dim, num_params, pointpile, batchsi
         explorer.expand_children_of(rootid, node)
     if len(batch) > 0:
         yield batch
+
+
+def resume_hot(
+    log_dir, x_dim, loglikelihood, transform,
+    verbose=False, df=2, backoff_factor=2.0,
+):
+    """
+    Resume from a UltraNest run with a different loglikelihood.
+
+    An auxiliary distribution is created from the previous run
+    posterior samples, if chains/weighted_post_untransformed.txt is available.
+    Otherwise the highest `num_livepoints_per_generation * x_dim` 
+    likelihood points are used, with exponentially decreasing weighting.
+
+    Parameters
+    ----------
+    log_dir: str
+        Folder containing results
+    x_dim: int
+        number of dimensions
+    loglikelihood: function
+        new likelihood function
+    transform: function
+        new transform function
+    verbose: bool
+        show progress
+
+    df: float
+        Degrees of freedom for auxiliary Student t-distribution.
+
+        In catastrophic resumes, where the likelihood changed drastically,
+        the guessed auxiliary distribution is off, and the new likelihood
+        peak is at the tails of the auxiliary distribution.
+        Using a Gaussian tail (high df) makes this difficult.
+        Low numbers (such as 2) make the tails flatter and thus
+        easier to navigate.
+
+    backoff_factor: float
+        Scale factor by which the the sample covariance is
+        increased for computing the covariance of the auxiliary distribution.
+
+        Large values cause longer computations.
+        Small values (1.0) can make complicated parameter space shapes
+        if the likelihood changed.
+
+    Returns
+    ----------
+    sequence: dict
+        contains arrays storing for each iteration estimates of:
+
+            * logz: log evidence estimate
+            * logzerr: log evidence uncertainty estimate
+            * logvol: log volume estimate
+            * samples_n: number of live points
+            * logwt: log weight
+            * logl: log likelihood
+
+    final: dict
+        same as ReactiveNestedSampler.results and
+        ReactiveNestedSampler.run return values
+
+    """
+    # try loading the finished posterior samples
+    posterior_filename = os.path.join(log_dir, 'chains', 'weighted_post_untransformed.txt')
+    try:
+        weighted_samples = np.loadtxt(posterior_filename, skiprows=1)
+        weighted_sample_weights = weighted_samples[:,0]
+        weighted_sample_u = weighted_samples[:,2:]
+    except IOError:
+        # otherwise, use recent live points
+        # if the run is in an early phase, the highest likelihood
+        # point is where we want to be, however we need several
+        # previous live points to define an extended region
+        
+        filepath = os.path.join(log_dir, 'results', 'points.hdf5')
+        fileobj = h5py.File(filepath, 'r')
+        nrows, ncols = fileobj['points'].shape
+        weighted_sample_u = fileobj['points'][:, 4:4 + x_dim]
+        num_params = ncols - 3 - x_dim
+        loglike = fileobj['points'][:,1]
+        
+        # rank by likelihood
+        rank = nrows - np.argsort(loglike)
+        # highest rank (index 0) gets weight 1., then it 
+        # declines exponentially
+        weighted_sample_weights = np.exp(-rank / x_dim)
+    
+    return _get_hotstart_auxiliary_problem(
+        loglike=loglikelihood, transform=transform,
+        usamples=weighted_sample_u, weights=weighted_sample_weights,
+        enlargement_factor=backoff_factor, df=df,
+        vectorized=True)
 
 
 def resume_from_similar_file(
@@ -1017,8 +1110,8 @@ class ReactiveNestedSampler(object):
         self.x_dim = x_dim
         self.transform_layer_class = AffineLayer if x_dim > 1 else ScalingLayer
         self.derivedparamnames = derived_param_names
-        self.num_bootstraps = int(num_bootstraps)
         num_derived = len(self.derivedparamnames)
+        self.num_bootstraps = int(num_bootstraps)
         self.num_params = x_dim + num_derived
         if wrapped_params is None:
             self.wrapped_axes = []
@@ -1043,10 +1136,11 @@ class ReactiveNestedSampler(object):
         self.log_to_disk = self.log and log_dir is not None
         self.log_to_pointstore = self.log_to_disk
 
-        assert resume in (True, 'overwrite', 'subfolder', 'resume', 'resume-similar'), \
-            "resume should be one of 'overwrite' 'subfolder', 'resume' or 'resume-similar'"
+        assert resume in (True, 'overwrite', 'subfolder', 'resume', 'resume-similar', 'resume-hotstart'), \
+            "resume should be one of 'overwrite' 'subfolder', 'resume', 'resume-hotstart' or 'resume-similar'"
         append_run_num = resume == 'subfolder'
         resume_similar = resume == 'resume-similar'
+        resume_hot = resume == 'resume-hotstart'
         resume = resume in ('resume-similar', 'resume', True)
 
         if self.log and log_dir is not None:
@@ -1111,6 +1205,16 @@ class ReactiveNestedSampler(object):
                 self.pointstore = HDF5PointStore(
                     os.path.join(self.logs['results'], 'points.hdf5'),
                     3 + self.x_dim + self.num_params, mode='a' if resume else 'w')
+            elif resume_hot and self.log_to_disk:
+                assert storage_backend == 'hdf5', 'resume-similar is only supported for HDF5 files'
+                self.transform, self.loglike = resume_hot(log_dir, x_dim, loglike, transform)
+                # add derived parameter: aux_weights
+                self.derivedparamnames += ['aux_weights']
+                num_derived += 1
+                # write to backend from scratch
+                self.pointstore = HDF5PointStore(
+                    os.path.join(self.logs['results'], 'points.hdf5'),
+                    3 + self.x_dim + self.num_params, mode='w')
             elif resume:
                 raise Exception("Cannot resume because loglikelihood function changed, "
                                 "unless resume=resume-similar. To start from scratch, delete '%s'." % (log_dir))
