@@ -7,7 +7,7 @@ from .utils import vectorize, resample_equal
 
 def get_extended_auxiliary_problem(
     loglike, transform, usamples, weights,
-    enlargement_factor, df=1, vectorized=False
+    enlargement_factor, df, otherdf=20, vectorized=False
 ):
     """Return a new loglike and transform based on an auxiliary distribution.
 
@@ -47,62 +47,93 @@ def get_extended_auxiliary_problem(
 
     Returns:
     ---------
-    aux_loglike: function
-        auxiliary loglikelihood function. Takes d + 1 parameters (see below).
-        The likelihood is the same as loglike, but adds weights.
     aux_transform: function
         auxiliary transform function.
         Takes d u-space coordinates, and returns d + 1 p-space parameters.
         The first d return coordinates are identical to what ``transform`` would return.
         The final coordinate is the correction weight.
+    aux_loglike: function
+        auxiliary loglikelihood function. Takes d + 1 parameters (see above).
+        The likelihood is the same as loglike, but adds weights.
     """
     assert df > 1, ('Degrees of freedom must exceed 1', df)
     
+    assert np.isfinite(usamples).all(), usamples
+    assert (usamples < 1).all(), usamples
+    assert (usamples > 0).all(), usamples
+
+    nsamples, x_dim = usamples.shape
+    assert weights.ndim == 1, ('expected a 1d array for weights, but got:', weights.shape)
+    assert len(usamples) == len(weights), ('expected usamples to have the same length as weights', usamples.shape, weights.shape)
+    assert np.isfinite(weights).all(), weights
+    assert np.all(weights >= 0), weights
+
     # Transform to a unit gaussian auxiliary space (g-space)
-    isamplesg = scipy.stats.norm.ppf(usamples)
+    isamplesg = scipy.stats.t.ppf(usamples, df=otherdf)
     # get parameters of auxiliary transform in this space
-    
-    # gctr = np.mean(isamplesg, axis=0)
-    # gcov = np.cov(isamplesg, rowvar=0)
-    QW = isamplesg * weights
-    gctr = np.sum(QW, axis=0) / np.sum(weights)
-    gcov = QW.T.dot(QW) / weights.T.dot(weights)
-    
+    assert np.isfinite(isamplesg).all(), isamplesg
+
+    print("g samples: ", isamplesg)
+    # remove extremely low weight points, for numerical stability
+    mask = weights > 1e-10 * weights.mean()
+    assert mask.sum() > x_dim + 1, ("too few points with non-negligible weight for dimensionality", mask.sum(), x_dim)
+    gctr = np.average(isamplesg[mask,:], weights=weights[mask], axis=0)
+    gcov = np.cov(isamplesg[mask, :], aweights=weights[mask], rowvar=0, ddof=0)
+    print("  ctr: ", gctr)
+    print("  std: ", np.diag(gcov)**0.5)
+    assert gctr.shape == (x_dim,), (gctr.shape, x_dim)
+    assert gcov.shape == (x_dim, x_dim), (gcov.shape, x_dim)
+    assert np.isfinite(gctr).all()
+    assert np.isfinite(gcov).all()
+
     ginvcov = np.linalg.inv(gcov)
-    
+    assert np.isfinite(gctr).all()
+    assert np.isfinite(ginvcov).all()
+
     # build transform
     l, v = np.linalg.eigh(ginvcov)
     rotation_matrix = np.dot(v, enlargement_factor * np.diag(1. / np.sqrt(l)))
+    assert np.isfinite(rotation_matrix).all(), (v, enlargement_factor, np.diag(1. / np.sqrt(l)), rotation_matrix)
+    print("rotation_matrix:", rotation_matrix)
 
     rv_auxiliary1d = scipy.stats.t(df)
     
     if vectorized:
         def combine_with_weights(p, w):
             return np.hstack((p, w.reshape((-1,1))))
+        sumaxis = 1
     else:
-        def combine_with_weights(p, w):
-            return np.append(p, w)
+        combine_with_weights = np.append
+        sumaxis = None
 
     def aux_transform(u):
         # get uniform gauss/t distributed values in g-space:
+        assert (u < 1).all(), u
+        assert (u > 0).all(), u
         coords = rv_auxiliary1d.ppf(u)
         # rotate & stretch; transform into g-space
         g = gctr + np.dot(coords, rotation_matrix)
+        assert np.isfinite(g).all(), g
         # since our proposal above is with the auxiliary distribution,
         # instead of the prior, a importance weight to adjust
         # the likelihood is needed
         # this is the ratio of the density of the aux dist
         # to the unit normal gaussian
-        logweight_aux = rv_auxiliary1d.logpdf(coords).sum()
-        logweight_unit = scipy.stats.norm.logpdf(g).sum()
+        logweight_aux = rv_auxiliary1d.logpdf(coords).sum(axis=sumaxis)
+        logweight_unit = scipy.stats.t.logpdf(g, df=otherdf).sum(axis=sumaxis)
         logweight = logweight_unit - logweight_aux
         
         # transform back to u space
-        u = scipy.stats.norm.cdf(g)
+        # print(u, " -> u to g ->", g, "with coords", coords)
+        u = scipy.stats.t.cdf(g, df=otherdf)
+        # print("  ", g, " -> g to u ->", u)
+        assert np.isfinite(u).all(), u
+        assert (u < 1).all(), u
+        assert (u > 0).all(), u
         # transform to p space with user transform
         return combine_with_weights(transform(u), logweight)
 
-    if vectorize:
+    if vectorized:
         def aux_loglikelihood(x):
             x_actual = x[:,:-1]
             logweight = x[:,-1]
@@ -119,9 +150,10 @@ def get_extended_auxiliary_problem(
             if -1e100 < logweight < 1e100:
                 return loglike(x_actual) + logweight
             else:
+                print("very low weight", x)
                 return -1e300
 
-    return aux_loglikelihood, aux_transform
+    return aux_transform, aux_loglikelihood
 
 
 def reuse_samples(

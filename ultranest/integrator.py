@@ -24,7 +24,6 @@ from .viz import get_default_viz_callback, nicelogger
 from .ordertest import UniformOrderAccumulator
 from .netiter import PointPile, SingleCounter, MultiCounter, BreadthFirstIterator, TreeNode, count_tree_between, find_nodes_before, logz_sequence
 from .netiter import dump_tree, combine_results
-import .hotstart.get_extended_auxiliary_problem as _get_hotstart_auxiliary_problem
 
 __all__ = ['ReactiveNestedSampler', 'NestedSampler', 'read_file']
 
@@ -129,25 +128,52 @@ def _explore_iterator_batch(explorer, pop, x_dim, num_params, pointpile, batchsi
         yield batch
 
 
-def resume_hot(
-    log_dir, x_dim, loglikelihood, transform,
-    verbose=False, df=2, backoff_factor=2.0,
+def HotReactiveNestedSampler(
+    log_dir_old, log_dir_new, param_names, loglike, transform,
+    derived_param_names=[], vectorized=False,
+    verbose=False, df=2, backoff_factor=1.0, 
+    **kwargs,
 ):
     """
-    Resume from a UltraNest run with a different loglikelihood.
+    returns a ReactiveNestedSampler which resumes a previous run 
+    with a modified loglikelihood.
+
+    The arguments are the same as for `ReactiveNestedSampler`,
+    except for log_dir_old, the folder where the results of a previous
+    `ReactiveNestedSampler` run were stored.
+
+    **Method**:
 
     An auxiliary distribution is created from the previous run
     posterior samples, if chains/weighted_post_untransformed.txt is available.
     Otherwise the highest `num_livepoints_per_generation * x_dim` 
     likelihood points are used, with exponentially decreasing weighting.
 
+    The auxiliary distribution is used to deform the prior space so
+    that samples are preferentially drawn near there.
+    The likelihood is adjusted with importance weighting to 
+    compensate for the deformations.
+
+    **Caveats**:
+
+    * This will not work if the number of parameters is different.
+    * The number of derived parameters can be different.
+    * The transform can be different.
+    * The returned ReactiveNestedSampler has an additional derived
+      parameter, which contains the importance (log) weight.
+      You can ignore this, it is needed internally.
+    * You can hot-start from a ReactiveNestedSampler run,
+      but not from a HotReactiveNestedSampler run.
+
     Parameters
     ----------
-    log_dir: str
-        Folder containing results
-    x_dim: int
-        number of dimensions
-    loglikelihood: function
+    log_dir_old: str
+        Folder containing reference results,
+        Either chains/weighted_post_untransformed.txt
+        or results/points.hdf5 must exist there.
+    param_names: list of str
+        Names of the parameter 
+    loglike: function
         new likelihood function
     transform: function
         new transform function
@@ -174,51 +200,56 @@ def resume_hot(
 
     Returns
     ----------
-    sequence: dict
-        contains arrays storing for each iteration estimates of:
-
-            * logz: log evidence estimate
-            * logzerr: log evidence uncertainty estimate
-            * logvol: log volume estimate
-            * samples_n: number of live points
-            * logwt: log weight
-            * logl: log likelihood
-
-    final: dict
-        same as ReactiveNestedSampler.results and
-        ReactiveNestedSampler.run return values
+    sampler: ReactiveNestedSampler
+        The new sampler.
 
     """
+    import h5py
+    from .hotstart import get_extended_auxiliary_problem
+    x_dim = len(param_names)
     # try loading the finished posterior samples
-    posterior_filename = os.path.join(log_dir, 'chains', 'weighted_post_untransformed.txt')
+    posterior_filename = os.path.join(log_dir_old, 'chains', 'weighted_post_untransformed.txt')
     try:
         weighted_samples = np.loadtxt(posterior_filename, skiprows=1)
-        weighted_sample_weights = weighted_samples[:,0]
+        weighted_sample_weights = weighted_samples[:,0] * len(weighted_samples)
         weighted_sample_u = weighted_samples[:,2:]
+        print("using posterior samples. Weights:", weighted_sample_weights)
     except IOError:
         # otherwise, use recent live points
         # if the run is in an early phase, the highest likelihood
         # point is where we want to be, however we need several
         # previous live points to define an extended region
         
-        filepath = os.path.join(log_dir, 'results', 'points.hdf5')
+        filepath = os.path.join(log_dir_old, 'results', 'points.hdf5')
         fileobj = h5py.File(filepath, 'r')
         nrows, ncols = fileobj['points'].shape
-        weighted_sample_u = fileobj['points'][:, 4:4 + x_dim]
-        num_params = ncols - 3 - x_dim
-        loglike = fileobj['points'][:,1]
+        weighted_sample_u = fileobj['points'][:, 3:3 + x_dim]
+        old_loglike = fileobj['points'][:, 1]
         
-        # rank by likelihood
-        rank = nrows - np.argsort(loglike)
+        # rank by likelihood (rank(highest likelihood) = 0)
+        rank = np.argsort(-old_loglike)
+        assert rank.shape == (len(weighted_sample_u),), (rank.shape, len(weighted_sample_u))
         # highest rank (index 0) gets weight 1., then it 
         # declines exponentially
         weighted_sample_weights = np.exp(-rank / x_dim)
-    
-    return _get_hotstart_auxiliary_problem(
-        loglike=loglikelihood, transform=transform,
+        print("using points from HDF5 store. Weights:", weighted_sample_weights)
+
+    assert weighted_sample_weights.shape == (len(weighted_sample_u),), (weighted_sample_u.shape, weighted_sample_weights.shape)
+    aux_transform, aux_loglikelihood = get_extended_auxiliary_problem(
+        loglike=loglike, transform=transform,
         usamples=weighted_sample_u, weights=weighted_sample_weights,
         enlargement_factor=backoff_factor, df=df,
-        vectorized=True)
+        vectorized=vectorized)
+
+    return ReactiveNestedSampler(
+         param_names,
+         loglike=aux_loglikelihood,
+         transform=aux_transform,
+         derived_param_names=derived_param_names + ['aux_logweight'],
+         log_dir=log_dir_new,
+         vectorized=vectorized,
+         storage_backend='hdf5',
+         **kwargs)
 
 
 def resume_from_similar_file(
@@ -506,7 +537,8 @@ class NestedSampler(object):
 
         Parameters
         -----------
-        param_names: list of str, names of the parameters.
+        param_names: list of str
+            Names of the parameters.
             Length gives dimensionality of the sampling problem.
         loglike: function
             log-likelihood function.
@@ -1034,7 +1066,8 @@ class ReactiveNestedSampler(object):
 
         Parameters
         -----------
-        param_names: list of str, names of the parameters.
+        param_names: list of str
+            Names of the parameters.
             Length gives dimensionality of the sampling problem.
 
         loglike: function
@@ -2822,7 +2855,7 @@ class ReactiveNestedSampler(object):
                 v = self.results['samples'][:,i]
                 sigma = v.std()
                 med = v.mean()
-                if sigma == 0:
+                if not sigma > 0:
                     j = 3
                 else:
                     j = max(0, int(-np.floor(np.log10(sigma))) + 1)
