@@ -7,7 +7,7 @@ from .utils import vectorize, resample_equal
 
 def get_extended_auxiliary_problem(
     loglike, transform, usamples, weights,
-    enlargement_factor, df, otherdf=20, vectorized=False
+    enlargement_factor, df, vectorized=False
 ):
     """Return a new loglike and transform based on an auxiliary distribution.
 
@@ -69,13 +69,14 @@ def get_extended_auxiliary_problem(
     assert np.all(weights >= 0), weights
 
     # Transform to a unit gaussian auxiliary space (g-space)
-    isamplesg = scipy.stats.t.ppf(usamples, df=otherdf)
+    isamplesg = scipy.stats.norm.ppf(usamples)
     # get parameters of auxiliary transform in this space
     assert np.isfinite(isamplesg).all(), isamplesg
 
-    print("g samples: ", isamplesg)
     # remove extremely low weight points, for numerical stability
     mask = weights > 1e-10 * weights.mean()
+    print("g samples: ", isamplesg[mask,:])
+    print("training samples: ", (transform if vectorized else vectorize(transform))(usamples[mask,:]))
     assert mask.sum() > x_dim + 1, ("too few points with non-negligible weight for dimensionality", mask.sum(), x_dim)
     gctr = np.average(isamplesg[mask,:], weights=weights[mask], axis=0)
     gcov = np.cov(isamplesg[mask, :], aweights=weights[mask], rowvar=0, ddof=0)
@@ -93,8 +94,10 @@ def get_extended_auxiliary_problem(
     # build transform
     l, v = np.linalg.eigh(ginvcov)
     rotation_matrix = np.dot(v, enlargement_factor * np.diag(1. / np.sqrt(l)))
-    assert np.isfinite(rotation_matrix).all(), (v, enlargement_factor, np.diag(1. / np.sqrt(l)), rotation_matrix)
+    sign, rotation_logdet = np.linalg.slogdet(rotation_matrix)
     print("rotation_matrix:", rotation_matrix)
+    print("rotation det", sign, rotation_logdet)
+    assert np.isfinite(rotation_matrix).all(), (v, enlargement_factor, np.diag(1. / np.sqrt(l)), rotation_matrix)
 
     rv_auxiliary1d = scipy.stats.t(df)
     
@@ -106,11 +109,11 @@ def get_extended_auxiliary_problem(
         combine_with_weights = np.append
         sumaxis = None
 
-    def aux_transform(u):
+    def aux_transform(uprime):
         # get uniform gauss/t distributed values in g-space:
-        assert (u < 1).all(), u
-        assert (u > 0).all(), u
-        coords = rv_auxiliary1d.ppf(u)
+        assert (uprime < 1).all(), uprime
+        assert (uprime > 0).all(), uprime
+        coords = rv_auxiliary1d.ppf(uprime)
         # rotate & stretch; transform into g-space
         g = gctr + np.dot(coords, rotation_matrix)
         assert np.isfinite(g).all(), g
@@ -119,18 +122,175 @@ def get_extended_auxiliary_problem(
         # the likelihood is needed
         # this is the ratio of the density of the aux dist
         # to the unit normal gaussian
+
+        # TODO: is coords or uprime or g needed here?
         logweight_aux = rv_auxiliary1d.logpdf(coords).sum(axis=sumaxis)
-        logweight_unit = scipy.stats.t.logpdf(g, df=otherdf).sum(axis=sumaxis)
+        logweight_unit = scipy.stats.norm.logpdf(g).sum(axis=sumaxis)
         logweight = logweight_unit - logweight_aux
         
         # transform back to u space
         # print(u, " -> u to g ->", g, "with coords", coords)
-        u = scipy.stats.t.cdf(g, df=otherdf)
-        # print("  ", g, " -> g to u ->", u)
+        u = scipy.stats.norm.cdf(g)
         assert np.isfinite(u).all(), u
+        # avoid borders of the guessing space, where cdf=1 or 0 is hit
+        outside = ~np.logical_and(u < 1, u > 0).all(axis=sumaxis)
+        np.clip(u, 1e-16, 1 - 1e-16, out=u)
+        logweight = np.where(outside, -1e300, logweight)
+        if np.any(outside): print("had some points outside", u, g)
         assert (u < 1).all(), u
         assert (u > 0).all(), u
         # transform to p space with user transform
+        return combine_with_weights(transform(u), logweight)
+
+    if vectorized:
+        def aux_loglikelihood(x):
+            x_actual = x[:,:-1]
+            logweight = x[:,-1]
+            aux_like = np.where(
+                np.logical_and(-1e100 < logweight, logweight < 1e100),
+                loglike(x_actual) + logweight,
+                -1e300
+            )
+            return aux_like
+    else:
+        def aux_loglikelihood(x):
+            x_actual = x[:-1]
+            logweight = x[-1]
+            if -1e100 < logweight < 1e100:
+                return loglike(x_actual) + logweight + rotation_logdet
+            else:
+                print("very low weight", x)
+                return -1e300
+
+    return aux_transform, aux_loglikelihood
+
+class BrokenDistribution():
+    """
+    three-part uniform distribution.
+
+    Flat with 1e-10 of the probability from 0 to lo
+    Flat with 1e-10 of the probability from hi to 1
+    Flat with 1-2e-10 of the probability from lo to hi
+    """
+    def __init__(self, lo, hi, edgep):
+        self.lo = np.asarray(lo)
+        self.hi = np.asarray(hi)
+        self.edgep = float(edgep)
+        self.logpdf_left = np.log(edgep / self.lo)
+        self.logpdf_middle = np.log((1 - 2 * edgep) / (self.hi - self.lo))
+        self.logpdf_high = np.log(edgep / (1 - self.hi))
+
+    def logpdf(self, v):
+        v = np.asarray(v)
+        return np.where(
+            v < self.lo, self.logpdf_left, 
+            np.where(
+                v > self.hi, self.logpdf_high, self.logpdf_middle)
+        )
+
+    def ppf(self, c):
+        c = np.asarray(c)
+        lo = self.lo
+        hi = self.hi
+        edgep = self.edgep
+        return np.where(
+            c < edgep,
+            c / edgep * lo,
+            np.where(
+                c > 1 - edgep,
+                1 - (1 - c) / edgep * (1 - hi),
+                (c - edgep) / (1 - 2 * edgep) * (hi - lo) + lo
+            )
+        )
+
+    def cdf(self, v):
+        v = np.asarray(v)
+        lo = self.lo
+        hi = self.hi
+        edgep = self.edgep
+        return np.where(
+            v < lo,
+            v / lo * self.edgep,
+            np.where(
+                v > hi,
+                1 - (1 - v) / (1 - hi) * edgep,
+                (v - lo) / (hi - lo) * (1 - 2 * edgep) + edgep
+            )
+        )
+
+
+def get_extended_auxiliary_problem_simple(
+    loglike, transform, usamples, suppression_probability=1e-3, vectorized=False
+):
+    """Return a new loglike and transform based on an auxiliary distribution.
+
+    Given a likelihood and prior transform, and information about
+    the (expected) posterior peak, generates a auxiliary
+    likelihood and prior transform that is identical but
+    requires fewer nested sampling iterations.
+
+    This is achieved by deforming the prior space, and undoing that
+    transformation by correction weights in the likelihood.
+
+    The auxiliary distribution used for transformation/weighting is
+    a d-dimensional Student-t distribution.
+
+    Parameters
+    ------------
+    loglike: function
+        original likelihood function
+    transform: function
+        original prior transform function
+    usamples: array
+        Untransformed posterior samples (in u-space).
+    suppression_probability: float
+        Probability assigned outside auxiliary uniform distribution
+    vectorized: bool
+        Whether the likelihood and transform functions are vectorized
+
+    Returns:
+    ---------
+    aux_transform: function
+        auxiliary transform function.
+        Takes d u-space coordinates, and returns d + 1 p-space parameters.
+        The first d return coordinates are identical to what ``transform`` would return.
+        The final coordinate is the correction weight.
+    aux_loglike: function
+        auxiliary loglikelihood function. Takes d + 1 parameters (see above).
+        The likelihood is the same as loglike, but adds weights.
+    """
+    assert np.isfinite(usamples).all(), usamples
+    assert (usamples < 1).all(), usamples
+    assert (usamples > 0).all(), usamples
+
+    nsamples, x_dim = usamples.shape
+
+    # Transform to a unit gaussian auxiliary space (g-space)
+    ulo = usamples.min(axis=0)
+    uhi = usamples.max(axis=0)
+    aux_dist = BrokenDistribution(ulo, uhi, suppression_probability)
+    print("defining broken dist with:", ulo, uhi)
+    
+    if vectorized:
+        def combine_with_weights(p, w):
+            return np.hstack((p, w.reshape((-1,1))))
+        sumaxis = 1
+    else:
+        combine_with_weights = np.append
+        sumaxis = None
+
+    def aux_transform(uprime):
+        # get uniform distributed values in u-space:
+        u = aux_dist.ppf(uprime)
+        assert np.isfinite(u).all(), u
+        assert (u < 1).all(), u
+        assert (u > 0).all(), u
+        # since our proposal above is with the auxiliary distribution,
+        # instead of the prior, a importance weight to adjust
+        # the likelihood is needed
+        # this is the ratio of the density of the aux dist
+        # to the unit normal gaussian
+        logweight = -aux_dist.logpdf(u).sum(axis=sumaxis)
         return combine_with_weights(transform(u), logweight)
 
     if vectorized:

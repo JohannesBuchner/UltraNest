@@ -205,7 +205,8 @@ def HotReactiveNestedSampler(
 
     """
     import h5py
-    from .hotstart import get_extended_auxiliary_problem
+    # from .hotstart import get_extended_auxiliary_problem
+    from .hotstart import get_extended_auxiliary_problem_simple
     x_dim = len(param_names)
     # try loading the finished posterior samples
     posterior_filename = os.path.join(log_dir_old, 'chains', 'weighted_post_untransformed.txt')
@@ -232,13 +233,19 @@ def HotReactiveNestedSampler(
         # highest rank (index 0) gets weight 1., then it 
         # declines exponentially
         weighted_sample_weights = np.exp(-rank / x_dim)
+        weighted_sample_weights[rank > 400] = 0.0
         print("using points from HDF5 store. Weights:", weighted_sample_weights)
 
     assert weighted_sample_weights.shape == (len(weighted_sample_u),), (weighted_sample_u.shape, weighted_sample_weights.shape)
-    aux_transform, aux_loglikelihood = get_extended_auxiliary_problem(
-        loglike=loglike, transform=transform,
-        usamples=weighted_sample_u, weights=weighted_sample_weights,
-        enlargement_factor=backoff_factor, df=df,
+    #aux_transform, aux_loglikelihood = get_extended_auxiliary_problem(
+    #    loglike=loglike, transform=transform,
+    #    usamples=weighted_sample_u, weights=weighted_sample_weights,
+    #    enlargement_factor=backoff_factor, df=df,
+    #    vectorized=vectorized)
+    highest_ranks = np.argsort(weighted_sample_weights)[-400:]
+    highest_sample_u = weighted_sample_u[highest_ranks, :]
+    aux_transform, aux_loglikelihood = get_extended_auxiliary_problem_simple(
+        loglike=loglike, transform=transform, usamples=highest_sample_u,
         vectorized=vectorized)
 
     return ReactiveNestedSampler(
