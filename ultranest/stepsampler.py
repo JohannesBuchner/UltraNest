@@ -147,13 +147,23 @@ def generate_partial_differential_direction(ui, region, scale=1):
     nlive, ndim = region.u.shape
     # choose pair
     i = np.random.randint(nlive)
-    i2 = np.random.randint(nlive - 1)
-    if i2 >= i:
-        i2 += 1
-    mask = np.random.uniform(size=ndim) < 0.1
+    while True:
+        i2 = np.random.randint(nlive - 1)
+        if i2 >= i:
+            i2 += 1
+
+        v = region.u[i] - region.u[i2]
+
+        mask = np.random.uniform(size=ndim) > 0.1
+        # at least one must be on
+        mask[np.random.randint(ndim)] = True
+        v[mask] = 0
+        if (v != 0).any():
+            # repeat if live points are identical
+            break
     # use doubling procedure to identify left and right maxima borders
-    v = np.zeros(ndim)
-    v[mask] = (region.u[i,mask] - region.u[i2,mask]) * scale
+    #v = np.zeros(ndim)
+    #v[mask] = (region.u[i,mask] - region.u[i2,mask]) * scale
     return v
 
 
@@ -224,8 +234,10 @@ def generate_mixture_random_direction(ui, region, scale=1):
         new direction vector
     """
     if np.random.uniform() < 0.5:
+        # DE proposal
         return generate_differential_direction(ui, region, scale=scale)
     else:
+        # region-oriented random axis proposal
         return generate_region_oriented_direction(ui, region, scale=scale)
 
 
@@ -455,9 +467,9 @@ class StepSampler(object):
 
     def __str__(self):
         if not self.adaptive_nsteps:
-            return type(self).__name__ + '(nsteps=%d)' % self.nsteps
+            return type(self).__name__ + '(nsteps=%d, generate_direction=%s)' % (self.nsteps, self.generate_direction)
         else:
-            return type(self).__name__ + '(adaptive_nsteps=%s)' % self.adaptive_nsteps
+            return type(self).__name__ + '(adaptive_nsteps=%s, generate_direction=%s)' % (self.adaptive_nsteps, self.generate_direction)
 
     def plot(self, filename):
         """Plot sampler statistics.
@@ -899,7 +911,7 @@ def RegionBallSliceSampler(*args, **kwargs):
     return SliceSampler(*args, **kwargs, generate_direction=generate_region_random_direction)
 
 
-class SequentialDirectionGenerator(object):
+class SequentialRegionDirectionGenerator(object):
     def __init__(self):
         """Sequentially proposes one region axes after the next."""
         self.axis_index = 0
@@ -935,10 +947,12 @@ class SequentialDirectionGenerator(object):
         v *= scale / (v**2).sum()**0.5
         return v
 
+    def __str__(self):
+        return type(self).__name__ + '()'
 
 def RegionSequentialSliceSampler(*args, **kwargs):
     """Slice sampler, sequentially iterating region axes."""
-    return SliceSampler(*args, **kwargs, generate_direction=SequentialDirectionGenerator())
+    return SliceSampler(*args, **kwargs, generate_direction=SequentialRegionDirectionGenerator())
 
 
 class OrthogonalDirectionGenerator(object):
@@ -953,6 +967,9 @@ class OrthogonalDirectionGenerator(object):
         self.axis_index = 0
         self.generate_direction = generate_direction
         self.directions = None
+    
+    def __str__(self):
+        return type(self).__name__ + '(generate_direction=%s)' % self.generate_direction
 
     def __call__(self, ui, region, scale=1):
         """Iteratively return a orthogonalized vector.
