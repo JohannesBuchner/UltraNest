@@ -2,6 +2,8 @@ import numpy as np
 import shutil
 import tempfile
 import pytest
+import json
+import pandas
 from numpy.testing import assert_allclose
 
 def test_run():
@@ -278,6 +280,65 @@ def test_reactive_run_resume_eggbox(storage_backend):
             assert abs(r['ncall'] - ncalls) <= 2 * sampler.mpi_size, (i, r['ncall'], ncalls, r['ncall'] - ncalls)
             assert paramnames == r['paramnames'], 'paramnames should be in results'
 
+            results2 = json.load(open(folder + '/info/results.json'))
+            print('CSV content:')
+            print(open(folder + '/info/post_summary.csv').read())
+            post_summary = pandas.read_csv(folder + '/info/post_summary.csv')
+            print(post_summary, post_summary.columns)
+            for k, v in r.items():
+                if k in results2:
+                    print("checking results[%s] ..." % k)
+                    assert results2[k] == r[k], (k, results2[k], r[k])
+            
+            assert r['paramnames'] == paramnames
+            samples = np.loadtxt(folder + '/chains/equal_weighted_post.txt', skiprows=1)
+            data = np.loadtxt(folder + '/chains/weighted_post.txt', skiprows=1)
+            data_u = np.loadtxt(folder + '/chains/weighted_post_untransformed.txt', skiprows=1)
+            assert (data[:,:2] == data_u[:,:2]).all()
+            
+            assert_allclose(samples.mean(axis=0), r['posterior']['mean'])
+            assert_allclose(np.median(samples, axis=0), r['posterior']['median'])
+            assert_allclose(np.std(samples, axis=0), r['posterior']['stdev'])
+            for k, v in r.items():
+                if k == 'posterior':
+                    for k1, v1 in v.items():
+                        if k1 == 'information_gain_bits':
+                            continue
+                        for param, value in zip(paramnames, v[k1]):
+                            print("checking %s of parameter '%s':" % (k1, param), value)
+                            assert np.isclose(post_summary[param + '_' + k1].values, value), (param, k1, post_summary[param + '_' + k1].values, value)
+                elif k == 'samples':
+                    assert_allclose(samples, r['samples'])
+                elif k == 'paramnames':
+                    assert v == paramnames
+                elif k == 'weighted_samples':
+                    print(k, v.keys())
+                    assert_allclose(data[:,0], v['weights'])
+                    assert_allclose(data[:,1], v['logl'])
+                    assert_allclose(data[:,2:], v['points'])
+                    assert_allclose(data_u[:,2:], v['upoints'])
+                elif k == 'maximum_likelihood':
+                    print(k, v.keys())
+                    assert_allclose(data[-1,1], v['logl'])
+                    assert_allclose(data[-1,2:], v['point'])
+                    assert_allclose(data_u[-1,2:], v['point_untransformed'])
+                    
+                elif k.startswith('logzerr') or '_bs' in k or 'Herr' in k:
+                    print("   skipping", k, np.shape(v))
+                    #assert_allclose(r[k], v, atol=0.5)
+                elif k == 'insertion_order_MWW_test':
+                    print('insertion_order_MWW_test:', r[k], v)
+                    assert r[k] == v, (r[k], v)
+                else:
+                    print("  ", k, np.shape(v))
+                    assert_allclose(r[k], v)
+
+            logw = r['weighted_samples']['logw']
+            v = r['weighted_samples']['points']
+            L = r['weighted_samples']['logl']
+
+            assert results2['niter'] == len(r['samples'])
+
         # the results are not exactly the same, because the sampling adds
         #ncalls = loglike.ncalls
         #sampler = ReactiveNestedSampler(paramnames,
@@ -340,7 +401,6 @@ def test_reactive_run_resume_eggbox(storage_backend):
 
 def test_reactive_run_warmstart_gauss():
     from ultranest import ReactiveNestedSampler
-    from ultranest import read_file
     center = 0
 
     def loglike(z):
@@ -353,7 +413,6 @@ def test_reactive_run_warmstart_gauss():
         return x * 20000 - 10000
 
     paramnames = ['a']
-    ndim = len(paramnames)
 
     folder = tempfile.mkdtemp()
     np.random.seed(1)
@@ -450,4 +509,5 @@ if __name__ == '__main__':
     #test_run()
     #test_reactive_run_warmstart_gauss()
     #test_reactive_run_extraparams()
-    test_dlogz_reactive_run()
+    test_reactive_run_resume_eggbox('hdf5')
+    #test_dlogz_reactive_run()
