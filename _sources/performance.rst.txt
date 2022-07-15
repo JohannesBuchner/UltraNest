@@ -9,6 +9,7 @@ This tutorial demonstrates:
 
 * How to make a program that uses nested sampling
 * How to store and resume runs
+* The meaning of the output files
 * How to use UltraNest in 100 dimensions
 * How to speed up likelihood functions with vectorization
 * How to write a program with UltraNest

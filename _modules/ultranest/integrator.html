@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ultranest.integrator &mdash; UltraNest 3.4.5 documentation</title>
+  <title>ultranest.integrator &mdash; UltraNest 3.4.6 documentation</title>
   
 
   
@@ -70,7 +70,7 @@
             
             
               <div class="version">
-                3.4.5
+                3.4.6
               </div>
             
           
@@ -2854,8 +2854,8 @@
 
             <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span>
                 <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logs</span><span class="p">[</span><span class="s1">&#39;info&#39;</span><span class="p">],</span> <span class="s1">&#39;post_summary.csv&#39;</span><span class="p">),</span>
-                <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;posterior&#39;</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="s1">&#39;stdev&#39;</span><span class="p">,</span> <span class="s1">&#39;median&#39;</span><span class="p">,</span> <span class="s1">&#39;errlo&#39;</span><span class="p">,</span> <span class="s1">&#39;errup&#39;</span><span class="p">)])],</span>
-                <span class="n">header</span><span class="o">=</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;&quot;</span><span class="si">{0}</span><span class="s1">_mean&quot;, &quot;</span><span class="si">{0}</span><span class="s1">_stdev&quot;, &quot;</span><span class="si">{0}</span><span class="s1">_median&quot;, &quot;</span><span class="si">{0}</span><span class="s1">_errlo&quot;, &quot;</span><span class="si">{0}</span><span class="s1">_errup&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+                <span class="p">[[</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;posterior&#39;</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_params</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="s1">&#39;stdev&#39;</span><span class="p">,</span> <span class="s1">&#39;median&#39;</span><span class="p">,</span> <span class="s1">&#39;errlo&#39;</span><span class="p">,</span> <span class="s1">&#39;errup&#39;</span><span class="p">)]],</span>
+                <span class="n">header</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;&quot;</span><span class="si">{0}</span><span class="s1">_mean&quot;,&quot;</span><span class="si">{0}</span><span class="s1">_stdev&quot;,&quot;</span><span class="si">{0}</span><span class="s1">_median&quot;,&quot;</span><span class="si">{0}</span><span class="s1">_errlo&quot;,&quot;</span><span class="si">{0}</span><span class="s1">_errup&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
                                   <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">paramnames</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">derivedparamnames</span><span class="p">]),</span>
                 <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="n">comments</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
             <span class="p">)</span>
