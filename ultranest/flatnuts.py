@@ -1,8 +1,9 @@
 """
-FLATNUTS
-=========
+FLATNUTS is a implementation of No-U-turn sampler 
+for nested sampling assuming a flat prior space (hyper-cube u-space).
 
-Experimental.
+This is highly experimental. It is similar to NoGUTS and suffers from 
+the same stability problems.
 
 Directional sampling within regions.
 
@@ -767,4 +768,3 @@ class ClockedNUTSSampler(ClockedBisectSampler):
         # additional criterion: start and end velocities must point in opposite directions
         stop = stopa or stopb or angle(xright-xleft, vleft) <= 0 or angle(xright-xleft, vright) <= 0 or angle(vleft, vright) <= 0
         return (ileft, xleft, vleft), (iright, xright, vright), (ileft,iright), stop
-
