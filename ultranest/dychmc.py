@@ -243,7 +243,7 @@ class DynamicCHMCSampler(object):
     Because of this, the number of steps is dynamic.
     """
 
-    def __init__(self, ndim, nsteps, transform, loglike, gradient, adaptive_nsteps=False, delta=0.9, nudge=1.04):
+    def __init__(self, scale, nsteps, adaptive_nsteps=False, delta=0.9, nudge=1.04):
         """Initialise sampler.
 
         Parameters
@@ -261,22 +261,10 @@ class DynamicCHMCSampler(object):
             start point and current position exceeds the mean distance
             between pairs of live points.
 
-        transform: function
-            called with unit cube position vector u, returns
-            transformed parameter vector p.
-        loglike: function
-            called with transformed parameters p, returns loglikelihood
-        gradient: function
-            called with unit cube position vector u, returns
-            gradient (dlogL/du, not just dlogL/dp)
-
         """
         self.history = []
         self.nsteps = nsteps
-        self.scale = 0.1 * ndim**0.5
-        self.transform = transform
-        self.loglike = loglike
-        self.gradient = gradient
+        self.scale = scale
         self.nudge = nudge
         self.nsteps_nudge = 1.01
         adaptive_nsteps_options = (False, 'proposal-total-distances-NN', 'proposal-summed-distances-NN',
@@ -297,6 +285,9 @@ class DynamicCHMCSampler(object):
         if adaptive_nsteps:
             self.logstat_labels += ['jump-distance', 'reference-distance']
         self.logstat_trajectory = []
+
+    def set_gradient(self, gradient):
+        self.gradient = gradient
 
     def __str__(self):
         """Get string representation."""
@@ -352,6 +343,9 @@ class DynamicCHMCSampler(object):
             whether to produce debug plots.
 
         """
+        self.transform = transform
+        self.loglike = loglike
+
         i = np.random.randint(len(Ls))
         #print("starting from live point %d" % i)
         self.starti = i
@@ -485,7 +479,8 @@ class DynamicCHMCSampler(object):
         self.logstat_trajectory = []
 
         if len(self.logstat) % N == 0:
-            print("updating step size: %.4f %.4f %.1f --> %g " % (alphamean, reflectmean, treeheightmean, self.scale))
+            print("updating step size: alpha=%.4f refl=%.4f treeheight=%.1f --> scale=%g " % (
+                alphamean, reflectmean, treeheightmean, self.scale))
 
     def region_changed(self, Ls, region):
         """React to change of region. """
