@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ultranest.integrator &mdash; UltraNest 3.4.4 documentation</title>
+  <title>ultranest.integrator &mdash; UltraNest 3.4.5 documentation</title>
   
 
   
@@ -70,7 +70,7 @@
             
             
               <div class="version">
-                3.4.4
+                3.4.5
               </div>
             
           
@@ -102,7 +102,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../method.html">Method</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../using-ultranest.html">Basic usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../priors.html">Specifying priors</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../performance.html">Tour of the features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../performance.html">Features</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../modules.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../issues.html">Frequently Asked Questions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
@@ -2915,8 +2915,8 @@
                     <span class="c1"># add a bit of padding, but not outside parameter limits</span>
                     <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span> <span class="o">=</span> <span class="n">edges</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">edges</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
                     <span class="n">step</span> <span class="o">=</span> <span class="n">edges</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">lo</span>
-                    <span class="n">lo</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transform_limits</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="n">lo</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">step</span><span class="p">)</span>
-                    <span class="n">hi</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transform_limits</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="n">hi</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">step</span><span class="p">)</span>
+                    <span class="n">lo</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">lo</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform_limits</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">]),</span> <span class="n">lo</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">step</span><span class="p">)</span>
+                    <span class="n">hi</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">hi</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform_limits</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">1</span><span class="p">]),</span> <span class="n">hi</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">step</span><span class="p">)</span>
                     <span class="n">H</span><span class="p">,</span> <span class="n">edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">lo</span><span class="p">,</span> <span class="n">hi</span><span class="p">,</span> <span class="mi">40</span><span class="p">))</span>
                     <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span> <span class="o">=</span> <span class="n">edges</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">edges</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 

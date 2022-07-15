@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ultranest package &mdash; UltraNest 3.4.4 documentation</title>
+  <title>ultranest package &mdash; UltraNest 3.4.5 documentation</title>
   
 
   
@@ -72,7 +72,7 @@
             
             
               <div class="version">
-                3.4.4
+                3.4.5
               </div>
             
           
@@ -104,16 +104,13 @@
 <li class="toctree-l1"><a class="reference internal" href="method.html">Method</a></li>
 <li class="toctree-l1"><a class="reference internal" href="using-ultranest.html">Basic usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="priors.html">Specifying priors</a></li>
-<li class="toctree-l1"><a class="reference internal" href="performance.html">Tour of the features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="performance.html">Features</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="modules.html">API</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">ultranest package</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-ultranest.dychmc">ultranest.dychmc module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-ultranest.dyhmc">ultranest.dyhmc module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-ultranest.flatnuts">ultranest.flatnuts module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#flatnuts">FLATNUTS</a></li>
-</ul>
-</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-ultranest.flatnuts">ultranest.flatnuts module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-ultranest.hotstart">ultranest.hotstart module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-ultranest.integrator">ultranest.integrator module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-ultranest.mlfriends">ultranest.mlfriends module</a></li>
@@ -290,7 +287,7 @@ dot(dtheta, rminus) &gt;= 0 &amp; dot(dtheta, rplus &gt;= 0)</p>
 
 <dl class="py class">
 <dt id="ultranest.dychmc.DynamicCHMCSampler">
-<em class="property">class </em><code class="sig-prename descclassname">ultranest.dychmc.</code><code class="sig-name descname">DynamicCHMCSampler</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ndim</span></em>, <em class="sig-param"><span class="n">nsteps</span></em>, <em class="sig-param"><span class="n">transform</span></em>, <em class="sig-param"><span class="n">loglike</span></em>, <em class="sig-param"><span class="n">gradient</span></em>, <em class="sig-param"><span class="n">adaptive_nsteps</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">delta</span><span class="o">=</span><span class="default_value">0.9</span></em>, <em class="sig-param"><span class="n">nudge</span><span class="o">=</span><span class="default_value">1.04</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/dychmc.html#DynamicCHMCSampler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.dychmc.DynamicCHMCSampler" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">ultranest.dychmc.</code><code class="sig-name descname">DynamicCHMCSampler</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">scale</span></em>, <em class="sig-param"><span class="n">nsteps</span></em>, <em class="sig-param"><span class="n">adaptive_nsteps</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">delta</span><span class="o">=</span><span class="default_value">0.9</span></em>, <em class="sig-param"><span class="n">nudge</span><span class="o">=</span><span class="default_value">1.04</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/dychmc.html#DynamicCHMCSampler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.dychmc.DynamicCHMCSampler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Dynamic Constrained Hamiltonian/Hybrid Monte Carlo technique</p>
 <p>Run a billiard ball inside the likelihood constrained.
@@ -312,14 +309,14 @@ As distance, the Mahalanobis distance is used.
 The ‘move-distance’ strategy stops when the distance between
 start point and current position exceeds the mean distance
 between pairs of live points.</p></li>
-<li><p><strong>transform</strong> (<em>function</em>) – called with unit cube position vector u, returns
-transformed parameter vector p.</p></li>
-<li><p><strong>loglike</strong> (<em>function</em>) – called with transformed parameters p, returns loglikelihood</p></li>
-<li><p><strong>gradient</strong> (<em>function</em>) – called with unit cube position vector u, returns
-gradient (dlogL/du, not just dlogL/dp)</p></li>
 </ul>
 </dd>
 </dl>
+<dl class="py method">
+<dt id="ultranest.dychmc.DynamicCHMCSampler.set_gradient">
+<code class="sig-name descname">set_gradient</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">gradient</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/dychmc.html#DynamicCHMCSampler.set_gradient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.dychmc.DynamicCHMCSampler.set_gradient" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="py method">
 <dt id="ultranest.dychmc.DynamicCHMCSampler.plot">
 <code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/dychmc.html#DynamicCHMCSampler.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.dychmc.DynamicCHMCSampler.plot" title="Permalink to this definition">¶</a></dt>
@@ -605,9 +602,10 @@ loglikelihood and gradient (dlogL/du, not just dlogL/dp)</p></li>
 </div>
 <div class="section" id="module-ultranest.flatnuts">
 <span id="ultranest-flatnuts-module"></span><h2>ultranest.flatnuts module<a class="headerlink" href="#module-ultranest.flatnuts" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="flatnuts">
-<h3>FLATNUTS<a class="headerlink" href="#flatnuts" title="Permalink to this headline">¶</a></h3>
-<p>Experimental.</p>
+<p>FLATNUTS is a implementation of No-U-turn sampler
+for nested sampling assuming a flat prior space (hyper-cube u-space).</p>
+<p>This is highly experimental. It is similar to NoGUTS and suffers from
+the same stability problems.</p>
 <p>Directional sampling within regions.</p>
 <p>Work in unit cube space. assume a step size.</p>
 <ol class="arabic simple">
@@ -903,7 +901,6 @@ rwd: bool whether we go backward</p>
 
 </dd></dl>
 
-</div>
 </div>
 <div class="section" id="module-ultranest.hotstart">
 <span id="ultranest-hotstart-module"></span><h2>ultranest.hotstart module<a class="headerlink" href="#module-ultranest.hotstart" title="Permalink to this headline">¶</a></h2>
@@ -4904,7 +4901,7 @@ always doubling nsteps, until Z is stable.</p>
 <ul>
 <li><p><a class="reference internal" href="#ultranest.stepsampler.generate_cube_oriented_direction" title="ultranest.stepsampler.generate_cube_oriented_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_cube_oriented_direction()</span></code></a> (slice sampling)</p></li>
 <li><p><a class="reference internal" href="#ultranest.stepsampler.generate_region_oriented_direction" title="ultranest.stepsampler.generate_region_oriented_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_region_oriented_direction()</span></code></a> (slice sampling on the whitened parameter space)</p></li>
-<li><p><a class="reference internal" href="#ultranest.stepsampler.SequentialDirectionGenerator" title="ultranest.stepsampler.SequentialDirectionGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">SequentialDirectionGenerator</span></code></a> (sequential slice sampling on the whitened parameter space)</p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">SequentialDirectionGenerator</span></code> (sequential slice sampling on the whitened parameter space)</p></li>
 <li><p><a class="reference internal" href="#ultranest.stepsampler.generate_random_direction" title="ultranest.stepsampler.generate_random_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_random_direction()</span></code></a> (hit-and-run sampling)</p></li>
 <li><p><a class="reference internal" href="#ultranest.stepsampler.generate_region_random_direction" title="ultranest.stepsampler.generate_region_random_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_region_random_direction()</span></code></a> (hit-and-run sampling on the whitened parameter space)</p></li>
 <li><p><a class="reference internal" href="#ultranest.stepsampler.generate_cube_oriented_differential_direction" title="ultranest.stepsampler.generate_cube_oriented_differential_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_cube_oriented_differential_direction()</span></code></a> (slice sampling with better proposal scale)</p></li>
@@ -5064,7 +5061,7 @@ always doubling nsteps, until Z is stable.</p>
 <ul>
 <li><p><a class="reference internal" href="#ultranest.stepsampler.generate_cube_oriented_direction" title="ultranest.stepsampler.generate_cube_oriented_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_cube_oriented_direction()</span></code></a> (slice sampling)</p></li>
 <li><p><a class="reference internal" href="#ultranest.stepsampler.generate_region_oriented_direction" title="ultranest.stepsampler.generate_region_oriented_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_region_oriented_direction()</span></code></a> (slice sampling on the whitened parameter space)</p></li>
-<li><p><a class="reference internal" href="#ultranest.stepsampler.SequentialDirectionGenerator" title="ultranest.stepsampler.SequentialDirectionGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">SequentialDirectionGenerator</span></code></a> (sequential slice sampling on the whitened parameter space)</p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">SequentialDirectionGenerator</span></code> (sequential slice sampling on the whitened parameter space)</p></li>
 <li><p><a class="reference internal" href="#ultranest.stepsampler.generate_random_direction" title="ultranest.stepsampler.generate_random_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_random_direction()</span></code></a> (hit-and-run sampling)</p></li>
 <li><p><a class="reference internal" href="#ultranest.stepsampler.generate_region_random_direction" title="ultranest.stepsampler.generate_region_random_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_region_random_direction()</span></code></a> (hit-and-run sampling on the whitened parameter space)</p></li>
 <li><p><a class="reference internal" href="#ultranest.stepsampler.generate_cube_oriented_differential_direction" title="ultranest.stepsampler.generate_cube_oriented_differential_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_cube_oriented_differential_direction()</span></code></a> (slice sampling with better proposal scale)</p></li>
@@ -5164,7 +5161,7 @@ always doubling nsteps, until Z is stable.</p>
 <ul>
 <li><p><a class="reference internal" href="#ultranest.stepsampler.generate_cube_oriented_direction" title="ultranest.stepsampler.generate_cube_oriented_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_cube_oriented_direction()</span></code></a> (slice sampling)</p></li>
 <li><p><a class="reference internal" href="#ultranest.stepsampler.generate_region_oriented_direction" title="ultranest.stepsampler.generate_region_oriented_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_region_oriented_direction()</span></code></a> (slice sampling on the whitened parameter space)</p></li>
-<li><p><a class="reference internal" href="#ultranest.stepsampler.SequentialDirectionGenerator" title="ultranest.stepsampler.SequentialDirectionGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">SequentialDirectionGenerator</span></code></a> (sequential slice sampling on the whitened parameter space)</p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">SequentialDirectionGenerator</span></code> (sequential slice sampling on the whitened parameter space)</p></li>
 <li><p><a class="reference internal" href="#ultranest.stepsampler.generate_random_direction" title="ultranest.stepsampler.generate_random_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_random_direction()</span></code></a> (hit-and-run sampling)</p></li>
 <li><p><a class="reference internal" href="#ultranest.stepsampler.generate_region_random_direction" title="ultranest.stepsampler.generate_region_random_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_region_random_direction()</span></code></a> (hit-and-run sampling on the whitened parameter space)</p></li>
 <li><p><a class="reference internal" href="#ultranest.stepsampler.generate_cube_oriented_differential_direction" title="ultranest.stepsampler.generate_cube_oriented_differential_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_cube_oriented_differential_direction()</span></code></a> (slice sampling with better proposal scale)</p></li>
@@ -5267,8 +5264,8 @@ between live points</p></li>
 </dd></dl>
 
 <dl class="py class">
-<dt id="ultranest.stepsampler.SequentialDirectionGenerator">
-<em class="property">class </em><code class="sig-prename descclassname">ultranest.stepsampler.</code><code class="sig-name descname">SequentialDirectionGenerator</code><a class="reference internal" href="_modules/ultranest/stepsampler.html#SequentialDirectionGenerator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.SequentialDirectionGenerator" title="Permalink to this definition">¶</a></dt>
+<dt id="ultranest.stepsampler.SequentialRegionDirectionGenerator">
+<em class="property">class </em><code class="sig-prename descclassname">ultranest.stepsampler.</code><code class="sig-name descname">SequentialRegionDirectionGenerator</code><a class="reference internal" href="_modules/ultranest/stepsampler.html#SequentialRegionDirectionGenerator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ultranest.stepsampler.SequentialRegionDirectionGenerator" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Sequentially proposes one region axes after the next.</p>
 </dd></dl>

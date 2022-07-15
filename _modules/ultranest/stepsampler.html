@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ultranest.stepsampler &mdash; UltraNest 3.4.4 documentation</title>
+  <title>ultranest.stepsampler &mdash; UltraNest 3.4.5 documentation</title>
   
 
   
@@ -70,7 +70,7 @@
             
             
               <div class="version">
-                3.4.4
+                3.4.5
               </div>
             
           
@@ -102,7 +102,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../method.html">Method</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../using-ultranest.html">Basic usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../priors.html">Specifying priors</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../performance.html">Tour of the features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../performance.html">Features</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../modules.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../issues.html">Frequently Asked Questions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
@@ -330,13 +330,23 @@
     <span class="n">nlive</span><span class="p">,</span> <span class="n">ndim</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="o">.</span><span class="n">shape</span>
     <span class="c1"># choose pair</span>
     <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">nlive</span><span class="p">)</span>
-    <span class="n">i2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">nlive</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">i2</span> <span class="o">&gt;=</span> <span class="n">i</span><span class="p">:</span>
-        <span class="n">i2</span> <span class="o">+=</span> <span class="mi">1</span>
-    <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">ndim</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">0.1</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">i2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">nlive</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">i2</span> <span class="o">&gt;=</span> <span class="n">i</span><span class="p">:</span>
+            <span class="n">i2</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="n">v</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="n">i2</span><span class="p">]</span>
+
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">ndim</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.1</span>
+        <span class="c1"># at least one must be on</span>
+        <span class="n">mask</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">ndim</span><span class="p">)]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">v</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">v</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+            <span class="c1"># repeat if live points are identical</span>
+            <span class="k">break</span>
     <span class="c1"># use doubling procedure to identify left and right maxima borders</span>
-    <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">ndim</span><span class="p">)</span>
-    <span class="n">v</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">mask</span><span class="p">]</span> <span class="o">-</span> <span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="n">i2</span><span class="p">,</span><span class="n">mask</span><span class="p">])</span> <span class="o">*</span> <span class="n">scale</span>
+    <span class="c1">#v = np.zeros(ndim)</span>
+    <span class="c1">#v[mask] = (region.u[i,mask] - region.u[i2,mask]) * scale</span>
     <span class="k">return</span> <span class="n">v</span></div>
 
 
@@ -407,8 +417,10 @@
 <span class="sd">        new direction vector</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">0.5</span><span class="p">:</span>
+        <span class="c1"># DE proposal</span>
         <span class="k">return</span> <span class="n">generate_differential_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">scale</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># region-oriented random axis proposal</span>
         <span class="k">return</span> <span class="n">generate_region_oriented_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="n">scale</span><span class="p">)</span></div>
 
 
@@ -638,9 +650,9 @@
 
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span><span class="p">:</span>
-            <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s1">&#39;(nsteps=</span><span class="si">%d</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span>
+            <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s1">&#39;(nsteps=</span><span class="si">%d</span><span class="s1">, generate_direction=</span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s1">&#39;(adaptive_nsteps=</span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span>
+            <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s1">&#39;(adaptive_nsteps=</span><span class="si">%s</span><span class="s1">, generate_direction=</span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span><span class="p">)</span>
 
 <div class="viewcode-block" id="StepSampler.plot"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.StepSampler.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Plot sampler statistics.</span>
@@ -1082,7 +1094,7 @@
     <span class="k">return</span> <span class="n">SliceSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">generate_direction</span><span class="o">=</span><span class="n">generate_region_random_direction</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="SequentialDirectionGenerator"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.SequentialDirectionGenerator">[docs]</a><span class="k">class</span> <span class="nc">SequentialDirectionGenerator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="SequentialRegionDirectionGenerator"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.SequentialRegionDirectionGenerator">[docs]</a><span class="k">class</span> <span class="nc">SequentialRegionDirectionGenerator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Sequentially proposes one region axes after the next.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">axis_index</span> <span class="o">=</span> <span class="mi">0</span>
@@ -1116,12 +1128,14 @@
         <span class="n">uj</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">untransform</span><span class="p">(</span><span class="n">ti</span> <span class="o">+</span> <span class="n">tv</span> <span class="o">*</span> <span class="mf">1e-3</span><span class="p">)</span>
         <span class="n">v</span> <span class="o">=</span> <span class="n">uj</span> <span class="o">-</span> <span class="n">ui</span>
         <span class="n">v</span> <span class="o">*=</span> <span class="n">scale</span> <span class="o">/</span> <span class="p">(</span><span class="n">v</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">**</span><span class="mf">0.5</span>
-        <span class="k">return</span> <span class="n">v</span></div>
+        <span class="k">return</span> <span class="n">v</span>
 
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s1">&#39;()&#39;</span></div>
 
 <div class="viewcode-block" id="RegionSequentialSliceSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.RegionSequentialSliceSampler">[docs]</a><span class="k">def</span> <span class="nf">RegionSequentialSliceSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Slice sampler, sequentially iterating region axes.&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">SliceSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">generate_direction</span><span class="o">=</span><span class="n">SequentialDirectionGenerator</span><span class="p">())</span></div>
+    <span class="k">return</span> <span class="n">SliceSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">generate_direction</span><span class="o">=</span><span class="n">SequentialRegionDirectionGenerator</span><span class="p">())</span></div>
 
 
 <div class="viewcode-block" id="OrthogonalDirectionGenerator"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.OrthogonalDirectionGenerator">[docs]</a><span class="k">class</span> <span class="nc">OrthogonalDirectionGenerator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
@@ -1136,6 +1150,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">axis_index</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span> <span class="o">=</span> <span class="n">generate_direction</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">directions</span> <span class="o">=</span> <span class="kc">None</span>
+    
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s1">&#39;(generate_direction=</span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span>
 
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Iteratively return a orthogonalized vector.</span>

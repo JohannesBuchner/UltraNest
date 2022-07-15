@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Tour of the features &mdash; UltraNest 3.4.4 documentation</title>
+  <title>Features &mdash; UltraNest 3.4.5 documentation</title>
   
 
   
@@ -72,7 +72,7 @@
             
             
               <div class="version">
-                3.4.4
+                3.4.5
               </div>
             
           
@@ -104,12 +104,18 @@
 <li class="toctree-l1"><a class="reference internal" href="method.html">Method</a></li>
 <li class="toctree-l1"><a class="reference internal" href="using-ultranest.html">Basic usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="priors.html">Specifying priors</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Tour of the features</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Features</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#usage-in-a-program">Usage in a program</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#speed-ups">Speed ups</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#vectorized-full-program">Vectorized full program</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#output-files">Output files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#speed-ups">Speed ups</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#vectorized-full-program">Vectorized full program</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#high-dimensional-models">High-dimensional models</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#using-multiple-cores">Using multiple cores</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#parallelisation">Parallelisation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#using-multiple-cores">Using multiple cores</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#more-features">More features</a></li>
 </ul>
 </li>
@@ -173,7 +179,7 @@
     
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
         
-      <li>Tour of the features</li>
+      <li>Features</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -214,8 +220,8 @@
     text-align: unset;
 }
 </style>
-<div class="section" id="tour-of-the-features">
-<span id="performance"></span><h1>Tour of the features<a class="headerlink" href="#tour-of-the-features" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="features">
+<span id="performance"></span><h1>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h1>
 <p>This tutorial demonstrates:</p>
 <ul class="simple">
 <li><p>How to make a program that uses nested sampling</p></li>
@@ -311,29 +317,85 @@ and the parameter constraints:</p>
     param3              0.602 +- 0.098
 </pre></div>
 </div>
-<p>In the folder my_gauss you can find useful files:</p>
-<ul class="simple">
-<li><p><strong>debug.log</strong>: log file of the run. Include when reporting bugs.</p></li>
-<li><p><strong>results/points.hdf5</strong>: file storing all sampled points. Used for resuming.</p></li>
-<li><p><strong>chains/equal_weighted_post.txt</strong>: posterior samples. Each column corresponds to one parameter.</p></li>
-<li><p><strong>chains/weighted_post.txt</strong>: weighted posterior samples. Weight, -loglikelihood, parameter value (d times). getdist compatible.</p></li>
-<li><p><strong>chains/weighted_post.paramnames</strong>: Parameter names</p></li>
-<li><p><strong>info/results.json</strong>: all results (logz, etc.) as a json dictionary</p></li>
-<li><p><strong>plots/corner.pdf</strong>: corner plot</p></li>
-<li><p><strong>plots/run.pdf</strong>: diagnostic plot showing integration progress</p></li>
-<li><p><strong>plots/trace.pdf</strong>: diagnostic plot showing problem structure</p></li>
-</ul>
 <p>Some features worth noting here:</p>
 <ul class="simple">
-<li><p>Key diagnostic plots are included.</p></li>
-<li><p>The program can resume from crashes – even if run with a different number of live points.</p></li>
 <li><p>UltraNest shows what it is currently exploring. This is especially useful for debugging models.</p></li>
+<li><p>Key diagnostic plots are included in the output folder (see below).</p></li>
+<li><p>The program can resume from crashes – even if run with a different number of live points.</p></li>
 </ul>
-<p>Lets go to some more advanced usage examples: Integrating a 100-dimensional gaussian.
-For that, we have to make a few modifications.</p>
+</div>
+<div class="section" id="output-files">
+<h2>Output files<a class="headerlink" href="#output-files" title="Permalink to this headline">¶</a></h2>
+<p>If a <cite>log_dir</cite> directory was specified, you will find these files:</p>
+<ul>
+<li><p>debug.log: A debug log of the run
+* Please attach it or the stdout output when you open a <a class="reference external" href="https://github.com/JohannesBuchner/UltraNest/issues">Github issue</a>.
+* This contains the efficiency and progress of the sampling.</p></li>
+<li><p>info folder: machine-readable summaries of the posterior
+* <strong>post_summary.csv</strong>: for each parameter: mean, std, median, upper and lower 1 sigma error. Can be read with <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html">pandas.read_csv</a>.
+* <strong>results.json</strong>: Contains detailed output of the nested sampling run. Can be read with <a class="reference external" href="https://docs.python.org/3/library/json.html">json.load</a>.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>paramnames: parameter names</p></li>
+<li><p>ncall, niter: Number of likelihood calls, nested sampling iterations</p></li>
+<li><p>maximum_likelihood: highest loglikelihood point found so far</p></li>
+<li><p>H, Herr: (global) information gain</p></li>
+<li><p>ess: effective sample size</p></li>
+<li><p>logz, logzerr: ln(Z) and its uncertainty. logzerr_tail is the remainder integral contribution, logzerr_bs is from bootstrapping</p></li>
+<li><p>posterior: for each parameter: mean, std, median, upper and lower 1 sigma error, and <a class="reference external" href="https://arxiv.org/abs/2205.00009">information gain</a>.</p></li>
+<li><p>insertion_order_MWW_test: MWW test results (see Buchner+21 in prep)</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>chains: machine-readable chains
+* <strong>equal_weighted_post.txt</strong>: equally weighted posterior samples (similar to a Markov chain). Each column corresponds to one parameter.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>You can make a corner plot from this.</p></li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li><p>weighted_post.txt: posterior samples with a weight attached.
+* This is made by nested sampling directly, and the above is produced from this. However, carrying the weights around is cumbersome.
+* getdist compatible. columns are Weight, -loglikelihood, parameter value (d times).</p></li>
+<li><p>weighted_post_untransformed.txt: same as above, but in coordinates before the prior transformation.</p></li>
+<li><p>run.txt: for each iteration, ln(z) and error, ln(volume), number of live points, log-likelihood threshold, posterior point weight (likelihood x volume) and insertion rank of newly sampled point.</p></li>
+</ul>
+</li>
+<li><p>plots: Visualisations (by plot functions)
+* corner.pdf: corner/pairs plot of the marginal and conditional parameter posteriors.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Useful for investigating degeneracies and which parameters were learned.</p></li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li><p>trace.pdf: diagnostic plot showing problem structure
+* Visualises how each parameter’s range was reduced as the nested sampling proceeds.
+* Color indicates where the bulk of the posterior lies.
+* Useful to understand the structure of the inference problem, and which parameters are learned first.</p></li>
+<li><p>run.pdf: diagnostic plot showing integration progress
+* Visualises how the number of live points, likelihood and posterior weight evolved through the nested sampling run.
+* Visualises the evidence integration and its uncertainty.</p></li>
+</ul>
+</li>
+</ul>
+<p>All of the above can be written, but are never read, by ultranest.ReactiveNestedSampler. The only file used to
+read the state of a previous run is:</p>
+<ul class="simple">
+<li><p>results/points.hdf5: file storing all sampled points. Used for resuming.
+* this is an internal file.
+* ncalls: number of likelihood calls
+* points: the columns are: likelihood threshold under which the point was sampled, likelihood of the point, a quality indicator (0 for MLFriends, otherwise the number of steps in the step sampler), u-space (unit cube) coordinates, p-space (transformed parameters) coordinates.</p></li>
+</ul>
+<p>You can safely store additional files and plots in the sub-folders.</p>
 </div>
 <div class="section" id="speed-ups">
 <h2>Speed ups<a class="headerlink" href="#speed-ups" title="Permalink to this headline">¶</a></h2>
+<p>Lets go to some more advanced usage examples: Integrating a 100-dimensional gaussian.
+For that, we have to make a few modifications to enhance the
+<strong>computational speed</strong>. Enhancing the <strong>algorithmic speed</strong> (number of likelihood evaluations
+needed per iterations) is discussed in the next section.</p>
 <p>Implementing a gaussian likelihood can be done in a few ways.</p>
 <p>Very slow:</p>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">loglike</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
@@ -361,9 +423,8 @@ This reduces function calls.</p>
 </div>
 <p>To use this function, pass <code class="docutils literal notranslate"><span class="pre">vectorized=True</span></code> to ReactiveNestedSampler.
 Lets see how this looks like in a full program.</p>
-</div>
 <div class="section" id="vectorized-full-program">
-<h2>Vectorized full program<a class="headerlink" href="#vectorized-full-program" title="Permalink to this headline">¶</a></h2>
+<h3>Vectorized full program<a class="headerlink" href="#vectorized-full-program" title="Permalink to this headline">¶</a></h3>
 <p>Below is a Python program that implements a gaussian likelihood,
 and allows the user to specify the problem dimension and a few sampler parameters.</p>
 <div class="literal-block-wrapper docutils container" id="gauss-py">
@@ -434,6 +495,7 @@ and allows the user to specify the problem dimension and a few sampler parameter
 </div>
 <p>Note that our likelihood is vectorized, and we pass <code class="docutils literal notranslate"><span class="pre">vectorized=True</span></code>.</p>
 <p>A similar program is included in the git repository as <em>examples/testasymgauss.py</em>.</p>
+</div>
 </div>
 <div class="section" id="high-dimensional-models">
 <h2>High-dimensional models<a class="headerlink" href="#high-dimensional-models" title="Permalink to this headline">¶</a></h2>
@@ -561,34 +623,47 @@ distant proposals, and the clustering is better justified (based on MLFriends).<
 </div>
 <p>This result is close to the analytic value (0) on infinite bounds
 (the prior boundaries slightly increase the result).</p>
-<p>We can test whether the slice sampler is good enough by halving
-<code class="docutils literal notranslate"><span class="pre">slice_steps</span></code>. The logZ estimate should ideally be consistent.</p>
+<p>We can test whether the slice sampler is good enough by doubling
+the number of steps, until the ln(Z) estimate is stable.</p>
 </div>
-<div class="section" id="using-multiple-cores">
-<h2>Using multiple cores<a class="headerlink" href="#using-multiple-cores" title="Permalink to this headline">¶</a></h2>
-<p>Depending on your numpy installation, the above may already use multiple CPUs.
+<div class="section" id="parallelisation">
+<h2>Parallelisation<a class="headerlink" href="#parallelisation" title="Permalink to this headline">¶</a></h2>
+<p>Your likelihood function may already be using multiple cores,
+whether your intended to or not, due to underlying libraries (e.g., numpy).
 You can control this with the OMP_NUM_THREADS environment variable:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># avoid automatic parallelisation</span>
 <span class="nb">export</span> <span class="nv">OMP_NUM_THREADS</span><span class="o">=</span><span class="m">1</span>
 </pre></div>
 </div>
+<p>If the likelihood is not parallelised, ultranest can parallelize
+its execution to multiple cores.</p>
+<div class="section" id="using-multiple-cores">
+<h3>Using multiple cores<a class="headerlink" href="#using-multiple-cores" title="Permalink to this headline">¶</a></h3>
 <p>To use multiple processors and cores, scaling UltraNest all the way to
 large computing clusters, you can parallelise the program with MPI:</p>
-<p>No code changes are required. You need to install MPI (for example, OpenMPI) and mpi4py (pip install mpi4py).
-Then run:</p>
+<ul class="simple">
+<li><p>No code changes are required.</p></li>
+<li><p>You need to install MPI (for example, OpenMPI) and mpi4py (pip install mpi4py).</p></li>
+<li><p>Then run your script with mpiexec:</p></li>
+</ul>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mpiexec -np <span class="m">4</span> python3 gauss.py --x_dim<span class="o">=</span><span class="m">100</span> --num_live_points<span class="o">=</span><span class="m">400</span> --slice  --slice_steps<span class="o">=</span><span class="m">100</span>
 </pre></div>
+</div>
+<p>This launches four scripts which are started in parallel, and ultranest
+coordinates them.</p>
+<p>Use as many scripts as processors. If memory is a concern, look into shared memory solutions.</p>
 </div>
 </div>
 <div class="section" id="more-features">
 <h2>More features<a class="headerlink" href="#more-features" title="Permalink to this headline">¶</a></h2>
-<p>To find more features such as …</p>
+<p>To find more features and details such as …</p>
 <ul class="simple">
 <li><p>Circular/wrapped parameter spaces</p></li>
 <li><p>Model comparison of empirical and physical models</p></li>
 <li><p>Quantifying posterior uncertainty</p></li>
 <li><p>Visualisation and interoperation with getdist, pandas, matplotlib, …</p></li>
 <li><p>Using in a Jupyter notebook</p></li>
+<li><p>all the step samplers and slice samplers available</p></li>
 </ul>
 <p>… see the tutorials!</p>
 </div>

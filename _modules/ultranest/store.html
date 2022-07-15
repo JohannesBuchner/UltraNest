@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ultranest.store &mdash; UltraNest 3.4.4 documentation</title>
+  <title>ultranest.store &mdash; UltraNest 3.4.5 documentation</title>
   
 
   
@@ -70,7 +70,7 @@
             
             
               <div class="version">
-                3.4.4
+                3.4.5
               </div>
             
           
@@ -102,7 +102,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../method.html">Method</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../using-ultranest.html">Basic usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../priors.html">Specifying priors</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../performance.html">Tour of the features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../performance.html">Features</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../modules.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../issues.html">Frequently Asked Questions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
@@ -375,7 +375,7 @@
         <span class="sd">&quot;&quot;&quot;Load from data file.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="s1">&#39;points&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">fileobj</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">fileobj</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span>
-                <span class="s1">&#39;points&#39;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float</span><span class="p">,</span>
+                <span class="s1">&#39;points&#39;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
                 <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ncols</span><span class="p">),</span> <span class="n">maxshape</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ncols</span><span class="p">))</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">nrows</span><span class="p">,</span> <span class="n">ncols</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fileobj</span><span class="p">[</span><span class="s1">&#39;points&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span>

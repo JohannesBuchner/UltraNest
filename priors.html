@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Specifying priors &mdash; UltraNest 3.4.4 documentation</title>
+  <title>Specifying priors &mdash; UltraNest 3.4.5 documentation</title>
   
 
   
@@ -44,7 +44,7 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Tour of the features" href="performance.html" />
+    <link rel="next" title="Features" href="performance.html" />
     <link rel="prev" title="Basic usage" href="using-ultranest.html" /> 
 </head>
 
@@ -72,7 +72,7 @@
             
             
               <div class="version">
-                3.4.4
+                3.4.5
               </div>
             
           
@@ -106,14 +106,21 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Specifying priors</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#Cumulative-prior-distributions">Cumulative prior distributions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#Transforming-from-the-unit-interval">Transforming from the unit interval</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#The-unit-hypercube">The unit hypercube</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#Dependent-priors">Dependent priors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id1">Specifying priors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Dependent-priors">Dependent priors</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Conditional-prior-approach">Conditional prior approach</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Complicated-constraints-and-rejection-in-the-likelihood">Complicated constraints and rejection in the likelihood</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#Hard-vs-soft-priors">Hard vs soft priors</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#Non-analytic-priors">Non-analytic priors</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#Fraction-parameters">Fraction parameters</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#Further-topics">Further topics</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="performance.html">Tour of the features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="performance.html">Features</a></li>
 <li class="toctree-l1"><a class="reference internal" href="modules.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="issues.html">Frequently Asked Questions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
@@ -511,7 +518,7 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-&lt;matplotlib.legend.Legend at 0x7f7388613df0&gt;
+&lt;matplotlib.legend.Legend at 0x7f909722de80&gt;
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -524,7 +531,7 @@ div.rendered_html tbody tr:hover {
 <div class="section" id="Transforming-from-the-unit-interval">
 <h2>Transforming from the unit interval<a class="headerlink" href="#Transforming-from-the-unit-interval" title="Permalink to this headline">¶</a></h2>
 <p>We invert the cumulative probability distribution mapping quantiles (0…1) to the corresponding model parameter value.</p>
-<p>Lets start with the uniform distribution.</p>
+<p>Lets start with the uniform distribution:</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
@@ -572,7 +579,7 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-&lt;matplotlib.legend.Legend at 0x7f7386471d00&gt;
+&lt;matplotlib.legend.Legend at 0x7f909508cd90&gt;
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
@@ -583,8 +590,8 @@ div.rendered_html tbody tr:hover {
 </div>
 <p>Beautiful! We obtained nice samples that follow the prior distribution.</p>
 </div>
-<div class="section" id="The-unit-hypercube">
-<h2>The unit hypercube<a class="headerlink" href="#The-unit-hypercube" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h2>Specifying priors<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
 <p>Lets specify a prior for UltraNest with multiple parameters:</p>
 <ul class="simple">
 <li><p>a uniform distribution from 3.5 to 4.7</p></li>
@@ -615,6 +622,7 @@ div.rendered_html tbody tr:hover {
 <ul class="simple">
 <li><p><a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/stats.html#continuous-distributions">scipy.stats</a> provides many 1-d distributions that can be used like this.</p></li>
 <li><p>avoid building scipy.stats objects in the transform, because this is slow – build them outside first, then only invoke the .ppf method in the transform.</p></li>
+<li><p>If you are looking for a distribution that is not implemented yet, try to follow a random number generator recipe (see the Dirichlet prior for an example, below).</p></li>
 </ul>
 </div>
 <div class="section" id="Dependent-priors">
@@ -718,7 +726,10 @@ Text(0, 0.5, &#39;Parameter 2&#39;)
 <div class="output_area docutils container">
 <img alt="_images/priors_20_1.svg" src="_images/priors_20_1.svg" /></div>
 </div>
-<p>A similar effect can be achieved by defining transforms in sequence (this is a different prior though):</p>
+<div class="section" id="Conditional-prior-approach">
+<h3>Conditional prior approach<a class="headerlink" href="#Conditional-prior-approach" title="Permalink to this headline">¶</a></h3>
+<p>Another approach is to sample the second parameter conditional on the first parameter, already transformed. This is akin to Gibbs sampling.</p>
+<p>For an example, we have a first parameter with a Gaussian prior, and a second parameter, with a Gaussian prior centred around the first parameter’s value. Therefore, its value shifts with the first parameter:</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
@@ -728,22 +739,72 @@ Text(0, 0.5, &#39;Parameter 2&#39;)
 <span class="n">gauss2</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">transform_correlated</span><span class="p">(</span><span class="n">quantiles</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">transform_correlated_gibbs</span><span class="p">(</span><span class="n">quantiles</span><span class="p">):</span>
     <span class="n">parameters</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">quantiles</span><span class="p">)</span>
     <span class="c1"># first parameter is independent</span>
-    <span class="n">parameters</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">gauss1</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">quantiles</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">parameters</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">gauss1</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">quantiles</span><span class="p">[:,</span><span class="mi">0</span><span class="p">])</span>
     <span class="c1"># second parameter depends on first parameter, here with a shift</span>
-    <span class="n">parameters</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">gauss2</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">quantiles</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">parameters</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">gauss2</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">quantiles</span><span class="p">[:,</span><span class="mi">1</span><span class="p">])</span>
     <span class="k">return</span> <span class="n">parameters</span>
 </pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">samples</span> <span class="o">=</span> <span class="n">transform_correlated_gibbs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">2</span><span class="p">)))</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Gibbs prior&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">samples</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">samples</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">mew</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">mfc</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">mec</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Parameter 1&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Parameter 2&#39;</span><span class="p">);</span>
+
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Text(0, 0.5, &#39;Parameter 2&#39;)
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/priors_23_1.svg" src="_images/priors_23_1.svg" /></div>
+</div>
+<p>As you can see, we also achieve a correlated prior. However, this is different from the previous example.</p>
+</div>
+<div class="section" id="Complicated-constraints-and-rejection-in-the-likelihood">
+<h3>Complicated constraints and rejection in the likelihood<a class="headerlink" href="#Complicated-constraints-and-rejection-in-the-likelihood" title="Permalink to this headline">¶</a></h3>
+<p>In some situations, you may have more constraints than parameters, such as:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">parameter_1_lower</span> <span class="o">&lt;</span> <span class="n">parameter_1</span> <span class="o">&lt;</span> <span class="n">parameter_1_upper</span>
+<span class="n">parameter_2_lower</span> <span class="o">&lt;</span> <span class="n">parameter_2</span> <span class="o">&lt;</span> <span class="n">parameter_2_upper</span>
+<span class="n">parameter_1</span> <span class="o">+</span> <span class="n">parameter_2</span> <span class="o">&lt;</span> <span class="n">constant</span>
+</pre></div>
+</div>
+<p>In that case, move either the first two or the last constraint into the likelihood function, whichever option is more relaxed (i.e., causes fewer rejections). This is achieved by returning a very low likelihood (e.g., -1e100), when the constraint is not met.</p>
+<p>It is beneficial for the sampler if you can add a slight slope towards the good region of the constraint. e.g., -1e100 * (1 + parameter_1 + parameter_2) or similar. This is because if you use the exact same constant, this is a likelihood plateau, and the live points have to be reduced until the plateau is traversed.</p>
+<div class="section" id="Hard-vs-soft-priors">
+<h4>Hard vs soft priors<a class="headerlink" href="#Hard-vs-soft-priors" title="Permalink to this headline">¶</a></h4>
+<p>Priors with hard edges (such as uniform/log-uniform priors) are pretty popular. When the data prefer a parameter at the edge or beyond the edge, the result is often unusable, and the fit has to be rerun with wider priors.</p>
+<p>Softer priors allow with low but non-zero prior probability the data to override the prior, and thus a single run can produce insights. A simple example are (log-)normal distributions.</p>
+<p>On the other hand, some models may have a range of validity for phyiscal or computational reasons, in which case hard priors are appropriate.</p>
 </div>
 </div>
 </div>
 <div class="section" id="Non-analytic-priors">
 <h2>Non-analytic priors<a class="headerlink" href="#Non-analytic-priors" title="Permalink to this headline">¶</a></h2>
-<p>Sometimes, the prior may not be easily invertable. For example, when it is given as posterior samples from a previous analysis. I</p>
+<p>Sometimes, the prior may not be easily invertable. For example, when it is given as posterior samples from a previous analysis. Lets say as a prior, we want a posterior from another experiment that looks like this:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -756,59 +817,59 @@ Text(0, 0.5, &#39;Parameter 2&#39;)
 </div>
 </div>
 <div class="nboutput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-(array([ 19.,  26.,  26.,  33.,  24.,  31.,  18.,  23.,  19.,  21.,  26.,
-         27.,  32.,  20.,  29.,  20.,  25.,  30.,  20.,  16.,  28.,  27.,
-         23.,  33.,  19.,  23.,  24.,  33.,  24.,  25.,  31.,  21.,  27.,
-         24.,  28.,  18.,  28.,  22.,  29.,  23.,  20.,  22.,  21.,  16.,
-         36.,  19.,  14.,  23.,  17.,  23.,  17.,  25.,  28.,  21.,  21.,
-         24.,  27.,  16.,  29.,  21.,  29.,  30.,  27.,  26.,  22.,  27.,
-         32.,  32.,  32.,  39.,  50.,  52.,  67.,  89.,  95., 105., 113.,
-        126., 159., 189., 184., 154., 134., 134., 124., 116.,  83.,  78.,
-         61.,  52.,  31.,  30.,  18.,  12.,   4.,   3.,   2.,   1.,   1.,
-          2.]),
- array([9.23266595e-04, 3.77949532e-02, 7.46666398e-02, 1.11538326e-01,
-        1.48410013e-01, 1.85281700e-01, 2.22153386e-01, 2.59025073e-01,
-        2.95896760e-01, 3.32768446e-01, 3.69640133e-01, 4.06511819e-01,
-        4.43383506e-01, 4.80255193e-01, 5.17126879e-01, 5.53998566e-01,
-        5.90870253e-01, 6.27741939e-01, 6.64613626e-01, 7.01485312e-01,
-        7.38356999e-01, 7.75228686e-01, 8.12100372e-01, 8.48972059e-01,
-        8.85843746e-01, 9.22715432e-01, 9.59587119e-01, 9.96458805e-01,
-        1.03333049e+00, 1.07020218e+00, 1.10707387e+00, 1.14394555e+00,
-        1.18081724e+00, 1.21768893e+00, 1.25456061e+00, 1.29143230e+00,
-        1.32830399e+00, 1.36517567e+00, 1.40204736e+00, 1.43891904e+00,
-        1.47579073e+00, 1.51266242e+00, 1.54953410e+00, 1.58640579e+00,
-        1.62327748e+00, 1.66014916e+00, 1.69702085e+00, 1.73389254e+00,
-        1.77076422e+00, 1.80763591e+00, 1.84450760e+00, 1.88137928e+00,
-        1.91825097e+00, 1.95512266e+00, 1.99199434e+00, 2.02886603e+00,
-        2.06573772e+00, 2.10260940e+00, 2.13948109e+00, 2.17635278e+00,
-        2.21322446e+00, 2.25009615e+00, 2.28696784e+00, 2.32383952e+00,
-        2.36071121e+00, 2.39758290e+00, 2.43445458e+00, 2.47132627e+00,
-        2.50819796e+00, 2.54506964e+00, 2.58194133e+00, 2.61881302e+00,
-        2.65568470e+00, 2.69255639e+00, 2.72942808e+00, 2.76629976e+00,
-        2.80317145e+00, 2.84004314e+00, 2.87691482e+00, 2.91378651e+00,
-        2.95065820e+00, 2.98752988e+00, 3.02440157e+00, 3.06127326e+00,
-        3.09814494e+00, 3.13501663e+00, 3.17188832e+00, 3.20876000e+00,
-        3.24563169e+00, 3.28250338e+00, 3.31937506e+00, 3.35624675e+00,
-        3.39311844e+00, 3.42999012e+00, 3.46686181e+00, 3.50373350e+00,
-        3.54060518e+00, 3.57747687e+00, 3.61434856e+00, 3.65122024e+00,
-        3.68809193e+00]),
- [&lt;matplotlib.patches.Polygon at 0x7f738653d850&gt;])
+(array([ 20.,  24.,  22.,  21.,  19.,  14.,  33.,  17.,  28.,  15.,  30.,
+         29.,  30.,  18.,  27.,  21.,  21.,  25.,  31.,  24.,  28.,  23.,
+         26.,  24.,  28.,  17.,  27.,  25.,  29.,  27.,  21.,  21.,  33.,
+         29.,  23.,  33.,  20.,  28.,  28.,  33.,  20.,  15.,  22.,  23.,
+         22.,  29.,  22.,  25.,  27.,  30.,  25.,  41.,  23.,  21.,  24.,
+         28.,  26.,  27.,  20.,  31.,  34.,  28.,  21.,  25.,  25.,  13.,
+         30.,  29.,  46.,  38.,  37.,  42.,  54.,  78.,  85.,  93., 106.,
+        115., 137., 148., 184., 198., 156., 125., 118., 105., 110.,  75.,
+         59.,  52.,  54.,  27.,  27.,  12.,   9.,   5.,   3.,   2.,   1.,
+          1.]),
+ array([2.77464621e-03, 3.94762572e-02, 7.61778682e-02, 1.12879479e-01,
+        1.49581090e-01, 1.86282701e-01, 2.22984312e-01, 2.59685923e-01,
+        2.96387534e-01, 3.33089145e-01, 3.69790756e-01, 4.06492367e-01,
+        4.43193978e-01, 4.79895589e-01, 5.16597200e-01, 5.53298811e-01,
+        5.90000422e-01, 6.26702033e-01, 6.63403644e-01, 7.00105255e-01,
+        7.36806866e-01, 7.73508477e-01, 8.10210088e-01, 8.46911699e-01,
+        8.83613310e-01, 9.20314921e-01, 9.57016532e-01, 9.93718143e-01,
+        1.03041975e+00, 1.06712137e+00, 1.10382298e+00, 1.14052459e+00,
+        1.17722620e+00, 1.21392781e+00, 1.25062942e+00, 1.28733103e+00,
+        1.32403264e+00, 1.36073425e+00, 1.39743586e+00, 1.43413748e+00,
+        1.47083909e+00, 1.50754070e+00, 1.54424231e+00, 1.58094392e+00,
+        1.61764553e+00, 1.65434714e+00, 1.69104875e+00, 1.72775036e+00,
+        1.76445197e+00, 1.80115359e+00, 1.83785520e+00, 1.87455681e+00,
+        1.91125842e+00, 1.94796003e+00, 1.98466164e+00, 2.02136325e+00,
+        2.05806486e+00, 2.09476647e+00, 2.13146808e+00, 2.16816970e+00,
+        2.20487131e+00, 2.24157292e+00, 2.27827453e+00, 2.31497614e+00,
+        2.35167775e+00, 2.38837936e+00, 2.42508097e+00, 2.46178258e+00,
+        2.49848419e+00, 2.53518581e+00, 2.57188742e+00, 2.60858903e+00,
+        2.64529064e+00, 2.68199225e+00, 2.71869386e+00, 2.75539547e+00,
+        2.79209708e+00, 2.82879869e+00, 2.86550030e+00, 2.90220191e+00,
+        2.93890353e+00, 2.97560514e+00, 3.01230675e+00, 3.04900836e+00,
+        3.08570997e+00, 3.12241158e+00, 3.15911319e+00, 3.19581480e+00,
+        3.23251641e+00, 3.26921802e+00, 3.30591964e+00, 3.34262125e+00,
+        3.37932286e+00, 3.41602447e+00, 3.45272608e+00, 3.48942769e+00,
+        3.52612930e+00, 3.56283091e+00, 3.59953252e+00, 3.63623413e+00,
+        3.67293575e+00]),
+ [&lt;matplotlib.patches.Polygon at 0x7f9097227e50&gt;])
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/priors_24_1.svg" src="_images/priors_24_1.svg" /></div>
+<img alt="_images/priors_29_1.svg" src="_images/priors_29_1.svg" /></div>
 </div>
-<p>In this case, you can compute the cumulative distribution numerically and invert it:</p>
+<p>In this case, we can compute the cumulative distribution numerically and invert it. Lets try implementing this and sampling from it:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -828,60 +889,60 @@ Text(0, 0.5, &#39;Parameter 2&#39;)
 </div>
 </div>
 <div class="nboutput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-(array([0.33507603, 0.08376901, 0.22338402, 0.11169201, 0.19546102,
-        0.22338402, 0.08376901, 0.11169201, 0.13961501, 0.13961501,
-        0.16753802, 0.25130703, 0.11169201, 0.16753802, 0.08376901,
-        0.11169201, 0.13961501, 0.19546102, 0.08376901, 0.13961501,
-        0.19546102, 0.11169201, 0.11169201, 0.11169201, 0.08376901,
-        0.22338402, 0.25130703, 0.19546102, 0.25130703, 0.08376901,
-        0.19546102, 0.11169201, 0.25130703, 0.16753802, 0.13961501,
-        0.13961501, 0.25130703, 0.19546102, 0.33507603, 0.08376901,
-        0.19546102, 0.11169201, 0.08376901, 0.13961501, 0.25130703,
-        0.22338402, 0.16753802, 0.19546102, 0.05584601, 0.05584601,
-        0.13961501, 0.22338402, 0.19546102, 0.13961501, 0.13961501,
-        0.25130703, 0.05584601, 0.05584601, 0.11169201, 0.19546102,
-        0.22338402, 0.25130703, 0.19546102, 0.08376901, 0.30715303,
-        0.        , 0.08376901, 0.19546102, 0.13961501, 0.25130703,
-        0.11169201, 0.41884504, 0.41884504, 0.67015207, 0.47469105,
-        0.61430606, 0.47469105, 0.92145909, 0.9773051 , 0.89353609,
-        1.45199615, 1.11692011, 1.34030413, 1.34030413, 0.69807507,
-        0.83769008, 0.89353609, 0.50261405, 0.47469105, 0.33507603,
-        0.44676804, 0.33507603, 0.19546102, 0.25130703, 0.19546102,
-        0.11169201, 0.05584601, 0.        , 0.027923  , 0.027923  ]),
- array([0.01935911, 0.05517188, 0.09098464, 0.12679741, 0.16261018,
-        0.19842295, 0.23423571, 0.27004848, 0.30586125, 0.34167402,
-        0.37748678, 0.41329955, 0.44911232, 0.48492508, 0.52073785,
-        0.55655062, 0.59236339, 0.62817615, 0.66398892, 0.69980169,
-        0.73561445, 0.77142722, 0.80723999, 0.84305276, 0.87886552,
-        0.91467829, 0.95049106, 0.98630383, 1.02211659, 1.05792936,
-        1.09374213, 1.12955489, 1.16536766, 1.20118043, 1.2369932 ,
-        1.27280596, 1.30861873, 1.3444315 , 1.38024427, 1.41605703,
-        1.4518698 , 1.48768257, 1.52349533, 1.5593081 , 1.59512087,
-        1.63093364, 1.6667464 , 1.70255917, 1.73837194, 1.7741847 ,
-        1.80999747, 1.84581024, 1.88162301, 1.91743577, 1.95324854,
-        1.98906131, 2.02487408, 2.06068684, 2.09649961, 2.13231238,
-        2.16812514, 2.20393791, 2.23975068, 2.27556345, 2.31137621,
-        2.34718898, 2.38300175, 2.41881452, 2.45462728, 2.49044005,
-        2.52625282, 2.56206558, 2.59787835, 2.63369112, 2.66950389,
-        2.70531665, 2.74112942, 2.77694219, 2.81275495, 2.84856772,
-        2.88438049, 2.92019326, 2.95600602, 2.99181879, 3.02763156,
-        3.06344433, 3.09925709, 3.13506986, 3.17088263, 3.20669539,
-        3.24250816, 3.27832093, 3.3141337 , 3.34994646, 3.38575923,
-        3.421572  , 3.45738477, 3.49319753, 3.5290103 , 3.56482307,
-        3.60063583]),
- [&lt;matplotlib.patches.Polygon at 0x7f73848fda00&gt;])
+(array([0.19738733, 0.16918914, 0.05639638, 0.14099095, 0.19738733,
+        0.33837828, 0.08459457, 0.16918914, 0.08459457, 0.19738733,
+        0.11279276, 0.33837828, 0.05639638, 0.25378371, 0.02819819,
+        0.08459457, 0.16918914, 0.45117104, 0.25378371, 0.14099095,
+        0.22558552, 0.16918914, 0.11279276, 0.05639638, 0.08459457,
+        0.05639638, 0.22558552, 0.16918914, 0.11279276, 0.11279276,
+        0.05639638, 0.08459457, 0.11279276, 0.16918914, 0.25378371,
+        0.14099095, 0.25378371, 0.2819819 , 0.2819819 , 0.25378371,
+        0.19738733, 0.08459457, 0.08459457, 0.14099095, 0.14099095,
+        0.22558552, 0.05639638, 0.14099095, 0.14099095, 0.16918914,
+        0.31018009, 0.16918914, 0.33837828, 0.08459457, 0.14099095,
+        0.14099095, 0.19738733, 0.14099095, 0.16918914, 0.22558552,
+        0.14099095, 0.31018009, 0.42297285, 0.14099095, 0.11279276,
+        0.11279276, 0.05639638, 0.16918914, 0.25378371, 0.11279276,
+        0.36657647, 0.33837828, 0.19738733, 0.39477466, 0.47936923,
+        0.33837828, 0.47936923, 0.59216199, 0.81774751, 0.90234208,
+        1.1279276 , 0.64855837, 1.49450407, 1.21252217, 1.07153122,
+        1.24072036, 0.73315294, 0.76135113, 0.59216199, 0.62036018,
+        0.62036018, 0.36657647, 0.36657647, 0.19738733, 0.19738733,
+        0.08459457, 0.05639638, 0.        , 0.        , 0.02819819]),
+ array([0.02112545, 0.05658872, 0.09205199, 0.12751526, 0.16297853,
+        0.1984418 , 0.23390507, 0.26936834, 0.3048316 , 0.34029487,
+        0.37575814, 0.41122141, 0.44668468, 0.48214795, 0.51761122,
+        0.55307449, 0.58853776, 0.62400103, 0.6594643 , 0.69492757,
+        0.73039083, 0.7658541 , 0.80131737, 0.83678064, 0.87224391,
+        0.90770718, 0.94317045, 0.97863372, 1.01409699, 1.04956026,
+        1.08502353, 1.12048679, 1.15595006, 1.19141333, 1.2268766 ,
+        1.26233987, 1.29780314, 1.33326641, 1.36872968, 1.40419295,
+        1.43965622, 1.47511949, 1.51058275, 1.54604602, 1.58150929,
+        1.61697256, 1.65243583, 1.6878991 , 1.72336237, 1.75882564,
+        1.79428891, 1.82975218, 1.86521545, 1.90067872, 1.93614198,
+        1.97160525, 2.00706852, 2.04253179, 2.07799506, 2.11345833,
+        2.1489216 , 2.18438487, 2.21984814, 2.25531141, 2.29077468,
+        2.32623794, 2.36170121, 2.39716448, 2.43262775, 2.46809102,
+        2.50355429, 2.53901756, 2.57448083, 2.6099441 , 2.64540737,
+        2.68087064, 2.7163339 , 2.75179717, 2.78726044, 2.82272371,
+        2.85818698, 2.89365025, 2.92911352, 2.96457679, 3.00004006,
+        3.03550333, 3.0709666 , 3.10642987, 3.14189313, 3.1773564 ,
+        3.21281967, 3.24828294, 3.28374621, 3.31920948, 3.35467275,
+        3.39013602, 3.42559929, 3.46106256, 3.49652583, 3.53198909,
+        3.56745236]),
+ [&lt;matplotlib.patches.Polygon at 0x7f90944726a0&gt;])
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/priors_26_1.svg" src="_images/priors_26_1.svg" /></div>
+<img alt="_images/priors_31_1.svg" src="_images/priors_31_1.svg" /></div>
 </div>
 </div>
 <div class="section" id="Fraction-parameters">
@@ -890,7 +951,7 @@ Text(0, 0.5, &#39;Parameter 2&#39;)
 <p>One option is to use absolute numbers. For example, instead of specifying the total mass and mass fractions for each chemical element, parameterise the mass of each element. This avoids the &lt;=1 constraint, and may be easier to infer. A drawback is that the prior ranges for each element mass may be wide.</p>
 <p>The other option is to use the right distribution exactly made for this, which samples unbiased under the constraint (sum&lt;=1): The <a class="reference external" href="https://en.wikipedia.org/wiki/Dirichlet_distribution">Dirichlet distribution</a>. Here we assume that the prior on the individual fraction is flat (flat Dirichlet distribution, <span class="math notranslate nohighlight">\(\alpha=1\)</span>).</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -904,9 +965,9 @@ Text(0, 0.5, &#39;Parameter 2&#39;)
 </pre></div>
 </div>
 </div>
-<p>Lets have a look at the samples:</p>
+<p>Lets have a look at the samples, and whether the three fractions look uniform and sum up to 1:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
@@ -921,19 +982,19 @@ Text(0, 0.5, &#39;Parameter 2&#39;)
 </div>
 </div>
 <div class="nboutput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-[&lt;mpl_toolkits.mplot3d.art3d.Line3D at 0x7f738484b190&gt;]
+[&lt;mpl_toolkits.mplot3d.art3d.Line3D at 0x7f9094457d30&gt;]
 </pre></div></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/priors_31_1.svg" src="_images/priors_31_1.svg" /></div>
+<img alt="_images/priors_36_1.svg" src="_images/priors_36_1.svg" /></div>
 </div>
 <p>The samples nicely lie on the plane where the sum is 1.</p>
 </div>
@@ -957,7 +1018,7 @@ Text(0, 0.5, &#39;Parameter 2&#39;)
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="performance.html" class="btn btn-neutral float-right" title="Tour of the features" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="performance.html" class="btn btn-neutral float-right" title="Features" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="using-ultranest.html" class="btn btn-neutral float-left" title="Basic usage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

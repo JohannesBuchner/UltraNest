@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>ultranest.flatnuts &mdash; UltraNest 3.4.4 documentation</title>
+  <title>ultranest.flatnuts &mdash; UltraNest 3.4.5 documentation</title>
   
 
   
@@ -70,7 +70,7 @@
             
             
               <div class="version">
-                3.4.4
+                3.4.5
               </div>
             
           
@@ -102,7 +102,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../method.html">Method</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../using-ultranest.html">Basic usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../priors.html">Specifying priors</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../performance.html">Tour of the features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../performance.html">Features</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../modules.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../issues.html">Frequently Asked Questions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
@@ -182,10 +182,11 @@
             
   <h1>Source code for ultranest.flatnuts</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">FLATNUTS</span>
-<span class="sd">=========</span>
+<span class="sd">FLATNUTS is a implementation of No-U-turn sampler </span>
+<span class="sd">for nested sampling assuming a flat prior space (hyper-cube u-space).</span>
 
-<span class="sd">Experimental.</span>
+<span class="sd">This is highly experimental. It is similar to NoGUTS and suffers from </span>
+<span class="sd">the same stability problems.</span>
 
 <span class="sd">Directional sampling within regions.</span>
 
@@ -950,7 +951,6 @@
         <span class="c1"># additional criterion: start and end velocities must point in opposite directions</span>
         <span class="n">stop</span> <span class="o">=</span> <span class="n">stopa</span> <span class="ow">or</span> <span class="n">stopb</span> <span class="ow">or</span> <span class="n">angle</span><span class="p">(</span><span class="n">xright</span><span class="o">-</span><span class="n">xleft</span><span class="p">,</span> <span class="n">vleft</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">angle</span><span class="p">(</span><span class="n">xright</span><span class="o">-</span><span class="n">xleft</span><span class="p">,</span> <span class="n">vright</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">angle</span><span class="p">(</span><span class="n">vleft</span><span class="p">,</span> <span class="n">vright</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">ileft</span><span class="p">,</span> <span class="n">xleft</span><span class="p">,</span> <span class="n">vleft</span><span class="p">),</span> <span class="p">(</span><span class="n">iright</span><span class="p">,</span> <span class="n">xright</span><span class="p">,</span> <span class="n">vright</span><span class="p">),</span> <span class="p">(</span><span class="n">ileft</span><span class="p">,</span><span class="n">iright</span><span class="p">),</span> <span class="n">stop</span></div></div>
-
 </pre></div>
 
            </div>
