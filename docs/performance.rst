@@ -123,11 +123,15 @@ Output files
 If a `log_dir` directory was specified, you will find these files:
 
 * debug.log: A debug log of the run
+
   * Please attach it or the stdout output when you open a `Github issue <https://github.com/JohannesBuchner/UltraNest/issues>`_.
   * This contains the efficiency and progress of the sampling.
+
 * info folder: machine-readable summaries of the posterior
+
   * **post_summary.csv**: for each parameter: mean, std, median, upper and lower 1 sigma error. Can be read with `pandas.read_csv <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html>`_.
   * **results.json**: Contains detailed output of the nested sampling run. Can be read with `json.load <https://docs.python.org/3/library/json.html>`_.
+
     * paramnames: parameter names
     * ncall, niter: Number of likelihood calls, nested sampling iterations
     * maximum_likelihood: highest loglikelihood point found so far
@@ -136,22 +140,35 @@ If a `log_dir` directory was specified, you will find these files:
     * logz, logzerr: ln(Z) and its uncertainty. logzerr_tail is the remainder integral contribution, logzerr_bs is from bootstrapping
     * posterior: for each parameter: mean, std, median, upper and lower 1 sigma error, and `information gain <https://arxiv.org/abs/2205.00009>`_.
     * insertion_order_MWW_test: MWW test results (see Buchner+21 in prep)
+
 * chains: machine-readable chains
+
   * **equal_weighted_post.txt**: equally weighted posterior samples (similar to a Markov chain). Each column corresponds to one parameter.
+
     * You can make a corner plot from this.
+
   * weighted_post.txt: posterior samples with a weight attached. 
+
     * This is made by nested sampling directly, and the above is produced from this. However, carrying the weights around is cumbersome.
     * getdist compatible. columns are Weight, -loglikelihood, parameter value (d times). 
+
   * weighted_post_untransformed.txt: same as above, but in coordinates before the prior transformation.
   * run.txt: for each iteration, ln(z) and error, ln(volume), number of live points, log-likelihood threshold, posterior point weight (likelihood x volume) and insertion rank of newly sampled point.
+
 * plots: Visualisations (by plot functions)
+
   * corner.pdf: corner/pairs plot of the marginal and conditional parameter posteriors.
+
     * Useful for investigating degeneracies and which parameters were learned.
+
   * trace.pdf: diagnostic plot showing problem structure
+
     * Visualises how each parameter's range was reduced as the nested sampling proceeds.
     * Color indicates where the bulk of the posterior lies.
     * Useful to understand the structure of the inference problem, and which parameters are learned first.
+
   * run.pdf: diagnostic plot showing integration progress
+
     * Visualises how the number of live points, likelihood and posterior weight evolved through the nested sampling run.
     * Visualises the evidence integration and its uncertainty.
 

@@ -2418,6 +2418,7 @@ class ReactiveNestedSampler(object):
                                 region=self.region, transformLayer=self.transformLayer,
                                 region_fresh=region_fresh,
                             )
+                        if self.log:
                             self.pointstore.flush()
 
                     if nlive < cluster_num_live_points * nclusters and improvement_it < max_num_improvement_loops:
