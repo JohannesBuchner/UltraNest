@@ -328,15 +328,18 @@ and the parameter constraints:</p>
 <div class="section" id="output-files">
 <h2>Output files<a class="headerlink" href="#output-files" title="Permalink to this headline">¶</a></h2>
 <p>If a <cite>log_dir</cite> directory was specified, you will find these files:</p>
+<ul class="simple">
+<li><p>debug.log: A debug log of the run</p>
 <ul>
-<li><p>debug.log: A debug log of the run
-* Please attach it or the stdout output when you open a <a class="reference external" href="https://github.com/JohannesBuchner/UltraNest/issues">Github issue</a>.
-* This contains the efficiency and progress of the sampling.</p></li>
-<li><p>info folder: machine-readable summaries of the posterior
-* <strong>post_summary.csv</strong>: for each parameter: mean, std, median, upper and lower 1 sigma error. Can be read with <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html">pandas.read_csv</a>.
-* <strong>results.json</strong>: Contains detailed output of the nested sampling run. Can be read with <a class="reference external" href="https://docs.python.org/3/library/json.html">json.load</a>.</p>
-<blockquote>
-<div><ul class="simple">
+<li><p>Please attach it or the stdout output when you open a <a class="reference external" href="https://github.com/JohannesBuchner/UltraNest/issues">Github issue</a>.</p></li>
+<li><p>This contains the efficiency and progress of the sampling.</p></li>
+</ul>
+</li>
+<li><p>info folder: machine-readable summaries of the posterior</p>
+<ul>
+<li><p><strong>post_summary.csv</strong>: for each parameter: mean, std, median, upper and lower 1 sigma error. Can be read with <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html">pandas.read_csv</a>.</p></li>
+<li><p><strong>results.json</strong>: Contains detailed output of the nested sampling run. Can be read with <a class="reference external" href="https://docs.python.org/3/library/json.html">json.load</a>.</p>
+<ul>
 <li><p>paramnames: parameter names</p></li>
 <li><p>ncall, niter: Number of likelihood calls, nested sampling iterations</p></li>
 <li><p>maximum_likelihood: highest loglikelihood point found so far</p></li>
@@ -346,38 +349,46 @@ and the parameter constraints:</p>
 <li><p>posterior: for each parameter: mean, std, median, upper and lower 1 sigma error, and <a class="reference external" href="https://arxiv.org/abs/2205.00009">information gain</a>.</p></li>
 <li><p>insertion_order_MWW_test: MWW test results (see Buchner+21 in prep)</p></li>
 </ul>
-</div></blockquote>
 </li>
-<li><p>chains: machine-readable chains
-* <strong>equal_weighted_post.txt</strong>: equally weighted posterior samples (similar to a Markov chain). Each column corresponds to one parameter.</p>
-<blockquote>
-<div><ul class="simple">
+</ul>
+</li>
+<li><p>chains: machine-readable chains</p>
+<ul>
+<li><p><strong>equal_weighted_post.txt</strong>: equally weighted posterior samples (similar to a Markov chain). Each column corresponds to one parameter.</p>
+<ul>
 <li><p>You can make a corner plot from this.</p></li>
 </ul>
-</div></blockquote>
-<ul class="simple">
-<li><p>weighted_post.txt: posterior samples with a weight attached.
-* This is made by nested sampling directly, and the above is produced from this. However, carrying the weights around is cumbersome.
-* getdist compatible. columns are Weight, -loglikelihood, parameter value (d times).</p></li>
+</li>
+<li><p>weighted_post.txt: posterior samples with a weight attached.</p>
+<ul>
+<li><p>This is made by nested sampling directly, and the above is produced from this. However, carrying the weights around is cumbersome.</p></li>
+<li><p>getdist compatible. columns are Weight, -loglikelihood, parameter value (d times).</p></li>
+</ul>
+</li>
 <li><p>weighted_post_untransformed.txt: same as above, but in coordinates before the prior transformation.</p></li>
 <li><p>run.txt: for each iteration, ln(z) and error, ln(volume), number of live points, log-likelihood threshold, posterior point weight (likelihood x volume) and insertion rank of newly sampled point.</p></li>
 </ul>
 </li>
-<li><p>plots: Visualisations (by plot functions)
-* corner.pdf: corner/pairs plot of the marginal and conditional parameter posteriors.</p>
-<blockquote>
-<div><ul class="simple">
+<li><p>plots: Visualisations (by plot functions)</p>
+<ul>
+<li><p>corner.pdf: corner/pairs plot of the marginal and conditional parameter posteriors.</p>
+<ul>
 <li><p>Useful for investigating degeneracies and which parameters were learned.</p></li>
 </ul>
-</div></blockquote>
-<ul class="simple">
-<li><p>trace.pdf: diagnostic plot showing problem structure
-* Visualises how each parameter’s range was reduced as the nested sampling proceeds.
-* Color indicates where the bulk of the posterior lies.
-* Useful to understand the structure of the inference problem, and which parameters are learned first.</p></li>
-<li><p>run.pdf: diagnostic plot showing integration progress
-* Visualises how the number of live points, likelihood and posterior weight evolved through the nested sampling run.
-* Visualises the evidence integration and its uncertainty.</p></li>
+</li>
+<li><p>trace.pdf: diagnostic plot showing problem structure</p>
+<ul>
+<li><p>Visualises how each parameter’s range was reduced as the nested sampling proceeds.</p></li>
+<li><p>Color indicates where the bulk of the posterior lies.</p></li>
+<li><p>Useful to understand the structure of the inference problem, and which parameters are learned first.</p></li>
+</ul>
+</li>
+<li><p>run.pdf: diagnostic plot showing integration progress</p>
+<ul>
+<li><p>Visualises how the number of live points, likelihood and posterior weight evolved through the nested sampling run.</p></li>
+<li><p>Visualises the evidence integration and its uncertainty.</p></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
