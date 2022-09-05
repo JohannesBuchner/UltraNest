@@ -3,7 +3,12 @@ import numpy as np
 import scipy.stats
 from numpy import log10
 from ultranest import ReactiveNestedSampler
+from ultranest.utils import vectorize
+from ultranest.integrator import resume_from_hot_file
 from ultranest.hotstart import reuse_samples, get_extended_auxiliary_problem
+from ultranest.hotstart import compute_quantile_intervals, get_auxiliary_contbox_parameterization
+import os
+import tempfile
 
 rng_data = np.random.RandomState(42)
 Ndata = 100
@@ -22,6 +27,102 @@ def prior_transform(x):
 def log_likelihood(params):
     mean, sigma = params
     return scipy.stats.norm.logpdf(y, mean, sigma).sum()
+
+def extended_prior_transform(x):
+    z = np.empty(3)
+    z[0] = x[0] * 2000 - 1000
+    z[1] = 10**(x[1] * 4 - 2)
+    z[2] = 2 * np.sqrt(2 * np.log(2)) * z[1]
+    return z
+
+def extended_log_likelihood(params):
+    mean, sigma, fwhm = params
+    return scipy.stats.norm.logpdf(y, mean, sigma).sum()
+
+def test_contbox_hotstart():
+    rng_samples = np.random.RandomState(43)
+    N = 100000
+    samples = rng_samples.normal(size=(N,2))
+    samples[:,1] = rng_samples.uniform(size=N)
+    weights = (np.ones(N) / N).reshape((-1,1))
+    logl = weights * 0
+
+    steps = [0.1, 0.01]
+    ulos, uhis = compute_quantile_intervals(steps, samples, weights)
+    print("quantiles:", ulos)
+    print("quantiles:", uhis)
+    assert ulos.shape == (2+1, len(steps)), (uhis.shape, ulos.shape)
+    assert uhis.shape == ulos.shape, (uhis.shape, ulos.shape)
+    tol = dict(atol=1e-3, rtol=0.01)
+    for i in 1, 0:
+        for j, q in enumerate(steps):
+            expectation = np.quantile(samples[:,i], q)
+            actual = ulos[j,i]
+            print(i, j, q, expectation, actual)
+            assert np.isclose(expectation, actual, **tol), (i, j, q, expectation, actual)
+            expectation = np.quantile(samples[:,i], 1-q)
+            actual = uhis[j,i]
+            print(i, j, 1-q, expectation, actual)
+            assert np.isclose(expectation, actual, **tol), (i, j, 1-q, expectation, actual)
+
+    aux_param_names, aux_loglike, aux_transform, vectorized = get_auxiliary_contbox_parameterization(
+        parameters, loglike=log_likelihood, transform=prior_transform,
+        vectorized=False, upoints=samples, uweights=weights,
+    )
+    assert aux_param_names == parameters + ['aux_logweight'], (aux_param_names, parameters)
+    p = aux_transform(np.random.uniform(size=3))
+    assert p.shape == (len(aux_param_names),)
+    L = float(aux_loglike(p))
+    print(L)
+    del aux_param_names, aux_loglike, aux_transform
+    
+    aux_param_names, aux_vloglike, aux_vtransform, vectorized = get_auxiliary_contbox_parameterization(
+        parameters, loglike=vectorize(log_likelihood), transform=vectorize(prior_transform), 
+        vectorized=True, upoints=samples, uweights=weights,
+    )
+    print(aux_param_names, parameters)
+    assert aux_param_names == parameters + ['aux_logweight'], (aux_param_names, parameters)
+    p = aux_vtransform(np.random.uniform(size=(11, 3)))
+    assert p.shape == (11, len(aux_param_names)), p.shape
+    L = aux_vloglike(p)
+    assert L.shape == (11,), L.shape
+    print(L)
+    del aux_param_names, aux_vloglike, aux_vtransform
+    
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        tmpfilename = os.path.join(tmpdirname, 'weighted_posterior_samples.txt')
+        print(tmpfilename)
+        np.savetxt(
+            tmpfilename,
+            np.hstack((weights, logl, samples)),
+            header='weight logl mean scatter',
+            fmt='%f'
+        )
+        aux_param_names, aux_loglike, aux_transform, vectorized = resume_from_hot_file(
+            parameters,
+            tmpfilename,
+            extended_log_likelihood,
+            extended_prior_transform,
+            vectorized=False,
+        )
+        assert aux_param_names == parameters + ['aux_logweight'], (aux_param_names, parameters)
+        p = aux_transform(np.random.uniform(size=3))
+        assert p.shape == (len(aux_param_names)+1,)
+        L = float(aux_loglike(p))
+        print(L)
+        aux_param_names, aux_vloglike, aux_vtransform, vectorized = resume_from_hot_file(
+            parameters,
+            tmpfilename,
+            vectorize(extended_log_likelihood),
+            vectorize(extended_prior_transform),
+            vectorized=True,
+        )
+        assert aux_param_names == parameters + ['aux_logweight'], (aux_param_names, parameters)
+        p = aux_vtransform(np.random.uniform(size=(11, 3)))
+        assert p.shape == (11, len(aux_param_names)+1)
+        L = aux_vloglike(p)
+        assert L.shape == (11,)
+        print(L)
 
 def test_hotstart_SLOW():
     np.random.seed(2)
@@ -89,4 +190,5 @@ def test_hotstart_SLOW():
     assert 0.5 < (ref_results['posterior']['stdev'][1] / rec_results2['posterior']['stdev'][1]) < 1.5, (ref_results['posterior'], rec_results2['posterior'])
 
 if __name__ == '__main__':
-    test_hotstart()
+    test_hotstart_SLOW()
+    test_contbox_hotstart()

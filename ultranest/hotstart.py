@@ -242,6 +242,142 @@ def get_extended_auxiliary_independent_problem(loglike, transform, ctr, err, df=
     return aux_loglikelihood, aux_transform
 
 
+def compute_quantile_intervals(steps, upoints, uweights):
+    """Compute lower and upper axis quantiles.
+    q and 1-q quantiles along each axis of corresponding to steps
+    
+    Parameters
+    ------------
+    steps: array
+        list of quantiles q to compute.
+    upoints: function
+        samples
+    uweights: array
+        sample weights
+
+    Returns:
+    ---------
+    ulo: array
+        list of lower quantiles (at q)
+    uhi: array
+        list of upper quantiles (at 1-q)
+    """
+    ndim = upoints.shape[1]
+    nboxes = len(steps)
+    ulos = np.empty((nboxes+1,ndim))
+    uhis = np.empty((nboxes+1,ndim))
+    for j, pthresh in enumerate(steps):
+        for i, ui in enumerate(upoints.transpose()):
+            order = np.argsort(ui)
+            c = np.cumsum(uweights[order])
+            usel = ui[order][np.logical_and(c >= pthresh, c <= 1 - pthresh)]
+            ulos[j,i] = usel.min()
+            uhis[j,i] = usel.max()
+    ulos[-1] = 0
+    uhis[-1] = 1
+    return ulos, uhis
+
+
+def get_auxiliary_contbox_parameterization(
+    param_names, loglike, transform, upoints, uweights, vectorized=False,
+):
+    """Return a new loglike and transform based on an auxiliary distribution.
+
+    Given a likelihood and prior transform, and information about
+    the (expected) posterior peak, generates a auxiliary
+    likelihood and prior transform that is identical but
+    requires fewer nested sampling iterations.
+
+    This is achieved by deforming the prior space, and undoing that
+    transformation by correction weights in the likelihood.
+
+    The auxiliary distribution used for transformation/weighting is
+    factorized. Each axis considers the ECDF of the auxiliary samples,
+    and segments it into five quantile segments. Within each segment,
+    the parameter edges in u-space are linearly interpolated.
+
+    Usage::
+
+        aux_loglikelihood, aux_transform = get_auxiliary_contbox_parameterization(
+            loglike, transform, auxiliary_usamples)
+        aux_sampler = ReactiveNestedSampler(parameters, aux_loglikelihood, transform=aux_transform, derived_param_names=['logweight'])
+        aux_results = aux_sampler.run()
+        posterior_samples = aux_results['samples'][:,-1]
+
+    Parameters
+    ------------
+    loglike: function
+        original likelihood function
+    transform: function
+        original prior transform function
+    auxiliary_usamples: array
+        Posterior samples (in u-space).
+
+    Returns:
+    ---------
+    aux_loglike: function
+        auxiliary loglikelihood function.
+    aux_transform: function
+        auxiliary transform function.
+        Takes d u-space coordinates, and returns d + 1 p-space parameters.
+        The first d return coordinates are identical to what ``transform`` would return.
+        The final coordinate is the log of the correction weight.
+    """
+    steps = 10**-(1.0 * np.arange(1, 8, 2))
+    nsamples, ndim = upoints.shape
+    assert nsamples > 10
+    ulos, uhis = compute_quantile_intervals(steps, upoints, uweights)
+    nboxes = len(ulos)
+
+    uinterpspace = np.linspace(0, 1, nboxes)
+    
+    aux_param_names = param_names + ['aux_logweight']
+
+    def aux_transform(u):
+        ndim2, = u.shape
+        assert ndim2 == ndim + 1
+        umod = np.empty(ndim)
+        log_aux_volume_factors = 0
+        for i in range(ndim):
+            ulo_here = np.interp(u[-1], uinterpspace, ulos[:,i])
+            uhi_here = np.interp(u[-1], uinterpspace, uhis[:,i])
+            umod[i] = ulo_here + (uhi_here - ulo_here) * u[i]
+            log_aux_volume_factors += np.log(uhi_here - ulo_here)
+        return np.append(transform(umod), log_aux_volume_factors)
+
+    def aux_transform_vectorized(u):
+        nsamples, ndim2 = u.shape
+        assert ndim2 == ndim + 1
+        umod = np.empty((nsamples, ndim2 - 1))
+        log_aux_volume_factors = np.zeros((nsamples, 1))
+        for i in range(ndim):
+            ulo_here = np.interp(u[:,-1], uinterpspace, ulos[:,i])
+            uhi_here = np.interp(u[:,-1], uinterpspace, uhis[:,i])
+            umod[:,i] = ulo_here + (uhi_here - ulo_here) * u[:,i]
+            log_aux_volume_factors[:,0] += np.log(uhi_here - ulo_here)
+        return np.hstack((transform(umod), log_aux_volume_factors))
+
+    def aux_loglikelihood(x):
+        x_actual = x[:-1]
+        logl = loglike(x_actual)
+        aux_logweight = x[-1]
+        # downweight if we are in the auxiliary distribution
+        return logl + aux_logweight
+
+    def aux_loglikelihood_vectorized(x):
+        x_actual = x[:,:-1]
+        logl = loglike(x_actual)
+        aux_logweight = x[:,-1]
+        # downweight if we are in the auxiliary distribution
+        return logl + aux_logweight
+
+    print("vectorized:", vectorized)
+    if vectorized:
+        return aux_param_names, aux_loglikelihood_vectorized, aux_transform_vectorized, vectorized
+    else:
+        return aux_param_names, aux_loglikelihood, aux_transform, vectorized
+
+
 def reuse_samples(
     param_names, loglike, points, logl, logw=None,
     logz=0.0, logzerr=0.0, upoints=None,
