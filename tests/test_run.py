@@ -516,7 +516,7 @@ def test_run_hotstart_gauss_SLOW():
             print()
             print("====== Running Gauss problem [%d] =====" % (i+1))
             print()
-            center = [0, 0, stdev, 50 * stdev][i]
+            center = [0, 0, stdev, 1][i]
             print("center:", center, "folder:", folder)
             if i == 0:
                 sampler = ReactiveNestedSampler(paramnames,

@@ -377,7 +377,6 @@ def get_auxiliary_contbox_parameterization(
     nsamples, ndim = upoints.shape
     assert nsamples > 10
     ulos, uhis, uinterpspace = compute_quantile_intervals_refined(steps, upoints, uweights)
-    print("boxes:", ulos, uhis, uinterpspace)
     
     aux_param_names = param_names + ['aux_logweight']
 
@@ -419,7 +418,6 @@ def get_auxiliary_contbox_parameterization(
         # downweight if we are in the auxiliary distribution
         return logl + aux_logweight
 
-    print("vectorized:", vectorized)
     if vectorized:
         return aux_param_names, aux_loglikelihood_vectorized, aux_transform_vectorized, vectorized
     else:
