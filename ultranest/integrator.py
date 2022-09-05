@@ -916,8 +916,8 @@ class NestedSampler(object):
 
 
 def resume_from_hot_file(
-    param_names,
     usample_filename,
+    param_names,
     loglike,
     transform,
     vectorized=False,
@@ -943,20 +943,11 @@ def resume_from_hot_file(
 
     nsamples = len(upoints)
     if nsamples < min_num_samples:
-        warnings.warn('not hot-resuming, file "%s" has too few samples (%d)' % (usample_filename, nsamples))
-        return param_names, loglike, transform, vectorized
+        raise ValueError('file "%s" has too few samples (%d) to hot-resume' % (usample_filename, nsamples))
 
     # check that the parameter meanings have not changed
-    if old_param_names == ['weight', 'logl'] + param_names:
-        # resuming from a first run
-        pass
-    elif old_param_names == ['weight', 'logl'] + param_names + ['aux_logweight']:
-        # re-resuming from a hot-resumed run
-        # cut off aux_logweight
-        upoints = upoints[:,:-1]
-    else:
-        warnings.warn('not hot-resuming, file "%s" has parameters %s, expected %s.' % (usample_filename, old_param_names, param_names))
-        return param_names, loglike, transform, vectorized
+    if old_param_names != ['weight', 'logl'] + param_names:
+        raise ValueError('file "%s" has parameters %s, expected %s, cannot hot-resume.' % (usample_filename, old_param_names, param_names))
 
     return get_auxiliary_contbox_parameterization(
         param_names, loglike=loglike, transform=transform,
@@ -1063,25 +1054,6 @@ class ReactiveNestedSampler(object):
             is below this normalised Kendall tau distance.
             Values from 0 (highly conservative) to 1 (extremely negligent).
         """
-        assert resume in (True, 'overwrite', 'subfolder', 'resume', 'resume-similar', 'resume-hot'), \
-            "resume should be one of 'overwrite' 'subfolder', 'resume', 'resume-hot' or 'resume-similar'"
-        append_run_num = resume == 'subfolder'
-        resume_similar = resume == 'resume-similar'
-        resume_hot = resume == 'resume-hot'
-        resume = resume in ('resume-similar', 'resume-hot', 'resume', True)
-        
-        if resume_hot:
-            if log_dir is not None:
-                raise ValueError('resume-hot requires setting log_dir to find <log_dir>/chain/weighted_post_untransformed.txt file')
-            param_names, loglike, transform, vectorized = resume_from_hot_file(
-                param_names,
-                os.path.join(log_dir, "chains", "weighted_post_untransformed.txt"),
-                loglike=loglike,
-                transform=transform,
-                vectorized=vectorized,
-                derived_param_names=derived_param_names,
-            )
-        
         self.paramnames = param_names
         x_dim = len(self.paramnames)
 
@@ -1114,6 +1086,12 @@ class ReactiveNestedSampler(object):
         self.log = self.mpi_rank == 0
         self.log_to_disk = self.log and log_dir is not None
         self.log_to_pointstore = self.log_to_disk
+
+        assert resume in (True, 'overwrite', 'subfolder', 'resume', 'resume-similar'), \
+            "resume should be one of 'overwrite' 'subfolder', 'resume' or 'resume-similar'"
+        append_run_num = resume == 'subfolder'
+        resume_similar = resume == 'resume-similar'
+        resume = resume in ('resume-similar', 'resume', True)
 
         if self.log and log_dir is not None:
             self.logs = make_run_dir(log_dir, run_num, append_run_num=append_run_num)

@@ -1,14 +1,16 @@
+import os
 import numpy as np
 import shutil
 import tempfile
 import pytest
 import json
 import pandas
+from ultranest import NestedSampler, ReactiveNestedSampler, read_file
+from ultranest.integrator import resume_from_hot_file
+import ultranest.mlfriends
 from numpy.testing import assert_allclose
 
 def test_run():
-    from ultranest import NestedSampler
-
     def loglike(y):
         z = np.log10(y)
         a = np.array([-0.5 * sum([((xi - 0.83456 + i*0.1)/0.5)**2 for i, xi in enumerate(x)]) for x in z])
@@ -37,9 +39,6 @@ def test_run():
 
 
 def test_dlogz_reactive_run_SLOW():
-    from ultranest import ReactiveNestedSampler
-    import ultranest.mlfriends
-
     def loglike(y):
         return -0.5 * np.sum(((y - 0.5)/0.001)**2, axis=1)
 
@@ -60,7 +59,6 @@ def test_dlogz_reactive_run_SLOW():
     assert results['logzerr'] < 0.1 * 2
 
 def test_reactive_run():
-    from ultranest import ReactiveNestedSampler
     np.random.seed(1)
     evals = set()
 
@@ -119,7 +117,6 @@ def test_reactive_run():
 
 
 def test_reactive_run_extraparams():
-    from ultranest import ReactiveNestedSampler
     np.random.seed(1)
 
     def loglike(z):
@@ -139,7 +136,6 @@ def test_reactive_run_extraparams():
     sampler.plot()
 
 def test_return_summary():
-    from ultranest import ReactiveNestedSampler
     sigma = np.array([0.1, 0.01])
     centers = np.array([0.5, 0.75])
     paramnames = ['a', 'b']
@@ -187,7 +183,6 @@ def test_return_summary():
 
 @pytest.mark.parametrize("dlogz", [2.0, 0.5, 0.1])
 def test_run_resume(dlogz):
-    from ultranest import ReactiveNestedSampler
     sigma = 0.01
     ndim = 1
 
@@ -230,9 +225,6 @@ def test_run_resume(dlogz):
 
 @pytest.mark.parametrize("storage_backend", ['hdf5', 'tsv', 'csv'])
 def test_reactive_run_resume_eggbox(storage_backend):
-    from ultranest import ReactiveNestedSampler
-    from ultranest import read_file
-
     def loglike(z):
         chi = (np.cos(z / 2.)).prod(axis=1)
         loglike.ncalls += len(z)
@@ -400,7 +392,6 @@ def test_reactive_run_resume_eggbox(storage_backend):
         shutil.rmtree(folder, ignore_errors=True)
 
 def test_reactive_run_warmstart_gauss():
-    from ultranest import ReactiveNestedSampler
     center = 0
 
     def loglike(z):
@@ -500,6 +491,62 @@ def test_run_compat():
     print('parameter values:')
     for name, col in zip(paramnames, result['samples'].transpose()):
         print('%15s : %.3f +- %.3f' % (name, col.mean(), col.std()))
+
+
+def test_run_hotstart_gauss_SLOW():
+    center = None
+    stdev = 0.001
+
+    def loglike(z):
+        chi2 = (((z - center) / stdev)**2).sum(axis=1)
+        loglike.ncalls += len(z)
+        return -0.5 * chi2
+    loglike.ncalls = 0
+
+    def transform(x):
+        return x * 20000 - 10000
+
+    paramnames = ['a']
+
+    folder = tempfile.mkdtemp()
+    np.random.seed(1)
+    ncalls = []
+    try:
+        for i, resume in enumerate(['overwrite', 'resume-hot', 'resume-hot', 'resume-hot']):
+            print()
+            print("====== Running Gauss problem [%d] =====" % (i+1))
+            print()
+            center = [0, 0, stdev, 50 * stdev][i]
+            print("center:", center, "folder:", folder)
+            if i == 0:
+                sampler = ReactiveNestedSampler(paramnames,
+                    loglike, transform=transform,
+                    log_dir=folder, resume=resume, vectorized=True)
+            else:
+                aux_param_names, aux_loglike, aux_transform, vectorized = resume_from_hot_file(
+                    os.path.join(folder, 'chains', 'weighted_post_untransformed.txt'),
+                    paramnames, loglike=loglike, transform=transform, vectorized=True,
+                )
+                sampler = ReactiveNestedSampler(aux_param_names,
+                    aux_loglike, transform=aux_transform, vectorized=True)
+
+            sampler.run(viz_callback=None)
+            sampler.print_results()
+            print("expected posterior:", center, '+-', stdev)
+            print(sampler.results.keys())
+            print(sampler.results['posterior'].keys())
+            print(sampler.results['posterior']['mean'], sampler.results['posterior']['stdev'])
+            print(sampler.results['weighted_samples']['upoints'], sampler.results['weighted_samples']['weights'])
+            assert center - stdev < sampler.results['posterior']['mean'][0] < center + stdev, (center, sampler.results['posterior'])
+            assert stdev * 0.8 < sampler.results['posterior']['stdev'][0] < stdev * 1.2, (center, sampler.results['posterior'])
+            ncalls.append(sampler.ncall)
+    finally:
+        shutil.rmtree(folder, ignore_errors=True)
+    print(ncalls)
+    
+    # make sure hot start is much faster
+    assert ncalls[1] < ncalls[0] - 800, (ncalls)
+    assert ncalls[2] < ncalls[0] - 800, (ncalls)
 
 if __name__ == '__main__':
     #test_run_compat()

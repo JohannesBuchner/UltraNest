@@ -277,6 +277,56 @@ def compute_quantile_intervals(steps, upoints, uweights):
     uhis[-1] = 1
     return ulos, uhis
 
+def compute_quantile_intervals_refined(steps, upoints, uweights, logsteps_max=20):
+    """Compute lower and upper axis quantiles.
+    q and 1-q quantiles along each axis of corresponding to steps
+    
+    Parameters
+    ------------
+    steps: array
+        list of quantiles q to compute.
+    upoints: function
+        samples
+    uweights: array
+        sample weights
+
+    Returns:
+    ---------
+    ulo: array
+        list of lower quantiles (at q)
+    uhi: array
+        list of upper quantiles (at 1-q)
+    """
+    nboxes = len(steps)
+    ulos_orig, uhis_orig = compute_quantile_intervals(steps, upoints, uweights)
+    assert len(ulos_orig) == nboxes+1
+    assert len(uhis_orig) == nboxes+1
+
+    smallest_axis_width = np.min(uhis_orig[-2,:] - ulos_orig[-2,:])
+    logsteps = min(logsteps_max, int(np.ceil(-np.log10(max(1e-100, smallest_axis_width)))))
+
+    weights = np.logspace(-logsteps, 0, logsteps+1).reshape((-1, 1))
+    # print("logspace:", weights, logsteps)
+    assert len(weights) == logsteps+1, (weights.shape, logsteps)
+    # print("quantiles:", ulos_orig, uhis_orig)
+    ulos_new = ulos_orig[nboxes-1, :].reshape((1, -1)) * (1 - weights) + 0 * weights
+    uhis_new = uhis_orig[nboxes-1, :].reshape((1, -1)) * (1 - weights) + 1 * weights
+    
+    # print("additional quantiles:", ulos_new, uhis_new)
+    
+    ulos = np.vstack((ulos_orig[:-1,:], ulos_new))
+    uhis = np.vstack((uhis_orig[:-1,:], uhis_new))
+    # print("combined quantiles:", ulos, uhis)
+    assert (ulos[-1,:] == 0).all()
+    assert (uhis[-1,:] == 1).all()
+    
+    uinterpspace = np.ones(nboxes+logsteps+1)
+    uinterpspace[:nboxes+1] = np.linspace(0, 1, nboxes+1)
+    assert 0 < uinterpspace[nboxes-1] < 1, uinterpspace[nboxes]
+    uinterpspace[nboxes:] = np.linspace(uinterpspace[nboxes-1], 1, logsteps+2)[1:]
+    
+    return ulos, uhis, uinterpspace
+
 
 def get_auxiliary_contbox_parameterization(
     param_names, loglike, transform, upoints, uweights, vectorized=False,
@@ -326,10 +376,8 @@ def get_auxiliary_contbox_parameterization(
     steps = 10**-(1.0 * np.arange(1, 8, 2))
     nsamples, ndim = upoints.shape
     assert nsamples > 10
-    ulos, uhis = compute_quantile_intervals(steps, upoints, uweights)
-    nboxes = len(ulos)
-
-    uinterpspace = np.linspace(0, 1, nboxes)
+    ulos, uhis, uinterpspace = compute_quantile_intervals_refined(steps, upoints, uweights)
+    print("boxes:", ulos, uhis, uinterpspace)
     
     aux_param_names = param_names + ['aux_logweight']
 

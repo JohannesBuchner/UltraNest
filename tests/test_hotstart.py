@@ -6,7 +6,7 @@ from ultranest import ReactiveNestedSampler
 from ultranest.utils import vectorize
 from ultranest.integrator import resume_from_hot_file
 from ultranest.hotstart import reuse_samples, get_extended_auxiliary_problem
-from ultranest.hotstart import compute_quantile_intervals, get_auxiliary_contbox_parameterization
+from ultranest.hotstart import compute_quantile_intervals, get_auxiliary_contbox_parameterization, compute_quantile_intervals_refined
 import os
 import tempfile
 
@@ -42,7 +42,7 @@ def extended_log_likelihood(params):
 def test_contbox_hotstart():
     rng_samples = np.random.RandomState(43)
     N = 100000
-    samples = rng_samples.normal(size=(N,2))
+    samples = rng_samples.normal(0.1, 1e-6, size=(N,2))
     samples[:,1] = rng_samples.uniform(size=N)
     weights = (np.ones(N) / N).reshape((-1,1))
     logl = weights * 0
@@ -51,8 +51,20 @@ def test_contbox_hotstart():
     ulos, uhis = compute_quantile_intervals(steps, samples, weights)
     print("quantiles:", ulos)
     print("quantiles:", uhis)
+    ulos2, uhis2, uinterpspace = compute_quantile_intervals_refined(steps, samples, weights)
+    print("refined quantiles:", ulos2)
+    print("refined quantiles:", uhis2)
+    print("interpolation steps:", uinterpspace)
+    assert np.diff(ulos, axis=0).shape == (2,2), ulos
+    assert (np.diff(uinterpspace) > 0).all(), uinterpspace
+    assert (np.diff(ulos, axis=0) < 0).all(), (ulos, uhis)
+    assert (np.diff(uhis, axis=0) > 0).all(), (ulos, uhis)
+    assert (np.diff(ulos2, axis=0) < 0).all(), (ulos2, uhis2)
+    assert (np.diff(uhis2, axis=0) > 0).all(), (ulos2, uhis2)
     assert ulos.shape == (2+1, len(steps)), (uhis.shape, ulos.shape)
     assert uhis.shape == ulos.shape, (uhis.shape, ulos.shape)
+    assert len(uinterpspace) == len(uhis2)
+    assert len(uinterpspace) == len(uhis2)
     tol = dict(atol=1e-3, rtol=0.01)
     for i in 1, 0:
         for j, q in enumerate(steps):
@@ -99,8 +111,8 @@ def test_contbox_hotstart():
             fmt='%f'
         )
         aux_param_names, aux_loglike, aux_transform, vectorized = resume_from_hot_file(
-            parameters,
             tmpfilename,
+            parameters,
             extended_log_likelihood,
             extended_prior_transform,
             vectorized=False,
@@ -111,8 +123,8 @@ def test_contbox_hotstart():
         L = float(aux_loglike(p))
         print(L)
         aux_param_names, aux_vloglike, aux_vtransform, vectorized = resume_from_hot_file(
-            parameters,
             tmpfilename,
+            parameters,
             vectorize(extended_log_likelihood),
             vectorize(extended_prior_transform),
             vectorized=True,
