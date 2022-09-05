@@ -2,6 +2,15 @@
 Release Notes
 ==============
 
+3.5.0 (2022-09-05)
+------------------
+
+* add hot-resume: resume from a similar fit (with different data)
+* fix post_summary.csv column order
+* fix build handling for non-pip systems (pyproject.toml)
+* more efficient handling of categorical variables
+
+
 3.4.0 (2022-04-05)
 ------------------
 
