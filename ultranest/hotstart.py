@@ -1,4 +1,4 @@
-"""Hot start helper functions."""
+"""Warm start and hot start helper functions."""
 
 import numpy as np
 import scipy.stats
