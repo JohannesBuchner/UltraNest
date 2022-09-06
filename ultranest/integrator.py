@@ -921,12 +921,9 @@ def warmstart_from_similar_file(
     loglike,
     transform,
     vectorized=False,
-    derived_param_names=[],
     min_num_samples=50
 ):
     """Warmstart from a previous run.
-
-    
 
     Parameters
     ------------
@@ -992,8 +989,8 @@ def warmstart_from_similar_file(
     return get_auxiliary_contbox_parameterization(
         param_names, loglike=loglike, transform=transform,
         vectorized=vectorized,
-        upoints=upoints, 
-        uweights=uweights, 
+        upoints=upoints,
+        uweights=uweights,
     )
 
 
@@ -2758,7 +2755,7 @@ class ReactiveNestedSampler(object):
                 os.path.join(self.logs['info'], 'post_summary.csv'),
                 [[results['posterior'][k][i] for i in range(self.num_params) for k in ('mean', 'stdev', 'median', 'errlo', 'errup')]],
                 header=','.join(['"{0}_mean","{0}_stdev","{0}_median","{0}_errlo","{0}_errup"'.format(k)
-                                  for k in self.paramnames + self.derivedparamnames]),
+                                 for k in self.paramnames + self.derivedparamnames]),
                 delimiter=',', comments='',
             )
 
@@ -2824,7 +2821,7 @@ class ReactiveNestedSampler(object):
 
                     dist = ''.join([' ▁▂▃▄▅▆▇██'[i] for i in np.ceil(H * 7 / H.max()).astype(int)])
                     print('    %-20s: %-6s│%s│%-6s    %s +- %s' % (p, fmt % lo, dist, fmt % hi, fmt % med, fmt % sigma))
-                except:
+                except Exception:
                     fmts = '    %-20s' + fmt + " +- " + fmt
                     print(fmts % (p, med, sigma))
             print()

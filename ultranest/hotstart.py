@@ -244,23 +244,22 @@ def get_extended_auxiliary_independent_problem(loglike, transform, ctr, err, df=
 
 def compute_quantile_intervals(steps, upoints, uweights):
     """Compute lower and upper axis quantiles.
-    q and 1-q quantiles along each axis of corresponding to steps
-    
+
     Parameters
     ------------
     steps: array
         list of quantiles q to compute.
-    upoints: function
-        samples
+    upoints: array
+        samples, with dimensions (N, d)
     uweights: array
         sample weights
 
     Returns:
     ---------
     ulo: array
-        list of lower quantiles (at q)
+        list of lower quantiles (at q), one entry for each dimension d.
     uhi: array
-        list of upper quantiles (at 1-q)
+        list of upper quantiles (at 1-q), one entry for each dimension d.
     """
     ndim = upoints.shape[1]
     nboxes = len(steps)
@@ -279,23 +278,22 @@ def compute_quantile_intervals(steps, upoints, uweights):
 
 def compute_quantile_intervals_refined(steps, upoints, uweights, logsteps_max=20):
     """Compute lower and upper axis quantiles.
-    q and 1-q quantiles along each axis of corresponding to steps
     
     Parameters
     ------------
     steps: array
-        list of quantiles q to compute.
-    upoints: function
-        samples
+        list of quantiles q to compute, with dimensions 
+    upoints: array
+        samples, with dimensions (N, d)
     uweights: array
-        sample weights
+        sample weights. N entries.
 
     Returns:
     ---------
     ulo: array
-        list of lower quantiles (at q)
+        list of lower quantiles (at q), of shape (M, d), one entry per quantile and dimension d.
     uhi: array
-        list of upper quantiles (at 1-q)
+        list of upper quantiles (at 1-q), of shape (M, d), one entry per quantile and dimension d.
     """
     nboxes = len(steps)
     ulos_orig, uhis_orig = compute_quantile_intervals(steps, upoints, uweights)
