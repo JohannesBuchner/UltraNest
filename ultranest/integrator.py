@@ -27,7 +27,7 @@ from .netiter import dump_tree, combine_results
 from .hotstart import get_auxiliary_contbox_parameterization
 
 
-__all__ = ['ReactiveNestedSampler', 'NestedSampler', 'read_file']
+__all__ = ['ReactiveNestedSampler', 'NestedSampler', 'read_file', 'warmstart_from_similar_file']
 
 
 def _get_cumsum_range(pi, dp):
@@ -915,7 +915,7 @@ class NestedSampler(object):
             plt.close()
 
 
-def resume_from_hot_file(
+def warmstart_from_similar_file(
     usample_filename,
     param_names,
     loglike,
@@ -924,6 +924,46 @@ def resume_from_hot_file(
     derived_param_names=[],
     min_num_samples=50
 ):
+    """Warmstart from a previous run.
+
+    
+
+    Parameters
+    ------------
+    usample_filename: str
+        'directory/chains/weighted_post_untransformed.txt'
+        contains posteriors in u-space (untransformed) of a previous run.
+        Columns are weight, logl, param1, param2, ...
+    min_num_samples: int
+        minimum number of samples in the usample_filename file required.
+        Too few samples will give a poor approximation.
+
+    The remaining parameters have the same meaning as in :class:ReactiveNestedSampler.
+
+    Returns:
+    ---------
+    aux_param_names: list
+        new parameter list
+    aux_loglikelihood: function
+        new loglikelihood function
+    aux_transform: function
+        new prior transform function
+    vectorized: bool
+        whether the new functions are vectorized
+
+    Usage::
+
+        aux_paramnames, aux_log_likelihood, aux_prior_transform, vectorized = warmstart_from_similar_file(
+            'model1/chains/weighted_post_untransformed.txt', parameters, log_likelihood_with_background, prior_transform)
+
+        aux_sampler = ReactiveNestedSampler(aux_paramnames, aux_log_likelihood, transform=aux_prior_transform,vectorized=vectorized)
+        aux_sampler.run()
+        posterior_samples = aux_results['samples'][:,-1]
+
+    See :py:func:`ultranest.hotstart.get_auxiliary_contbox_parameterization`
+    for more information.
+
+    """
     # load samples
     try:
         with open(usample_filename) as f:

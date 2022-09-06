@@ -338,14 +338,6 @@ def get_auxiliary_contbox_parameterization(
     likelihood and prior transform that is identical but
     requires fewer nested sampling iterations.
 
-    This is achieved by deforming the prior space, and undoing that
-    transformation by correction weights in the likelihood.
-
-    The auxiliary distribution used for transformation/weighting is
-    factorized. Each axis considers the ECDF of the auxiliary samples,
-    and segments it into five quantile segments. Within each segment,
-    the parameter edges in u-space are linearly interpolated.
-
     Usage::
 
         aux_loglikelihood, aux_transform = get_auxiliary_contbox_parameterization(
@@ -353,6 +345,20 @@ def get_auxiliary_contbox_parameterization(
         aux_sampler = ReactiveNestedSampler(parameters, aux_loglikelihood, transform=aux_transform, derived_param_names=['logweight'])
         aux_results = aux_sampler.run()
         posterior_samples = aux_results['samples'][:,-1]
+
+    This is achieved by deforming the prior space, and undoing that
+    transformation by correction weights in the likelihood.
+    A additional parameter, "aux_logweight", is added at the end,
+    which contains the correction weight. You can ignore it.
+
+    The auxiliary distribution used for transformation/weighting is
+    factorized. Each axis considers the ECDF of the auxiliary samples,
+    and segments it into quantile segments. Within each segment,
+    the parameter edges in u-space are linearly interpolated.
+    To see the interpolation quantiles for each axis, use::
+    
+        steps = 10**-(1.0 * np.arange(1, 8, 2))
+        ulos, uhis, uinterpspace = compute_quantile_intervals_refined(steps, upoints, uweights)
 
     Parameters
     ------------

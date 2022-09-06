@@ -4,7 +4,7 @@ import scipy.stats
 from numpy import log10
 from ultranest import ReactiveNestedSampler
 from ultranest.utils import vectorize
-from ultranest.integrator import resume_from_hot_file
+from ultranest.integrator import warmstart_from_similar_file
 from ultranest.hotstart import reuse_samples, get_extended_auxiliary_problem
 from ultranest.hotstart import compute_quantile_intervals, get_auxiliary_contbox_parameterization, compute_quantile_intervals_refined
 import os
@@ -110,7 +110,7 @@ def test_contbox_hotstart():
             header='weight logl mean scatter',
             fmt='%f'
         )
-        aux_param_names, aux_loglike, aux_transform, vectorized = resume_from_hot_file(
+        aux_param_names, aux_loglike, aux_transform, vectorized = warmstart_from_similar_file(
             tmpfilename,
             parameters,
             extended_log_likelihood,
@@ -122,7 +122,7 @@ def test_contbox_hotstart():
         assert p.shape == (len(aux_param_names)+1,)
         L = float(aux_loglike(p))
         print(L)
-        aux_param_names, aux_vloglike, aux_vtransform, vectorized = resume_from_hot_file(
+        aux_param_names, aux_vloglike, aux_vtransform, vectorized = warmstart_from_similar_file(
             tmpfilename,
             parameters,
             vectorize(extended_log_likelihood),

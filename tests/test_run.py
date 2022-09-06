@@ -6,7 +6,7 @@ import pytest
 import json
 import pandas
 from ultranest import NestedSampler, ReactiveNestedSampler, read_file
-from ultranest.integrator import resume_from_hot_file
+from ultranest.integrator import warmstart_from_similar_file
 import ultranest.mlfriends
 from numpy.testing import assert_allclose
 
@@ -493,7 +493,7 @@ def test_run_compat():
         print('%15s : %.3f +- %.3f' % (name, col.mean(), col.std()))
 
 
-def test_run_hotstart_gauss_SLOW():
+def test_run_warmstart_gauss_SLOW():
     center = None
     stdev = 0.001
 
@@ -523,7 +523,7 @@ def test_run_hotstart_gauss_SLOW():
                     loglike, transform=transform,
                     log_dir=folder, resume=resume, vectorized=True)
             else:
-                aux_param_names, aux_loglike, aux_transform, vectorized = resume_from_hot_file(
+                aux_param_names, aux_loglike, aux_transform, vectorized = warmstart_from_similar_file(
                     os.path.join(folder, 'chains', 'weighted_post_untransformed.txt'),
                     paramnames, loglike=loglike, transform=transform, vectorized=True,
                 )
