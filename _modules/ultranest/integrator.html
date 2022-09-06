@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest.integrator &mdash; UltraNest 3.5.2 documentation</title>
+  <title>ultranest.integrator &mdash; UltraNest 3.5.3 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="../../_static/icon.ico"/>
@@ -33,7 +33,7 @@
             <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.5.2
+                3.5.3
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -65,10 +65,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../example-line.html">Tutorial: fitting a line</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../example-outliers.html">Tutorial: distribution with outliers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../example-sine-bayesian-workflow.html">Bayesian workflow</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../example-warmstart.html">Tutorial: warm start from a similar fit</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../example-warmstart.html#First-simple-model">First simple model</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../example-warmstart.html#Warm-Start-with-Model-modification">Warm Start with Model modification</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../example-warmstart.html#Starting-from-existing-posterior-samples">Starting from existing posterior samples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-warmstart.html">warm starting</a></li>
 </ul>
 
         </div>
@@ -1019,12 +1016,9 @@
     <span class="n">loglike</span><span class="p">,</span>
     <span class="n">transform</span><span class="p">,</span>
     <span class="n">vectorized</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">derived_param_names</span><span class="o">=</span><span class="p">[],</span>
     <span class="n">min_num_samples</span><span class="o">=</span><span class="mi">50</span>
 <span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Warmstart from a previous run.</span>
-
-<span class="sd">    </span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ------------</span>
@@ -1090,8 +1084,8 @@
     <span class="k">return</span> <span class="n">get_auxiliary_contbox_parameterization</span><span class="p">(</span>
         <span class="n">param_names</span><span class="p">,</span> <span class="n">loglike</span><span class="o">=</span><span class="n">loglike</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">transform</span><span class="p">,</span>
         <span class="n">vectorized</span><span class="o">=</span><span class="n">vectorized</span><span class="p">,</span>
-        <span class="n">upoints</span><span class="o">=</span><span class="n">upoints</span><span class="p">,</span> 
-        <span class="n">uweights</span><span class="o">=</span><span class="n">uweights</span><span class="p">,</span> 
+        <span class="n">upoints</span><span class="o">=</span><span class="n">upoints</span><span class="p">,</span>
+        <span class="n">uweights</span><span class="o">=</span><span class="n">uweights</span><span class="p">,</span>
     <span class="p">)</span></div>
 
 
@@ -2856,7 +2850,7 @@
                 <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logs</span><span class="p">[</span><span class="s1">&#39;info&#39;</span><span class="p">],</span> <span class="s1">&#39;post_summary.csv&#39;</span><span class="p">),</span>
                 <span class="p">[[</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;posterior&#39;</span><span class="p">][</span><span class="n">k</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_params</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="s1">&#39;stdev&#39;</span><span class="p">,</span> <span class="s1">&#39;median&#39;</span><span class="p">,</span> <span class="s1">&#39;errlo&#39;</span><span class="p">,</span> <span class="s1">&#39;errup&#39;</span><span class="p">)]],</span>
                 <span class="n">header</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;&quot;</span><span class="si">{0}</span><span class="s1">_mean&quot;,&quot;</span><span class="si">{0}</span><span class="s1">_stdev&quot;,&quot;</span><span class="si">{0}</span><span class="s1">_median&quot;,&quot;</span><span class="si">{0}</span><span class="s1">_errlo&quot;,&quot;</span><span class="si">{0}</span><span class="s1">_errup&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
-                                  <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">paramnames</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">derivedparamnames</span><span class="p">]),</span>
+                                 <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">paramnames</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">derivedparamnames</span><span class="p">]),</span>
                 <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="n">comments</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
             <span class="p">)</span>
 
@@ -2922,7 +2916,7 @@
 
                     <span class="n">dist</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39; ▁▂▃▄▅▆▇██&#39;</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">H</span> <span class="o">*</span> <span class="mi">7</span> <span class="o">/</span> <span class="n">H</span><span class="o">.</span><span class="n">max</span><span class="p">())</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)])</span>
                     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;    </span><span class="si">%-20s</span><span class="s1">: </span><span class="si">%-6s</span><span class="s1">│</span><span class="si">%s</span><span class="s1">│</span><span class="si">%-6s</span><span class="s1">    </span><span class="si">%s</span><span class="s1"> +- </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">fmt</span> <span class="o">%</span> <span class="n">lo</span><span class="p">,</span> <span class="n">dist</span><span class="p">,</span> <span class="n">fmt</span> <span class="o">%</span> <span class="n">hi</span><span class="p">,</span> <span class="n">fmt</span> <span class="o">%</span> <span class="n">med</span><span class="p">,</span> <span class="n">fmt</span> <span class="o">%</span> <span class="n">sigma</span><span class="p">))</span>
-                <span class="k">except</span><span class="p">:</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
                     <span class="n">fmts</span> <span class="o">=</span> <span class="s1">&#39;    </span><span class="si">%-20s</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="n">fmt</span> <span class="o">+</span> <span class="s2">&quot; +- &quot;</span> <span class="o">+</span> <span class="n">fmt</span>
                     <span class="nb">print</span><span class="p">(</span><span class="n">fmts</span> <span class="o">%</span> <span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">med</span><span class="p">,</span> <span class="n">sigma</span><span class="p">))</span>
             <span class="nb">print</span><span class="p">()</span></div>

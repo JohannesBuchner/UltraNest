@@ -4,7 +4,7 @@
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "# Tutorial: warm start from a similar fit\n",
+    "# warm starting\n",
     "\n",
     "In this tutorial you will learn:\n",
     "\n",
@@ -57,7 +57,7 @@
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "## Generate some data"
+    "### Generate some data"
    ]
   },
   {
@@ -90,7 +90,7 @@
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "## Visualise the data\n",
+    "### Visualise the data\n",
     "\n",
     "Lets plot the data first to see what is going on:\n",
     "\n"
@@ -113,7 +113,7 @@
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "## Prior"
+    "### Prior"
    ]
   },
   {
@@ -162,7 +162,9 @@
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "# First simple model"
+    "## First simple model\n",
+    "\n",
+    "Here is a typical gaussian likelihood with our black body function:"
    ]
   },
   {
@@ -195,7 +197,7 @@
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "## Plot the fit"
+    "### Plot the fit"
    ]
   },
   {
@@ -220,7 +222,7 @@
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "# Warm Start with Model modification\n",
+    "## Warm starting a modified model\n",
     "\n",
     "Lets say we alter our model slightly. We include a small constant background:"
    ]
@@ -241,7 +243,7 @@
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "We have the same parameters, and expect results to only be slightly different. So lets use **warm start**."
+    "We have the same parameters, and expect results to be only mildly different. So lets use **warm starting**."
    ]
   },
   {
@@ -325,7 +327,7 @@
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "## Speed-up"
+    "### Speed-up"
    ]
   },
   {
@@ -370,7 +372,7 @@
    "cell_type": "markdown",
    "metadata": {},
    "source": [
-    "# Starting from existing posterior samples"
+    "## Warm starting from posterior samples"
    ]
   },
   {
@@ -382,6 +384,8 @@
     "However, the inverse of the prior transformation has to be applied.\n",
     "\n",
     "In some cases, this is easy to do analytically, e.g., for uniform priors it is just a scaling.\n",
+    "\n",
+    "### When the transform cannot be inverted easily\n",
     "\n",
     "The following code works for arbitrary, factorized priors (as in the blackbody example in this notebook), for an arbitrary number of parameters.\n",
     "\n",

@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest package &mdash; UltraNest 3.5.2 documentation</title>
+  <title>ultranest package &mdash; UltraNest 3.5.3 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="_static/icon.ico"/>
@@ -38,7 +38,7 @@
             <img src="_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.5.2
+                3.5.3
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -95,10 +95,7 @@
 <li class="toctree-l1"><a class="reference internal" href="example-line.html">Tutorial: fitting a line</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example-outliers.html">Tutorial: distribution with outliers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example-sine-bayesian-workflow.html">Bayesian workflow</a></li>
-<li class="toctree-l1"><a class="reference internal" href="example-warmstart.html">Tutorial: warm start from a similar fit</a></li>
-<li class="toctree-l1"><a class="reference internal" href="example-warmstart.html#First-simple-model">First simple model</a></li>
-<li class="toctree-l1"><a class="reference internal" href="example-warmstart.html#Warm-Start-with-Model-modification">Warm Start with Model modification</a></li>
-<li class="toctree-l1"><a class="reference internal" href="example-warmstart.html#Starting-from-existing-posterior-samples">Starting from existing posterior samples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-warmstart.html">warm starting</a></li>
 </ul>
 
         </div>
@@ -949,18 +946,17 @@ The final coordinate is the log of the correction weight.</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="ultranest.hotstart.compute_quantile_intervals">
 <span class="sig-prename descclassname"><span class="pre">ultranest.hotstart.</span></span><span class="sig-name descname"><span class="pre">compute_quantile_intervals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upoints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uweights</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/hotstart.html#compute_quantile_intervals"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.hotstart.compute_quantile_intervals" title="Permalink to this definition"></a></dt>
-<dd><p>Compute lower and upper axis quantiles.
-q and 1-q quantiles along each axis of corresponding to steps</p>
+<dd><p>Compute lower and upper axis quantiles.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>steps</strong> (<em>array</em>) – list of quantiles q to compute.</p></li>
-<li><p><strong>upoints</strong> (<em>function</em>) – samples</p></li>
+<li><p><strong>upoints</strong> (<em>array</em>) – samples, with dimensions (N, d)</p></li>
 <li><p><strong>uweights</strong> (<em>array</em>) – sample weights</p></li>
 <li><p><strong>Returns</strong> – </p></li>
 <li><p><strong>---------</strong> – </p></li>
-<li><p><strong>ulo</strong> (<em>array</em>) – list of lower quantiles (at q)</p></li>
-<li><p><strong>uhi</strong> (<em>array</em>) – list of upper quantiles (at 1-q)</p></li>
+<li><p><strong>ulo</strong> (<em>array</em>) – list of lower quantiles (at q), one entry for each dimension d.</p></li>
+<li><p><strong>uhi</strong> (<em>array</em>) – list of upper quantiles (at 1-q), one entry for each dimension d.</p></li>
 </ul>
 </dd>
 </dl>
@@ -969,18 +965,17 @@ q and 1-q quantiles along each axis of corresponding to steps</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="ultranest.hotstart.compute_quantile_intervals_refined">
 <span class="sig-prename descclassname"><span class="pre">ultranest.hotstart.</span></span><span class="sig-name descname"><span class="pre">compute_quantile_intervals_refined</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upoints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uweights</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logsteps_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/hotstart.html#compute_quantile_intervals_refined"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.hotstart.compute_quantile_intervals_refined" title="Permalink to this definition"></a></dt>
-<dd><p>Compute lower and upper axis quantiles.
-q and 1-q quantiles along each axis of corresponding to steps</p>
+<dd><p>Compute lower and upper axis quantiles.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>steps</strong> (<em>array</em>) – list of quantiles q to compute.</p></li>
-<li><p><strong>upoints</strong> (<em>function</em>) – samples</p></li>
-<li><p><strong>uweights</strong> (<em>array</em>) – sample weights</p></li>
+<li><p><strong>steps</strong> (<em>array</em>) – list of quantiles q to compute, with dimensions</p></li>
+<li><p><strong>upoints</strong> (<em>array</em>) – samples, with dimensions (N, d)</p></li>
+<li><p><strong>uweights</strong> (<em>array</em>) – sample weights. N entries.</p></li>
 <li><p><strong>Returns</strong> – </p></li>
 <li><p><strong>---------</strong> – </p></li>
-<li><p><strong>ulo</strong> (<em>array</em>) – list of lower quantiles (at q)</p></li>
-<li><p><strong>uhi</strong> (<em>array</em>) – list of upper quantiles (at 1-q)</p></li>
+<li><p><strong>ulo</strong> (<em>array</em>) – list of lower quantiles (at q), of shape (M, d), one entry per quantile and dimension d.</p></li>
+<li><p><strong>uhi</strong> (<em>array</em>) – list of upper quantiles (at 1-q), of shape (M, d), one entry per quantile and dimension d.</p></li>
 </ul>
 </dd>
 </dl>
@@ -1343,7 +1338,7 @@ ReactiveNestedSampler.run return values</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ultranest.integrator.warmstart_from_similar_file">
-<span class="sig-prename descclassname"><span class="pre">ultranest.integrator.</span></span><span class="sig-name descname"><span class="pre">warmstart_from_similar_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">usample_filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loglike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vectorized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">derived_param_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_num_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/integrator.html#warmstart_from_similar_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.integrator.warmstart_from_similar_file" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">ultranest.integrator.</span></span><span class="sig-name descname"><span class="pre">warmstart_from_similar_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">usample_filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loglike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vectorized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_num_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/integrator.html#warmstart_from_similar_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.integrator.warmstart_from_similar_file" title="Permalink to this definition"></a></dt>
 <dd><p>Warmstart from a previous run.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
