@@ -1,83 +1,45 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <title>Specifying priors &mdash; UltraNest 3.4.6 documentation</title>
-  
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-  
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-
-  
-  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Specifying priors &mdash; UltraNest 3.5.2 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="_static/icon.ico"/>
-  
-  
-  
-    <link rel="canonical" href="https://johannesbuchner.github.io/UltraNest/priors.html"/>
-  
-
-  
+    <link rel="canonical" href="https://johannesbuchner.github.io/UltraNest/priors.html" />
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
-        <script src="_static/language_data.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
-        <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.20.0/dist/embed-amd.js"></script>
-    
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-
-    
+        <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Features" href="performance.html" />
     <link rel="prev" title="Basic usage" href="using-ultranest.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search"  style="background: #2980B9" >
-          
-
-          
-            <a href="index.html" class="icon icon-home" alt="Documentation Home"> UltraNest
-          
-
-          
-            
+            <a href="index.html" class="icon icon-home"> UltraNest
             <img src="_static/logo.svg" class="logo" alt="Logo"/>
-          
           </a>
-
-          
-            
-            
               <div class="version">
-                3.4.6
+                3.5.2
               </div>
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -85,19 +47,8 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="readme.html">UltraNest</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
@@ -126,7 +77,7 @@
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="history.html">Release Notes</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Tutorials:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Tutorials:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="example-sine-line.html">Time series fitting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example-sine-modelcomparison.html">Model comparison</a></li>
@@ -135,69 +86,35 @@
 <li class="toctree-l1"><a class="reference internal" href="example-line.html">Tutorial: fitting a line</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example-outliers.html">Tutorial: distribution with outliers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example-sine-bayesian-workflow.html">Bayesian workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-warmstart.html">Tutorial: warm start from a similar fit</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-warmstart.html#First-simple-model">First simple model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-warmstart.html#Warm-Start-with-Model-modification">Warm Start with Model modification</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-warmstart.html#Starting-from-existing-posterior-samples">Starting from existing posterior samples</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">UltraNest</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content style-external-links">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-        
       <li>Specifying priors</li>
-    
-    
       <li class="wy-breadcrumbs-aside">
-        
-            
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
+             
   
 <style>
 /* CSS for nbsphinx extension */
@@ -408,11 +325,12 @@ div.nboutput.container div.output_area > div[class^='highlight']{
 }
 
 /* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
-.prompt a.copybtn {
+.prompt .copybtn {
     display: none;
 }
 
 /* Some additional styling taken form the Jupyter notebook CSS */
+.jp-RenderedHTMLCommon table,
 div.rendered_html table {
   border: none;
   border-collapse: collapse;
@@ -421,10 +339,14 @@ div.rendered_html table {
   font-size: 12px;
   table-layout: fixed;
 }
+.jp-RenderedHTMLCommon thead,
 div.rendered_html thead {
   border-bottom: 1px solid black;
   vertical-align: bottom;
 }
+.jp-RenderedHTMLCommon tr,
+.jp-RenderedHTMLCommon th,
+.jp-RenderedHTMLCommon td,
 div.rendered_html tr,
 div.rendered_html th,
 div.rendered_html td {
@@ -436,12 +358,15 @@ div.rendered_html td {
   max-width: none;
   border: none;
 }
+.jp-RenderedHTMLCommon th,
 div.rendered_html th {
   font-weight: bold;
 }
+.jp-RenderedHTMLCommon tbody tr:nth-child(odd),
 div.rendered_html tbody tr:nth-child(odd) {
   background: #f5f5f5;
 }
+.jp-RenderedHTMLCommon tbody tr:hover,
 div.rendered_html tbody tr:hover {
   background: rgba(66, 165, 245, 0.2);
 }
@@ -468,8 +393,8 @@ div.rendered_html tbody tr:hover {
     text-align: unset;
 }
 </style>
-<div class="section" id="Specifying-priors">
-<h1>Specifying priors<a class="headerlink" href="#Specifying-priors" title="Permalink to this headline">¶</a></h1>
+<section id="Specifying-priors">
+<h1>Specifying priors<a class="headerlink" href="#Specifying-priors" title="Permalink to this heading"></a></h1>
 <p>This tutorial demonstrates how to specify parameter priors, including:</p>
 <ul class="simple">
 <li><p>uniform and log-uniform distributions</p></li>
@@ -478,26 +403,33 @@ div.rendered_html tbody tr:hover {
 <li><p>non-analytic priors</p></li>
 <li><p>priors on fractions</p></li>
 </ul>
-<div class="nbinput nblast docutils container">
+<div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">scipy.stats</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 </pre></div>
 </div>
 </div>
-<div class="section" id="Cumulative-prior-distributions">
-<h2>Cumulative prior distributions<a class="headerlink" href="#Cumulative-prior-distributions" title="Permalink to this headline">¶</a></h2>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/home/user/.local/lib/python3.10/site-packages/traitlets/traitlets.py:3258: FutureWarning: --rc={&#39;figure.dpi&#39;: 96} for dict-traits is deprecated in traitlets 5.0. You can pass --rc &lt;key=value&gt; ... multiple times to add items to a dict.
+  warn(
+</pre></div></div>
+</div>
+<section id="Cumulative-prior-distributions">
+<h2>Cumulative prior distributions<a class="headerlink" href="#Cumulative-prior-distributions" title="Permalink to this heading"></a></h2>
 <p>Any 1-dimensional probability distribution is normalised so that its integral is 1. That is, the cumulative distribution goes from 0 to 1. For example:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">gaussdistribution</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">gaussdistribution</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">)</span>
 <span class="n">uniformdistribution</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">3.5</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">)</span>
 <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">400</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
@@ -511,32 +443,22 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<div class="nboutput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
-</pre></div>
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-&lt;matplotlib.legend.Legend at 0x7f9364505b20&gt;
-</pre></div></div>
-</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/priors_3_1.svg" src="_images/priors_3_1.svg" /></div>
+<img alt="_images/priors_3_0.svg" src="_images/priors_3_0.svg" /></div>
 </div>
-</div>
-<div class="section" id="Transforming-from-the-unit-interval">
-<h2>Transforming from the unit interval<a class="headerlink" href="#Transforming-from-the-unit-interval" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="Transforming-from-the-unit-interval">
+<h2>Transforming from the unit interval<a class="headerlink" href="#Transforming-from-the-unit-interval" title="Permalink to this heading"></a></h2>
 <p>We invert the cumulative probability distribution mapping quantiles (0…1) to the corresponding model parameter value.</p>
 <p>Lets start with the uniform distribution:</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="k">def</span> <span class="nf">transform_1d_uniform</span><span class="p">(</span><span class="n">quantile</span><span class="p">):</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">transform_1d_uniform</span><span class="p">(</span><span class="n">quantile</span><span class="p">):</span>
     <span class="n">lower_bound</span> <span class="o">=</span> <span class="mf">3.5</span>
     <span class="n">width</span> <span class="o">=</span> <span class="mf">1.2</span>
     <span class="k">return</span> <span class="n">quantile</span> <span class="o">*</span> <span class="n">width</span> <span class="o">+</span> <span class="n">lower_bound</span>
@@ -548,11 +470,9 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="k">def</span> <span class="nf">transform_1d</span><span class="p">(</span><span class="n">quantile</span><span class="p">):</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">transform_1d</span><span class="p">(</span><span class="n">quantile</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">gaussdistribution</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">quantile</span><span class="p">)</span>
-
-</pre></div>
+<br/></pre></div>
 </div>
 </div>
 <p>UltraNest samples from the unit interval to obtain prior samples. Lets try drawing a few examples from our function:</p>
@@ -560,8 +480,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">uniform_samples</span> <span class="o">=</span> <span class="n">transform_1d_uniform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">100000</span><span class="p">))</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">uniform_samples</span> <span class="o">=</span> <span class="n">transform_1d_uniform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">100000</span><span class="p">))</span>
 <span class="n">gauss_samples</span> <span class="o">=</span> <span class="n">transform_1d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">100000</span><span class="p">))</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">uniform_samples</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">histtype</span><span class="o">=</span><span class="s1">&#39;step&#39;</span><span class="p">,</span> <span class="n">density</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Uniform&#39;</span><span class="p">)</span>
@@ -572,25 +491,16 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<div class="nboutput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
-</pre></div>
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-&lt;matplotlib.legend.Legend at 0x7f93623ef820&gt;
-</pre></div></div>
-</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/priors_9_1.svg" src="_images/priors_9_1.svg" /></div>
+<img alt="_images/priors_9_0.svg" src="_images/priors_9_0.svg" /></div>
 </div>
 <p>Beautiful! We obtained nice samples that follow the prior distribution.</p>
-</div>
-<div class="section" id="id1">
-<h2>Specifying priors<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="id1">
+<h2>Specifying priors<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h2>
 <p>Lets specify a prior for UltraNest with multiple parameters:</p>
 <ul class="simple">
 <li><p>a uniform distribution from 3.5 to 4.7</p></li>
@@ -601,8 +511,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="c1"># out transform function will receive one quantile corresponding to each of the three parameter</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># out transform function will receive one quantile corresponding to each of the three parameter</span>
 <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="n">quantile_cube</span><span class="p">):</span>
     <span class="c1"># prepare the output array, which has the same shape</span>
     <span class="n">transformed_parameters</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">quantile_cube</span><span class="p">)</span>
@@ -623,18 +532,17 @@ div.rendered_html tbody tr:hover {
 <li><p>avoid building scipy.stats objects in the transform, because this is slow – build them outside first, then only invoke the .ppf method in the transform.</p></li>
 <li><p>If you are looking for a distribution that is not implemented yet, try to follow a random number generator recipe (see the Dirichlet prior for an example, below).</p></li>
 </ul>
-</div>
-<div class="section" id="Dependent-priors">
-<h2>Dependent priors<a class="headerlink" href="#Dependent-priors" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="Incorporating-covariances">
-<h3>Incorporating covariances<a class="headerlink" href="#Incorporating-covariances" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="Dependent-priors">
+<h2>Dependent priors<a class="headerlink" href="#Dependent-priors" title="Permalink to this heading"></a></h2>
+<section id="Incorporating-covariances">
+<h3>Incorporating covariances<a class="headerlink" href="#Incorporating-covariances" title="Permalink to this heading"></a></h3>
 <p>In some cases, a previous experiment gives informative priors which we want to incorporate, and they may be inter-dependent. For example, consider a two-dimensional gaussian prior distribution.</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">means</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">means</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
 <span class="n">cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">]])</span>
 </pre></div>
 </div>
@@ -643,8 +551,7 @@ div.rendered_html tbody tr:hover {
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">rv</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">multivariate_normal</span><span class="p">(</span><span class="n">means</span><span class="p">,</span> <span class="n">cov</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">rv</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">multivariate_normal</span><span class="p">(</span><span class="n">means</span><span class="p">,</span> <span class="n">cov</span><span class="p">)</span>
 <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">400</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">1.5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">400</span><span class="p">)</span>
 <span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 <span class="n">Z</span> <span class="o">=</span> <span class="n">rv</span><span class="o">.</span><span class="n">pdf</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">([</span><span class="n">X</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">Y</span><span class="o">.</span><span class="n">flatten</span><span class="p">()]))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
@@ -656,20 +563,11 @@ div.rendered_html tbody tr:hover {
 </pre></div>
 </div>
 </div>
-<div class="nboutput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
-</pre></div>
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-Text(0, 0.5, &#39;Parameter 2&#39;)
-</pre></div></div>
-</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/priors_16_1.svg" src="_images/priors_16_1.svg" /></div>
+<img alt="_images/priors_16_0.svg" src="_images/priors_16_0.svg" /></div>
 </div>
 <p>We recall:</p>
 <ul class="simple">
@@ -681,8 +579,7 @@ Text(0, 0.5, &#39;Parameter 2&#39;)
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">cov</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">cov</span><span class="p">)</span>
 <span class="n">l</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eigh</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
 <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="mf">1.</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">l</span><span class="p">)))</span>
 
@@ -699,8 +596,7 @@ Text(0, 0.5, &#39;Parameter 2&#39;)
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">samples</span> <span class="o">=</span> <span class="n">transform_correlated</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">2</span><span class="p">)))</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">samples</span> <span class="o">=</span> <span class="n">transform_correlated</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">2</span><span class="p">)))</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Correlated prior&#39;</span><span class="p">)</span>
@@ -711,31 +607,21 @@ Text(0, 0.5, &#39;Parameter 2&#39;)
 </pre></div>
 </div>
 </div>
-<div class="nboutput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
-</pre></div>
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-Text(0, 0.5, &#39;Parameter 2&#39;)
-</pre></div></div>
-</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/priors_20_1.svg" src="_images/priors_20_1.svg" /></div>
+<img alt="_images/priors_20_0.svg" src="_images/priors_20_0.svg" /></div>
 </div>
-<div class="section" id="Conditional-prior-approach">
-<h4>Conditional prior approach<a class="headerlink" href="#Conditional-prior-approach" title="Permalink to this headline">¶</a></h4>
+<section id="Conditional-prior-approach">
+<h4>Conditional prior approach<a class="headerlink" href="#Conditional-prior-approach" title="Permalink to this heading"></a></h4>
 <p>Another approach is to sample the second parameter conditional on the first parameter, already transformed. This is akin to Gibbs sampling.</p>
 <p>For an example, we have a first parameter with a Gaussian prior, and a second parameter, with a Gaussian prior centred around the first parameter’s value. Therefore, its value shifts with the first parameter:</p>
 <div class="nbinput nblast docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">gauss1</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">gauss1</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="n">gauss2</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">)</span>
 
 
@@ -753,8 +639,7 @@ Text(0, 0.5, &#39;Parameter 2&#39;)
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">samples</span> <span class="o">=</span> <span class="n">transform_correlated_gibbs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">2</span><span class="p">)))</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">samples</span> <span class="o">=</span> <span class="n">transform_correlated_gibbs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="mi">2</span><span class="p">)))</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Gibbs prior&#39;</span><span class="p">)</span>
@@ -764,109 +649,53 @@ Text(0, 0.5, &#39;Parameter 2&#39;)
 </pre></div>
 </div>
 </div>
-<div class="nboutput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
-</pre></div>
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-Text(0, 0.5, &#39;Parameter 2&#39;)
-</pre></div></div>
-</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/priors_23_1.svg" src="_images/priors_23_1.svg" /></div>
+<img alt="_images/priors_23_0.svg" src="_images/priors_23_0.svg" /></div>
 </div>
 <p>As you can see, we also achieve a correlated prior. However, this is different from the previous example.</p>
-</div>
-<div class="section" id="Complicated-constraints-and-rejection-in-the-likelihood">
-<h4>Complicated constraints and rejection in the likelihood<a class="headerlink" href="#Complicated-constraints-and-rejection-in-the-likelihood" title="Permalink to this headline">¶</a></h4>
+</section>
+<section id="Complicated-constraints-and-rejection-in-the-likelihood">
+<h4>Complicated constraints and rejection in the likelihood<a class="headerlink" href="#Complicated-constraints-and-rejection-in-the-likelihood" title="Permalink to this heading"></a></h4>
 <p>In some situations, you may have more constraints than parameters, such as:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">parameter_1_lower</span> <span class="o">&lt;</span> <span class="n">parameter_1</span> <span class="o">&lt;</span> <span class="n">parameter_1_upper</span>
-<span class="n">parameter_2_lower</span> <span class="o">&lt;</span> <span class="n">parameter_2</span> <span class="o">&lt;</span> <span class="n">parameter_2_upper</span>
-<span class="n">parameter_1</span> <span class="o">+</span> <span class="n">parameter_2</span> <span class="o">&lt;</span> <span class="n">constant</span>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>parameter_1_lower &lt; parameter_1 &lt; parameter_1_upper
+parameter_2_lower &lt; parameter_2 &lt; parameter_2_upper
+parameter_1 + parameter_2 &lt; constant
 </pre></div>
 </div>
 <p>In that case, move either the first two or the last constraint into the likelihood function, whichever option is more relaxed (i.e., causes fewer rejections). This is achieved by returning a very low likelihood (e.g., -1e100), when the constraint is not met.</p>
 <p>It is beneficial for the sampler if you can add a slight slope towards the good region of the constraint. e.g., -1e100 * (1 + parameter_1 + parameter_2) or similar. This is because if you use the exact same constant, this is a likelihood plateau, and the live points have to be reduced until the plateau is traversed.</p>
-</div>
-</div>
-</div>
-<div class="section" id="Non-analytic-priors">
-<h2>Non-analytic priors<a class="headerlink" href="#Non-analytic-priors" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+</section>
+<section id="Non-analytic-priors">
+<h2>Non-analytic priors<a class="headerlink" href="#Non-analytic-priors" title="Permalink to this heading"></a></h2>
 <p>Sometimes, the prior may not be easily invertable. For example, when it is given as posterior samples from a previous analysis. Lets say as a prior, we want a posterior from another experiment that looks like this:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">posterior_samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2000</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mi">2000</span><span class="p">)))</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">posterior_samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2000</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mi">2000</span><span class="p">)))</span>
 
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">posterior_samples</span><span class="p">,</span> <span class="n">histtype</span><span class="o">=</span><span class="s1">&#39;step&#39;</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">100</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
-<div class="nboutput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
-</pre></div>
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-(array([ 20.,  30.,  26.,  26.,  23.,  27.,  25.,  26.,  27.,  26.,  19.,
-         27.,  19.,  21.,  26.,  28.,  22.,  27.,  22.,  28.,  19.,  27.,
-         27.,  32.,  21.,  31.,  23.,  26.,  24.,  25.,  26.,  15.,  23.,
-         19.,  36.,  26.,  24.,  25.,  25.,  35.,  40.,  17.,  23.,  28.,
-         22.,  26.,  30.,  31.,  27.,  29.,  27.,  31.,  29.,  34.,  33.,
-         24.,  30.,  22.,  29.,  23.,  22.,  30.,  35.,  32.,  39.,  39.,
-         47.,  66.,  70.,  82., 100., 120., 139., 139., 171., 171., 154.,
-        143., 150., 129., 120., 132.,  81.,  50.,  60.,  50.,  24.,  14.,
-         13.,   6.,   5.,   3.,   2.,   1.,   1.,   0.,   0.,   0.,   0.,
-          1.]),
- array([1.82237656e-03, 4.08773094e-02, 7.99322423e-02, 1.18987175e-01,
-        1.58042108e-01, 1.97097041e-01, 2.36151974e-01, 2.75206907e-01,
-        3.14261840e-01, 3.53316773e-01, 3.92371705e-01, 4.31426638e-01,
-        4.70481571e-01, 5.09536504e-01, 5.48591437e-01, 5.87646370e-01,
-        6.26701303e-01, 6.65756236e-01, 7.04811169e-01, 7.43866102e-01,
-        7.82921034e-01, 8.21975967e-01, 8.61030900e-01, 9.00085833e-01,
-        9.39140766e-01, 9.78195699e-01, 1.01725063e+00, 1.05630556e+00,
-        1.09536050e+00, 1.13441543e+00, 1.17347036e+00, 1.21252530e+00,
-        1.25158023e+00, 1.29063516e+00, 1.32969009e+00, 1.36874503e+00,
-        1.40779996e+00, 1.44685489e+00, 1.48590983e+00, 1.52496476e+00,
-        1.56401969e+00, 1.60307463e+00, 1.64212956e+00, 1.68118449e+00,
-        1.72023942e+00, 1.75929436e+00, 1.79834929e+00, 1.83740422e+00,
-        1.87645916e+00, 1.91551409e+00, 1.95456902e+00, 1.99362395e+00,
-        2.03267889e+00, 2.07173382e+00, 2.11078875e+00, 2.14984369e+00,
-        2.18889862e+00, 2.22795355e+00, 2.26700848e+00, 2.30606342e+00,
-        2.34511835e+00, 2.38417328e+00, 2.42322822e+00, 2.46228315e+00,
-        2.50133808e+00, 2.54039301e+00, 2.57944795e+00, 2.61850288e+00,
-        2.65755781e+00, 2.69661275e+00, 2.73566768e+00, 2.77472261e+00,
-        2.81377754e+00, 2.85283248e+00, 2.89188741e+00, 2.93094234e+00,
-        2.96999728e+00, 3.00905221e+00, 3.04810714e+00, 3.08716208e+00,
-        3.12621701e+00, 3.16527194e+00, 3.20432687e+00, 3.24338181e+00,
-        3.28243674e+00, 3.32149167e+00, 3.36054661e+00, 3.39960154e+00,
-        3.43865647e+00, 3.47771140e+00, 3.51676634e+00, 3.55582127e+00,
-        3.59487620e+00, 3.63393114e+00, 3.67298607e+00, 3.71204100e+00,
-        3.75109593e+00, 3.79015087e+00, 3.82920580e+00, 3.86826073e+00,
-        3.90731567e+00]),
- [&lt;matplotlib.patches.Polygon at 0x7f93607812b0&gt;])
-</pre></div></div>
-</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/priors_28_1.svg" src="_images/priors_28_1.svg" /></div>
+<img alt="_images/priors_28_0.svg" src="_images/priors_28_0.svg" /></div>
 </div>
 <p>In this case, we can compute the cumulative distribution numerically and invert it. Lets try implementing this and sampling from it:</p>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">hist</span><span class="p">,</span> <span class="n">bin_edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">posterior_samples</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">hist</span><span class="p">,</span> <span class="n">bin_edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">posterior_samples</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
 <span class="n">hist_cumulative</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">hist</span> <span class="o">/</span> <span class="n">hist</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
 <span class="n">bin_middle</span> <span class="o">=</span> <span class="p">(</span><span class="n">bin_edges</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">bin_edges</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span> <span class="o">/</span> <span class="mi">2</span>
 
@@ -880,65 +709,15 @@ Text(0, 0.5, &#39;Parameter 2&#39;)
 </pre></div>
 </div>
 </div>
-<div class="nboutput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
-</pre></div>
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-(array([0.28635596, 0.10412944, 0.10412944, 0.05206472, 0.05206472,
-        0.10412944, 0.23429124, 0.20825888, 0.10412944, 0.15619416,
-        0.18222652, 0.18222652, 0.28635596, 0.18222652, 0.07809708,
-        0.15619416, 0.1301618 , 0.07809708, 0.15619416, 0.18222652,
-        0.05206472, 0.23429124, 0.1301618 , 0.23429124, 0.15619416,
-        0.18222652, 0.07809708, 0.28635596, 0.18222652, 0.1301618 ,
-        0.05206472, 0.15619416, 0.1301618 , 0.2603236 , 0.23429124,
-        0.05206472, 0.02603236, 0.1301618 , 0.15619416, 0.1301618 ,
-        0.28635596, 0.10412944, 0.2603236 , 0.2603236 , 0.1301618 ,
-        0.15619416, 0.23429124, 0.20825888, 0.18222652, 0.20825888,
-        0.18222652, 0.15619416, 0.23429124, 0.15619416, 0.20825888,
-        0.20825888, 0.23429124, 0.15619416, 0.18222652, 0.23429124,
-        0.1301618 , 0.20825888, 0.2603236 , 0.23429124, 0.2603236 ,
-        0.20825888, 0.3904854 , 0.28635596, 0.54667956, 0.33842068,
-        0.650809  , 0.67684136, 0.70287372, 1.06732677, 0.98922968,
-        1.24955329, 1.30161801, 0.75493844, 1.11939149, 0.70287372,
-        0.7809708 , 0.88510024, 0.67684136, 0.33842068, 0.33842068,
-        0.33842068, 0.10412944, 0.1301618 , 0.18222652, 0.07809708,
-        0.05206472, 0.02603236, 0.        , 0.        , 0.        ,
-        0.        , 0.        , 0.        , 0.        , 0.02603236]),
- array([0.02134984, 0.05976357, 0.0981773 , 0.13659103, 0.17500475,
-        0.21341848, 0.25183221, 0.29024594, 0.32865967, 0.36707339,
-        0.40548712, 0.44390085, 0.48231458, 0.52072831, 0.55914203,
-        0.59755576, 0.63596949, 0.67438322, 0.71279695, 0.75121067,
-        0.7896244 , 0.82803813, 0.86645186, 0.90486559, 0.94327931,
-        0.98169304, 1.02010677, 1.0585205 , 1.09693423, 1.13534795,
-        1.17376168, 1.21217541, 1.25058914, 1.28900287, 1.32741659,
-        1.36583032, 1.40424405, 1.44265778, 1.48107151, 1.51948523,
-        1.55789896, 1.59631269, 1.63472642, 1.67314015, 1.71155387,
-        1.7499676 , 1.78838133, 1.82679506, 1.86520878, 1.90362251,
-        1.94203624, 1.98044997, 2.0188637 , 2.05727742, 2.09569115,
-        2.13410488, 2.17251861, 2.21093234, 2.24934606, 2.28775979,
-        2.32617352, 2.36458725, 2.40300098, 2.4414147 , 2.47982843,
-        2.51824216, 2.55665589, 2.59506962, 2.63348334, 2.67189707,
-        2.7103108 , 2.74872453, 2.78713826, 2.82555198, 2.86396571,
-        2.90237944, 2.94079317, 2.9792069 , 3.01762062, 3.05603435,
-        3.09444808, 3.13286181, 3.17127554, 3.20968926, 3.24810299,
-        3.28651672, 3.32493045, 3.36334418, 3.4017579 , 3.44017163,
-        3.47858536, 3.51699909, 3.55541281, 3.59382654, 3.63224027,
-        3.670654  , 3.70906773, 3.74748145, 3.78589518, 3.82430891,
-        3.86272264]),
- [&lt;matplotlib.patches.Polygon at 0x7f93606e6940&gt;])
-</pre></div></div>
-</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/priors_30_1.svg" src="_images/priors_30_1.svg" /></div>
+<img alt="_images/priors_30_0.svg" src="_images/priors_30_0.svg" /></div>
 </div>
-</div>
-<div class="section" id="Fraction-parameters">
-<h2>Fraction parameters<a class="headerlink" href="#Fraction-parameters" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="Fraction-parameters">
+<h2>Fraction parameters<a class="headerlink" href="#Fraction-parameters" title="Permalink to this heading"></a></h2>
 <p>Some parameters such as fractions (or abundances) may be required to sum to 1. How can we specify such parameters?</p>
 <p>One option is to use absolute numbers. For example, instead of specifying the total mass and mass fractions for each chemical element, parameterise the mass of each element. This avoids the &lt;=1 constraint, and may be easier to infer. A drawback is that the prior ranges for each element mass may be wide.</p>
 <p>The other option is to use the right distribution exactly made for this, which samples unbiased under the constraint (sum&lt;=1): The <a class="reference external" href="https://en.wikipedia.org/wiki/Dirichlet_distribution">Dirichlet distribution</a>. Here we assume that the prior on the individual fraction is flat (flat Dirichlet distribution, <span class="math notranslate nohighlight">\(\alpha=1\)</span>).</p>
@@ -946,15 +725,13 @@ Text(0, 0.5, &#39;Parameter 2&#39;)
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="k">def</span> <span class="nf">transform_dirichlet</span><span class="p">(</span><span class="n">quantiles</span><span class="p">):</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">transform_dirichlet</span><span class="p">(</span><span class="n">quantiles</span><span class="p">):</span>
     <span class="c1"># https://en.wikipedia.org/wiki/Dirichlet_distribution#Random_number_generation</span>
     <span class="c1"># first inverse transform sample from Gamma(alpha=1,beta=1), which is Exponential(1)</span>
     <span class="n">gamma_quantiles</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">quantiles</span><span class="p">)</span>
     <span class="c1"># dirichlet variables</span>
     <span class="k">return</span> <span class="n">gamma_quantiles</span> <span class="o">/</span> <span class="n">gamma_quantiles</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
-
-</pre></div>
+<br/></pre></div>
 </div>
 </div>
 <p>Lets have a look at the samples, and whether the three fractions look uniform and sum up to 1:</p>
@@ -962,8 +739,7 @@ Text(0, 0.5, &#39;Parameter 2&#39;)
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
 </div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
-<span></span><span class="n">samples</span> <span class="o">=</span> <span class="n">transform_dirichlet</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="mi">3</span><span class="p">)))</span>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">samples</span> <span class="o">=</span> <span class="n">transform_dirichlet</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="mi">3</span><span class="p">)))</span>
 
 <span class="kn">from</span> <span class="nn">mpl_toolkits.mplot3d</span> <span class="kn">import</span> <span class="n">Axes3D</span>
 <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
@@ -973,25 +749,16 @@ Text(0, 0.5, &#39;Parameter 2&#39;)
 </pre></div>
 </div>
 </div>
-<div class="nboutput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
-</pre></div>
-</div>
-<div class="output_area docutils container">
-<div class="highlight"><pre>
-[&lt;mpl_toolkits.mplot3d.art3d.Line3D at 0x7f936065b160&gt;]
-</pre></div></div>
-</div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<img alt="_images/priors_35_1.svg" src="_images/priors_35_1.svg" /></div>
+<img alt="_images/priors_35_0.svg" src="_images/priors_35_0.svg" /></div>
 </div>
 <p>The samples nicely lie on the plane where the sum is 1.</p>
-</div>
-<div class="section" id="Further-topics">
-<h2>Further topics<a class="headerlink" href="#Further-topics" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="Further-topics">
+<h2>Further topics<a class="headerlink" href="#Further-topics" title="Permalink to this heading"></a></h2>
 <p>Check out the rest of the documentation and the tutorials.</p>
 <p>They illustrate how to:</p>
 <ul class="simple">
@@ -999,55 +766,35 @@ Text(0, 0.5, &#39;Parameter 2&#39;)
 <li><p><a class="reference external" href="https://johannesbuchner.github.io/UltraNest/usage-spectral-line.html">How to use priors in Ultranest</a></p></li>
 <li><p>and many example tutorials</p></li>
 </ul>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
-           
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="performance.html" class="btn btn-neutral float-right" title="Features" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="using-ultranest.html" class="btn btn-neutral float-left" title="Basic usage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="using-ultranest.html" class="btn btn-neutral float-left" title="Basic usage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="performance.html" class="btn btn-neutral float-right" title="Features" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        
-        &copy; Copyright 2014-2020, Johannes Buchner
+    <p>&#169; Copyright 2014-2022, Johannes Buchner.</p>
+  </div>
 
-    </p>
-  </div> 
+   
 
 </footer>
-
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>

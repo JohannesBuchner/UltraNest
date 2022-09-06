@@ -1,83 +1,43 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <title>Features &mdash; UltraNest 3.4.6 documentation</title>
-  
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-  
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-
-  
-  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Features &mdash; UltraNest 3.5.2 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="_static/icon.ico"/>
-  
-  
-  
-    <link rel="canonical" href="https://johannesbuchner.github.io/UltraNest/performance.html"/>
-  
-
-  
+    <link rel="canonical" href="https://johannesbuchner.github.io/UltraNest/performance.html" />
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
-        <script src="_static/language_data.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
-        <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.20.0/dist/embed-amd.js"></script>
-    
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-
-    
+        <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="API" href="modules.html" />
     <link rel="prev" title="Specifying priors" href="priors.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search"  style="background: #2980B9" >
-          
-
-          
-            <a href="index.html" class="icon icon-home" alt="Documentation Home"> UltraNest
-          
-
-          
-            
+            <a href="index.html" class="icon icon-home"> UltraNest
             <img src="_static/logo.svg" class="logo" alt="Logo"/>
-          
           </a>
-
-          
-            
-            
               <div class="version">
-                3.4.6
+                3.5.2
               </div>
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -85,19 +45,8 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="readme.html">UltraNest</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
@@ -124,7 +73,7 @@
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="history.html">Release Notes</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Tutorials:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Tutorials:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="example-sine-line.html">Time series fitting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example-sine-modelcomparison.html">Model comparison</a></li>
@@ -133,69 +82,35 @@
 <li class="toctree-l1"><a class="reference internal" href="example-line.html">Tutorial: fitting a line</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example-outliers.html">Tutorial: distribution with outliers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example-sine-bayesian-workflow.html">Bayesian workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-warmstart.html">Tutorial: warm start from a similar fit</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-warmstart.html#First-simple-model">First simple model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-warmstart.html#Warm-Start-with-Model-modification">Warm Start with Model modification</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-warmstart.html#Starting-from-existing-posterior-samples">Starting from existing posterior samples</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">UltraNest</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content style-external-links">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-        
       <li>Features</li>
-    
-    
       <li class="wy-breadcrumbs-aside">
-        
-            
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
+             
   
 <style>
 /* CSS overrides for sphinx_rtd_theme */
@@ -220,8 +135,8 @@
     text-align: unset;
 }
 </style>
-<div class="section" id="features">
-<span id="performance"></span><h1>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h1>
+<section id="features">
+<span id="performance"></span><h1>Features<a class="headerlink" href="#features" title="Permalink to this heading"></a></h1>
 <p>This tutorial demonstrates:</p>
 <ul class="simple">
 <li><p>How to make a program that uses nested sampling</p></li>
@@ -232,13 +147,13 @@
 <li><p>How to write a program with UltraNest</p></li>
 <li><p>How to execute on multiple cores</p></li>
 </ul>
-<div class="section" id="usage-in-a-program">
-<h2>Usage in a program<a class="headerlink" href="#usage-in-a-program" title="Permalink to this headline">¶</a></h2>
+<section id="usage-in-a-program">
+<h2>Usage in a program<a class="headerlink" href="#usage-in-a-program" title="Permalink to this heading"></a></h2>
 <p>Lets write a script simple.py. It defines a problem through prior and likelihood functions,
 and analyses it.</p>
 <p>To understand it, have a look first the <a class="reference external" href="using-ultranest.html">Basic usage</a> page.</p>
 <div class="literal-block-wrapper docutils container" id="simple-py">
-<div class="code-block-caption"><span class="caption-text">simple.py</span><a class="headerlink" href="#simple-py" title="Permalink to this code">¶</a></div>
+<div class="code-block-caption"><span class="caption-text">simple.py</span><a class="headerlink" href="#simple-py" title="Permalink to this code"></a></div>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span> <span class="kn">import</span> <span class="nn">scipy.stats</span>
 
  <span class="n">paramnames</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;param1&#39;</span><span class="p">,</span> <span class="s1">&#39;param2&#39;</span><span class="p">,</span> <span class="s1">&#39;param3&#39;</span><span class="p">]</span>
@@ -324,9 +239,9 @@ and the parameter constraints:</p>
 <li><p>Key diagnostic plots are included in the output folder (see below).</p></li>
 <li><p>The program can resume from crashes – even if run with a different number of live points.</p></li>
 </ul>
-</div>
-<div class="section" id="output-files">
-<h2>Output files<a class="headerlink" href="#output-files" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="output-files">
+<h2>Output files<a class="headerlink" href="#output-files" title="Permalink to this heading"></a></h2>
 <p>If a <cite>log_dir</cite> directory was specified, you will find these files:</p>
 <ul class="simple">
 <li><p>debug.log: A debug log of the run</p>
@@ -401,9 +316,9 @@ read the state of a previous run is:</p>
 * points: the columns are: likelihood threshold under which the point was sampled, likelihood of the point, a quality indicator (0 for MLFriends, otherwise the number of steps in the step sampler), u-space (unit cube) coordinates, p-space (transformed parameters) coordinates.</p></li>
 </ul>
 <p>You can safely store additional files and plots in the sub-folders.</p>
-</div>
-<div class="section" id="speed-ups">
-<h2>Speed ups<a class="headerlink" href="#speed-ups" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="speed-ups">
+<h2>Speed ups<a class="headerlink" href="#speed-ups" title="Permalink to this heading"></a></h2>
 <p>Lets go to some more advanced usage examples: Integrating a 100-dimensional gaussian.
 For that, we have to make a few modifications to enhance the
 <strong>computational speed</strong>. Enhancing the <strong>algorithmic speed</strong> (number of likelihood evaluations
@@ -435,12 +350,12 @@ This reduces function calls.</p>
 </div>
 <p>To use this function, pass <code class="docutils literal notranslate"><span class="pre">vectorized=True</span></code> to ReactiveNestedSampler.
 Lets see how this looks like in a full program.</p>
-<div class="section" id="vectorized-full-program">
-<h3>Vectorized full program<a class="headerlink" href="#vectorized-full-program" title="Permalink to this headline">¶</a></h3>
+<section id="vectorized-full-program">
+<h3>Vectorized full program<a class="headerlink" href="#vectorized-full-program" title="Permalink to this heading"></a></h3>
 <p>Below is a Python program that implements a gaussian likelihood,
 and allows the user to specify the problem dimension and a few sampler parameters.</p>
 <div class="literal-block-wrapper docutils container" id="gauss-py">
-<div class="code-block-caption"><span class="caption-text">gauss.py</span><a class="headerlink" href="#gauss-py" title="Permalink to this code">¶</a></div>
+<div class="code-block-caption"><span class="caption-text">gauss.py</span><a class="headerlink" href="#gauss-py" title="Permalink to this code"></a></div>
 <div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span> <span class="kn">import</span> <span class="nn">argparse</span>
  <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
  <span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">log</span>
@@ -507,10 +422,10 @@ and allows the user to specify the problem dimension and a few sampler parameter
 </div>
 <p>Note that our likelihood is vectorized, and we pass <code class="docutils literal notranslate"><span class="pre">vectorized=True</span></code>.</p>
 <p>A similar program is included in the git repository as <em>examples/testasymgauss.py</em>.</p>
-</div>
-</div>
-<div class="section" id="high-dimensional-models">
-<h2>High-dimensional models<a class="headerlink" href="#high-dimensional-models" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+<section id="high-dimensional-models">
+<h2>High-dimensional models<a class="headerlink" href="#high-dimensional-models" title="Permalink to this heading"></a></h2>
 <p>In high-dimensional spaces, MLFriends by itself is inefficient, so
 we have to use a step sampling technique. There are several implemented
 in <a class="reference internal" href="ultranest.html#module-ultranest.stepsampler" title="ultranest.stepsampler"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ultranest.stepsampler</span></code></a>. Here we are using slice sampling
@@ -522,7 +437,7 @@ distant proposals, and the clustering is better justified (based on MLFriends).<
 </pre></div>
 </div>
 <p>After a while (a few hours on my laptop), this will have traversed the parameter space:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Z</span><span class="o">=</span><span class="mf">0.3</span><span class="p">(</span><span class="mf">43.44</span><span class="o">%</span><span class="p">)</span> <span class="o">|</span> <span class="n">Like</span><span class="o">=</span><span class="mf">89.39</span><span class="o">..</span><span class="mf">96.29</span> <span class="p">[</span><span class="mf">89.3916</span><span class="o">..</span><span class="mf">89.3936</span><span class="p">]</span><span class="o">*|</span> <span class="n">it</span><span class="o">/</span><span class="n">evals</span><span class="o">=</span><span class="mi">39671</span><span class="o">/</span><span class="mi">11660719</span> <span class="n">eff</span><span class="o">=</span><span class="mf">0.2939</span><span class="o">%</span> <span class="n">N</span><span class="o">=</span><span class="mi">400</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Z</span><span class="o">=</span><span class="mf">0.3</span><span class="p">(</span><span class="mf">43.44</span><span class="o">%</span><span class="p">)</span> <span class="o">|</span> <span class="n">Like</span><span class="o">=</span><span class="mf">89.39</span><span class="o">.</span><span class="mf">.96.29</span> <span class="p">[</span><span class="mf">89.3916</span><span class="o">.</span><span class="mf">.89.3936</span><span class="p">]</span><span class="o">*|</span> <span class="n">it</span><span class="o">/</span><span class="n">evals</span><span class="o">=</span><span class="mi">39671</span><span class="o">/</span><span class="mi">11660719</span> <span class="n">eff</span><span class="o">=</span><span class="mf">0.2939</span><span class="o">%</span> <span class="n">N</span><span class="o">=</span><span class="mi">400</span>
 
 <span class="n">param1</span>  <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                        <span class="o">+</span><span class="mf">0.2</span>  <span class="mi">0</span> <span class="mi">0000</span>  <span class="mi">0100000000000000000000100010001000010100010000000010000</span> <span class="mi">0</span> <span class="mi">0</span>  <span class="mi">00</span> <span class="mi">0</span>       <span class="mi">0</span>  <span class="o">+</span><span class="mf">0.8</span>                 <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
 <span class="n">param2</span>  <span class="p">:</span>      <span class="o">+</span><span class="mf">0.0</span><span class="o">|</span>                                      <span class="o">+</span><span class="mf">0.3</span>  <span class="mi">0</span>   <span class="mi">0</span>  <span class="mi">0</span>  <span class="mi">001</span> <span class="mi">0</span> <span class="mi">00000100000100010110001010000010000000000000000</span> <span class="mi">00</span> <span class="mi">0</span>   <span class="mi">00</span> <span class="mi">00</span>  <span class="o">+</span><span class="mf">0.9</span>        <span class="o">|</span>     <span class="o">+</span><span class="mf">1.0</span>
@@ -637,9 +552,9 @@ distant proposals, and the clustering is better justified (based on MLFriends).<
 (the prior boundaries slightly increase the result).</p>
 <p>We can test whether the slice sampler is good enough by doubling
 the number of steps, until the ln(Z) estimate is stable.</p>
-</div>
-<div class="section" id="parallelisation">
-<h2>Parallelisation<a class="headerlink" href="#parallelisation" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="parallelisation">
+<h2>Parallelisation<a class="headerlink" href="#parallelisation" title="Permalink to this heading"></a></h2>
 <p>Your likelihood function may already be using multiple cores,
 whether your intended to or not, due to underlying libraries (e.g., numpy).
 You can control this with the OMP_NUM_THREADS environment variable:</p>
@@ -649,8 +564,8 @@ You can control this with the OMP_NUM_THREADS environment variable:</p>
 </div>
 <p>If the likelihood is not parallelised, ultranest can parallelize
 its execution to multiple cores.</p>
-<div class="section" id="using-multiple-cores">
-<h3>Using multiple cores<a class="headerlink" href="#using-multiple-cores" title="Permalink to this headline">¶</a></h3>
+<section id="using-multiple-cores">
+<h3>Using multiple cores<a class="headerlink" href="#using-multiple-cores" title="Permalink to this heading"></a></h3>
 <p>To use multiple processors and cores, scaling UltraNest all the way to
 large computing clusters, you can parallelise the program with MPI:</p>
 <ul class="simple">
@@ -664,10 +579,10 @@ large computing clusters, you can parallelise the program with MPI:</p>
 <p>This launches four scripts which are started in parallel, and ultranest
 coordinates them.</p>
 <p>Use as many scripts as processors. If memory is a concern, look into shared memory solutions.</p>
-</div>
-</div>
-<div class="section" id="more-features">
-<h2>More features<a class="headerlink" href="#more-features" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+<section id="more-features">
+<h2>More features<a class="headerlink" href="#more-features" title="Permalink to this heading"></a></h2>
 <p>To find more features and details such as …</p>
 <ul class="simple">
 <li><p>Circular/wrapped parameter spaces</p></li>
@@ -678,55 +593,35 @@ coordinates them.</p>
 <li><p>all the step samplers and slice samplers available</p></li>
 </ul>
 <p>… see the tutorials!</p>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
-           
           </div>
-          <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="modules.html" class="btn btn-neutral float-right" title="API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="priors.html" class="btn btn-neutral float-left" title="Specifying priors" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="priors.html" class="btn btn-neutral float-left" title="Specifying priors" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="modules.html" class="btn btn-neutral float-right" title="API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        
-        &copy; Copyright 2014-2020, Johannes Buchner
+    <p>&#169; Copyright 2014-2022, Johannes Buchner.</p>
+  </div>
 
-    </p>
-  </div> 
+   
 
 </footer>
-
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>

@@ -1,81 +1,40 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <title>ultranest.hotstart &mdash; UltraNest 3.4.6 documentation</title>
-  
-
-  
-  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-
-  
-  
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ultranest.hotstart &mdash; UltraNest 3.5.2 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="../../_static/icon.ico"/>
-  
-  
-  
-    <link rel="canonical" href="https://johannesbuchner.github.io/UltraNest/_modules/ultranest/hotstart.html"/>
-  
-
-  
+    <link rel="canonical" href="https://johannesbuchner.github.io/UltraNest/_modules/ultranest/hotstart.html" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/language_data.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
-        <script src="https://unpkg.com/@jupyter-widgets/html-manager@^0.20.0/dist/embed-amd.js"></script>
-    
-    <script type="text/javascript" src="../../_static/js/theme.js"></script>
-
-    
+        <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search"  style="background: #2980B9" >
-          
-
-          
-            <a href="../../index.html" class="icon icon-home" alt="Documentation Home"> UltraNest
-          
-
-          
-            
+            <a href="../../index.html" class="icon icon-home"> UltraNest
             <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
-          
           </a>
-
-          
-            
-            
               <div class="version">
-                3.4.6
+                3.5.2
               </div>
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -83,19 +42,8 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
-              <p class="caption"><span class="caption-text">Contents:</span></p>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../readme.html">UltraNest</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
@@ -108,7 +56,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../history.html">Release Notes</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Tutorials:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Tutorials:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../example-sine-line.html">Time series fitting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../example-sine-modelcomparison.html">Model comparison</a></li>
@@ -117,71 +65,38 @@
 <li class="toctree-l1"><a class="reference internal" href="../../example-line.html">Tutorial: fitting a line</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../example-outliers.html">Tutorial: distribution with outliers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../example-sine-bayesian-workflow.html">Bayesian workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-warmstart.html">Tutorial: warm start from a similar fit</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-warmstart.html#First-simple-model">First simple model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-warmstart.html#Warm-Start-with-Model-modification">Warm Start with Model modification</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-warmstart.html#Starting-from-existing-posterior-samples">Starting from existing posterior samples</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../../index.html">UltraNest</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content style-external-links">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
       <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
-        
           <li><a href="../index.html">Module code</a> &raquo;</li>
-        
       <li>ultranest.hotstart</li>
-    
-    
       <li class="wy-breadcrumbs-aside">
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
+             
   <h1>Source code for ultranest.hotstart</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Hot start helper functions.&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;Warm start and hot start helper functions.&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">scipy.stats</span>
@@ -425,6 +340,194 @@
     <span class="k">return</span> <span class="n">aux_loglikelihood</span><span class="p">,</span> <span class="n">aux_transform</span></div>
 
 
+<div class="viewcode-block" id="compute_quantile_intervals"><a class="viewcode-back" href="../../ultranest.html#ultranest.hotstart.compute_quantile_intervals">[docs]</a><span class="k">def</span> <span class="nf">compute_quantile_intervals</span><span class="p">(</span><span class="n">steps</span><span class="p">,</span> <span class="n">upoints</span><span class="p">,</span> <span class="n">uweights</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute lower and upper axis quantiles.</span>
+<span class="sd">    q and 1-q quantiles along each axis of corresponding to steps</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ------------</span>
+<span class="sd">    steps: array</span>
+<span class="sd">        list of quantiles q to compute.</span>
+<span class="sd">    upoints: function</span>
+<span class="sd">        samples</span>
+<span class="sd">    uweights: array</span>
+<span class="sd">        sample weights</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    ---------</span>
+<span class="sd">    ulo: array</span>
+<span class="sd">        list of lower quantiles (at q)</span>
+<span class="sd">    uhi: array</span>
+<span class="sd">        list of upper quantiles (at 1-q)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ndim</span> <span class="o">=</span> <span class="n">upoints</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">nboxes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">steps</span><span class="p">)</span>
+    <span class="n">ulos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">nboxes</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">ndim</span><span class="p">))</span>
+    <span class="n">uhis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">nboxes</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">ndim</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">pthresh</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">steps</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ui</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">upoints</span><span class="o">.</span><span class="n">transpose</span><span class="p">()):</span>
+            <span class="n">order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">ui</span><span class="p">)</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">uweights</span><span class="p">[</span><span class="n">order</span><span class="p">])</span>
+            <span class="n">usel</span> <span class="o">=</span> <span class="n">ui</span><span class="p">[</span><span class="n">order</span><span class="p">][</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">c</span> <span class="o">&gt;=</span> <span class="n">pthresh</span><span class="p">,</span> <span class="n">c</span> <span class="o">&lt;=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">pthresh</span><span class="p">)]</span>
+            <span class="n">ulos</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">usel</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+            <span class="n">uhis</span><span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">usel</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    <span class="n">ulos</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">uhis</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">ulos</span><span class="p">,</span> <span class="n">uhis</span></div>
+
+<div class="viewcode-block" id="compute_quantile_intervals_refined"><a class="viewcode-back" href="../../ultranest.html#ultranest.hotstart.compute_quantile_intervals_refined">[docs]</a><span class="k">def</span> <span class="nf">compute_quantile_intervals_refined</span><span class="p">(</span><span class="n">steps</span><span class="p">,</span> <span class="n">upoints</span><span class="p">,</span> <span class="n">uweights</span><span class="p">,</span> <span class="n">logsteps_max</span><span class="o">=</span><span class="mi">20</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute lower and upper axis quantiles.</span>
+<span class="sd">    q and 1-q quantiles along each axis of corresponding to steps</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ------------</span>
+<span class="sd">    steps: array</span>
+<span class="sd">        list of quantiles q to compute.</span>
+<span class="sd">    upoints: function</span>
+<span class="sd">        samples</span>
+<span class="sd">    uweights: array</span>
+<span class="sd">        sample weights</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    ---------</span>
+<span class="sd">    ulo: array</span>
+<span class="sd">        list of lower quantiles (at q)</span>
+<span class="sd">    uhi: array</span>
+<span class="sd">        list of upper quantiles (at 1-q)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">nboxes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">steps</span><span class="p">)</span>
+    <span class="n">ulos_orig</span><span class="p">,</span> <span class="n">uhis_orig</span> <span class="o">=</span> <span class="n">compute_quantile_intervals</span><span class="p">(</span><span class="n">steps</span><span class="p">,</span> <span class="n">upoints</span><span class="p">,</span> <span class="n">uweights</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">ulos_orig</span><span class="p">)</span> <span class="o">==</span> <span class="n">nboxes</span><span class="o">+</span><span class="mi">1</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">uhis_orig</span><span class="p">)</span> <span class="o">==</span> <span class="n">nboxes</span><span class="o">+</span><span class="mi">1</span>
+
+    <span class="n">smallest_axis_width</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">uhis_orig</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">,:]</span> <span class="o">-</span> <span class="n">ulos_orig</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">,:])</span>
+    <span class="n">logsteps</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">logsteps_max</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mf">1e-100</span><span class="p">,</span> <span class="n">smallest_axis_width</span><span class="p">)))))</span>
+
+    <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="o">-</span><span class="n">logsteps</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">logsteps</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="c1"># print(&quot;logspace:&quot;, weights, logsteps)</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span> <span class="o">==</span> <span class="n">logsteps</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">weights</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">logsteps</span><span class="p">)</span>
+    <span class="c1"># print(&quot;quantiles:&quot;, ulos_orig, uhis_orig)</span>
+    <span class="n">ulos_new</span> <span class="o">=</span> <span class="n">ulos_orig</span><span class="p">[</span><span class="n">nboxes</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">weights</span><span class="p">)</span> <span class="o">+</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">weights</span>
+    <span class="n">uhis_new</span> <span class="o">=</span> <span class="n">uhis_orig</span><span class="p">[</span><span class="n">nboxes</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">weights</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">*</span> <span class="n">weights</span>
+    
+    <span class="c1"># print(&quot;additional quantiles:&quot;, ulos_new, uhis_new)</span>
+    
+    <span class="n">ulos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">ulos_orig</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,:],</span> <span class="n">ulos_new</span><span class="p">))</span>
+    <span class="n">uhis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">uhis_orig</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,:],</span> <span class="n">uhis_new</span><span class="p">))</span>
+    <span class="c1"># print(&quot;combined quantiles:&quot;, ulos, uhis)</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">ulos</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,:]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">uhis</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,:]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    
+    <span class="n">uinterpspace</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">nboxes</span><span class="o">+</span><span class="n">logsteps</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">uinterpspace</span><span class="p">[:</span><span class="n">nboxes</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">nboxes</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="n">uinterpspace</span><span class="p">[</span><span class="n">nboxes</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">,</span> <span class="n">uinterpspace</span><span class="p">[</span><span class="n">nboxes</span><span class="p">]</span>
+    <span class="n">uinterpspace</span><span class="p">[</span><span class="n">nboxes</span><span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">uinterpspace</span><span class="p">[</span><span class="n">nboxes</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="n">logsteps</span><span class="o">+</span><span class="mi">2</span><span class="p">)[</span><span class="mi">1</span><span class="p">:]</span>
+    
+    <span class="k">return</span> <span class="n">ulos</span><span class="p">,</span> <span class="n">uhis</span><span class="p">,</span> <span class="n">uinterpspace</span></div>
+
+
+<div class="viewcode-block" id="get_auxiliary_contbox_parameterization"><a class="viewcode-back" href="../../ultranest.html#ultranest.hotstart.get_auxiliary_contbox_parameterization">[docs]</a><span class="k">def</span> <span class="nf">get_auxiliary_contbox_parameterization</span><span class="p">(</span>
+    <span class="n">param_names</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">upoints</span><span class="p">,</span> <span class="n">uweights</span><span class="p">,</span> <span class="n">vectorized</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return a new loglike and transform based on an auxiliary distribution.</span>
+
+<span class="sd">    Given a likelihood and prior transform, and information about</span>
+<span class="sd">    the (expected) posterior peak, generates a auxiliary</span>
+<span class="sd">    likelihood and prior transform that is identical but</span>
+<span class="sd">    requires fewer nested sampling iterations.</span>
+
+<span class="sd">    Usage::</span>
+
+<span class="sd">        aux_loglikelihood, aux_transform = get_auxiliary_contbox_parameterization(</span>
+<span class="sd">            loglike, transform, auxiliary_usamples)</span>
+<span class="sd">        aux_sampler = ReactiveNestedSampler(parameters, aux_loglikelihood, transform=aux_transform, derived_param_names=[&#39;logweight&#39;])</span>
+<span class="sd">        aux_results = aux_sampler.run()</span>
+<span class="sd">        posterior_samples = aux_results[&#39;samples&#39;][:,-1]</span>
+
+<span class="sd">    This is achieved by deforming the prior space, and undoing that</span>
+<span class="sd">    transformation by correction weights in the likelihood.</span>
+<span class="sd">    A additional parameter, &quot;aux_logweight&quot;, is added at the end,</span>
+<span class="sd">    which contains the correction weight. You can ignore it.</span>
+
+<span class="sd">    The auxiliary distribution used for transformation/weighting is</span>
+<span class="sd">    factorized. Each axis considers the ECDF of the auxiliary samples,</span>
+<span class="sd">    and segments it into quantile segments. Within each segment,</span>
+<span class="sd">    the parameter edges in u-space are linearly interpolated.</span>
+<span class="sd">    To see the interpolation quantiles for each axis, use::</span>
+<span class="sd">    </span>
+<span class="sd">        steps = 10**-(1.0 * np.arange(1, 8, 2))</span>
+<span class="sd">        ulos, uhis, uinterpspace = compute_quantile_intervals_refined(steps, upoints, uweights)</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ------------</span>
+<span class="sd">    loglike: function</span>
+<span class="sd">        original likelihood function</span>
+<span class="sd">    transform: function</span>
+<span class="sd">        original prior transform function</span>
+<span class="sd">    auxiliary_usamples: array</span>
+<span class="sd">        Posterior samples (in u-space).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    ---------</span>
+<span class="sd">    aux_loglike: function</span>
+<span class="sd">        auxiliary loglikelihood function.</span>
+<span class="sd">    aux_transform: function</span>
+<span class="sd">        auxiliary transform function.</span>
+<span class="sd">        Takes d u-space coordinates, and returns d + 1 p-space parameters.</span>
+<span class="sd">        The first d return coordinates are identical to what ``transform`` would return.</span>
+<span class="sd">        The final coordinate is the log of the correction weight.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">steps</span> <span class="o">=</span> <span class="mi">10</span><span class="o">**-</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="n">nsamples</span><span class="p">,</span> <span class="n">ndim</span> <span class="o">=</span> <span class="n">upoints</span><span class="o">.</span><span class="n">shape</span>
+    <span class="k">assert</span> <span class="n">nsamples</span> <span class="o">&gt;</span> <span class="mi">10</span>
+    <span class="n">ulos</span><span class="p">,</span> <span class="n">uhis</span><span class="p">,</span> <span class="n">uinterpspace</span> <span class="o">=</span> <span class="n">compute_quantile_intervals_refined</span><span class="p">(</span><span class="n">steps</span><span class="p">,</span> <span class="n">upoints</span><span class="p">,</span> <span class="n">uweights</span><span class="p">)</span>
+    
+    <span class="n">aux_param_names</span> <span class="o">=</span> <span class="n">param_names</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;aux_logweight&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">aux_transform</span><span class="p">(</span><span class="n">u</span><span class="p">):</span>
+        <span class="n">ndim2</span><span class="p">,</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">assert</span> <span class="n">ndim2</span> <span class="o">==</span> <span class="n">ndim</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">umod</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">ndim</span><span class="p">)</span>
+        <span class="n">log_aux_volume_factors</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndim</span><span class="p">):</span>
+            <span class="n">ulo_here</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">uinterpspace</span><span class="p">,</span> <span class="n">ulos</span><span class="p">[:,</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">uhi_here</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">uinterpspace</span><span class="p">,</span> <span class="n">uhis</span><span class="p">[:,</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">umod</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">ulo_here</span> <span class="o">+</span> <span class="p">(</span><span class="n">uhi_here</span> <span class="o">-</span> <span class="n">ulo_here</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">log_aux_volume_factors</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">uhi_here</span> <span class="o">-</span> <span class="n">ulo_here</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">transform</span><span class="p">(</span><span class="n">umod</span><span class="p">),</span> <span class="n">log_aux_volume_factors</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">aux_transform_vectorized</span><span class="p">(</span><span class="n">u</span><span class="p">):</span>
+        <span class="n">nsamples</span><span class="p">,</span> <span class="n">ndim2</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">assert</span> <span class="n">ndim2</span> <span class="o">==</span> <span class="n">ndim</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">umod</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">nsamples</span><span class="p">,</span> <span class="n">ndim2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">log_aux_volume_factors</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nsamples</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndim</span><span class="p">):</span>
+            <span class="n">ulo_here</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">u</span><span class="p">[:,</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">uinterpspace</span><span class="p">,</span> <span class="n">ulos</span><span class="p">[:,</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">uhi_here</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">u</span><span class="p">[:,</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">uinterpspace</span><span class="p">,</span> <span class="n">uhis</span><span class="p">[:,</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">umod</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">ulo_here</span> <span class="o">+</span> <span class="p">(</span><span class="n">uhi_here</span> <span class="o">-</span> <span class="n">ulo_here</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span><span class="p">[:,</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">log_aux_volume_factors</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">uhi_here</span> <span class="o">-</span> <span class="n">ulo_here</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">transform</span><span class="p">(</span><span class="n">umod</span><span class="p">),</span> <span class="n">log_aux_volume_factors</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">aux_loglikelihood</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="n">x_actual</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">logl</span> <span class="o">=</span> <span class="n">loglike</span><span class="p">(</span><span class="n">x_actual</span><span class="p">)</span>
+        <span class="n">aux_logweight</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="c1"># downweight if we are in the auxiliary distribution</span>
+        <span class="k">return</span> <span class="n">logl</span> <span class="o">+</span> <span class="n">aux_logweight</span>
+
+    <span class="k">def</span> <span class="nf">aux_loglikelihood_vectorized</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="n">x_actual</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:,:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">logl</span> <span class="o">=</span> <span class="n">loglike</span><span class="p">(</span><span class="n">x_actual</span><span class="p">)</span>
+        <span class="n">aux_logweight</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:,</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="c1"># downweight if we are in the auxiliary distribution</span>
+        <span class="k">return</span> <span class="n">logl</span> <span class="o">+</span> <span class="n">aux_logweight</span>
+
+    <span class="k">if</span> <span class="n">vectorized</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">aux_param_names</span><span class="p">,</span> <span class="n">aux_loglikelihood_vectorized</span><span class="p">,</span> <span class="n">aux_transform_vectorized</span><span class="p">,</span> <span class="n">vectorized</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">aux_param_names</span><span class="p">,</span> <span class="n">aux_loglikelihood</span><span class="p">,</span> <span class="n">aux_transform</span><span class="p">,</span> <span class="n">vectorized</span></div>
+
+
 <div class="viewcode-block" id="reuse_samples"><a class="viewcode-back" href="../../ultranest.html#ultranest.hotstart.reuse_samples">[docs]</a><span class="k">def</span> <span class="nf">reuse_samples</span><span class="p">(</span>
     <span class="n">param_names</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">points</span><span class="p">,</span> <span class="n">logl</span><span class="p">,</span> <span class="n">logw</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">logz</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">logzerr</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">upoints</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -540,41 +643,27 @@
 </pre></div>
 
            </div>
-           
           </div>
           <footer>
-  
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        
-        &copy; Copyright 2014-2020, Johannes Buchner
+    <p>&#169; Copyright 2014-2022, Johannes Buchner.</p>
+  </div>
 
-    </p>
-  </div> 
+   
 
 </footer>
-
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>
