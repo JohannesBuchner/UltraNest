@@ -60,7 +60,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'UltraNest'
-copyright = u"2014-2020, Johannes Buchner"
+copyright = u"2014-2022, Johannes Buchner"
 author = u"Johannes Buchner"
 
 # The version info for the project you're documenting, acts as replacement
@@ -77,7 +77,7 @@ release = ultranest.__version__
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = 'en'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -118,12 +118,13 @@ edit_on_github_src = 'docs/'  # optional. default: ''
 #
 html_theme = "sphinx_rtd_theme"
 
+html_baseurl = 'https://johannesbuchner.github.io/UltraNest/'
+
 # Theme options are theme-specific and customize the look and feel of a
 # theme further.  For a list of options available for each theme, see the
 # documentation.
 #
 html_theme_options = {
-    'canonical_url': 'https://johannesbuchner.github.io/UltraNest/',
     'style_external_links': True,
     # 'vcs_pageview_mode': 'edit',
     'style_nav_header_background': '#2980B9',
