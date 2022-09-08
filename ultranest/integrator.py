@@ -2284,7 +2284,7 @@ class ReactiveNestedSampler(object):
 
     def run_iter(
             self,
-            update_interval_volume_fraction=0.2,
+            update_interval_volume_fraction=0.8,
             update_interval_ncall=None,
             log_interval=None,
             dlogz=0.5,
