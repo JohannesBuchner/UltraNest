@@ -66,6 +66,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../example-outliers.html">Tutorial: distribution with outliers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../example-sine-bayesian-workflow.html">Bayesian workflow</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../example-warmstart.html">warm starting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../debugging.html">Debugging techniques</a></li>
 </ul>
 
         </div>
@@ -1839,7 +1840,14 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">active_u</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">(),</span> \
             <span class="p">(</span><span class="s2">&quot;None of the live points satisfies the current region!&quot;</span><span class="p">,</span>
-             <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">unormed</span><span class="p">,</span> <span class="n">active_u</span><span class="p">)</span>
+             <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">unormed</span><span class="p">,</span> <span class="n">active_u</span><span class="p">,</span>
+             <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span> <span class="s1">&#39;bbox_lo&#39;</span><span class="p">),</span>
+             <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span> <span class="s1">&#39;bbox_hi&#39;</span><span class="p">),</span>
+             <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span> <span class="s1">&#39;ellipsoid_cov&#39;</span><span class="p">),</span>
+             <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span> <span class="s1">&#39;ellipsoid_center&#39;</span><span class="p">),</span>
+             <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span> <span class="s1">&#39;ellipsoid_invcov&#39;</span><span class="p">),</span>
+             <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span> <span class="s1">&#39;ellipsoid_cov&#39;</span><span class="p">),</span>
+             <span class="p">)</span>
 
         <span class="n">nit</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
