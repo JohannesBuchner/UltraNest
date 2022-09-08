@@ -65,7 +65,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../example-line.html">Tutorial: fitting a line</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../example-outliers.html">Tutorial: distribution with outliers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../example-sine-bayesian-workflow.html">Bayesian workflow</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../example-warmstart.html">warm starting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-warmstart.html">Warm starting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../debugging.html">Debugging techniques</a></li>
 </ul>
 
@@ -154,7 +154,7 @@
     <span class="n">oldfunc</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">warning</span>
     <span class="n">logging</span><span class="o">.</span><span class="n">warning</span> <span class="o">=</span> <span class="k">lambda</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="kc">None</span>
     <span class="n">corner</span><span class="o">.</span><span class="n">corner</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">mask</span><span class="p">,:],</span> <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span>
-                  <span class="n">labels</span><span class="o">=</span><span class="n">paramnames</span><span class="p">,</span> <span class="n">show_titles</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                  <span class="n">labels</span><span class="o">=</span><span class="n">paramnames</span><span class="p">,</span> <span class="n">show_titles</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">quiet</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">logging</span><span class="o">.</span><span class="n">warning</span> <span class="o">=</span> <span class="n">oldfunc</span></div>
 
 
