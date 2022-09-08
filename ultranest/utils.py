@@ -52,7 +52,7 @@ def create_logger(module_name, log_dir=None, level=logging.INFO):
         formatter = logging.Formatter('[{}] %(message)s'.format(module_name))
         handler.setFormatter(formatter)
         logger.addHandler(handler)
-
+        logger.addHandler(logging.NullHandler())
     return logger
 
 
