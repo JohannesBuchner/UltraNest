@@ -88,7 +88,6 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#Parallelisation-issues">Parallelisation issues</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#Debugging-step-sampler-quality">Debugging step sampler quality</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#Noisy-debug-logs-in-jupyter-notebooks">Noisy debug logs in jupyter notebooks</a></li>
 </ul>
 </li>
 </ul>
@@ -581,7 +580,7 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-6.31 µs ± 153 ns per loop (mean ± std. dev. of 7 runs, 100,000 loops each)
+6.66 µs ± 209 ns per loop (mean ± std. dev. of 7 runs, 100,000 loops each)
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -598,7 +597,7 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-901 µs ± 11.9 µs per loop (mean ± std. dev. of 7 runs, 1,000 loops each)
+937 µs ± 29.8 µs per loop (mean ± std. dev. of 7 runs, 1,000 loops each)
 </pre></div></div>
 </div>
 <p>Here we see that the prior transform is very quick: one evaluation per microsecond. But the likelihood is much slower, with one evaluation per ms. That means for a million samples, we already have to wait 15 minutes.</p>
@@ -620,14 +619,14 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">signal</span>
 <span class="k">def</span> <span class="nf">timeout_handler</span><span class="p">(</span><span class="n">signum</span><span class="p">,</span> <span class="n">frame</span><span class="p">):</span>
-    <span class="k">raise</span> <span class="ne">KeyboardInterrupt</span><span class="p">()</span>
+    <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">()</span>
 <span class="n">old_handler</span> <span class="o">=</span> <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGALRM</span><span class="p">,</span> <span class="n">timeout_handler</span><span class="p">)</span>
 <span class="n">signal</span><span class="o">.</span><span class="n">alarm</span><span class="p">(</span><span class="mi">30</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">ultranest</span>
@@ -637,7 +636,7 @@ div.rendered_html tbody tr:hover {
 
 <span class="k">try</span><span class="p">:</span>
     <span class="n">sampler</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
-<span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
+<span class="k">except</span> <span class="ne">TimeoutError</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;run interrupted!&quot;</span><span class="p">)</span>
 
 <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGALRM</span><span class="p">,</span> <span class="n">old_handler</span><span class="p">);</span>
@@ -656,38 +655,39 @@ div.rendered_html tbody tr:hover {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<script type="application/vnd.jupyter.widget-view+json">{"model_id": "ee9e27ffafa64d8fba719bdf44538f37", "version_major": 2, "version_minor": 0}</script></div>
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "146540ae46bc408db966066c74cffd7f", "version_major": 2, "version_minor": 0}</script></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-Z=-293.5(0.00%) | Like=-286.66..-128.48 [-312.3024..-284.5850] | it/evals=1332/7292 eff=19.3268% N=400 0 0
+run interrupted!| Like=-258.90..-89.46 [-260.4596..-249.1400] | it/evals=1995/18885 eff=10.7925% N=400 0 0
 </pre></div></div>
-</div>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sampler</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">handlers</span>
-</pre></div>
-</div>
 </div>
 <section id="Looking-inside-the-current-parameter-space">
 <h3>Looking inside the current parameter space<a class="headerlink" href="#Looking-inside-the-current-parameter-space" title="Permalink to this heading"></a></h3>
 <p>Nested sampling is at this likelihood threshold:</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sampler</span><span class="o">.</span><span class="n">Lmin</span>
 </pre></div>
 </div>
 </div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+-258.733283170889
+</pre></div></div>
+</div>
 <p>Lets see the distribution of live points in the parameter space:</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">live_points_p</span> <span class="o">=</span> <span class="n">sampler</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">sampler</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="p">)</span>
@@ -695,21 +695,35 @@ Z=-293.5(0.00%) | Like=-286.66..-128.48 [-312.3024..-284.5850] | it/evals=1332/7
 </pre></div>
 </div>
 </div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/debugging_38_0.png" src="_images/debugging_38_0.png" />
+</div>
+</div>
 <p>This does not look trivial, for example P1-t1 plot has two arms. It is not a ellipsoidal contour (which would be the easiest shape).</p>
 <p>However, this plot also includes the prior deformation. What ultranest operates on, primarily, is the unit cube. Lets look at the live points distribution in the un-transformed prior space:</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">corner</span><span class="o">.</span><span class="n">corner</span><span class="p">(</span><span class="n">sampler</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="p">,</span> <span class="n">show_titles</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">quiet</span><span class="o">=</span><span class="kc">True</span><span class="p">);</span>
 </pre></div>
 </div>
 </div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/debugging_40_0.png" src="_images/debugging_40_0.png" />
+</div>
+</div>
 <p>Again, you see relatively complicated shapes. This means that the parameters have a complicated relationship with the observables.</p>
 <p>You can help ultranest by reparametrizing the parameters, or adding derived parameters, which are more ellipsoidal, and better behaved.</p>
 <p>Lets see what models correspond to the current live points:</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="s1">&#39;o &#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
@@ -717,6 +731,13 @@ Z=-293.5(0.00%) | Like=-286.66..-128.48 [-312.3024..-284.5850] | it/evals=1332/7
 <span class="k">for</span> <span class="n">params</span> <span class="ow">in</span> <span class="n">live_points_p</span><span class="p">:</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">sine_model1</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="o">*</span><span class="n">params</span><span class="p">),</span> <span class="s1">&#39;. &#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">viridis</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">/</span><span class="mi">10</span><span class="p">))</span>
 <br/></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/debugging_43_0.png" src="_images/debugging_43_0.png" />
 </div>
 </div>
 <p>Here you see two groups of curves, which are highlighted by color-coding by period.</p>
@@ -728,8 +749,8 @@ Z=-293.5(0.00%) | Like=-286.66..-128.48 [-312.3024..-284.5850] | it/evals=1332/7
 <p>The sine curve model has the time shift t1 and the period as parameters. Likely, the data will constrain, for example, when the peak occurs, for example.</p>
 <p>So you could add a derived parameter that specifies the time of the first peak. If that is closer to the data, the sampler can take advantage of it.</p>
 <p>You can also see that when A1 is large, B can take a wider range of values, giving a funnel shape:</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">live_points_p</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">live_points_p</span><span class="p">[:,</span><span class="mi">1</span><span class="p">])</span>
@@ -738,9 +759,16 @@ Z=-293.5(0.00%) | Like=-286.66..-128.48 [-312.3024..-284.5850] | it/evals=1332/7
 </pre></div>
 </div>
 </div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/debugging_50_0.png" src="_images/debugging_50_0.png" />
+</div>
+</div>
 <p>This funnel is even clearer in unit cube space:</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">sampler</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">sampler</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="p">[:,</span><span class="mi">1</span><span class="p">])</span>
@@ -749,9 +777,16 @@ Z=-293.5(0.00%) | Like=-286.66..-128.48 [-312.3024..-284.5850] | it/evals=1332/7
 </pre></div>
 </div>
 </div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/debugging_52_0.png" src="_images/debugging_52_0.png" />
+</div>
+</div>
 <p>A different parameterization would be to define a background fraction. Instead of background &amp; amplitude being free parameters, you would have this reparametrized model:</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">parameters_reparametrized</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Bfrac&#39;</span><span class="p">,</span> <span class="s1">&#39;A1&#39;</span><span class="p">,</span> <span class="s1">&#39;P1&#39;</span><span class="p">,</span> <span class="s1">&#39;t1&#39;</span><span class="p">]</span>
@@ -777,7 +812,7 @@ Z=-293.5(0.00%) | Like=-286.66..-128.48 [-312.3024..-284.5850] | it/evals=1332/7
 <h2>Parallelisation issues<a class="headerlink" href="#Parallelisation-issues" title="Permalink to this heading"></a></h2>
 <p>If you have any MPI issues, test your MPI first in isolation, by running this command:</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>mpiexec -np <span class="m">4</span> python3 -c <span class="s1">&#39;from mpi4py import MPI; print(MPI.COMM_WORLD.Get_rank(), MPI.COMM_WORLD.Get_size())&#39;</span>
@@ -792,69 +827,6 @@ Z=-293.5(0.00%) | Like=-286.66..-128.48 [-312.3024..-284.5850] | it/evals=1332/7
 <section id="Debugging-step-sampler-quality">
 <h2>Debugging step sampler quality<a class="headerlink" href="#Debugging-step-sampler-quality" title="Permalink to this heading"></a></h2>
 <p>Run with nsteps=1, 2, 4, 8, 16, 32, 64 … steps and look where the log(Z) value stabilizes.</p>
-</section>
-<section id="Noisy-debug-logs-in-jupyter-notebooks">
-<h2>Noisy debug logs in jupyter notebooks<a class="headerlink" href="#Noisy-debug-logs-in-jupyter-notebooks" title="Permalink to this heading"></a></h2>
-<p>Sometimes you see lots of “DEBUG:” statements when ultranest runs in jupyter notebooks. Why does this happen?</p>
-<p>It is because a library (such as corner) started to make logging outputs when no logger was defined. So python automatically installs a logger which jupyter “helpfully” prints to the screen.</p>
-<p>You can see the installed logger here and its handlers:</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span>
-<span class="n">root_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">root_logger</span><span class="o">.</span><span class="n">handlers</span>
-</pre></div>
-</div>
-</div>
-<p>If some library, like corner, emits a warning …</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Oh no, something happened&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<p>A root logging handler is now installed:</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">root_logger</span><span class="o">.</span><span class="n">handlers</span>
-</pre></div>
-</div>
-</div>
-<p>You can silence it later with:</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">root_logger</span><span class="o">.</span><span class="n">handlers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<p>But the proper way is to set up logging at the top of your notebooks:</p>
-<div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[ ]:
-</pre></div>
-</div>
-<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">logging</span><span class="o">,</span> <span class="nn">sys</span>
-<span class="n">handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
-<span class="n">handler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">)</span>
-<span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<p>Find out more about python logging at: <a class="reference external" href="https://docs.python.org/3/howto/logging.html">https://docs.python.org/3/howto/logging.html</a></p>
 </section>
 </section>
 
