@@ -47,7 +47,7 @@ def get_auxiliary_problem(loglike, transform, ctr, invcov, enlargement_factor, d
         The default is recommended. For truly gaussian posteriors,
         the student-t can be made more gaussian (by df>=30) for accelation.
 
-    Returns:
+    Returns
     ---------
     aux_loglike: function
         auxiliary loglikelihood function.
@@ -122,7 +122,7 @@ def get_extended_auxiliary_problem(loglike, transform, ctr, invcov, enlargement_
         The default is recommended. For truly gaussian posteriors,
         the student-t can be made more gaussian (by df>=30) for accelation.
 
-    Returns:
+    Returns
     ---------
     aux_loglike: function
         auxiliary loglikelihood function. Takes d + 1 parameters (see below).
@@ -204,7 +204,7 @@ def get_extended_auxiliary_independent_problem(loglike, transform, ctr, err, df=
         The default is recommended. For truly gaussian posteriors,
         the student-t can be made more gaussian (by df>=30) for accelation.
 
-    Returns:
+    Returns
     ---------
     aux_loglike: function
         auxiliary loglikelihood function.
@@ -254,7 +254,7 @@ def compute_quantile_intervals(steps, upoints, uweights):
     uweights: array
         sample weights
 
-    Returns:
+    Returns
     ---------
     ulo: array
         list of lower quantiles (at q), one entry for each dimension d.
@@ -263,8 +263,8 @@ def compute_quantile_intervals(steps, upoints, uweights):
     """
     ndim = upoints.shape[1]
     nboxes = len(steps)
-    ulos = np.empty((nboxes+1,ndim))
-    uhis = np.empty((nboxes+1,ndim))
+    ulos = np.empty((nboxes + 1, ndim))
+    uhis = np.empty((nboxes + 1, ndim))
     for j, pthresh in enumerate(steps):
         for i, ui in enumerate(upoints.transpose()):
             order = np.argsort(ui)
@@ -276,19 +276,20 @@ def compute_quantile_intervals(steps, upoints, uweights):
     uhis[-1] = 1
     return ulos, uhis
 
+
 def compute_quantile_intervals_refined(steps, upoints, uweights, logsteps_max=20):
     """Compute lower and upper axis quantiles.
-    
+
     Parameters
     ------------
     steps: array
-        list of quantiles q to compute, with dimensions 
+        list of quantiles q to compute, with dimensions
     upoints: array
         samples, with dimensions (N, d)
     uweights: array
         sample weights. N entries.
 
-    Returns:
+    Returns
     ---------
     ulo: array
         list of lower quantiles (at q), of shape (M, d), one entry per quantile and dimension d.
@@ -297,32 +298,32 @@ def compute_quantile_intervals_refined(steps, upoints, uweights, logsteps_max=20
     """
     nboxes = len(steps)
     ulos_orig, uhis_orig = compute_quantile_intervals(steps, upoints, uweights)
-    assert len(ulos_orig) == nboxes+1
-    assert len(uhis_orig) == nboxes+1
+    assert len(ulos_orig) == nboxes + 1
+    assert len(uhis_orig) == nboxes + 1
 
     smallest_axis_width = np.min(uhis_orig[-2,:] - ulos_orig[-2,:])
     logsteps = min(logsteps_max, int(np.ceil(-np.log10(max(1e-100, smallest_axis_width)))))
 
-    weights = np.logspace(-logsteps, 0, logsteps+1).reshape((-1, 1))
+    weights = np.logspace(-logsteps, 0, logsteps + 1).reshape((-1, 1))
     # print("logspace:", weights, logsteps)
-    assert len(weights) == logsteps+1, (weights.shape, logsteps)
+    assert len(weights) == logsteps + 1, (weights.shape, logsteps)
     # print("quantiles:", ulos_orig, uhis_orig)
-    ulos_new = ulos_orig[nboxes-1, :].reshape((1, -1)) * (1 - weights) + 0 * weights
-    uhis_new = uhis_orig[nboxes-1, :].reshape((1, -1)) * (1 - weights) + 1 * weights
-    
+    ulos_new = ulos_orig[nboxes - 1, :].reshape((1, -1)) * (1 - weights) + 0 * weights
+    uhis_new = uhis_orig[nboxes - 1, :].reshape((1, -1)) * (1 - weights) + 1 * weights
+
     # print("additional quantiles:", ulos_new, uhis_new)
-    
+
     ulos = np.vstack((ulos_orig[:-1,:], ulos_new))
     uhis = np.vstack((uhis_orig[:-1,:], uhis_new))
     # print("combined quantiles:", ulos, uhis)
     assert (ulos[-1,:] == 0).all()
     assert (uhis[-1,:] == 1).all()
-    
-    uinterpspace = np.ones(nboxes+logsteps+1)
-    uinterpspace[:nboxes+1] = np.linspace(0, 1, nboxes+1)
-    assert 0 < uinterpspace[nboxes-1] < 1, uinterpspace[nboxes]
-    uinterpspace[nboxes:] = np.linspace(uinterpspace[nboxes-1], 1, logsteps+2)[1:]
-    
+
+    uinterpspace = np.ones(nboxes + logsteps + 1)
+    uinterpspace[:nboxes + 1] = np.linspace(0, 1, nboxes + 1)
+    assert 0 < uinterpspace[nboxes - 1] < 1, uinterpspace[nboxes]
+    uinterpspace[nboxes:] = np.linspace(uinterpspace[nboxes - 1], 1, logsteps + 2)[1:]
+
     return ulos, uhis, uinterpspace
 
 
@@ -354,7 +355,7 @@ def get_auxiliary_contbox_parameterization(
     and segments it into quantile segments. Within each segment,
     the parameter edges in u-space are linearly interpolated.
     To see the interpolation quantiles for each axis, use::
-    
+
         steps = 10**-(1.0 * np.arange(1, 8, 2))
         ulos, uhis, uinterpspace = compute_quantile_intervals_refined(steps, upoints, uweights)
 
@@ -367,7 +368,7 @@ def get_auxiliary_contbox_parameterization(
     auxiliary_usamples: array
         Posterior samples (in u-space).
 
-    Returns:
+    Returns
     ---------
     aux_loglike: function
         auxiliary loglikelihood function.
@@ -381,7 +382,7 @@ def get_auxiliary_contbox_parameterization(
     nsamples, ndim = upoints.shape
     assert nsamples > 10
     ulos, uhis, uinterpspace = compute_quantile_intervals_refined(steps, upoints, uweights)
-    
+
     aux_param_names = param_names + ['aux_logweight']
 
     def aux_transform(u):
@@ -462,7 +463,7 @@ def reuse_samples(
     log_weight_threshold: float
         Lowest log-weight to consider
 
-    Returns:
+    Returns
     ---------
     results: dict
         All information of the run. Important keys:

@@ -40,7 +40,7 @@ def _get_cumsum_range(pi, dp):
     dp: float
         Quantile (between 0 and 0.5).
 
-    Returns:
+    Returns
     ---------
     index_lo: int
         Index of the item corresponding to quantile ``dp``.
@@ -65,7 +65,7 @@ def _sequentialize_width_sequence(minimal_widths, min_width):
     min_width: int
         Minimum width everywhere.
 
-    Returns:
+    Returns
     ---------
     Lsequence: list of (L, width)
         A sequence of L points and the expected tree width at and above it.
@@ -925,29 +925,6 @@ def warmstart_from_similar_file(
 ):
     """Warmstart from a previous run.
 
-    Parameters
-    ------------
-    usample_filename: str
-        'directory/chains/weighted_post_untransformed.txt'
-        contains posteriors in u-space (untransformed) of a previous run.
-        Columns are weight, logl, param1, param2, ...
-    min_num_samples: int
-        minimum number of samples in the usample_filename file required.
-        Too few samples will give a poor approximation.
-
-    The remaining parameters have the same meaning as in :class:ReactiveNestedSampler.
-
-    Returns:
-    ---------
-    aux_param_names: list
-        new parameter list
-    aux_loglikelihood: function
-        new loglikelihood function
-    aux_transform: function
-        new prior transform function
-    vectorized: bool
-        whether the new functions are vectorized
-
     Usage::
 
         aux_paramnames, aux_log_likelihood, aux_prior_transform, vectorized = warmstart_from_similar_file(
@@ -960,6 +937,28 @@ def warmstart_from_similar_file(
     See :py:func:`ultranest.hotstart.get_auxiliary_contbox_parameterization`
     for more information.
 
+    Parameters
+    ------------
+    usample_filename: str
+        'directory/chains/weighted_post_untransformed.txt'
+        contains posteriors in u-space (untransformed) of a previous run.
+        Columns are weight, logl, param1, param2, ...
+    min_num_samples: int
+        minimum number of samples in the usample_filename file required.
+        Too few samples will give a poor approximation.
+    otherparameters: ...
+        The remaining parameters have the same meaning as in :class:ReactiveNestedSampler.
+
+    Returns
+    ---------
+    aux_param_names: list
+        new parameter list
+    aux_loglikelihood: function
+        new loglikelihood function
+    aux_transform: function
+        new prior transform function
+    vectorized: bool
+        whether the new functions are vectorized
     """
     # load samples
     try:
