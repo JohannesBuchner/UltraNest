@@ -580,7 +580,7 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-6.66 µs ± 209 ns per loop (mean ± std. dev. of 7 runs, 100,000 loops each)
+6.53 µs ± 256 ns per loop (mean ± std. dev. of 7 runs, 100,000 loops each)
 </pre></div></div>
 </div>
 <div class="nbinput docutils container">
@@ -597,7 +597,7 @@ div.rendered_html tbody tr:hover {
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-937 µs ± 29.8 µs per loop (mean ± std. dev. of 7 runs, 1,000 loops each)
+897 µs ± 6.6 µs per loop (mean ± std. dev. of 7 runs, 1,000 loops each)
 </pre></div></div>
 </div>
 <p>Here we see that the prior transform is very quick: one evaluation per microsecond. But the likelihood is much slower, with one evaluation per ms. That means for a million samples, we already have to wait 15 minutes.</p>
@@ -655,21 +655,21 @@ div.rendered_html tbody tr:hover {
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
-<script type="application/vnd.jupyter.widget-view+json">{"model_id": "146540ae46bc408db966066c74cffd7f", "version_major": 2, "version_minor": 0}</script></div>
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "780e0d4d65014955b438d2dd9a7769ed", "version_major": 2, "version_minor": 0}</script></div>
 </div>
 <div class="nboutput nblast docutils container">
 <div class="prompt empty docutils container">
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-run interrupted!| Like=-258.90..-89.46 [-260.4596..-249.1400] | it/evals=1995/18885 eff=10.7925% N=400 0 0
+run interrupted!| Like=-255.66..-89.46 [-260.4596..-249.1400] | it/evals=2060/20807 eff=10.0946% N=400 0 0
 </pre></div></div>
 </div>
 <section id="Looking-inside-the-current-parameter-space">
 <h3>Looking inside the current parameter space<a class="headerlink" href="#Looking-inside-the-current-parameter-space" title="Permalink to this heading"></a></h3>
 <p>Nested sampling is at this likelihood threshold:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sampler</span><span class="o">.</span><span class="n">Lmin</span>
@@ -677,17 +677,17 @@ run interrupted!| Like=-258.90..-89.46 [-260.4596..-249.1400] | it/evals=1995/18
 </div>
 </div>
 <div class="nboutput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
 </pre></div>
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
--258.733283170889
+-255.4088047726119
 </pre></div></div>
 </div>
 <p>Lets see the distribution of live points in the parameter space:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">live_points_p</span> <span class="o">=</span> <span class="n">sampler</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">sampler</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="p">)</span>
@@ -705,7 +705,7 @@ run interrupted!| Like=-258.90..-89.46 [-260.4596..-249.1400] | it/evals=1995/18
 <p>This does not look trivial, for example P1-t1 plot has two arms. It is not a ellipsoidal contour (which would be the easiest shape).</p>
 <p>However, this plot also includes the prior deformation. What ultranest operates on, primarily, is the unit cube. Lets look at the live points distribution in the un-transformed prior space:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">corner</span><span class="o">.</span><span class="n">corner</span><span class="p">(</span><span class="n">sampler</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="p">,</span> <span class="n">show_titles</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">quiet</span><span class="o">=</span><span class="kc">True</span><span class="p">);</span>
@@ -723,7 +723,7 @@ run interrupted!| Like=-258.90..-89.46 [-260.4596..-249.1400] | it/evals=1995/18
 <p>You can help ultranest by reparametrizing the parameters, or adding derived parameters, which are more ellipsoidal, and better behaved.</p>
 <p>Lets see what models correspond to the current live points:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="s1">&#39;o &#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
@@ -750,7 +750,7 @@ run interrupted!| Like=-258.90..-89.46 [-260.4596..-249.1400] | it/evals=1995/18
 <p>So you could add a derived parameter that specifies the time of the first peak. If that is closer to the data, the sampler can take advantage of it.</p>
 <p>You can also see that when A1 is large, B can take a wider range of values, giving a funnel shape:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">live_points_p</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">live_points_p</span><span class="p">[:,</span><span class="mi">1</span><span class="p">])</span>
@@ -768,7 +768,7 @@ run interrupted!| Like=-258.90..-89.46 [-260.4596..-249.1400] | it/evals=1995/18
 </div>
 <p>This funnel is even clearer in unit cube space:</p>
 <div class="nbinput docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">sampler</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">sampler</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="p">[:,</span><span class="mi">1</span><span class="p">])</span>
@@ -786,7 +786,7 @@ run interrupted!| Like=-258.90..-89.46 [-260.4596..-249.1400] | it/evals=1995/18
 </div>
 <p>A different parameterization would be to define a background fraction. Instead of background &amp; amplitude being free parameters, you would have this reparametrized model:</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">parameters_reparametrized</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Bfrac&#39;</span><span class="p">,</span> <span class="s1">&#39;A1&#39;</span><span class="p">,</span> <span class="s1">&#39;P1&#39;</span><span class="p">,</span> <span class="s1">&#39;t1&#39;</span><span class="p">]</span>
@@ -812,15 +812,21 @@ run interrupted!| Like=-258.90..-89.46 [-260.4596..-249.1400] | it/evals=1995/18
 <h2>Parallelisation issues<a class="headerlink" href="#Parallelisation-issues" title="Permalink to this heading"></a></h2>
 <p>If you have any MPI issues, test your MPI first in isolation, by running this command:</p>
 <div class="nbinput nblast docutils container">
-<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">!</span>mpiexec -np <span class="m">4</span> python3 -c <span class="s1">&#39;from mpi4py import MPI; print(MPI.COMM_WORLD.Get_rank(), MPI.COMM_WORLD.Get_size())&#39;</span>
 </pre></div>
 </div>
 </div>
-<p>If it gives an output like the above, your MPI is working. If the last column is 1, your cores are not communicating.</p>
-<p>If you get an error, fix it first.</p>
+<p>This should give something like:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>3 4
+1 4
+0 4
+2 4
+</pre></div>
+</div>
+<p>With the first column randomly. If it gives an output like the above, your MPI is working. If the last column is 1, your cores are not communicating. If you get an error, fix it first.</p>
 <p>If you are seeing slower runtimes with MPI than without, see here: <a class="reference external" href="https://johannesbuchner.github.io/UltraNest/performance.html#parallelisation">https://johannesbuchner.github.io/UltraNest/performance.html#parallelisation</a></p>
 <p>Some MPI implementations have bugs, and you can switch to another MPI implementation. Your computing cluster admins may also help you with MPI troubles.</p>
 </section>
