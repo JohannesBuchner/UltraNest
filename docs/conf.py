@@ -98,7 +98,7 @@ nbsphinx_timeout = 4 * 60 * 60
 
 nbsphinx_execute_arguments = [
     "--InlineBackend.figure_formats={'svg', 'pdf'}",
-    "--InlineBackend.rc={'figure.dpi': 96}",
+    "--InlineBackend.rc=figure.dpi=96",
 ]
 
 autodoc_member_order = 'bysource'
