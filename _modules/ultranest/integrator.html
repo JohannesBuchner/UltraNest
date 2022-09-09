@@ -136,7 +136,7 @@
 <span class="sd">    dp: float</span>
 <span class="sd">        Quantile (between 0 and 0.5).</span>
 
-<span class="sd">    Returns:</span>
+<span class="sd">    Returns</span>
 <span class="sd">    ---------</span>
 <span class="sd">    index_lo: int</span>
 <span class="sd">        Index of the item corresponding to quantile ``dp``.</span>
@@ -161,7 +161,7 @@
 <span class="sd">    min_width: int</span>
 <span class="sd">        Minimum width everywhere.</span>
 
-<span class="sd">    Returns:</span>
+<span class="sd">    Returns</span>
 <span class="sd">    ---------</span>
 <span class="sd">    Lsequence: list of (L, width)</span>
 <span class="sd">        A sequence of L points and the expected tree width at and above it.</span>
@@ -1021,29 +1021,6 @@
 <span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Warmstart from a previous run.</span>
 
-<span class="sd">    Parameters</span>
-<span class="sd">    ------------</span>
-<span class="sd">    usample_filename: str</span>
-<span class="sd">        &#39;directory/chains/weighted_post_untransformed.txt&#39;</span>
-<span class="sd">        contains posteriors in u-space (untransformed) of a previous run.</span>
-<span class="sd">        Columns are weight, logl, param1, param2, ...</span>
-<span class="sd">    min_num_samples: int</span>
-<span class="sd">        minimum number of samples in the usample_filename file required.</span>
-<span class="sd">        Too few samples will give a poor approximation.</span>
-
-<span class="sd">    The remaining parameters have the same meaning as in :class:ReactiveNestedSampler.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">    ---------</span>
-<span class="sd">    aux_param_names: list</span>
-<span class="sd">        new parameter list</span>
-<span class="sd">    aux_loglikelihood: function</span>
-<span class="sd">        new loglikelihood function</span>
-<span class="sd">    aux_transform: function</span>
-<span class="sd">        new prior transform function</span>
-<span class="sd">    vectorized: bool</span>
-<span class="sd">        whether the new functions are vectorized</span>
-
 <span class="sd">    Usage::</span>
 
 <span class="sd">        aux_paramnames, aux_log_likelihood, aux_prior_transform, vectorized = warmstart_from_similar_file(</span>
@@ -1056,6 +1033,28 @@
 <span class="sd">    See :py:func:`ultranest.hotstart.get_auxiliary_contbox_parameterization`</span>
 <span class="sd">    for more information.</span>
 
+<span class="sd">    Parameters</span>
+<span class="sd">    ------------</span>
+<span class="sd">    usample_filename: str</span>
+<span class="sd">        &#39;directory/chains/weighted_post_untransformed.txt&#39;</span>
+<span class="sd">        contains posteriors in u-space (untransformed) of a previous run.</span>
+<span class="sd">        Columns are weight, logl, param1, param2, ...</span>
+<span class="sd">    min_num_samples: int</span>
+<span class="sd">        minimum number of samples in the usample_filename file required.</span>
+<span class="sd">        Too few samples will give a poor approximation.</span>
+<span class="sd">    otherparameters: ...</span>
+<span class="sd">        The remaining parameters have the same meaning as in :class:ReactiveNestedSampler.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    ---------</span>
+<span class="sd">    aux_param_names: list</span>
+<span class="sd">        new parameter list</span>
+<span class="sd">    aux_loglikelihood: function</span>
+<span class="sd">        new loglikelihood function</span>
+<span class="sd">    aux_transform: function</span>
+<span class="sd">        new prior transform function</span>
+<span class="sd">    vectorized: bool</span>
+<span class="sd">        whether the new functions are vectorized</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># load samples</span>
     <span class="k">try</span><span class="p">:</span>
