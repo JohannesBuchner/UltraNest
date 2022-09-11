@@ -154,6 +154,8 @@ def resample_equal(samples, weights, rstate=None):
         Shape is (N, ...), with N the number of samples.
     weights : `~numpy.ndarray`
         Weight of each sample. Shape is (N,).
+    rstate : `~numpy.random.RandomState`
+        random number generator. If not provided, numpy.random is used.
 
     Returns
     -------

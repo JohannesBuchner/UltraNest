@@ -223,8 +223,8 @@ def generate_mixture_random_direction(ui, region, scale=1):
     -----------
     region: MLFriends
         region
-    uniform_weight: float
-        sets the weight for the equal-axis ball contribution
+    ui: array
+        vector of starting point
     scale: float
         length of the vector.
 
@@ -756,8 +756,10 @@ class MHSampler(StepSampler):
             current point
         ndraw: int
             number of points to draw.
-
-        All other parameters are ignored.
+        region:
+            ignored
+        plot:
+            ignored
         """
         # propose in that direction
         direction = self.generate_direction(ui, region, scale=self.scale)

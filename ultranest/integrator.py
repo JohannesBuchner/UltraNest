@@ -18,9 +18,9 @@ import numpy as np
 
 from .utils import create_logger, make_run_dir, resample_equal, vol_prefactor, vectorize, listify as _listify
 from .utils import is_affine_transform, normalised_kendall_tau_distance, distributed_work_chunk_size
-from ultranest.mlfriends import MLFriends, AffineLayer, ScalingLayer, find_nearby, WrappingEllipsoid, RobustEllipsoidRegion
+from ultranest.mlfriends import MLFriends, AffineLayer, ScalingLayer, find_nearby, WrappingEllipsoid
 from .store import HDF5PointStore, TextPointStore, NullPointStore
-from .viz import get_default_viz_callback, nicelogger
+from .viz import get_default_viz_callback
 from .ordertest import UniformOrderAccumulator
 from .netiter import PointPile, SingleCounter, MultiCounter, BreadthFirstIterator, TreeNode, count_tree_between, find_nodes_before, logz_sequence
 from .netiter import dump_tree, combine_results
@@ -438,6 +438,9 @@ class NestedSampler(object):
         vectorized: bool
             If true, loglike and transform function can receive arrays
             of points.
+        run_num: int
+            unique run number. If None, will be automatically incremented.
+        
 
         """
         self.paramnames = param_names
@@ -937,6 +940,8 @@ def warmstart_from_similar_file(
     See :py:func:`ultranest.hotstart.get_auxiliary_contbox_parameterization`
     for more information.
 
+    The remaining parameters have the same meaning as in :py:class:`ReactiveNestedSampler`.
+
     Parameters
     ------------
     usample_filename: str
@@ -946,8 +951,13 @@ def warmstart_from_similar_file(
     min_num_samples: int
         minimum number of samples in the usample_filename file required.
         Too few samples will give a poor approximation.
-    otherparameters: ...
-        The remaining parameters have the same meaning as in :class:ReactiveNestedSampler.
+
+    Other Parameters
+    -----------------
+    param_names: list
+    loglike: function
+    transform: function
+    vectorized: bool
 
     Returns
     ---------
@@ -1050,6 +1060,10 @@ class ReactiveNestedSampler(object):
             If a likelihood difference is detected, the existing likelihoods
             are updated until the live point order differs.
             Otherwise, behaves like resume.
+
+        run_num: int or None
+            If resume=='subfolder', this is the subfolder number.
+            Automatically increments if set to None.
 
         wrapped_params: list of bools
             indicating whether this parameter wraps around (circular parameter).
@@ -1471,11 +1485,14 @@ class ReactiveNestedSampler(object):
     def _adaptive_strategy_advice(self, Lmin, parallel_values, main_iterator, minimal_widths, frac_remain, Lepsilon):
         """Check if integration is done.
 
+        Returns range where more sampling is needed
+
         Returns
         --------
-        Llo, Lhi: floats
-            range where more sampling is needed
-            if done, both are nan
+        Llo: float
+            lower log-likelihood bound, nan if done
+        Lhi: float
+            lower log-likelihood bound, nan if done
 
         Parameters
         -----------
@@ -1489,6 +1506,8 @@ class ReactiveNestedSampler(object):
             current width required
         frac_remain: float
             maximum fraction of integral in remainder for termination
+        Lepsilon: float
+            loglikelihood accuracy threshold
 
         """
         Ls = parallel_values.copy()
@@ -1737,7 +1756,7 @@ class ReactiveNestedSampler(object):
             number of points to try to sample at once
         active_u: array of floats
             current live points
-        active_values
+        active_values: array
             loglikelihoods of current live points
 
         """
@@ -2100,8 +2119,14 @@ class ReactiveNestedSampler(object):
             maximum number of likelihood function calls allowed
         max_iters: int
             maximum number of nested sampling iteration allowed
-        Llo, Lhi, minimal_widths_sequence, target_min_num_children:
-            Current strategy parameters
+        Llo: float
+            lower loglikelihood bound for the strategy
+        Lhi: float
+            upper loglikelihood bound for the strategy
+        minimal_widths_sequence: list
+            list of likelihood intervals with minimum number of live points
+        target_min_num_children:
+            minimum number of live points currently targeted
         live_points_healthy: bool
             indicates whether the live points have become
             linearly dependent (covariance not full rank)
@@ -2310,6 +2335,10 @@ class ReactiveNestedSampler(object):
                 print('lnZ = %(logz).2f +- %(logzerr).2f' % result)
 
         Parameters as described in run() method.
+
+        Yields
+        ------
+        results: dict
         """
         # frac_remain=1  means 1:1 -> dlogz=log(0.5)
         # frac_remain=0.1 means 1:10 -> dlogz=log(0.1)

@@ -78,8 +78,8 @@ def get_auxiliary_problem(loglike, transform, ctr, invcov, enlargement_factor, d
         if not (x > 0).all() or not (x < 1).all():
             return -1e300
         # undo the effect of the auxiliary distribution
-        loglike = rv_auxiliary1d.logpdf(coords).sum()
-        return loglike(transform(x)) - loglike
+        loglike_total = rv_auxiliary1d.logpdf(coords).sum()
+        return loglike(transform(x)) - loglike_total
 
     def aux_aftertransform(u):
         return transform(aux_rotator(rv_auxiliary1d.ppf(u)))
@@ -288,13 +288,17 @@ def compute_quantile_intervals_refined(steps, upoints, uweights, logsteps_max=20
         samples, with dimensions (N, d)
     uweights: array
         sample weights. N entries.
+    logsteps_max: int
+        number of intermediate steps to inject between largest quantiles interval and full unit cube
 
     Returns
     ---------
     ulo: array
-        list of lower quantiles (at q), of shape (M, d), one entry per quantile and dimension d.
+        list of lower quantiles (at `q`), of shape (M, d), one entry per quantile and dimension d.
     uhi: array
-        list of upper quantiles (at 1-q), of shape (M, d), one entry per quantile and dimension d.
+        list of upper quantiles (at 1-`q`), of shape (M, d), one entry per quantile and dimension d.
+    uinterpspace: array
+        list of steps (length of `steps` plus `logsteps_max` long)
     """
     nboxes = len(steps)
     ulos_orig, uhis_orig = compute_quantile_intervals(steps, upoints, uweights)
@@ -337,14 +341,6 @@ def get_auxiliary_contbox_parameterization(
     likelihood and prior transform that is identical but
     requires fewer nested sampling iterations.
 
-    Usage::
-
-        aux_loglikelihood, aux_transform = get_auxiliary_contbox_parameterization(
-            loglike, transform, auxiliary_usamples)
-        aux_sampler = ReactiveNestedSampler(parameters, aux_loglikelihood, transform=aux_transform, derived_param_names=['logweight'])
-        aux_results = aux_sampler.run()
-        posterior_samples = aux_results['samples'][:,-1]
-
     This is achieved by deforming the prior space, and undoing that
     transformation by correction weights in the likelihood.
     A additional parameter, "aux_logweight", is added at the end,
@@ -361,15 +357,23 @@ def get_auxiliary_contbox_parameterization(
 
     Parameters
     ------------
+    param_names: list
+        parameter names
     loglike: function
         original likelihood function
     transform: function
         original prior transform function
-    auxiliary_usamples: array
+    upoints: array
         Posterior samples (in u-space).
+    uweights: array
+        Weights of samples (needs to sum of 1)
+    vectorized: bool
+        whether the loglike & transform functions are vectorized
 
     Returns
     ---------
+    aux_param_names: list
+        new parameter names (`param_names`) plus additional 'aux_logweight'
     aux_loglike: function
         auxiliary loglikelihood function.
     aux_transform: function
@@ -377,6 +381,19 @@ def get_auxiliary_contbox_parameterization(
         Takes d u-space coordinates, and returns d + 1 p-space parameters.
         The first d return coordinates are identical to what ``transform`` would return.
         The final coordinate is the log of the correction weight.
+      vectorized: bool
+        whether the returned functions are vectorized
+
+    Usage
+    ------
+    ::
+
+        aux_loglikelihood, aux_transform = get_auxiliary_contbox_parameterization(
+            loglike, transform, auxiliary_usamples)
+        aux_sampler = ReactiveNestedSampler(parameters, aux_loglikelihood, transform=aux_transform, derived_param_names=['logweight'])
+        aux_results = aux_sampler.run()
+        posterior_samples = aux_results['samples'][:,-1]
+
     """
     steps = 10**-(1.0 * np.arange(1, 8, 2))
     nsamples, ndim = upoints.shape
