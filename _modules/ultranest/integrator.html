@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest.integrator &mdash; UltraNest 3.5.3 documentation</title>
+  <title>ultranest.integrator &mdash; UltraNest 3.5.4 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="../../_static/icon.ico"/>
@@ -33,7 +33,7 @@
             <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.5.3
+                3.5.4
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -114,9 +114,9 @@
 
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">create_logger</span><span class="p">,</span> <span class="n">make_run_dir</span><span class="p">,</span> <span class="n">resample_equal</span><span class="p">,</span> <span class="n">vol_prefactor</span><span class="p">,</span> <span class="n">vectorize</span><span class="p">,</span> <span class="n">listify</span> <span class="k">as</span> <span class="n">_listify</span>
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">is_affine_transform</span><span class="p">,</span> <span class="n">normalised_kendall_tau_distance</span><span class="p">,</span> <span class="n">distributed_work_chunk_size</span>
-<span class="kn">from</span> <span class="nn">ultranest.mlfriends</span> <span class="kn">import</span> <span class="n">MLFriends</span><span class="p">,</span> <span class="n">AffineLayer</span><span class="p">,</span> <span class="n">ScalingLayer</span><span class="p">,</span> <span class="n">find_nearby</span><span class="p">,</span> <span class="n">WrappingEllipsoid</span><span class="p">,</span> <span class="n">RobustEllipsoidRegion</span>
+<span class="kn">from</span> <span class="nn">ultranest.mlfriends</span> <span class="kn">import</span> <span class="n">MLFriends</span><span class="p">,</span> <span class="n">AffineLayer</span><span class="p">,</span> <span class="n">ScalingLayer</span><span class="p">,</span> <span class="n">find_nearby</span><span class="p">,</span> <span class="n">WrappingEllipsoid</span>
 <span class="kn">from</span> <span class="nn">.store</span> <span class="kn">import</span> <span class="n">HDF5PointStore</span><span class="p">,</span> <span class="n">TextPointStore</span><span class="p">,</span> <span class="n">NullPointStore</span>
-<span class="kn">from</span> <span class="nn">.viz</span> <span class="kn">import</span> <span class="n">get_default_viz_callback</span><span class="p">,</span> <span class="n">nicelogger</span>
+<span class="kn">from</span> <span class="nn">.viz</span> <span class="kn">import</span> <span class="n">get_default_viz_callback</span>
 <span class="kn">from</span> <span class="nn">.ordertest</span> <span class="kn">import</span> <span class="n">UniformOrderAccumulator</span>
 <span class="kn">from</span> <span class="nn">.netiter</span> <span class="kn">import</span> <span class="n">PointPile</span><span class="p">,</span> <span class="n">SingleCounter</span><span class="p">,</span> <span class="n">MultiCounter</span><span class="p">,</span> <span class="n">BreadthFirstIterator</span><span class="p">,</span> <span class="n">TreeNode</span><span class="p">,</span> <span class="n">count_tree_between</span><span class="p">,</span> <span class="n">find_nodes_before</span><span class="p">,</span> <span class="n">logz_sequence</span>
 <span class="kn">from</span> <span class="nn">.netiter</span> <span class="kn">import</span> <span class="n">dump_tree</span><span class="p">,</span> <span class="n">combine_results</span>
@@ -534,6 +534,9 @@
 <span class="sd">        vectorized: bool</span>
 <span class="sd">            If true, loglike and transform function can receive arrays</span>
 <span class="sd">            of points.</span>
+<span class="sd">        run_num: int</span>
+<span class="sd">            unique run number. If None, will be automatically incremented.</span>
+<span class="sd">        </span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">paramnames</span> <span class="o">=</span> <span class="n">param_names</span>
@@ -1033,6 +1036,8 @@
 <span class="sd">    See :py:func:`ultranest.hotstart.get_auxiliary_contbox_parameterization`</span>
 <span class="sd">    for more information.</span>
 
+<span class="sd">    The remaining parameters have the same meaning as in :py:class:`ReactiveNestedSampler`.</span>
+
 <span class="sd">    Parameters</span>
 <span class="sd">    ------------</span>
 <span class="sd">    usample_filename: str</span>
@@ -1042,8 +1047,13 @@
 <span class="sd">    min_num_samples: int</span>
 <span class="sd">        minimum number of samples in the usample_filename file required.</span>
 <span class="sd">        Too few samples will give a poor approximation.</span>
-<span class="sd">    otherparameters: ...</span>
-<span class="sd">        The remaining parameters have the same meaning as in :class:ReactiveNestedSampler.</span>
+
+<span class="sd">    Other Parameters</span>
+<span class="sd">    -----------------</span>
+<span class="sd">    param_names: list</span>
+<span class="sd">    loglike: function</span>
+<span class="sd">    transform: function</span>
+<span class="sd">    vectorized: bool</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    ---------</span>
@@ -1146,6 +1156,10 @@
 <span class="sd">            If a likelihood difference is detected, the existing likelihoods</span>
 <span class="sd">            are updated until the live point order differs.</span>
 <span class="sd">            Otherwise, behaves like resume.</span>
+
+<span class="sd">        run_num: int or None</span>
+<span class="sd">            If resume==&#39;subfolder&#39;, this is the subfolder number.</span>
+<span class="sd">            Automatically increments if set to None.</span>
 
 <span class="sd">        wrapped_params: list of bools</span>
 <span class="sd">            indicating whether this parameter wraps around (circular parameter).</span>
@@ -1567,11 +1581,14 @@
     <span class="k">def</span> <span class="nf">_adaptive_strategy_advice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">,</span> <span class="n">parallel_values</span><span class="p">,</span> <span class="n">main_iterator</span><span class="p">,</span> <span class="n">minimal_widths</span><span class="p">,</span> <span class="n">frac_remain</span><span class="p">,</span> <span class="n">Lepsilon</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Check if integration is done.</span>
 
+<span class="sd">        Returns range where more sampling is needed</span>
+
 <span class="sd">        Returns</span>
 <span class="sd">        --------</span>
-<span class="sd">        Llo, Lhi: floats</span>
-<span class="sd">            range where more sampling is needed</span>
-<span class="sd">            if done, both are nan</span>
+<span class="sd">        Llo: float</span>
+<span class="sd">            lower log-likelihood bound, nan if done</span>
+<span class="sd">        Lhi: float</span>
+<span class="sd">            lower log-likelihood bound, nan if done</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        -----------</span>
@@ -1585,6 +1602,8 @@
 <span class="sd">            current width required</span>
 <span class="sd">        frac_remain: float</span>
 <span class="sd">            maximum fraction of integral in remainder for termination</span>
+<span class="sd">        Lepsilon: float</span>
+<span class="sd">            loglikelihood accuracy threshold</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">Ls</span> <span class="o">=</span> <span class="n">parallel_values</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -1833,7 +1852,7 @@
 <span class="sd">            number of points to try to sample at once</span>
 <span class="sd">        active_u: array of floats</span>
 <span class="sd">            current live points</span>
-<span class="sd">        active_values</span>
+<span class="sd">        active_values: array</span>
 <span class="sd">            loglikelihoods of current live points</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -2196,8 +2215,14 @@
 <span class="sd">            maximum number of likelihood function calls allowed</span>
 <span class="sd">        max_iters: int</span>
 <span class="sd">            maximum number of nested sampling iteration allowed</span>
-<span class="sd">        Llo, Lhi, minimal_widths_sequence, target_min_num_children:</span>
-<span class="sd">            Current strategy parameters</span>
+<span class="sd">        Llo: float</span>
+<span class="sd">            lower loglikelihood bound for the strategy</span>
+<span class="sd">        Lhi: float</span>
+<span class="sd">            upper loglikelihood bound for the strategy</span>
+<span class="sd">        minimal_widths_sequence: list</span>
+<span class="sd">            list of likelihood intervals with minimum number of live points</span>
+<span class="sd">        target_min_num_children:</span>
+<span class="sd">            minimum number of live points currently targeted</span>
 <span class="sd">        live_points_healthy: bool</span>
 <span class="sd">            indicates whether the live points have become</span>
 <span class="sd">            linearly dependent (covariance not full rank)</span>
@@ -2406,6 +2431,10 @@
 <span class="sd">                print(&#39;lnZ = %(logz).2f +- %(logzerr).2f&#39; % result)</span>
 
 <span class="sd">        Parameters as described in run() method.</span>
+
+<span class="sd">        Yields</span>
+<span class="sd">        ------</span>
+<span class="sd">        results: dict</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># frac_remain=1  means 1:1 -&gt; dlogz=log(0.5)</span>
         <span class="c1"># frac_remain=0.1 means 1:10 -&gt; dlogz=log(0.1)</span>

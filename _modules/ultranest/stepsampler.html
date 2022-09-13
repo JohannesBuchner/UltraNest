@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest.stepsampler &mdash; UltraNest 3.5.3 documentation</title>
+  <title>ultranest.stepsampler &mdash; UltraNest 3.5.4 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="../../_static/icon.ico"/>
@@ -33,7 +33,7 @@
             <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.5.3
+                3.5.4
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -319,8 +319,8 @@
 <span class="sd">    -----------</span>
 <span class="sd">    region: MLFriends</span>
 <span class="sd">        region</span>
-<span class="sd">    uniform_weight: float</span>
-<span class="sd">        sets the weight for the equal-axis ball contribution</span>
+<span class="sd">    ui: array</span>
+<span class="sd">        vector of starting point</span>
 <span class="sd">    scale: float</span>
 <span class="sd">        length of the vector.</span>
 
@@ -852,8 +852,10 @@
 <span class="sd">            current point</span>
 <span class="sd">        ndraw: int</span>
 <span class="sd">            number of points to draw.</span>
-
-<span class="sd">        All other parameters are ignored.</span>
+<span class="sd">        region:</span>
+<span class="sd">            ignored</span>
+<span class="sd">        plot:</span>
+<span class="sd">            ignored</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># propose in that direction</span>
         <span class="n">direction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">)</span>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest.hotstart &mdash; UltraNest 3.5.3 documentation</title>
+  <title>ultranest.hotstart &mdash; UltraNest 3.5.4 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="../../_static/icon.ico"/>
@@ -33,7 +33,7 @@
             <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.5.3
+                3.5.4
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -174,8 +174,8 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span> <span class="p">(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
             <span class="k">return</span> <span class="o">-</span><span class="mf">1e300</span>
         <span class="c1"># undo the effect of the auxiliary distribution</span>
-        <span class="n">loglike</span> <span class="o">=</span> <span class="n">rv_auxiliary1d</span><span class="o">.</span><span class="n">logpdf</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">loglike</span><span class="p">(</span><span class="n">transform</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="o">-</span> <span class="n">loglike</span>
+        <span class="n">loglike_total</span> <span class="o">=</span> <span class="n">rv_auxiliary1d</span><span class="o">.</span><span class="n">logpdf</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">loglike</span><span class="p">(</span><span class="n">transform</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="o">-</span> <span class="n">loglike_total</span>
 
     <span class="k">def</span> <span class="nf">aux_aftertransform</span><span class="p">(</span><span class="n">u</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">transform</span><span class="p">(</span><span class="n">aux_rotator</span><span class="p">(</span><span class="n">rv_auxiliary1d</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">u</span><span class="p">)))</span>
@@ -384,13 +384,17 @@
 <span class="sd">        samples, with dimensions (N, d)</span>
 <span class="sd">    uweights: array</span>
 <span class="sd">        sample weights. N entries.</span>
+<span class="sd">    logsteps_max: int</span>
+<span class="sd">        number of intermediate steps to inject between largest quantiles interval and full unit cube</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    ---------</span>
 <span class="sd">    ulo: array</span>
-<span class="sd">        list of lower quantiles (at q), of shape (M, d), one entry per quantile and dimension d.</span>
+<span class="sd">        list of lower quantiles (at `q`), of shape (M, d), one entry per quantile and dimension d.</span>
 <span class="sd">    uhi: array</span>
-<span class="sd">        list of upper quantiles (at 1-q), of shape (M, d), one entry per quantile and dimension d.</span>
+<span class="sd">        list of upper quantiles (at 1-`q`), of shape (M, d), one entry per quantile and dimension d.</span>
+<span class="sd">    uinterpspace: array</span>
+<span class="sd">        list of steps (length of `steps` plus `logsteps_max` long)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">nboxes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">steps</span><span class="p">)</span>
     <span class="n">ulos_orig</span><span class="p">,</span> <span class="n">uhis_orig</span> <span class="o">=</span> <span class="n">compute_quantile_intervals</span><span class="p">(</span><span class="n">steps</span><span class="p">,</span> <span class="n">upoints</span><span class="p">,</span> <span class="n">uweights</span><span class="p">)</span>
@@ -433,14 +437,6 @@
 <span class="sd">    likelihood and prior transform that is identical but</span>
 <span class="sd">    requires fewer nested sampling iterations.</span>
 
-<span class="sd">    Usage::</span>
-
-<span class="sd">        aux_loglikelihood, aux_transform = get_auxiliary_contbox_parameterization(</span>
-<span class="sd">            loglike, transform, auxiliary_usamples)</span>
-<span class="sd">        aux_sampler = ReactiveNestedSampler(parameters, aux_loglikelihood, transform=aux_transform, derived_param_names=[&#39;logweight&#39;])</span>
-<span class="sd">        aux_results = aux_sampler.run()</span>
-<span class="sd">        posterior_samples = aux_results[&#39;samples&#39;][:,-1]</span>
-
 <span class="sd">    This is achieved by deforming the prior space, and undoing that</span>
 <span class="sd">    transformation by correction weights in the likelihood.</span>
 <span class="sd">    A additional parameter, &quot;aux_logweight&quot;, is added at the end,</span>
@@ -457,15 +453,23 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ------------</span>
+<span class="sd">    param_names: list</span>
+<span class="sd">        parameter names</span>
 <span class="sd">    loglike: function</span>
 <span class="sd">        original likelihood function</span>
 <span class="sd">    transform: function</span>
 <span class="sd">        original prior transform function</span>
-<span class="sd">    auxiliary_usamples: array</span>
+<span class="sd">    upoints: array</span>
 <span class="sd">        Posterior samples (in u-space).</span>
+<span class="sd">    uweights: array</span>
+<span class="sd">        Weights of samples (needs to sum of 1)</span>
+<span class="sd">    vectorized: bool</span>
+<span class="sd">        whether the loglike &amp; transform functions are vectorized</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    ---------</span>
+<span class="sd">    aux_param_names: list</span>
+<span class="sd">        new parameter names (`param_names`) plus additional &#39;aux_logweight&#39;</span>
 <span class="sd">    aux_loglike: function</span>
 <span class="sd">        auxiliary loglikelihood function.</span>
 <span class="sd">    aux_transform: function</span>
@@ -473,6 +477,19 @@
 <span class="sd">        Takes d u-space coordinates, and returns d + 1 p-space parameters.</span>
 <span class="sd">        The first d return coordinates are identical to what ``transform`` would return.</span>
 <span class="sd">        The final coordinate is the log of the correction weight.</span>
+<span class="sd">      vectorized: bool</span>
+<span class="sd">        whether the returned functions are vectorized</span>
+
+<span class="sd">    Usage</span>
+<span class="sd">    ------</span>
+<span class="sd">    ::</span>
+
+<span class="sd">        aux_loglikelihood, aux_transform = get_auxiliary_contbox_parameterization(</span>
+<span class="sd">            loglike, transform, auxiliary_usamples)</span>
+<span class="sd">        aux_sampler = ReactiveNestedSampler(parameters, aux_loglikelihood, transform=aux_transform, derived_param_names=[&#39;logweight&#39;])</span>
+<span class="sd">        aux_results = aux_sampler.run()</span>
+<span class="sd">        posterior_samples = aux_results[&#39;samples&#39;][:,-1]</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">steps</span> <span class="o">=</span> <span class="mi">10</span><span class="o">**-</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
     <span class="n">nsamples</span><span class="p">,</span> <span class="n">ndim</span> <span class="o">=</span> <span class="n">upoints</span><span class="o">.</span><span class="n">shape</span>

@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest package &mdash; UltraNest 3.5.3 documentation</title>
+  <title>ultranest package &mdash; UltraNest 3.5.4 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="_static/icon.ico"/>
@@ -38,7 +38,7 @@
             <img src="_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.5.3
+                3.5.4
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -985,12 +985,14 @@ The final coordinate is the log of the correction weight.</p></li>
 <li><p><strong>steps</strong> (<em>array</em>) – list of quantiles q to compute, with dimensions</p></li>
 <li><p><strong>upoints</strong> (<em>array</em>) – samples, with dimensions (N, d)</p></li>
 <li><p><strong>uweights</strong> (<em>array</em>) – sample weights. N entries.</p></li>
+<li><p><strong>logsteps_max</strong> (<em>int</em>) – number of intermediate steps to inject between largest quantiles interval and full unit cube</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><ul class="simple">
-<li><p><strong>ulo</strong> (<em>array</em>) – list of lower quantiles (at q), of shape (M, d), one entry per quantile and dimension d.</p></li>
-<li><p><strong>uhi</strong> (<em>array</em>) – list of upper quantiles (at 1-q), of shape (M, d), one entry per quantile and dimension d.</p></li>
+<li><p><strong>ulo</strong> (<em>array</em>) – list of lower quantiles (at <cite>q</cite>), of shape (M, d), one entry per quantile and dimension d.</p></li>
+<li><p><strong>uhi</strong> (<em>array</em>) – list of upper quantiles (at 1-<cite>q</cite>), of shape (M, d), one entry per quantile and dimension d.</p></li>
+<li><p><strong>uinterpspace</strong> (<em>array</em>) – list of steps (length of <cite>steps</cite> plus <cite>logsteps_max</cite> long)</p></li>
 </ul>
 </p>
 </dd>
@@ -1005,14 +1007,6 @@ The final coordinate is the log of the correction weight.</p></li>
 the (expected) posterior peak, generates a auxiliary
 likelihood and prior transform that is identical but
 requires fewer nested sampling iterations.</p>
-<p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">aux_loglikelihood</span><span class="p">,</span> <span class="n">aux_transform</span> <span class="o">=</span> <span class="n">get_auxiliary_contbox_parameterization</span><span class="p">(</span>
-    <span class="n">loglike</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">auxiliary_usamples</span><span class="p">)</span>
-<span class="n">aux_sampler</span> <span class="o">=</span> <span class="n">ReactiveNestedSampler</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="n">aux_loglikelihood</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">aux_transform</span><span class="p">,</span> <span class="n">derived_param_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;logweight&#39;</span><span class="p">])</span>
-<span class="n">aux_results</span> <span class="o">=</span> <span class="n">aux_sampler</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
-<span class="n">posterior_samples</span> <span class="o">=</span> <span class="n">aux_results</span><span class="p">[</span><span class="s1">&#39;samples&#39;</span><span class="p">][:,</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-</pre></div>
-</div>
 <p>This is achieved by deforming the prior space, and undoing that
 transformation by correction weights in the likelihood.
 A additional parameter, “aux_logweight”, is added at the end,
@@ -1029,18 +1023,38 @@ To see the interpolation quantiles for each axis, use:</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
+<li><p><strong>param_names</strong> (<em>list</em>) – parameter names</p></li>
 <li><p><strong>loglike</strong> (<em>function</em>) – original likelihood function</p></li>
 <li><p><strong>transform</strong> (<em>function</em>) – original prior transform function</p></li>
-<li><p><strong>auxiliary_usamples</strong> (<em>array</em>) – Posterior samples (in u-space).</p></li>
+<li><p><strong>upoints</strong> (<em>array</em>) – Posterior samples (in u-space).</p></li>
+<li><p><strong>uweights</strong> (<em>array</em>) – Weights of samples (needs to sum of 1)</p></li>
+<li><p><strong>vectorized</strong> (<em>bool</em>) – whether the loglike &amp; transform functions are vectorized</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><ul class="simple">
+<dd class="field-even"><p><ul>
+<li><p><strong>aux_param_names</strong> (<em>list</em>) – new parameter names (<cite>param_names</cite>) plus additional ‘aux_logweight’</p></li>
 <li><p><strong>aux_loglike</strong> (<em>function</em>) – auxiliary loglikelihood function.</p></li>
-<li><p><strong>aux_transform</strong> (<em>function</em>) – auxiliary transform function.
-Takes d u-space coordinates, and returns d + 1 p-space parameters.
+<li><dl class="simple">
+<dt><strong>aux_transform</strong> (<em>function</em>) –   auxiliary transform function.</dt><dd><p>Takes d u-space coordinates, and returns d + 1 p-space parameters.
 The first d return coordinates are identical to what <code class="docutils literal notranslate"><span class="pre">transform</span></code> would return.
-The final coordinate is the log of the correction weight.</p></li>
+The final coordinate is the log of the correction weight.</p>
+</dd>
+<dt>vectorized: bool</dt><dd><p>whether the returned functions are vectorized</p>
+</dd>
+</dl>
+</li>
+<li><p><em>Usage</em></p></li>
+<li><p><em>——</em></p></li>
+<li><p><em>::</em> –</p>
+<dl class="simple">
+<dt>aux_loglikelihood, aux_transform = get_auxiliary_contbox_parameterization(</dt><dd><p>loglike, transform, auxiliary_usamples)</p>
+</dd>
+</dl>
+<p>aux_sampler = ReactiveNestedSampler(parameters, aux_loglikelihood, transform=aux_transform, derived_param_names=[‘logweight’])
+aux_results = aux_sampler.run()
+posterior_samples = aux_results[‘samples’][:,-1]</p>
+</li>
 </ul>
 </p>
 </dd>
@@ -1114,6 +1128,8 @@ If a likelihood difference is detected, the existing likelihoods
 are updated until the live point order differs.
 Otherwise, behaves like resume.</p>
 </p></li>
+<li><p><strong>run_num</strong> (<em>int</em><em> or </em><em>None</em>) – If resume==’subfolder’, this is the subfolder number.
+Automatically increments if set to None.</p></li>
 <li><p><strong>wrapped_params</strong> (<em>list of bools</em>) – indicating whether this parameter wraps around (circular parameter).</p></li>
 <li><p><strong>num_test_samples</strong> (<em>int</em>) – test transform and likelihood with this number of
 random points for errors first. Useful to catch bugs.</p></li>
@@ -1191,6 +1207,11 @@ or just ellipsoidal sampling (faster for high-dimensional, gaussian-like problem
 </pre></div>
 </div>
 <p>Parameters as described in run() method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Yields</dt>
+<dd class="field-odd"><p><strong>results</strong> (<em>dict</em>)</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -1286,6 +1307,7 @@ if ‘resume’ or True, continue previous run if available.</p></li>
 <li><p><strong>num_live_points</strong> (<em>int</em>) – Number of live points</p></li>
 <li><p><strong>vectorized</strong> (<em>bool</em>) – If true, loglike and transform function can receive arrays
 of points.</p></li>
+<li><p><strong>run_num</strong> (<em>int</em>) – unique run number. If None, will be automatically incremented.</p></li>
 </ul>
 </dd>
 </dl>
@@ -1373,6 +1395,7 @@ ReactiveNestedSampler.run return values</p></li>
 </div>
 <p>See <a class="reference internal" href="#ultranest.hotstart.get_auxiliary_contbox_parameterization" title="ultranest.hotstart.get_auxiliary_contbox_parameterization"><code class="xref py py-func docutils literal notranslate"><span class="pre">ultranest.hotstart.get_auxiliary_contbox_parameterization()</span></code></a>
 for more information.</p>
+<p>The remaining parameters have the same meaning as in <a class="reference internal" href="#ultranest.integrator.ReactiveNestedSampler" title="ultranest.integrator.ReactiveNestedSampler"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReactiveNestedSampler</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -1381,7 +1404,10 @@ contains posteriors in u-space (untransformed) of a previous run.
 Columns are weight, logl, param1, param2, …</p></li>
 <li><p><strong>min_num_samples</strong> (<em>int</em>) – minimum number of samples in the usample_filename file required.
 Too few samples will give a poor approximation.</p></li>
-<li><p><strong>otherparameters</strong> – The remaining parameters have the same meaning as in :class:ReactiveNestedSampler.</p></li>
+<li><p><strong>param_names</strong> (<em>list</em>) – </p></li>
+<li><p><strong>loglike</strong> (<em>function</em>) – </p></li>
+<li><p><strong>transform</strong> (<em>function</em>) – </p></li>
+<li><p><strong>vectorized</strong> (<em>bool</em>) – </p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -3895,7 +3921,7 @@ do not terminate at the same number of iterations.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>region</strong> (<a class="reference internal" href="#ultranest.mlfriends.MLFriends" title="ultranest.mlfriends.MLFriends"><em>MLFriends</em></a>) – region</p></li>
-<li><p><strong>uniform_weight</strong> (<em>float</em>) – sets the weight for the equal-axis ball contribution</p></li>
+<li><p><strong>ui</strong> (<em>array</em>) – vector of starting point</p></li>
 <li><p><strong>scale</strong> (<em>float</em>) – length of the vector.</p></li>
 </ul>
 </dd>
@@ -4200,7 +4226,8 @@ between live points</p></li>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ui</strong> (<em>array</em>) – current point</p></li>
 <li><p><strong>ndraw</strong> (<em>int</em>) – number of points to draw.</p></li>
-<li><p><strong>ignored.</strong> (<em>All other parameters are</em>) – </p></li>
+<li><p><strong>region</strong> – ignored</p></li>
+<li><p><strong>plot</strong> – ignored</p></li>
 </ul>
 </dd>
 </dl>
@@ -4669,6 +4696,7 @@ Keys are “run_dir” (the path), “info”, “results”, “chains”, “p
 <li><p><strong>samples</strong> (<cite>~numpy.ndarray</cite>) – Unequally weight samples returned by the nested sampling algorithm.
 Shape is (N, …), with N the number of samples.</p></li>
 <li><p><strong>weights</strong> (<cite>~numpy.ndarray</cite>) – Weight of each sample. Shape is (N,).</p></li>
+<li><p><strong>rstate</strong> (<cite>~numpy.random.RandomState</cite>) – random number generator. If not provided, numpy.random is used.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
