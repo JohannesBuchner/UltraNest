@@ -395,6 +395,9 @@ def get_auxiliary_contbox_parameterization(
         posterior_samples = aux_results['samples'][:,-1]
 
     """
+    mask = np.logical_and(upoints > 0, upoints < 1)
+    assert np.all(mask), (
+        'upoints must be between 0 and 1, have:', upoints[~mask,:])
     steps = 10**-(1.0 * np.arange(1, 8, 2))
     nsamples, ndim = upoints.shape
     assert nsamples > 10
