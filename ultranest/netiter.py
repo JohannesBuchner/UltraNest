@@ -29,26 +29,22 @@ from .ordertest import UniformOrderAccumulator
 
 
 class TreeNode(object):
-    """Simple tree node."""
+    """Simple tree node.
+
+    Parameters
+    ----------
+    value: float
+        value used to order nodes (typically log-likelihood)
+    id: int
+        identifier, refers to the order of discovery and storage (PointPile)
+    children: list
+        children nodes, should be :class:`TreeNode` objects. if None, a empty list is used.
+    """
 
     def __init__(self, value=None, id=None, children=None):
-        """Define TreeNode.
-
-        Parameters
-        ----------
-        value:
-            used to order nodes
-        id: int
-            refers to the order of discovery and storage (PointPile)
-        children: list of :class:TreeNode objects
-            children nodes. if None, a empty list is used.
-        """
         self.value = value
         self.id = id
-        if children is None:
-            self.children = []
-        else:
-            self.children = children
+        self.children = children or []
 
     def __str__(self, indent=0):
         """Visual representation of the node and its children (recursive)."""
@@ -171,8 +167,8 @@ def print_tree(roots, title='Tree:'):
 
     Parameters
     ----------
-    roots: list of :pyclass:TreeNode
-        tree
+    roots: list
+        list of `:py:class:TreeNode` specifying the roots of the tree.
     """
     print()
     print(title)
@@ -222,8 +218,8 @@ def dump_tree(filename, roots, pointpile):
     ----------
     filename: str
         output filename
-    roots: list of :pyclass:TreeNode
-        tree to store
+    roots: list
+        list of `:py:class:TreeNode` specifying the roots of the tree.
     pointpile: :class:PointPile
         information on the node points
     """
@@ -259,8 +255,8 @@ def count_tree(roots):
 
     Parameters
     ----------
-    roots: list of :pyclass:TreeNode
-        tree
+    roots: list
+        list of `:py:class:TreeNode` specifying the roots of the tree.
 
     Returns
     --------
@@ -291,8 +287,8 @@ def count_tree_between(roots, lo, hi):
 
     Parameters
     ----------
-    roots: list of :pyclass:TreeNode
-        tree
+    roots: list
+        list of `:py:class:TreeNode` specifying the roots of the tree.
     lo: float
         lower value threshold
     hi: float
@@ -335,7 +331,7 @@ def find_nodes_before(root, value):
 
     Parameters
     ----------
-    root: :pyclass:TreeNode
+    root: :py:class:`TreeNode`
         tree
     value: float
         selection threshold
@@ -384,9 +380,9 @@ def find_nodes_before(root, value):
 class PointPile(object):
     """A in-memory linearized storage of point coordinates.
 
-    :pyclass:TreeNodes only store the logL value and id,
+    :py:class:`TreeNode`s only store the logL value and id,
     which is the index in the point pile. The point pile stores
-    the point coordinates.
+    the point coordinates in u and p-space (transformed and untransformed).
     """
 
     def __init__(self, udim, pdim, chunksize=1000):
@@ -464,10 +460,7 @@ class PointPile(object):
 
 
 class SingleCounter(object):
-    """Evidence log(Z) and posterior weight summation for a Nested Sampling tree."""
-
-    def __init__(self, random=False):
-        """Initialise counter.
+    """Evidence log(Z) and posterior weight summation for a Nested Sampling tree.
 
         Parameters
         ----------
@@ -476,6 +469,8 @@ class SingleCounter(object):
             if True, draw a random sample
 
         """
+
+    def __init__(self, random=False):
         self.reset()
         self.random = random
 
@@ -568,7 +563,7 @@ class SingleCounter(object):
 
 
 class MultiCounter(object):
-    """Like SingleCounter, but bootstrap capable.
+    """Like :py:class:`SingleCounter`, but bootstrap capable.
 
     **Attributes**:
 
@@ -719,9 +714,9 @@ class MultiCounter(object):
 
         Parameters
         ----------
-        rootid: :pyclass:TreeNode
+        rootid: :py:class:`TreeNode`
             root node this `node` is from.
-        node: :pyclass:TreeNode
+        node: :py:class:`TreeNode`
             node being processed.
         rootids: array of ints
             for each parallel node, which root it belongs to.
@@ -856,9 +851,9 @@ def combine_results(saved_logl, saved_nodeids, pointpile, main_iterator, mpi_com
         loglikelihoods of dead points
     saved_nodeids: list of ints
         indices of dead points
-    pointpile: :pyclass:PointPile
+    pointpile: :py:class:`PointPile`
         Point pile.
-    main_iterator: :pyclass:BreadthFirstIterator
+    main_iterator: :py:class:`BreadthFirstIterator`
         iterator used
     mpi_comm:
         MPI communicator object, or None if MPI is not used.
@@ -971,9 +966,9 @@ def logz_sequence(root, pointpile, nbootstraps=12, random=True, onNode=None, ver
 
     Parameters
     ----------
-    root: :pyclass:TreeNode
+    root: :py:class:`TreeNode`
         Tree
-    pointpile: :pyclass:PointPile
+    pointpile: :py:class:`PointPile`
         Point pile
     nbootstraps: int
         Number of independent iterators
@@ -1039,14 +1034,16 @@ def logz_sequence(root, pointpile, nbootstraps=12, random=True, onNode=None, ver
         with np.errstate(invalid='ignore'):
             # first time they are all the same
             logzerr.append(main_iterator.logZerr_bs)
+        
+        nactive = len(active_values)
 
-        if len(np.unique(active_values)) == len(active_values) and len(node.children) > 0:
+        if len(np.unique(active_values)) == nactive and len(node.children) > 0:
             child_insertion_order = (active_values > node.children[0].value).sum()
-            insert_order.append(2 * (child_insertion_order + 1.) / len(active_values))
+            insert_order.append(2 * (child_insertion_order + 1.) / nactive)
         else:
             insert_order.append(np.nan)
 
-        nlive.append(len(active_values))
+        nlive.append(nactive)
         logvol.append(main_iterator.logVolremaining)
 
         niter += 1

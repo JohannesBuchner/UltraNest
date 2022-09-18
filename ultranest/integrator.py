@@ -2016,7 +2016,7 @@ class ReactiveNestedSampler(object):
                 good_region = nextregion.inside(active_u).all()
                 # assert good_region
                 if not good_region and self.log:
-                    self.logger.warning("Proposed region is inconsistent (maxr=%f,enlarge=%f) and will be skipped.", r, f)
+                    self.logger.debug("Proposed region is inconsistent (maxr=%g,enlarge=%g) and will be skipped.", r, f)
 
                 # avoid cases where every point is its own cluster,
                 # and even the largest cluster has fewer than x_dim points
