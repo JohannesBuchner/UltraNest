@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest.hotstart &mdash; UltraNest 3.5.4 documentation</title>
+  <title>ultranest.hotstart &mdash; UltraNest 3.5.5 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="../../_static/icon.ico"/>
@@ -33,7 +33,7 @@
             <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.5.4
+                3.5.5
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -491,6 +491,11 @@
 <span class="sd">        posterior_samples = aux_results[&#39;samples&#39;][:,-1]</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">upoints</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">upoints</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">upoints</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;expected 2d array for upoints, got shape: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">upoints</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">upoints</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">upoints</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">mask</span><span class="p">),</span> <span class="p">(</span>
+        <span class="s1">&#39;upoints must be between 0 and 1, have:&#39;</span><span class="p">,</span> <span class="n">upoints</span><span class="p">[</span><span class="o">~</span><span class="n">mask</span><span class="p">,:])</span>
     <span class="n">steps</span> <span class="o">=</span> <span class="mi">10</span><span class="o">**-</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
     <span class="n">nsamples</span><span class="p">,</span> <span class="n">ndim</span> <span class="o">=</span> <span class="n">upoints</span><span class="o">.</span><span class="n">shape</span>
     <span class="k">assert</span> <span class="n">nsamples</span> <span class="o">&gt;</span> <span class="mi">10</span>

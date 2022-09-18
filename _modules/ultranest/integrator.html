@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest.integrator &mdash; UltraNest 3.5.4 documentation</title>
+  <title>ultranest.integrator &mdash; UltraNest 3.5.5 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="../../_static/icon.ico"/>
@@ -33,7 +33,7 @@
             <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.5.4
+                3.5.5
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -2112,7 +2112,7 @@
                 <span class="n">good_region</span> <span class="o">=</span> <span class="n">nextregion</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">active_u</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
                 <span class="c1"># assert good_region</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">good_region</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Proposed region is inconsistent (maxr=</span><span class="si">%f</span><span class="s2">,enlarge=</span><span class="si">%f</span><span class="s2">) and will be skipped.&quot;</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Proposed region is inconsistent (maxr=</span><span class="si">%g</span><span class="s2">,enlarge=</span><span class="si">%g</span><span class="s2">) and will be skipped.&quot;</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
 
                 <span class="c1"># avoid cases where every point is its own cluster,</span>
                 <span class="c1"># and even the largest cluster has fewer than x_dim points</span>

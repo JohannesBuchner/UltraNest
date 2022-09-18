@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest.netiter &mdash; UltraNest 3.5.4 documentation</title>
+  <title>ultranest.netiter &mdash; UltraNest 3.5.5 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="../../_static/icon.ico"/>
@@ -33,7 +33,7 @@
             <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.5.4
+                3.5.5
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -125,26 +125,22 @@
 
 
 <div class="viewcode-block" id="TreeNode"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.TreeNode">[docs]</a><span class="k">class</span> <span class="nc">TreeNode</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Simple tree node.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Simple tree node.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    value: float</span>
+<span class="sd">        value used to order nodes (typically log-likelihood)</span>
+<span class="sd">    id: int</span>
+<span class="sd">        identifier, refers to the order of discovery and storage (PointPile)</span>
+<span class="sd">    children: list</span>
+<span class="sd">        children nodes, should be :class:`TreeNode` objects. if None, a empty list is used.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">children</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Define TreeNode.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        value:</span>
-<span class="sd">            used to order nodes</span>
-<span class="sd">        id: int</span>
-<span class="sd">            refers to the order of discovery and storage (PointPile)</span>
-<span class="sd">        children: list of :class:TreeNode objects</span>
-<span class="sd">            children nodes. if None, a empty list is used.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="nb">id</span>
-        <span class="k">if</span> <span class="n">children</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">children</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">children</span> <span class="o">=</span> <span class="n">children</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">children</span> <span class="o">=</span> <span class="n">children</span> <span class="ow">or</span> <span class="p">[]</span>
 
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Visual representation of the node and its children (recursive).&quot;&quot;&quot;</span>
@@ -267,8 +263,8 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    roots: list of :pyclass:TreeNode</span>
-<span class="sd">        tree</span>
+<span class="sd">    roots: list</span>
+<span class="sd">        list of `:py:class:TreeNode` specifying the roots of the tree.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="nb">print</span><span class="p">()</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
@@ -318,8 +314,8 @@
 <span class="sd">    ----------</span>
 <span class="sd">    filename: str</span>
 <span class="sd">        output filename</span>
-<span class="sd">    roots: list of :pyclass:TreeNode</span>
-<span class="sd">        tree to store</span>
+<span class="sd">    roots: list</span>
+<span class="sd">        list of `:py:class:TreeNode` specifying the roots of the tree.</span>
 <span class="sd">    pointpile: :class:PointPile</span>
 <span class="sd">        information on the node points</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -355,8 +351,8 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    roots: list of :pyclass:TreeNode</span>
-<span class="sd">        tree</span>
+<span class="sd">    roots: list</span>
+<span class="sd">        list of `:py:class:TreeNode` specifying the roots of the tree.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    --------</span>
@@ -387,8 +383,8 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    roots: list of :pyclass:TreeNode</span>
-<span class="sd">        tree</span>
+<span class="sd">    roots: list</span>
+<span class="sd">        list of `:py:class:TreeNode` specifying the roots of the tree.</span>
 <span class="sd">    lo: float</span>
 <span class="sd">        lower value threshold</span>
 <span class="sd">    hi: float</span>
@@ -431,7 +427,7 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    root: :pyclass:TreeNode</span>
+<span class="sd">    root: :py:class:`TreeNode`</span>
 <span class="sd">        tree</span>
 <span class="sd">    value: float</span>
 <span class="sd">        selection threshold</span>
@@ -480,9 +476,9 @@
 <div class="viewcode-block" id="PointPile"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.PointPile">[docs]</a><span class="k">class</span> <span class="nc">PointPile</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;A in-memory linearized storage of point coordinates.</span>
 
-<span class="sd">    :pyclass:TreeNodes only store the logL value and id,</span>
+<span class="sd">    :py:class:`TreeNode`s only store the logL value and id,</span>
 <span class="sd">    which is the index in the point pile. The point pile stores</span>
-<span class="sd">    the point coordinates.</span>
+<span class="sd">    the point coordinates in u and p-space (transformed and untransformed).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">udim</span><span class="p">,</span> <span class="n">pdim</span><span class="p">,</span> <span class="n">chunksize</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
@@ -560,10 +556,7 @@
 
 
 <div class="viewcode-block" id="SingleCounter"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.SingleCounter">[docs]</a><span class="k">class</span> <span class="nc">SingleCounter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Evidence log(Z) and posterior weight summation for a Nested Sampling tree.&quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">random</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Initialise counter.</span>
+    <span class="sd">&quot;&quot;&quot;Evidence log(Z) and posterior weight summation for a Nested Sampling tree.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -572,6 +565,8 @@
 <span class="sd">            if True, draw a random sample</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">random</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">random</span> <span class="o">=</span> <span class="n">random</span>
 
@@ -664,7 +659,7 @@
 
 
 <div class="viewcode-block" id="MultiCounter"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.MultiCounter">[docs]</a><span class="k">class</span> <span class="nc">MultiCounter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Like SingleCounter, but bootstrap capable.</span>
+    <span class="sd">&quot;&quot;&quot;Like :py:class:`SingleCounter`, but bootstrap capable.</span>
 
 <span class="sd">    **Attributes**:</span>
 
@@ -815,9 +810,9 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        rootid: :pyclass:TreeNode</span>
+<span class="sd">        rootid: :py:class:`TreeNode`</span>
 <span class="sd">            root node this `node` is from.</span>
-<span class="sd">        node: :pyclass:TreeNode</span>
+<span class="sd">        node: :py:class:`TreeNode`</span>
 <span class="sd">            node being processed.</span>
 <span class="sd">        rootids: array of ints</span>
 <span class="sd">            for each parallel node, which root it belongs to.</span>
@@ -952,9 +947,9 @@
 <span class="sd">        loglikelihoods of dead points</span>
 <span class="sd">    saved_nodeids: list of ints</span>
 <span class="sd">        indices of dead points</span>
-<span class="sd">    pointpile: :pyclass:PointPile</span>
+<span class="sd">    pointpile: :py:class:`PointPile`</span>
 <span class="sd">        Point pile.</span>
-<span class="sd">    main_iterator: :pyclass:BreadthFirstIterator</span>
+<span class="sd">    main_iterator: :py:class:`BreadthFirstIterator`</span>
 <span class="sd">        iterator used</span>
 <span class="sd">    mpi_comm:</span>
 <span class="sd">        MPI communicator object, or None if MPI is not used.</span>
@@ -1067,9 +1062,9 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    root: :pyclass:TreeNode</span>
+<span class="sd">    root: :py:class:`TreeNode`</span>
 <span class="sd">        Tree</span>
-<span class="sd">    pointpile: :pyclass:PointPile</span>
+<span class="sd">    pointpile: :py:class:`PointPile`</span>
 <span class="sd">        Point pile</span>
 <span class="sd">    nbootstraps: int</span>
 <span class="sd">        Number of independent iterators</span>
@@ -1135,14 +1130,16 @@
         <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">invalid</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">):</span>
             <span class="c1"># first time they are all the same</span>
             <span class="n">logzerr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">main_iterator</span><span class="o">.</span><span class="n">logZerr_bs</span><span class="p">)</span>
+        
+        <span class="n">nactive</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">active_values</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">active_values</span><span class="p">))</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">active_values</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">active_values</span><span class="p">))</span> <span class="o">==</span> <span class="n">nactive</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">child_insertion_order</span> <span class="o">=</span> <span class="p">(</span><span class="n">active_values</span> <span class="o">&gt;</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-            <span class="n">insert_order</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">child_insertion_order</span> <span class="o">+</span> <span class="mf">1.</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">active_values</span><span class="p">))</span>
+            <span class="n">insert_order</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">child_insertion_order</span> <span class="o">+</span> <span class="mf">1.</span><span class="p">)</span> <span class="o">/</span> <span class="n">nactive</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">insert_order</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
 
-        <span class="n">nlive</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">active_values</span><span class="p">))</span>
+        <span class="n">nlive</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nactive</span><span class="p">)</span>
         <span class="n">logvol</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">main_iterator</span><span class="o">.</span><span class="n">logVolremaining</span><span class="p">)</span>
 
         <span class="n">niter</span> <span class="o">+=</span> <span class="mi">1</span>

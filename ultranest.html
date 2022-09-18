@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest package &mdash; UltraNest 3.5.4 documentation</title>
+  <title>ultranest package &mdash; UltraNest 3.5.5 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="_static/icon.ico"/>
@@ -38,7 +38,7 @@
             <img src="_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.5.4
+                3.5.5
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -1863,8 +1863,8 @@ Does nothing if there are no wrapped/circular parameters.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>points</strong> (<em>array</em>) – points to use for optimization (in u-space)</p></li>
 <li><p><strong>there.</strong> (<em>Find largest gap in live points and wrap parameter space</em>) – </p></li>
-<li><p><strong>example</strong> (<em>For</em>) – <a href="#id1"><span class="problematic" id="id2">|*****           ****|</span></a></p></li>
-<li><p><strong>has::</strong> (<em>if a wrapped axis</em>) – <a href="#id3"><span class="problematic" id="id4">|*****           ****|</span></a></p></li>
+<li><p><strong>example</strong> (<em>For</em>) – <a href="#id3"><span class="problematic" id="id4">|*****           ****|</span></a></p></li>
+<li><p><strong>has::</strong> (<em>if a wrapped axis</em>) – <a href="#id5"><span class="problematic" id="id6">|*****           ****|</span></a></p></li>
 <li><p><strong>middle</strong> (<em>it would identify the</em>) – </p></li>
 <li><p><strong>it</strong> (<em>subtract</em>) – </p></li>
 <li><p><strong>space</strong> (<em>so that the new</em>) – </p></li>
@@ -2156,13 +2156,12 @@ can ignore the rootids it does not know about.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ultranest.netiter.</span></span><span class="sig-name descname"><span class="pre">TreeNode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">children</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/netiter.html#TreeNode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.netiter.TreeNode" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Simple tree node.</p>
-<p>Define TreeNode.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>value</strong> – used to order nodes</p></li>
-<li><p><strong>id</strong> (<em>int</em>) – refers to the order of discovery and storage (PointPile)</p></li>
-<li><p><strong>children</strong> (<em>list of :class:TreeNode objects</em>) – children nodes. if None, a empty list is used.</p></li>
+<li><p><strong>value</strong> (<em>float</em>) – value used to order nodes (typically log-likelihood)</p></li>
+<li><p><strong>id</strong> (<em>int</em>) – identifier, refers to the order of discovery and storage (PointPile)</p></li>
+<li><p><strong>children</strong> (<em>list</em>) – children nodes, should be <a class="reference internal" href="#ultranest.netiter.TreeNode" title="ultranest.netiter.TreeNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">TreeNode</span></code></a> objects. if None, a empty list is used.</p></li>
 </ul>
 </dd>
 </dl>
@@ -2227,7 +2226,7 @@ otherwise</p>
 <dd><p>Print a pretty yet compact graphic of the tree.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>roots</strong> (<em>list of :pyclass:TreeNode</em>) – tree</p>
+<dd class="field-odd"><p><strong>roots</strong> (<em>list</em>) – list of <cite>:py:class:TreeNode</cite> specifying the roots of the tree.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2240,7 +2239,7 @@ otherwise</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>filename</strong> (<em>str</em>) – output filename</p></li>
-<li><p><strong>roots</strong> (<em>list of :pyclass:TreeNode</em>) – tree to store</p></li>
+<li><p><strong>roots</strong> (<em>list</em>) – list of <cite>:py:class:TreeNode</cite> specifying the roots of the tree.</p></li>
 <li><p><strong>pointpile</strong> (<em>:class:PointPile</em>) – information on the node points</p></li>
 </ul>
 </dd>
@@ -2253,7 +2252,7 @@ otherwise</p>
 <dd><p>Return the total number of nodes and maximum number of parallel edges.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>roots</strong> (<em>list of :pyclass:TreeNode</em>) – tree</p>
+<dd class="field-odd"><p><strong>roots</strong> (<em>list</em>) – list of <cite>:py:class:TreeNode</cite> specifying the roots of the tree.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><ul class="simple">
@@ -2274,7 +2273,7 @@ but only considering a interval of the tree.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>roots</strong> (<em>list of :pyclass:TreeNode</em>) – tree</p></li>
+<li><p><strong>roots</strong> (<em>list</em>) – list of <cite>:py:class:TreeNode</cite> specifying the roots of the tree.</p></li>
 <li><p><strong>lo</strong> (<em>float</em>) – lower value threshold</p></li>
 <li><p><strong>hi</strong> (<em>float</em>) – upper value threshold</p></li>
 </ul>
@@ -2297,7 +2296,7 @@ but only considering a interval of the tree.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>root</strong> (<em>:pyclass:TreeNode</em>) – tree</p></li>
+<li><p><strong>root</strong> (<a class="reference internal" href="#ultranest.netiter.TreeNode" title="ultranest.netiter.TreeNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">TreeNode</span></code></a>) – tree</p></li>
 <li><p><strong>value</strong> (<em>float</em>) – selection threshold</p></li>
 </ul>
 </dd>
@@ -2319,9 +2318,9 @@ where no node had more than one child.
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ultranest.netiter.</span></span><span class="sig-name descname"><span class="pre">PointPile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">udim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunksize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/netiter.html#PointPile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.netiter.PointPile" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>A in-memory linearized storage of point coordinates.</p>
-<p>:pyclass:TreeNodes only store the logL value and id,
+<p>:py:class:<a href="#id1"><span class="problematic" id="id2">`</span></a>TreeNode`s only store the logL value and id,
 which is the index in the point pile. The point pile stores
-the point coordinates.</p>
+the point coordinates in u and p-space (transformed and untransformed).</p>
 <p>Set up point pile.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -2392,7 +2391,6 @@ the point coordinates.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ultranest.netiter.</span></span><span class="sig-name descname"><span class="pre">SingleCounter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">random</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/netiter.html#SingleCounter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.netiter.SingleCounter" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Evidence log(Z) and posterior weight summation for a Nested Sampling tree.</p>
-<p>Initialise counter.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>random</strong> (<em>bool</em>) – if False, use mean estimator for volume shrinkage
@@ -2431,7 +2429,7 @@ if True, draw a random sample</p>
 <dt class="sig sig-object py" id="ultranest.netiter.MultiCounter">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ultranest.netiter.</span></span><span class="sig-name descname"><span class="pre">MultiCounter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nroots</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nbootstraps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_insertion_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/netiter.html#MultiCounter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.netiter.MultiCounter" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Like SingleCounter, but bootstrap capable.</p>
+<p>Like <a class="reference internal" href="#ultranest.netiter.SingleCounter" title="ultranest.netiter.SingleCounter"><code class="xref py py-class docutils literal notranslate"><span class="pre">SingleCounter</span></code></a>, but bootstrap capable.</p>
 <p><strong>Attributes</strong>:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">logZ</span></code>, <code class="docutils literal notranslate"><span class="pre">logZerr</span></code>, <code class="docutils literal notranslate"><span class="pre">logVolremaining</span></code>: main estimator
@@ -2534,8 +2532,8 @@ should accumulate.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>rootid</strong> (<em>:pyclass:TreeNode</em>) – root node this <cite>node</cite> is from.</p></li>
-<li><p><strong>node</strong> (<em>:pyclass:TreeNode</em>) – node being processed.</p></li>
+<li><p><strong>rootid</strong> (<a class="reference internal" href="#ultranest.netiter.TreeNode" title="ultranest.netiter.TreeNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">TreeNode</span></code></a>) – root node this <cite>node</cite> is from.</p></li>
+<li><p><strong>node</strong> (<a class="reference internal" href="#ultranest.netiter.TreeNode" title="ultranest.netiter.TreeNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">TreeNode</span></code></a>) – node being processed.</p></li>
 <li><p><strong>rootids</strong> (<em>array of ints</em>) – for each parallel node, which root it belongs to.</p></li>
 <li><p><strong>parallel_values</strong> (<em>float array</em>) – loglikelihood values of nodes passing <cite>node</cite>.</p></li>
 </ul>
@@ -2554,8 +2552,8 @@ should accumulate.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>saved_logl</strong> (<em>list of floats</em>) – loglikelihoods of dead points</p></li>
 <li><p><strong>saved_nodeids</strong> (<em>list of ints</em>) – indices of dead points</p></li>
-<li><p><strong>pointpile</strong> (<em>:pyclass:PointPile</em>) – Point pile.</p></li>
-<li><p><strong>main_iterator</strong> (<em>:pyclass:BreadthFirstIterator</em>) – iterator used</p></li>
+<li><p><strong>pointpile</strong> (<a class="reference internal" href="#ultranest.netiter.PointPile" title="ultranest.netiter.PointPile"><code class="xref py py-class docutils literal notranslate"><span class="pre">PointPile</span></code></a>) – Point pile.</p></li>
+<li><p><strong>main_iterator</strong> (<a class="reference internal" href="#ultranest.netiter.BreadthFirstIterator" title="ultranest.netiter.BreadthFirstIterator"><code class="xref py py-class docutils literal notranslate"><span class="pre">BreadthFirstIterator</span></code></a>) – iterator used</p></li>
 <li><p><strong>mpi_comm</strong> – MPI communicator object, or None if MPI is not used.</p></li>
 </ul>
 </dd>
@@ -2586,8 +2584,8 @@ included if the iterator has it.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>root</strong> (<em>:pyclass:TreeNode</em>) – Tree</p></li>
-<li><p><strong>pointpile</strong> (<em>:pyclass:PointPile</em>) – Point pile</p></li>
+<li><p><strong>root</strong> (<a class="reference internal" href="#ultranest.netiter.TreeNode" title="ultranest.netiter.TreeNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">TreeNode</span></code></a>) – Tree</p></li>
+<li><p><strong>pointpile</strong> (<a class="reference internal" href="#ultranest.netiter.PointPile" title="ultranest.netiter.PointPile"><code class="xref py py-class docutils literal notranslate"><span class="pre">PointPile</span></code></a>) – Point pile</p></li>
 <li><p><strong>nbootstraps</strong> (<em>int</em>) – Number of independent iterators</p></li>
 <li><p><strong>random</strong> (<em>bool</em>) – Whether to randomly draw volume estimates</p></li>
 <li><p><strong>onNode</strong> (<em>function</em>) – Function to call for every node.
