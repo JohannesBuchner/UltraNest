@@ -380,7 +380,7 @@ def find_nodes_before(root, value):
 class PointPile(object):
     """A in-memory linearized storage of point coordinates.
 
-    :py:class:`TreeNode`s only store the logL value and id,
+    :py:class:`TreeNode` objects only store the logL value and id,
     which is the index in the point pile. The point pile stores
     the point coordinates in u and p-space (transformed and untransformed).
     """

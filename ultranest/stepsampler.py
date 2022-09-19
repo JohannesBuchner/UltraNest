@@ -662,7 +662,7 @@ class StepSampler(object):
             number of draws to attempt simultaneously.
         plot: bool
             whether to produce debug plots.
-        tregion: WrappingEllipsoid
+        tregion: :py:class:`WrappingEllipsoid`
             optional ellipsoid in transformed space for rejecting proposals
 
         """
@@ -1114,7 +1114,7 @@ def ellipsoid_bracket(ui, v, ellipsoid_center, ellipsoid_inv_axes, ellipsoid_rad
     ellipsoid_center: array
         center of the ellipsoid
     ellipsoid_inv_axes: array
-        ellipsoid axes matrix, as computed by :class:WrappingEllipsoid
+        ellipsoid axes matrix, as computed by :py:class:`WrappingEllipsoid`
     ellipsoid_radius_square: float
         square of the ellipsoid radius
 

@@ -81,7 +81,7 @@ class PopulationSliceSampler():
         self.searching_right = np.zeros(self.popsize, dtype=bool)
 
     def step_back(self, Lmin):
-        """see `:func:ultranest.stepfuncs.step_back` :func:ultranest.stepfuncs.step_back."""
+        """see :py:func:`ultranest.stepfuncs.step_back`"""
         step_back(Lmin, self.allL, self.generation, self.currentt)
 
     def setup_start(self, us, Ls, starting):
