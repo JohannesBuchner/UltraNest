@@ -2231,7 +2231,7 @@ class ReactiveNestedSampler(object):
         viz_callback: function
             callback function when region was rebuilt. Allows to
             show current state of the live points.
-            See :func:`nicelogger` or :class:`LivePointsWidget`.
+            See :py:func:`nicelogger` or :py:class:`LivePointsWidget`.
             If no output desired, set to False.
 
         dlogz: float
@@ -2278,9 +2278,10 @@ class ReactiveNestedSampler(object):
         insertion_test_window: int
             Number of iterations after which the insertion order test is reset.
 
-        region_class: MLFriends or RobustEllipsoidRegion
+        region_class: :py:class:`MLFriends` or :py:class:`RobustEllipsoidRegion` or :py:class:`SimpleRegion`
             Whether to use MLFriends+ellipsoidal+tellipsoidal region (better for multi-modal problems)
-            or just ellipsoidal sampling (faster for high-dimensional, gaussian-like problems).
+            or just ellipsoidal sampling (faster for high-dimensional, gaussian-like problems)
+            or a axis-aligned ellipsoid (fastest, to be combined with slice sampling).
         """
         for result in self.run_iter(
             update_interval_volume_fraction=update_interval_volume_fraction,

@@ -38,7 +38,7 @@ class TreeNode(object):
     id: int
         identifier, refers to the order of discovery and storage (PointPile)
     children: list
-        children nodes, should be :class:`TreeNode` objects. if None, a empty list is used.
+        children nodes, should be :py:class:`TreeNode` objects. if None, a empty list is used.
     """
 
     def __init__(self, value=None, id=None, children=None):
@@ -169,6 +169,8 @@ def print_tree(roots, title='Tree:'):
     ----------
     roots: list
         list of :py:class:`TreeNode` specifying the roots of the tree.
+    title: str
+        Print this string first.
     """
     print()
     print(title)
@@ -220,7 +222,7 @@ def dump_tree(filename, roots, pointpile):
         output filename
     roots: list
         list of :py:class:`TreeNode` specifying the roots of the tree.
-    pointpile: :class:PointPile
+    pointpile: :py:class:`PointPile`
         information on the node points
     """
     import h5py
@@ -596,6 +598,8 @@ class MultiCounter(object):
         random: bool
             if False, use mean estimator for volume shrinkage
             if True, draw a random sample
+        check_insertion_order: bool
+            whether to run insertion order rank U test
 
         """
         allyes = np.ones(nroots, dtype=bool)
@@ -621,7 +625,13 @@ class MultiCounter(object):
         self.reset(len(self.rootids))
 
     def reset(self, nentries):
-        """Reset counters/integrator."""
+        """Reset counters/integrator.
+
+        Parameters
+        ----------
+        nentries: int
+            number of iterators
+        """
         self.logweights = []
         self.istail = []
         self.logZ = -np.inf
