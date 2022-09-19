@@ -812,10 +812,21 @@
     
 <div class="viewcode-block" id="ClockedNUTSSampler.sample_chain_point"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedNUTSSampler.sample_chain_point">[docs]</a>    <span class="k">def</span> <span class="nf">sample_chain_point</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Gets a point on the track between a and b (inclusive)</span>
-<span class="sd">        returns tuple ((point coordinates, likelihood), is_independent)</span>
-<span class="sd">            where is_independent is always True</span>
+<span class="sd">        Gets a point on the track between a and b (inclusive).</span>
 <span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        a: array</span>
+<span class="sd">            starting point</span>
+<span class="sd">        b: array</span>
+<span class="sd">            end point</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        --------</span>
+<span class="sd">        newpoint: tuple</span>
+<span class="sd">            tuple of point_coordinates and loglikelihood</span>
+<span class="sd">        is_independent: bool</span>
+<span class="sd">            always True</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot</span><span class="p">:</span> 
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>

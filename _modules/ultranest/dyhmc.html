@@ -110,17 +110,21 @@
     <span class="sd">&quot;&quot;&quot; Compute the stop condition in the main loop</span>
 <span class="sd">    dot(dtheta, rminus) &gt;= 0 &amp; dot(dtheta, rplus &gt;= 0)</span>
 
-<span class="sd">    INPUTS</span>
+<span class="sd">    Parameters</span>
 <span class="sd">    ------</span>
-<span class="sd">    thetaminus, thetaplus: ndarray[float, ndim=1]</span>
-<span class="sd">        under and above position</span>
-<span class="sd">    rminus, rplus: ndarray[float, ndim=1]</span>
-<span class="sd">        under and above momentum</span>
+<span class="sd">    thetaminus: ndarray[float, ndim=1]</span>
+<span class="sd">        under position</span>
+<span class="sd">    thetaplus: ndarray[float, ndim=1]</span>
+<span class="sd">        above position</span>
+<span class="sd">    rminus: ndarray[float, ndim=1]</span>
+<span class="sd">        under momentum</span>
+<span class="sd">    rplus: ndarray[float, ndim=1]</span>
+<span class="sd">        above momentum</span>
 
-<span class="sd">    OUTPUTS</span>
+<span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    criterion: bool</span>
-<span class="sd">        return if the condition is valid</span>
+<span class="sd">        whether the condition is valid</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">dtheta</span> <span class="o">=</span> <span class="n">thetaplus</span> <span class="o">-</span> <span class="n">thetaminus</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dtheta</span><span class="p">,</span> <span class="n">rminus</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dtheta</span><span class="p">,</span> <span class="n">rplus</span><span class="o">.</span><span class="n">T</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span></div>
@@ -293,7 +297,6 @@
     <span class="sd">&quot;&quot;&quot; Define auxiliary distribution taking into account</span>
 <span class="sd">    kinetic energy of a d-dimensional HMC.</span>
 <span class="sd">    Make exp(-d/2) quantile to be at u=0.1, and 95% quantile at u=0.5. &quot;&quot;&quot;</span>
-    <span class="k">del</span> <span class="n">d</span>
 
     <span class="n">u50</span> <span class="o">=</span> <span class="p">(</span><span class="n">u10</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.</span>
 

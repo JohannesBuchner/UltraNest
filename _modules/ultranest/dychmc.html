@@ -104,20 +104,26 @@
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
 <div class="viewcode-block" id="stop_criterion"><a class="viewcode-back" href="../../ultranest.html#ultranest.dychmc.stop_criterion">[docs]</a><span class="k">def</span> <span class="nf">stop_criterion</span><span class="p">(</span><span class="n">thetaminus</span><span class="p">,</span> <span class="n">thetaplus</span><span class="p">,</span> <span class="n">rminus</span><span class="p">,</span> <span class="n">rplus</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Compute the stop condition in the main loop</span>
-<span class="sd">    dot(dtheta, rminus) &gt;= 0 &amp; dot(dtheta, rplus &gt;= 0)</span>
+    <span class="sd">&quot;&quot;&quot;Compute the stop condition in the main loop</span>
 
-<span class="sd">    INPUTS</span>
+<span class="sd">    computes:</span>
+<span class="sd">    `dot(dtheta, rminus) &gt;= 0 &amp; dot(dtheta, rplus &gt;= 0)`</span>
+
+<span class="sd">    Parameters</span>
 <span class="sd">    ------</span>
-<span class="sd">    thetaminus, thetaplus: ndarray[float, ndim=1]</span>
-<span class="sd">        under and above position</span>
-<span class="sd">    rminus, rplus: ndarray[float, ndim=1]</span>
-<span class="sd">        under and above momentum</span>
+<span class="sd">    thetaminus: ndarray[float, ndim=1]</span>
+<span class="sd">        under position</span>
+<span class="sd">    thetaplus: ndarray[float, ndim=1]</span>
+<span class="sd">        above position</span>
+<span class="sd">    rminus: ndarray[float, ndim=1]</span>
+<span class="sd">        under momentum</span>
+<span class="sd">    rplus: ndarray[float, ndim=1]</span>
+<span class="sd">        above momentum</span>
 
-<span class="sd">    OUTPUTS</span>
+<span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    criterion: bool</span>
-<span class="sd">        return if the condition is valid</span>
+<span class="sd">        whether the condition is valid</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">dtheta</span> <span class="o">=</span> <span class="n">thetaplus</span> <span class="o">-</span> <span class="n">thetaminus</span>
     <span class="c1">#print(&quot;stop?&quot;, dtheta, rminus, rplus, np.dot(dtheta, rminus.T), np.dot(dtheta, rplus.T))</span>
@@ -125,7 +131,7 @@
 
 
 <div class="viewcode-block" id="step_or_reflect"><a class="viewcode-back" href="../../ultranest.html#ultranest.dychmc.step_or_reflect">[docs]</a><span class="k">def</span> <span class="nf">step_or_reflect</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">gradient</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Make a step from theta towards v with stepsize epsilon. &quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Make a step from `theta` towards `v` with stepsize `epsilon`. &quot;&quot;&quot;</span>
     <span class="c1"># step in position:</span>
     <span class="n">thetaprime</span> <span class="o">=</span> <span class="n">theta</span> <span class="o">+</span> <span class="n">epsilon</span> <span class="o">*</span> <span class="n">v</span>
     <span class="c1"># check if still inside</span>
@@ -250,7 +256,7 @@
     <span class="k">return</span> <span class="n">thetaminus</span><span class="p">,</span> <span class="n">vminus</span><span class="p">,</span> <span class="n">pminus</span><span class="p">,</span> <span class="n">thetaplus</span><span class="p">,</span> <span class="n">vplus</span><span class="p">,</span> <span class="n">pplus</span><span class="p">,</span> <span class="n">thetaprime</span><span class="p">,</span> <span class="n">vprime</span><span class="p">,</span> <span class="n">pprime</span><span class="p">,</span> <span class="n">logpprime</span><span class="p">,</span> <span class="n">sprime</span><span class="p">,</span> <span class="n">can_continue</span><span class="p">,</span> <span class="n">alphaprime</span><span class="p">,</span> <span class="n">nalphaprime</span><span class="p">,</span> <span class="n">nreflectprime</span></div>
 
 <div class="viewcode-block" id="tree_sample"><a class="viewcode-back" href="../../ultranest.html#ultranest.dychmc.tree_sample">[docs]</a><span class="k">def</span> <span class="nf">tree_sample</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">logL</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">gradient</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">,</span> <span class="n">maxheight</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Build NUTS-like tree of sampling path from theta towards p with stepsize epsilon.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Build NUTS-like tree of sampling path from `theta` towards `p` with stepsize `epsilon`.&quot;&quot;&quot;</span>
     <span class="c1"># initialize the tree</span>
     <span class="n">thetaminus</span> <span class="o">=</span> <span class="n">theta</span>
     <span class="n">thetaplus</span> <span class="o">=</span> <span class="n">theta</span>
@@ -321,7 +327,7 @@
     <span class="k">return</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">nreflect</span><span class="p">,</span> <span class="n">nalpha</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">logp</span><span class="p">,</span> <span class="n">j</span></div>
 
 <div class="viewcode-block" id="generate_uniform_direction"><a class="viewcode-back" href="../../ultranest.html#ultranest.dychmc.generate_uniform_direction">[docs]</a><span class="k">def</span> <span class="nf">generate_uniform_direction</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">massmatrix</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; draw unit direction vector according to mass matrix &quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Draw unit direction vector according to mass matrix.&quot;&quot;&quot;</span>
     <span class="n">momentum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">multivariate_normal</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">d</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">massmatrix</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">d</span><span class="p">)))</span>
     <span class="n">momentum</span> <span class="o">/=</span> <span class="p">(</span><span class="n">momentum</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">**</span><span class="mf">0.5</span>
     <span class="k">return</span> <span class="n">momentum</span></div>
@@ -337,27 +343,27 @@
 <span class="sd">    A No-U-turn criterion and randomized doubling of forward or backward</span>
 <span class="sd">    steps is used to avoid repeating circular trajectories.</span>
 <span class="sd">    Because of this, the number of steps is dynamic.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    nsteps: int</span>
+<span class="sd">        number of accepted steps until the sample is considered independent.</span>
+<span class="sd">    adaptive_nsteps: False, &#39;proposal-distance&#39;, &#39;move-distance&#39;</span>
+<span class="sd">        if not false, allow earlier termination than nsteps.</span>
+<span class="sd">        The &#39;proposal-distance&#39; strategy stops when the sum of</span>
+<span class="sd">        all proposed vectors exceeds the mean distance</span>
+<span class="sd">        between pairs of live points.</span>
+<span class="sd">        As distance, the Mahalanobis distance is used.</span>
+<span class="sd">        The &#39;move-distance&#39; strategy stops when the distance between</span>
+<span class="sd">        start point and current position exceeds the mean distance</span>
+<span class="sd">        between pairs of live points.</span>
+<span class="sd">    delta: float</span>
+<span class="sd">        step size</span>
+<span class="sd">    nudge: float</span>
+<span class="sd">        change in step size, must be &gt;1.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">,</span> <span class="n">adaptive_nsteps</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">nudge</span><span class="o">=</span><span class="mf">1.04</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Initialise sampler.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        -----------</span>
-<span class="sd">        nsteps: int</span>
-<span class="sd">            number of accepted steps until the sample is considered independent.</span>
-
-<span class="sd">        adaptive_nsteps: False, &#39;proposal-distance&#39;, &#39;move-distance&#39;</span>
-<span class="sd">            if not false, allow earlier termination than nsteps.</span>
-<span class="sd">            The &#39;proposal-distance&#39; strategy stops when the sum of</span>
-<span class="sd">            all proposed vectors exceeds the mean distance</span>
-<span class="sd">            between pairs of live points.</span>
-<span class="sd">            As distance, the Mahalanobis distance is used.</span>
-<span class="sd">            The &#39;move-distance&#39; strategy stops when the distance between</span>
-<span class="sd">            start point and current position exceeds the mean distance</span>
-<span class="sd">            between pairs of live points.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">=</span> <span class="n">nsteps</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">scale</span>
