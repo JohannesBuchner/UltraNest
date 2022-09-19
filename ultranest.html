@@ -1884,8 +1884,8 @@ Does nothing if there are no wrapped/circular parameters.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>points</strong> (<em>array</em>) – points to use for optimization (in u-space)</p></li>
 <li><p><strong>there.</strong> (<em>Find largest gap in live points and wrap parameter space</em>) – </p></li>
-<li><p><strong>example</strong> (<em>For</em>) – <a href="#id3"><span class="problematic" id="id4">|*****           ****|</span></a></p></li>
-<li><p><strong>has::</strong> (<em>if a wrapped axis</em>) – <a href="#id5"><span class="problematic" id="id6">|*****           ****|</span></a></p></li>
+<li><p><strong>example</strong> (<em>For</em>) – <a href="#id1"><span class="problematic" id="id2">|*****           ****|</span></a></p></li>
+<li><p><strong>has::</strong> (<em>if a wrapped axis</em>) – <a href="#id3"><span class="problematic" id="id4">|*****           ****|</span></a></p></li>
 <li><p><strong>middle</strong> (<em>it would identify the</em>) – </p></li>
 <li><p><strong>it</strong> (<em>subtract</em>) – </p></li>
 <li><p><strong>space</strong> (<em>so that the new</em>) – </p></li>
@@ -2339,7 +2339,7 @@ where no node had more than one child.
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ultranest.netiter.</span></span><span class="sig-name descname"><span class="pre">PointPile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">udim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunksize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/netiter.html#PointPile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.netiter.PointPile" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>A in-memory linearized storage of point coordinates.</p>
-<p>:py:class:<a href="#id1"><span class="problematic" id="id2">`</span></a>TreeNode`s only store the logL value and id,
+<p><a class="reference internal" href="#ultranest.netiter.TreeNode" title="ultranest.netiter.TreeNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">TreeNode</span></code></a> objects only store the logL value and id,
 which is the index in the point pile. The point pile stores
 the point coordinates in u and p-space (transformed and untransformed).</p>
 <p>Set up point pile.</p>
@@ -3161,7 +3161,7 @@ the last slice length is used as a initial guess for the next.</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="ultranest.popstepsampler.PopulationSliceSampler.step_back">
 <span class="sig-name descname"><span class="pre">step_back</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Lmin</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/popstepsampler.html#PopulationSliceSampler.step_back"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.popstepsampler.PopulationSliceSampler.step_back" title="Permalink to this definition"></a></dt>
-<dd><p>see <cite>:func:ultranest.stepfuncs.step_back</cite> :func:ultranest.stepfuncs.step_back.</p>
+<dd><p>see <a class="reference internal" href="#ultranest.stepfuncs.step_back" title="ultranest.stepfuncs.step_back"><code class="xref py py-func docutils literal notranslate"><span class="pre">ultranest.stepfuncs.step_back()</span></code></a></p>
 </dd></dl>
 
 <dl class="py method">
@@ -4467,7 +4467,7 @@ return the lower and upper intersection parameter.</p>
 <li><p><strong>ui</strong> (<em>array</em>) – current point (in u-space)</p></li>
 <li><p><strong>v</strong> (<em>array</em>) – direction vector</p></li>
 <li><p><strong>ellipsoid_center</strong> (<em>array</em>) – center of the ellipsoid</p></li>
-<li><p><strong>ellipsoid_inv_axes</strong> (<em>array</em>) – ellipsoid axes matrix, as computed by :class:WrappingEllipsoid</p></li>
+<li><p><strong>ellipsoid_inv_axes</strong> (<em>array</em>) – ellipsoid axes matrix, as computed by <code class="xref py py-class docutils literal notranslate"><span class="pre">WrappingEllipsoid</span></code></p></li>
 <li><p><strong>ellipsoid_radius_square</strong> (<em>float</em>) – square of the ellipsoid radius</p></li>
 </ul>
 </dd>
