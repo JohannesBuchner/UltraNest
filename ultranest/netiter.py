@@ -121,9 +121,9 @@ class BreadthFirstIterator(object):
         Parameters
         ----------
         rootid: int
-            index of the root returned by the most recent call to :pyfunc:BreadthFirstIterator.next_node
+            index of the root returned by the most recent call to :py:method:`BreadthFirstIterator.next_node`
         node: :pyclass:TreeNode
-            node returned by the most recent call to :pyfunc:BreadthFirstIterator.next_node
+            node returned by the most recent call to :py:method:`BreadthFirstIterator.next_node`
         """
         # print("replacing %.1f" % node.value, len(node.children))
         i = self.next_index
@@ -168,7 +168,7 @@ def print_tree(roots, title='Tree:'):
     Parameters
     ----------
     roots: list
-        list of `:py:class:TreeNode` specifying the roots of the tree.
+        list of :py:class:`TreeNode` specifying the roots of the tree.
     """
     print()
     print(title)
@@ -219,7 +219,7 @@ def dump_tree(filename, roots, pointpile):
     filename: str
         output filename
     roots: list
-        list of `:py:class:TreeNode` specifying the roots of the tree.
+        list of :py:class:`TreeNode` specifying the roots of the tree.
     pointpile: :class:PointPile
         information on the node points
     """
@@ -256,7 +256,7 @@ def count_tree(roots):
     Parameters
     ----------
     roots: list
-        list of `:py:class:TreeNode` specifying the roots of the tree.
+        list of :py:class:`TreeNode` specifying the roots of the tree.
 
     Returns
     --------
@@ -288,7 +288,7 @@ def count_tree_between(roots, lo, hi):
     Parameters
     ----------
     roots: list
-        list of `:py:class:TreeNode` specifying the roots of the tree.
+        list of :py:class:`TreeNode` specifying the roots of the tree.
     lo: float
         lower value threshold
     hi: float
@@ -452,7 +452,7 @@ class PointPile(object):
 
         Returns
         ---------
-        node: :pyclass:TreeNode
+        node: :py:class:`TreeNode`
             node
         """
         index = self.add(u, p)
@@ -985,7 +985,7 @@ def logz_sequence(root, pointpile, nbootstraps=12, random=True, onNode=None, ver
     Returns
     --------
     results: dict
-        Run information, see :pyfunc:combine_results
+        Run information, see :py:func:`combine_results`
     sequence: dict
         Each entry of the dictionary is results['niter'] long,
         and contains the state of information at that iteration.

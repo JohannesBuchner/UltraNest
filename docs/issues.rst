@@ -20,7 +20,7 @@ To suppress the live point visualisations, set ``viz_callback=False`` in ``sampl
 
 To suppress the status line, set ``show_status=False`` in `sampler.run()``.
 
-See the documentation of `:py:meth:ultranest.ReactiveNestedSampler.run()`.
+See the documentation of :py:meth:`ultranest.ReactiveNestedSampler.run()`.
 
 To suppress the logging to stderr, set up a logging handler::
 
@@ -33,7 +33,7 @@ To suppress the logging to stderr, set up a logging handler::
     logger.addHandler(handler)
     logger.setLevel(logging.WARNING)
 
-You may want to alter the above to log to a file instead. See the `logging python module<https://docs.python.org/3/library/logging.html>`_ docs.
+You may want to alter the above to log to a file instead. See the `logging python module <https://docs.python.org/3/library/logging.html>`_ docs.
 
 To completely turn off logging, you can use::
 

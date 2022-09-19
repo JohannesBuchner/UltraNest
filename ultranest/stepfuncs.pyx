@@ -127,6 +127,8 @@ cpdef evolve_update(
     success: np.array(nwalkers, dtype=bool)
         whether the walker accepts the point.
 
+    Notes
+    -----
     Writes to `currentt`, `current_left`, `current_right`, 
     `searching_left`, `searching_right`, `success`.
     """

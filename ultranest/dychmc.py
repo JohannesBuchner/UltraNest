@@ -8,20 +8,26 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def stop_criterion(thetaminus, thetaplus, rminus, rplus):
-    """ Compute the stop condition in the main loop
-    dot(dtheta, rminus) >= 0 & dot(dtheta, rplus >= 0)
+    """Compute the stop condition in the main loop
 
-    INPUTS
+    computes:
+    `dot(dtheta, rminus) >= 0 & dot(dtheta, rplus >= 0)`
+
+    Parameters
     ------
-    thetaminus, thetaplus: ndarray[float, ndim=1]
-        under and above position
-    rminus, rplus: ndarray[float, ndim=1]
-        under and above momentum
+    thetaminus: ndarray[float, ndim=1]
+        under position
+    thetaplus: ndarray[float, ndim=1]
+        above position
+    rminus: ndarray[float, ndim=1]
+        under momentum
+    rplus: ndarray[float, ndim=1]
+        above momentum
 
-    OUTPUTS
+    Returns
     -------
     criterion: bool
-        return if the condition is valid
+        whether the condition is valid
     """
     dtheta = thetaplus - thetaminus
     #print("stop?", dtheta, rminus, rplus, np.dot(dtheta, rminus.T), np.dot(dtheta, rplus.T))
@@ -29,7 +35,7 @@ def stop_criterion(thetaminus, thetaplus, rminus, rplus):
 
 
 def step_or_reflect(theta, v, epsilon, transform, loglike, gradient, Lmin):
-    """Make a step from theta towards v with stepsize epsilon. """
+    """Make a step from `theta` towards `v` with stepsize `epsilon`. """
     # step in position:
     thetaprime = theta + epsilon * v
     # check if still inside
@@ -154,7 +160,7 @@ def build_tree(theta, v, direction, j, epsilon, transform, loglike, gradient, Lm
     return thetaminus, vminus, pminus, thetaplus, vplus, pplus, thetaprime, vprime, pprime, logpprime, sprime, can_continue, alphaprime, nalphaprime, nreflectprime
 
 def tree_sample(theta, p, logL, v, epsilon, transform, loglike, gradient, Lmin, maxheight=np.inf):
-    """Build NUTS-like tree of sampling path from theta towards p with stepsize epsilon."""
+    """Build NUTS-like tree of sampling path from `theta` towards `p` with stepsize `epsilon`."""
     # initialize the tree
     thetaminus = theta
     thetaplus = theta
@@ -225,7 +231,7 @@ def tree_sample(theta, p, logL, v, epsilon, transform, loglike, gradient, Lmin, 
     return alpha, nreflect, nalpha, theta, p, logp, j
 
 def generate_uniform_direction(d, massmatrix):
-    """ draw unit direction vector according to mass matrix """
+    """Draw unit direction vector according to mass matrix."""
     momentum = np.random.multivariate_normal(np.zeros(d), np.dot(massmatrix, np.eye(d)))
     momentum /= (momentum**2).sum()**0.5
     return momentum
@@ -241,27 +247,27 @@ class DynamicCHMCSampler(object):
     A No-U-turn criterion and randomized doubling of forward or backward
     steps is used to avoid repeating circular trajectories.
     Because of this, the number of steps is dynamic.
+
+    Parameters
+    -----------
+    nsteps: int
+        number of accepted steps until the sample is considered independent.
+    adaptive_nsteps: False, 'proposal-distance', 'move-distance'
+        if not false, allow earlier termination than nsteps.
+        The 'proposal-distance' strategy stops when the sum of
+        all proposed vectors exceeds the mean distance
+        between pairs of live points.
+        As distance, the Mahalanobis distance is used.
+        The 'move-distance' strategy stops when the distance between
+        start point and current position exceeds the mean distance
+        between pairs of live points.
+    delta: float
+        step size
+    nudge: float
+        change in step size, must be >1.
     """
 
     def __init__(self, scale, nsteps, adaptive_nsteps=False, delta=0.9, nudge=1.04):
-        """Initialise sampler.
-
-        Parameters
-        -----------
-        nsteps: int
-            number of accepted steps until the sample is considered independent.
-
-        adaptive_nsteps: False, 'proposal-distance', 'move-distance'
-            if not false, allow earlier termination than nsteps.
-            The 'proposal-distance' strategy stops when the sum of
-            all proposed vectors exceeds the mean distance
-            between pairs of live points.
-            As distance, the Mahalanobis distance is used.
-            The 'move-distance' strategy stops when the distance between
-            start point and current position exceeds the mean distance
-            between pairs of live points.
-
-        """
         self.history = []
         self.nsteps = nsteps
         self.scale = scale

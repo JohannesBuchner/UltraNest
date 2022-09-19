@@ -716,10 +716,21 @@ class ClockedNUTSSampler(ClockedBisectSampler):
     
     def sample_chain_point(self, a, b):
         """
-        Gets a point on the track between a and b (inclusive)
-        returns tuple ((point coordinates, likelihood), is_independent)
-            where is_independent is always True
+        Gets a point on the track between a and b (inclusive).
         
+        Parameters
+        ----------
+        a: array
+            starting point
+        b: array
+            end point
+        
+        Returns
+        --------
+        newpoint: tuple
+            tuple of point_coordinates and loglikelihood
+        is_independent: bool
+            always True
         """
         if self.plot: 
             for i in range(a, b+1):

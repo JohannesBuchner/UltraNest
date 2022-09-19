@@ -381,7 +381,7 @@ def get_auxiliary_contbox_parameterization(
         Takes d u-space coordinates, and returns d + 1 p-space parameters.
         The first d return coordinates are identical to what ``transform`` would return.
         The final coordinate is the log of the correction weight.
-      vectorized: bool
+    vectorized: bool
         whether the returned functions are vectorized
 
     Usage
