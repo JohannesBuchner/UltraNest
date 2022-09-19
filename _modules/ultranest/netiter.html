@@ -134,7 +134,7 @@
 <span class="sd">    id: int</span>
 <span class="sd">        identifier, refers to the order of discovery and storage (PointPile)</span>
 <span class="sd">    children: list</span>
-<span class="sd">        children nodes, should be :class:`TreeNode` objects. if None, a empty list is used.</span>
+<span class="sd">        children nodes, should be :py:class:`TreeNode` objects. if None, a empty list is used.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">children</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -265,6 +265,8 @@
 <span class="sd">    ----------</span>
 <span class="sd">    roots: list</span>
 <span class="sd">        list of :py:class:`TreeNode` specifying the roots of the tree.</span>
+<span class="sd">    title: str</span>
+<span class="sd">        Print this string first.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="nb">print</span><span class="p">()</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
@@ -316,7 +318,7 @@
 <span class="sd">        output filename</span>
 <span class="sd">    roots: list</span>
 <span class="sd">        list of :py:class:`TreeNode` specifying the roots of the tree.</span>
-<span class="sd">    pointpile: :class:PointPile</span>
+<span class="sd">    pointpile: :py:class:`PointPile`</span>
 <span class="sd">        information on the node points</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">import</span> <span class="nn">h5py</span>
@@ -692,6 +694,8 @@
 <span class="sd">        random: bool</span>
 <span class="sd">            if False, use mean estimator for volume shrinkage</span>
 <span class="sd">            if True, draw a random sample</span>
+<span class="sd">        check_insertion_order: bool</span>
+<span class="sd">            whether to run insertion order rank U test</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">allyes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">nroots</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
@@ -717,7 +721,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rootids</span><span class="p">))</span>
 
 <div class="viewcode-block" id="MultiCounter.reset"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.MultiCounter.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nentries</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Reset counters/integrator.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Reset counters/integrator.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        nentries: int</span>
+<span class="sd">            number of iterators</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logweights</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">istail</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logZ</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>

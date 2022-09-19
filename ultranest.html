@@ -1211,8 +1211,9 @@ This number limits the number of improvement loops.</p></li>
 <li><p><strong>insertion_test_zscore_threshold</strong> (<em>float</em>) – z-score used as a threshold for the insertion order test.
 Set to infinity to disable.</p></li>
 <li><p><strong>insertion_test_window</strong> (<em>int</em>) – Number of iterations after which the insertion order test is reset.</p></li>
-<li><p><strong>region_class</strong> (<a class="reference internal" href="#ultranest.mlfriends.MLFriends" title="ultranest.mlfriends.MLFriends"><em>MLFriends</em></a><em> or </em><a class="reference internal" href="#ultranest.mlfriends.RobustEllipsoidRegion" title="ultranest.mlfriends.RobustEllipsoidRegion"><em>RobustEllipsoidRegion</em></a>) – Whether to use MLFriends+ellipsoidal+tellipsoidal region (better for multi-modal problems)
-or just ellipsoidal sampling (faster for high-dimensional, gaussian-like problems).</p></li>
+<li><p><strong>region_class</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">MLFriends</span></code> or <code class="xref py py-class docutils literal notranslate"><span class="pre">RobustEllipsoidRegion</span></code> or <code class="xref py py-class docutils literal notranslate"><span class="pre">SimpleRegion</span></code>) – Whether to use MLFriends+ellipsoidal+tellipsoidal region (better for multi-modal problems)
+or just ellipsoidal sampling (faster for high-dimensional, gaussian-like problems)
+or a axis-aligned ellipsoid (fastest, to be combined with slice sampling).</p></li>
 </ul>
 </dd>
 </dl>
@@ -2247,7 +2248,10 @@ otherwise</p>
 <dd><p>Print a pretty yet compact graphic of the tree.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>roots</strong> (<em>list</em>) – list of <a class="reference internal" href="#ultranest.netiter.TreeNode" title="ultranest.netiter.TreeNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">TreeNode</span></code></a> specifying the roots of the tree.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>roots</strong> (<em>list</em>) – list of <a class="reference internal" href="#ultranest.netiter.TreeNode" title="ultranest.netiter.TreeNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">TreeNode</span></code></a> specifying the roots of the tree.</p></li>
+<li><p><strong>title</strong> (<em>str</em>) – Print this string first.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -2261,7 +2265,7 @@ otherwise</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>filename</strong> (<em>str</em>) – output filename</p></li>
 <li><p><strong>roots</strong> (<em>list</em>) – list of <a class="reference internal" href="#ultranest.netiter.TreeNode" title="ultranest.netiter.TreeNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">TreeNode</span></code></a> specifying the roots of the tree.</p></li>
-<li><p><strong>pointpile</strong> (<em>:class:PointPile</em>) – information on the node points</p></li>
+<li><p><strong>pointpile</strong> (<a class="reference internal" href="#ultranest.netiter.PointPile" title="ultranest.netiter.PointPile"><code class="xref py py-class docutils literal notranslate"><span class="pre">PointPile</span></code></a>) – information on the node points</p></li>
 </ul>
 </dd>
 </dl>
@@ -2476,6 +2480,7 @@ first entry is the main estimator, i.e., not bootstrapped</p></li>
 <li><p><strong>nbootstraps</strong> (<em>int</em>) – number of bootstrap rounds</p></li>
 <li><p><strong>random</strong> (<em>bool</em>) – if False, use mean estimator for volume shrinkage
 if True, draw a random sample</p></li>
+<li><p><strong>check_insertion_order</strong> (<em>bool</em>) – whether to run insertion order rank U test</p></li>
 </ul>
 </dd>
 </dl>
@@ -2483,6 +2488,11 @@ if True, draw a random sample</p></li>
 <dt class="sig sig-object py" id="ultranest.netiter.MultiCounter.reset">
 <span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nentries</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/netiter.html#MultiCounter.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.netiter.MultiCounter.reset" title="Permalink to this definition"></a></dt>
 <dd><p>Reset counters/integrator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>nentries</strong> (<em>int</em>) – number of iterators</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py property">

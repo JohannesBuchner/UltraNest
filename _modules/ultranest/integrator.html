@@ -2327,7 +2327,7 @@
 <span class="sd">        viz_callback: function</span>
 <span class="sd">            callback function when region was rebuilt. Allows to</span>
 <span class="sd">            show current state of the live points.</span>
-<span class="sd">            See :func:`nicelogger` or :class:`LivePointsWidget`.</span>
+<span class="sd">            See :py:func:`nicelogger` or :py:class:`LivePointsWidget`.</span>
 <span class="sd">            If no output desired, set to False.</span>
 
 <span class="sd">        dlogz: float</span>
@@ -2374,9 +2374,10 @@
 <span class="sd">        insertion_test_window: int</span>
 <span class="sd">            Number of iterations after which the insertion order test is reset.</span>
 
-<span class="sd">        region_class: MLFriends or RobustEllipsoidRegion</span>
+<span class="sd">        region_class: :py:class:`MLFriends` or :py:class:`RobustEllipsoidRegion` or :py:class:`SimpleRegion`</span>
 <span class="sd">            Whether to use MLFriends+ellipsoidal+tellipsoidal region (better for multi-modal problems)</span>
-<span class="sd">            or just ellipsoidal sampling (faster for high-dimensional, gaussian-like problems).</span>
+<span class="sd">            or just ellipsoidal sampling (faster for high-dimensional, gaussian-like problems)</span>
+<span class="sd">            or a axis-aligned ellipsoid (fastest, to be combined with slice sampling).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_iter</span><span class="p">(</span>
             <span class="n">update_interval_volume_fraction</span><span class="o">=</span><span class="n">update_interval_volume_fraction</span><span class="p">,</span>
