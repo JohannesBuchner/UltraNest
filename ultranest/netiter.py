@@ -121,9 +121,9 @@ class BreadthFirstIterator(object):
         Parameters
         ----------
         rootid: int
-            index of the root returned by the most recent call to :py:method:`BreadthFirstIterator.next_node`
-        node: :pyclass:TreeNode
-            node returned by the most recent call to :py:method:`BreadthFirstIterator.next_node`
+            index of the root returned by the most recent call to :py:meth:`BreadthFirstIterator.next_node`
+        node: :py:class:`TreeNode`
+            node returned by the most recent call to :py:meth:`BreadthFirstIterator.next_node`
         """
         # print("replacing %.1f" % node.value, len(node.children))
         i = self.next_index
