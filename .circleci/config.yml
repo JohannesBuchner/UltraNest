@@ -13,4 +13,5 @@ jobs:
       - checkout
       - run: pip install linkchecker
       - run: ls
+      - run: [ $(grep -Eo ':[a-Z]{1,15}:' docs/build/html/*.html|grep -v ':root:'|grep -c -v ':GmwWqzssMkkJ:') -gt 0 ] && exit 1
       - run: linkchecker --ignore-url '.*fonts.*.eot' *.html
