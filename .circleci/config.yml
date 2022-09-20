@@ -24,7 +24,7 @@ jobs:
       - run: for i in examples/test*.py; do python3 $i --help; done
       
       - run: sudo python3 -m pip install snowline
-      - run: sudo python3 -m pip install numpy
+      - run: sudo python3 -m pip install -U numpy
       - run: python3 -c 'import snowline'
       - run: coverage3 run --parallel-mode setup.py test
       - run: |
