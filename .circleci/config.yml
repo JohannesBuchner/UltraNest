@@ -17,12 +17,13 @@ jobs:
       
       - run: sudo ln -s /usr/lib/python3/dist-packages/numpy/core/include/numpy/ /usr/include/numpy
 
-      - run: sudo python3 -m pip install -r pip-requirements.txt pytest-html coveralls pyyaml mpi4py snowline
+      - run: sudo python3 -m pip install -r pip-requirements.txt pytest-html coveralls pyyaml mpi4py
       - run: mkdir -p test-reports
 
       - run: python3 -m pip install -e .
       - run: for i in examples/test*.py; do python3 $i --help; done
       
+      - run: sudo python3 -m pip install snowline
       - run: coverage3 run --parallel-mode setup.py test
       - run: |
             echo "backend: Agg" > matplotlibrc
