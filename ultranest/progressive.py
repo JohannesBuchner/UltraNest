@@ -103,7 +103,7 @@ class ProgressiveNestedSampler():
                 np.savetxt(upoints_path, upoints)
         else:
             optu, cov = self._get_laplace_approximation()
-            upoints_all = scipy.stats.multivariate_t.rvs(loc=optu, shape=cov, df=df, size=num_quantile_samples * 10)
+            upoints_all = scipy.stats.t.rvs(loc=optu, scale=np.diag(cov)**0.5, df=df, size=(num_quantile_samples * 10, len(optu)))
             mask = np.logical_and(upoints_all > 0, upoints_all < 1).all(axis=1)
             upoints = upoints_all[mask,:][:num_quantile_samples]
 
