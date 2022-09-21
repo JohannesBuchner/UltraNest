@@ -124,6 +124,11 @@ class ProgressiveNestedSampler():
             self.sampler = ReactiveNestedSampler(self.paramnames, self.loglike, transform=self.transform,
                 vectorized=self.vectorized, **self.sampler_kwargs)
             self.warmstarted = False
+        self.mpi_rank = self.sampler.mpi_rank
+        self.mpi_size = self.sampler.mpi_size
+        self.log = self.sampler.log
+        if self.log:
+            self.logger = self.sampler.logger
 
     def run_iter(
         self,
@@ -224,7 +229,8 @@ class ProgressiveNestedSampler():
                 self.sampler.logger.debug('current logzerr: %.3f, need <%.3f', self.results['logzerr'], dlogztot)
             if len(self.results_sequence) > 2 and self.results['logzerr'] < dlogz + dlogz_extra_per_parameter * len(self.paramnames):
                 self.sampler.logger.info('current logzerr: %.3f, target (<%.3f) satisfied', self.results['logzerr'], dlogztot)
-                return self.results
+                break
+        return self.results
 
     def plot_corner(self):
         """Make corner plot.
