@@ -5,6 +5,7 @@ Some parts are from the nnest library by Adam Moss (https://github.com/adammoss/
 """
 
 from .integrator import NestedSampler, ReactiveNestedSampler, read_file
+from .progressive import ProgressiveNestedSampler
 from .utils import vectorize
 
 
