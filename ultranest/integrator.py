@@ -1760,16 +1760,17 @@ class ReactiveNestedSampler(object):
             loglikelihoods of current live points
 
         """
-        assert self.region.inside(active_u).any(), \
-            ("None of the live points satisfies the current region!",
-             self.region.maxradiussq, self.region.u, self.region.unormed, active_u,
-             getattr(self.region, 'bbox_lo'),
-             getattr(self.region, 'bbox_hi'),
-             getattr(self.region, 'ellipsoid_cov'),
-             getattr(self.region, 'ellipsoid_center'),
-             getattr(self.region, 'ellipsoid_invcov'),
-             getattr(self.region, 'ellipsoid_cov'),
-             )
+        if self.stepsampler is None:
+            assert self.region.inside(active_u).any(), \
+                ("None of the live points satisfies the current region!",
+                 self.region.maxradiussq, self.region.u, self.region.unormed, active_u,
+                 getattr(self.region, 'bbox_lo'),
+                 getattr(self.region, 'bbox_hi'),
+                 getattr(self.region, 'ellipsoid_cov'),
+                 getattr(self.region, 'ellipsoid_center'),
+                 getattr(self.region, 'ellipsoid_invcov'),
+                 getattr(self.region, 'ellipsoid_cov'),
+                 )
 
         nit = 0
         while True:
