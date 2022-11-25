@@ -1394,17 +1394,17 @@ class ReactiveNestedSampler(object):
         nroots_needed = nroots
         while True:
             self._widen_roots(nroots_needed)
-            Ls = np.unique([node.value for node in self.root.children])
+            Ls = np.array([node.value for node in self.root.children])
             Lmin = np.min(Ls)
             # number of plateau points
             P = (Ls == Lmin).sum()
-            if P > 1 and P < nroots_needed:
+            if P > 1 and len(Ls) - P + 1 < nroots:
                 # guess the number of points needed: P-1 are useless
-                nroots_needed = nroots_needed + (P - 1)
                 self.logger.debug(
-                    'Found plateau with %d points at %e. Widening to %d live points.'
-                    'Avoid this by a loglikelihood that continuously increases towards good regions.',
-                    P, Lmin, nroots_needed)
+                    'Found plateau of %d/%d initial points at L=%g. '
+                    'Avoid this by a continuously increasing loglikelihood towards good regions.',
+                    P, nroots_needed, Lmin)
+                nroots_needed = nroots_needed + (P - 1)
             else:
                 break
 
