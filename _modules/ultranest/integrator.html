@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest.integrator &mdash; UltraNest 3.5.5 documentation</title>
+  <title>ultranest.integrator &mdash; UltraNest 3.5.7 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="../../_static/icon.ico"/>
@@ -33,7 +33,7 @@
             <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.5.5
+                3.5.7
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -536,7 +536,6 @@
 <span class="sd">            of points.</span>
 <span class="sd">        run_num: int</span>
 <span class="sd">            unique run number. If None, will be automatically incremented.</span>
-<span class="sd">        </span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">paramnames</span> <span class="o">=</span> <span class="n">param_names</span>
@@ -1480,6 +1479,31 @@
 
         <span class="k">return</span> <span class="n">target_min_num_children</span>
 
+    <span class="k">def</span> <span class="nf">_widen_roots_beyond_initial_plateau</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nroots</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Widen roots, but populate ahead of initial plateau.</span>
+
+<span class="sd">        calls _widen_roots, and if there are several points with the same</span>
+<span class="sd">        value equal to the lowest loglikelihood, widens some more until</span>
+<span class="sd">        there are `nroots`-1 that are different to the lowest</span>
+<span class="sd">        loglikelihood value.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">nroots_needed</span> <span class="o">=</span> <span class="n">nroots</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_widen_roots</span><span class="p">(</span><span class="n">nroots_needed</span><span class="p">)</span>
+            <span class="n">Ls</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">node</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">children</span><span class="p">])</span>
+            <span class="n">Lmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">Ls</span><span class="p">)</span>
+            <span class="c1"># number of plateau points</span>
+            <span class="n">P</span> <span class="o">=</span> <span class="p">(</span><span class="n">Ls</span> <span class="o">==</span> <span class="n">Lmin</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">P</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">Ls</span><span class="p">)</span> <span class="o">-</span> <span class="n">P</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&lt;</span> <span class="n">nroots</span><span class="p">:</span>
+                <span class="c1"># guess the number of points needed: P-1 are useless</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                    <span class="s1">&#39;Found plateau of </span><span class="si">%d</span><span class="s1">/</span><span class="si">%d</span><span class="s1"> initial points at L=</span><span class="si">%g</span><span class="s1">. &#39;</span>
+                    <span class="s1">&#39;Avoid this by a continuously increasing loglikelihood towards good regions.&#39;</span><span class="p">,</span>
+                    <span class="n">P</span><span class="p">,</span> <span class="n">nroots_needed</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">)</span>
+                <span class="n">nroots_needed</span> <span class="o">=</span> <span class="n">nroots_needed</span> <span class="o">+</span> <span class="p">(</span><span class="n">P</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">break</span>
+
     <span class="k">def</span> <span class="nf">_widen_roots</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nroots</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Ensure root has `nroots` children.</span>
 
@@ -1856,16 +1880,17 @@
 <span class="sd">            loglikelihoods of current live points</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">active_u</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">(),</span> \
-            <span class="p">(</span><span class="s2">&quot;None of the live points satisfies the current region!&quot;</span><span class="p">,</span>
-             <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">unormed</span><span class="p">,</span> <span class="n">active_u</span><span class="p">,</span>
-             <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span> <span class="s1">&#39;bbox_lo&#39;</span><span class="p">),</span>
-             <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span> <span class="s1">&#39;bbox_hi&#39;</span><span class="p">),</span>
-             <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span> <span class="s1">&#39;ellipsoid_cov&#39;</span><span class="p">),</span>
-             <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span> <span class="s1">&#39;ellipsoid_center&#39;</span><span class="p">),</span>
-             <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span> <span class="s1">&#39;ellipsoid_invcov&#39;</span><span class="p">),</span>
-             <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span> <span class="s1">&#39;ellipsoid_cov&#39;</span><span class="p">),</span>
-             <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stepsampler</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">active_u</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">(),</span> \
+                <span class="p">(</span><span class="s2">&quot;None of the live points satisfies the current region!&quot;</span><span class="p">,</span>
+                 <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">unormed</span><span class="p">,</span> <span class="n">active_u</span><span class="p">,</span>
+                 <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span> <span class="s1">&#39;bbox_lo&#39;</span><span class="p">),</span>
+                 <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span> <span class="s1">&#39;bbox_hi&#39;</span><span class="p">),</span>
+                 <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span> <span class="s1">&#39;ellipsoid_cov&#39;</span><span class="p">),</span>
+                 <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span> <span class="s1">&#39;ellipsoid_center&#39;</span><span class="p">),</span>
+                 <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span> <span class="s1">&#39;ellipsoid_invcov&#39;</span><span class="p">),</span>
+                 <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span> <span class="s1">&#39;ellipsoid_cov&#39;</span><span class="p">),</span>
+                 <span class="p">)</span>
 
         <span class="n">nit</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
@@ -2474,7 +2499,7 @@
         <span class="k">if</span> <span class="n">viz_callback</span> <span class="o">==</span> <span class="s1">&#39;auto&#39;</span><span class="p">:</span>
             <span class="n">viz_callback</span> <span class="o">=</span> <span class="n">get_default_viz_callback</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_widen_roots</span><span class="p">(</span><span class="n">min_num_live_points</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_widen_roots_beyond_initial_plateau</span><span class="p">(</span><span class="n">min_num_live_points</span><span class="p">)</span>
 
         <span class="n">Llo</span><span class="p">,</span> <span class="n">Lhi</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
         <span class="n">Lmax</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
@@ -2815,7 +2840,7 @@
             <span class="k">if</span> <span class="n">dlogz_min_num_live_points</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_num_live_points</span><span class="p">:</span>
                 <span class="c1"># more live points needed throughout to reach target</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">min_num_live_points</span> <span class="o">=</span> <span class="n">dlogz_min_num_live_points</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_widen_roots</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_num_live_points</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_widen_roots_beyond_initial_plateau</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_num_live_points</span><span class="p">)</span>
 
             <span class="k">elif</span> <span class="n">Llo</span> <span class="o">&lt;=</span> <span class="n">Lhi</span><span class="p">:</span>
                 <span class="c1"># if self.log:</span>
