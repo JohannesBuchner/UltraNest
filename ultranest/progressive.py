@@ -11,6 +11,13 @@ from .mlfriends import SimpleRegion
 
 
 class ProgressiveNestedSampler():
+    """
+    Progressive nested sampling method.
+
+    Iteratively runs nested sampling with more and more live points,
+    with a constant number of slice sampling steps, until the
+    evidence estimate converges.
+    """
 
     def __init__(
         self,
@@ -21,6 +28,7 @@ class ProgressiveNestedSampler():
         log_dir=None,
         **sampler_kwargs
     ):
+        """See :py:class:`ReactiveNestedSampler` for documentation of the parameters."""
         self.paramnames = param_names
         self.transform = transform
         self.loglike = loglike
@@ -30,8 +38,10 @@ class ProgressiveNestedSampler():
             # make simple versions of the provided functions
             def flat_transform(x):
                 return transform(np.asarray(x).reshape((1, -1)))[0]
+
             def flat_loglike(x):
                 return loglike(np.asarray(x).reshape((1, -1)))[0]
+
             self.flat_transform = flat_transform
             self.flat_loglike = flat_loglike
         else:
@@ -120,8 +130,10 @@ class ProgressiveNestedSampler():
         self.warmstarted = True
 
     def init(self):
+        """Initialize underlying sampler."""
         if not self.sampler:
-            self.sampler = ReactiveNestedSampler(self.paramnames, self.loglike, transform=self.transform,
+            self.sampler = ReactiveNestedSampler(
+                self.paramnames, self.loglike, transform=self.transform,
                 vectorized=self.vectorized, **self.sampler_kwargs)
             self.warmstarted = False
         self.mpi_rank = self.sampler.mpi_rank
@@ -132,7 +144,7 @@ class ProgressiveNestedSampler():
 
     def run_iter(
         self,
-        slice_sampler_args={'nsteps':10, 'generate_direction': ultranest.stepsampler.generate_mixture_random_direction},
+        slice_sampler_args={'nsteps': 10, 'generate_direction': ultranest.stepsampler.generate_mixture_random_direction},
         max_num_improvement_loops=0,
         update_interval_volume_fraction=0.1,
         region_class=SimpleRegion,
@@ -141,6 +153,10 @@ class ProgressiveNestedSampler():
         max_iter=50,
         **run_kwargs,
     ):
+        """Run nested sampling iteratively with increasing number of live points.
+
+        see :py:class:`ReactiveNestedSampler.run_iter` for parameter documentation.
+        """
         self.init()
         if 'dlogz' in run_kwargs:
             raise ValueError('dlogz was set: use run() instead of run_iter() to target a ln(Z) accuracy.')
@@ -161,6 +177,7 @@ class ProgressiveNestedSampler():
             )
 
     def _estimate_logz(self):
+        """Estimate evidence from sequence of estimates."""
         # ignore first 20%
         iend = len(self.results_sequence)
         istart = max(0, iend // 5)
@@ -180,6 +197,7 @@ class ProgressiveNestedSampler():
         return logz_predict
 
     def _get_results(self):
+        """Combine sequence of estimates into one result."""
         logz_predict = self._estimate_logz()
         logz_current = self.results_sequence[-1]['logz']
         logz_convergence_error = abs(logz_predict - logz_current)
@@ -211,6 +229,10 @@ class ProgressiveNestedSampler():
         dlogz_extra_per_parameter=0.05,
         **run_kwargs,
     ):
+        """Run nested sampling to convergence.
+
+        see :py:class:`ReactiveNestedSampler.run_iter` for parameter documentation.
+        """
         self.results_sequence = []
         dlogztot = dlogz + dlogz_extra_per_parameter * len(self.paramnames)
 
@@ -268,14 +290,13 @@ class ProgressiveNestedSampler():
         self.plot_trace()
 
     def print_results(self, *args, **kwargs):
-        """see :py:func:`ReactiveNestedSampler.print_results`"""
+        """See :py:func:`ReactiveNestedSampler.print_results`."""
         return self.sampler.print_results(*args, **kwargs)
 
-
     def plot_trace(self, *args, **kwargs):
-        """see :py:func:`ReactiveNestedSampler.plot_trace`"""
+        """See :py:func:`ReactiveNestedSampler.plot_trace`."""
         return self.sampler.plot_trace(*args, **kwargs)
 
     def plot_run(self, *args, **kwargs):
-        """see :py:func:`ReactiveNestedSampler.plot_run`"""
+        """See :py:func:`ReactiveNestedSampler.plot_run`."""
         return self.sampler.plot_run(*args, **kwargs)
