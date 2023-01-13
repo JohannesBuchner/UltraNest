@@ -440,7 +440,6 @@ class NestedSampler(object):
             of points.
         run_num: int
             unique run number. If None, will be automatically incremented.
-        
 
         """
         self.paramnames = param_names
@@ -1383,6 +1382,31 @@ class ReactiveNestedSampler(object):
             target_min_num_children[n.id] = orign + nsamples
 
         return target_min_num_children
+
+    def _widen_roots_beyond_initial_plateau(self, nroots):
+        """Widen roots, but populate ahead of initial plateau.
+
+        calls _widen_roots, and if there are several points with the same
+        value equal to the lowest loglikelihood, widens some more until
+        there are `nroots`-1 that are different to the lowest
+        loglikelihood value.
+        """
+        nroots_needed = nroots
+        while True:
+            self._widen_roots(nroots_needed)
+            Ls = np.array([node.value for node in self.root.children])
+            Lmin = np.min(Ls)
+            # number of plateau points
+            P = (Ls == Lmin).sum()
+            if P > 1 and len(Ls) - P + 1 < nroots:
+                # guess the number of points needed: P-1 are useless
+                self.logger.debug(
+                    'Found plateau of %d/%d initial points at L=%g. '
+                    'Avoid this by a continuously increasing loglikelihood towards good regions.',
+                    P, nroots_needed, Lmin)
+                nroots_needed = nroots_needed + (P - 1)
+            else:
+                break
 
     def _widen_roots(self, nroots):
         """Ensure root has `nroots` children.
@@ -2379,7 +2403,7 @@ class ReactiveNestedSampler(object):
         if viz_callback == 'auto':
             viz_callback = get_default_viz_callback()
 
-        self._widen_roots(min_num_live_points)
+        self._widen_roots_beyond_initial_plateau(min_num_live_points)
 
         Llo, Lhi = -np.inf, np.inf
         Lmax = -np.inf
@@ -2720,7 +2744,7 @@ class ReactiveNestedSampler(object):
             if dlogz_min_num_live_points > self.min_num_live_points:
                 # more live points needed throughout to reach target
                 self.min_num_live_points = dlogz_min_num_live_points
-                self._widen_roots(self.min_num_live_points)
+                self._widen_roots_beyond_initial_plateau(self.min_num_live_points)
 
             elif Llo <= Lhi:
                 # if self.log:

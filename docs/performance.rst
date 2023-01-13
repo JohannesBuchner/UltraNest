@@ -176,6 +176,7 @@ All of the above can be written, but are never read, by ultranest.ReactiveNested
 read the state of a previous run is:
 
 * results/points.hdf5: file storing all sampled points. Used for resuming.
+
   * this is an internal file.
   * ncalls: number of likelihood calls
   * points: the columns are: likelihood threshold under which the point was sampled, likelihood of the point, a quality indicator (0 for MLFriends, otherwise the number of steps in the step sampler), u-space (unit cube) coordinates, p-space (transformed parameters) coordinates.

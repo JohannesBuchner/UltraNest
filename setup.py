@@ -24,10 +24,10 @@ ext_args = dict(
 )
 
 
-with open('README.rst') as readme_file:
+with open('README.rst', encoding="utf-8") as readme_file:
     readme = readme_file.read()
 
-with open('HISTORY.rst') as history_file:
+with open('HISTORY.rst', encoding="utf-8") as history_file:
     history = history_file.read()
 
 requirements = ['numpy', 'cython', 'matplotlib', 'corner']
@@ -71,7 +71,7 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/JohannesBuchner/ultranest',
-    version='3.5.5',
+    version='3.5.7',
     zip_safe=False,
     cmdclass={'build_ext': build_ext},
 )
