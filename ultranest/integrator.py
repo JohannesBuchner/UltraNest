@@ -2900,7 +2900,7 @@ class ReactiveNestedSampler(object):
         self.plot_run()
         self.plot_trace()
 
-    def plot_corner(self):
+    def plot_corner(self, **kwargs):
         """Make corner plot.
 
         Writes corner plot to plots/ directory if log directory was
@@ -2916,7 +2916,7 @@ class ReactiveNestedSampler(object):
         import matplotlib.pyplot as plt
         if self.log:
             self.logger.debug('Making corner plot ...')
-        cornerplot(self.results, logger=self.logger if self.log else None)
+        cornerplot(self.results, logger=self.logger if self.log else None, **kwargs)
         if self.log_to_disk:
             plt.savefig(os.path.join(self.logs['plots'], 'corner.pdf'), bbox_inches='tight')
             plt.close()

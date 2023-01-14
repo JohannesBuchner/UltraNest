@@ -49,6 +49,15 @@ def main(args):
         for name, col in zip(paramnames, result['samples'].transpose()):
             print('%15s : %.3f +- %.3f' % (name, col.mean(), col.std()))
     
+    elif args.progressive:
+        from ultranest.progressive import ProgressiveNestedSampler
+        sampler = ProgressiveNestedSampler(paramnames, loglike, transform=transform, 
+            log_dir=log_dir, resume=True, vectorized=True)
+        # sampler.warmup()
+        result = sampler.run()
+        sampler.print_results()
+        sampler.plot()
+
     elif args.reactive:
         if args.slice:
             log_dir = args.log_dir + 'RNS-%dd-slice%d' % (ndim, args.slice_steps)
@@ -113,6 +122,7 @@ if __name__ == '__main__':
     parser.add_argument('--log_dir', type=str, default='logs/asymgauss')
     parser.add_argument('--pymultinest', action='store_true')
     parser.add_argument('--reactive', action='store_true')
+    parser.add_argument('--progressive', action='store_true')
     parser.add_argument('--slice', action='store_true')
     parser.add_argument('--harm', action='store_true')
     parser.add_argument('--dyhmc', action='store_true')

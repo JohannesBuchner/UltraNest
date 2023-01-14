@@ -46,6 +46,25 @@ def main(args):
         for name, col in zip(paramnames, result['samples'].transpose()):
             print('%15s : %.3f +- %.3f' % (name, col.mean(), col.std()))
     
+    elif args.progressive:
+        from ultranest.progressive import ProgressiveNestedSampler
+        sampler = ProgressiveNestedSampler(
+            paramnames, flat_loglike, flat_transform,
+            vectorized=False,
+            log_dir=args.log_dir + 'PNS-%dd' % ndim,
+            resume='overwrite',
+        )
+        if args.progressive_warm:
+            sampler.warmup()
+        result = sampler.run(frac_remain=0.5)
+        print()
+        print('evidence: %(logz).1f +- %(logzerr).1f' % result)
+        print()
+        print('parameter values:')
+        for name, col in zip(paramnames, result['samples'].transpose()):
+            print('%15s : %.3f +- %.3f' % (name, col.mean(), col.std()))
+        sampler.plot()
+    
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -57,6 +76,8 @@ if __name__ == '__main__':
     parser.add_argument('--run_num', type=str, default='')
     parser.add_argument('--log_dir', type=str, default='logs/loggauss')
     parser.add_argument('--reactive', action='store_true')
+    parser.add_argument('--progressive', action='store_true')
+    parser.add_argument('--progressive-warm', action='store_true')
     parser.add_argument('--pymultinest', action='store_true')
 
     args = parser.parse_args()

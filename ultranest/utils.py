@@ -38,9 +38,8 @@ def create_logger(module_name, log_dir=None, level=logging.INFO):
     if log_dir is not None and first_logger:
         # create file handler which logs even debug messages
         handler = logging.FileHandler(os.path.join(log_dir, 'debug.log'))
-        msgformat = '%(asctime)s [{}] [%(levelname)s] %(message)s'
-        formatter = logging.Formatter(
-            msgformat.format(module_name), datefmt='%H:%M:%S')
+        msgformat = '%(asctime)s [%(module)s] [%(levelname)s] %(message)s'
+        formatter = logging.Formatter(msgformat, datefmt='%H:%M:%S')
         handler.setLevel(logging.DEBUG)
         handler.setFormatter(formatter)
         logger.addHandler(handler)
@@ -49,7 +48,7 @@ def create_logger(module_name, log_dir=None, level=logging.INFO):
         # if it is new, register to write to stdout
         handler = logging.StreamHandler(sys.stdout)
         handler.setLevel(level)
-        formatter = logging.Formatter('[{}] %(message)s'.format(module_name))
+        formatter = logging.Formatter('[%(module)s] %(message)s')
         handler.setFormatter(formatter)
         logger.addHandler(handler)
         logger.addHandler(logging.NullHandler())

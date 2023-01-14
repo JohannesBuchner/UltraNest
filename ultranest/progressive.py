@@ -7,6 +7,7 @@ from .hotstart import get_auxiliary_contbox_parameterization
 from .stepsampler import SliceSampler
 import os
 import ultranest.stepsampler
+import logging
 from .mlfriends import SimpleRegion
 
 
@@ -52,6 +53,8 @@ class ProgressiveNestedSampler():
         self.warmstarted = False
 
     def _get_laplace_approximation(self):
+        if self.sampler is not None and self.sampler.log:
+            self.logger.info("warming up: finding laplace approximation with snowline...")
         import snowline  # snowline is required, install it with pip
         # make laplace approximation
         fitsampler = snowline.ReactiveImportanceSampler(self.paramnames, self.flat_loglike, transform=self.flat_transform)
@@ -140,7 +143,7 @@ class ProgressiveNestedSampler():
         self.mpi_size = self.sampler.mpi_size
         self.log = self.sampler.log
         if self.log:
-            self.logger = self.sampler.logger
+            self.logger = logging.getLogger('ultranest.progressive')
 
     def run_iter(
         self,
@@ -164,14 +167,15 @@ class ProgressiveNestedSampler():
         for i in range(max_iter):
             # need at least 2*d live points to compute variance
             # each iteration increases the number of live points
-            nlive = min_num_live_points + 2 * len(self.paramnames) * (i + 1)
+            nlive = min_num_live_points + 2 * max(20, len(self.paramnames)) * (i + 1)
             if self.sampler.log:
-                self.sampler.logger.info("progressive NS iteration %d: %d live points, %d steps" % (i + 1, nlive, slice_sampler_args['nsteps']))
+                self.logger.info("progressive NS iteration %d: %d live points, %d steps" % (i + 1, nlive, slice_sampler_args['nsteps']))
             self.sampler.stepsampler = SliceSampler(**slice_sampler_args)
             yield self.sampler.run(
                 min_num_live_points=nlive,
                 region_class=region_class, viz_callback=viz_callback,
                 update_interval_volume_fraction=update_interval_volume_fraction,
+                max_num_improvement_loops=max_num_improvement_loops,
                 dlogz=1000, cluster_num_live_points=0,
                 **run_kwargs
             )
@@ -189,18 +193,20 @@ class ProgressiveNestedSampler():
         # ln(Z) values:
         y = np.array([res['logz'] for res in results_sequence_here])
         A = np.vstack([x, np.ones(len(x))]).T
-        m, c = np.linalg.lstsq(A, y, rcond=None)[0]
+        result = np.linalg.lstsq(A, y, rcond=None)
+        m, c = result[0]
+        mean_residual = float(result[1]) / len(y) if result[1] > 0 else np.nan
 
         # estimate for twice the number of samples
         xfuture = np.log(iend * 2 + 1)
         logz_predict = m * xfuture + c
-        return logz_predict
+        return logz_predict, mean_residual
 
     def _get_results(self):
         """Combine sequence of estimates into one result."""
-        logz_predict = self._estimate_logz()
+        logz_predict, logz_prediction_error = self._estimate_logz()
         logz_current = self.results_sequence[-1]['logz']
-        logz_convergence_error = abs(logz_predict - logz_current)
+        logz_convergence_error = ((logz_predict - logz_current)**2 + logz_prediction_error**2)**0.5
 
         results = dict(self.sampler.results)
         results['logz'] = logz_predict
@@ -225,7 +231,7 @@ class ProgressiveNestedSampler():
         region_class=SimpleRegion,
         viz_callback=None,
         max_iter=50,
-        dlogz=0.5,
+        dlogz=0.1,
         dlogz_extra_per_parameter=0.05,
         **run_kwargs,
     ):
@@ -247,14 +253,15 @@ class ProgressiveNestedSampler():
             self.results_sequence.append(res)
             self.results = self._get_results()
 
-            if self.sampler.log:
-                self.sampler.logger.debug('current logzerr: %.3f, need <%.3f', self.results['logzerr'], dlogztot)
             if len(self.results_sequence) > 2 and self.results['logzerr'] < dlogz + dlogz_extra_per_parameter * len(self.paramnames):
-                self.sampler.logger.info('current logzerr: %.3f, target (<%.3f) satisfied', self.results['logzerr'], dlogztot)
+                if self.sampler.log:
+                    self.logger.info('current logz = %.3f +- %.3f, target accuracy (<%.3f) satisfied', self.results['logz'], self.results['logzerr'], dlogztot)
                 break
+            elif self.sampler.log:
+                self.logger.info('current logz = %.3f +- %.3f, target accuracy <%.3f', self.results['logz'], self.results['logzerr'], dlogztot)
         return self.results
 
-    def plot_corner(self):
+    def plot_corner(self, **kwargs):
         """Make corner plot.
 
         Writes corner plot to plots/ directory if log directory was
@@ -270,7 +277,7 @@ class ProgressiveNestedSampler():
         import matplotlib.pyplot as plt
         if self.sampler.log:
             self.sampler.logger.debug('Making corner plot ...')
-        cornerplot(self.results, logger=self.sampler.logger if self.sampler.log else None)
+        cornerplot(self.results, logger=self.sampler.logger if self.sampler.log else None, **kwargs)
         if self.sampler.log_to_disk:
             plt.savefig(os.path.join(self.sampler.logs['plots'], 'corner.pdf'), bbox_inches='tight')
             plt.close()
@@ -285,9 +292,22 @@ class ProgressiveNestedSampler():
         * plot_run()
         * plot_trace()
         """
-        self.plot_corner()
+        self.plot_progress()
+        self.plot_corner(plot_datapoints=False, plot_density=False)
         self.plot_run()
         self.plot_trace()
+
+    def plot_progress(self):
+        import matplotlib.pyplot as plt
+        if self.log:
+            self.logger.debug('Making progress plot ...')
+        y = np.array([res['logz'] for res in self.results_sequence])
+        plt.plot(y)
+        if self.sampler.log_to_disk:
+            plt.savefig(os.path.join(self.sampler.logs['plots'], 'progress.pdf'), bbox_inches='tight')
+            plt.close()
+            self.logger.debug('Making progress plot ... done')
+
 
     def print_results(self, *args, **kwargs):
         """See :py:func:`ReactiveNestedSampler.print_results`."""

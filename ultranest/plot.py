@@ -34,7 +34,7 @@ import corner
 __all__ = ["runplot", "cornerplot", "traceplot", "PredictionBand"]
 
 
-def cornerplot(results, logger=None):
+def cornerplot(results, logger=None, **kwargs):
     """Make a corner plot with corner."""
     paramnames = results['paramnames']
     data = np.array(results['weighted_samples']['points'])
@@ -58,7 +58,8 @@ def cornerplot(results, logger=None):
     oldfunc = logging.warning
     logging.warning = lambda *args, **kwargs: None
     corner.corner(data[mask,:], weights=weights[mask],
-                  labels=paramnames, show_titles=True, quiet=True)
+                  labels=paramnames, show_titles=True, quiet=True,
+                  **kwargs)
     logging.warning = oldfunc
 
 
