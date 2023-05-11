@@ -49,7 +49,7 @@ To understand it, have a look first the `Basic usage <using-ultranest.html>`_ pa
         min_num_live_points=400,
         dlogz=0.5, # desired accuracy on logz
         min_ess=400, # number of effective samples
-        update_interval_iter_fraction=0.4, # how often to update region
+        update_interval_volume_fraction=0.4, # how often to update region
         max_num_improvement_loops=3, # how many times to go back and improve
     )
 
