@@ -2,6 +2,7 @@
 
 import numpy as np
 import scipy.stats
+import scipy.optimize
 from .integrator import ReactiveNestedSampler
 from .hotstart import get_auxiliary_contbox_parameterization
 from .stepsampler import SliceSampler
@@ -9,6 +10,50 @@ import os
 import ultranest.stepsampler
 import logging
 from .mlfriends import SimpleRegion
+
+
+def find_untransformed_posterior(transform, means, stdevs, maxiter):
+    """Finds a corresponding multi-variate gaussian in untransformed space.
+
+    The following loss function is used to compare the upper and lower
+    1 sigma equivalent transformed points to the means +- stdevs::
+    
+        sum{((means - transform(umeans))/stdevs)^2} + sum{(((upper - lower) - stdevs)/stdevs)^2}
+
+    Parameters
+    ----------
+    means: array
+        Expected approximate posterior mean
+    stdevs: int
+        Expected approximate posterior standard deviation
+    maxiter: int
+        number of iterations for the optimizer.
+    """
+    nparams = len(means)
+    umeans = np.ones(nparams) * 0.5
+    ustdevs = np.ones(nparams) * 0.1
+
+    def minfunc(values):
+        ctr = np.clip(values[:nparams], 1e-10, 1-1e-10)
+        std = values[nparams:]
+        pctr = transform(ctr)
+        up = np.clip(ctr + std, 1e-10, 1-1e-10)
+        lo = np.clip(ctr - std, 1e-10, 1-1e-10)
+        pup = transform(up)
+        plo = transform(lo)
+        pdelta = pup - plo
+        return np.sum(((means - pctr)/stdevs)**2 + ((stdevs - pdelta)/stdevs)**2)
+
+    r = scipy.stats.optimize(minfunc,
+        x0=np.concatenate((umeans, ustdevs)),
+        method='Nelder-Mead', maxiter=maxiter,
+        bounds=[(0,1)] * nparams
+    )
+    print(r)
+    assert r.success, "Could not find posterior mean in transform"
+    optumeans = r.x[:nparams]
+    optustdevs = r.x[nparams:]
+    return optumeans, optustdevs
 
 
 class ProgressiveNestedSampler():
@@ -60,6 +105,77 @@ class ProgressiveNestedSampler():
         fitsampler = snowline.ReactiveImportanceSampler(self.paramnames, self.flat_loglike, transform=self.flat_transform)
         fitsampler.laplace_approximate()
         return fitsampler.optu, fitsampler.cov
+
+    def warmup_with_expected_posterior(self, means, stdevs, maxiter=100000):
+        """Prepare a efficient approximation of the posterior to speed up nested sampling.
+
+        This uses an expected mean and standard deviation to deform the parameter space
+        for more efficient sampling.
+
+        The marginals of this are used to deform the nested sampling parameter space,
+        see :py:func:`ultranest.hotstart.get_auxiliary_contbox_parameterization`.
+        For obtaining approximate residuals, a student-t with the laplace covariance with *df*
+        degrees of freedom (low numbers promote heavy tails), is sampled
+        *num_quantile_samples* times.
+
+        Internally, this function finds a untransformed equivalent
+        of means +- stdevs. This is achieved with a simple optimizer
+        operating on the transform function.
+        If *log_dir* has been specified, the results are
+        stored in `chains/laplaceapprox_samples.txt`. If
+        resume=True, this file is read.
+
+        Parameters
+        ----------
+        means: array
+            Expected approximate posterior mean
+        stdevs: int
+            Expected approximate posterior standard deviation
+        maxiter: int
+            number of iterations for the optimizer.
+        """
+        nparams = len(self.paramnames)
+
+        store = self.sampler_kwargs.get('log_dir', None) is not None
+
+        if store:
+            upoints_path = os.path.join(self.sampler_kwargs['log_dir'], 'chains', 'laplaceapprox_samples.txt')
+            if self.sampler_kwargs.get('resume', 'subfolder') in ('overwrite', 'subfolder'):
+                try:
+                    os.remove(upoints_path)
+                    if self.sampler.log:
+                        self.logger.info("removed laplace approximation file, starting from scratch")
+                except IOError:
+                    pass
+            try:
+                upoints = np.loadtxt(upoints_path)
+            except IOError:
+                if self.sampler.log:
+                    self.logger.info("finding laplace approximation...")
+                optumeans, optustdevs = find_untransformed_posterior(self.transform, means, stdevs, maxiter=maxiter)
+                upoints = np.random.normal(optumeans, optustdevs, size=40000)
+                np.savetxt(upoints_path, upoints)
+        else:
+            if self.sampler.log:
+                self.logger.info("finding laplace approximation...")
+            optumeans, optustdevs = find_untransformed_posterior(self.transform, means, stdevs, maxiter=maxiter)
+            upoints = np.random.normal(optumeans, optustdevs, size=40000)
+
+        if self.sampler.log:
+            self.logger.info("finding laplace approximation done")
+
+        uweights = np.ones(len(upoints)) / len(upoints)
+        assert upoints.shape == (40000, nparams)
+        aux_parameters, aux_loglike, aux_transform, vectorized = get_auxiliary_contbox_parameterization(
+            self.paramnames, self.loglike, transform=self.transform,
+            upoints=upoints, uweights=uweights, vectorized=self.vectorized)
+
+        self.sampler = ReactiveNestedSampler(
+            aux_parameters, aux_loglike, aux_transform, vectorized=vectorized,
+            **self.sampler_kwargs
+        )
+        self.warmstarted = True
+        
 
     def warmup(self, df=2, num_global_samples=400, verbose=True, num_quantile_samples=10000):
         """Prepare a efficient approximation of the posterior to speed up nested sampling.
@@ -215,7 +331,7 @@ class ProgressiveNestedSampler():
 
         if self.warmstarted:
             # hide warmstart weight variable
-            mask = [p != 'aux_logweight' for p in results['paramnames']]
+            mask = np.array([p != 'aux_logweight' for p in results['paramnames']])
             paramnames = [p for p in results['paramnames'] if p != 'aux_logweight']
             results['paramnames'] = paramnames
             results['samples'] = results['samples'][:,mask]
