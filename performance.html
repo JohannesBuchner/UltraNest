@@ -150,40 +150,37 @@
 <p>Lets write a script simple.py. It defines a problem through prior and likelihood functions,
 and analyses it.</p>
 <p>To understand it, have a look first the <a class="reference external" href="using-ultranest.html">Basic usage</a> page.</p>
-<div class="literal-block-wrapper docutils container" id="simple-py">
-<div class="code-block-caption"><span class="caption-text">simple.py</span><a class="headerlink" href="#simple-py" title="Permalink to this code"></a></div>
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span> <span class="kn">import</span> <span class="nn">scipy.stats</span>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">scipy.stats</span>
 
- <span class="n">paramnames</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;param1&#39;</span><span class="p">,</span> <span class="s1">&#39;param2&#39;</span><span class="p">,</span> <span class="s1">&#39;param3&#39;</span><span class="p">]</span>
- <span class="n">centers</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">]</span>
- <span class="n">sigma</span> <span class="o">=</span> <span class="mf">0.1</span>
+<span class="n">paramnames</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;param1&#39;</span><span class="p">,</span> <span class="s1">&#39;param2&#39;</span><span class="p">,</span> <span class="s1">&#39;param3&#39;</span><span class="p">]</span>
+<span class="n">centers</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">]</span>
+<span class="n">sigma</span> <span class="o">=</span> <span class="mf">0.1</span>
 
- <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="n">cube</span><span class="p">):</span>
-     <span class="k">return</span> <span class="n">cube</span>
+<span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="n">cube</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">cube</span>
 
- <span class="k">def</span> <span class="nf">loglike</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
-     <span class="k">return</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">centers</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span><span class="o">.</span><span class="n">logpdf</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">loglike</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">centers</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span><span class="o">.</span><span class="n">logpdf</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
 
- <span class="kn">from</span> <span class="nn">ultranest</span> <span class="kn">import</span> <span class="n">ReactiveNestedSampler</span>
- <span class="n">sampler</span> <span class="o">=</span> <span class="n">ReactiveNestedSampler</span><span class="p">(</span><span class="n">paramnames</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">transform</span><span class="p">,</span>
-     <span class="n">log_dir</span><span class="o">=</span><span class="s1">&#39;my_gauss&#39;</span><span class="p">,</span> <span class="c1"># folder where to store files</span>
-     <span class="n">resume</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="c1"># whether to resume from there (otherwise start from scratch)</span>
-     <span class="p">)</span>
+<span class="kn">from</span> <span class="nn">ultranest</span> <span class="kn">import</span> <span class="n">ReactiveNestedSampler</span>
+<span class="n">sampler</span> <span class="o">=</span> <span class="n">ReactiveNestedSampler</span><span class="p">(</span><span class="n">paramnames</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">transform</span><span class="p">,</span> 
+    <span class="n">log_dir</span><span class="o">=</span><span class="s1">&#39;my_gauss&#39;</span><span class="p">,</span> <span class="c1"># folder where to store files</span>
+    <span class="n">resume</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="c1"># whether to resume from there (otherwise start from scratch) </span>
+<span class="p">)</span>
 
- <span class="n">sampler</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
-     <span class="n">min_num_live_points</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span>
-     <span class="n">dlogz</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="c1"># desired accuracy on logz</span>
-     <span class="n">min_ess</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="c1"># number of effective samples</span>
-     <span class="n">update_interval_volume_fraction</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span> <span class="c1"># how often to update region</span>
-     <span class="n">max_num_improvement_loops</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="c1"># how many times to go back and improve</span>
- <span class="p">)</span>
+<span class="n">sampler</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+    <span class="n">min_num_live_points</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span>
+    <span class="n">dlogz</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="c1"># desired accuracy on logz</span>
+    <span class="n">min_ess</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="c1"># number of effective samples</span>
+    <span class="n">update_interval_volume_fraction</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span> <span class="c1"># how often to update region</span>
+    <span class="n">max_num_improvement_loops</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="c1"># how many times to go back and improve</span>
+<span class="p">)</span>
 
- <span class="n">sampler</span><span class="o">.</span><span class="n">print_results</span><span class="p">()</span>
+<span class="n">sampler</span><span class="o">.</span><span class="n">print_results</span><span class="p">()</span>
 
- <span class="n">sampler</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
- <span class="n">sampler</span><span class="o">.</span><span class="n">plot_trace</span><span class="p">()</span>
+<span class="n">sampler</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+<span class="n">sampler</span><span class="o">.</span><span class="n">plot_trace</span><span class="p">()</span>
 </pre></div>
-</div>
 </div>
 <p>Running this, you should see outputs like:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Mono-modal Volume: ~exp(-9.21) * Expected Volume: exp(-4.83)
@@ -355,71 +352,68 @@ Lets see how this looks like in a full program.</p>
 <h3>Vectorized full program<a class="headerlink" href="#vectorized-full-program" title="Permalink to this heading"></a></h3>
 <p>Below is a Python program that implements a gaussian likelihood,
 and allows the user to specify the problem dimension and a few sampler parameters.</p>
-<div class="literal-block-wrapper docutils container" id="gauss-py">
-<div class="code-block-caption"><span class="caption-text">gauss.py</span><a class="headerlink" href="#gauss-py" title="Permalink to this code"></a></div>
-<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span> <span class="kn">import</span> <span class="nn">argparse</span>
- <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
- <span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">log</span>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">log</span>
 
- <span class="c1"># define command line arguments:</span>
- <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">()</span>
+<span class="c1"># define command line arguments:</span>
+<span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">()</span>
 
- <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--x_dim&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-                     <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Dimensionality&quot;</span><span class="p">)</span>
- <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--num_live_points&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>
- <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--sigma&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
- <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--slice&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">)</span>
- <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--slice_steps&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
- <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--log_dir&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;logs/loggauss&#39;</span><span class="p">)</span>
+<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--x_dim&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                    <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Dimensionality&quot;</span><span class="p">)</span>
+<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--num_live_points&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>
+<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--sigma&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--slice&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">)</span>
+<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--slice_steps&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--log_dir&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;logs/loggauss&#39;</span><span class="p">)</span>
 
- <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+<span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
 
- <span class="n">ndim</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">x_dim</span>
- <span class="n">sigma</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">sigma</span>
- <span class="n">width</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="mi">5</span> <span class="o">*</span> <span class="n">sigma</span><span class="p">)</span>
- <span class="n">centers</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">ndim</span><span class="p">)</span><span class="o">/</span><span class="mf">2.</span><span class="p">)</span> <span class="o">*</span> <span class="n">width</span> <span class="o">+</span> <span class="mf">1.</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.</span>
+<span class="n">ndim</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">x_dim</span>
+<span class="n">sigma</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">sigma</span>
+<span class="n">width</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="mi">5</span> <span class="o">*</span> <span class="n">sigma</span><span class="p">)</span>
+<span class="n">centers</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">ndim</span><span class="p">)</span><span class="o">/</span><span class="mf">2.</span><span class="p">)</span> <span class="o">*</span> <span class="n">width</span> <span class="o">+</span> <span class="mf">1.</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.</span>
 
- <span class="c1"># Here, we implement a vectorized loglikelihood, which can</span>
- <span class="c1"># process many points at the same time. This reduces function calls.</span>
- <span class="k">def</span> <span class="nf">loglike</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
-     <span class="n">like</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(((</span><span class="n">theta</span> <span class="o">-</span> <span class="n">centers</span><span class="p">)</span><span class="o">/</span><span class="n">sigma</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">sigma</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">ndim</span>
-     <span class="k">return</span> <span class="n">like</span>
+<span class="c1"># Here, we implement a vectorized loglikelihood, which can</span>
+<span class="c1"># process many points at the same time. This reduces function calls.</span>
+<span class="k">def</span> <span class="nf">loglike</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
+    <span class="n">like</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(((</span><span class="n">theta</span> <span class="o">-</span> <span class="n">centers</span><span class="p">)</span><span class="o">/</span><span class="n">sigma</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">sigma</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">ndim</span>
+    <span class="k">return</span> <span class="n">like</span>
 
- <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-     <span class="k">return</span> <span class="n">x</span>
+<span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span>
 
- <span class="n">paramnames</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;param</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndim</span><span class="p">)]</span>
+<span class="n">paramnames</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;param</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndim</span><span class="p">)]</span>
 
- <span class="c1"># set up nested sampler:</span>
+<span class="c1"># set up nested sampler:</span>
 
- <span class="kn">from</span> <span class="nn">ultranest</span> <span class="kn">import</span> <span class="n">ReactiveNestedSampler</span>
+<span class="kn">from</span> <span class="nn">ultranest</span> <span class="kn">import</span> <span class="n">ReactiveNestedSampler</span>
 
- <span class="n">sampler</span> <span class="o">=</span> <span class="n">ReactiveNestedSampler</span><span class="p">(</span><span class="n">paramnames</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">transform</span><span class="p">,</span>
-     <span class="n">log_dir</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">log_dir</span> <span class="o">+</span> <span class="s1">&#39;RNS-</span><span class="si">%d</span><span class="s1">d&#39;</span> <span class="o">%</span> <span class="n">ndim</span><span class="p">,</span> <span class="n">resume</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-     <span class="n">vectorized</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">sampler</span> <span class="o">=</span> <span class="n">ReactiveNestedSampler</span><span class="p">(</span><span class="n">paramnames</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">transform</span><span class="p">,</span> 
+    <span class="n">log_dir</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">log_dir</span> <span class="o">+</span> <span class="s1">&#39;RNS-</span><span class="si">%d</span><span class="s1">d&#39;</span> <span class="o">%</span> <span class="n">ndim</span><span class="p">,</span> <span class="n">resume</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">vectorized</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
- <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">slice</span><span class="p">:</span>
-     <span class="c1"># set up step sampler. Here, we use a differential evolution slice sampler:</span>
-     <span class="kn">import</span> <span class="nn">ultranest.stepsampler</span>
-     <span class="n">sampler</span><span class="o">.</span><span class="n">stepsampler</span> <span class="o">=</span> <span class="n">ultranest</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="n">SliceSampler</span><span class="p">(</span>
-         <span class="n">nsteps</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">slice_steps</span><span class="p">,</span>
-         <span class="n">generate_direction</span><span class="o">=</span><span class="n">ultranest</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="n">generate_mixture_random_direction</span><span class="p">,</span>
-     <span class="p">)</span>
+<span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">slice</span><span class="p">:</span>
+    <span class="c1"># set up step sampler. Here, we use a differential evolution slice sampler:</span>
+    <span class="kn">import</span> <span class="nn">ultranest.stepsampler</span>
+    <span class="n">sampler</span><span class="o">.</span><span class="n">stepsampler</span> <span class="o">=</span> <span class="n">ultranest</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="n">SliceSampler</span><span class="p">(</span>
+        <span class="n">nsteps</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">slice_steps</span><span class="p">,</span>
+        <span class="n">generate_direction</span><span class="o">=</span><span class="n">ultranest</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="n">generate_mixture_random_direction</span><span class="p">,</span>
+    <span class="p">)</span>
 
- <span class="c1"># run sampler, with a few custom arguments:</span>
- <span class="n">sampler</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">dlogz</span><span class="o">=</span><span class="mf">0.5</span> <span class="o">+</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">ndim</span><span class="p">,</span>
-     <span class="n">update_interval_iter_fraction</span><span class="o">=</span><span class="mf">0.4</span> <span class="k">if</span> <span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">20</span> <span class="k">else</span> <span class="mf">0.2</span><span class="p">,</span>
-     <span class="n">max_num_improvement_loops</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
-     <span class="n">min_num_live_points</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">num_live_points</span><span class="p">)</span>
+<span class="c1"># run sampler, with a few custom arguments:</span>
+<span class="n">sampler</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">dlogz</span><span class="o">=</span><span class="mf">0.5</span> <span class="o">+</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">ndim</span><span class="p">,</span>
+    <span class="n">update_interval_volume_fraction</span><span class="o">=</span><span class="mf">0.4</span> <span class="k">if</span> <span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">20</span> <span class="k">else</span> <span class="mf">0.2</span><span class="p">,</span>
+    <span class="n">max_num_improvement_loops</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+    <span class="n">min_num_live_points</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">num_live_points</span><span class="p">)</span>
 
- <span class="n">sampler</span><span class="o">.</span><span class="n">print_results</span><span class="p">()</span>
+<span class="n">sampler</span><span class="o">.</span><span class="n">print_results</span><span class="p">()</span>
 
- <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">slice</span><span class="p">:</span>
-     <span class="n">sampler</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">filename</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">log_dir</span> <span class="o">+</span> <span class="s1">&#39;RNS-</span><span class="si">%d</span><span class="s1">d/stepsampler_stats_regionslice.pdf&#39;</span> <span class="o">%</span> <span class="n">ndim</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">slice</span><span class="p">:</span>
+    <span class="n">sampler</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">filename</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">log_dir</span> <span class="o">+</span> <span class="s1">&#39;RNS-</span><span class="si">%d</span><span class="s1">d/stepsampler_stats_regionslice.pdf&#39;</span> <span class="o">%</span> <span class="n">ndim</span><span class="p">)</span>
 
- <span class="n">sampler</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+<span class="n">sampler</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
 </pre></div>
-</div>
 </div>
 <p>Note that our likelihood is vectorized, and we pass <code class="docutils literal notranslate"><span class="pre">vectorized=True</span></code>.</p>
 <p>A similar program is included in the git repository as <em>examples/testasymgauss.py</em>.</p>
