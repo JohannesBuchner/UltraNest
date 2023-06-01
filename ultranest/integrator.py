@@ -2274,6 +2274,8 @@ It is safe to ignore this warning.""", Lmin, num_warn, num_stop)
             insertion_test_window=10,
             insertion_test_zscore_threshold=4,
             region_class=MLFriends,
+            widen_before_initial_plateau_num_warn=100000,
+            widen_before_initial_plateau_num_max=500000,
     ):
         """Run until target convergence criteria are fulfilled.
 
@@ -2346,6 +2348,19 @@ It is safe to ignore this warning.""", Lmin, num_warn, num_stop)
             Whether to use MLFriends+ellipsoidal+tellipsoidal region (better for multi-modal problems)
             or just ellipsoidal sampling (faster for high-dimensional, gaussian-like problems)
             or a axis-aligned ellipsoid (fastest, to be combined with slice sampling).
+
+        widen_before_initial_plateau_num_warn: int
+            If a likelihood plateau is encountered, increase the number
+            of initial live points so that once the plateau is traversed,
+            *min_num_live_points* live points remain.
+            If the number exceeds *widen_before_initial_plateau_num_warn*,
+            a warning is raised.
+
+        widen_before_initial_plateau_num_max: int
+            If a likelihood plateau is encountered, increase the number
+            of initial live points so that once the plateau is traversed,
+            *min_num_live_points* live points remain, but not more than
+            *widen_before_initial_plateau_num_warn*.
         """
         for result in self.run_iter(
             update_interval_volume_fraction=update_interval_volume_fraction,
@@ -2362,6 +2377,8 @@ It is safe to ignore this warning.""", Lmin, num_warn, num_stop)
             insertion_test_window=insertion_test_window,
             insertion_test_zscore_threshold=insertion_test_zscore_threshold,
             region_class=region_class,
+            widen_before_initial_plateau_num_warn=widen_before_initial_plateau_num_warn,
+            widen_before_initial_plateau_num_max=widen_before_initial_plateau_num_max,
         ):
             if self.log:
                 self.logger.debug("did a run_iter pass!")
@@ -2390,7 +2407,9 @@ It is safe to ignore this warning.""", Lmin, num_warn, num_stop)
             viz_callback='auto',
             insertion_test_window=10000,
             insertion_test_zscore_threshold=2,
-            region_class=MLFriends
+            region_class=MLFriends,
+            widen_before_initial_plateau_num_warn=100000,
+            widen_before_initial_plateau_num_max=500000,
     ):
         """Iterate towards convergence.
 
