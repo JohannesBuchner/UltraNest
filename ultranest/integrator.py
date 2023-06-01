@@ -1408,7 +1408,7 @@ class ReactiveNestedSampler(object):
             self._widen_roots(nroots_needed)
             Ls = np.array([node.value for node in self.root.children])
             Lmin = np.min(Ls)
-            if nroots_needed > num_warn:
+            if self.log and nroots_needed > num_warn:
                 self.logger.warn("""The log-likelihood has a large plateau with L=%g.
 
 Probably you are returning a low value when the parameters are problematic/unphysical.
