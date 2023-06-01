@@ -1383,20 +1383,55 @@ class ReactiveNestedSampler(object):
 
         return target_min_num_children
 
-    def _widen_roots_beyond_initial_plateau(self, nroots):
+    def _widen_roots_beyond_initial_plateau(self, nroots, num_warn=100000, num_stop=500000):
         """Widen roots, but populate ahead of initial plateau.
 
         calls _widen_roots, and if there are several points with the same
         value equal to the lowest loglikelihood, widens some more until
         there are `nroots`-1 that are different to the lowest
         loglikelihood value.
+
+        Parameters
+        -----------
+        nroots: int
+            Number of root live points, after the plateau is traversed.
+
+        num_warn: int
+            Warn if the number of root live points reached this.
+
+        num_stop: int
+            Do not increasing the number of root live points beyond this limit.
+
         """
         nroots_needed = nroots
         while True:
             self._widen_roots(nroots_needed)
             Ls = np.array([node.value for node in self.root.children])
             Lmin = np.min(Ls)
-            # number of plateau points
+            if nroots_needed > num_warn:
+                self.logger.warn("""The log-likelihood has a large plateau with L=%g.
+
+Probably you are returning a low value when the parameters are problematic/unphysical.
+ultranest can handle this correctly, by discarding live points with the same loglikelihood.
+(arxiv:2005.08602 arxiv:2010.13884). To mitigate running out of live points,
+the initial number of live points is increased. But now this has reached over %d points.
+
+You can avoid this making the loglikelihood increase towards where the good region is.
+For example, let's say you have two parameters where the sum must be below 1. Replace this:
+
+    if params[0] + params[1] > 1:
+         return -1e300
+
+with:
+
+    if params[0] + params[1] > 1:
+         return -1e300 * (params[0] + params[1])
+
+The current strategy will continue until %d live points are reached.
+It is safe to ignore this warning.""", Lmin, num_warn, num_stop)
+
+            if nroots_needed > num_stop:
+                break
             P = (Ls == Lmin).sum()
             if P > 1 and len(Ls) - P + 1 < nroots:
                 # guess the number of points needed: P-1 are useless
@@ -1412,6 +1447,11 @@ class ReactiveNestedSampler(object):
         """Ensure root has `nroots` children.
 
         Sample from prior to fill up (if needed).
+
+        Parameters
+        -----------
+        nroots: int
+            Number of root live points, after the plateau is traversed.
         """
         if self.log and len(self.root.children) > 0:
             self.logger.info('Widening roots to %d live points (have %d already) ...', nroots, len(self.root.children))
@@ -1532,7 +1572,6 @@ class ReactiveNestedSampler(object):
             maximum fraction of integral in remainder for termination
         Lepsilon: float
             loglikelihood accuracy threshold
-
         """
         Ls = parallel_values.copy()
         Ls.sort()
