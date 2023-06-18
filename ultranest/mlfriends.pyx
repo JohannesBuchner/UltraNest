@@ -9,9 +9,11 @@ cimport numpy as np
 from numpy import pi
 cimport cython
 
+
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cdef count_nearby(np.ndarray[np.float_t, ndim=2] apts,
+cdef count_nearby(
+    np.ndarray[np.float_t, ndim=2] apts,
     np.ndarray[np.float_t, ndim=2] bpts,
     np.float_t radiussq,
     np.ndarray[np.int_t, ndim=1] nnearby
@@ -34,8 +36,6 @@ cdef count_nearby(np.ndarray[np.float_t, ndim=2] apts,
     cdef size_t na = apts.shape[0]
     cdef size_t nb = bpts.shape[0]
     cdef size_t ndim = apts.shape[1]
-    #assert ndim == bpts.shape[1]
-    #assert nnearby.shape[0] == nb
 
     cdef unsigned long i, j
     cdef np.float_t d
@@ -54,7 +54,8 @@ cdef count_nearby(np.ndarray[np.float_t, ndim=2] apts,
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def find_nearby(np.ndarray[np.float_t, ndim=2] apts,
+def find_nearby(
+    np.ndarray[np.float_t, ndim=2] apts,
     np.ndarray[np.float_t, ndim=2] bpts,
     np.float_t radiussq,
     np.ndarray[np.int_t, ndim=1] nnearby
@@ -79,8 +80,6 @@ def find_nearby(np.ndarray[np.float_t, ndim=2] apts,
     cdef size_t na = apts.shape[0]
     cdef size_t nb = bpts.shape[0]
     cdef size_t ndim = apts.shape[1]
-    #assert ndim == bpts.shape[1]
-    #assert nnearby.shape[0] == nb
 
     cdef unsigned long i, j
     cdef np.float_t d
@@ -117,8 +116,6 @@ cdef float compute_maxradiussq(np.ndarray[np.float_t, ndim=2] apts, np.ndarray[n
     cdef size_t na = apts.shape[0]
     cdef size_t nb = bpts.shape[0]
     cdef size_t ndim = apts.shape[1]
-    #assert ndim == bpts.shape[1]
-    #assert f.dtype == np.float_t and g.dtype == np.float_t
 
     cdef unsigned long i, j
     cdef np.float_t d
@@ -196,7 +193,6 @@ cdef _update_clusters(
     np.ndarray[np.int_t, ndim=1] clusterids,
 ):
     """same signature as ``update_clusters()``, see there."""
-    #print("clustering with maxradiussq %f..." % maxradiussq)
     assert upoints.shape[0] == tpoints.shape[0], ('different number of points', upoints.shape[0], tpoints.shape[0])
     assert upoints.shape[1] == tpoints.shape[1], ('different dimensionality of points', upoints.shape[1], tpoints.shape[1])
     clusteridxs = np.zeros(len(tpoints), dtype=int)
@@ -220,13 +216,13 @@ cdef _update_clusters(
         idnearby = np.empty(len(nonmembers), dtype=int)
         members = tpoints[clusteridxs == currentclusterid,:]
         find_nearby(members, nonmembers, maxradiussq, idnearby)
-        #print('merging %d into cluster %d of size %d' % (np.count_nonzero(nnearby), currentclusterid, len(members)))
+        # print('merging %d into cluster %d of size %d' % (np.count_nonzero(nnearby), currentclusterid, len(members)))
 
         if (idnearby >= 0).any():
             # place into cluster
             newmembers = nonmembermask
             newmembers[nonmembermask] = idnearby >= 0
-            #print('adding', newmembers.sum())
+            # print('adding', newmembers.sum())
             clusteridxs[newmembers] = currentclusterid
         else:
             # start a new cluster
@@ -241,7 +237,7 @@ cdef _update_clusters(
 
     assert (clusteridxs > 0).all()
     nclusters = len(np.unique(clusteridxs))
-    #assert np.all(np.unique(clusteridxs) == np.arange(nclusters)+1), (np.unique(clusteridxs), nclusters, np.arange(nclusters)+1)
+    # assert np.all(np.unique(clusteridxs) == np.arange(nclusters)+1), (np.unique(clusteridxs), nclusters, np.arange(nclusters)+1)
     if nclusters == 1:
         overlapped_upoints = upoints
     else:
@@ -260,13 +256,14 @@ cdef _update_clusters(
 
     return nclusters, clusteridxs, overlapped_upoints
 
+
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def update_clusters(
     np.ndarray[np.float_t, ndim=2] upoints,
     np.ndarray[np.float_t, ndim=2] tpoints,
     np.float_t maxradiussq,
-    clusterids = None,
+    clusterids=None,
 ):
     """Clusters `upoints`, so that clusters are distinct if no 
     member pair is within a radius of sqrt(`maxradiussq`).
@@ -328,14 +325,15 @@ def make_eigvals_positive(
     except np.linalg.LinAlgError as e:
         print(a, targetprod)
         raise e
-    mask = w < 1.e-10
+    mask = w < max(1.e-10, 1e-300**(1. / len(a)))
     if np.any(mask):
         nzprod = np.product(w[~mask])  # product of nonzero eigenvalues
         nzeros = mask.sum()  # number of zero eigenvalues
-        w[mask] = (targetprod / nzprod) ** (1./nzeros)  # adjust zero eigvals
+        w[mask] = (targetprod / nzprod) ** (1. / nzeros)  # adjust zero eigvals
         a = np.dot(np.dot(v, np.diag(w)), np.linalg.inv(v))  # re-form cov
 
     return a
+
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -360,7 +358,6 @@ def bounding_ellipsoid(
     """
     # Function taken from nestle, MIT licensed, (C) kbarbary
 
-    npoints = x.shape[0]
     ndim = x.shape[1]
 
     # Calculate covariance of points
@@ -482,7 +479,7 @@ class ScalingLayer(object):
         self.mean = wrapped_points.mean(axis=0).reshape((1,-1))
         self.std = centered_points.std(axis=0).reshape((1,-1))
         self.axes = np.diag(self.std[0])
-        self.volscale = np.product(self.std)
+        self.logvolscale = np.sum(np.log(self.std))
         self.set_clusterids(clusterids=clusterids, npoints=len(points))
 
     def set_clusterids(self, clusterids=None, npoints=None):
@@ -514,7 +511,7 @@ class ScalingLayer(object):
         uwpoints = self.wrap(upoints)
         tpoints = self.transform(upoints)
         nclusters, clusteridxs, overlapped_uwpoints = update_clusters(uwpoints, tpoints, maxradiussq, self.clusterids)
-        #clusteridxs = track_clusters(clusteridxs, self.clusterids)
+        # clusteridxs = track_clusters(clusteridxs, self.clusterids)
         s = ScalingLayer(nclusters=nclusters, wrapped_dims=self.wrapped_dims, clusterids=clusteridxs)
         s.optimize(upoints, overlapped_uwpoints)
         return s
@@ -535,6 +532,7 @@ class ScalingLayer(object):
         else:
             u = w.reshape(ww.shape)
         return u
+
 
 class AffineLayer(ScalingLayer):
     """Affine whitening transformation.
@@ -599,12 +597,12 @@ class AffineLayer(ScalingLayer):
         eigvalmin = eigval.max() * 1e-40
         eigval[eigval < eigvalmin] = eigvalmin
         a = np.linalg.inv(cov)
-        self.volscale = np.linalg.det(a)**-0.5
+        self.logvolscale = np.linalg.slogdet(a)[1] * -0.5
 
         self.T = eigvec * eigval**-0.5
         self.invT = np.linalg.inv(self.T)
         self.axes = self.invT
-        #print('transform used:', self.T, self.invT, 'cov:', cov, 'eigen:', eigval, eigvec)
+        # print('transform used:', self.T, self.invT, 'cov:', cov, 'eigen:', eigval, eigvec)
         self.set_clusterids(clusterids=clusterids, npoints=len(points))
 
     def create_new(self, upoints, maxradiussq, minvol=0.):
@@ -627,7 +625,7 @@ class AffineLayer(ScalingLayer):
         uwpoints = self.wrap(upoints)
         tpoints = self.transform(upoints)
         nclusters, clusteridxs, overlapped_uwpoints = update_clusters(uwpoints, tpoints, maxradiussq, self.clusterids)
-        #clusteridxs = track_clusters(clusteridxs, self.clusterids)
+        # clusteridxs = track_clusters(clusteridxs, self.clusterids)
         s = AffineLayer(nclusters=nclusters, wrapped_dims=self.wrapped_dims, clusterids=clusteridxs)
         s.optimize(upoints, overlapped_uwpoints, minvol=minvol)
         return s
@@ -678,6 +676,7 @@ def vol_prefactor(np.int_t n):
 
     return f
 
+
 def _inside_ellipsoid(
     np.ndarray[np.float_t, ndim=2] points,
     np.ndarray[np.float_t, ndim=1] ellipsoid_center,
@@ -709,6 +708,7 @@ def _inside_ellipsoid(
     r = np.einsum('ij,jk,ik->i', d, ellipsoid_invcov, d)
     # (r <= 1) means inside
     return r <= square_radius
+
 
 class MLFriends(object):
     """MLFriends region.
@@ -765,7 +765,7 @@ class MLFriends(object):
         r = self.maxradiussq**0.5
         N, ndim = self.u.shape
         # how large is a sphere of size r in untransformed coordinates?
-        return np.log(self.transformLayer.volscale) + np.log(r) * ndim #+ np.log(vol_prefactor(ndim))
+        return self.transformLayer.logvolscale + np.log(r) * ndim  #+ np.log(vol_prefactor(ndim))
 
     def set_transformLayer(self, transformLayer):
         """Update transformation layer. Invalidates attribute `maxradius`.
@@ -848,7 +848,7 @@ class MLFriends(object):
 
             # compute distances from a to b
             maxd = max(maxd, compute_maxradiussq(
-                self.unormed[selected,:], 
+                self.unormed[selected,:],
                 self.unormed[~selected,:]))
 
             # compute enlargement of bounding ellipsoid
@@ -878,7 +878,7 @@ class MLFriends(object):
         # generate points near random existing points
         idx = np.random.randint(N, size=nsamples)
         v = np.random.normal(size=(nsamples, ndim))
-        v *= (np.random.uniform(size=nsamples)**(1./ndim) / np.linalg.norm(v, axis=1)).reshape((-1, 1))
+        v *= (np.random.uniform(size=nsamples)**(1. / ndim) / np.linalg.norm(v, axis=1)).reshape((-1, 1))
         v = self.unormed[idx,:] + v * self.maxradiussq**0.5
 
         # count how many are around
@@ -978,7 +978,7 @@ class MLFriends(object):
         if len(samples) == 0:
             # no result, choose another method
             self.current_sampling_method = self.sampling_methods[np.random.randint(len(self.sampling_methods))]
-            #print("switching to %s" % self.current_sampling_method)
+            # print("switching to %s" % self.current_sampling_method)
         return samples
 
     def inside(self, pts):
@@ -1085,7 +1085,7 @@ class RobustEllipsoidRegion(MLFriends):
         self.set_transformLayer(transformLayer)
 
         self.sampling_methods = [
-            self.sample_from_transformed_boundingbox,
+            #self.sample_from_transformed_boundingbox,
             self.sample_from_boundingbox,
             self.sample_from_wrapping_ellipsoid
         ]
@@ -1209,6 +1209,8 @@ class RobustEllipsoidRegion(MLFriends):
             square radius of enclosing ellipsoid.
         """
         N, ndim = self.u.shape
+        if N < ndim + 1:
+            raise FloatingPointError('not enough live points to compute covariance')
         assert np.isfinite(self.unormed).all(), self.unormed
         selected = np.empty(N, dtype=bool)
         maxd = 1e300
@@ -1252,6 +1254,98 @@ class RobustEllipsoidRegion(MLFriends):
         else:
             return -1e300
 
+
+class SimpleRegion(RobustEllipsoidRegion):
+    """Axis-aligned ellipsoidal region.
+
+    Defines a region around nested sampling live points for
+
+    1. checking whether a proposed point likely also fulfills the
+       likelihood constraints
+    2. proposing new points.
+
+    Learns geometry of region from existing live points.
+    """
+
+    def create_ellipsoid(self, minvol=0.0):
+        """Create wrapping ellipsoid and store its center and covariance.
+
+        Parameters
+        ----------
+        minvol: float
+            If positive, make sure ellipsoid has at least this volume.
+        """
+        assert self.enlarge is not None
+        # compute enlargement of bounding ellipsoid
+        ctr = np.mean(self.u, axis=0)
+        var = np.var(self.u, axis=0)
+        a = np.diag(1. / var)
+        cov = np.diag(var)
+
+        self.ellipsoid_center = ctr
+        self.ellipsoid_invcov = a
+        self.ellipsoid_cov = cov
+
+        l, v = np.linalg.eigh(a)
+        self.ellipsoid_axlens = 1. / np.sqrt(l)
+        self.ellipsoid_axes = np.dot(v, np.diag(self.ellipsoid_axlens))
+        self.ellipsoid_axes_T = self.ellipsoid_axes.transpose()
+
+        l2, v2 = np.linalg.eigh(cov)
+        self.ellipsoid_inv_axlens = 1. / np.sqrt(l2)
+        self.ellipsoid_inv_axes = np.dot(v2, np.diag(self.ellipsoid_inv_axlens))
+
+
+    def compute_enlargement(self, nbootstraps=50, minvol=0., rng=np.random):
+        """Return MLFriends radius and ellipsoid enlargement using bootstrapping.
+
+        The wrapping ellipsoid covariance is determined in each bootstrap round.
+
+        Parameters
+        ----------
+        nbootstraps: int
+            number of bootstrapping rounds
+        minvol: float
+            minimum volume to enforce to wrapping ellipsoid
+        rng:
+            random number generator
+
+        Returns
+        -------
+        max_distance: float
+            square radius of MLFriends algorithm
+        max_radius: float
+            square radius of enclosing ellipsoid.
+        """
+        N, ndim = self.u.shape
+        assert np.isfinite(self.u).all(), self.u
+        assert np.isfinite(self.unormed).all(), self.unormed
+        selected = np.empty(N, dtype=bool)
+        maxd = 1e300
+        maxf = 0.0
+        if N < ndim + 1:
+            raise FloatingPointError('not enough live points to compute variance')
+
+        for i in range(nbootstraps):
+            idx = rng.randint(N, size=N)
+            selected[:] = False
+            selected[idx] = True
+
+            # compute enlargement of bounding ellipsoid
+            ctr = np.mean(self.u[selected,:], axis=0)
+            var = np.var(self.u[selected,:], axis=0)
+            # compute expansion factor
+            f = np.sum((self.u[~selected,:] - ctr.reshape((1, -1)))**2 / var, axis=0).max()
+            assert np.isfinite(f), (self.u, ctr, var, self.unormed, f)
+            if not f > 0:
+                raise np.linalg.LinAlgError("Distances are not positive")
+            maxf = max(maxf, f)
+
+        assert maxd > 0, (maxd, self.u, self.unormed)
+        assert maxf > 0, (maxf, self.u, self.unormed)
+        return maxd, maxf
+
+
 class WrappingEllipsoid(object):
     """Ellipsoid which safely wraps points."""
 
@@ -1264,13 +1358,19 @@ class WrappingEllipsoid(object):
             live points
         """
         self.u = u
+        # allow some parameters to have exactly the same value
+        # this can occur with grid / categorical parameters
+        self.variable_dims = np.std(self.u, axis=0) > 0
+        if self.variable_dims.all():
+            self.variable_dims = Ellipsis
 
     def compute_enlargement(self, nbootstraps=50, rng=np.random):
         """Return ellipsoid enlargement after `nbootstraps` bootstrapping rounds.
 
         The wrapping ellipsoid covariance is determined in each bootstrap round.
         """
-        N, ndim = self.u.shape
+        N = len(self.u)
+        v = self.u[:,self.variable_dims]
         selected = np.empty(N, dtype=bool)
         maxf = 0.0
 
@@ -1278,8 +1378,8 @@ class WrappingEllipsoid(object):
             idx = rng.randint(N, size=N)
             selected[:] = False
             selected[idx] = True
-            ua = self.u[selected,:]
-            ub = self.u[~selected,:]
+            ua = v[selected,:]
+            ub = v[~selected,:]
 
             # compute enlargement of bounding ellipsoid
             ctr, cov = bounding_ellipsoid(ua)
@@ -1291,14 +1391,14 @@ class WrappingEllipsoid(object):
                 raise np.linalg.LinAlgError("Distances are not positive")
             maxf = max(maxf, f)
 
-        assert maxf > 0, (maxf, self.u)
+        assert maxf > 0, (maxf, self.u, self.active_dims)
         return maxf
 
     def create_ellipsoid(self, minvol=0.0):
         """Create wrapping ellipsoid and store its center and covariance."""
         assert self.enlarge is not None
         # compute enlargement of bounding ellipsoid
-        ctr, cov = bounding_ellipsoid(self.u, minvol=minvol)
+        ctr, cov = bounding_ellipsoid(self.u[:,self.variable_dims], minvol=minvol)
         a = np.linalg.inv(cov)
 
         self.ellipsoid_center = ctr
@@ -1309,6 +1409,19 @@ class WrappingEllipsoid(object):
         self.ellipsoid_axlens = 1. / np.sqrt(l)
         self.ellipsoid_axes = np.dot(v, np.diag(self.ellipsoid_axlens))
 
+    def update_center(self, ctr):
+        """Update ellipsoid center, considering fixed dimensions.
+
+        Parameters
+        ----------
+        ctr: vector
+            new center
+
+        """
+        if self.variable_dims is Ellipsis:
+            self.ellipsoid_center = ctr
+        else:
+            self.ellipsoid_center = ctr[self.variable_dims]
 
     def inside(self, u):
         """Check if inside wrapping ellipsoid.
@@ -1324,4 +1437,11 @@ class WrappingEllipsoid(object):
             True if inside wrapping ellipsoid, for each point in `pts`.
 
         """
-        return _inside_ellipsoid(u, self.ellipsoid_center, self.ellipsoid_invcov, self.enlarge)
+        # check the variable subspace with the ellipsoid
+        inside_variable = _inside_ellipsoid(u[:,self.variable_dims], self.ellipsoid_center, self.ellipsoid_invcov, self.enlarge)
+        if self.variable_dims is Ellipsis:
+            return inside_variable
+        else:
+            # the remaining dims must be exactly equal
+            inside_fixed = np.all(self.u[0, ~self.variable_dims] == u[:,~self.variable_dims], axis=1)
+            return np.logical_and(inside_fixed, inside_variable)

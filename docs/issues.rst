@@ -16,21 +16,32 @@ Opening a github issue is preferred, because then other people can find the ques
 How do I suppress the output?
 -----------------------------
 
-To suppress the logging to stdout, you can configure your own logger::
+To suppress the live point visualisations, set ``viz_callback=False`` in ``sampler.run()``.
+
+To suppress the status line, set ``show_status=False`` in `sampler.run()``.
+
+See the documentation of :py:meth:`ultranest.ReactiveNestedSampler.run()`.
+
+To suppress the logging to stderr, set up a logging handler::
 
     import logging
     logger = logging.getLogger("ultranest")
     handler = logging.StreamHandler(sys.stdout)
     handler.setLevel(logging.WARNING)
-    formatter = logging.Formatter('[{}] [%(levelname)s] %(message)s'.format(module_name))
+    formatter = logging.Formatter('[ultranest] [%(levelname)s] %(message)s')
     handler.setFormatter(formatter)
     logger.addHandler(handler)
+    logger.setLevel(logging.WARNING)
 
-You may want to alter the above to log to a file only. See the logging python module docs.
+You may want to alter the above to log to a file instead. See the `logging python module <https://docs.python.org/3/library/logging.html>`_ docs.
 
-To suppress the live point visualisations, set ``viz_callback=False`` in ``sampler.run()``.
+To completely turn off logging, you can use::
 
-To suppress the status line, set ``show_status=False`` in ``sampler.run()``.
+    import logging
+    logger = logging.getLogger("ultranest")
+    logger.addHandler(logging.NullHandler())
+    logger.setLevel(logging.WARNING)
+
 
 How should I choose the number of live points?
 -----------------------------------------------
@@ -280,7 +291,7 @@ How should I cite UltraNest?
 
 The main algorithm (MLFriends) is described in:
 
-* Buchner, J. (2014): `A statistical test for Nested Sampling algorithms <https://arxiv.org/abs/1407.5459>`_ (`bibtex <https://scholar.googleusercontent.com/scholar.bib?q=info:yTXfZFtI_vYJ:scholar.google.com/&output=citation&scisdr=CgXWBaaNEK7YkjRrxRc:AAGBfm0AAAAAX8Nu3Rcw9Cl4oM-O20oJrdlLRUQB2IhI&scisig=AAGBfm0AAAAAX8Nu3ftd-SBQKMLTBDogxM9U1n9uLKdi&scisf=4&ct=citation&cd=-1&hl=en&scfhb=1>`__)
+* Buchner, J. (2014): `A statistical test for Nested Sampling algorithms <https://arxiv.org/abs/1407.5459>`_ (`bibtex <https://ui.adsabs.harvard.edu/abs/2016S%26C....26..383B/exportcitation>`__)
 * Buchner, J. (2019): `Collaborative Nested Sampling: Big Data versus Complex Physical Models <https://arxiv.org/abs/1707.04476>`_ (`bibtex <https://ui.adsabs.harvard.edu/abs/2019PASP..131j8005B/exportcitation>`__)
 
 The UltraNest software package is presented in:

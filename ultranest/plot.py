@@ -58,7 +58,7 @@ def cornerplot(results, logger=None):
     oldfunc = logging.warning
     logging.warning = lambda *args, **kwargs: None
     corner.corner(data[mask,:], weights=weights[mask],
-                  labels=paramnames, show_titles=True)
+                  labels=paramnames, show_titles=True, quiet=True)
     logging.warning = oldfunc
 
 

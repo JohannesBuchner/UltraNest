@@ -1,7 +1,7 @@
 .. _performance:
 
 ====================================
-Tour of the features
+Features
 ====================================
 
 
@@ -9,6 +9,7 @@ This tutorial demonstrates:
 
 * How to make a program that uses nested sampling
 * How to store and resume runs
+* The meaning of the output files
 * How to use UltraNest in 100 dimensions
 * How to speed up likelihood functions with vectorization
 * How to write a program with UltraNest
@@ -22,40 +23,8 @@ and analyses it.
 
 To understand it, have a look first the `Basic usage <using-ultranest.html>`_ page.
 
-.. code-block:: python3
-   :caption: simple.py
-   :name: simple.py
-    
-    import scipy.stats
-    
-    paramnames = ['param1', 'param2', 'param3']
-    centers = [0.4, 0.5, 0.6]
-    sigma = 0.1
-    
-    def transform(cube):
-        return cube
-
-    def loglike(theta):
-        return scipy.stats.norm(centers, sigma).logpdf(theta).sum()
-
-    from ultranest import ReactiveNestedSampler
-    sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, 
-        log_dir='my_gauss', # folder where to store files
-        resume=True, # whether to resume from there (otherwise start from scratch) 
-        )
-
-    sampler.run(
-        min_num_live_points=400,
-        dlogz=0.5, # desired accuracy on logz
-        min_ess=400, # number of effective samples
-        update_interval_iter_fraction=0.4, # how often to update region
-        max_num_improvement_loops=3, # how many times to go back and improve
-    )
-
-    sampler.print_results()
-
-    sampler.plot()
-    sampler.plot_trace()
+.. literalinclude:: simple.py
+   :language: python3
 
 Running this, you should see outputs like:
 
@@ -110,29 +79,85 @@ and the parameter constraints:
             param2              0.500 +- 0.099
             param3              0.602 +- 0.098
 
-In the folder my_gauss you can find useful files:
-
-* **debug.log**: log file of the run. Include when reporting bugs.
-* **results/points.hdf5**: file storing all sampled points. Used for resuming.
-* **chains/equal_weighted_post.txt**: posterior samples. Each column corresponds to one parameter.
-* **chains/weighted_post.txt**: weighted posterior samples. Weight, -loglikelihood, parameter value (d times). getdist compatible.
-* **chains/weighted_post.paramnames**: Parameter names
-* **info/results.json**: all results (logz, etc.) as a json dictionary
-* **plots/corner.pdf**: corner plot
-* **plots/run.pdf**: diagnostic plot showing integration progress
-* **plots/trace.pdf**: diagnostic plot showing problem structure
-
 Some features worth noting here:
 
-* Key diagnostic plots are included.
-* The program can resume from crashes -- even if run with a different number of live points.
 * UltraNest shows what it is currently exploring. This is especially useful for debugging models.
+* Key diagnostic plots are included in the output folder (see below).
+* The program can resume from crashes -- even if run with a different number of live points.
 
-Lets go to some more advanced usage examples: Integrating a 100-dimensional gaussian.
-For that, we have to make a few modifications.
+Output files
+============
+
+If a `log_dir` directory was specified, you will find these files:
+
+* debug.log: A debug log of the run
+
+  * Please attach it or the stdout output when you open a `Github issue <https://github.com/JohannesBuchner/UltraNest/issues>`_.
+  * This contains the efficiency and progress of the sampling.
+
+* info folder: machine-readable summaries of the posterior
+
+  * **post_summary.csv**: for each parameter: mean, std, median, upper and lower 1 sigma error. Can be read with `pandas.read_csv <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html>`_.
+  * **results.json**: Contains detailed output of the nested sampling run. Can be read with `json.load <https://docs.python.org/3/library/json.html>`_.
+
+    * paramnames: parameter names
+    * ncall, niter: Number of likelihood calls, nested sampling iterations
+    * maximum_likelihood: highest loglikelihood point found so far
+    * H, Herr: (global) information gain
+    * ess: effective sample size
+    * logz, logzerr: ln(Z) and its uncertainty. logzerr_tail is the remainder integral contribution, logzerr_bs is from bootstrapping
+    * posterior: for each parameter: mean, std, median, upper and lower 1 sigma error, and `information gain <https://arxiv.org/abs/2205.00009>`_.
+    * insertion_order_MWW_test: MWW test results (see Buchner+21 in prep)
+
+* chains: machine-readable chains
+
+  * **equal_weighted_post.txt**: equally weighted posterior samples (similar to a Markov chain). Each column corresponds to one parameter.
+
+    * You can make a corner plot from this.
+
+  * weighted_post.txt: posterior samples with a weight attached. 
+
+    * This is made by nested sampling directly, and the above is produced from this. However, carrying the weights around is cumbersome.
+    * getdist compatible. columns are Weight, -loglikelihood, parameter value (d times). 
+
+  * weighted_post_untransformed.txt: same as above, but in coordinates before the prior transformation.
+  * run.txt: for each iteration, ln(z) and error, ln(volume), number of live points, log-likelihood threshold, posterior point weight (likelihood x volume) and insertion rank of newly sampled point.
+
+* plots: Visualisations (by plot functions)
+
+  * corner.pdf: corner/pairs plot of the marginal and conditional parameter posteriors.
+
+    * Useful for investigating degeneracies and which parameters were learned.
+
+  * trace.pdf: diagnostic plot showing problem structure
+
+    * Visualises how each parameter's range was reduced as the nested sampling proceeds.
+    * Color indicates where the bulk of the posterior lies.
+    * Useful to understand the structure of the inference problem, and which parameters are learned first.
+
+  * run.pdf: diagnostic plot showing integration progress
+
+    * Visualises how the number of live points, likelihood and posterior weight evolved through the nested sampling run.
+    * Visualises the evidence integration and its uncertainty.
+
+All of the above can be written, but are never read, by ultranest.ReactiveNestedSampler. The only file used to
+read the state of a previous run is:
+
+* results/points.hdf5: file storing all sampled points. Used for resuming.
+
+  * this is an internal file.
+  * ncalls: number of likelihood calls
+  * points: the columns are: likelihood threshold under which the point was sampled, likelihood of the point, a quality indicator (0 for MLFriends, otherwise the number of steps in the step sampler), u-space (unit cube) coordinates, p-space (transformed parameters) coordinates.
+
+You can safely store additional files and plots in the sub-folders.
 
 Speed ups
 ===========
+
+Lets go to some more advanced usage examples: Integrating a 100-dimensional gaussian.
+For that, we have to make a few modifications to enhance the
+**computational speed**. Enhancing the **algorithmic speed** (number of likelihood evaluations
+needed per iterations) is discussed in the next section.
 
 Implementing a gaussian likelihood can be done in a few ways.
 
@@ -172,77 +197,18 @@ To use this function, pass ``vectorized=True`` to ReactiveNestedSampler.
 Lets see how this looks like in a full program.
 
 Vectorized full program
-================================
+------------------------
 
 Below is a Python program that implements a gaussian likelihood,
 and allows the user to specify the problem dimension and a few sampler parameters.
 
-.. code-block:: python3
-   :caption: gauss.py
-   :name: gauss.py
-
-    import argparse
-    import numpy as np
-    from numpy import log
-
-    # define command line arguments:
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument('--x_dim', type=int, default=2,
-                        help="Dimensionality")
-    parser.add_argument("--num_live_points", type=int, default=400)
-    parser.add_argument('--sigma', type=float, default=0.1)
-    parser.add_argument('--slice', action='store_true')
-    parser.add_argument('--slice_steps', type=int, default=100)
-    parser.add_argument('--log_dir', type=str, default='logs/loggauss')
-
-    args = parser.parse_args()
-
-    ndim = args.x_dim
-    sigma = args.sigma
-    width = max(0, 1 - 5 * sigma)
-    centers = (np.sin(np.arange(ndim)/2.) * width + 1.) / 2.
-
-    # Here, we implement a vectorized loglikelihood, which can
-    # process many points at the same time. This reduces function calls.
-    def loglike(theta):
-        like = -0.5 * (((theta - centers)/sigma)**2).sum(axis=1) - 0.5 * np.log(2 * np.pi * sigma**2) * ndim
-        return like
-
-    def transform(x):
-        return x
-
-    paramnames = ['param%d' % (i+1) for i in range(ndim)]
-
-    # set up nested sampler:
-    
-    from ultranest import ReactiveNestedSampler
-    
-    sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, 
-        log_dir=args.log_dir + 'RNS-%dd' % ndim, resume=True,
-        vectorized=True)
-
-    if args.slice:
-        # set up step sampler. Here, we use a slice sampler:
-        import ultranest.stepsampler
-        sampler.stepsampler = ultranest.stepsampler.RegionSliceSampler(nsteps=args.slice_steps)
-
-    # run sampler, with a few custom arguments:
-    sampler.run(dlogz=0.5 + 0.1 * ndim,
-        update_interval_iter_fraction=0.4 if ndim > 20 else 0.2,
-        max_num_improvement_loops=3,
-        min_num_live_points=args.num_live_points)
-
-    sampler.print_results()
-
-    if args.slice:
-        sampler.stepsampler.plot(filename = args.log_dir + 'RNS-%dd/stepsampler_stats_regionslice.pdf' % ndim)
-
-    sampler.plot()
+.. literalinclude:: gauss.py
+   :language: python3
 
 Note that our likelihood is vectorized, and we pass ``vectorized=True``.
 
 A similar program is included in the git repository as *examples/testasymgauss.py*.
+
 
 High-dimensional models
 ========================
@@ -377,13 +343,14 @@ The integral is given as::
 This result is close to the analytic value (0) on infinite bounds 
 (the prior boundaries slightly increase the result).
 
-We can test whether the slice sampler is good enough by halving 
-``slice_steps``. The logZ estimate should ideally be consistent.
+We can test whether the slice sampler is good enough by doubling 
+the number of steps, until the ln(Z) estimate is stable.
 
-Using multiple cores
+Parallelisation
 ====================
 
-Depending on your numpy installation, the above may already use multiple CPUs.
+Your likelihood function may already be using multiple cores,
+whether your intended to or not, due to underlying libraries (e.g., numpy).
 You can control this with the OMP_NUM_THREADS environment variable:
 
 .. code-block:: bash
@@ -391,26 +358,39 @@ You can control this with the OMP_NUM_THREADS environment variable:
         # avoid automatic parallelisation
         export OMP_NUM_THREADS=1
 
+If the likelihood is not parallelised, ultranest can parallelize
+its execution to multiple cores.
+
+Using multiple cores
+--------------------
+
 To use multiple processors and cores, scaling UltraNest all the way to 
 large computing clusters, you can parallelise the program with MPI:
 
-No code changes are required. You need to install MPI (for example, OpenMPI) and mpi4py (pip install mpi4py).
-Then run:
+* No code changes are required. 
+* You need to install MPI (for example, OpenMPI) and mpi4py (pip install mpi4py).
+* Then run your script with mpiexec:
 
 .. code-block:: bash
         
         mpiexec -np 4 python3 gauss.py --x_dim=100 --num_live_points=400 --slice  --slice_steps=100
 
 
+This launches four scripts which are started in parallel, and ultranest 
+coordinates them.
+
+Use as many scripts as processors. If memory is a concern, look into shared memory solutions.
+
 More features
 ===================
 
-To find more features such as ...
+To find more features and details such as ...
 
 * Circular/wrapped parameter spaces
 * Model comparison of empirical and physical models
 * Quantifying posterior uncertainty
 * Visualisation and interoperation with getdist, pandas, matplotlib, ...
 * Using in a Jupyter notebook
+* all the step samplers and slice samplers available
 
 ... see the tutorials!

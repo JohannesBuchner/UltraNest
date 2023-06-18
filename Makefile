@@ -1,4 +1,4 @@
-.PHONY: clean clean-test clean-pyc clean-build docs help
+.PHONY: clean clean-test clean-pyc clean-build docs servedocs help install release release-test dist 
 .DEFAULT_GOAL := help
 
 define BROWSER_PYSCRIPT
@@ -43,6 +43,7 @@ clean-build: ## remove build artifacts
 clean-pyc: ## remove Python file artifacts
 	find . -name '*.pyc' -exec rm -f {} +
 	find . -name '*.pyo' -exec rm -f {} +
+	find . -name '*.pyx.py' -exec rm -f {} +
 	find . -name '*~' -exec rm -f {} +
 	find . -name '__pycache__' -exec rm -fr {} +
 	find . -name '*.so' -exec rm -f {} +
@@ -82,15 +83,20 @@ docs: ## generate Sphinx HTML documentation, including API docs
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html O=-jauto
 	sed --in-place '/href="ultranest\/mlfriends.html"/d' docs/build/html/_modules/index.html
+	sed --in-place '/href="ultranest\/stepfuncs.html"/d' docs/build/html/_modules/index.html
 	$(BROWSER) docs/build/html/index.html
 
 servedocs: docs ## compile the docs watching for changes
 	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
 
-release: dist ## package and upload a release
+release-test: install
 	rm -rf logs/features-*
-	echo testfeatures/runsettings-*-iterated.json | xargs --max-args=1 mpiexec -np 3 coverage run --parallel-mode examples/testfeatures.py
-	bash -c 'echo $$RANDOM' | xargs mpiexec -np 5 coverage run --parallel-mode examples/testfeatures.py --random --seed
+	grep -v iterated examples/runfeatures.sh | sed 's,python3,mpiexec -np 5 coverage3 run --parallel-mode,g' | OMP_NUM_THREADS=4 bash
+	grep    iterated examples/runfeatures.sh | sed 's,python3,mpiexec -np 3 coverage3 run --parallel-mode,g' | OMP_NUM_THREADS=4 bash
+	#echo testfeatures/runsettings-*-iterated.json | xargs --max-args=1 mpiexec -np 3 coverage run --parallel-mode examples/testfeatures.py
+	#grep -- --random examples/runfeatures.sh | sed s,python3,,g | xargs -rt --max-lines=1 mpiexec -np 5 coverage run --parallel-mode 
+
+release: release-test dist ## package and upload a release
 	twine upload -s dist/*.tar.gz
 
 dist: clean ## builds source and wheel package
@@ -99,4 +105,4 @@ dist: clean ## builds source and wheel package
 	ls -l dist
 
 install: clean ## install the package to the active Python's site-packages
-	$(PYTHON) setup.py install
+	$(PYTHON) setup.py install --user

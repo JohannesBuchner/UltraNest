@@ -24,8 +24,10 @@ from .viz import get_default_viz_callback, nicelogger
 from .ordertest import UniformOrderAccumulator
 from .netiter import PointPile, SingleCounter, MultiCounter, BreadthFirstIterator, TreeNode, count_tree_between, find_nodes_before, logz_sequence
 from .netiter import dump_tree, combine_results
+from .hotstart import get_auxiliary_contbox_parameterization
 
-__all__ = ['ReactiveNestedSampler', 'NestedSampler', 'read_file']
+
+__all__ = ['ReactiveNestedSampler', 'NestedSampler', 'read_file', 'warmstart_from_similar_file']
 
 
 def _get_cumsum_range(pi, dp):
@@ -38,7 +40,7 @@ def _get_cumsum_range(pi, dp):
     dp: float
         Quantile (between 0 and 0.5).
 
-    Returns:
+    Returns
     ---------
     index_lo: int
         Index of the item corresponding to quantile ``dp``.
@@ -63,7 +65,7 @@ def _sequentialize_width_sequence(minimal_widths, min_width):
     min_width: int
         Minimum width everywhere.
 
-    Returns:
+    Returns
     ---------
     Lsequence: list of (L, width)
         A sequence of L points and the expected tree width at and above it.
@@ -436,6 +438,8 @@ class NestedSampler(object):
         vectorized: bool
             If true, loglike and transform function can receive arrays
             of points.
+        run_num: int
+            unique run number. If None, will be automatically incremented.
 
         """
         self.paramnames = param_names
@@ -913,6 +917,91 @@ class NestedSampler(object):
             plt.close()
 
 
+def warmstart_from_similar_file(
+    usample_filename,
+    param_names,
+    loglike,
+    transform,
+    vectorized=False,
+    min_num_samples=50
+):
+    """Warmstart from a previous run.
+
+    Usage::
+
+        aux_paramnames, aux_log_likelihood, aux_prior_transform, vectorized = warmstart_from_similar_file(
+            'model1/chains/weighted_post_untransformed.txt', parameters, log_likelihood_with_background, prior_transform)
+
+        aux_sampler = ReactiveNestedSampler(aux_paramnames, aux_log_likelihood, transform=aux_prior_transform,vectorized=vectorized)
+        aux_sampler.run()
+        posterior_samples = aux_results['samples'][:,-1]
+
+    See :py:func:`ultranest.hotstart.get_auxiliary_contbox_parameterization`
+    for more information.
+
+    The remaining parameters have the same meaning as in :py:class:`ReactiveNestedSampler`.
+
+    Parameters
+    ------------
+    usample_filename: str
+        'directory/chains/weighted_post_untransformed.txt'
+        contains posteriors in u-space (untransformed) of a previous run.
+        Columns are weight, logl, param1, param2, ...
+    min_num_samples: int
+        minimum number of samples in the usample_filename file required.
+        Too few samples will give a poor approximation.
+
+    Other Parameters
+    -----------------
+    param_names: list
+    loglike: function
+    transform: function
+    vectorized: bool
+
+    Returns
+    ---------
+    aux_param_names: list
+        new parameter list
+    aux_loglikelihood: function
+        new loglikelihood function
+    aux_transform: function
+        new prior transform function
+    vectorized: bool
+        whether the new functions are vectorized
+    """
+    # load samples
+    try:
+        with open(usample_filename) as f:
+            old_param_names = f.readline().lstrip('#').strip().split()
+            auxiliary_usamples = np.loadtxt(f)
+    except IOError:
+        warnings.warn('not hot-resuming, could not load file "%s"' % usample_filename)
+        return param_names, loglike, transform, vectorized
+
+    ulogl = auxiliary_usamples[:,1]
+    uweights_full = auxiliary_usamples[:,0] * np.exp(ulogl - ulogl.max())
+    mask = uweights_full > 0
+    uweights = uweights_full[mask]
+    uweights /= uweights.sum()
+    upoints = auxiliary_usamples[mask,2:]
+    del auxiliary_usamples
+
+    nsamples = len(upoints)
+    if nsamples < min_num_samples:
+        raise ValueError('file "%s" has too few samples (%d) to hot-resume' % (usample_filename, nsamples))
+
+    # check that the parameter meanings have not changed
+    if old_param_names != ['weight', 'logl'] + param_names:
+        raise ValueError('file "%s" has parameters %s, expected %s, cannot hot-resume.' % (usample_filename, old_param_names, param_names))
+
+    return get_auxiliary_contbox_parameterization(
+        param_names, loglike=loglike, transform=transform,
+        vectorized=vectorized,
+        upoints=upoints,
+        uweights=uweights,
+    )
+
+
 class ReactiveNestedSampler(object):
     """Nested sampler with reactive exploration strategy.
 
@@ -971,6 +1060,10 @@ class ReactiveNestedSampler(object):
             are updated until the live point order differs.
             Otherwise, behaves like resume.
 
+        run_num: int or None
+            If resume=='subfolder', this is the subfolder number.
+            Automatically increments if set to None.
+
         wrapped_params: list of bools
             indicating whether this parameter wraps around (circular parameter).
 
@@ -1015,6 +1108,7 @@ class ReactiveNestedSampler(object):
 
         self.sampler = 'reactive-nested'
         self.x_dim = x_dim
+        self.transform_layer_class = AffineLayer if x_dim > 1 else ScalingLayer
         self.derivedparamnames = derived_param_names
         self.num_bootstraps = int(num_bootstraps)
         num_derived = len(self.derivedparamnames)
@@ -1289,10 +1383,75 @@ class ReactiveNestedSampler(object):
 
         return target_min_num_children
 
+    def _widen_roots_beyond_initial_plateau(self, nroots, num_warn=100000, num_stop=500000):
+        """Widen roots, but populate ahead of initial plateau.
+
+        calls _widen_roots, and if there are several points with the same
+        value equal to the lowest loglikelihood, widens some more until
+        there are `nroots`-1 that are different to the lowest
+        loglikelihood value.
+
+        Parameters
+        -----------
+        nroots: int
+            Number of root live points, after the plateau is traversed.
+
+        num_warn: int
+            Warn if the number of root live points reached this.
+
+        num_stop: int
+            Do not increasing the number of root live points beyond this limit.
+
+        """
+        nroots_needed = nroots
+        while True:
+            self._widen_roots(nroots_needed)
+            Ls = np.array([node.value for node in self.root.children])
+            Lmin = np.min(Ls)
+            if self.log and nroots_needed > num_warn:
+                self.logger.warn("""The log-likelihood has a large plateau with L=%g.
+
+Probably you are returning a low value when the parameters are problematic/unphysical.
+ultranest can handle this correctly, by discarding live points with the same loglikelihood.
+(arxiv:2005.08602 arxiv:2010.13884). To mitigate running out of live points,
+the initial number of live points is increased. But now this has reached over %d points.
+
+You can avoid this making the loglikelihood increase towards where the good region is.
+For example, let's say you have two parameters where the sum must be below 1. Replace this:
+
+    if params[0] + params[1] > 1:
+         return -1e300
+
+with:
+
+    if params[0] + params[1] > 1:
+         return -1e300 * (params[0] + params[1])
+
+The current strategy will continue until %d live points are reached.
+It is safe to ignore this warning.""", Lmin, num_warn, num_stop)
+
+            if nroots_needed > num_stop:
+                break
+            P = (Ls == Lmin).sum()
+            if P > 1 and len(Ls) - P + 1 < nroots:
+                # guess the number of points needed: P-1 are useless
+                self.logger.debug(
+                    'Found plateau of %d/%d initial points at L=%g. '
+                    'Avoid this by a continuously increasing loglikelihood towards good regions.',
+                    P, nroots_needed, Lmin)
+                nroots_needed = nroots_needed + (P - 1)
+            else:
+                break
+
     def _widen_roots(self, nroots):
         """Ensure root has `nroots` children.
 
         Sample from prior to fill up (if needed).
+
+        Parameters
+        -----------
+        nroots: int
+            Number of root live points, after the plateau is traversed.
         """
         if self.log and len(self.root.children) > 0:
             self.logger.info('Widening roots to %d live points (have %d already) ...', nroots, len(self.root.children))
@@ -1390,11 +1549,14 @@ class ReactiveNestedSampler(object):
     def _adaptive_strategy_advice(self, Lmin, parallel_values, main_iterator, minimal_widths, frac_remain, Lepsilon):
         """Check if integration is done.
 
+        Returns range where more sampling is needed
+
         Returns
         --------
-        Llo, Lhi: floats
-            range where more sampling is needed
-            if done, both are nan
+        Llo: float
+            lower log-likelihood bound, nan if done
+        Lhi: float
+            lower log-likelihood bound, nan if done
 
         Parameters
         -----------
@@ -1408,7 +1570,8 @@ class ReactiveNestedSampler(object):
             current width required
         frac_remain: float
             maximum fraction of integral in remainder for termination
-
+        Lepsilon: float
+            loglikelihood accuracy threshold
         """
         Ls = parallel_values.copy()
         Ls.sort()
@@ -1656,14 +1819,21 @@ class ReactiveNestedSampler(object):
             number of points to try to sample at once
         active_u: array of floats
             current live points
-        active_values
+        active_values: array
             loglikelihoods of current live points
 
         """
-        # this is extremely cautious and slows down performance in high-d
-        # assert self.region.inside(active_u).any(), \
-        #     ("None of the live points satisfies the current region!",
-        #      self.region.maxradiussq, self.region.u, self.region.unormed, active_u)
+        if self.stepsampler is None:
+            assert self.region.inside(active_u).any(), \
+                ("None of the live points satisfies the current region!",
+                 self.region.maxradiussq, self.region.u, self.region.unormed, active_u,
+                 getattr(self.region, 'bbox_lo'),
+                 getattr(self.region, 'bbox_hi'),
+                 getattr(self.region, 'ellipsoid_cov'),
+                 getattr(self.region, 'ellipsoid_center'),
+                 getattr(self.region, 'ellipsoid_invcov'),
+                 getattr(self.region, 'ellipsoid_cov'),
+                 )
 
         nit = 0
         while True:
@@ -1793,10 +1963,7 @@ class ReactiveNestedSampler(object):
         if self.region is None:
             # if self.log:
             #    self.logger.debug("building first region ...")
-            if self.x_dim > 1:
-                self.transformLayer = AffineLayer(wrapped_dims=self.wrapped_axes)
-            else:
-                self.transformLayer = ScalingLayer(wrapped_dims=self.wrapped_axes)
+            self.transformLayer = self.transform_layer_class(wrapped_dims=self.wrapped_axes)
             self.transformLayer.optimize(active_u, active_u, minvol=minvol)
             self.region = self.region_class(active_u, self.transformLayer)
             self.region_nodes = active_node_ids.copy()
@@ -1899,7 +2066,7 @@ class ReactiveNestedSampler(object):
                 # check if live points are numerically colliding or become linearly dependent
                 self.live_points_healthy = len(active_u) > self.x_dim and \
                     np.all(np.sum(active_u[1:] != active_u[0], axis=0) > self.x_dim) and \
-                    np.linalg.matrix_rank(nextregion.ellipsoid_cov)
+                    np.linalg.matrix_rank(nextregion.ellipsoid_cov) == self.x_dim
 
                 assert (nextregion.u == active_u).all()
                 assert np.allclose(nextregion.unormed, nextregion.transformLayer.transform(active_u))
@@ -1908,7 +2075,7 @@ class ReactiveNestedSampler(object):
                 good_region = nextregion.inside(active_u).all()
                 # assert good_region
                 if not good_region and self.log:
-                    self.logger.warning("Proposed region is inconsistent (maxr=%f,enlarge=%f) and will be skipped.", r, f)
+                    self.logger.debug("Proposed region is inconsistent (maxr=%g,enlarge=%g) and will be skipped.", r, f)
 
                 # avoid cases where every point is its own cluster,
                 # and even the largest cluster has fewer than x_dim points
@@ -2011,8 +2178,14 @@ class ReactiveNestedSampler(object):
             maximum number of likelihood function calls allowed
         max_iters: int
             maximum number of nested sampling iteration allowed
-        Llo, Lhi, minimal_widths_sequence, target_min_num_children:
-            Current strategy parameters
+        Llo: float
+            lower loglikelihood bound for the strategy
+        Lhi: float
+            upper loglikelihood bound for the strategy
+        minimal_widths_sequence: list
+            list of likelihood intervals with minimum number of live points
+        target_min_num_children:
+            minimum number of live points currently targeted
         live_points_healthy: bool
             indicates whether the live points have become
             linearly dependent (covariance not full rank)
@@ -2096,6 +2269,8 @@ class ReactiveNestedSampler(object):
             insertion_test_window=10,
             insertion_test_zscore_threshold=4,
             region_class=MLFriends,
+            widen_before_initial_plateau_num_warn=100000,
+            widen_before_initial_plateau_num_max=500000,
     ):
         """Run until target convergence criteria are fulfilled.
 
@@ -2117,7 +2292,7 @@ class ReactiveNestedSampler(object):
         viz_callback: function
             callback function when region was rebuilt. Allows to
             show current state of the live points.
-            See :func:`nicelogger` or :class:`LivePointsWidget`.
+            See :py:func:`nicelogger` or :py:class:`LivePointsWidget`.
             If no output desired, set to False.
 
         dlogz: float
@@ -2164,9 +2339,23 @@ class ReactiveNestedSampler(object):
         insertion_test_window: int
             Number of iterations after which the insertion order test is reset.
 
-        region_class: MLFriends or RobustEllipsoidRegion
+        region_class: :py:class:`MLFriends` or :py:class:`RobustEllipsoidRegion` or :py:class:`SimpleRegion`
             Whether to use MLFriends+ellipsoidal+tellipsoidal region (better for multi-modal problems)
-            or just ellipsoidal sampling (faster for high-dimensional, gaussian-like problems).
+            or just ellipsoidal sampling (faster for high-dimensional, gaussian-like problems)
+            or a axis-aligned ellipsoid (fastest, to be combined with slice sampling).
+
+        widen_before_initial_plateau_num_warn: int
+            If a likelihood plateau is encountered, increase the number
+            of initial live points so that once the plateau is traversed,
+            *min_num_live_points* live points remain.
+            If the number exceeds *widen_before_initial_plateau_num_warn*,
+            a warning is raised.
+
+        widen_before_initial_plateau_num_max: int
+            If a likelihood plateau is encountered, increase the number
+            of initial live points so that once the plateau is traversed,
+            *min_num_live_points* live points remain, but not more than
+            *widen_before_initial_plateau_num_warn*.
         """
         for result in self.run_iter(
             update_interval_volume_fraction=update_interval_volume_fraction,
@@ -2183,6 +2372,8 @@ class ReactiveNestedSampler(object):
             insertion_test_window=insertion_test_window,
             insertion_test_zscore_threshold=insertion_test_zscore_threshold,
             region_class=region_class,
+            widen_before_initial_plateau_num_warn=widen_before_initial_plateau_num_warn,
+            widen_before_initial_plateau_num_max=widen_before_initial_plateau_num_max,
         ):
             if self.log:
                 self.logger.debug("did a run_iter pass!")
@@ -2194,7 +2385,7 @@ class ReactiveNestedSampler(object):
 
     def run_iter(
             self,
-            update_interval_volume_fraction=0.2,
+            update_interval_volume_fraction=0.8,
             update_interval_ncall=None,
             log_interval=None,
             dlogz=0.5,
@@ -2211,7 +2402,9 @@ class ReactiveNestedSampler(object):
             viz_callback='auto',
             insertion_test_window=10000,
             insertion_test_zscore_threshold=2,
-            region_class=MLFriends
+            region_class=MLFriends,
+            widen_before_initial_plateau_num_warn=100000,
+            widen_before_initial_plateau_num_max=500000,
     ):
         """Iterate towards convergence.
 
@@ -2221,6 +2414,10 @@ class ReactiveNestedSampler(object):
                 print('lnZ = %(logz).2f +- %(logzerr).2f' % result)
 
         Parameters as described in run() method.
+
+        Yields
+        ------
+        results: dict
         """
         # frac_remain=1  means 1:1 -> dlogz=log(0.5)
         # frac_remain=0.1 means 1:10 -> dlogz=log(0.1)
@@ -2259,7 +2456,7 @@ class ReactiveNestedSampler(object):
         if viz_callback == 'auto':
             viz_callback = get_default_viz_callback()
 
-        self._widen_roots(min_num_live_points)
+        self._widen_roots_beyond_initial_plateau(min_num_live_points)
 
         Llo, Lhi = -np.inf, np.inf
         Lmax = -np.inf
@@ -2319,7 +2516,7 @@ class ReactiveNestedSampler(object):
             self.ib = 0
             self.samples = []
             if self.draw_multiple:
-                ndraw = 100
+                ndraw = self.ndraw_min
             else:
                 ndraw = 40
             self.pointstore.reset()
@@ -2416,6 +2613,7 @@ class ReactiveNestedSampler(object):
                                 region=self.region, transformLayer=self.transformLayer,
                                 region_fresh=region_fresh,
                             )
+                        if self.log:
                             self.pointstore.flush()
 
                     if nlive < cluster_num_live_points * nclusters and improvement_it < max_num_improvement_loops:
@@ -2453,7 +2651,7 @@ class ReactiveNestedSampler(object):
                     # move also the ellipsoid
                     self.region.ellipsoid_center = np.mean(self.region.u, axis=0)
                     if self.tregion:
-                        self.tregion.ellipsoid_center = np.mean(active_p, axis=0)
+                        self.tregion.update_center(np.mean(active_p, axis=0))
 
                     # if we track the cluster assignment, then in the next round
                     # the ids with the same members are likely to have the same id
@@ -2486,8 +2684,8 @@ class ReactiveNestedSampler(object):
                                 np.inf if ncall_here == 0 else it_here * 100 / ncall_here,
                                 nlive))
                             sys.stdout.flush()
-                        self.logger.debug('iteration=%d, ncalls=%d, logz=%.2f, remainder_fraction=%.4f%%, Lmin=%.2f, Lmax=%.2f' % (
-                            it, self.ncall, main_iterator.logZ,
+                        self.logger.debug('iteration=%d, ncalls=%d, regioncalls=%d, ndraw=%d, logz=%.2f, remainder_fraction=%.4f%%, Lmin=%.2f, Lmax=%.2f' % (
+                            it, self.ncall, self.ncall_region, ndraw, main_iterator.logZ,
                             100 * main_iterator.remainder_fraction, Lmin, main_iterator.Lmax))
 
                         # if efficiency becomes low, bulk-process larger arrays
@@ -2599,7 +2797,7 @@ class ReactiveNestedSampler(object):
             if dlogz_min_num_live_points > self.min_num_live_points:
                 # more live points needed throughout to reach target
                 self.min_num_live_points = dlogz_min_num_live_points
-                self._widen_roots(self.min_num_live_points)
+                self._widen_roots_beyond_initial_plateau(self.min_num_live_points)
 
             elif Llo <= Lhi:
                 # if self.log:
@@ -2669,9 +2867,9 @@ class ReactiveNestedSampler(object):
 
             np.savetxt(
                 os.path.join(self.logs['info'], 'post_summary.csv'),
-                [np.hstack([results['posterior'][k] for k in ('mean', 'stdev', 'median', 'errlo', 'errup')])],
-                header=', '.join(['"{0}_mean", "{0}_stdev", "{0}_median", "{0}_errlo", "{0}_errup"'.format(k)
-                                  for k in self.paramnames + self.derivedparamnames]),
+                [[results['posterior'][k][i] for i in range(self.num_params) for k in ('mean', 'stdev', 'median', 'errlo', 'errup')]],
+                header=','.join(['"{0}_mean","{0}_stdev","{0}_median","{0}_errlo","{0}_errup"'.format(k)
+                                 for k in self.paramnames + self.derivedparamnames]),
                 delimiter=',', comments='',
             )
 
@@ -2734,7 +2932,7 @@ class ReactiveNestedSampler(object):
                     hi = min(self.transform_limits[i,1], hi + 2 * step)
                     H, edges = np.histogram(v, bins=np.linspace(lo, hi, 40))
                     lo, hi = edges[0], edges[-1]
-                    
+
                     dist = ''.join([' ▁▂▃▄▅▆▇██'[i] for i in np.ceil(H * 7 / H.max()).astype(int)])
                     print('    %-20s: %-6s│%s│%-6s    %s +- %s' % (p, fmt % lo, dist, fmt % hi, fmt % med, fmt % sigma))
                 except:
@@ -2747,7 +2945,7 @@ class ReactiveNestedSampler(object):
         """Make corner, run and trace plots.
 
         calls:
-        
+
         * plot_corner()
         * plot_run()
         * plot_trace()

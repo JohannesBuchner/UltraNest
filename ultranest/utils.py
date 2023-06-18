@@ -52,7 +52,7 @@ def create_logger(module_name, log_dir=None, level=logging.INFO):
         formatter = logging.Formatter('[{}] %(message)s'.format(module_name))
         handler.setFormatter(formatter)
         logger.addHandler(handler)
-
+        logger.addHandler(logging.NullHandler())
     return logger
 
 
@@ -130,7 +130,9 @@ def vectorize(function):
         """Vectorized version of function."""
         return np.asarray([function(arg) for arg in args])
 
-    vectorized.__name__ = function.__name__
+    # give a user-friendly name to the vectorized version of the function
+    # getattr works around methods, which do not have __name__
+    vectorized.__name__ = getattr(function, '__name__', vectorized.__name__)
     return vectorized
 
 
@@ -152,6 +154,8 @@ def resample_equal(samples, weights, rstate=None):
         Shape is (N, ...), with N the number of samples.
     weights : `~numpy.ndarray`
         Weight of each sample. Shape is (N,).
+    rstate : `~numpy.random.RandomState`
+        random number generator. If not provided, numpy.random is used.
 
     Returns
     -------
@@ -457,3 +461,27 @@ def distributed_work_chunk_size(num_total_tasks, mpi_rank, mpi_size):
         total number of processes
     """
     return (num_total_tasks + mpi_size - 1 - mpi_rank) // mpi_size
+
+
+def submasks(mask, *masks):
+    """
+    Get indices for an array, so that
+    array[indices] is equivalent to a[mask][mask1][mask2].
+
+    Parameters
+    ----------
+    mask : np.array(dtype=bool)
+        selection of some array
+    masks : list of np.array(dtype=bool)
+        each further mask is a subselection
+
+    Returns
+    -------
+    indices : np.array(dtype=int)
+        indices which select the subselection in the original array
+
+    """
+    indices, = np.where(mask)
+    for othermask in masks:
+        indices = indices[othermask]
+    return indices

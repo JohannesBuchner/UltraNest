@@ -2,6 +2,35 @@
 Release Notes
 ==============
 
+3.5.0 (2022-09-05)
+------------------
+
+* add hot-resume: resume from a similar fit (with different data)
+* fix post_summary.csv column order
+* fix build handling for non-pip systems (pyproject.toml)
+* more efficient handling of categorical variables
+
+
+3.4.0 (2022-04-05)
+------------------
+
+* add differential evolution proposal for slice sampling, recommend it
+* fix revert of step sampler when run out of constraint, in MPI
+* add SimpleRegion: axis-aligned ellipsoidal for very high-d.
+
+
+3.3.3 (2021-09-17)
+------------------
+
+* pretty marginal posterior plot to stdout
+* avoid non-terminations when logzerr cannot be reached
+* add RobustEllipsoidRegion: ellipsoidal without MLFriends for high-d.
+* add WrappingEllipsoid: for additional rejection.
+* bug fixes on rank order test
+* add resume-similar
+* modular step samplers
+
+
 3.0.0 (2020-10-03)
 ------------------
 

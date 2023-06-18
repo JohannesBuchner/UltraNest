@@ -192,7 +192,7 @@ class HDF5PointStore(FilePointStore):
         """Load from data file."""
         if 'points' not in self.fileobj:
             self.fileobj.create_dataset(
-                'points', dtype=np.float,
+                'points', dtype=float,
                 shape=(0, self.ncols), maxshape=(None, self.ncols))
 
         self.nrows, ncols = self.fileobj['points'].shape

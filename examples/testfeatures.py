@@ -12,7 +12,7 @@ import hashlib
 
 
 def get_arg_hash(runargs):
-    return hashlib.md5(str(sorted(runargs.items())).encode()).hexdigest()[:10]
+    return hashlib.md5(str(runargs).encode()).hexdigest()[:10]
 
 
 def main(args):
@@ -112,7 +112,7 @@ def main(args):
             L2 = np.log(0.5 * rv2a.pdf(theta[:,1]) + 0.5 * rv2b.pdf(theta[:,1]))
             Lrest = np.sum([rv.logpdf(t) for rv, t in zip(rv_rest, theta[:,2:].transpose())], axis=0)
             like = L1 + L2 + Lrest
-            like = np.where(like < -300, -300 - ((np.asarray(theta) - 0.5)**2).sum(), like)
+            like = np.where(like < -1e100, -1e100 - ((np.asarray(theta) - 0.5)**2).sum(), like)
             assert like.shape == (len(theta),), (like.shape, theta.shape)
             return like
 
@@ -120,6 +120,7 @@ def main(args):
             return x
 
     from ultranest import ReactiveNestedSampler
+    from ultranest.mlfriends import MLFriends, RobustEllipsoidRegion, SimpleRegion, ScalingLayer
     sampler = ReactiveNestedSampler(
         paramnames, loglike,
         transform=transform if args.pass_transform else None,
@@ -127,6 +128,11 @@ def main(args):
         resume='resume' if args.resume else 'overwrite',
         wrapped_params=wrapped_params,
     )
+    if hasattr(args, 'axis_aligned') and args.axis_aligned:
+        sampler.transform_layer_class = ScalingLayer
+        region_class = SimpleRegion
+    else:
+        region_class = RobustEllipsoidRegion if hasattr(args, 'ellipsoidal') and args.ellipsoidal else MLFriends
     print("MPI:", sampler.mpi_size, sampler.mpi_rank)
     for result in sampler.run_iter(
         update_interval_volume_fraction=args.update_interval_iter_fraction,
@@ -138,6 +144,7 @@ def main(args):
         cluster_num_live_points=args.cluster_num_live_points,
         min_num_live_points=args.num_live_points,
         max_ncalls=int(args.max_ncalls),
+        region_class=region_class,
     ):
         sampler.print_results()
         print(
@@ -166,6 +173,7 @@ def main(args):
 def run_safely(runargs):
     id = get_arg_hash(runargs)
     if os.path.exists('testfeatures/%s.done' % id):
+        print("not rerunning %s" % id)
         return
 
     print("Running %s with options:" % id, runargs)
@@ -254,6 +262,8 @@ if __name__ == '__main__':
             min_ess = choose([0, 4000]),
             max_iters = choose([None, 10000]),
             max_ncalls = choose([10000000., 10000., 100000.]),
+            axis_aligned = choose([False, True]),
+            ellipsoidal = choose([False, True]),
         )
         if not progargs.random:
             key = i

@@ -27,6 +27,8 @@ Welcome to UltraNest's documentation!
    example-line.ipynb
    example-outliers.ipynb
    example-sine-bayesian-workflow.ipynb
+   example-warmstart.ipynb
+   debugging.ipynb
 
 .. include:: ../README.rst
 

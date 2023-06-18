@@ -5,8 +5,12 @@ include README.rst
 include requirements_dev.txt
 include pip-requirements.txt
 
+recursive-include * *.pyx
+recursive-include * *.pxd
+
 recursive-include tests *
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]
+recursive-exclude * *.c
 
 recursive-include docs *.rst conf.py Makefile make.bat *.jpg *.png *.gif

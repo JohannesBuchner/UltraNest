@@ -14,17 +14,21 @@ def stop_criterion(thetaminus, thetaplus, rminus, rplus):
     """ Compute the stop condition in the main loop
     dot(dtheta, rminus) >= 0 & dot(dtheta, rplus >= 0)
 
-    INPUTS
+    Parameters
     ------
-    thetaminus, thetaplus: ndarray[float, ndim=1]
-        under and above position
-    rminus, rplus: ndarray[float, ndim=1]
-        under and above momentum
+    thetaminus: ndarray[float, ndim=1]
+        under position
+    thetaplus: ndarray[float, ndim=1]
+        above position
+    rminus: ndarray[float, ndim=1]
+        under momentum
+    rplus: ndarray[float, ndim=1]
+        above momentum
 
-    OUTPUTS
+    Returns
     -------
     criterion: bool
-        return if the condition is valid
+        whether the condition is valid
     """
     dtheta = thetaplus - thetaminus
     return (np.dot(dtheta, rminus.T) >= 0) & (np.dot(dtheta, rplus.T) >= 0)
@@ -197,7 +201,6 @@ def find_beta_params_dynamic(d, u10):
     """ Define auxiliary distribution taking into account
     kinetic energy of a d-dimensional HMC.
     Make exp(-d/2) quantile to be at u=0.1, and 95% quantile at u=0.5. """
-    del d
 
     u50 = (u10 + 1) / 2.
 

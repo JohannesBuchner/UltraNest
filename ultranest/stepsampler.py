@@ -17,11 +17,13 @@ def generate_random_direction(ui, region, scale=1):
 
     Parameters
     -----------
+    ui: array
+        starting point
     region: MLFriends object
         current region (not used)
     scale: float
         length of direction vector
-    
+
     Returns
     --------
     v: array
@@ -38,8 +40,12 @@ def generate_cube_oriented_direction(ui, region, scale=1):
 
     Parameters
     -----------
+    ui: array
+        starting point
     region: MLFriends object
         current region (not used)
+    scale: float
+        factor to multiple the vector
 
     Returns
     --------
@@ -56,6 +62,111 @@ def generate_cube_oriented_direction(ui, region, scale=1):
     return v
 
 
+def generate_cube_oriented_differential_direction(ui, region, scale=1):
+    """Draw a unit direction vector in direction of a random unit cube axes.
+
+    Guess the length from the difference of two points in that axis.
+
+    Parameters
+    -----------
+    ui: array
+        starting point
+    region: MLFriends object
+        current region
+    scale: float
+        factor to multiple the vector
+
+    Returns
+    --------
+    v: array
+        new direction vector
+    """
+    nlive, ndim = region.u.shape
+    v = np.zeros(ndim)
+
+    # choose axis
+    j = np.random.randint(ndim)
+    # choose pair
+    while v[j] == 0:
+        i = np.random.randint(nlive)
+        i2 = np.random.randint(nlive - 1)
+        if i2 >= i:
+            i2 += 1
+
+        v[j] = (region.u[i,j] - region.u[i2,j]) * scale
+
+    return v
+
+
+def generate_differential_direction(ui, region, scale=1):
+    """Draw a vector using the difference between two points.
+
+    Parameters
+    -----------
+    ui: array
+        starting point
+    region: MLFriends object
+        current region
+    scale: float
+        factor to multiple the vector
+
+    Returns
+    --------
+    v: array
+        new direction vector
+    """
+    nlive, ndim = region.u.shape
+    # choose pair
+    i = np.random.randint(nlive)
+    i2 = np.random.randint(nlive - 1)
+    if i2 >= i:
+        i2 += 1
+
+    # use doubling procedure to identify left and right maxima borders
+    v = (region.u[i,:] - region.u[i2,:]) * scale
+    return v
+
+
+def generate_partial_differential_direction(ui, region, scale=1):
+    """Draw a unit direction vector in direction of a random unit cube axes.
+
+    Parameters
+    -----------
+    ui: array
+        starting point
+    region: MLFriends object
+        current region
+    scale: float
+        factor to multiple the vector
+
+    Returns
+    --------
+    v: array
+        new direction vector
+    """
+    nlive, ndim = region.u.shape
+    # choose pair
+    i = np.random.randint(nlive)
+    while True:
+        i2 = np.random.randint(nlive - 1)
+        if i2 >= i:
+            i2 += 1
+
+        v = region.u[i] - region.u[i2]
+
+        mask = np.random.uniform(size=ndim) > 0.1
+        # at least one must be on
+        mask[np.random.randint(ndim)] = True
+        v[mask] = 0
+        if (v != 0).any():
+            # repeat if live points are identical
+            break
+    # use doubling procedure to identify left and right maxima borders
+    #v = np.zeros(ndim)
+    #v[mask] = (region.u[i,mask] - region.u[i2,mask]) * scale
+    return v
+
+
 def generate_region_oriented_direction(ui, region, scale=1):
     """Draw a random direction vector in direction of one of the `region` axes.
 
@@ -64,10 +175,12 @@ def generate_region_oriented_direction(ui, region, scale=1):
 
     Parameters
     -----------
+    ui: array
+        starting point
     region: MLFriends object
         current region
     scale: float
-        length of direction vector in t-space
+        factor to multiple the vector
 
     Returns
     --------
@@ -87,11 +200,13 @@ def generate_region_random_direction(ui, region, scale=1):
 
     Parameters
     -----------
+    ui: array
+        starting point
     region: MLFriends object
         current region
     scale: float:
         length of direction vector (in t-space)
-    
+
     Returns
     --------
     v: array
@@ -99,20 +214,20 @@ def generate_region_random_direction(ui, region, scale=1):
     """
     # choose axis in transformed space:
     v1 = np.random.normal(0, 1, size=len(ui))
-    v1 *= scale / (v1**2).sum()**0.5
+    v1 *= scale / np.linalg.norm(v1)
     v = np.dot(region.transformLayer.axes, v1)
     return v
 
 
-def generate_mixture_random_direction(ui, region, scale=1, uniform_weight=1e-6):
-    """Draw from a mix of a ball proposal and a region-shaped proposal.
+def generate_mixture_random_direction(ui, region, scale=1):
+    """Draw either from a region-direction or a unit axis.
 
     Parameters
     -----------
     region: MLFriends
         region
-    uniform_weight: float
-        sets the weight for the equal-axis ball contribution
+    ui: array
+        vector of starting point
     scale: float
         length of the vector.
 
@@ -121,13 +236,12 @@ def generate_mixture_random_direction(ui, region, scale=1, uniform_weight=1e-6):
     v: array
         new direction vector
     """
-    v1 = generate_random_direction(ui, region)
-    v1 /= (v1**2).sum()**0.5
-    v2 = generate_region_random_direction(ui, region)
-    v2 /= (v2**2).sum()**0.5
-    v = (v1 * uniform_weight + v2 * (1 - uniform_weight))
-    v *= scale * (v2**2).sum()**0.5
-    return v
+    if np.random.uniform() < 0.5:
+        # DE proposal
+        return generate_differential_direction(ui, region, scale=scale)
+    else:
+        # region-oriented random axis proposal
+        return generate_region_oriented_direction(ui, region, scale=scale)
 
 
 def _inside_region(region, unew, uold):
@@ -157,7 +271,7 @@ def inside_region(region, unew, uold):
         point to check
     uold: array
         not used
-    
+
     Returns
     --------
     v: array
@@ -165,6 +279,7 @@ def inside_region(region, unew, uold):
     """
     del uold
     return region.inside(unew)
+
 
 def adapt_proposal_total_distances(region, history, mean_pair_distance, ndim):
     # compute mean vector of each proposed jump
@@ -176,6 +291,7 @@ def adapt_proposal_total_distances(region, history, mean_pair_distance, ndim):
 
     return far_enough, [d2, mean_pair_distance]
 
+
 def adapt_proposal_total_distances_NN(region, history, mean_pair_distance, ndim):
     # compute mean vector of each proposed jump
     # compute total distance of all jumps
@@ -186,6 +302,7 @@ def adapt_proposal_total_distances_NN(region, history, mean_pair_distance, ndim)
 
     return far_enough, [d2, region.maxradiussq**0.5]
 
+
 def adapt_proposal_summed_distances(region, history, mean_pair_distance, ndim):
     # compute sum of distances from each jump
     tproposed = region.transformLayer.transform(np.asarray([u for u, _ in history]))
@@ -194,6 +311,7 @@ def adapt_proposal_summed_distances(region, history, mean_pair_distance, ndim):
 
     return far_enough, [d2, mean_pair_distance]
 
+
 def adapt_proposal_summed_distances_NN(region, history, mean_pair_distance, ndim):
     # compute sum of distances from each jump
     tproposed = region.transformLayer.transform(np.asarray([u for u, _ in history]))
@@ -201,6 +319,7 @@ def adapt_proposal_summed_distances_NN(region, history, mean_pair_distance, ndim
     far_enough = d2 > region.maxradiussq**0.5
 
     return far_enough, [d2, region.maxradiussq**0.5]
+
 
 def adapt_proposal_move_distances(region, history, mean_pair_distance, ndim):
     # compute distance from start to end
@@ -212,6 +331,7 @@ def adapt_proposal_move_distances(region, history, mean_pair_distance, ndim):
 
     return far_enough, [d2, region.maxradiussq**0.5]
 
+
 def adapt_proposal_move_distances_midway(region, history, mean_pair_distance, ndim):
     # compute distance from start to end
     ustart, _ = history[0]
@@ -222,6 +342,7 @@ def adapt_proposal_move_distances_midway(region, history, mean_pair_distance, nd
     far_enough = d2 > region.maxradiussq
 
     return far_enough, [d2, region.maxradiussq**0.5]
+
 
 class StepSampler(object):
     """Base class for a simple step sampler, staggering around.
@@ -244,8 +365,34 @@ class StepSampler(object):
         nsteps: int
             number of accepted steps until the sample is considered independent.
 
+            To find the right value, run nested sampling several time,
+            always doubling nsteps, until Z is stable.
+
+        generate_direction: function
+            direction proposal function.
+
+            Available are:
+
+            * :py:func:`generate_cube_oriented_direction` (slice sampling)
+            * :py:func:`generate_region_oriented_direction` (slice sampling on the whitened parameter space)
+            * :py:class:`SequentialDirectionGenerator` (sequential slice sampling on the whitened parameter space)
+            * :py:func:`generate_random_direction` (hit-and-run sampling)
+            * :py:func:`generate_region_random_direction` (hit-and-run sampling on the whitened parameter space)
+            * :py:func:`generate_cube_oriented_differential_direction` (slice sampling with better proposal scale)
+            * :py:func:`generate_differential_direction` (differential evolution slice proposal)
+            * :py:func:`generate_partial_differential_direction` (differential evolution slice proposal on only 10% of the parameters)
+            * :py:func:`generate_mixture_random_direction` (generate_differential_direction and generate_cube_oriented_differential_direction)
+
+            Additionally, :py:class:`OrthogonalDirectionGenerator` 
+            can be applied to a generate_direction.
+
+            When in doubt, try :py:func:`generate_mixture_random_direction`.
+            It combines efficient moves along the live point distribution,
+            with robustness against collapse to a subspace.
+            :py:func:`generate_cube_oriented_direction` works well too.
+
         adaptive_nsteps: False, 'proposal-distance', 'move-distance'
-            Select a strategy to adapt the number of steps. The strategies
+            Strategy to adapt the number of steps. The strategies
             make sure that:
 
             * 'move-distance' (recommended): distance between
@@ -267,6 +414,12 @@ class StepSampler(object):
               between chain points exceeds mean distance
               between pairs of live points.
 
+            Adapting can give usable results. However, strictly speaking,
+            detailed balance is not maintained, so the results can be biased.
+            You can use the logstat property to find out the `nsteps` learned
+            from one run (third column), and use the largest value for `nsteps`
+            of a fresh run.
+
         max_nsteps: int
             Maximum number of steps the adaptive_nsteps can reach.
 
@@ -286,7 +439,6 @@ class StepSampler(object):
         self.scale = 1.0
         self.max_nsteps = max_nsteps
         self.next_scale = self.scale
-        self.last = None, None
         self.nudge = 1.1**(1. / self.nsteps)
         self.nsteps_nudge = 1.01
         self.generate_direction = generate_direction
@@ -294,7 +446,7 @@ class StepSampler(object):
             False: None,
             'move-distance': adapt_proposal_move_distances,
             'move-distance-midway': adapt_proposal_move_distances_midway,
-            'proposal-total-distances': adapt_proposal_total_distances, 
+            'proposal-total-distances': adapt_proposal_total_distances,
             'proposal-total-distances-NN': adapt_proposal_total_distances_NN,
             'proposal-summed-distances': adapt_proposal_summed_distances,
             'proposal-summed-distances-NN': adapt_proposal_summed_distances_NN,
@@ -318,9 +470,9 @@ class StepSampler(object):
 
     def __str__(self):
         if not self.adaptive_nsteps:
-            return type(self).__name__ + '(nsteps=%d)' % self.nsteps
+            return type(self).__name__ + '(nsteps=%d, generate_direction=%s)' % (self.nsteps, self.generate_direction)
         else:
-            return type(self).__name__ + '(adaptive_nsteps=%s)' % self.adaptive_nsteps
+            return type(self).__name__ + '(adaptive_nsteps=%s, generate_direction=%s)' % (self.adaptive_nsteps, self.generate_direction)
 
     def plot(self, filename):
         """Plot sampler statistics.
@@ -393,7 +545,6 @@ class StepSampler(object):
         """
         if accepted:
             self.next_scale *= self.nudge
-            self.last = unew, Lnew
             self.history.append((unew.copy(), Lnew.copy()))
         else:
             self.next_scale /= self.nudge**10
@@ -472,17 +623,16 @@ class StepSampler(object):
             self.next_scale = self.scale / self.nudge**10
         # print("updating scale: %g -> %g" % (self.scale, self.next_scale))
         self.scale = self.next_scale
-        self.last = None, None
         self.history = []
         self.nrejects = 0
 
     def new_chain(self, region=None):
-        """Starts a new path, reset statistics."""
+        """Start a new path, reset statistics."""
         self.history = []
         self.nrejects = 0
 
     def region_changed(self, Ls, region):
-        """React to change of region. 
+        """React to change of region.
 
         Parameters
         -----------
@@ -491,7 +641,6 @@ class StepSampler(object):
         Ls: array
             loglikelihood values of the live points
         """
-
         if self.adaptive_nsteps_needs_mean_pair_distance:
             self.mean_pair_distance = region.compute_mean_pair_distance()
             # print("region changed. new mean_pair_distance: %g" % self.mean_pair_distance)
@@ -517,30 +666,20 @@ class StepSampler(object):
             number of draws to attempt simultaneously.
         plot: bool
             whether to produce debug plots.
-        tregion: WrappingEllipsoid
+        tregion: :py:class:`WrappingEllipsoid`
             optional ellipsoid in transformed space for rejecting proposals
 
         """
         # find most recent point in history conforming to current Lmin
-        ui, Li = self.last
-        if Li is not None and not Li >= Lmin:
-            print("wandered out of L constraint; resetting", ui[0])
-            del ui, Li
-            ui, Li = None, None
-
-        if Li is None and self.history:
-            # try to resume from a previous point above the current contour
-            for j, (uj, Lj) in enumerate(self.history[::-1]):
-                is_inside = not self.region_filter or (region.inside(uj.reshape((1,-1))) and (tregion is None or tregion.inside(transform(uj.reshape((1, -1))))))
-                if Lj > Lmin and is_inside:
-                    del ui, Li
-                    ui, Li = uj, Lj
-                    self.last = ui, Li
-                    break
-            pass
-
-        # select starting point
-        if Li is None:
+        for j, (uj, Lj) in enumerate(self.history):
+            if not Lj > Lmin:
+                self.history = self.history[:j]
+                # print("wandered out of L constraint; reverting", ui[0])
+                break
+        if len(self.history) > 0:
+            ui, Li = self.history[-1]
+        else:
+            # select starting point
             self.new_chain(region)
             # choose a new random starting point
             # mask = region.inside(us)
@@ -548,7 +687,6 @@ class StepSampler(object):
             #    region.maxradiussq, region.u, region.unormed, us)
             i = np.random.randint(len(us))
             self.starti = i
-            del Li, ui
             ui = us[i,:]
             # print("starting at", ui[0])
             # assert np.logical_and(ui > 0, ui < 1).all(), ui
@@ -622,8 +760,10 @@ class MHSampler(StepSampler):
             current point
         ndraw: int
             number of points to draw.
-
-        All other parameters are ignored.
+        region:
+            ignored
+        plot:
+            ignored
         """
         # propose in that direction
         direction = self.generate_direction(ui, region, scale=self.scale)
@@ -631,10 +771,14 @@ class MHSampler(StepSampler):
         unew = ui.reshape((1, -1)) + jitter
         return unew
 
+
 def CubeMHSampler(*args, **kwargs):
+    """Gaussian Metropolis-Hastings sampler, using unit cube."""
     return MHSampler(*args, **kwargs, generate_direction=generate_random_direction)
 
+
 def RegionMHSampler(*args, **kwargs):
+    """Gaussian Metropolis-Hastings sampler, using region."""
     return MHSampler(*args, **kwargs, generate_direction=generate_region_random_direction)
 
 
@@ -642,14 +786,13 @@ class SliceSampler(StepSampler):
     """Slice sampler, respecting the region."""
 
     def new_chain(self, region=None):
-        """Starts a new path, reset slice."""
+        """Start a new path, reset slice."""
         self.interval = None
         self.found_left = False
         self.found_right = False
         self.axis_index = 0
 
         self.history = []
-        self.last = None, None
         self.nrejects = 0
 
     def adjust_accept(self, accepted, unew, pnew, Lnew, nc):
@@ -676,7 +819,6 @@ class SliceSampler(StepSampler):
                 # start with a new interval next time
                 self.interval = None
 
-                self.last = unew, Lnew
                 self.history.append((unew.copy(), Lnew.copy()))
             else:
                 self.nrejects += 1
@@ -775,9 +917,11 @@ def RegionBallSliceSampler(*args, **kwargs):
     return SliceSampler(*args, **kwargs, generate_direction=generate_region_random_direction)
 
 
-class SequentialDirectionGenerator(object):
+class SequentialRegionDirectionGenerator(object):
     def __init__(self):
+        """Sequentially proposes one region axes after the next."""
         self.axis_index = 0
+
     def __call__(self, ui, region, scale=1):
         """Iteratively choose the next axis in t-space.
 
@@ -809,9 +953,59 @@ class SequentialDirectionGenerator(object):
         v *= scale / (v**2).sum()**0.5
         return v
 
+    def __str__(self):
+        return type(self).__name__ + '()'
+
 def RegionSequentialSliceSampler(*args, **kwargs):
     """Slice sampler, sequentially iterating region axes."""
-    return SliceSampler(*args, **kwargs, generate_direction=SequentialDirectionGenerator())
+    return SliceSampler(*args, **kwargs, generate_direction=SequentialRegionDirectionGenerator())
+
+
+class OrthogonalDirectionGenerator(object):
+    def __init__(self, generate_direction):
+        """Orthogonalizes proposal vectors.
+
+        Parameters
+        -----------
+        generate_direction: function
+            direction proposal to orthogonalize
+        """
+        self.axis_index = 0
+        self.generate_direction = generate_direction
+        self.directions = None
+    
+    def __str__(self):
+        return type(self).__name__ + '(generate_direction=%s)' % self.generate_direction
+
+    def __call__(self, ui, region, scale=1):
+        """Iteratively return a orthogonalized vector.
+
+        Parameters
+        -----------
+        ui: array
+            current point (in u-space)
+        region: MLFriends object
+            region to use for transformation
+        scale: float
+            length of direction vector
+
+        Returns
+        --------
+        v: array
+            new direction vector (in u-space)
+        """
+        ndim = len(ui)
+        if self.directions is None or self.axis_index >= ndim:
+            proposed_directions = np.empty((ndim, ndim))
+            for i in range(ndim):
+                proposed_directions[i] = self.generate_direction(ui, region, scale=scale)
+            q, r = np.linalg.qr(proposed_directions)
+            self.directions = np.dot(q, np.diag(np.diag(r)))
+            self.axis_index = 0
+
+        v = self.directions[self.axis_index]
+        self.axis_index += 1
+        return v
 
 
 class SpeedVariableGenerator(object):
@@ -880,7 +1074,7 @@ class SpeedVariableGenerator(object):
             new direction vector
         """
         ndim = len(ui)
-        
+
         v = self.generate_direction(ui=ui, region=region, scale=scale)
         j = self.axis_index % self.nsteps
         self.axis_index = j + 1
@@ -897,19 +1091,21 @@ def SpeedVariableRegionSliceSampler(step_matrix, *args, **kwargs):
 
     Updates only some dimensions at a time, completely user-definable.
     """
-    
-    
-    return SliceSampler(*args, **kwargs, 
+    generate_direction = kwargs.pop('generate_direction', generate_region_random_direction)
+    return SliceSampler(
+        *args, **kwargs,
         nsteps=kwargs.pop('nsteps', len(step_matrix)),
         generate_direction=SpeedVariableGenerator(
             step_matrix=step_matrix,
-            generate_direction=kwargs.pop('generate_direction', generate_region_random_direction)
+            generate_direction=generate_direction
         )
     )
 
 
 def ellipsoid_bracket(ui, v, ellipsoid_center, ellipsoid_inv_axes, ellipsoid_radius_square):
-    """ For a line from ui in direction v through an ellipsoid
+    """Find line-ellipsoid intersection points.
+
+    For a line from ui in direction v through an ellipsoid
     centered at ellipsoid_center with axes matrix ellipsoid_inv_axes,
     return the lower and upper intersection parameter.
 
@@ -922,7 +1118,7 @@ def ellipsoid_bracket(ui, v, ellipsoid_center, ellipsoid_inv_axes, ellipsoid_rad
     ellipsoid_center: array
         center of the ellipsoid
     ellipsoid_inv_axes: array
-        ellipsoid axes matrix, as computed by :class:WrappingEllipsoid
+        ellipsoid axes matrix, as computed by :py:class:`WrappingEllipsoid`
     ellipsoid_radius_square: float
         square of the ellipsoid radius
 
@@ -950,7 +1146,9 @@ def ellipsoid_bracket(ui, v, ellipsoid_center, ellipsoid_inv_axes, ellipsoid_rad
 
 
 def crop_bracket_at_unit_cube(ui, v, left, right, epsilon=1e-6):
-    """A line segment from *ui* in direction *v* from t between *left* <= 0 <= *right*
+    """Find line-cube intersection points.
+
+    A line segment from *ui* in direction *v* from t between *left* <= 0 <= *right*
     will be truncated by the unit cube. Returns the bracket and whether cropping was applied.
 
     Parameters
@@ -1539,187 +1737,3 @@ class AHARMSampler(StepSampler):
         left, right = ellipsoid_bracket(ui, v, region.ellipsoid_center, region.ellipsoid_inv_axes, region.enlarge)
         left, right, _, _ = crop_bracket_at_unit_cube(ui, v, left, right)
         self.interval = (v, left, right, 0)
-
-
-import operator
-firstitemgetter = operator.itemgetter(0)
-
-class PopulationSliceSampler():
-    def __init__(self, popsize, nsteps, generate_direction, scale=1.0):
-        self.nsteps = nsteps
-        self.nrejects = 0
-        self.scale = scale
-        self.currentu = []
-        self.currentL = []
-        self.currentt = []
-        self.currentv = []
-        self.generation = []
-        self.current_left = []
-        self.current_right = []
-        self.searching_left = []
-        self.searching_right = []
-        self.nextu = None
-
-        self.popsize = popsize
-        self.generate_direction = generate_direction
-
-    def _check(self):
-        assert self.popsize == len(self.currentu)
-        assert self.popsize == len(self.currentL)
-        assert self.popsize == len(self.currentv)
-        assert self.popsize == len(self.current_left)
-        assert self.popsize == len(self.current_right)
-        assert self.popsize == len(self.generation)
-        assert self.popsize == len(self.currentt)
-        assert np.isfinite(self.currentu).all(), self.currentu
-        assert np.isfinite(self.currentL).all(), self.currentL
-        #assert np.isfinite(self.currentt).all(), self.currentt
-        assert np.isfinite(self.currentv).all(), self.currentv
-        assert np.isfinite(self.current_left).all(), self.current_left
-        assert np.isfinite(self.current_right).all(), self.current_right
-
-    def region_changed(self, Ls, region):
-        # self.scale = region.us.std(axis=1).mean()
-        pass
-
-    def evolve(self, transform, loglike, Lmin, log=False):
-        self._check()
-        # define three mutually exclusive states: 
-        # stepping out to the left, to the right, bisecting on the slice
-        search_right = np.logical_and(~self.searching_left, self.searching_right)
-        bisecting = ~np.logical_or(self.searching_left, self.searching_right)
-        if log:
-            print("states: %d < %d > %d  | %d total" % (self.searching_left.sum(), bisecting.sum(), search_right.sum(), len(self.currentu)))
-        
-        # handle the three cases:
-        if self.nextu is None:
-            self.nextu = self.currentu.copy()
-        assert self.nextu.shape == self.currentu.shape, (self.nextu.shape, self.currentu.shape)
-        
-        unew = self.nextu
-        if self.searching_left.any():
-            unew[self.searching_left,:] = self.currentu[self.searching_left,:] + self.currentv[self.searching_left,:] * self.current_left[self.searching_left].reshape((-1,1))
-        if search_right.any():
-            unew[search_right,:] = self.currentu[search_right,:] + self.currentv[search_right,:] * self.current_right[search_right].reshape((-1,1))
-        if bisecting.any():
-            self.currentt[bisecting] = np.random.uniform(self.current_left[bisecting], self.current_right[bisecting])
-            unew[bisecting,:] = self.currentu[bisecting,:] + self.currentv[bisecting,:] * self.currentt[bisecting].reshape((-1,1))
-        assert np.isfinite(unew).all(), unew
-        
-        acceptable = np.logical_and(unew > 0, unew < 1).all(axis=1)
-        if acceptable.any():
-            pnew = transform(unew[acceptable,:])
-            Lnew = loglike(pnew)
-        else:
-            if log: print("empty try!", acceptable.shape, len(unew))
-            pnew = np.empty((0,1))
-            Lnew = np.empty(0)
-        accepted = np.zeros_like(acceptable)
-        accepted[acceptable] = Lnew > Lmin
-        rejected = ~accepted
-        # handle cases:
-        # step out, if still accepting
-        self.current_left[np.logical_and(self.searching_left, accepted)] *= 2
-        self.current_right[np.logical_and(search_right, accepted)] *= 2
-        if log:
-            print("    acceptance rate: %.2f%%" % (100 * accepted.mean()), 
-                  np.logical_and(self.searching_left, accepted).sum(),
-                  np.logical_and(search_right, accepted).sum(),
-                  np.logical_and(self.searching_left, rejected).sum(),
-                  np.logical_and(search_right, rejected).sum(),)
-        # done stepping out, if rejected
-        self.searching_left[np.logical_and(self.searching_left, rejected)] = False
-        self.searching_right[np.logical_and(search_right, rejected)] = False
-        # adjust guess length
-        self.scale = (abs(self.current_left.mean()) + abs(self.current_right.mean())) / 2
-        
-        # bisecting, rejected or not acceptable
-        bisectshrink = np.logical_and(bisecting, rejected)
-        bisectshrinkleft = np.logical_and(bisecting, self.currentt < 0)
-        bisectshrinkright = np.logical_and(bisecting, ~(self.currentt < 0))
-        if bisectshrinkleft.any():
-            self.current_left[bisectshrinkleft] = self.currentt[bisectshrinkleft]
-        if bisectshrinkright.any():
-            self.current_right[bisectshrinkright] = self.currentt[bisectshrinkright]
-        # bisect accepted: start new slice and new generation there
-        success = np.logical_and(bisecting, accepted)
-        if success.any():
-            self.currentt[success] = np.nan
-            #if log: print(self.currentu[success,:], unew[success,:])
-            self.currentu[success,:] = unew[success,:]
-            self.currentL[success] = Lnew[success[acceptable]]
-            self.generation[success] += 1
-        self._check()
-        if log:
-            print("    bisect results:",
-                  bisectshrink.sum(),
-                  bisectshrinkleft.sum(),
-                  bisectshrinkright.sum(),
-                  success.sum()
-                 )
-        
-        return unew[success,:], pnew[success[acceptable],:], Lnew[success[acceptable]], self.generation[success]
-        
-    def __next__(self, region, Lmin, us, Ls, transform, loglike, ndraw=10, plot=False, tregion=None, log=False):
-        if len(self.currentL) > 0:
-            # remove those cut away by Lmin increase
-            mask_survivors = self.currentL > Lmin
-            if log: print("keeping %d" % mask_survivors.sum())
-            if not mask_survivors.all():
-                self.currentu = self.currentu[mask_survivors,:]
-                self.currentL = self.currentL[mask_survivors]
-                self.currentt = self.currentt[mask_survivors]
-                self.currentv = self.currentv[mask_survivors,:]
-                self.generation = self.generation[mask_survivors]
-                self.searching_left = self.searching_left[mask_survivors]
-                self.searching_right = self.searching_right[mask_survivors]
-                self.current_left = self.current_left[mask_survivors]
-                self.current_right = self.current_right[mask_survivors]
-
-        # repopulate with new samples
-        nmissing = self.popsize - len(self.currentu)
-        if nmissing > 0:
-            if log: print("repopulate %d" % nmissing)
-            # pick some of the current live points as starting points
-            i = np.random.randint(len(us), size=nmissing)
-            concatenate = np.concatenate if len(self.currentu) > 0 else firstitemgetter
-            self.currentL = concatenate((Ls[i], self.currentL))
-            self.currentu = concatenate((us[i,:], self.currentu))
-            # empty values for the rest:
-            self.currentv = concatenate((np.zeros_like(us[i,:]) + np.nan, self.currentv))
-            self.currentt = concatenate((np.zeros(nmissing) + np.nan, self.currentt))
-            self.generation = concatenate((np.zeros(nmissing, dtype=int), self.generation))
-            self.searching_left  = concatenate((np.zeros(nmissing, dtype=bool), self.searching_left))
-            self.searching_right = concatenate((np.zeros(nmissing, dtype=bool), self.searching_right))
-            self.current_left = concatenate((np.zeros(nmissing), self.current_left))
-            self.current_right = concatenate((np.zeros(nmissing), self.current_right))
-
-        # find those where bracket is undefined:
-        mask_starting = ~np.isfinite(self.currentt)
-        if mask_starting.any():
-            self.current_left[mask_starting] = -self.scale
-            self.current_right[mask_starting] = self.scale
-            self.searching_left[mask_starting] = True
-            self.searching_right[mask_starting] = True
-            self.currentt[mask_starting] = 0
-            # choose direction for new slice
-            self.currentv[mask_starting,:] = self.generate_direction(self.currentu[mask_starting,:], region, scale=self.scale)
-
-        self._check()
-        
-        # advance the population
-        currentu, currentp, currentL, generation = self.evolve(transform, loglike, Lmin)
-
-        # harvest one individual if possible
-        mask_ripe = generation >= self.nsteps
-        # if np.random.uniform()<0.001:
-        #     print(mask_ripe.sum(), self.generation.mean(), self.generation.min(), self.generation.max(), "|")
-        if mask_ripe.any():
-            j = np.where(mask_ripe)[0][np.random.randint(mask_ripe.sum())]
-            u, p, L, nc = currentu[j,:], currentp[j,:], currentL[j], self.generation[j]
-            # reset this one to start again
-            self.generation[j] = 0
-            return u, p, L, self.popsize
-        else:
-            # print("E", end="\r")
-            return None, None, None, self.popsize
