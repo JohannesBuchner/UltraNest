@@ -6,6 +6,190 @@ from ultranest.utils import submasks
 from ultranest.stepfuncs import evolve, step_back
 from ultranest.stepfuncs import generate_cube_oriented_direction, \
    generate_random_direction, generate_region_oriented_direction, generate_region_random_direction
+import scipy.stats
+
+def unitcube_line_intersection(ray_origin, ray_direction):
+    r"""Compute intersection of a line (ray) and a unit box (0:1 in all axes).
+
+    Based on
+    http://www.iquilezles.org/www/articles/intersectors/intersectors.htm
+
+    Parameters
+    -----------
+    ray_origin: array of vectors
+        starting point of line
+    ray_direction: vector
+        line direction vector
+
+    Returns
+    --------
+    tleft: array
+        negative intersection point distance from ray\_origin in units in ray\_direction
+    tright: array
+        positive intersection point distance from ray\_origin in units in ray\_direction
+
+    """
+    # make sure ray starts inside the box
+    assert (ray_origin >= 0).all(), ray_origin
+    assert (ray_origin <= 1).all(), ray_origin
+    assert ((ray_direction**2).sum()**0.5 > 1e-200).all(), ray_direction
+
+    # step size
+    with np.errstate(divide='ignore', invalid='ignore'):
+        m = 1. / ray_direction
+        n = m * (ray_origin - 0.5)
+        k = np.abs(m) * 0.5
+        # line coordinates of intersection
+        # find first intersecting coordinate
+        t1 = -n - k
+        t2 = -n + k
+        return np.nanmax(t1, axis=1), np.nanmin(t2, axis=1)
+
+
+
+class PopulationRandomWalkSampler():
+    def __init__(
+        self, popsize, nsteps, generate_direction, scale=1.0, 
+        scale_adapt_factor=0.9, log=False, logfile=None
+    ):
+        """
+        Vectorized Gaussian Random Walk sampler.
+
+        Revert until all previous steps have likelihoods allL above Lmin.
+        Updates currentt, generation and allL, in-place.
+
+        Parameters
+        ----------
+        popsize: int
+            number of walkers to maintain
+        nsteps: int
+            number of steps to take until the found point is accepted as independent.
+        generate_direction: function `(u, region, scale) -> v`
+            function such as `generate_unit_directions`, which
+            generates a random slice direction.
+        scale: float
+            initial guess scale for the length of the slice
+        scale_adapt_factor: float
+            smoothing factor for updating scale.
+            if near 1, scale is barely updating, if near 0,
+            the last slice length is used as a initial guess for the next.
+
+        """
+        self.nsteps = nsteps
+        self.nrejects = 0
+        self.scale = scale
+        self.ncalls = 0
+        assert scale_adapt_factor <= 1
+        self.scale_adapt_factor = scale_adapt_factor
+
+        self.log = log
+        self.logfile = logfile
+        self.prepared_samples = []
+
+        self.popsize = popsize
+        self.generate_direction = generate_direction
+
+    def __str__(self):
+        return 'PopulationRandomWalkSampler(popsize=%d, nsteps=%d, generate_direction=%s, scale=%.g)' % (
+                self.popsize, self.nsteps, self.generate_direction, self.scale)
+
+    def region_changed(self, Ls, region):
+        """notification that the region changed. Currently not used."""
+        pass
+
+    def __next__(
+        self, region, Lmin, us, Ls, transform, loglike, ndraw=10,
+        plot=False, tregion=None, log=False
+    ):
+        """Sample a new live point.
+
+        Parameters
+        ----------
+        region: MLFriends object
+            Region
+        Lmin: float
+            current log-likelihood threshold
+        us: np.array((nlive, ndim))
+            live points
+        Ls: np.array(nlive)
+            loglikelihoods live points
+        transform: function
+            prior transform function
+        loglike: function
+            loglikelihood function
+        ndraw: int
+            not used
+        plot: bool
+            not used
+        tregion: bool
+            not used
+        log: bool
+            not used
+
+        Returns
+        -------
+        u: np.array(ndim) or None
+            new point coordinates (None if not yet available)
+        p: np.array(nparams) or None
+            new point transformed coordinates (None if not yet available)
+        L: float or None
+            new point likelihood (None if not yet available)
+        nc: int
+
+        """
+        nlive, ndim = us.shape
+
+        # fill if empty:
+        if len(self.prepared_samples) == 0:
+            # choose live points
+            ilive = np.random.randint(0, nlive, size=self.popsize)
+            allu = us[ilive,:]
+            allp = None
+            allL = Ls[ilive]
+            nc = self.nsteps * self.popsize
+            nrejects_expected = self.nrejects + self.nsteps * self.popsize * (1 - 0.234)
+
+            for i in range(self.nsteps):
+                # perturb walker population
+                v = self.generate_direction(allu, region, self.scale)
+                # compute intersection of u + t * v with unit cube
+                tleft, tright = unitcube_line_intersection(allu, v)
+                #print(tleft.shape, tright.shape, self.popsize, tleft, tright)
+                proposed_t = scipy.stats.truncnorm.rvs(tleft, tright, loc=0, scale=1).reshape((-1, 1))
+                # proposed_t = np.random.normal(size=(self.popsize, 1))
+                
+                proposed_u = allu + v * proposed_t
+                mask_outside = ~np.logical_and(proposed_u > 0, proposed_u < 1).all(axis=1)
+                assert not mask_outside.any(), proposed_u[mask_outside,:]
+                #while mask_outside.any():
+                #    proposed_u[mask_outside,:] = allu[mask_outside,:] + v[mask_outside,:] * np.random.normal(size=(mask_outside.sum(), 1))
+                #    mask_outside = ~np.logical_and(proposed_u > 0, proposed_u < 1).all(axis=1)
+                
+                proposed_p = transform(proposed_u)
+                # accept if likelihood threshold exceeded
+                proposed_L = loglike(proposed_p)
+                mask_accept = proposed_L > Lmin
+                self.nrejects += (~mask_accept).sum()
+                allu[mask_accept,:] = proposed_u[mask_accept,:]
+                if allp is None:
+                    allp = proposed_p * np.nan
+                allp[mask_accept,:] = proposed_p[mask_accept,:]
+                allL[mask_accept] = proposed_L[mask_accept]
+            assert np.isfinite(allp).all(), 'some walkers never moved! Double nsteps of PopulationRandomWalkSampler.'
+            self.prepared_samples = list(zip(allu, allp, allL))
+
+            # adapt slightly
+            print('%.1f%%  %.1f%%  %f ' % (mask_accept.mean() * 100, 100 - (self.nrejects - (nrejects_expected - self.nsteps * self.popsize * (1 - 0.234))) * 100. / (self.nsteps * self.popsize), self.scale))
+            if self.nrejects > nrejects_expected and self.scale > 1e-20:
+                # lots of rejects, decrease scale
+                self.scale *= self.scale_adapt_factor
+            elif self.nrejects < nrejects_expected and self.scale < 10:
+                self.scale /= self.scale_adapt_factor
+        else:
+            nc = 0
+
+        u, p, L = self.prepared_samples.pop(0)
+        return u, p, L, nc
 
 
 class PopulationSliceSampler():
