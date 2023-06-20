@@ -116,6 +116,33 @@ def test_reactive_run():
     sampler.plot()
 
 
+def test_plateau_SLOW():
+    def loglike(y):
+        a = -0.5 * ((y/0.1)**2).sum()
+        if a < -1:
+            return -1e100
+        return a
+
+    def transform(x):
+        return x * 2 - 1
+
+    paramnames = ['Hinz', 'Kunz']
+
+    sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform)
+    print(sampler.run(min_num_live_points=400)['logz'])
+    print(sampler.run_sequence['nlive'][:-400])
+    assert sampler.run_sequence['nlive'][-400] == 400, sampler.run_sequence['nlive'][:-400]
+
+def test_flat():
+    def loglike(y):
+        return 0
+    paramnames = ['Hinz', 'Kunz']
+
+    sampler = ReactiveNestedSampler(paramnames, loglike)
+    print(sampler.run(min_num_live_points=400)['logz'])
+    print(sampler.run_sequence['nlive'][:-400])
+
+
 def test_reactive_run_extraparams():
     np.random.seed(1)
 
@@ -556,5 +583,6 @@ if __name__ == '__main__':
     #test_run()
     #test_reactive_run_warmstart_gauss()
     #test_reactive_run_extraparams()
-    test_reactive_run_resume_eggbox('hdf5')
+    #test_reactive_run_resume_eggbox('hdf5')
     #test_dlogz_reactive_run()
+    test_plateau()

@@ -474,7 +474,7 @@ class NestedSampler(object):
         assert p.shape == (2, self.num_params), ("Error in transform function: returned shape is %s, expected %s" % (p.shape, (2, self.num_params)))
         logl = loglike(p)
         assert np.logical_and(u > 0, u < 1).all(), ("Error in transform function: u was modified!")
-        assert logl.shape == (2,), ("Error in loglikelihood function: returned shape is %s, expected %s" % (p.shape, (2, self.num_params)))
+        assert np.shape(logl) == (2,), ("Error in loglikelihood function: returned shape is %s, expected %s" % (p.shape, (2, self.num_params)))
         assert np.isfinite(logl).all(), ("Error in loglikelihood function: returned non-finite number: %s for input u=%s p=%s" % (logl, u, p))
 
         def safe_loglike(x):
@@ -1383,28 +1383,65 @@ class ReactiveNestedSampler(object):
 
         return target_min_num_children
 
-    def _widen_roots_beyond_initial_plateau(self, nroots):
+    def _widen_roots_beyond_initial_plateau(self, nroots, num_warn, num_stop):
         """Widen roots, but populate ahead of initial plateau.
 
         calls _widen_roots, and if there are several points with the same
         value equal to the lowest loglikelihood, widens some more until
         there are `nroots`-1 that are different to the lowest
         loglikelihood value.
+
+        Parameters
+        -----------
+        nroots: int
+            Number of root live points, after the plateau is traversed.
+
+        num_warn: int
+            Warn if the number of root live points reached this.
+
+        num_stop: int
+            Do not increasing the number of root live points beyond this limit.
+
         """
         nroots_needed = nroots
+        user_has_been_warned = False
         while True:
             self._widen_roots(nroots_needed)
             Ls = np.array([node.value for node in self.root.children])
             Lmin = np.min(Ls)
-            # number of plateau points
+            if self.log and nroots_needed > num_warn and not user_has_been_warned:
+                self.logger.warn("""Warning: The log-likelihood has a large plateau with L=%g.
+
+  Probably you are returning a low value when the parameters are problematic/unphysical.
+  ultranest can handle this correctly, by discarding live points with the same loglikelihood.
+  (arxiv:2005.08602 arxiv:2010.13884). To mitigate running out of live points,
+  the initial number of live points is increased. But now this has reached over %d points.
+
+  You can avoid this making the loglikelihood increase towards where the good region is.
+  For example, let's say you have two parameters where the sum must be below 1. Replace this:
+
+    if params[0] + params[1] > 1:
+         return -1e300
+
+  with:
+
+    if params[0] + params[1] > 1:
+         return -1e300 * (params[0] + params[1])
+
+  The current strategy will continue until %d live points are reached.
+  It is safe to ignore this warning.""", Lmin, num_warn, num_stop)
+                user_has_been_warned = True
+
+            if nroots_needed >= num_stop:
+                break
             P = (Ls == Lmin).sum()
-            if P > 1 and len(Ls) - P + 1 < nroots:
+            if 1 < P < len(Ls) and len(Ls) - P + 1 < nroots:
                 # guess the number of points needed: P-1 are useless
                 self.logger.debug(
                     'Found plateau of %d/%d initial points at L=%g. '
                     'Avoid this by a continuously increasing loglikelihood towards good regions.',
                     P, nroots_needed, Lmin)
-                nroots_needed = nroots_needed + (P - 1)
+                nroots_needed = min(num_stop, nroots_needed + (P - 1))
             else:
                 break
 
@@ -1412,6 +1449,11 @@ class ReactiveNestedSampler(object):
         """Ensure root has `nroots` children.
 
         Sample from prior to fill up (if needed).
+
+        Parameters
+        -----------
+        nroots: int
+            Number of root live points, after the plateau is traversed.
         """
         if self.log and len(self.root.children) > 0:
             self.logger.info('Widening roots to %d live points (have %d already) ...', nroots, len(self.root.children))
@@ -1532,7 +1574,6 @@ class ReactiveNestedSampler(object):
             maximum fraction of integral in remainder for termination
         Lepsilon: float
             loglikelihood accuracy threshold
-
         """
         Ls = parallel_values.copy()
         Ls.sort()
@@ -1802,7 +1843,6 @@ class ReactiveNestedSampler(object):
             if ib >= len(self.samples) and self.use_point_stack:
                 # root checks the point store
                 next_point = np.zeros((1, 3 + self.x_dim + self.num_params)) * np.nan
-                # print("1", self.mpi_rank, next_point)
 
                 if self.log_to_pointstore:
                     _, stored_point = self.pointstore.pop(Lmin)
@@ -1810,17 +1850,13 @@ class ReactiveNestedSampler(object):
                         next_point[0,:] = stored_point
                     else:
                         next_point[0,:] = -np.inf
-                    # print("2", self.mpi_rank, next_point)
                     self.use_point_stack = not self.pointstore.stack_empty
 
                 if self.use_mpi:  # and informs everyone
                     self.use_point_stack = self.comm.bcast(self.use_point_stack, root=0)
-                    # print("3", self.mpi_rank, next_point)
                     next_point = self.comm.bcast(next_point, root=0)
 
                 # unpack
-                if np.ndim(next_point) != 2:
-                    print("XXXX ", self.mpi_rank, next_point, self.use_point_stack)
                 self.likes = next_point[:,1]
                 self.samples = next_point[:,3:3 + self.x_dim]
                 self.samplesv = next_point[:,3 + self.x_dim:3 + self.x_dim + self.num_params]
@@ -2235,6 +2271,8 @@ class ReactiveNestedSampler(object):
             insertion_test_window=10,
             insertion_test_zscore_threshold=4,
             region_class=MLFriends,
+            widen_before_initial_plateau_num_warn=10000,
+            widen_before_initial_plateau_num_max=50000,
     ):
         """Run until target convergence criteria are fulfilled.
 
@@ -2307,6 +2345,19 @@ class ReactiveNestedSampler(object):
             Whether to use MLFriends+ellipsoidal+tellipsoidal region (better for multi-modal problems)
             or just ellipsoidal sampling (faster for high-dimensional, gaussian-like problems)
             or a axis-aligned ellipsoid (fastest, to be combined with slice sampling).
+
+        widen_before_initial_plateau_num_warn: int
+            If a likelihood plateau is encountered, increase the number
+            of initial live points so that once the plateau is traversed,
+            *min_num_live_points* live points remain.
+            If the number exceeds *widen_before_initial_plateau_num_warn*,
+            a warning is raised.
+
+        widen_before_initial_plateau_num_max: int
+            If a likelihood plateau is encountered, increase the number
+            of initial live points so that once the plateau is traversed,
+            *min_num_live_points* live points remain, but not more than
+            *widen_before_initial_plateau_num_warn*.
         """
         for result in self.run_iter(
             update_interval_volume_fraction=update_interval_volume_fraction,
@@ -2323,6 +2374,8 @@ class ReactiveNestedSampler(object):
             insertion_test_window=insertion_test_window,
             insertion_test_zscore_threshold=insertion_test_zscore_threshold,
             region_class=region_class,
+            widen_before_initial_plateau_num_warn=widen_before_initial_plateau_num_warn,
+            widen_before_initial_plateau_num_max=widen_before_initial_plateau_num_max,
         ):
             if self.log:
                 self.logger.debug("did a run_iter pass!")
@@ -2351,7 +2404,9 @@ class ReactiveNestedSampler(object):
             viz_callback='auto',
             insertion_test_window=10000,
             insertion_test_zscore_threshold=2,
-            region_class=MLFriends
+            region_class=MLFriends,
+            widen_before_initial_plateau_num_warn=10000,
+            widen_before_initial_plateau_num_max=50000,
     ):
         """Iterate towards convergence.
 
@@ -2403,7 +2458,9 @@ class ReactiveNestedSampler(object):
         if viz_callback == 'auto':
             viz_callback = get_default_viz_callback()
 
-        self._widen_roots_beyond_initial_plateau(min_num_live_points)
+        self._widen_roots_beyond_initial_plateau(
+            min_num_live_points, 
+            widen_before_initial_plateau_num_warn, widen_before_initial_plateau_num_max)
 
         Llo, Lhi = -np.inf, np.inf
         Lmax = -np.inf
@@ -2744,7 +2801,10 @@ class ReactiveNestedSampler(object):
             if dlogz_min_num_live_points > self.min_num_live_points:
                 # more live points needed throughout to reach target
                 self.min_num_live_points = dlogz_min_num_live_points
-                self._widen_roots_beyond_initial_plateau(self.min_num_live_points)
+                self._widen_roots_beyond_initial_plateau(
+                    self.min_num_live_points,
+                    widen_before_initial_plateau_num_warn,
+                    widen_before_initial_plateau_num_max)
 
             elif Llo <= Lhi:
                 # if self.log:
