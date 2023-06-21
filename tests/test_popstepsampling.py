@@ -1,7 +1,8 @@
 import numpy as np
 from ultranest import ReactiveNestedSampler
-from ultranest.popstepsampler import PopulationSliceSampler, generate_cube_oriented_direction, \
-    generate_random_direction, generate_region_oriented_direction, generate_region_random_direction
+from ultranest.popstepsampler import PopulationSliceSampler, PopulationRandomWalkSampler
+from ultranest.popstepsampler import generate_cube_oriented_direction, generate_random_direction, generate_cube_oriented_direction_scaled
+from ultranest.popstepsampler import generate_region_oriented_direction, generate_region_random_direction
 
 def loglike_vectorized(z):
     a = np.array([-0.5 * sum([((xi - 0.7 + i*0.001)/0.1)**2 for i, xi in enumerate(x)]) for x in z])
@@ -35,7 +36,25 @@ def test_stepsampler_cubeslice(plot=False):
     assert a.sum() > 1
     assert b.sum() > 1
 
-from ultranest.mlfriends import update_clusters, AffineLayer, ScalingLayer, MLFriends, RobustEllipsoidRegion, SimpleRegion
+def test_stepsampler_cubegausswalk(plot=False):
+    np.random.seed(2)
+    nsteps = np.random.randint(10, 50)
+    popsize = np.random.randint(1, 20)
+    sampler = ReactiveNestedSampler(paramnames, loglike_vectorized, transform=transform, vectorized=True)
+
+    sampler.stepsampler = PopulationRandomWalkSampler(
+        popsize=popsize, nsteps=nsteps, 
+        generate_direction=generate_cube_oriented_direction,
+        scale=0.1,
+    )
+    r = sampler.run(viz_callback=None, log_interval=50, max_iters=200, max_num_improvement_loops=0)
+    sampler.print_results()
+    a = (np.abs(r['samples'] - 0.7) < 0.1).all(axis=1)
+    b = (np.abs(r['samples'] - 0.3) < 0.1).all(axis=1)
+    assert a.sum() > 1
+    assert b.sum() > 1
+
+from ultranest.mlfriends import AffineLayer, ScalingLayer, MLFriends, RobustEllipsoidRegion, SimpleRegion
 
 def test_direction_proposals():
     proposals = [generate_cube_oriented_direction, generate_random_direction, 
@@ -58,10 +77,9 @@ def test_direction_proposals():
             for prop in proposals:
                 print("test of proposal:", prop, "with region:", region_class, "layer:", layer)
                 directions = prop(points, region, scale=scale)
-                norms = np.linalg.norm(directions, axis=1)
-                #print(norms[0], directions[0])
                 assert directions.shape == points.shape, (directions.shape, points.shape)
                 #assert np.allclose(norms, scale), (norms, scale)
 
 if __name__ == '__main__':
+    test_stepsampler_cubegausswalk()
     test_direction_proposals()

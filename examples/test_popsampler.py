@@ -6,9 +6,10 @@ from ultranest import ReactiveNestedSampler
 from ultranest.mlfriends import RobustEllipsoidRegion, SimpleRegion, ScalingLayer
 import ultranest.popstepsampler
 import matplotlib.pyplot as plt
+import sys
+import argparse
 
-def main(generate_direction_method, ndim, nsteps, popsize, verbose=False):
-
+def main(generate_direction_method, ndim, nsteps, popsize, log_dir=None, verbose=False):
     np.random.seed(1)
 
     logsigma = -5
@@ -29,7 +30,9 @@ def main(generate_direction_method, ndim, nsteps, popsize, verbose=False):
 
     paramnames = ['param%d' % (i+1) for i in range(ndim)]
 
-    sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform, vectorized=True)
+    sampler = ReactiveNestedSampler(
+        paramnames, loglike, transform=transform, 
+        vectorized=True, log_dir=log_dir, resume=True)
     
     # ellipsoidal:
     region_class = RobustEllipsoidRegion
@@ -40,6 +43,7 @@ def main(generate_direction_method, ndim, nsteps, popsize, verbose=False):
     sampler.stepsampler = ultranest.popstepsampler.PopulationRandomWalkSampler(
         popsize=popsize, nsteps=nsteps, scale=1. / len(paramnames),
         generate_direction=getattr(ultranest.popstepsampler, generate_direction_method), log=verbose,
+        #logfile=sys.stderr
     )
     results = sampler.run(
         frac_remain=0.01, update_interval_volume_fraction=0.01, 
@@ -54,5 +58,16 @@ def main(generate_direction_method, ndim, nsteps, popsize, verbose=False):
     #sampler.plot_trace()
 
 if __name__ == '__main__':
-    import sys
-    main(sys.argv[1], *map(int, sys.argv[2:5]), verbose='--verbose' in sys.argv[1:])
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--x_dim', type=int, default=2,
+                        help="Dimensionality")
+    parser.add_argument("--num_live_points", type=int, default=400)
+    parser.add_argument("--generate_direction_method", type=str, required=True)
+    parser.add_argument("--num_steps", type=int, required=True)
+    parser.add_argument("--popsize", type=int, required=True)
+    parser.add_argument('--log_dir', type=str)
+    parser.add_argument('--verbose', action='store_true')
+
+    args = parser.parse_args()
+    main(args.generate_direction_method, args.x_dim, args.num_steps, args.popsize, args.log_dir, verbose=args.verbose)

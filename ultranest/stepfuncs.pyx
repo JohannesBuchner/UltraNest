@@ -332,6 +332,7 @@ cdef _fill_directions(
     for i in range(nsamples):
         v[i, indices[i]] = scale
 
+
 def generate_cube_oriented_direction(ui, region, scale=1):
     """Draw a unit direction vector in direction of a random unit cube axes.
 
@@ -354,6 +355,34 @@ def generate_cube_oriented_direction(ui, region, scale=1):
     # choose axis
     j = np.random.randint(ndim, size=nsamples)
     _fill_directions(v, j, scale)
+    return v
+
+
+def generate_cube_oriented_direction_scaled(ui, region, scale=1):
+    """Draw a unit direction vector in direction of a random unit cube axes.
+    Scale by the live point min-max range.
+
+    Parameters
+    ----------
+    ui: np.array((npoints, ndim), dtype=float)
+        starting points (not used)
+    region:
+        not used
+    scale: float
+        length of returned vector
+
+    Returns
+    ---------
+    v: np.array((npoints, ndim), dtype=float)
+        Random axis vectors of length `scale`, one for each starting point.
+    """
+    nsamples, ndim = ui.shape
+    v = np.zeros((nsamples, ndim))
+    scales = region.u.std(axis=0)
+    # choose axis
+    j = np.random.randint(ndim, size=nsamples)
+    _fill_directions(v, j, scale)
+    v *= scales[j].reshape((-1, 1))
     return v
 
 def generate_random_direction(ui, region, scale=1):

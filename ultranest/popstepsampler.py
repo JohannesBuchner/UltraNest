@@ -4,7 +4,7 @@
 import numpy as np
 from ultranest.utils import submasks
 from ultranest.stepfuncs import evolve, step_back
-from ultranest.stepfuncs import generate_cube_oriented_direction, \
+from ultranest.stepfuncs import generate_cube_oriented_direction, generate_cube_oriented_direction_scaled, \
    generate_random_direction, generate_region_oriented_direction, generate_region_random_direction
 import scipy.stats
 
@@ -49,8 +49,8 @@ def unitcube_line_intersection(ray_origin, ray_direction):
 
 class PopulationRandomWalkSampler():
     def __init__(
-        self, popsize, nsteps, generate_direction, scale=1.0, 
-        scale_adapt_factor=0.9, log=False, logfile=None
+        self, popsize, nsteps, generate_direction, scale, 
+        scale_adapt_factor=0.9, scale_min=1e-20, scale_max=20, log=False, logfile=None
     ):
         """
         Vectorized Gaussian Random Walk sampler.
@@ -81,6 +81,8 @@ class PopulationRandomWalkSampler():
         self.ncalls = 0
         assert scale_adapt_factor <= 1
         self.scale_adapt_factor = scale_adapt_factor
+        self.scale_min = scale_min
+        self.scale_max = scale_max
 
         self.log = log
         self.logfile = logfile
@@ -179,11 +181,15 @@ class PopulationRandomWalkSampler():
             self.prepared_samples = list(zip(allu, allp, allL))
 
             # adapt slightly
-            print('%.1f%%  %.1f%%  %f ' % (mask_accept.mean() * 100, 100 - (self.nrejects - (nrejects_expected - self.nsteps * self.popsize * (1 - 0.234))) * 100. / (self.nsteps * self.popsize), self.scale))
-            if self.nrejects > nrejects_expected and self.scale > 1e-20:
+            if self.logfile:
+                self.logfile.write("rescale\t%.4f\t%.4f\t%g\n" % (
+                    mask_accept.mean() * 100, 
+                    100 - (self.nrejects - (nrejects_expected - self.nsteps * self.popsize * (1 - 0.234))) * 100. / (self.nsteps * self.popsize), 
+                    self.scale))
+            if self.nrejects > nrejects_expected and self.scale > self.scale_min:
                 # lots of rejects, decrease scale
                 self.scale *= self.scale_adapt_factor
-            elif self.nrejects < nrejects_expected and self.scale < 10:
+            elif self.nrejects < nrejects_expected and self.scale < self.scale_max:
                 self.scale /= self.scale_adapt_factor
         else:
             nc = 0
