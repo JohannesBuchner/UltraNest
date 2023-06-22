@@ -57,12 +57,13 @@ def unitcube_line_intersection(ray_origin, ray_direction):
 
 
 class PopulationRandomWalkSampler():
+    """Vectorized Gaussian Random Walk sampler."""
+
     def __init__(
         self, popsize, nsteps, generate_direction, scale,
         scale_adapt_factor=0.9, scale_min=1e-20, scale_max=20, log=False, logfile=None
     ):
-        """
-        Vectorized Gaussian Random Walk sampler.
+        """Initialise.
 
         Parameters
         ----------
@@ -113,11 +114,12 @@ class PopulationRandomWalkSampler():
         self.generate_direction = generate_direction
 
     def __str__(self):
+        """Return string representation."""
         return 'PopulationRandomWalkSampler(popsize=%d, nsteps=%d, generate_direction=%s, scale=%.g)' % (
             self.popsize, self.nsteps, self.generate_direction, self.scale)
 
     def region_changed(self, Ls, region):
-        """notification that the region changed. Currently not used."""
+        """Act upon region changed. Currently unused."""
         pass
 
     def __next__(
@@ -216,15 +218,17 @@ class PopulationRandomWalkSampler():
 
 
 class PopulationSliceSampler():
+    """Vectorized slice/HARM sampler.
+
+    Can revert until all previous steps have likelihoods allL above Lmin.
+    Updates currentt, generation and allL, in-place.
+    """
+
     def __init__(
         self, popsize, nsteps, generate_direction, scale=1.0,
         scale_adapt_factor=0.9, log=False, logfile=None
     ):
-        """
-        Vectorized slice/HARM sampler.
-
-        Revert until all previous steps have likelihoods allL above Lmin.
-        Updates currentt, generation and allL, in-place.
+        """Initialise.
 
         Parameters
         ----------
@@ -266,11 +270,12 @@ class PopulationSliceSampler():
         self.generate_direction = generate_direction
 
     def __str__(self):
+        """Return string representation."""
         return 'PopulationSliceSampler(popsize=%d, nsteps=%d, generate_direction=%s, scale=%.g)' % (
             self.popsize, self.nsteps, self.generate_direction, self.scale)
 
     def region_changed(self, Ls, region):
-        """notification that the region changed. Currently not used."""
+        """Act upon region changed. Currently unused."""
         # self.scale = region.us.std(axis=1).mean()
         if self.logfile:
             self.logfile.write("region-update\t%g\t%g\n" % (self.scale, region.us.std(axis=1).mean()))
@@ -321,6 +326,7 @@ class PopulationSliceSampler():
 
     @property
     def status(self):
+        """Return compact string representation of the current status."""
         s1 = ('G:' + ''.join(['%d' % g if g >= 0 else '_' for g in self.generation]))
         s2 = ('S:' + ''.join([
             'S' if not np.isfinite(self.currentt[i]) else 'L' if self.searching_left[i] else 'R' if self.searching_right[i] else 'B'
@@ -403,8 +409,9 @@ class PopulationSliceSampler():
 
         (
             (
-            currentt, currentv,
-            current_left, current_right, searching_left, searching_right),
+                currentt, currentv,
+                current_left, current_right, searching_left, searching_right
+            ),
             (success, unew, pnew, Lnew),
             nc
         ) = evolve(transform, loglike, Lmin, *args)
@@ -503,13 +510,16 @@ class PopulationSliceSampler():
         if mask_starting.any():
             self.setup_brackets(mask_starting, region)
 
-        if self.log: print(str(self), "(before)")
+        if self.log:
+            print(str(self), "(before)")
         nc = self.advance(transform, loglike, Lmin)
-        if self.log: print(str(self), "(after)")
+        if self.log:
+            print(str(self), "(after)")
 
         # harvest top individual if possible
         if self.generation[self.ringindex] == self.nsteps:
-            if self.log: print("have a candidate")
+            if self.log:
+                print("have a candidate")
             u, p, L = self.allu[self.ringindex, self.nsteps, :].copy(), self.currentp[self.ringindex, :].copy(), self.allL[self.ringindex, self.nsteps].copy()
             assert np.isfinite(u).all(), u
             assert np.isfinite(p).all(), p
@@ -528,6 +538,7 @@ class PopulationSliceSampler():
             return None, None, None, nc
 
 
-__all__ = ["generate_cube_oriented_direction", "generate_cube_oriented_direction_scaled",
-   "generate_random_direction", "generate_region_oriented_direction", "generate_region_random_direction",
-   "PopulationRandomWalkSampler", "PopulationSliceSampler"]
+__all__ = [
+    "generate_cube_oriented_direction", "generate_cube_oriented_direction_scaled",
+    "generate_random_direction", "generate_region_oriented_direction", "generate_region_random_direction",
+    "PopulationRandomWalkSampler", "PopulationSliceSampler"]

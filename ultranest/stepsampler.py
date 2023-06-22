@@ -1,9 +1,11 @@
-"""MCMC-like step sampling within a region.
+"""
+MCMC-like step sampling
+-----------------------
 
 The classes implemented here are generators that, in each iteration,
-only make one likelihood call. This allows keeping a population of
-samplers that have the same execution time per call, even if they
-do not terminate at the same number of iterations.
+only make one likelihood call. This allows running in parallel a
+population of samplers that have the same execution time per call,
+even if they do not terminate at the same number of iterations.
 """
 
 from __future__ import print_function, division
@@ -162,8 +164,8 @@ def generate_partial_differential_direction(ui, region, scale=1):
             # repeat if live points are identical
             break
     # use doubling procedure to identify left and right maxima borders
-    #v = np.zeros(ndim)
-    #v[mask] = (region.u[i,mask] - region.u[i2,mask]) * scale
+    # v = np.zeros(ndim)
+    # v[mask] = (region.u[i,mask] - region.u[i2,mask]) * scale
     return v
 
 
@@ -380,7 +382,7 @@ class StepSampler(object):
             * :py:func:`generate_partial_differential_direction` (differential evolution slice proposal on only 10% of the parameters)
             * :py:func:`generate_mixture_random_direction` (generate_differential_direction and generate_cube_oriented_differential_direction)
 
-            Additionally, :py:class:`OrthogonalDirectionGenerator` 
+            Additionally, :py:class:`OrthogonalDirectionGenerator`
             can be applied to a generate_direction.
 
             When in doubt, try :py:func:`generate_mixture_random_direction`.
@@ -466,6 +468,7 @@ class StepSampler(object):
             self.logstat_labels += ['jump-distance', 'reference-distance']
 
     def __str__(self):
+        """Return string representation."""
         if not self.adaptive_nsteps:
             return type(self).__name__ + '(nsteps=%d, generate_direction=%s)' % (self.nsteps, self.generate_direction)
         else:
@@ -792,7 +795,7 @@ class SliceSampler(StepSampler):
         self.nrejects = 0
 
     def adjust_accept(self, accepted, unew, pnew, Lnew, nc):
-        """see :py:meth:`StepSampler.adjust_accept`"""
+        """See :py:meth:`StepSampler.adjust_accept`."""
         v, left, right, u = self.interval
         if not self.found_left:
             if accepted:
@@ -833,7 +836,7 @@ class SliceSampler(StepSampler):
         self.adjust_accept(False, unew=None, pnew=None, Lnew=None, nc=0)
 
     def move(self, ui, region, ndraw=1, plot=False):
-        """Advance the slice sampling move. see :py:meth:`StepSampler.move`"""
+        """Advance the slice sampling move. see :py:meth:`StepSampler.move`."""
         if self.interval is None:
             v = self.generate_direction(ui, region)
 
@@ -914,12 +917,13 @@ def RegionBallSliceSampler(*args, **kwargs):
 
 
 class SequentialRegionDirectionGenerator(object):
+    """Sequentially proposes one region axes after the next."""
     def __init__(self):
-        """Sequentially proposes one region axes after the next."""
+        """Initialise."""
         self.axis_index = 0
 
     def __call__(self, ui, region, scale=1):
-        """Iteratively choose the next axis in t-space.
+        """Choose the next axis in t-space.
 
         Parameters
         -----------
@@ -952,14 +956,17 @@ class SequentialRegionDirectionGenerator(object):
     def __str__(self):
         return type(self).__name__ + '()'
 
+
 def RegionSequentialSliceSampler(*args, **kwargs):
     """Slice sampler, sequentially iterating region axes."""
     return SliceSampler(*args, **kwargs, generate_direction=SequentialRegionDirectionGenerator())
 
 
 class OrthogonalDirectionGenerator(object):
+    """Orthogonalizes proposal vectors."""
+
     def __init__(self, generate_direction):
-        """Orthogonalizes proposal vectors.
+        """Initialise.
 
         Parameters
         -----------
@@ -969,12 +976,13 @@ class OrthogonalDirectionGenerator(object):
         self.axis_index = 0
         self.generate_direction = generate_direction
         self.directions = None
-    
+
     def __str__(self):
+        """Return string representation."""
         return type(self).__name__ + '(generate_direction=%s)' % self.generate_direction
 
     def __call__(self, ui, region, scale=1):
-        """Iteratively return a orthogonalized vector.
+        """Return next orthogonalized vector.
 
         Parameters
         -----------
@@ -1005,7 +1013,10 @@ class OrthogonalDirectionGenerator(object):
 
 
 class SpeedVariableGenerator(object):
-    """Propose directions in region, but only some dimensions at a time, completely user-definable.
+    """Propose directions with only some parameters variable.
+
+    Propose in region direction, but only include some dimensions at a time.
+    Completely configurable.
     """
 
     def __init__(self, step_matrix, generate_direction=generate_region_random_direction):

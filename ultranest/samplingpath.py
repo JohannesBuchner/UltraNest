@@ -73,6 +73,13 @@ def nearest_box_intersection_line(ray_origin, ray_direction, fwd=True):
 def box_line_intersection(ray_origin, ray_direction):
     """Find intersections of a line with the unit cube, in both sides.
 
+    Parameters
+    -----------
+    ray_origin: vector
+        starting point of line
+    ray_direction: vector
+        line direction vector
+
     Returns
     --------
     left: nearest_box_intersection_line return value
@@ -156,6 +163,13 @@ def get_sphere_tangent(sphere_center, edge_point):
     so that edge_point is on the surface. At edge_point, in
     which direction does the normal vector point?
 
+    Parameters
+    -----------
+    sphere_center: vector
+        center of sphere
+    edge_point: vector
+        point at the surface
+
     Returns
     --------
     tangent: vector
@@ -175,10 +189,17 @@ def get_sphere_tangents(sphere_center, edge_point):
 
     This function is vectorized and handles arrays of arguments.
 
+    Parameters
+    -----------
+    sphere_center: array
+        centers of spheres
+    edge_point: array
+        points at the surface
+
     Returns
     --------
-    tangent: vector
-        vector pointing to the sphere center.
+    tangent: array
+        vectors pointing to the sphere center.
 
     """
     arrow = sphere_center - edge_point
@@ -190,14 +211,14 @@ def reflect(v, normal):
     return v - 2 * (normal * v).sum() * normal
 
 
-def distances(l, o, r=1):
+def distances(direction, center, r=1):
     """Compute sphere-line intersection.
 
     Parameters
     -----------
-    l: vector
+    direction: vector
         direction vector (line starts at 0)
-    o: vector
+    center: vector
         center of sphere (coordinate vector)
     r: float
         radius of sphere
@@ -209,8 +230,8 @@ def distances(l, o, r=1):
         If no intersection, throws AssertError.
 
     """
-    loc = (l * o).sum()
-    osqrnorm = (o**2).sum()
+    loc = (direction * center).sum()
+    osqrnorm = (center**2).sum()
     # print(loc.shape, loc.shape, osqrnorm.shape)
     rootterm = loc**2 - osqrnorm + r**2
     # make sure we are crossing the sphere

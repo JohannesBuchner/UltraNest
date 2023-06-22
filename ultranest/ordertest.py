@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Mann-Whitney-Wilcoxon U test for a uniform distribution of integers.
+Mann-Whitney-Wilcoxon U test for a uniform distribution of integers
+-------------------------------------------------------------------
+
+A test for biased nested sampling, presented in
+section 4.5.2 of Buchner (2023, https://arxiv.org/abs/2101.09675).
 
 This implements the same idea as https://arxiv.org/abs/2006.03371
 except their KS test is problematic because the variable (insertion order)

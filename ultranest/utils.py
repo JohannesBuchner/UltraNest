@@ -1,4 +1,7 @@
-"""Utility functions for logging and statistics."""
+"""
+Utility functions for logging and statistics
+--------------------------------------------
+"""
 
 from __future__ import print_function, division
 import logging
@@ -446,8 +449,11 @@ def verify_gradient(ndim, transform, loglike, gradient, verbose=False, combinati
         assert np.allclose(Lprime, Lexpected, atol=0.1 / ndim), \
             (u, uprime, theta, thetaprime, grad, eps * grad / L, L, Lprime, Lexpected)
 
+
 def distributed_work_chunk_size(num_total_tasks, mpi_rank, mpi_size):
     """
+    Divide tasks uniformly.
+
     Computes the number of tasks for process number `mpi_rank`, so that
     `num_total_tasks` tasks are spread uniformly among `mpi_size` processes.
 
@@ -465,8 +471,9 @@ def distributed_work_chunk_size(num_total_tasks, mpi_rank, mpi_size):
 
 def submasks(mask, *masks):
     """
-    Get indices for an array, so that
-    array[indices] is equivalent to a[mask][mask1][mask2].
+    Get indices for a submasked array.
+
+    Returns indices, so that a[indices] is equivalent to a[mask][mask1][mask2].
 
     Parameters
     ----------

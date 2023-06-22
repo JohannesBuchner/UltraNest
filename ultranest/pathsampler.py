@@ -172,13 +172,12 @@ class SamplingPathStepSampler(StepSampler):
 
     def __str__(self):
         """Get string representation."""
-        return '(nsteps=%d, nresets=%d, AR=%d%%)' % (
+        return '%s(nsteps=%d, nresets=%d, AR=%d%%)' % (
             type(self).__name__, self.nsteps, self.nresets, (1 - self.balance) * 100)
 
     def start(self):
         """Start sampler, reset all counters."""
         if hasattr(self, 'naccepts') and self.nrejects + self.naccepts > 0:
-            nr, na = self.nrejects, self.naccepts
             self.logstat.append([
                 self.naccepts / (self.nrejects + self.naccepts),
                 self.nreflects / (self.nreflects + self.nrejects + self.naccepts),

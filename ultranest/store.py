@@ -1,4 +1,6 @@
-"""Storage for nested sampling points.
+"""
+Storage for nested sampling points
+-----------------------------------
 
 The information stored is a table with
 

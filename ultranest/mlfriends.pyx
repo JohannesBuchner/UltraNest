@@ -1,7 +1,17 @@
 # cython: language_level=3,annotate=True,profile=True,fast_fail=True,warning_errors=True
-"""Construct and sample from region.
+"""
+Region construction methods
+---------------------------
 
-Implements MLFriends efficiently, with transformation layers and clustering.
+Construct and sample from regions of neighbourhoods around the live points.
+Includes
+
+* an efficient implementation of MLFriends, with transformation layers and clustering.
+  * RadFriends: Buchner (2014) https://arxiv.org/abs/1407.5459
+  * MLFriends: Buchner (2019) https://arxiv.org/abs/1707.04476
+* a single-ellipsoid region (Mukherjee et al., 2006, https://arxiv.org/abs/astro-ph/0508461)
+* a very fast single-ellipsoid, axis-aligned region, for use with step-samplers in high dimensions
+
 """
 
 import numpy as np

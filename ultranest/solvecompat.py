@@ -73,7 +73,7 @@ def pymultinest_solve_compat(
             generate_direction=generate_mixture_random_direction,
             adaptive_nsteps='move-distance',
             region_filter=kwargs.get('region_filter', True)
-            )
+        )
     else:
         sampler.stepsampler = SliceSampler(
             generate_direction=generate_mixture_random_direction,

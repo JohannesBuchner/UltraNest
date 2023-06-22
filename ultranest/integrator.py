@@ -1,4 +1,11 @@
-"""Ultranest calculates the Bayesian evidence and posterior samples of arbitrary models."""
+"""
+Nested sampling integrators
+---------------------------
+
+This module provides the high-level class :py:class:`ReactiveNestedSampler`,
+for calculating the Bayesian evidence and posterior samples of arbitrary models.
+
+"""
 
 # Some parts are from the Nestle library by Kyle Barbary (https://github.com/kbarbary/nestle)
 # Some parts are from the nnest library by Adam Moss (https://github.com/adammoss/nnest)
@@ -2459,7 +2466,7 @@ class ReactiveNestedSampler(object):
             viz_callback = get_default_viz_callback()
 
         self._widen_roots_beyond_initial_plateau(
-            min_num_live_points, 
+            min_num_live_points,
             widen_before_initial_plateau_num_warn, widen_before_initial_plateau_num_max)
 
         Llo, Lhi = -np.inf, np.inf
@@ -2946,7 +2953,6 @@ class ReactiveNestedSampler(object):
                     fmts = '    %-20s' + fmt + " +- " + fmt
                     print(fmts % (p, med, sigma))
             print()
-
 
     def plot(self):
         """Make corner, run and trace plots.

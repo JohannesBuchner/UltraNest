@@ -1,4 +1,13 @@
-"""Warm start and hot start helper functions."""
+"""
+Warm start
+----------
+
+Helper functions for deforming the parameter space to enable
+a more efficient sampling.
+
+Based on ideas from Petrosyan & Handley (2022, https://arxiv.org/abs/2212.01760).
+
+"""
 
 import numpy as np
 import scipy.stats

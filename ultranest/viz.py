@@ -1,4 +1,12 @@
-"""Visual impression of current exploration."""
+"""
+Live point visualisations
+-------------------------
+
+Gives a live impression of current exploration.
+This is powerful because the user can abort partial runs if the fit
+converges to unreasonable values.
+
+"""
 
 from __future__ import print_function, division
 
@@ -107,9 +115,9 @@ def nicelogger(points, info, region, transformLayer, region_fresh=False):
     plo_rounded, phi_rounded, paramformats = round_parameterlimits(plo, phi, paramlimitguess=info.get('paramlims'))
 
     if sys.stderr.isatty() and hasattr(shutil, 'get_terminal_size'):
-        columns, _rows = shutil.get_terminal_size(fallback=(80, 25))
+        columns, _ = shutil.get_terminal_size(fallback=(80, 25))
     else:
-        columns, _rows = 80, 25
+        columns, _ = 80, 25
 
     paramwidth = max([len(pname) for pname in paramnames])
     width = columns - 23 - paramwidth

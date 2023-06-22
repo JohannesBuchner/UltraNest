@@ -1,4 +1,8 @@
-"""Plotting utilities."""
+"""
+Plotting utilities
+------------------
+
+"""
 
 from __future__ import (print_function, division)
 from six.moves import range
@@ -117,7 +121,7 @@ class PredictionBand(object):
     def shade(self, q=0.341, **kwargs):
         """Plot a shaded region between 0.5-q and 0.5+q. Default is 1 sigma."""
         if not 0 <= q <= 0.5:
-            raise ValueError("quantile distance from the median, q, must be between 0 and 0.5, not %s. For a 99% quantile range, use q=0.48." % q)
+            raise ValueError("quantile distance from the median, q, must be between 0 and 0.5, not %s. For a 99%% quantile range, use q=0.48." % q)
         shadeargs = dict(self.shadeargs)
         shadeargs.update(kwargs)
         lo = self.get_line(0.5 - q)
@@ -283,7 +287,7 @@ def runplot(results, span=None, logplot=False, kde=True, nkde=1000,
     for i, _ in enumerate(span):
         try:
             ymin, ymax = span[i]
-        except:
+        except Exception:
             span[i] = (max(data[i]) * span[i], max(data[i]))
     if lnz_error and no_span:
         if logplot:
@@ -302,7 +306,7 @@ def runplot(results, span=None, logplot=False, kde=True, nkde=1000,
         fig, axes = fig
         try:
             axes.reshape(4, 1)
-        except:
+        except Exception:
             raise ValueError("Provided axes do not match the required shape "
                              "for plotting samples.")
         # If figure is provided, keep previous bounds if they were larger.
@@ -594,12 +598,12 @@ def traceplot(results, span=None, quantiles=[0.025, 0.5, 0.975], smooth=0.02,
         try:
             samples_id = results['samples_id']
             uid = np.unique(samples_id)
-        except:
+        except Exception:
             raise ValueError("Sample IDs are not defined!")
         try:
             ids = connect_highlight[0]
             ids = connect_highlight
-        except:
+        except Exception:
             ids = np.random.choice(uid, size=connect_highlight, replace=False)
 
     # Determine plotting bounds for marginalized 1-D posteriors.
@@ -611,7 +615,7 @@ def traceplot(results, span=None, quantiles=[0.025, 0.5, 0.975], smooth=0.02,
     for i, _ in enumerate(span):
         try:
             xmin, xmax = span[i]
-        except:
+        except Exception:
             q = [0.5 - 0.5 * span[i], 0.5 + 0.5 * span[i]]
             span[i] = _quantile(samples[i], q, weights=weights)
 
@@ -630,7 +634,7 @@ def traceplot(results, span=None, quantiles=[0.025, 0.5, 0.975], smooth=0.02,
         fig, axes = fig
         try:
             axes.reshape(ndim, 2)
-        except:
+        except Exception:
             raise ValueError("Provided axes do not match the required shape "
                              "for plotting samples.")
 
@@ -683,7 +687,7 @@ def traceplot(results, span=None, quantiles=[0.025, 0.5, 0.975], smooth=0.02,
             try:
                 [ax.axhline(t, color=truth_color, **truth_kwargs)
                  for t in truths[i]]
-            except:
+            except Exception:
                 ax.axhline(truths[i], color=truth_color, **truth_kwargs)
 
         # Plot marginalized 1-D posterior.
@@ -752,7 +756,7 @@ def traceplot(results, span=None, quantiles=[0.025, 0.5, 0.975], smooth=0.02,
             try:
                 [ax.axvline(t, color=truth_color, **truth_kwargs)
                  for t in truths[i]]
-            except:
+            except Exception:
                 ax.axvline(truths[i], color=truth_color, **truth_kwargs)
         # Set titles.
         if show_titles:

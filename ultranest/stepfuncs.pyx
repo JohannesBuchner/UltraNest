@@ -1,5 +1,8 @@
 # cython: language_level=3,annotate=True,profile=True,fast_fail=True,warning_errors=True
-"""Efficient Helper functions for stepsamplers
+"""
+Efficient helper functions for vectorized step-samplers
+-------------------------------------------------------
+
 """
 
 import numpy as np

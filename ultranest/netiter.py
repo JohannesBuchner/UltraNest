@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Functions and classes for treating nested sampling exploration as a tree.
+"""
+Graph-based nested sampling
+---------------------------
+
+A formulation of nested sampling exploration as a tree, presented in
+section 3.4 of Buchner (2023, https://arxiv.org/abs/2101.09675).
 
 The root represents the prior volume, branches and sub-branches split the volume.
 The leaves of the tree are the integration tail.
@@ -29,19 +34,20 @@ from .ordertest import UniformOrderAccumulator
 
 
 class TreeNode(object):
-    """Simple tree node.
-
-    Parameters
-    ----------
-    value: float
-        value used to order nodes (typically log-likelihood)
-    id: int
-        identifier, refers to the order of discovery and storage (PointPile)
-    children: list
-        children nodes, should be :py:class:`TreeNode` objects. if None, a empty list is used.
-    """
+    """Simple tree node."""
 
     def __init__(self, value=None, id=None, children=None):
+        """Initialise.
+
+        Parameters
+        ----------
+        value: float
+            value used to order nodes (typically log-likelihood)
+        id: int
+            identifier, refers to the order of discovery and storage (PointPile)
+        children: list
+            children nodes, should be :py:class:`TreeNode` objects. if None, a empty list is used.
+        """
         self.value = value
         self.id = id
         self.children = children or []
@@ -462,17 +468,17 @@ class PointPile(object):
 
 
 class SingleCounter(object):
-    """Evidence log(Z) and posterior weight summation for a Nested Sampling tree.
+    """Evidence log(Z) and posterior weight summation for a Nested Sampling tree."""
+
+    def __init__(self, random=False):
+        """Initialise.
 
         Parameters
         ----------
         random: bool
             if False, use mean estimator for volume shrinkage
             if True, draw a random sample
-
         """
-
-    def __init__(self, random=False):
         self.reset()
         self.random = random
 
@@ -600,7 +606,6 @@ class MultiCounter(object):
             if True, draw a random sample
         check_insertion_order: bool
             whether to run insertion order rank U test
-
         """
         allyes = np.ones(nroots, dtype=bool)
         # the following is a masked array of size (nbootstraps+1, nroots)
@@ -1044,7 +1049,7 @@ def logz_sequence(root, pointpile, nbootstraps=12, random=True, onNode=None, ver
         with np.errstate(invalid='ignore'):
             # first time they are all the same
             logzerr.append(main_iterator.logZerr_bs)
-        
+
         nactive = len(active_values)
 
         if len(np.unique(active_values)) == nactive and len(node.children) > 0:
