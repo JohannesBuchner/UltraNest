@@ -528,6 +528,6 @@ class PopulationSliceSampler():
             return None, None, None, nc
 
 
-__all__ = [generate_cube_oriented_direction, generate_cube_oriented_direction_scaled,
-   generate_random_direction, generate_region_oriented_direction, generate_region_random_direction,
-   PopulationRandomWalkSampler, PopulationSliceSampler]
+__all__ = ["generate_cube_oriented_direction", "generate_cube_oriented_direction_scaled",
+   "generate_random_direction", "generate_region_oriented_direction", "generate_region_random_direction",
+   "PopulationRandomWalkSampler", "PopulationSliceSampler"]
