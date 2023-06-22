@@ -381,6 +381,17 @@ coordinates them.
 
 Use as many scripts as processors. If memory is a concern, look into shared memory solutions.
 
+GPU-acceleration
+====================
+
+Some models today use probabilistic programming languages, such as JAX,
+which allows fast model evaluations on GPUs and CPUs.
+
+UltraNest supports such models with vectorization (see above).
+
+For high-dimensional, cheap, vectorized models, the 
+:py:mod:`popstepsampler` implements vectorized versions.
+
 More features
 ===================
 
