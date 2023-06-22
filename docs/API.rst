@@ -1,6 +1,9 @@
 API
 ===
 
+.. toctree::
+   :maxdepth: 4
+
 Modules common to be used directly:
 
 ultranest.integrator module
