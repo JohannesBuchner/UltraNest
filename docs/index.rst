@@ -11,7 +11,7 @@ Welcome to UltraNest's documentation!
    using-ultranest.ipynb
    priors.ipynb
    performance
-   modules
+   API
    issues
    contributing
    history
