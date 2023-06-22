@@ -2,6 +2,14 @@
 Release Notes
 ==============
 
+
+3.6.0 (2023-06-22)
+------------------
+
+* add PopulationRandomWalkSampler: vectorized Gaussian random walks for GPU/JAX-powered likelihoods
+* limit initial widening to escape plateau (issue #81)
+
+
 3.5.0 (2022-09-05)
 ------------------
 
