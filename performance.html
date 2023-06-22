@@ -23,7 +23,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="API" href="modules.html" />
+    <link rel="next" title="ultranest package" href="API.html" />
     <link rel="prev" title="Specifying priors" href="priors.html" /> 
 </head>
 
@@ -65,10 +65,11 @@
 <li class="toctree-l3"><a class="reference internal" href="#using-multiple-cores">Using multiple cores</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#gpu-acceleration">GPU-acceleration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#more-features">More features</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="modules.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="API.html">ultranest package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="issues.html">Frequently Asked Questions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="history.html">Release Notes</a></li>
@@ -423,7 +424,7 @@ and allows the user to specify the problem dimension and a few sampler parameter
 <h2>High-dimensional models<a class="headerlink" href="#high-dimensional-models" title="Permalink to this heading"></a></h2>
 <p>In high-dimensional spaces, MLFriends by itself is inefficient, so
 we have to use a step sampling technique. There are several implemented
-in <a class="reference internal" href="ultranest.html#module-ultranest.stepsampler" title="ultranest.stepsampler"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ultranest.stepsampler</span></code></a>. Here we are using slice sampling
+in <a class="reference internal" href="API.html#module-ultranest.stepsampler" title="ultranest.stepsampler"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ultranest.stepsampler</span></code></a>. Here we are using slice sampling
 that learns the direction from the existing live points.
 This is similar to PolyChord, except the region is also used to reject
 distant proposals, and the clustering is better justified (based on MLFriends).</p>
@@ -576,6 +577,14 @@ coordinates them.</p>
 <p>Use as many scripts as processors. If memory is a concern, look into shared memory solutions.</p>
 </section>
 </section>
+<section id="gpu-acceleration">
+<h2>GPU-acceleration<a class="headerlink" href="#gpu-acceleration" title="Permalink to this heading"></a></h2>
+<p>Some models today use probabilistic programming languages, such as JAX,
+which allows fast model evaluations on GPUs and CPUs.</p>
+<p>UltraNest supports such models with vectorization (see above).</p>
+<p>For high-dimensional, cheap, vectorized models, the
+<code class="xref py py-mod docutils literal notranslate"><span class="pre">popstepsampler</span></code> implements vectorized versions.</p>
+</section>
 <section id="more-features">
 <h2>More features<a class="headerlink" href="#more-features" title="Permalink to this heading"></a></h2>
 <p>To find more features and details such as …</p>
@@ -596,7 +605,7 @@ coordinates them.</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="priors.html" class="btn btn-neutral float-left" title="Specifying priors" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="modules.html" class="btn btn-neutral float-right" title="API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="API.html" class="btn btn-neutral float-right" title="ultranest package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
