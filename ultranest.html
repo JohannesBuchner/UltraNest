@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest package &mdash; UltraNest 3.5.7 documentation</title>
+  <title>ultranest package &mdash; UltraNest 3.6.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="_static/icon.ico"/>
@@ -38,7 +38,7 @@
             <img src="_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.5.7
+                3.6.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -1177,7 +1177,7 @@ Values from 0 (highly conservative) to 1 (extremely negligent).</p></li>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="ultranest.integrator.ReactiveNestedSampler.run">
-<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update_interval_volume_fraction=0.8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_interval_ncall=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_interval=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_status=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">viz_callback='auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dlogz=0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dKL=0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frac_remain=0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Lepsilon=0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_ess=400</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iters=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_ncalls=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_num_improvement_loops=-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_num_live_points=400</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cluster_num_live_points=40</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">insertion_test_window=10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">insertion_test_zscore_threshold=4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region_class=&lt;class</span> <span class="pre">'ultranest.mlfriends.MLFriends'&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/integrator.html#ReactiveNestedSampler.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.integrator.ReactiveNestedSampler.run" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update_interval_volume_fraction=0.8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_interval_ncall=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_interval=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_status=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">viz_callback='auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dlogz=0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dKL=0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frac_remain=0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Lepsilon=0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_ess=400</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iters=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_ncalls=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_num_improvement_loops=-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_num_live_points=400</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cluster_num_live_points=40</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">insertion_test_window=10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">insertion_test_zscore_threshold=4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region_class=&lt;class</span> <span class="pre">'ultranest.mlfriends.MLFriends'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">widen_before_initial_plateau_num_warn=10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">widen_before_initial_plateau_num_max=50000</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/integrator.html#ReactiveNestedSampler.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.integrator.ReactiveNestedSampler.run" title="Permalink to this definition"></a></dt>
 <dd><p>Run until target convergence criteria are fulfilled.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1214,6 +1214,15 @@ Set to infinity to disable.</p></li>
 <li><p><strong>region_class</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">MLFriends</span></code> or <code class="xref py py-class docutils literal notranslate"><span class="pre">RobustEllipsoidRegion</span></code> or <code class="xref py py-class docutils literal notranslate"><span class="pre">SimpleRegion</span></code>) – Whether to use MLFriends+ellipsoidal+tellipsoidal region (better for multi-modal problems)
 or just ellipsoidal sampling (faster for high-dimensional, gaussian-like problems)
 or a axis-aligned ellipsoid (fastest, to be combined with slice sampling).</p></li>
+<li><p><strong>widen_before_initial_plateau_num_warn</strong> (<em>int</em>) – If a likelihood plateau is encountered, increase the number
+of initial live points so that once the plateau is traversed,
+<em>min_num_live_points</em> live points remain.
+If the number exceeds <em>widen_before_initial_plateau_num_warn</em>,
+a warning is raised.</p></li>
+<li><p><strong>widen_before_initial_plateau_num_max</strong> (<em>int</em>) – If a likelihood plateau is encountered, increase the number
+of initial live points so that once the plateau is traversed,
+<em>min_num_live_points</em> live points remain, but not more than
+<em>widen_before_initial_plateau_num_warn</em>.</p></li>
 </ul>
 </dd>
 </dl>
@@ -1221,7 +1230,7 @@ or a axis-aligned ellipsoid (fastest, to be combined with slice sampling).</p></
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ultranest.integrator.ReactiveNestedSampler.run_iter">
-<span class="sig-name descname"><span class="pre">run_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update_interval_volume_fraction=0.8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_interval_ncall=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_interval=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dlogz=0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dKL=0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frac_remain=0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Lepsilon=0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_ess=400</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iters=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_ncalls=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_num_improvement_loops=-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_num_live_points=400</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cluster_num_live_points=40</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_status=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">viz_callback='auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">insertion_test_window=10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">insertion_test_zscore_threshold=2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region_class=&lt;class</span> <span class="pre">'ultranest.mlfriends.MLFriends'&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/integrator.html#ReactiveNestedSampler.run_iter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.integrator.ReactiveNestedSampler.run_iter" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">run_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update_interval_volume_fraction=0.8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">update_interval_ncall=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_interval=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dlogz=0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dKL=0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frac_remain=0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Lepsilon=0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_ess=400</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_iters=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_ncalls=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_num_improvement_loops=-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_num_live_points=400</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cluster_num_live_points=40</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_status=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">viz_callback='auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">insertion_test_window=10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">insertion_test_zscore_threshold=2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region_class=&lt;class</span> <span class="pre">'ultranest.mlfriends.MLFriends'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">widen_before_initial_plateau_num_warn=10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">widen_before_initial_plateau_num_max=50000</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/integrator.html#ReactiveNestedSampler.run_iter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.integrator.ReactiveNestedSampler.run_iter" title="Permalink to this definition"></a></dt>
 <dd><p>Iterate towards convergence.</p>
 <p>Use as an iterator like so:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">sampler</span><span class="o">.</span><span class="n">run_iter</span><span class="p">(</span><span class="o">...</span><span class="p">):</span>
@@ -3141,6 +3150,58 @@ internal figure is generated.</p></li>
 </section>
 <section id="module-ultranest.popstepsampler">
 <span id="ultranest-popstepsampler-module"></span><h2>ultranest.popstepsampler module<a class="headerlink" href="#module-ultranest.popstepsampler" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="ultranest.popstepsampler.unitcube_line_intersection">
+<span class="sig-prename descclassname"><span class="pre">ultranest.popstepsampler.</span></span><span class="sig-name descname"><span class="pre">unitcube_line_intersection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ray_origin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ray_direction</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/popstepsampler.html#unitcube_line_intersection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.popstepsampler.unitcube_line_intersection" title="Permalink to this definition"></a></dt>
+<dd><p>Compute intersection of a line (ray) and a unit box (0:1 in all axes).</p>
+<p>Based on
+<a class="reference external" href="http://www.iquilezles.org/www/articles/intersectors/intersectors.htm">http://www.iquilezles.org/www/articles/intersectors/intersectors.htm</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ray_origin</strong> (<em>array of vectors</em>) – starting point of line</p></li>
+<li><p><strong>ray_direction</strong> (<em>vector</em>) – line direction vector</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>tleft</strong> (<em>array</em>) – negative intersection point distance from ray_origin in units in ray_direction</p></li>
+<li><p><strong>tright</strong> (<em>array</em>) – positive intersection point distance from ray_origin in units in ray_direction</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ultranest.popstepsampler.PopulationRandomWalkSampler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ultranest.popstepsampler.</span></span><span class="sig-name descname"><span class="pre">PopulationRandomWalkSampler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">popsize</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nsteps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generate_direction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_adapt_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/popstepsampler.html#PopulationRandomWalkSampler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.popstepsampler.PopulationRandomWalkSampler" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Vectorized Gaussian Random Walk sampler.</p>
+<p>Revert until all previous steps have likelihoods allL above Lmin.
+Updates currentt, generation and allL, in-place.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>popsize</strong> (<em>int</em>) – number of walkers to maintain</p></li>
+<li><p><strong>nsteps</strong> (<em>int</em>) – number of steps to take until the found point is accepted as independent.</p></li>
+<li><p><strong>generate_direction</strong> (function <cite>(u, region, scale) -&gt; v</cite>) – function such as <cite>generate_unit_directions</cite>, which
+generates a random slice direction.</p></li>
+<li><p><strong>scale</strong> (<em>float</em>) – initial guess scale for the length of the slice</p></li>
+<li><p><strong>scale_adapt_factor</strong> (<em>float</em>) – smoothing factor for updating scale.
+if near 1, scale is barely updating, if near 0,
+the last slice length is used as a initial guess for the next.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="ultranest.popstepsampler.PopulationRandomWalkSampler.region_changed">
+<span class="sig-name descname"><span class="pre">region_changed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ls</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/popstepsampler.html#PopulationRandomWalkSampler.region_changed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.popstepsampler.PopulationRandomWalkSampler.region_changed" title="Permalink to this definition"></a></dt>
+<dd><p>notification that the region changed. Currently not used.</p>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="ultranest.popstepsampler.PopulationSliceSampler">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ultranest.popstepsampler.</span></span><span class="sig-name descname"><span class="pre">PopulationSliceSampler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">popsize</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nsteps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generate_direction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_adapt_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/popstepsampler.html#PopulationSliceSampler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.popstepsampler.PopulationSliceSampler" title="Permalink to this definition"></a></dt>
@@ -3666,6 +3727,28 @@ with stepping out by doubling.</p>
 <dt class="sig sig-object py" id="ultranest.stepfuncs.generate_cube_oriented_direction">
 <span class="sig-prename descclassname"><span class="pre">ultranest.stepfuncs.</span></span><span class="sig-name descname"><span class="pre">generate_cube_oriented_direction</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.stepfuncs.generate_cube_oriented_direction" title="Permalink to this definition"></a></dt>
 <dd><p>Draw a unit direction vector in direction of a random unit cube axes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ui</strong> (<em>np.array</em><em>(</em><em>(</em><em>npoints</em><em>, </em><em>ndim</em><em>)</em><em>, </em><em>dtype=float</em><em>)</em>) – starting points (not used)</p></li>
+<li><p><strong>region</strong> – not used</p></li>
+<li><p><strong>scale</strong> (<em>float</em>) – length of returned vector</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>v</strong> – Random axis vectors of length <cite>scale</cite>, one for each starting point.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.array((npoints, ndim), dtype=float)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ultranest.stepfuncs.generate_cube_oriented_direction_scaled">
+<span class="sig-prename descclassname"><span class="pre">ultranest.stepfuncs.</span></span><span class="sig-name descname"><span class="pre">generate_cube_oriented_direction_scaled</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.stepfuncs.generate_cube_oriented_direction_scaled" title="Permalink to this definition"></a></dt>
+<dd><p>Draw a unit direction vector in direction of a random unit cube axes.
+Scale by the live point min-max range.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">

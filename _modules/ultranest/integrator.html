@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest.integrator &mdash; UltraNest 3.5.7 documentation</title>
+  <title>ultranest.integrator &mdash; UltraNest 3.6.0 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="../../_static/icon.ico"/>
@@ -33,7 +33,7 @@
             <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.5.7
+                3.6.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -114,7 +114,7 @@
 
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">create_logger</span><span class="p">,</span> <span class="n">make_run_dir</span><span class="p">,</span> <span class="n">resample_equal</span><span class="p">,</span> <span class="n">vol_prefactor</span><span class="p">,</span> <span class="n">vectorize</span><span class="p">,</span> <span class="n">listify</span> <span class="k">as</span> <span class="n">_listify</span>
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">is_affine_transform</span><span class="p">,</span> <span class="n">normalised_kendall_tau_distance</span><span class="p">,</span> <span class="n">distributed_work_chunk_size</span>
-<span class="kn">from</span> <span class="nn">ultranest.mlfriends</span> <span class="kn">import</span> <span class="n">MLFriends</span><span class="p">,</span> <span class="n">AffineLayer</span><span class="p">,</span> <span class="n">ScalingLayer</span><span class="p">,</span> <span class="n">find_nearby</span><span class="p">,</span> <span class="n">WrappingEllipsoid</span>
+<span class="kn">from</span> <span class="nn">ultranest.mlfriends</span> <span class="kn">import</span> <span class="n">MLFriends</span><span class="p">,</span> <span class="n">AffineLayer</span><span class="p">,</span> <span class="n">ScalingLayer</span><span class="p">,</span> <span class="n">find_nearby</span><span class="p">,</span> <span class="n">WrappingEllipsoid</span><span class="p">,</span> <span class="n">RobustEllipsoidRegion</span>
 <span class="kn">from</span> <span class="nn">.store</span> <span class="kn">import</span> <span class="n">HDF5PointStore</span><span class="p">,</span> <span class="n">TextPointStore</span><span class="p">,</span> <span class="n">NullPointStore</span>
 <span class="kn">from</span> <span class="nn">.viz</span> <span class="kn">import</span> <span class="n">get_default_viz_callback</span>
 <span class="kn">from</span> <span class="nn">.ordertest</span> <span class="kn">import</span> <span class="n">UniformOrderAccumulator</span>
@@ -570,7 +570,7 @@
         <span class="k">assert</span> <span class="n">p</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_params</span><span class="p">),</span> <span class="p">(</span><span class="s2">&quot;Error in transform function: returned shape is </span><span class="si">%s</span><span class="s2">, expected </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_params</span><span class="p">)))</span>
         <span class="n">logl</span> <span class="o">=</span> <span class="n">loglike</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
         <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">u</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">u</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="p">(</span><span class="s2">&quot;Error in transform function: u was modified!&quot;</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="n">logl</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">2</span><span class="p">,),</span> <span class="p">(</span><span class="s2">&quot;Error in loglikelihood function: returned shape is </span><span class="si">%s</span><span class="s2">, expected </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_params</span><span class="p">)))</span>
+        <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">logl</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="mi">2</span><span class="p">,),</span> <span class="p">(</span><span class="s2">&quot;Error in loglikelihood function: returned shape is </span><span class="si">%s</span><span class="s2">, expected </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_params</span><span class="p">)))</span>
         <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">logl</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="p">(</span><span class="s2">&quot;Error in loglikelihood function: returned non-finite number: </span><span class="si">%s</span><span class="s2"> for input u=</span><span class="si">%s</span><span class="s2"> p=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">logl</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
 
         <span class="k">def</span> <span class="nf">safe_loglike</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
@@ -1479,28 +1479,65 @@
 
         <span class="k">return</span> <span class="n">target_min_num_children</span>
 
-    <span class="k">def</span> <span class="nf">_widen_roots_beyond_initial_plateau</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nroots</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_widen_roots_beyond_initial_plateau</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nroots</span><span class="p">,</span> <span class="n">num_warn</span><span class="p">,</span> <span class="n">num_stop</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Widen roots, but populate ahead of initial plateau.</span>
 
 <span class="sd">        calls _widen_roots, and if there are several points with the same</span>
 <span class="sd">        value equal to the lowest loglikelihood, widens some more until</span>
 <span class="sd">        there are `nroots`-1 that are different to the lowest</span>
 <span class="sd">        loglikelihood value.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        -----------</span>
+<span class="sd">        nroots: int</span>
+<span class="sd">            Number of root live points, after the plateau is traversed.</span>
+
+<span class="sd">        num_warn: int</span>
+<span class="sd">            Warn if the number of root live points reached this.</span>
+
+<span class="sd">        num_stop: int</span>
+<span class="sd">            Do not increasing the number of root live points beyond this limit.</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">nroots_needed</span> <span class="o">=</span> <span class="n">nroots</span>
+        <span class="n">user_has_been_warned</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_widen_roots</span><span class="p">(</span><span class="n">nroots_needed</span><span class="p">)</span>
             <span class="n">Ls</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">node</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">children</span><span class="p">])</span>
             <span class="n">Lmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">Ls</span><span class="p">)</span>
-            <span class="c1"># number of plateau points</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="ow">and</span> <span class="n">nroots_needed</span> <span class="o">&gt;</span> <span class="n">num_warn</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">user_has_been_warned</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;Warning: The log-likelihood has a large plateau with L=</span><span class="si">%g</span><span class="s2">.</span>
+
+<span class="s2">  Probably you are returning a low value when the parameters are problematic/unphysical.</span>
+<span class="s2">  ultranest can handle this correctly, by discarding live points with the same loglikelihood.</span>
+<span class="s2">  (arxiv:2005.08602 arxiv:2010.13884). To mitigate running out of live points,</span>
+<span class="s2">  the initial number of live points is increased. But now this has reached over </span><span class="si">%d</span><span class="s2"> points.</span>
+
+<span class="s2">  You can avoid this making the loglikelihood increase towards where the good region is.</span>
+<span class="s2">  For example, let&#39;s say you have two parameters where the sum must be below 1. Replace this:</span>
+
+<span class="s2">    if params[0] + params[1] &gt; 1:</span>
+<span class="s2">         return -1e300</span>
+
+<span class="s2">  with:</span>
+
+<span class="s2">    if params[0] + params[1] &gt; 1:</span>
+<span class="s2">         return -1e300 * (params[0] + params[1])</span>
+
+<span class="s2">  The current strategy will continue until </span><span class="si">%d</span><span class="s2"> live points are reached.</span>
+<span class="s2">  It is safe to ignore this warning.&quot;&quot;&quot;</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">,</span> <span class="n">num_warn</span><span class="p">,</span> <span class="n">num_stop</span><span class="p">)</span>
+                <span class="n">user_has_been_warned</span> <span class="o">=</span> <span class="kc">True</span>
+
+            <span class="k">if</span> <span class="n">nroots_needed</span> <span class="o">&gt;=</span> <span class="n">num_stop</span><span class="p">:</span>
+                <span class="k">break</span>
             <span class="n">P</span> <span class="o">=</span> <span class="p">(</span><span class="n">Ls</span> <span class="o">==</span> <span class="n">Lmin</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-            <span class="k">if</span> <span class="n">P</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">Ls</span><span class="p">)</span> <span class="o">-</span> <span class="n">P</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&lt;</span> <span class="n">nroots</span><span class="p">:</span>
+            <span class="k">if</span> <span class="mi">1</span> <span class="o">&lt;</span> <span class="n">P</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">Ls</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">Ls</span><span class="p">)</span> <span class="o">-</span> <span class="n">P</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&lt;</span> <span class="n">nroots</span><span class="p">:</span>
                 <span class="c1"># guess the number of points needed: P-1 are useless</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
                     <span class="s1">&#39;Found plateau of </span><span class="si">%d</span><span class="s1">/</span><span class="si">%d</span><span class="s1"> initial points at L=</span><span class="si">%g</span><span class="s1">. &#39;</span>
                     <span class="s1">&#39;Avoid this by a continuously increasing loglikelihood towards good regions.&#39;</span><span class="p">,</span>
                     <span class="n">P</span><span class="p">,</span> <span class="n">nroots_needed</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">)</span>
-                <span class="n">nroots_needed</span> <span class="o">=</span> <span class="n">nroots_needed</span> <span class="o">+</span> <span class="p">(</span><span class="n">P</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">nroots_needed</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">num_stop</span><span class="p">,</span> <span class="n">nroots_needed</span> <span class="o">+</span> <span class="p">(</span><span class="n">P</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">break</span>
 
@@ -1508,6 +1545,11 @@
         <span class="sd">&quot;&quot;&quot;Ensure root has `nroots` children.</span>
 
 <span class="sd">        Sample from prior to fill up (if needed).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        -----------</span>
+<span class="sd">        nroots: int</span>
+<span class="sd">            Number of root live points, after the plateau is traversed.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">children</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Widening roots to </span><span class="si">%d</span><span class="s1"> live points (have </span><span class="si">%d</span><span class="s1"> already) ...&#39;</span><span class="p">,</span> <span class="n">nroots</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">children</span><span class="p">))</span>
@@ -1628,7 +1670,6 @@
 <span class="sd">            maximum fraction of integral in remainder for termination</span>
 <span class="sd">        Lepsilon: float</span>
 <span class="sd">            loglikelihood accuracy threshold</span>
-
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">Ls</span> <span class="o">=</span> <span class="n">parallel_values</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">Ls</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
@@ -1898,7 +1939,6 @@
             <span class="k">if</span> <span class="n">ib</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_point_stack</span><span class="p">:</span>
                 <span class="c1"># root checks the point store</span>
                 <span class="n">next_point</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_dim</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_params</span><span class="p">))</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-                <span class="c1"># print(&quot;1&quot;, self.mpi_rank, next_point)</span>
 
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_to_pointstore</span><span class="p">:</span>
                     <span class="n">_</span><span class="p">,</span> <span class="n">stored_point</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pointstore</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">Lmin</span><span class="p">)</span>
@@ -1906,17 +1946,13 @@
                         <span class="n">next_point</span><span class="p">[</span><span class="mi">0</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">stored_point</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">next_point</span><span class="p">[</span><span class="mi">0</span><span class="p">,:]</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
-                    <span class="c1"># print(&quot;2&quot;, self.mpi_rank, next_point)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">use_point_stack</span> <span class="o">=</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">pointstore</span><span class="o">.</span><span class="n">stack_empty</span>
 
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_mpi</span><span class="p">:</span>  <span class="c1"># and informs everyone</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">use_point_stack</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">bcast</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">use_point_stack</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-                    <span class="c1"># print(&quot;3&quot;, self.mpi_rank, next_point)</span>
                     <span class="n">next_point</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">bcast</span><span class="p">(</span><span class="n">next_point</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
                 <span class="c1"># unpack</span>
-                <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">ndim</span><span class="p">(</span><span class="n">next_point</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;XXXX &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mpi_rank</span><span class="p">,</span> <span class="n">next_point</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_point_stack</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">likes</span> <span class="o">=</span> <span class="n">next_point</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">samples</span> <span class="o">=</span> <span class="n">next_point</span><span class="p">[:,</span><span class="mi">3</span><span class="p">:</span><span class="mi">3</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_dim</span><span class="p">]</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">samplesv</span> <span class="o">=</span> <span class="n">next_point</span><span class="p">[:,</span><span class="mi">3</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_dim</span><span class="p">:</span><span class="mi">3</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_dim</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_params</span><span class="p">]</span>
@@ -2331,6 +2367,8 @@
             <span class="n">insertion_test_window</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
             <span class="n">insertion_test_zscore_threshold</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
             <span class="n">region_class</span><span class="o">=</span><span class="n">MLFriends</span><span class="p">,</span>
+            <span class="n">widen_before_initial_plateau_num_warn</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
+            <span class="n">widen_before_initial_plateau_num_max</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Run until target convergence criteria are fulfilled.</span>
 
@@ -2403,6 +2441,19 @@
 <span class="sd">            Whether to use MLFriends+ellipsoidal+tellipsoidal region (better for multi-modal problems)</span>
 <span class="sd">            or just ellipsoidal sampling (faster for high-dimensional, gaussian-like problems)</span>
 <span class="sd">            or a axis-aligned ellipsoid (fastest, to be combined with slice sampling).</span>
+
+<span class="sd">        widen_before_initial_plateau_num_warn: int</span>
+<span class="sd">            If a likelihood plateau is encountered, increase the number</span>
+<span class="sd">            of initial live points so that once the plateau is traversed,</span>
+<span class="sd">            *min_num_live_points* live points remain.</span>
+<span class="sd">            If the number exceeds *widen_before_initial_plateau_num_warn*,</span>
+<span class="sd">            a warning is raised.</span>
+
+<span class="sd">        widen_before_initial_plateau_num_max: int</span>
+<span class="sd">            If a likelihood plateau is encountered, increase the number</span>
+<span class="sd">            of initial live points so that once the plateau is traversed,</span>
+<span class="sd">            *min_num_live_points* live points remain, but not more than</span>
+<span class="sd">            *widen_before_initial_plateau_num_warn*.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_iter</span><span class="p">(</span>
             <span class="n">update_interval_volume_fraction</span><span class="o">=</span><span class="n">update_interval_volume_fraction</span><span class="p">,</span>
@@ -2419,6 +2470,8 @@
             <span class="n">insertion_test_window</span><span class="o">=</span><span class="n">insertion_test_window</span><span class="p">,</span>
             <span class="n">insertion_test_zscore_threshold</span><span class="o">=</span><span class="n">insertion_test_zscore_threshold</span><span class="p">,</span>
             <span class="n">region_class</span><span class="o">=</span><span class="n">region_class</span><span class="p">,</span>
+            <span class="n">widen_before_initial_plateau_num_warn</span><span class="o">=</span><span class="n">widen_before_initial_plateau_num_warn</span><span class="p">,</span>
+            <span class="n">widen_before_initial_plateau_num_max</span><span class="o">=</span><span class="n">widen_before_initial_plateau_num_max</span><span class="p">,</span>
         <span class="p">):</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;did a run_iter pass!&quot;</span><span class="p">)</span>
@@ -2447,7 +2500,9 @@
             <span class="n">viz_callback</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span>
             <span class="n">insertion_test_window</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
             <span class="n">insertion_test_zscore_threshold</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-            <span class="n">region_class</span><span class="o">=</span><span class="n">MLFriends</span>
+            <span class="n">region_class</span><span class="o">=</span><span class="n">MLFriends</span><span class="p">,</span>
+            <span class="n">widen_before_initial_plateau_num_warn</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
+            <span class="n">widen_before_initial_plateau_num_max</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Iterate towards convergence.</span>
 
@@ -2499,7 +2554,9 @@
         <span class="k">if</span> <span class="n">viz_callback</span> <span class="o">==</span> <span class="s1">&#39;auto&#39;</span><span class="p">:</span>
             <span class="n">viz_callback</span> <span class="o">=</span> <span class="n">get_default_viz_callback</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_widen_roots_beyond_initial_plateau</span><span class="p">(</span><span class="n">min_num_live_points</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_widen_roots_beyond_initial_plateau</span><span class="p">(</span>
+            <span class="n">min_num_live_points</span><span class="p">,</span> 
+            <span class="n">widen_before_initial_plateau_num_warn</span><span class="p">,</span> <span class="n">widen_before_initial_plateau_num_max</span><span class="p">)</span>
 
         <span class="n">Llo</span><span class="p">,</span> <span class="n">Lhi</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
         <span class="n">Lmax</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
@@ -2840,7 +2897,10 @@
             <span class="k">if</span> <span class="n">dlogz_min_num_live_points</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_num_live_points</span><span class="p">:</span>
                 <span class="c1"># more live points needed throughout to reach target</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">min_num_live_points</span> <span class="o">=</span> <span class="n">dlogz_min_num_live_points</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_widen_roots_beyond_initial_plateau</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_num_live_points</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_widen_roots_beyond_initial_plateau</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">min_num_live_points</span><span class="p">,</span>
+                    <span class="n">widen_before_initial_plateau_num_warn</span><span class="p">,</span>
+                    <span class="n">widen_before_initial_plateau_num_max</span><span class="p">)</span>
 
             <span class="k">elif</span> <span class="n">Llo</span> <span class="o">&lt;=</span> <span class="n">Lhi</span><span class="p">:</span>
                 <span class="c1"># if self.log:</span>
@@ -2971,8 +3031,8 @@
                     <span class="c1"># add a bit of padding, but not outside parameter limits</span>
                     <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span> <span class="o">=</span> <span class="n">edges</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">edges</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
                     <span class="n">step</span> <span class="o">=</span> <span class="n">edges</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">lo</span>
-                    <span class="n">lo</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">lo</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform_limits</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">]),</span> <span class="n">lo</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">step</span><span class="p">)</span>
-                    <span class="n">hi</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">hi</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform_limits</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">1</span><span class="p">]),</span> <span class="n">hi</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">step</span><span class="p">)</span>
+                    <span class="n">lo</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transform_limits</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="n">lo</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">step</span><span class="p">)</span>
+                    <span class="n">hi</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transform_limits</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="n">hi</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">step</span><span class="p">)</span>
                     <span class="n">H</span><span class="p">,</span> <span class="n">edges</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">lo</span><span class="p">,</span> <span class="n">hi</span><span class="p">,</span> <span class="mi">40</span><span class="p">))</span>
                     <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span> <span class="o">=</span> <span class="n">edges</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">edges</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
@@ -2982,6 +3042,7 @@
                     <span class="n">fmts</span> <span class="o">=</span> <span class="s1">&#39;    </span><span class="si">%-20s</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="n">fmt</span> <span class="o">+</span> <span class="s2">&quot; +- &quot;</span> <span class="o">+</span> <span class="n">fmt</span>
                     <span class="nb">print</span><span class="p">(</span><span class="n">fmts</span> <span class="o">%</span> <span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">med</span><span class="p">,</span> <span class="n">sigma</span><span class="p">))</span>
             <span class="nb">print</span><span class="p">()</span></div>
+
 
 <div class="viewcode-block" id="ReactiveNestedSampler.plot"><a class="viewcode-back" href="../../ultranest.html#ultranest.integrator.ReactiveNestedSampler.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Make corner, run and trace plots.</span>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest.popstepsampler &mdash; UltraNest 3.5.7 documentation</title>
+  <title>ultranest.popstepsampler &mdash; UltraNest 3.6.0 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="../../_static/icon.ico"/>
@@ -33,7 +33,7 @@
             <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.5.7
+                3.6.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -100,8 +100,198 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">ultranest.utils</span> <span class="kn">import</span> <span class="n">submasks</span>
 <span class="kn">from</span> <span class="nn">ultranest.stepfuncs</span> <span class="kn">import</span> <span class="n">evolve</span><span class="p">,</span> <span class="n">step_back</span>
-<span class="kn">from</span> <span class="nn">ultranest.stepfuncs</span> <span class="kn">import</span> <span class="n">generate_cube_oriented_direction</span><span class="p">,</span> \
+<span class="kn">from</span> <span class="nn">ultranest.stepfuncs</span> <span class="kn">import</span> <span class="n">generate_cube_oriented_direction</span><span class="p">,</span> <span class="n">generate_cube_oriented_direction_scaled</span><span class="p">,</span> \
    <span class="n">generate_random_direction</span><span class="p">,</span> <span class="n">generate_region_oriented_direction</span><span class="p">,</span> <span class="n">generate_region_random_direction</span>
+<span class="kn">import</span> <span class="nn">scipy.stats</span>
+
+<div class="viewcode-block" id="unitcube_line_intersection"><a class="viewcode-back" href="../../ultranest.html#ultranest.popstepsampler.unitcube_line_intersection">[docs]</a><span class="k">def</span> <span class="nf">unitcube_line_intersection</span><span class="p">(</span><span class="n">ray_origin</span><span class="p">,</span> <span class="n">ray_direction</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Compute intersection of a line (ray) and a unit box (0:1 in all axes).</span>
+
+<span class="sd">    Based on</span>
+<span class="sd">    http://www.iquilezles.org/www/articles/intersectors/intersectors.htm</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    ray_origin: array of vectors</span>
+<span class="sd">        starting point of line</span>
+<span class="sd">    ray_direction: vector</span>
+<span class="sd">        line direction vector</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    --------</span>
+<span class="sd">    tleft: array</span>
+<span class="sd">        negative intersection point distance from ray\_origin in units in ray\_direction</span>
+<span class="sd">    tright: array</span>
+<span class="sd">        positive intersection point distance from ray\_origin in units in ray\_direction</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># make sure ray starts inside the box</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">ray_origin</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">ray_origin</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">ray_origin</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">ray_origin</span>
+    <span class="k">assert</span> <span class="p">((</span><span class="n">ray_direction</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">**</span><span class="mf">0.5</span> <span class="o">&gt;</span> <span class="mf">1e-200</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">ray_direction</span>
+
+    <span class="c1"># step size</span>
+    <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">invalid</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">):</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">ray_direction</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">m</span> <span class="o">*</span> <span class="p">(</span><span class="n">ray_origin</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span>
+        <span class="c1"># line coordinates of intersection</span>
+        <span class="c1"># find first intersecting coordinate</span>
+        <span class="n">t1</span> <span class="o">=</span> <span class="o">-</span><span class="n">n</span> <span class="o">-</span> <span class="n">k</span>
+        <span class="n">t2</span> <span class="o">=</span> <span class="o">-</span><span class="n">n</span> <span class="o">+</span> <span class="n">k</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">t2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="PopulationRandomWalkSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.popstepsampler.PopulationRandomWalkSampler">[docs]</a><span class="k">class</span> <span class="nc">PopulationRandomWalkSampler</span><span class="p">():</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">popsize</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">,</span> <span class="n">generate_direction</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> 
+        <span class="n">scale_adapt_factor</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">scale_min</span><span class="o">=</span><span class="mf">1e-20</span><span class="p">,</span> <span class="n">scale_max</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">logfile</span><span class="o">=</span><span class="kc">None</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Vectorized Gaussian Random Walk sampler.</span>
+
+<span class="sd">        Revert until all previous steps have likelihoods allL above Lmin.</span>
+<span class="sd">        Updates currentt, generation and allL, in-place.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        popsize: int</span>
+<span class="sd">            number of walkers to maintain</span>
+<span class="sd">        nsteps: int</span>
+<span class="sd">            number of steps to take until the found point is accepted as independent.</span>
+<span class="sd">        generate_direction: function `(u, region, scale) -&gt; v`</span>
+<span class="sd">            function such as `generate_unit_directions`, which</span>
+<span class="sd">            generates a random slice direction.</span>
+<span class="sd">        scale: float</span>
+<span class="sd">            initial guess scale for the length of the slice</span>
+<span class="sd">        scale_adapt_factor: float</span>
+<span class="sd">            smoothing factor for updating scale.</span>
+<span class="sd">            if near 1, scale is barely updating, if near 0,</span>
+<span class="sd">            the last slice length is used as a initial guess for the next.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">=</span> <span class="n">nsteps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nrejects</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">scale</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ncalls</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">assert</span> <span class="n">scale_adapt_factor</span> <span class="o">&lt;=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale_adapt_factor</span> <span class="o">=</span> <span class="n">scale_adapt_factor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale_min</span> <span class="o">=</span> <span class="n">scale_min</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale_max</span> <span class="o">=</span> <span class="n">scale_max</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="o">=</span> <span class="n">log</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logfile</span> <span class="o">=</span> <span class="n">logfile</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prepared_samples</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">popsize</span> <span class="o">=</span> <span class="n">popsize</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span> <span class="o">=</span> <span class="n">generate_direction</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;PopulationRandomWalkSampler(popsize=</span><span class="si">%d</span><span class="s1">, nsteps=</span><span class="si">%d</span><span class="s1">, generate_direction=</span><span class="si">%s</span><span class="s1">, scale=%.g)&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">popsize</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PopulationRandomWalkSampler.region_changed"><a class="viewcode-back" href="../../ultranest.html#ultranest.popstepsampler.PopulationRandomWalkSampler.region_changed">[docs]</a>    <span class="k">def</span> <span class="nf">region_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Ls</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;notification that the region changed. Currently not used.&quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+    <span class="k">def</span> <span class="fm">__next__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">,</span> <span class="n">us</span><span class="p">,</span> <span class="n">Ls</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+        <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">tregion</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Sample a new live point.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        region: MLFriends object</span>
+<span class="sd">            Region</span>
+<span class="sd">        Lmin: float</span>
+<span class="sd">            current log-likelihood threshold</span>
+<span class="sd">        us: np.array((nlive, ndim))</span>
+<span class="sd">            live points</span>
+<span class="sd">        Ls: np.array(nlive)</span>
+<span class="sd">            loglikelihoods live points</span>
+<span class="sd">        transform: function</span>
+<span class="sd">            prior transform function</span>
+<span class="sd">        loglike: function</span>
+<span class="sd">            loglikelihood function</span>
+<span class="sd">        ndraw: int</span>
+<span class="sd">            not used</span>
+<span class="sd">        plot: bool</span>
+<span class="sd">            not used</span>
+<span class="sd">        tregion: bool</span>
+<span class="sd">            not used</span>
+<span class="sd">        log: bool</span>
+<span class="sd">            not used</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        u: np.array(ndim) or None</span>
+<span class="sd">            new point coordinates (None if not yet available)</span>
+<span class="sd">        p: np.array(nparams) or None</span>
+<span class="sd">            new point transformed coordinates (None if not yet available)</span>
+<span class="sd">        L: float or None</span>
+<span class="sd">            new point likelihood (None if not yet available)</span>
+<span class="sd">        nc: int</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">nlive</span><span class="p">,</span> <span class="n">ndim</span> <span class="o">=</span> <span class="n">us</span><span class="o">.</span><span class="n">shape</span>
+
+        <span class="c1"># fill if empty:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prepared_samples</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># choose live points</span>
+            <span class="n">ilive</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nlive</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">popsize</span><span class="p">)</span>
+            <span class="n">allu</span> <span class="o">=</span> <span class="n">us</span><span class="p">[</span><span class="n">ilive</span><span class="p">,:]</span>
+            <span class="n">allp</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">allL</span> <span class="o">=</span> <span class="n">Ls</span><span class="p">[</span><span class="n">ilive</span><span class="p">]</span>
+            <span class="n">nc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">popsize</span>
+            <span class="n">nrejects_expected</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nrejects</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">popsize</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="mf">0.234</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">):</span>
+                <span class="c1"># perturb walker population</span>
+                <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span><span class="p">(</span><span class="n">allu</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">)</span>
+                <span class="c1"># compute intersection of u + t * v with unit cube</span>
+                <span class="n">tleft</span><span class="p">,</span> <span class="n">tright</span> <span class="o">=</span> <span class="n">unitcube_line_intersection</span><span class="p">(</span><span class="n">allu</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+                <span class="c1">#print(tleft.shape, tright.shape, self.popsize, tleft, tright)</span>
+                <span class="n">proposed_t</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">truncnorm</span><span class="o">.</span><span class="n">rvs</span><span class="p">(</span><span class="n">tleft</span><span class="p">,</span> <span class="n">tright</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+                <span class="c1"># proposed_t = np.random.normal(size=(self.popsize, 1))</span>
+                
+                <span class="n">proposed_u</span> <span class="o">=</span> <span class="n">allu</span> <span class="o">+</span> <span class="n">v</span> <span class="o">*</span> <span class="n">proposed_t</span>
+                <span class="n">mask_outside</span> <span class="o">=</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">proposed_u</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">proposed_u</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                <span class="k">assert</span> <span class="ow">not</span> <span class="n">mask_outside</span><span class="o">.</span><span class="n">any</span><span class="p">(),</span> <span class="n">proposed_u</span><span class="p">[</span><span class="n">mask_outside</span><span class="p">,:]</span>
+                <span class="c1">#while mask_outside.any():</span>
+                <span class="c1">#    proposed_u[mask_outside,:] = allu[mask_outside,:] + v[mask_outside,:] * np.random.normal(size=(mask_outside.sum(), 1))</span>
+                <span class="c1">#    mask_outside = ~np.logical_and(proposed_u &gt; 0, proposed_u &lt; 1).all(axis=1)</span>
+                
+                <span class="n">proposed_p</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">proposed_u</span><span class="p">)</span>
+                <span class="c1"># accept if likelihood threshold exceeded</span>
+                <span class="n">proposed_L</span> <span class="o">=</span> <span class="n">loglike</span><span class="p">(</span><span class="n">proposed_p</span><span class="p">)</span>
+                <span class="n">mask_accept</span> <span class="o">=</span> <span class="n">proposed_L</span> <span class="o">&gt;</span> <span class="n">Lmin</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">nrejects</span> <span class="o">+=</span> <span class="p">(</span><span class="o">~</span><span class="n">mask_accept</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+                <span class="n">allu</span><span class="p">[</span><span class="n">mask_accept</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">proposed_u</span><span class="p">[</span><span class="n">mask_accept</span><span class="p">,:]</span>
+                <span class="k">if</span> <span class="n">allp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">allp</span> <span class="o">=</span> <span class="n">proposed_p</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+                <span class="n">allp</span><span class="p">[</span><span class="n">mask_accept</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">proposed_p</span><span class="p">[</span><span class="n">mask_accept</span><span class="p">,:]</span>
+                <span class="n">allL</span><span class="p">[</span><span class="n">mask_accept</span><span class="p">]</span> <span class="o">=</span> <span class="n">proposed_L</span><span class="p">[</span><span class="n">mask_accept</span><span class="p">]</span>
+            <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">allp</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="s1">&#39;some walkers never moved! Double nsteps of PopulationRandomWalkSampler.&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">prepared_samples</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">allu</span><span class="p">,</span> <span class="n">allp</span><span class="p">,</span> <span class="n">allL</span><span class="p">))</span>
+
+            <span class="c1"># adapt slightly</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logfile</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;rescale</span><span class="se">\t</span><span class="si">%.4f</span><span class="se">\t</span><span class="si">%.4f</span><span class="se">\t</span><span class="si">%g</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+                    <span class="n">mask_accept</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">*</span> <span class="mi">100</span><span class="p">,</span> 
+                    <span class="mi">100</span> <span class="o">-</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nrejects</span> <span class="o">-</span> <span class="p">(</span><span class="n">nrejects_expected</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">popsize</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="mf">0.234</span><span class="p">)))</span> <span class="o">*</span> <span class="mf">100.</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">popsize</span><span class="p">),</span> 
+                    <span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">))</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nrejects</span> <span class="o">&gt;</span> <span class="n">nrejects_expected</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_min</span><span class="p">:</span>
+                <span class="c1"># lots of rejects, decrease scale</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_adapt_factor</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">nrejects</span> <span class="o">&lt;</span> <span class="n">nrejects_expected</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_max</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">/=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_adapt_factor</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">nc</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="n">u</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">L</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prepared_samples</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">u</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">nc</span></div>
 
 
 <div class="viewcode-block" id="PopulationSliceSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.popstepsampler.PopulationSliceSampler">[docs]</a><span class="k">class</span> <span class="nc">PopulationSliceSampler</span><span class="p">():</span>

@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Release Notes &mdash; UltraNest 3.5.7 documentation</title>
+  <title>Release Notes &mdash; UltraNest 3.6.0 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="_static/icon.ico"/>
@@ -36,7 +36,7 @@
             <img src="_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.5.7
+                3.6.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -58,14 +58,15 @@
 <li class="toctree-l1"><a class="reference internal" href="issues.html">Frequently Asked Questions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Release Notes</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#id1">3.5.0 (2022-09-05)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id2">3.4.0 (2022-04-05)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id3">3.3.3 (2021-09-17)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id4">3.0.0 (2020-10-03)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id5">2.2.0 (2020-02-07)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id6">2.1.0 (2020-02-07)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id7">2.0.0 (2019-10-03)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id8">1.0.0 (2014)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id1">3.6.0 (2023-06-22)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id2">3.5.0 (2022-09-05)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id3">3.4.0 (2022-04-05)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id4">3.3.3 (2021-09-17)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id5">3.0.0 (2020-10-03)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id6">2.2.0 (2020-02-07)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id7">2.1.0 (2020-02-07)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id8">2.0.0 (2019-10-03)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id9">1.0.0 (2014)</a></li>
 </ul>
 </li>
 </ul>
@@ -132,7 +133,14 @@
 <section id="release-notes">
 <h1>Release Notes<a class="headerlink" href="#release-notes" title="Permalink to this heading"></a></h1>
 <section id="id1">
-<h2>3.5.0 (2022-09-05)<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h2>
+<h2>3.6.0 (2023-06-22)<a class="headerlink" href="#id1" title="Permalink to this heading"></a></h2>
+<ul class="simple">
+<li><p>add PopulationRandomWalkSampler: vectorized Gaussian random walks for GPU/JAX-powered likelihoods</p></li>
+<li><p>limit initial widening to escape plateau (issue #81)</p></li>
+</ul>
+</section>
+<section id="id2">
+<h2>3.5.0 (2022-09-05)<a class="headerlink" href="#id2" title="Permalink to this heading"></a></h2>
 <ul class="simple">
 <li><p>add hot-resume: resume from a similar fit (with different data)</p></li>
 <li><p>fix post_summary.csv column order</p></li>
@@ -140,16 +148,16 @@
 <li><p>more efficient handling of categorical variables</p></li>
 </ul>
 </section>
-<section id="id2">
-<h2>3.4.0 (2022-04-05)<a class="headerlink" href="#id2" title="Permalink to this heading"></a></h2>
+<section id="id3">
+<h2>3.4.0 (2022-04-05)<a class="headerlink" href="#id3" title="Permalink to this heading"></a></h2>
 <ul class="simple">
 <li><p>add differential evolution proposal for slice sampling, recommend it</p></li>
 <li><p>fix revert of step sampler when run out of constraint, in MPI</p></li>
 <li><p>add SimpleRegion: axis-aligned ellipsoidal for very high-d.</p></li>
 </ul>
 </section>
-<section id="id3">
-<h2>3.3.3 (2021-09-17)<a class="headerlink" href="#id3" title="Permalink to this heading"></a></h2>
+<section id="id4">
+<h2>3.3.3 (2021-09-17)<a class="headerlink" href="#id4" title="Permalink to this heading"></a></h2>
 <ul class="simple">
 <li><p>pretty marginal posterior plot to stdout</p></li>
 <li><p>avoid non-terminations when logzerr cannot be reached</p></li>
@@ -160,8 +168,8 @@
 <li><p>modular step samplers</p></li>
 </ul>
 </section>
-<section id="id4">
-<h2>3.0.0 (2020-10-03)<a class="headerlink" href="#id4" title="Permalink to this heading"></a></h2>
+<section id="id5">
+<h2>3.0.0 (2020-10-03)<a class="headerlink" href="#id5" title="Permalink to this heading"></a></h2>
 <ul class="simple">
 <li><p>Accelerated Hit-and-Run Sampler added</p></li>
 <li><p>Support for other languages (C, C++, Julia, Fortran) added</p></li>
@@ -170,26 +178,26 @@
 <li><p>Rejection sampling with transformed ellipsoid added</p></li>
 </ul>
 </section>
-<section id="id5">
-<h2>2.2.0 (2020-02-07)<a class="headerlink" href="#id5" title="Permalink to this heading"></a></h2>
+<section id="id6">
+<h2>2.2.0 (2020-02-07)<a class="headerlink" href="#id6" title="Permalink to this heading"></a></h2>
 <ul class="simple">
 <li><p>allow reading UltraNest outputs without ReactiveNestedSampler instance</p></li>
 </ul>
 </section>
-<section id="id6">
-<h2>2.1.0 (2020-02-07)<a class="headerlink" href="#id6" title="Permalink to this heading"></a></h2>
+<section id="id7">
+<h2>2.1.0 (2020-02-07)<a class="headerlink" href="#id7" title="Permalink to this heading"></a></h2>
 <ul class="simple">
 <li><p>adaptive number of steps for slice and hit-and-run samplers.</p></li>
 </ul>
 </section>
-<section id="id7">
-<h2>2.0.0 (2019-10-03)<a class="headerlink" href="#id7" title="Permalink to this heading"></a></h2>
+<section id="id8">
+<h2>2.0.0 (2019-10-03)<a class="headerlink" href="#id8" title="Permalink to this heading"></a></h2>
 <ul class="simple">
 <li><p>First release.</p></li>
 </ul>
 </section>
-<section id="id8">
-<h2>1.0.0 (2014)<a class="headerlink" href="#id8" title="Permalink to this heading"></a></h2>
+<section id="id9">
+<h2>1.0.0 (2014)<a class="headerlink" href="#id9" title="Permalink to this heading"></a></h2>
 <ul class="simple">
 <li><p>A simpler version referenced in Buchner et al. (2014),
 combining RadFriends with an optional Metropolis-Hastings proposal.</p></li>
