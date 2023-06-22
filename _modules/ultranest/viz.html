@@ -94,7 +94,15 @@
            <div itemprop="articleBody">
              
   <h1>Source code for ultranest.viz</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Visual impression of current exploration.&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Live point visualisations</span>
+<span class="sd">-------------------------</span>
+
+<span class="sd">Gives a live impression of current exploration.</span>
+<span class="sd">This is powerful because the user can abort partial runs if the fit</span>
+<span class="sd">converges to unreasonable values.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span><span class="p">,</span> <span class="n">division</span>
 
@@ -203,9 +211,9 @@
     <span class="n">plo_rounded</span><span class="p">,</span> <span class="n">phi_rounded</span><span class="p">,</span> <span class="n">paramformats</span> <span class="o">=</span> <span class="n">round_parameterlimits</span><span class="p">(</span><span class="n">plo</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">paramlimitguess</span><span class="o">=</span><span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;paramlims&#39;</span><span class="p">))</span>
 
     <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">isatty</span><span class="p">()</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">shutil</span><span class="p">,</span> <span class="s1">&#39;get_terminal_size&#39;</span><span class="p">):</span>
-        <span class="n">columns</span><span class="p">,</span> <span class="n">_rows</span> <span class="o">=</span> <span class="n">shutil</span><span class="o">.</span><span class="n">get_terminal_size</span><span class="p">(</span><span class="n">fallback</span><span class="o">=</span><span class="p">(</span><span class="mi">80</span><span class="p">,</span> <span class="mi">25</span><span class="p">))</span>
+        <span class="n">columns</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">shutil</span><span class="o">.</span><span class="n">get_terminal_size</span><span class="p">(</span><span class="n">fallback</span><span class="o">=</span><span class="p">(</span><span class="mi">80</span><span class="p">,</span> <span class="mi">25</span><span class="p">))</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">columns</span><span class="p">,</span> <span class="n">_rows</span> <span class="o">=</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">25</span>
+        <span class="n">columns</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="mi">80</span><span class="p">,</span> <span class="mi">25</span>
 
     <span class="n">paramwidth</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">pname</span><span class="p">)</span> <span class="k">for</span> <span class="n">pname</span> <span class="ow">in</span> <span class="n">paramnames</span><span class="p">])</span>
     <span class="n">width</span> <span class="o">=</span> <span class="n">columns</span> <span class="o">-</span> <span class="mi">23</span> <span class="o">-</span> <span class="n">paramwidth</span>

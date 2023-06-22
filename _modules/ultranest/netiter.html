@@ -96,7 +96,12 @@
   <h1>Source code for ultranest.netiter</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!/usr/bin/env python</span>
 <span class="c1"># -*- coding: utf-8 -*-</span>
-<span class="sd">&quot;&quot;&quot;Functions and classes for treating nested sampling exploration as a tree.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Graph-based nested sampling</span>
+<span class="sd">---------------------------</span>
+
+<span class="sd">A formulation of nested sampling exploration as a tree, presented in</span>
+<span class="sd">section 3.4 of Buchner (2023, https://arxiv.org/abs/2101.09675).</span>
 
 <span class="sd">The root represents the prior volume, branches and sub-branches split the volume.</span>
 <span class="sd">The leaves of the tree are the integration tail.</span>
@@ -125,19 +130,20 @@
 
 
 <div class="viewcode-block" id="TreeNode"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.TreeNode">[docs]</a><span class="k">class</span> <span class="nc">TreeNode</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Simple tree node.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    value: float</span>
-<span class="sd">        value used to order nodes (typically log-likelihood)</span>
-<span class="sd">    id: int</span>
-<span class="sd">        identifier, refers to the order of discovery and storage (PointPile)</span>
-<span class="sd">    children: list</span>
-<span class="sd">        children nodes, should be :py:class:`TreeNode` objects. if None, a empty list is used.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Simple tree node.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">children</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialise.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        value: float</span>
+<span class="sd">            value used to order nodes (typically log-likelihood)</span>
+<span class="sd">        id: int</span>
+<span class="sd">            identifier, refers to the order of discovery and storage (PointPile)</span>
+<span class="sd">        children: list</span>
+<span class="sd">            children nodes, should be :py:class:`TreeNode` objects. if None, a empty list is used.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="nb">id</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">children</span> <span class="o">=</span> <span class="n">children</span> <span class="ow">or</span> <span class="p">[]</span>
@@ -558,17 +564,17 @@
 
 
 <div class="viewcode-block" id="SingleCounter"><a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.SingleCounter">[docs]</a><span class="k">class</span> <span class="nc">SingleCounter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Evidence log(Z) and posterior weight summation for a Nested Sampling tree.</span>
+    <span class="sd">&quot;&quot;&quot;Evidence log(Z) and posterior weight summation for a Nested Sampling tree.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">random</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialise.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        random: bool</span>
 <span class="sd">            if False, use mean estimator for volume shrinkage</span>
 <span class="sd">            if True, draw a random sample</span>
-
 <span class="sd">        &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">random</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">random</span> <span class="o">=</span> <span class="n">random</span>
 
@@ -696,7 +702,6 @@
 <span class="sd">            if True, draw a random sample</span>
 <span class="sd">        check_insertion_order: bool</span>
 <span class="sd">            whether to run insertion order rank U test</span>
-
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">allyes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">nroots</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
         <span class="c1"># the following is a masked array of size (nbootstraps+1, nroots)</span>
@@ -1140,7 +1145,7 @@
         <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">invalid</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">):</span>
             <span class="c1"># first time they are all the same</span>
             <span class="n">logzerr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">main_iterator</span><span class="o">.</span><span class="n">logZerr_bs</span><span class="p">)</span>
-        
+
         <span class="n">nactive</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">active_values</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">active_values</span><span class="p">))</span> <span class="o">==</span> <span class="n">nactive</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>

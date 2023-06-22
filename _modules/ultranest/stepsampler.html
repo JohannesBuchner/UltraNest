@@ -94,12 +94,14 @@
            <div itemprop="articleBody">
              
   <h1>Source code for ultranest.stepsampler</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;MCMC-like step sampling within a region.</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">MCMC-like step sampling</span>
+<span class="sd">-----------------------</span>
 
 <span class="sd">The classes implemented here are generators that, in each iteration,</span>
-<span class="sd">only make one likelihood call. This allows keeping a population of</span>
-<span class="sd">samplers that have the same execution time per call, even if they</span>
-<span class="sd">do not terminate at the same number of iterations.</span>
+<span class="sd">only make one likelihood call. This allows running in parallel a</span>
+<span class="sd">population of samplers that have the same execution time per call,</span>
+<span class="sd">even if they do not terminate at the same number of iterations.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span><span class="p">,</span> <span class="n">division</span>
@@ -258,8 +260,8 @@
             <span class="c1"># repeat if live points are identical</span>
             <span class="k">break</span>
     <span class="c1"># use doubling procedure to identify left and right maxima borders</span>
-    <span class="c1">#v = np.zeros(ndim)</span>
-    <span class="c1">#v[mask] = (region.u[i,mask] - region.u[i2,mask]) * scale</span>
+    <span class="c1"># v = np.zeros(ndim)</span>
+    <span class="c1"># v[mask] = (region.u[i,mask] - region.u[i2,mask]) * scale</span>
     <span class="k">return</span> <span class="n">v</span></div>
 
 
@@ -476,7 +478,7 @@
 <span class="sd">            * :py:func:`generate_partial_differential_direction` (differential evolution slice proposal on only 10% of the parameters)</span>
 <span class="sd">            * :py:func:`generate_mixture_random_direction` (generate_differential_direction and generate_cube_oriented_differential_direction)</span>
 
-<span class="sd">            Additionally, :py:class:`OrthogonalDirectionGenerator` </span>
+<span class="sd">            Additionally, :py:class:`OrthogonalDirectionGenerator`</span>
 <span class="sd">            can be applied to a generate_direction.</span>
 
 <span class="sd">            When in doubt, try :py:func:`generate_mixture_random_direction`.</span>
@@ -562,6 +564,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;jump-distance&#39;</span><span class="p">,</span> <span class="s1">&#39;reference-distance&#39;</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return string representation.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s1">&#39;(nsteps=</span><span class="si">%d</span><span class="s1">, generate_direction=</span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -888,7 +891,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">nrejects</span> <span class="o">=</span> <span class="mi">0</span></div>
 
 <div class="viewcode-block" id="SliceSampler.adjust_accept"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.SliceSampler.adjust_accept">[docs]</a>    <span class="k">def</span> <span class="nf">adjust_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">accepted</span><span class="p">,</span> <span class="n">unew</span><span class="p">,</span> <span class="n">pnew</span><span class="p">,</span> <span class="n">Lnew</span><span class="p">,</span> <span class="n">nc</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;see :py:meth:`StepSampler.adjust_accept`&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;See :py:meth:`StepSampler.adjust_accept`.&quot;&quot;&quot;</span>
         <span class="n">v</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">u</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">interval</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">found_left</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">accepted</span><span class="p">:</span>
@@ -929,7 +932,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">adjust_accept</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="n">unew</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pnew</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">Lnew</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nc</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="SliceSampler.move"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.SliceSampler.move">[docs]</a>    <span class="k">def</span> <span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Advance the slice sampling move. see :py:meth:`StepSampler.move`&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Advance the slice sampling move. see :py:meth:`StepSampler.move`.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">interval</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">)</span>
 
@@ -1010,12 +1013,13 @@
 
 
 <div class="viewcode-block" id="SequentialRegionDirectionGenerator"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.SequentialRegionDirectionGenerator">[docs]</a><span class="k">class</span> <span class="nc">SequentialRegionDirectionGenerator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Sequentially proposes one region axes after the next.&quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Sequentially proposes one region axes after the next.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Initialise.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">axis_index</span> <span class="o">=</span> <span class="mi">0</span>
 
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Iteratively choose the next axis in t-space.</span>
+        <span class="sd">&quot;&quot;&quot;Choose the next axis in t-space.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        -----------</span>
@@ -1048,14 +1052,17 @@
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s1">&#39;()&#39;</span></div>
 
+
 <div class="viewcode-block" id="RegionSequentialSliceSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.RegionSequentialSliceSampler">[docs]</a><span class="k">def</span> <span class="nf">RegionSequentialSliceSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Slice sampler, sequentially iterating region axes.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">SliceSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">generate_direction</span><span class="o">=</span><span class="n">SequentialRegionDirectionGenerator</span><span class="p">())</span></div>
 
 
 <div class="viewcode-block" id="OrthogonalDirectionGenerator"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.OrthogonalDirectionGenerator">[docs]</a><span class="k">class</span> <span class="nc">OrthogonalDirectionGenerator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Orthogonalizes proposal vectors.&quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">generate_direction</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Orthogonalizes proposal vectors.</span>
+        <span class="sd">&quot;&quot;&quot;Initialise.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        -----------</span>
@@ -1065,12 +1072,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">axis_index</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span> <span class="o">=</span> <span class="n">generate_direction</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">directions</span> <span class="o">=</span> <span class="kc">None</span>
-    
+
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return string representation.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s1">&#39;(generate_direction=</span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span>
 
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Iteratively return a orthogonalized vector.</span>
+        <span class="sd">&quot;&quot;&quot;Return next orthogonalized vector.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        -----------</span>
@@ -1101,7 +1109,10 @@
 
 
 <div class="viewcode-block" id="SpeedVariableGenerator"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.SpeedVariableGenerator">[docs]</a><span class="k">class</span> <span class="nc">SpeedVariableGenerator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Propose directions in region, but only some dimensions at a time, completely user-definable.</span>
+    <span class="sd">&quot;&quot;&quot;Propose directions with only some parameters variable.</span>
+
+<span class="sd">    Propose in region direction, but only include some dimensions at a time.</span>
+<span class="sd">    Completely configurable.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step_matrix</span><span class="p">,</span> <span class="n">generate_direction</span><span class="o">=</span><span class="n">generate_region_random_direction</span><span class="p">):</span>

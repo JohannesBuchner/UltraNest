@@ -153,12 +153,13 @@
 
 
 <div class="viewcode-block" id="PopulationRandomWalkSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.popstepsampler.PopulationRandomWalkSampler">[docs]</a><span class="k">class</span> <span class="nc">PopulationRandomWalkSampler</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Vectorized Gaussian Random Walk sampler.&quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">popsize</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">,</span> <span class="n">generate_direction</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span>
         <span class="n">scale_adapt_factor</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">scale_min</span><span class="o">=</span><span class="mf">1e-20</span><span class="p">,</span> <span class="n">scale_max</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">logfile</span><span class="o">=</span><span class="kc">None</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Vectorized Gaussian Random Walk sampler.</span>
+        <span class="sd">&quot;&quot;&quot;Initialise.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -209,11 +210,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span> <span class="o">=</span> <span class="n">generate_direction</span>
 
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return string representation.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="s1">&#39;PopulationRandomWalkSampler(popsize=</span><span class="si">%d</span><span class="s1">, nsteps=</span><span class="si">%d</span><span class="s1">, generate_direction=</span><span class="si">%s</span><span class="s1">, scale=%.g)&#39;</span> <span class="o">%</span> <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">popsize</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">)</span>
 
 <div class="viewcode-block" id="PopulationRandomWalkSampler.region_changed"><a class="viewcode-back" href="../../ultranest.html#ultranest.popstepsampler.PopulationRandomWalkSampler.region_changed">[docs]</a>    <span class="k">def</span> <span class="nf">region_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Ls</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;notification that the region changed. Currently not used.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Act upon region changed. Currently unused.&quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
     <span class="k">def</span> <span class="fm">__next__</span><span class="p">(</span>
@@ -312,15 +314,17 @@
 
 
 <div class="viewcode-block" id="PopulationSliceSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.popstepsampler.PopulationSliceSampler">[docs]</a><span class="k">class</span> <span class="nc">PopulationSliceSampler</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Vectorized slice/HARM sampler.</span>
+
+<span class="sd">    Can revert until all previous steps have likelihoods allL above Lmin.</span>
+<span class="sd">    Updates currentt, generation and allL, in-place.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">popsize</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">,</span> <span class="n">generate_direction</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
         <span class="n">scale_adapt_factor</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">logfile</span><span class="o">=</span><span class="kc">None</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Vectorized slice/HARM sampler.</span>
-
-<span class="sd">        Revert until all previous steps have likelihoods allL above Lmin.</span>
-<span class="sd">        Updates currentt, generation and allL, in-place.</span>
+        <span class="sd">&quot;&quot;&quot;Initialise.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -362,11 +366,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span> <span class="o">=</span> <span class="n">generate_direction</span>
 
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return string representation.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="s1">&#39;PopulationSliceSampler(popsize=</span><span class="si">%d</span><span class="s1">, nsteps=</span><span class="si">%d</span><span class="s1">, generate_direction=</span><span class="si">%s</span><span class="s1">, scale=%.g)&#39;</span> <span class="o">%</span> <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">popsize</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">)</span>
 
 <div class="viewcode-block" id="PopulationSliceSampler.region_changed"><a class="viewcode-back" href="../../ultranest.html#ultranest.popstepsampler.PopulationSliceSampler.region_changed">[docs]</a>    <span class="k">def</span> <span class="nf">region_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Ls</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;notification that the region changed. Currently not used.&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Act upon region changed. Currently unused.&quot;&quot;&quot;</span>
         <span class="c1"># self.scale = region.us.std(axis=1).mean()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logfile</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;region-update</span><span class="se">\t</span><span class="si">%g</span><span class="se">\t</span><span class="si">%g</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">us</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()))</span></div>
@@ -417,6 +422,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return compact string representation of the current status.&quot;&quot;&quot;</span>
         <span class="n">s1</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;G:&#39;</span> <span class="o">+</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">g</span> <span class="k">if</span> <span class="n">g</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="k">else</span> <span class="s1">&#39;_&#39;</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">generation</span><span class="p">]))</span>
         <span class="n">s2</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;S:&#39;</span> <span class="o">+</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span>
             <span class="s1">&#39;S&#39;</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">currentt</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">else</span> <span class="s1">&#39;L&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">searching_left</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">else</span> <span class="s1">&#39;R&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">searching_right</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">else</span> <span class="s1">&#39;B&#39;</span>
@@ -499,8 +505,9 @@
 
         <span class="p">(</span>
             <span class="p">(</span>
-            <span class="n">currentt</span><span class="p">,</span> <span class="n">currentv</span><span class="p">,</span>
-            <span class="n">current_left</span><span class="p">,</span> <span class="n">current_right</span><span class="p">,</span> <span class="n">searching_left</span><span class="p">,</span> <span class="n">searching_right</span><span class="p">),</span>
+                <span class="n">currentt</span><span class="p">,</span> <span class="n">currentv</span><span class="p">,</span>
+                <span class="n">current_left</span><span class="p">,</span> <span class="n">current_right</span><span class="p">,</span> <span class="n">searching_left</span><span class="p">,</span> <span class="n">searching_right</span>
+            <span class="p">),</span>
             <span class="p">(</span><span class="n">success</span><span class="p">,</span> <span class="n">unew</span><span class="p">,</span> <span class="n">pnew</span><span class="p">,</span> <span class="n">Lnew</span><span class="p">),</span>
             <span class="n">nc</span>
         <span class="p">)</span> <span class="o">=</span> <span class="n">evolve</span><span class="p">(</span><span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
@@ -599,13 +606,16 @@
         <span class="k">if</span> <span class="n">mask_starting</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">setup_brackets</span><span class="p">(</span><span class="n">mask_starting</span><span class="p">,</span> <span class="n">region</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="s2">&quot;(before)&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="s2">&quot;(before)&quot;</span><span class="p">)</span>
         <span class="n">nc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">advance</span><span class="p">(</span><span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="s2">&quot;(after)&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="s2">&quot;(after)&quot;</span><span class="p">)</span>
 
         <span class="c1"># harvest top individual if possible</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">generation</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">ringindex</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">:</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;have a candidate&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;have a candidate&quot;</span><span class="p">)</span>
             <span class="n">u</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">L</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">allu</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">ringindex</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">currentp</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">ringindex</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">allL</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">ringindex</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
             <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">u</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">u</span>
             <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="n">p</span>
@@ -624,9 +634,10 @@
             <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">nc</span></div>
 
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;generate_cube_oriented_direction&quot;</span><span class="p">,</span> <span class="s2">&quot;generate_cube_oriented_direction_scaled&quot;</span><span class="p">,</span>
-   <span class="s2">&quot;generate_random_direction&quot;</span><span class="p">,</span> <span class="s2">&quot;generate_region_oriented_direction&quot;</span><span class="p">,</span> <span class="s2">&quot;generate_region_random_direction&quot;</span><span class="p">,</span>
-   <span class="s2">&quot;PopulationRandomWalkSampler&quot;</span><span class="p">,</span> <span class="s2">&quot;PopulationSliceSampler&quot;</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;generate_cube_oriented_direction&quot;</span><span class="p">,</span> <span class="s2">&quot;generate_cube_oriented_direction_scaled&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;generate_random_direction&quot;</span><span class="p">,</span> <span class="s2">&quot;generate_region_oriented_direction&quot;</span><span class="p">,</span> <span class="s2">&quot;generate_region_random_direction&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PopulationRandomWalkSampler&quot;</span><span class="p">,</span> <span class="s2">&quot;PopulationSliceSampler&quot;</span><span class="p">]</span>
 </pre></div>
 
            </div>

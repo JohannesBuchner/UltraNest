@@ -169,6 +169,13 @@
 <div class="viewcode-block" id="box_line_intersection"><a class="viewcode-back" href="../../ultranest.html#ultranest.samplingpath.box_line_intersection">[docs]</a><span class="k">def</span> <span class="nf">box_line_intersection</span><span class="p">(</span><span class="n">ray_origin</span><span class="p">,</span> <span class="n">ray_direction</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Find intersections of a line with the unit cube, in both sides.</span>
 
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    ray_origin: vector</span>
+<span class="sd">        starting point of line</span>
+<span class="sd">    ray_direction: vector</span>
+<span class="sd">        line direction vector</span>
+
 <span class="sd">    Returns</span>
 <span class="sd">    --------</span>
 <span class="sd">    left: nearest_box_intersection_line return value</span>
@@ -252,6 +259,13 @@
 <span class="sd">    so that edge_point is on the surface. At edge_point, in</span>
 <span class="sd">    which direction does the normal vector point?</span>
 
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    sphere_center: vector</span>
+<span class="sd">        center of sphere</span>
+<span class="sd">    edge_point: vector</span>
+<span class="sd">        point at the surface</span>
+
 <span class="sd">    Returns</span>
 <span class="sd">    --------</span>
 <span class="sd">    tangent: vector</span>
@@ -271,10 +285,17 @@
 
 <span class="sd">    This function is vectorized and handles arrays of arguments.</span>
 
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    sphere_center: array</span>
+<span class="sd">        centers of spheres</span>
+<span class="sd">    edge_point: array</span>
+<span class="sd">        points at the surface</span>
+
 <span class="sd">    Returns</span>
 <span class="sd">    --------</span>
-<span class="sd">    tangent: vector</span>
-<span class="sd">        vector pointing to the sphere center.</span>
+<span class="sd">    tangent: array</span>
+<span class="sd">        vectors pointing to the sphere center.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">arrow</span> <span class="o">=</span> <span class="n">sphere_center</span> <span class="o">-</span> <span class="n">edge_point</span>
@@ -286,14 +307,14 @@
     <span class="k">return</span> <span class="n">v</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">normal</span> <span class="o">*</span> <span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">*</span> <span class="n">normal</span></div>
 
 
-<div class="viewcode-block" id="distances"><a class="viewcode-back" href="../../ultranest.html#ultranest.samplingpath.distances">[docs]</a><span class="k">def</span> <span class="nf">distances</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="n">o</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="distances"><a class="viewcode-back" href="../../ultranest.html#ultranest.samplingpath.distances">[docs]</a><span class="k">def</span> <span class="nf">distances</span><span class="p">(</span><span class="n">direction</span><span class="p">,</span> <span class="n">center</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Compute sphere-line intersection.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    -----------</span>
-<span class="sd">    l: vector</span>
+<span class="sd">    direction: vector</span>
 <span class="sd">        direction vector (line starts at 0)</span>
-<span class="sd">    o: vector</span>
+<span class="sd">    center: vector</span>
 <span class="sd">        center of sphere (coordinate vector)</span>
 <span class="sd">    r: float</span>
 <span class="sd">        radius of sphere</span>
@@ -305,8 +326,8 @@
 <span class="sd">        If no intersection, throws AssertError.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">loc</span> <span class="o">=</span> <span class="p">(</span><span class="n">l</span> <span class="o">*</span> <span class="n">o</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-    <span class="n">osqrnorm</span> <span class="o">=</span> <span class="p">(</span><span class="n">o</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">loc</span> <span class="o">=</span> <span class="p">(</span><span class="n">direction</span> <span class="o">*</span> <span class="n">center</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">osqrnorm</span> <span class="o">=</span> <span class="p">(</span><span class="n">center</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
     <span class="c1"># print(loc.shape, loc.shape, osqrnorm.shape)</span>
     <span class="n">rootterm</span> <span class="o">=</span> <span class="n">loc</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">osqrnorm</span> <span class="o">+</span> <span class="n">r</span><span class="o">**</span><span class="mi">2</span>
     <span class="c1"># make sure we are crossing the sphere</span>

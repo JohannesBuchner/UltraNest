@@ -94,7 +94,16 @@
            <div itemprop="articleBody">
              
   <h1>Source code for ultranest.hotstart</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Warm start and hot start helper functions.&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Warm start</span>
+<span class="sd">----------</span>
+
+<span class="sd">Helper functions for deforming the parameter space to enable</span>
+<span class="sd">a more efficient sampling.</span>
+
+<span class="sd">Based on ideas from Petrosyan &amp; Handley (2022, https://arxiv.org/abs/2212.01760).</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">scipy.stats</span>

@@ -62,24 +62,57 @@
 <li class="toctree-l3"><a class="reference internal" href="#module-ultranest.dychmc">ultranest.dychmc module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-ultranest.dyhmc">ultranest.dyhmc module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-ultranest.flatnuts">ultranest.flatnuts module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-ultranest.hotstart">ultranest.hotstart module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-ultranest.integrator">ultranest.integrator module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-ultranest.mlfriends">ultranest.mlfriends module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-ultranest.netiter">ultranest.netiter module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-ultranest.ordertest">ultranest.ordertest module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-ultranest.hotstart">ultranest.hotstart module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#warm-start">Warm start</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-ultranest.integrator">ultranest.integrator module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#nested-sampling-integrators">Nested sampling integrators</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-ultranest.mlfriends">ultranest.mlfriends module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#region-construction-methods">Region construction methods</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-ultranest.netiter">ultranest.netiter module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#graph-based-nested-sampling">Graph-based nested sampling</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-ultranest.ordertest">ultranest.ordertest module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#mann-whitney-wilcoxon-u-test-for-a-uniform-distribution-of-integers">Mann-Whitney-Wilcoxon U test for a uniform distribution of integers</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#module-ultranest.pathsampler">ultranest.pathsampler module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-ultranest.plot">ultranest.plot module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-ultranest.plot">ultranest.plot module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#plotting-utilities">Plotting utilities</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#module-ultranest.popstepsampler">ultranest.popstepsampler module</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#vectorized-step-samplers">Vectorized step samplers</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#module-ultranest.samplingpath">ultranest.samplingpath module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-ultranest.solvecompat">ultranest.solvecompat module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-ultranest.stepfuncs">ultranest.stepfuncs module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-ultranest.stepsampler">ultranest.stepsampler module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-ultranest.store">ultranest.store module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-ultranest.utils">ultranest.utils module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-ultranest.viz">ultranest.viz module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-ultranest.stepfuncs">ultranest.stepfuncs module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#efficient-helper-functions-for-vectorized-step-samplers">Efficient helper functions for vectorized step-samplers</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-ultranest.stepsampler">ultranest.stepsampler module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#mcmc-like-step-sampling">MCMC-like step sampling</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-ultranest.store">ultranest.store module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#storage-for-nested-sampling-points">Storage for nested sampling points</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-ultranest.utils">ultranest.utils module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#utility-functions-for-logging-and-statistics">Utility functions for logging and statistics</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-ultranest.viz">ultranest.viz module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#live-point-visualisations">Live point visualisations</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="#module-ultranest">Module contents</a></li>
 </ul>
 </li>
@@ -844,7 +877,11 @@ rwd: bool whether we go backward</p>
 </section>
 <section id="module-ultranest.hotstart">
 <span id="ultranest-hotstart-module"></span><h2>ultranest.hotstart module<a class="headerlink" href="#module-ultranest.hotstart" title="Permalink to this heading"></a></h2>
-<p>Warm start and hot start helper functions.</p>
+<section id="warm-start">
+<h3>Warm start<a class="headerlink" href="#warm-start" title="Permalink to this heading"></a></h3>
+<p>Helper functions for deforming the parameter space to enable
+a more efficient sampling.</p>
+<p>Based on ideas from Petrosyan &amp; Handley (2022, <a class="reference external" href="https://arxiv.org/abs/2212.01760">https://arxiv.org/abs/2212.01760</a>).</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="ultranest.hotstart.get_auxiliary_problem">
 <span class="sig-prename descclassname"><span class="pre">ultranest.hotstart.</span></span><span class="sig-name descname"><span class="pre">get_auxiliary_problem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loglike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ctr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invcov</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enlargement_factor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/hotstart.html#get_auxiliary_problem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.hotstart.get_auxiliary_problem" title="Permalink to this definition"></a></dt>
@@ -1122,9 +1159,13 @@ posterior summaries (posterior).</p>
 </dd></dl>
 
 </section>
+</section>
 <section id="module-ultranest.integrator">
 <span id="ultranest-integrator-module"></span><h2>ultranest.integrator module<a class="headerlink" href="#module-ultranest.integrator" title="Permalink to this heading"></a></h2>
-<p>Ultranest calculates the Bayesian evidence and posterior samples of arbitrary models.</p>
+<section id="nested-sampling-integrators">
+<h3>Nested sampling integrators<a class="headerlink" href="#nested-sampling-integrators" title="Permalink to this heading"></a></h3>
+<p>This module provides the high-level class <a class="reference internal" href="#ultranest.integrator.ReactiveNestedSampler" title="ultranest.integrator.ReactiveNestedSampler"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReactiveNestedSampler</span></code></a>,
+for calculating the Bayesian evidence and posterior samples of arbitrary models.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="ultranest.integrator.ReactiveNestedSampler">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ultranest.integrator.</span></span><span class="sig-name descname"><span class="pre">ReactiveNestedSampler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param_names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loglike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">derived_param_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wrapped_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resume</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'subfolder'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_test_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">draw_multiple</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_bootstraps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vectorized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndraw_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">128</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndraw_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">65536</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">storage_backend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'hdf5'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warmstart_max_tau</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/integrator.html#ReactiveNestedSampler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.integrator.ReactiveNestedSampler" title="Permalink to this definition"></a></dt>
@@ -1457,10 +1498,20 @@ Too few samples will give a poor approximation.</p></li>
 </dd></dl>
 
 </section>
+</section>
 <section id="module-ultranest.mlfriends">
 <span id="ultranest-mlfriends-module"></span><h2>ultranest.mlfriends module<a class="headerlink" href="#module-ultranest.mlfriends" title="Permalink to this heading"></a></h2>
-<p>Construct and sample from region.</p>
-<p>Implements MLFriends efficiently, with transformation layers and clustering.</p>
+<section id="region-construction-methods">
+<h3>Region construction methods<a class="headerlink" href="#region-construction-methods" title="Permalink to this heading"></a></h3>
+<p>Construct and sample from regions of neighbourhoods around the live points.
+Includes</p>
+<ul class="simple">
+<li><p>an efficient implementation of MLFriends, with transformation layers and clustering.
+* RadFriends: Buchner (2014) <a class="reference external" href="https://arxiv.org/abs/1407.5459">https://arxiv.org/abs/1407.5459</a>
+* MLFriends: Buchner (2019) <a class="reference external" href="https://arxiv.org/abs/1707.04476">https://arxiv.org/abs/1707.04476</a></p></li>
+<li><p>a single-ellipsoid region (Mukherjee et al., 2006, <a class="reference external" href="https://arxiv.org/abs/astro-ph/0508461">https://arxiv.org/abs/astro-ph/0508461</a>)</p></li>
+<li><p>a very fast single-ellipsoid, axis-aligned region, for use with step-samplers in high dimensions</p></li>
+</ul>
 <dl class="py class">
 <dt class="sig sig-object py" id="ultranest.mlfriends.AffineLayer">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ultranest.mlfriends.</span></span><span class="sig-name descname"><span class="pre">AffineLayer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invT</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nclusters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wrapped_dims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clusterids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.mlfriends.AffineLayer" title="Permalink to this definition"></a></dt>
@@ -2172,9 +2223,13 @@ for <code class="docutils literal notranslate"><span class="pre">n</span></code>
 </dd></dl>
 
 </section>
+</section>
 <section id="module-ultranest.netiter">
 <span id="ultranest-netiter-module"></span><h2>ultranest.netiter module<a class="headerlink" href="#module-ultranest.netiter" title="Permalink to this heading"></a></h2>
-<p>Functions and classes for treating nested sampling exploration as a tree.</p>
+<section id="graph-based-nested-sampling">
+<h3>Graph-based nested sampling<a class="headerlink" href="#graph-based-nested-sampling" title="Permalink to this heading"></a></h3>
+<p>A formulation of nested sampling exploration as a tree, presented in
+section 3.4 of Buchner (2023, <a class="reference external" href="https://arxiv.org/abs/2101.09675">https://arxiv.org/abs/2101.09675</a>).</p>
 <p>The root represents the prior volume, branches and sub-branches split the volume.
 The leaves of the tree are the integration tail.</p>
 <p>Nested sampling proceeds as a breadth first graph search,
@@ -2190,6 +2245,7 @@ can ignore the rootids it does not know about.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ultranest.netiter.</span></span><span class="sig-name descname"><span class="pre">TreeNode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">children</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/netiter.html#TreeNode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.netiter.TreeNode" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Simple tree node.</p>
+<p>Initialise.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -2428,6 +2484,7 @@ the point coordinates in u and p-space (transformed and untransformed).</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ultranest.netiter.</span></span><span class="sig-name descname"><span class="pre">SingleCounter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">random</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/netiter.html#SingleCounter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.netiter.SingleCounter" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Evidence log(Z) and posterior weight summation for a Nested Sampling tree.</p>
+<p>Initialise.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>random</strong> (<em>bool</em>) – if False, use mean estimator for volume shrinkage
@@ -2656,9 +2713,13 @@ Rank test score (insert_order).</p></li>
 </dd></dl>
 
 </section>
+</section>
 <section id="module-ultranest.ordertest">
 <span id="ultranest-ordertest-module"></span><h2>ultranest.ordertest module<a class="headerlink" href="#module-ultranest.ordertest" title="Permalink to this heading"></a></h2>
-<p>Mann-Whitney-Wilcoxon U test for a uniform distribution of integers.</p>
+<section id="mann-whitney-wilcoxon-u-test-for-a-uniform-distribution-of-integers">
+<h3>Mann-Whitney-Wilcoxon U test for a uniform distribution of integers<a class="headerlink" href="#mann-whitney-wilcoxon-u-test-for-a-uniform-distribution-of-integers" title="Permalink to this heading"></a></h3>
+<p>A test for biased nested sampling, presented in
+section 4.5.2 of Buchner (2023, <a class="reference external" href="https://arxiv.org/abs/2101.09675">https://arxiv.org/abs/2101.09675</a>).</p>
 <p>This implements the same idea as <a class="reference external" href="https://arxiv.org/abs/2006.03371">https://arxiv.org/abs/2006.03371</a>
 except their KS test is problematic because the variable (insertion order)
 is not continuous. Instead, this implements a Mann-Whitney-Wilcoxon
@@ -2726,6 +2787,7 @@ without detection of a insertion order problem.</p>
 
 </dd></dl>
 
+</section>
 </section>
 <section id="module-ultranest.pathsampler">
 <span id="ultranest-pathsampler-module"></span><h2>ultranest.pathsampler module<a class="headerlink" href="#module-ultranest.pathsampler" title="Permalink to this heading"></a></h2>
@@ -2920,7 +2982,8 @@ must be &gt;=1.</p></li>
 </section>
 <section id="module-ultranest.plot">
 <span id="ultranest-plot-module"></span><h2>ultranest.plot module<a class="headerlink" href="#module-ultranest.plot" title="Permalink to this heading"></a></h2>
-<p>Plotting utilities.</p>
+<section id="plotting-utilities">
+<h3>Plotting utilities<a class="headerlink" href="#plotting-utilities" title="Permalink to this heading"></a></h3>
 <dl class="py function">
 <dt class="sig sig-object py" id="ultranest.plot.runplot">
 <span class="sig-prename descclassname"><span class="pre">ultranest.plot.</span></span><span class="sig-name descname"><span class="pre">runplot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">span</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logplot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kde</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nkde</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'blue'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lnz_error</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lnz_truth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">truth_color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'red'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">truth_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_x_ticks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_y_ticks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_math_text</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mark_final_live</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fig</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/plot.html#runplot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.plot.runplot" title="Permalink to this definition"></a></dt>
@@ -3151,6 +3214,7 @@ internal figure is generated.</p></li>
 </dd></dl>
 
 </section>
+</section>
 <section id="module-ultranest.popstepsampler">
 <span id="ultranest-popstepsampler-module"></span><h2>ultranest.popstepsampler module<a class="headerlink" href="#module-ultranest.popstepsampler" title="Permalink to this heading"></a></h2>
 <section id="vectorized-step-samplers">
@@ -3273,6 +3337,7 @@ If not, the vector length in transformed space is <cite>tscale</cite>.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ultranest.popstepsampler.</span></span><span class="sig-name descname"><span class="pre">PopulationRandomWalkSampler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">popsize</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nsteps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generate_direction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_adapt_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/popstepsampler.html#PopulationRandomWalkSampler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.popstepsampler.PopulationRandomWalkSampler" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Vectorized Gaussian Random Walk sampler.</p>
+<p>Initialise.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -3302,7 +3367,7 @@ or decreased if it is above, by <em>scale_adapt_factor</em>.</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="ultranest.popstepsampler.PopulationRandomWalkSampler.region_changed">
 <span class="sig-name descname"><span class="pre">region_changed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ls</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/popstepsampler.html#PopulationRandomWalkSampler.region_changed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.popstepsampler.PopulationRandomWalkSampler.region_changed" title="Permalink to this definition"></a></dt>
-<dd><p>notification that the region changed. Currently not used.</p>
+<dd><p>Act upon region changed. Currently unused.</p>
 </dd></dl>
 
 </dd></dl>
@@ -3312,8 +3377,9 @@ or decreased if it is above, by <em>scale_adapt_factor</em>.</p></li>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ultranest.popstepsampler.</span></span><span class="sig-name descname"><span class="pre">PopulationSliceSampler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">popsize</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nsteps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generate_direction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_adapt_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/popstepsampler.html#PopulationSliceSampler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.popstepsampler.PopulationSliceSampler" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Vectorized slice/HARM sampler.</p>
-<p>Revert until all previous steps have likelihoods allL above Lmin.
+<p>Can revert until all previous steps have likelihoods allL above Lmin.
 Updates currentt, generation and allL, in-place.</p>
+<p>Initialise.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -3331,7 +3397,7 @@ the last slice length is used as a initial guess for the next.</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="ultranest.popstepsampler.PopulationSliceSampler.region_changed">
 <span class="sig-name descname"><span class="pre">region_changed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ls</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/popstepsampler.html#PopulationSliceSampler.region_changed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.popstepsampler.PopulationSliceSampler.region_changed" title="Permalink to this definition"></a></dt>
-<dd><p>notification that the region changed. Currently not used.</p>
+<dd><p>Act upon region changed. Currently unused.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -3353,7 +3419,8 @@ the last slice length is used as a initial guess for the next.</p></li>
 <dl class="py property">
 <dt class="sig sig-object py" id="ultranest.popstepsampler.PopulationSliceSampler.status">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">status</span></span><a class="headerlink" href="#ultranest.popstepsampler.PopulationSliceSampler.status" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Return compact string representation of the current status.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ultranest.popstepsampler.PopulationSliceSampler.setup_brackets">
@@ -3435,8 +3502,14 @@ the last slice length is used as a initial guess for the next.</p></li>
 <span class="sig-prename descclassname"><span class="pre">ultranest.samplingpath.</span></span><span class="sig-name descname"><span class="pre">box_line_intersection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ray_origin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ray_direction</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/samplingpath.html#box_line_intersection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.samplingpath.box_line_intersection" title="Permalink to this definition"></a></dt>
 <dd><p>Find intersections of a line with the unit cube, in both sides.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><ul class="simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ray_origin</strong> (<em>vector</em>) – starting point of line</p></li>
+<li><p><strong>ray_direction</strong> (<em>vector</em>) – line direction vector</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
 <li><p><strong>left</strong> (<em>nearest_box_intersection_line return value</em>) – from negative direction</p></li>
 <li><p><strong>right</strong> (<em>nearest_box_intersection_line return value</em>) – from positive direction</p></li>
 </ul>
@@ -3470,11 +3543,17 @@ In any case, the distance should be <code class="docutils literal notranslate"><
 so that edge_point is on the surface. At edge_point, in
 which direction does the normal vector point?</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><strong>tangent</strong> – vector pointing to the sphere center.</p>
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sphere_center</strong> (<em>vector</em>) – center of sphere</p></li>
+<li><p><strong>edge_point</strong> (<em>vector</em>) – point at the surface</p></li>
+</ul>
 </dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>vector</p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>tangent</strong> – vector pointing to the sphere center.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>vector</p>
 </dd>
 </dl>
 </dd></dl>
@@ -3488,11 +3567,17 @@ so that edge_point is on the surface. At edge_point, in
 which direction does the normal vector point?</p>
 <p>This function is vectorized and handles arrays of arguments.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><strong>tangent</strong> – vector pointing to the sphere center.</p>
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sphere_center</strong> (<em>array</em>) – centers of spheres</p></li>
+<li><p><strong>edge_point</strong> (<em>array</em>) – points at the surface</p></li>
+</ul>
 </dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>vector</p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>tangent</strong> – vectors pointing to the sphere center.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>array</p>
 </dd>
 </dl>
 </dd></dl>
@@ -3505,13 +3590,13 @@ which direction does the normal vector point?</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ultranest.samplingpath.distances">
-<span class="sig-prename descclassname"><span class="pre">ultranest.samplingpath.</span></span><span class="sig-name descname"><span class="pre">distances</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">l</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">o</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/samplingpath.html#distances"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.samplingpath.distances" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">ultranest.samplingpath.</span></span><span class="sig-name descname"><span class="pre">distances</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">direction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">center</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/samplingpath.html#distances"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.samplingpath.distances" title="Permalink to this definition"></a></dt>
 <dd><p>Compute sphere-line intersection.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>l</strong> (<em>vector</em>) – direction vector (line starts at 0)</p></li>
-<li><p><strong>o</strong> (<em>vector</em>) – center of sphere (coordinate vector)</p></li>
+<li><p><strong>direction</strong> (<em>vector</em>) – direction vector (line starts at 0)</p></li>
+<li><p><strong>center</strong> (<em>vector</em>) – center of sphere (coordinate vector)</p></li>
 <li><p><strong>r</strong> (<em>float</em>) – radius of sphere</p></li>
 </ul>
 </dd>
@@ -3728,7 +3813,8 @@ as this gives you more control on resuming and sampler options.</p>
 </section>
 <section id="module-ultranest.stepfuncs">
 <span id="ultranest-stepfuncs-module"></span><h2>ultranest.stepfuncs module<a class="headerlink" href="#module-ultranest.stepfuncs" title="Permalink to this heading"></a></h2>
-<p>Efficient Helper functions for stepsamplers</p>
+<section id="efficient-helper-functions-for-vectorized-step-samplers">
+<h3>Efficient helper functions for vectorized step-samplers<a class="headerlink" href="#efficient-helper-functions-for-vectorized-step-samplers" title="Permalink to this heading"></a></h3>
 <dl class="py function">
 <dt class="sig sig-object py" id="ultranest.stepfuncs.evolve">
 <span class="sig-prename descclassname"><span class="pre">ultranest.stepfuncs.</span></span><span class="sig-name descname"><span class="pre">evolve</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.stepfuncs.evolve" title="Permalink to this definition"></a></dt>
@@ -3967,13 +4053,15 @@ Updates currentt, generation and allL, in-place.</p>
 </dd></dl>
 
 </section>
+</section>
 <section id="module-ultranest.stepsampler">
 <span id="ultranest-stepsampler-module"></span><h2>ultranest.stepsampler module<a class="headerlink" href="#module-ultranest.stepsampler" title="Permalink to this heading"></a></h2>
-<p>MCMC-like step sampling within a region.</p>
+<section id="mcmc-like-step-sampling">
+<h3>MCMC-like step sampling<a class="headerlink" href="#mcmc-like-step-sampling" title="Permalink to this heading"></a></h3>
 <p>The classes implemented here are generators that, in each iteration,
-only make one likelihood call. This allows keeping a population of
-samplers that have the same execution time per call, even if they
-do not terminate at the same number of iterations.</p>
+only make one likelihood call. This allows running in parallel a
+population of samplers that have the same execution time per call,
+even if they do not terminate at the same number of iterations.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="ultranest.stepsampler.generate_random_direction">
 <span class="sig-prename descclassname"><span class="pre">ultranest.stepsampler.</span></span><span class="sig-name descname"><span class="pre">generate_random_direction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ui</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#generate_random_direction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.stepsampler.generate_random_direction" title="Permalink to this definition"></a></dt>
@@ -4537,7 +4625,7 @@ between live points</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="ultranest.stepsampler.SliceSampler.adjust_accept">
 <span class="sig-name descname"><span class="pre">adjust_accept</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">accepted</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unew</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pnew</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Lnew</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nc</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#SliceSampler.adjust_accept"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.stepsampler.SliceSampler.adjust_accept" title="Permalink to this definition"></a></dt>
-<dd><p>see <a class="reference internal" href="#ultranest.stepsampler.StepSampler.adjust_accept" title="ultranest.stepsampler.StepSampler.adjust_accept"><code class="xref py py-meth docutils literal notranslate"><span class="pre">StepSampler.adjust_accept()</span></code></a></p>
+<dd><p>See <a class="reference internal" href="#ultranest.stepsampler.StepSampler.adjust_accept" title="ultranest.stepsampler.StepSampler.adjust_accept"><code class="xref py py-meth docutils literal notranslate"><span class="pre">StepSampler.adjust_accept()</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -4549,7 +4637,7 @@ between live points</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="ultranest.stepsampler.SliceSampler.move">
 <span class="sig-name descname"><span class="pre">move</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ui</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndraw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#SliceSampler.move"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.stepsampler.SliceSampler.move" title="Permalink to this definition"></a></dt>
-<dd><p>Advance the slice sampling move. see <a class="reference internal" href="#ultranest.stepsampler.StepSampler.move" title="ultranest.stepsampler.StepSampler.move"><code class="xref py py-meth docutils literal notranslate"><span class="pre">StepSampler.move()</span></code></a></p>
+<dd><p>Advance the slice sampling move. see <a class="reference internal" href="#ultranest.stepsampler.StepSampler.move" title="ultranest.stepsampler.StepSampler.move"><code class="xref py py-meth docutils literal notranslate"><span class="pre">StepSampler.move()</span></code></a>.</p>
 </dd></dl>
 
 </dd></dl>
@@ -4583,6 +4671,7 @@ between live points</p></li>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ultranest.stepsampler.</span></span><span class="sig-name descname"><span class="pre">SequentialRegionDirectionGenerator</span></span><a class="reference internal" href="_modules/ultranest/stepsampler.html#SequentialRegionDirectionGenerator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.stepsampler.SequentialRegionDirectionGenerator" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Sequentially proposes one region axes after the next.</p>
+<p>Initialise.</p>
 </dd></dl>
 
 <dl class="py function">
@@ -4596,6 +4685,7 @@ between live points</p></li>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ultranest.stepsampler.</span></span><span class="sig-name descname"><span class="pre">OrthogonalDirectionGenerator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">generate_direction</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#OrthogonalDirectionGenerator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.stepsampler.OrthogonalDirectionGenerator" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Orthogonalizes proposal vectors.</p>
+<p>Initialise.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>generate_direction</strong> (<em>function</em>) – direction proposal to orthogonalize</p>
@@ -4607,7 +4697,9 @@ between live points</p></li>
 <dt class="sig sig-object py" id="ultranest.stepsampler.SpeedVariableGenerator">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ultranest.stepsampler.</span></span><span class="sig-name descname"><span class="pre">SpeedVariableGenerator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">step_matrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generate_direction=&lt;function</span> <span class="pre">generate_region_random_direction&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#SpeedVariableGenerator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.stepsampler.SpeedVariableGenerator" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Propose directions in region, but only some dimensions at a time, completely user-definable.</p>
+<p>Propose directions with only some parameters variable.</p>
+<p>Propose in region direction, but only include some dimensions at a time.
+Completely configurable.</p>
 <p>Initialise sampler.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -4705,9 +4797,11 @@ will be truncated by the unit cube. Returns the bracket and whether cropping was
 </dd></dl>
 
 </section>
+</section>
 <section id="module-ultranest.store">
 <span id="ultranest-store-module"></span><h2>ultranest.store module<a class="headerlink" href="#module-ultranest.store" title="Permalink to this heading"></a></h2>
-<p>Storage for nested sampling points.</p>
+<section id="storage-for-nested-sampling-points">
+<h3>Storage for nested sampling points<a class="headerlink" href="#storage-for-nested-sampling-points" title="Permalink to this heading"></a></h3>
 <p>The information stored is a table with</p>
 <ul class="simple">
 <li><p>the likelihood threshold drawn from</p></li>
@@ -4836,9 +4930,11 @@ h5_file_args are passed on to hdf5.File.</p>
 </dd></dl>
 
 </section>
+</section>
 <section id="module-ultranest.utils">
 <span id="ultranest-utils-module"></span><h2>ultranest.utils module<a class="headerlink" href="#module-ultranest.utils" title="Permalink to this heading"></a></h2>
-<p>Utility functions for logging and statistics.</p>
+<section id="utility-functions-for-logging-and-statistics">
+<h3>Utility functions for logging and statistics<a class="headerlink" href="#utility-functions-for-logging-and-statistics" title="Permalink to this heading"></a></h3>
 <dl class="py function">
 <dt class="sig sig-object py" id="ultranest.utils.create_logger">
 <span class="sig-prename descclassname"><span class="pre">ultranest.utils.</span></span><span class="sig-name descname"><span class="pre">create_logger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/utils.html#create_logger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.utils.create_logger" title="Permalink to this definition"></a></dt>
@@ -5068,7 +5164,8 @@ given unit cube point.</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="ultranest.utils.distributed_work_chunk_size">
 <span class="sig-prename descclassname"><span class="pre">ultranest.utils.</span></span><span class="sig-name descname"><span class="pre">distributed_work_chunk_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_total_tasks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mpi_rank</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mpi_size</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/utils.html#distributed_work_chunk_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.utils.distributed_work_chunk_size" title="Permalink to this definition"></a></dt>
-<dd><p>Computes the number of tasks for process number <cite>mpi_rank</cite>, so that
+<dd><p>Divide tasks uniformly.</p>
+<p>Computes the number of tasks for process number <cite>mpi_rank</cite>, so that
 <cite>num_total_tasks</cite> tasks are spread uniformly among <cite>mpi_size</cite> processes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -5084,8 +5181,8 @@ given unit cube point.</p></li>
 <dl class="py function">
 <dt class="sig sig-object py" id="ultranest.utils.submasks">
 <span class="sig-prename descclassname"><span class="pre">ultranest.utils.</span></span><span class="sig-name descname"><span class="pre">submasks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">masks</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/utils.html#submasks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.utils.submasks" title="Permalink to this definition"></a></dt>
-<dd><p>Get indices for an array, so that
-array[indices] is equivalent to a[mask][mask1][mask2].</p>
+<dd><p>Get indices for a submasked array.</p>
+<p>Returns indices, so that a[indices] is equivalent to a[mask][mask1][mask2].</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -5103,9 +5200,14 @@ array[indices] is equivalent to a[mask][mask1][mask2].</p>
 </dd></dl>
 
 </section>
+</section>
 <section id="module-ultranest.viz">
 <span id="ultranest-viz-module"></span><h2>ultranest.viz module<a class="headerlink" href="#module-ultranest.viz" title="Permalink to this heading"></a></h2>
-<p>Visual impression of current exploration.</p>
+<section id="live-point-visualisations">
+<h3>Live point visualisations<a class="headerlink" href="#live-point-visualisations" title="Permalink to this heading"></a></h3>
+<p>Gives a live impression of current exploration.
+This is powerful because the user can abort partial runs if the fit
+converges to unreasonable values.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="ultranest.viz.round_parameterlimits">
 <span class="sig-prename descclassname"><span class="pre">ultranest.viz.</span></span><span class="sig-name descname"><span class="pre">round_parameterlimits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paramlimitguess</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/viz.html#round_parameterlimits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.viz.round_parameterlimits" title="Permalink to this definition"></a></dt>
@@ -5188,6 +5290,7 @@ logl: loglikelihood values)</p></li>
 <p>LivePointsWidget for Jupyter notebook, nicelogger otherwise.</p>
 </dd></dl>
 
+</section>
 </section>
 <section id="module-ultranest">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ultranest" title="Permalink to this heading"></a></h2>
