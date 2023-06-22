@@ -1,12 +1,22 @@
 #!/usr/bin/env python
 # coding: utf-8
+"""
+Vectorized step samplers
+------------------------
+
+Likelihood based on GPUs (model emulators based on neural networks,
+or JAX implementations) can evaluate hundreds of points as efficiently
+as one point. The implementations in this module leverage this power,
+by providing random walks of populations of walkers.
+"""
 
 import numpy as np
 from ultranest.utils import submasks
 from ultranest.stepfuncs import evolve, step_back
-from ultranest.stepfuncs import generate_cube_oriented_direction, generate_cube_oriented_direction_scaled, \
-   generate_random_direction, generate_region_oriented_direction, generate_region_random_direction
+from ultranest.stepfuncs import generate_cube_oriented_direction, generate_cube_oriented_direction_scaled
+from ultranest.stepfuncs import generate_random_direction, generate_region_oriented_direction, generate_region_random_direction
 import scipy.stats
+
 
 def unitcube_line_intersection(ray_origin, ray_direction):
     r"""Compute intersection of a line (ray) and a unit box (0:1 in all axes).
@@ -46,33 +56,44 @@ def unitcube_line_intersection(ray_origin, ray_direction):
         return np.nanmax(t1, axis=1), np.nanmin(t2, axis=1)
 
 
-
 class PopulationRandomWalkSampler():
     def __init__(
-        self, popsize, nsteps, generate_direction, scale, 
+        self, popsize, nsteps, generate_direction, scale,
         scale_adapt_factor=0.9, scale_min=1e-20, scale_max=20, log=False, logfile=None
     ):
         """
         Vectorized Gaussian Random Walk sampler.
 
-        Revert until all previous steps have likelihoods allL above Lmin.
-        Updates currentt, generation and allL, in-place.
-
         Parameters
         ----------
         popsize: int
-            number of walkers to maintain
+            number of walkers to maintain.
+            this should be fairly large (~100), if too large you probably get memory issues
+            Also, some results have to be discarded as the likelihood threshold increases.
+            Observe the nested sampling efficiency.
         nsteps: int
             number of steps to take until the found point is accepted as independent.
-        generate_direction: function `(u, region, scale) -> v`
-            function such as `generate_unit_directions`, which
-            generates a random slice direction.
+            To calibrate, try several runs with increasing nsteps (doubling).
+            The ln(Z) should become stable at some value.
+        generate_direction: function
+            Function that gives proposal kernel shape, one of:
+            :py:func:`ultranest.popstepsampler.generate_cube_oriented_direction`
+            :py:func:`ultranest.popstepsampler.generate_cube_oriented_direction_scaled`
+            :py:func:`ultranest.popstepsampler.generate_random_direction`
+            :py:func:`ultranest.popstepsampler.generate_region_oriented_direction`
+            :py:func:`ultranest.popstepsampler.generate_region_random_direction`
         scale: float
-            initial guess scale for the length of the slice
+            initial guess for the proposal scaling factor
         scale_adapt_factor: float
-            smoothing factor for updating scale.
-            if near 1, scale is barely updating, if near 0,
-            the last slice length is used as a initial guess for the next.
+            if 1, no adapting is done.
+            if <1, the scale is increased if the acceptance rate is below 23.4%,
+            or decreased if it is above, by *scale_adapt_factor*.
+        scale_min: float
+            lowest value allowed for scale, do not adapt down further
+        scale_max: float
+            highest value allowed for scale, do not adapt up further
+        logfile: file
+            where to print the current scaling factor and acceptance rate
 
         """
         self.nsteps = nsteps
@@ -93,7 +114,7 @@ class PopulationRandomWalkSampler():
 
     def __str__(self):
         return 'PopulationRandomWalkSampler(popsize=%d, nsteps=%d, generate_direction=%s, scale=%.g)' % (
-                self.popsize, self.nsteps, self.generate_direction, self.scale)
+            self.popsize, self.nsteps, self.generate_direction, self.scale)
 
     def region_changed(self, Ls, region):
         """notification that the region changed. Currently not used."""
@@ -156,17 +177,12 @@ class PopulationRandomWalkSampler():
                 v = self.generate_direction(allu, region, self.scale)
                 # compute intersection of u + t * v with unit cube
                 tleft, tright = unitcube_line_intersection(allu, v)
-                #print(tleft.shape, tright.shape, self.popsize, tleft, tright)
                 proposed_t = scipy.stats.truncnorm.rvs(tleft, tright, loc=0, scale=1).reshape((-1, 1))
-                # proposed_t = np.random.normal(size=(self.popsize, 1))
-                
+
                 proposed_u = allu + v * proposed_t
                 mask_outside = ~np.logical_and(proposed_u > 0, proposed_u < 1).all(axis=1)
-                assert not mask_outside.any(), proposed_u[mask_outside,:]
-                #while mask_outside.any():
-                #    proposed_u[mask_outside,:] = allu[mask_outside,:] + v[mask_outside,:] * np.random.normal(size=(mask_outside.sum(), 1))
-                #    mask_outside = ~np.logical_and(proposed_u > 0, proposed_u < 1).all(axis=1)
-                
+                assert not mask_outside.any(), proposed_u[mask_outside, :]
+
                 proposed_p = transform(proposed_u)
                 # accept if likelihood threshold exceeded
                 proposed_L = loglike(proposed_p)
@@ -174,6 +190,7 @@ class PopulationRandomWalkSampler():
                 self.nrejects += (~mask_accept).sum()
                 allu[mask_accept,:] = proposed_u[mask_accept,:]
                 if allp is None:
+                    del allp
                     allp = proposed_p * np.nan
                 allp[mask_accept,:] = proposed_p[mask_accept,:]
                 allL[mask_accept] = proposed_L[mask_accept]
@@ -183,8 +200,8 @@ class PopulationRandomWalkSampler():
             # adapt slightly
             if self.logfile:
                 self.logfile.write("rescale\t%.4f\t%.4f\t%g\n" % (
-                    mask_accept.mean() * 100, 
-                    100 - (self.nrejects - (nrejects_expected - self.nsteps * self.popsize * (1 - 0.234))) * 100. / (self.nsteps * self.popsize), 
+                    mask_accept.mean() * 100,
+                    100 - (self.nrejects - (nrejects_expected - self.nsteps * self.popsize * (1 - 0.234))) * 100. / (self.nsteps * self.popsize),
                     self.scale))
             if self.nrejects > nrejects_expected and self.scale > self.scale_min:
                 # lots of rejects, decrease scale
@@ -200,7 +217,7 @@ class PopulationRandomWalkSampler():
 
 class PopulationSliceSampler():
     def __init__(
-        self, popsize, nsteps, generate_direction, scale=1.0, 
+        self, popsize, nsteps, generate_direction, scale=1.0,
         scale_adapt_factor=0.9, log=False, logfile=None
     ):
         """
@@ -250,7 +267,7 @@ class PopulationSliceSampler():
 
     def __str__(self):
         return 'PopulationSliceSampler(popsize=%d, nsteps=%d, generate_direction=%s, scale=%.g)' % (
-                self.popsize, self.nsteps, self.generate_direction, self.scale)
+            self.popsize, self.nsteps, self.generate_direction, self.scale)
 
     def region_changed(self, Ls, region):
         """notification that the region changed. Currently not used."""
@@ -270,10 +287,6 @@ class PopulationSliceSampler():
         self.searching_left = np.zeros(self.popsize, dtype=bool)
         self.searching_right = np.zeros(self.popsize, dtype=bool)
 
-    def step_back(self, Lmin):
-        """see :py:func:`ultranest.stepfuncs.step_back`"""
-        step_back(Lmin, self.allL, self.generation, self.currentt)
-
     def setup_start(self, us, Ls, starting):
         """Initialize walker starting points.
 
@@ -289,7 +302,8 @@ class PopulationSliceSampler():
             which walkers to initialize.
 
         """
-        if self.log: print("setting up:", starting)
+        if self.log:
+            print("setting up:", starting)
         nlive = len(us)
         i = np.random.randint(nlive, size=starting.sum())
 
@@ -308,12 +322,13 @@ class PopulationSliceSampler():
     @property
     def status(self):
         s1 = ('G:' + ''.join(['%d' % g if g >= 0 else '_' for g in self.generation]))
-        s2 = ('S:' + ''.join(['S' if not np.isfinite(self.currentt[i]) else 'L' if self.searching_left[i] else 'R' if self.searching_right[i] else 'B'
+        s2 = ('S:' + ''.join([
+            'S' if not np.isfinite(self.currentt[i]) else 'L' if self.searching_left[i] else 'R' if self.searching_right[i] else 'B'
             for i in range(self.popsize)]))
         return s1 + '  ' + s2
 
     def setup_brackets(self, mask_starting, region):
-        """Pick starting direction and range for slice
+        """Pick starting direction and range for slice.
 
         Parameters
         ----------
@@ -323,7 +338,8 @@ class PopulationSliceSampler():
             which walkers to set up.
 
         """
-        if self.log: print("starting brackets:", mask_starting)
+        if self.log:
+            print("starting brackets:", mask_starting)
         i_starting, = np.where(mask_starting)
         self.current_left[i_starting] = -self.scale
         self.current_right[i_starting] = self.scale
@@ -336,11 +352,12 @@ class PopulationSliceSampler():
             region)
 
     def _setup_currentp(self, nparams):
-        if self.log: print("setting currentp")
+        if self.log:
+            print("setting currentp")
         self.currentp = np.zeros((self.popsize, nparams)) + np.nan
 
     def advance(self, transform, loglike, Lmin):
-        """Advance the walker population
+        """Advance the walker population.
 
         Parameters
         ----------
@@ -381,7 +398,8 @@ class PopulationSliceSampler():
                 self.searching_left[movable],
                 self.searching_right[movable]
             ]
-        if self.log: print("evolve will advance:", movable)
+        if self.log:
+            print("evolve will advance:", movable)
 
         (
             (
@@ -389,17 +407,20 @@ class PopulationSliceSampler():
             current_left, current_right, searching_left, searching_right),
             (success, unew, pnew, Lnew),
             nc
-        ) = evolve(transform, loglike, Lmin, *args, log=self.log)
+        ) = evolve(transform, loglike, Lmin, *args)
 
-        if self.log: print("movable", movable.shape, movable.sum(), success.shape)
+        if self.log:
+            print("movable", movable.shape, movable.sum(), success.shape)
         moved = submasks(movable, success)
-        if self.log: print("evolve moved:", moved)
+        if self.log:
+            print("evolve moved:", moved)
         self.generation[moved] += 1
         if len(pnew) > 0:
             if len(self.currentp) == 0:
                 self._setup_currentp(nparams=pnew.shape[1])
 
-            if self.log: print("currentp", self.currentp[moved,:].shape, pnew.shape)
+            if self.log:
+                print("currentp", self.currentp[moved,:].shape, pnew.shape)
             self.currentp[moved,:] = pnew
 
         # update with what we learned
@@ -470,15 +491,12 @@ class PopulationSliceSampler():
         if len(self.allu) == 0:
             self._setup(ndim)
 
-        #print(str(self), "(start)")
-        self.step_back(Lmin)
+        step_back(Lmin, self.allL, self.generation, self.currentt)
 
         starting = self.generation < 0
         if starting.any():
             self.setup_start(us[Ls > Lmin], Ls[Ls > Lmin], starting)
         assert (self.generation >= 0).all(), self.generation
-
-        #if self.log: print("generation:", self.generation)
 
         # find those where bracket is undefined:
         mask_starting = ~np.isfinite(self.currentt)
@@ -508,3 +526,8 @@ class PopulationSliceSampler():
             return u, p, L, nc
         else:
             return None, None, None, nc
+
+
+__all__ = [generate_cube_oriented_direction, generate_cube_oriented_direction_scaled,
+   generate_random_direction, generate_region_oriented_direction, generate_region_random_direction,
+   PopulationRandomWalkSampler, PopulationSliceSampler]

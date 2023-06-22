@@ -8,6 +8,7 @@ from numpy import nan as np_nan
 cimport cython
 from cython.parallel import prange
 
+
 @cython.boundscheck(False)
 @cython.wraparound(False)
 cdef _within_unit_cube(
@@ -42,6 +43,7 @@ def within_unit_cube(u):
     _within_unit_cube(u, acceptable)
     return acceptable
 
+
 @cython.boundscheck(False)
 @cython.wraparound(False)
 cdef _evolve_prepare(
@@ -57,6 +59,7 @@ cdef _evolve_prepare(
     for i in range(n):
         search_right[i] = not searching_left[i] and searching_right[i]
         bisecting[i] = not (searching_left[i] or searching_right[i])
+
 
 def evolve_prepare(searching_left, searching_right):
     """Get auxiliary slice sampler state selectors.
@@ -81,6 +84,7 @@ def evolve_prepare(searching_left, searching_right):
     bisecting = np.empty_like(searching_left)
     _evolve_prepare(searching_left, searching_right, search_right, bisecting)
     return search_right, bisecting
+
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -137,10 +141,10 @@ cpdef evolve_update(
     cdef size_t i
     cdef float my_nan = np_nan
     
-    for i in range(popsize):
-        if acceptable[i]:
+    for k in range(popsize):
+        if acceptable[k]:
             if Lnew[j] > Lmin:
-                success[i] = 1
+                success[k] = 1
             j += 1
 
     for i in prange(popsize, nogil=True):
@@ -177,8 +181,7 @@ Lnew_empty = np.empty(0)
 def evolve(
     transform, loglike, Lmin, 
     currentu, currentL, currentt, currentv,
-    current_left, current_right, searching_left, searching_right,
-    log=False
+    current_left, current_right, searching_left, searching_right
 ):
     """Evolve each slice sampling walker.
 
@@ -190,10 +193,6 @@ def evolve(
         loglikelihood function
     Lmin: float
         current log-likelihood threshold
-    search_right: np.array(nwalkers, dtype=bool)
-        whether stepping out in the positive direction
-    bisecting: np.array(nwalkers, dtype=bool)
-        whether bisecting. If neither search_right nor bisecting, then 
     currentu: np.array((nwalkers, ndim))
         slice starting point (where currentt=0)
     currentL: np.array(nwalkers)
@@ -274,6 +273,7 @@ def evolve(
         nc
     )
 
+
 def step_back(Lmin, allL, generation, currentt, log=False):
     """Revert walkers which have wandered astray.
 
@@ -290,6 +290,9 @@ def step_back(Lmin, allL, generation, currentt, log=False):
         how many iterations each walker has completed.
     currentt: np.array(nwalkers)
         current slice coordinate
+    log: bool
+        whether to print when steps are reverted
+
 
     """
     # step back where step was excluded by Lmin increase
@@ -317,6 +320,7 @@ def step_back(Lmin, allL, generation, currentt, log=False):
         if log:
             print("resetting %d%%" % (problematic.meancount_good_generations() * 100), 'by', step, 'steps', 'to', g)
 
+        del problematic
         problematic = np.any(below_threshold_parent, axis=1)
         if not problematic.any():
             break
@@ -390,6 +394,8 @@ def generate_random_direction(ui, region, scale=1):
 
     Parameters
     -----------
+    ui: np.array((npoints, ndim), dtype=float)
+        starting points (not used)
     region: MLFriends object
         current region (not used)
     scale: float
@@ -415,6 +421,8 @@ def generate_region_oriented_direction(ui, region, scale=1):
 
     Parameters
     -----------
+    ui: np.array((npoints, ndim), dtype=float)
+        starting points (not used)
     region: MLFriends object
         current region
     scale: float
@@ -439,6 +447,8 @@ def generate_region_random_direction(ui, region, scale=1):
 
     Parameters
     -----------
+    ui: np.array((npoints, ndim), dtype=float)
+        starting points (not used)
     region: MLFriends object
         current region
     scale: float:
