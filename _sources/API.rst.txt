@@ -1,5 +1,5 @@
-ultranest package
-=================
+API
+===
 
 Modules common to be used directly:
 

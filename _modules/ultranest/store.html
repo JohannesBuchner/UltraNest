@@ -51,7 +51,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../using-ultranest.html">Basic usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../priors.html">Specifying priors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../performance.html">Features</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../API.html">ultranest package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../API.html">API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../issues.html">Frequently Asked Questions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../history.html">Release Notes</a></li>
@@ -111,7 +111,7 @@
 <span class="kn">import</span> <span class="nn">os</span>
 
 
-<div class="viewcode-block" id="NullPointStore"><a class="viewcode-back" href="../../ultranest.html#ultranest.store.NullPointStore">[docs]</a><span class="k">class</span> <span class="nc">NullPointStore</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="NullPointStore"><a class="viewcode-back" href="../../API.html#ultranest.store.NullPointStore">[docs]</a><span class="k">class</span> <span class="nc">NullPointStore</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;No storage.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ncols</span><span class="p">):</span>
@@ -121,33 +121,33 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">stack_empty</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ncalls</span> <span class="o">=</span> <span class="mi">0</span>
 
-<div class="viewcode-block" id="NullPointStore.reset"><a class="viewcode-back" href="../../ultranest.html#ultranest.store.NullPointStore.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="NullPointStore.reset"><a class="viewcode-back" href="../../API.html#ultranest.store.NullPointStore.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Do nothing.&quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="NullPointStore.close"><a class="viewcode-back" href="../../ultranest.html#ultranest.store.NullPointStore.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="NullPointStore.close"><a class="viewcode-back" href="../../API.html#ultranest.store.NullPointStore.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Do nothing.&quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="NullPointStore.flush"><a class="viewcode-back" href="../../ultranest.html#ultranest.store.NullPointStore.flush">[docs]</a>    <span class="k">def</span> <span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="NullPointStore.flush"><a class="viewcode-back" href="../../API.html#ultranest.store.NullPointStore.flush">[docs]</a>    <span class="k">def</span> <span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Do nothing.&quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="NullPointStore.add"><a class="viewcode-back" href="../../ultranest.html#ultranest.store.NullPointStore.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">ncalls</span><span class="p">):</span>
+<div class="viewcode-block" id="NullPointStore.add"><a class="viewcode-back" href="../../API.html#ultranest.store.NullPointStore.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">ncalls</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Increases the number of &quot;stored&quot; points.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nrows</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ncalls</span> <span class="o">=</span> <span class="n">ncalls</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">nrows</span> <span class="o">-</span> <span class="mi">1</span></div>
 
-<div class="viewcode-block" id="NullPointStore.pop"><a class="viewcode-back" href="../../ultranest.html#ultranest.store.NullPointStore.pop">[docs]</a>    <span class="k">def</span> <span class="nf">pop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">):</span>
+<div class="viewcode-block" id="NullPointStore.pop"><a class="viewcode-back" href="../../API.html#ultranest.store.NullPointStore.pop">[docs]</a>    <span class="k">def</span> <span class="nf">pop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return no point (None, None).&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div></div>
 
 
-<div class="viewcode-block" id="FilePointStore"><a class="viewcode-back" href="../../ultranest.html#ultranest.store.FilePointStore">[docs]</a><span class="k">class</span> <span class="nc">FilePointStore</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="FilePointStore"><a class="viewcode-back" href="../../API.html#ultranest.store.FilePointStore">[docs]</a><span class="k">class</span> <span class="nc">FilePointStore</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Base class for storing points in a file.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="FilePointStore.reset"><a class="viewcode-back" href="../../ultranest.html#ultranest.store.FilePointStore.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="FilePointStore.reset"><a class="viewcode-back" href="../../API.html#ultranest.store.FilePointStore.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Reset stack to loaded data.</span>
 
 <span class="sd">        Useful when Lmin is not reset to a lower value.</span>
@@ -156,15 +156,15 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">stack_empty</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span></div>
         <span class="c1"># print(&quot;PointStore: have %d items&quot; % len(self.stack))</span>
 
-<div class="viewcode-block" id="FilePointStore.close"><a class="viewcode-back" href="../../ultranest.html#ultranest.store.FilePointStore.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="FilePointStore.close"><a class="viewcode-back" href="../../API.html#ultranest.store.FilePointStore.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Close file.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fileobj</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="FilePointStore.flush"><a class="viewcode-back" href="../../ultranest.html#ultranest.store.FilePointStore.flush">[docs]</a>    <span class="k">def</span> <span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="FilePointStore.flush"><a class="viewcode-back" href="../../API.html#ultranest.store.FilePointStore.flush">[docs]</a>    <span class="k">def</span> <span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Flush file to disk.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fileobj</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="FilePointStore.pop"><a class="viewcode-back" href="../../ultranest.html#ultranest.store.FilePointStore.pop">[docs]</a>    <span class="k">def</span> <span class="nf">pop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">):</span>
+<div class="viewcode-block" id="FilePointStore.pop"><a class="viewcode-back" href="../../API.html#ultranest.store.FilePointStore.pop">[docs]</a>    <span class="k">def</span> <span class="nf">pop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Request from the storage a point sampled from &lt;= Lmin with L &gt; Lmin.</span>
 
 <span class="sd">        Returns</span>
@@ -193,7 +193,7 @@
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div></div>
 
 
-<div class="viewcode-block" id="TextPointStore"><a class="viewcode-back" href="../../ultranest.html#ultranest.store.TextPointStore">[docs]</a><span class="k">class</span> <span class="nc">TextPointStore</span><span class="p">(</span><span class="n">FilePointStore</span><span class="p">):</span>
+<div class="viewcode-block" id="TextPointStore"><a class="viewcode-back" href="../../API.html#ultranest.store.TextPointStore">[docs]</a><span class="k">class</span> <span class="nc">TextPointStore</span><span class="p">(</span><span class="n">FilePointStore</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Storage in a text file.</span>
 
 <span class="sd">    Stores previously drawn points above some likelihood contour,</span>
@@ -237,7 +237,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">ncalls</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
 
-<div class="viewcode-block" id="TextPointStore.add"><a class="viewcode-back" href="../../ultranest.html#ultranest.store.TextPointStore.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">ncalls</span><span class="p">):</span>
+<div class="viewcode-block" id="TextPointStore.add"><a class="viewcode-back" href="../../API.html#ultranest.store.TextPointStore.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">ncalls</span><span class="p">):</span>
         <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Add data point *row* = [Lmin, L, \*otherinfo] to storage.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ncols</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;expected </span><span class="si">%d</span><span class="s2"> values, got </span><span class="si">%d</span><span class="s2"> in </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ncols</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">row</span><span class="p">),</span> <span class="n">row</span><span class="p">))</span>
@@ -247,7 +247,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">nrows</span> <span class="o">-</span> <span class="mi">1</span></div></div>
 
 
-<div class="viewcode-block" id="HDF5PointStore"><a class="viewcode-back" href="../../ultranest.html#ultranest.store.HDF5PointStore">[docs]</a><span class="k">class</span> <span class="nc">HDF5PointStore</span><span class="p">(</span><span class="n">FilePointStore</span><span class="p">):</span>
+<div class="viewcode-block" id="HDF5PointStore"><a class="viewcode-back" href="../../API.html#ultranest.store.HDF5PointStore">[docs]</a><span class="k">class</span> <span class="nc">HDF5PointStore</span><span class="p">(</span><span class="n">FilePointStore</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Storage in a HDF5 file.</span>
 
 <span class="sd">    Stores previously drawn points above some likelihood contour,</span>
@@ -301,7 +301,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">ncalls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fileobj</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;ncalls&#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stack</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
 
-<div class="viewcode-block" id="HDF5PointStore.add"><a class="viewcode-back" href="../../ultranest.html#ultranest.store.HDF5PointStore.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">ncalls</span><span class="p">):</span>
+<div class="viewcode-block" id="HDF5PointStore.add"><a class="viewcode-back" href="../../API.html#ultranest.store.HDF5PointStore.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">ncalls</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Add data point row = [Lmin, L, *otherinfo* to storage.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ncols</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;expected </span><span class="si">%d</span><span class="s2"> values, got </span><span class="si">%d</span><span class="s2"> in </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ncols</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">row</span><span class="p">),</span> <span class="n">row</span><span class="p">))</span>
