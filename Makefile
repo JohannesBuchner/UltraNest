@@ -77,9 +77,11 @@ coverage: ## check code coverage quickly with the default Python
 docs: ## generate Sphinx HTML documentation, including API docs
 	rm -f docs/ultranest.rst
 	rm -f docs/modules.rst
+	rm -f docs/API.rst
 	python3 setup.py build_ext --inplace
 	#nbstripout docs/*.ipynb
 	sphinx-apidoc -H API -o docs/ ultranest
+	pushd docs; python3 modoverview.py; popd
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html O=-jauto
 	sed --in-place '/href="ultranest\/mlfriends.html"/d' docs/build/html/_modules/index.html
