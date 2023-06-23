@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 Mann-Whitney-Wilcoxon U test for a uniform distribution of integers
 -------------------------------------------------------------------

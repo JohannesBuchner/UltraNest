@@ -1,156 +1,48 @@
 API
 ===
 
-.. toctree::
-   :maxdepth: 4
+`Full API documentation on one page <ultranest.html>`_
 
-Modules common to be used directly:
+The main interface is :py:class:`ultranest.integrator.ReactiveNestedSampler`, 
+also available as `ultranest.ReactiveNestedSampler`.
 
-ultranest.integrator module
----------------------------
 
-.. automodule:: ultranest.integrator
-   :members:
-   :undoc-members:
-   :show-inheritance:
+Modules commonly used directly:
+--------------------------------------------------------------------------------
 
-ultranest.hotstart module
--------------------------
-
-.. automodule:: ultranest.hotstart
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-ultranest.plot module
----------------------
-
-.. automodule:: ultranest.plot
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-ultranest.stepsampler module
-----------------------------
-
-.. automodule:: ultranest.stepsampler
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-ultranest.popstepsampler module
--------------------------------
-
-.. automodule:: ultranest.popstepsampler
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-ultranest.solvecompat module
-----------------------------
-
-.. automodule:: ultranest.solvecompat
-   :members:
-   :undoc-members:
-   :show-inheritance:
+ * :py:mod:`ultranest.integrator`: Nested sampling integrators
+ * :py:mod:`ultranest.hotstart`: Warm start
+ * :py:mod:`ultranest.plot`: Plotting utilities
+ * :py:mod:`ultranest.stepsampler`: MCMC-like step sampling
+ * :py:mod:`ultranest.popstepsampler`: Vectorized step samplers
+ * :py:mod:`ultranest.solvecompat`: Drop-in replacement for pymultinest.solve.
 
 Internally used modules:
+--------------------------------------------------------------------------------
 
-ultranest.mlfriends module
---------------------------
-
-.. automodule:: ultranest.mlfriends
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-ultranest.netiter module
-------------------------
-
-.. automodule:: ultranest.netiter
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-ultranest.ordertest module
---------------------------
-
-.. automodule:: ultranest.ordertest
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-
-ultranest.stepfuncs module
---------------------------
-
-.. automodule:: ultranest.stepfuncs
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-ultranest.store module
-----------------------
-
-.. automodule:: ultranest.store
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-ultranest.utils module
-----------------------
-
-.. automodule:: ultranest.utils
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-ultranest.viz module
---------------------
-
-.. automodule:: ultranest.viz
-   :members:
-   :undoc-members:
-   :show-inheritance:
+ * :py:mod:`ultranest.mlfriends`: Region construction methods
+ * :py:mod:`ultranest.netiter`: Graph-based nested sampling
+ * :py:mod:`ultranest.ordertest`: Mann-Whitney-Wilcoxon U test for a uniform distribution of integers
+ * :py:mod:`ultranest.stepfuncs`: Efficient helper functions for vectorized step-samplers
+ * :py:mod:`ultranest.store`: Storage for nested sampling points
+ * :py:mod:`ultranest.viz`: Live point visualisations
 
 Experimental modules, no guarantees:
+--------------------------------------------------------------------------------
 
-ultranest.dychmc module
------------------------
+ * :py:mod:`ultranest.dychmc`: Constrained Hamiltanean Monte Carlo step sampling.
+ * :py:mod:`ultranest.dyhmc`: Experimental constrained Hamiltanean Monte Carlo step sampling
+ * :py:mod:`ultranest.flatnuts`: FLATNUTS is a implementation of No-U-turn sampler 
+ * :py:mod:`ultranest.pathsampler`: MCMC-like step sampling on a trajectory
+ * :py:mod:`ultranest.samplingpath`: Sparsely sampled, virtual sampling path.
 
-.. automodule:: ultranest.dychmc
-   :members:
-   :undoc-members:
-   :show-inheritance:
 
-ultranest.dyhmc module
-----------------------
+Alphabetical list of submodules
+-------------------------------
 
-.. automodule:: ultranest.dyhmc
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. toctree::
+   :maxdepth: 2
 
-ultranest.flatnuts module
--------------------------
+   ultranest
 
-.. automodule:: ultranest.flatnuts
-   :members:
-   :undoc-members:
-   :show-inheritance:
 
-ultranest.pathsampler module
-----------------------------
-
-.. automodule:: ultranest.pathsampler
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-ultranest.samplingpath module
------------------------------
-
-.. automodule:: ultranest.samplingpath
-   :members:
-   :undoc-members:
-   :show-inheritance:

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
+__doc__ = """
 Graph-based nested sampling
 ---------------------------
 
@@ -24,7 +24,6 @@ can ignore the rootids it does not know about.
 
 """
 
-from __future__ import print_function, division
 import numpy as np
 from numpy import log, log1p, exp, logaddexp
 import math

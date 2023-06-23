@@ -1,4 +1,4 @@
-"""MCMC-like step sampling on a trajectory.
+"""MCMC-like step sampling on a trajectory
 
 These features are experimental.
 """
