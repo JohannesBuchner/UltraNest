@@ -153,7 +153,7 @@
 <span class="kn">from</span> <span class="nn">.samplingpath</span> <span class="kn">import</span> <span class="n">angle</span><span class="p">,</span> <span class="n">extrapolate_ahead</span>
 
 
-<div class="viewcode-block" id="SingleJumper"><a class="viewcode-back" href="../../API.html#ultranest.flatnuts.SingleJumper">[docs]</a><span class="k">class</span> <span class="nc">SingleJumper</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="SingleJumper"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.SingleJumper">[docs]</a><span class="k">class</span> <span class="nc">SingleJumper</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Jump on step at a time. If unsuccessful, reverse direction. &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stepsampler</span><span class="p">,</span> <span class="n">nsteps</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stepsampler</span> <span class="o">=</span> <span class="n">stepsampler</span>
@@ -165,16 +165,16 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">naccepts</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nrejects</span> <span class="o">=</span> <span class="mi">0</span>
     
-<div class="viewcode-block" id="SingleJumper.prepare_jump"><a class="viewcode-back" href="../../API.html#ultranest.flatnuts.SingleJumper.prepare_jump">[docs]</a>    <span class="k">def</span> <span class="nf">prepare_jump</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="SingleJumper.prepare_jump"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.SingleJumper.prepare_jump">[docs]</a>    <span class="k">def</span> <span class="nf">prepare_jump</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">currenti</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">direction</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="n">set_nsteps</span><span class="p">(</span><span class="n">target</span><span class="p">)</span></div>
     
-<div class="viewcode-block" id="SingleJumper.check_gaps"><a class="viewcode-back" href="../../API.html#ultranest.flatnuts.SingleJumper.check_gaps">[docs]</a>    <span class="k">def</span> <span class="nf">check_gaps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gaps</span><span class="p">):</span>
+<div class="viewcode-block" id="SingleJumper.check_gaps"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.SingleJumper.check_gaps">[docs]</a>    <span class="k">def</span> <span class="nf">check_gaps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gaps</span><span class="p">):</span>
         <span class="c1"># gaps cannot happen, because we make each jump explicitly</span>
         <span class="k">pass</span></div>
     <span class="c1"># then user runs stepsampler until it is done</span>
     
-<div class="viewcode-block" id="SingleJumper.make_jump"><a class="viewcode-back" href="../../API.html#ultranest.flatnuts.SingleJumper.make_jump">[docs]</a>    <span class="k">def</span> <span class="nf">make_jump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gaps</span><span class="o">=</span><span class="p">{}):</span>
+<div class="viewcode-block" id="SingleJumper.make_jump"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.SingleJumper.make_jump">[docs]</a>    <span class="k">def</span> <span class="nf">make_jump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gaps</span><span class="o">=</span><span class="p">{}):</span>
         <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">currenti</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">direction</span>
         <span class="n">pointi</span> <span class="o">=</span> <span class="p">[(</span><span class="n">j</span><span class="p">,</span> <span class="n">xj</span><span class="p">,</span> <span class="n">vj</span><span class="p">,</span> <span class="n">Lj</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">xj</span><span class="p">,</span> <span class="n">vj</span><span class="p">,</span> <span class="n">Lj</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="n">points</span> <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="n">target</span><span class="p">]</span>
         <span class="n">accept</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">pointi</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
@@ -191,7 +191,7 @@
         <span class="k">return</span> <span class="n">pointi</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">pointi</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span></div></div>
 
 
-<div class="viewcode-block" id="DirectJumper"><a class="viewcode-back" href="../../API.html#ultranest.flatnuts.DirectJumper">[docs]</a><span class="k">class</span> <span class="nc">DirectJumper</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="DirectJumper"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.DirectJumper">[docs]</a><span class="k">class</span> <span class="nc">DirectJumper</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Jump to n steps immediately. If unsuccessful, takes rest in other direction. &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stepsampler</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stepsampler</span> <span class="o">=</span> <span class="n">stepsampler</span>
@@ -204,12 +204,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">nrejects</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="o">=</span> <span class="n">log</span>
     
-<div class="viewcode-block" id="DirectJumper.prepare_jump"><a class="viewcode-back" href="../../API.html#ultranest.flatnuts.DirectJumper.prepare_jump">[docs]</a>    <span class="k">def</span> <span class="nf">prepare_jump</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="DirectJumper.prepare_jump"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.DirectJumper.prepare_jump">[docs]</a>    <span class="k">def</span> <span class="nf">prepare_jump</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">currenti</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="n">set_nsteps</span><span class="p">(</span><span class="n">target</span><span class="p">)</span></div>
     
     <span class="c1"># then user runs stepsampler until it is done</span>
-<div class="viewcode-block" id="DirectJumper.check_gaps"><a class="viewcode-back" href="../../API.html#ultranest.flatnuts.DirectJumper.check_gaps">[docs]</a>    <span class="k">def</span> <span class="nf">check_gaps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gaps</span><span class="p">):</span>
+<div class="viewcode-block" id="DirectJumper.check_gaps"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.DirectJumper.check_gaps">[docs]</a>    <span class="k">def</span> <span class="nf">check_gaps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gaps</span><span class="p">):</span>
         <span class="n">pointi</span> <span class="o">=</span> <span class="p">{</span><span class="n">j</span><span class="p">:</span> <span class="p">(</span><span class="n">xj</span><span class="p">,</span> <span class="n">Lj</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">xj</span><span class="p">,</span> <span class="n">vj</span><span class="p">,</span> <span class="n">Lj</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="n">points</span><span class="p">}</span>
         <span class="n">ilo</span><span class="p">,</span> <span class="n">ihi</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">pointi</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span> <span class="nb">max</span><span class="p">(</span><span class="n">pointi</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
         <span class="n">currenti</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">currenti</span>
@@ -246,7 +246,7 @@
         <span class="c1"># gaps[i] = True if outside, gaps[i] = False if OK</span>
         <span class="k">return</span> <span class="n">xj</span><span class="p">,</span> <span class="n">currenti</span></div>
     
-<div class="viewcode-block" id="DirectJumper.make_jump"><a class="viewcode-back" href="../../API.html#ultranest.flatnuts.DirectJumper.make_jump">[docs]</a>    <span class="k">def</span> <span class="nf">make_jump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gaps</span><span class="o">=</span><span class="p">{}):</span>
+<div class="viewcode-block" id="DirectJumper.make_jump"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.DirectJumper.make_jump">[docs]</a>    <span class="k">def</span> <span class="nf">make_jump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gaps</span><span class="o">=</span><span class="p">{}):</span>
         <span class="n">pointi</span> <span class="o">=</span> <span class="p">{</span><span class="n">j</span><span class="p">:</span> <span class="p">(</span><span class="n">xj</span><span class="p">,</span> <span class="n">Lj</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">xj</span><span class="p">,</span> <span class="n">vj</span><span class="p">,</span> <span class="n">Lj</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="n">points</span><span class="p">}</span>
         <span class="n">ilo</span><span class="p">,</span> <span class="n">ihi</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">pointi</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span> <span class="nb">max</span><span class="p">(</span><span class="n">pointi</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
         
@@ -269,7 +269,7 @@
         <span class="k">return</span> <span class="n">pointi</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">currenti</span><span class="p">]</span></div></div>
 
 
-<div class="viewcode-block" id="IntervalJumper"><a class="viewcode-back" href="../../API.html#ultranest.flatnuts.IntervalJumper">[docs]</a><span class="k">class</span> <span class="nc">IntervalJumper</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="IntervalJumper"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.IntervalJumper">[docs]</a><span class="k">class</span> <span class="nc">IntervalJumper</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Use interval to choose final point randomly &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stepsampler</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stepsampler</span> <span class="o">=</span> <span class="n">stepsampler</span>
@@ -281,14 +281,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">naccepts</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nrejects</span> <span class="o">=</span> <span class="mi">0</span>
     
-<div class="viewcode-block" id="IntervalJumper.prepare_jump"><a class="viewcode-back" href="../../API.html#ultranest.flatnuts.IntervalJumper.prepare_jump">[docs]</a>    <span class="k">def</span> <span class="nf">prepare_jump</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="IntervalJumper.prepare_jump"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.IntervalJumper.prepare_jump">[docs]</a>    <span class="k">def</span> <span class="nf">prepare_jump</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">currenti</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="n">set_nsteps</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="n">set_nsteps</span><span class="p">(</span><span class="o">-</span><span class="n">target</span><span class="p">)</span></div>
     
     <span class="c1"># then user runs stepsampler until it is done</span>
     
-<div class="viewcode-block" id="IntervalJumper.make_jump"><a class="viewcode-back" href="../../API.html#ultranest.flatnuts.IntervalJumper.make_jump">[docs]</a>    <span class="k">def</span> <span class="nf">make_jump</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="IntervalJumper.make_jump"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.IntervalJumper.make_jump">[docs]</a>    <span class="k">def</span> <span class="nf">make_jump</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">pointi</span> <span class="o">=</span> <span class="p">{</span><span class="n">j</span><span class="p">:</span> <span class="p">(</span><span class="n">xj</span><span class="p">,</span> <span class="n">Lj</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">xj</span><span class="p">,</span> <span class="n">vj</span><span class="p">,</span> <span class="n">Lj</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="n">points</span><span class="p">}</span>
         <span class="n">ilo</span><span class="p">,</span> <span class="n">ihi</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">pointi</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span> <span class="nb">max</span><span class="p">(</span><span class="n">pointi</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
         <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nutssampler</span><span class="o">.</span><span class="n">validrange</span>
@@ -302,7 +302,7 @@
         
         <span class="k">return</span> <span class="kc">None</span></div></div>
 
-<div class="viewcode-block" id="ClockedSimpleStepSampler"><a class="viewcode-back" href="../../API.html#ultranest.flatnuts.ClockedSimpleStepSampler">[docs]</a><span class="k">class</span> <span class="nc">ClockedSimpleStepSampler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="ClockedSimpleStepSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedSimpleStepSampler">[docs]</a><span class="k">class</span> <span class="nc">ClockedSimpleStepSampler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Find a new point with a series of small steps</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -323,10 +323,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="o">=</span> <span class="n">log</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
     
-<div class="viewcode-block" id="ClockedSimpleStepSampler.reset"><a class="viewcode-back" href="../../API.html#ultranest.flatnuts.ClockedSimpleStepSampler.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ClockedSimpleStepSampler.reset"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedSimpleStepSampler.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">goals</span> <span class="o">=</span> <span class="p">[]</span></div>
     
-<div class="viewcode-block" id="ClockedSimpleStepSampler.reverse"><a class="viewcode-back" href="../../API.html#ultranest.flatnuts.ClockedSimpleStepSampler.reverse">[docs]</a>    <span class="k">def</span> <span class="nf">reverse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reflpoint</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="ClockedSimpleStepSampler.reverse"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedSimpleStepSampler.reverse">[docs]</a>    <span class="k">def</span> <span class="nf">reverse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reflpoint</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Reflect off the surface at reflpoint going in direction v</span>
 <span class="sd">        </span>
@@ -347,13 +347,13 @@
             <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="n">reflpoint</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">(</span><span class="n">vnew</span> <span class="o">+</span> <span class="n">reflpoint</span><span class="p">)[</span><span class="mi">0</span><span class="p">]],</span> <span class="p">[</span><span class="n">reflpoint</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">(</span><span class="n">vnew</span> <span class="o">+</span> <span class="n">reflpoint</span><span class="p">)[</span><span class="mi">1</span><span class="p">]],</span> <span class="s1">&#39;-&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">vnew</span></div>
     
-<div class="viewcode-block" id="ClockedSimpleStepSampler.set_nsteps"><a class="viewcode-back" href="../../API.html#ultranest.flatnuts.ClockedSimpleStepSampler.set_nsteps">[docs]</a>    <span class="k">def</span> <span class="nf">set_nsteps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+<div class="viewcode-block" id="ClockedSimpleStepSampler.set_nsteps"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedSimpleStepSampler.set_nsteps">[docs]</a>    <span class="k">def</span> <span class="nf">set_nsteps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">goals</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;sample-at&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span></div>
     
-<div class="viewcode-block" id="ClockedSimpleStepSampler.is_done"><a class="viewcode-back" href="../../API.html#ultranest.flatnuts.ClockedSimpleStepSampler.is_done">[docs]</a>    <span class="k">def</span> <span class="nf">is_done</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ClockedSimpleStepSampler.is_done"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedSimpleStepSampler.is_done">[docs]</a>    <span class="k">def</span> <span class="nf">is_done</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">goals</span> <span class="o">==</span> <span class="p">[]</span></div>
     
-<div class="viewcode-block" id="ClockedSimpleStepSampler.expand_onestep"><a class="viewcode-back" href="../../API.html#ultranest.flatnuts.ClockedSimpleStepSampler.expand_onestep">[docs]</a>    <span class="k">def</span> <span class="nf">expand_onestep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fwd</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">):</span>
+<div class="viewcode-block" id="ClockedSimpleStepSampler.expand_onestep"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedSimpleStepSampler.expand_onestep">[docs]</a>    <span class="k">def</span> <span class="nf">expand_onestep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fwd</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Helper interface, make one step (forward fwd=True or backward fwd=False) &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">fwd</span><span class="p">:</span>
             <span class="n">starti</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
@@ -363,12 +363,12 @@
             <span class="n">i</span> <span class="o">=</span> <span class="n">starti</span> <span class="o">-</span> <span class="mi">1</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">expand_to_step</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="ClockedSimpleStepSampler.expand_to_step"><a class="viewcode-back" href="../../API.html#ultranest.flatnuts.ClockedSimpleStepSampler.expand_to_step">[docs]</a>    <span class="k">def</span> <span class="nf">expand_to_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">):</span>
+<div class="viewcode-block" id="ClockedSimpleStepSampler.expand_to_step"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedSimpleStepSampler.expand_to_step">[docs]</a>    <span class="k">def</span> <span class="nf">expand_to_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Helper interface, go to step nstep &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_nsteps</span><span class="p">(</span><span class="n">nsteps</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_independent_sample</span><span class="p">(</span><span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="ClockedSimpleStepSampler.get_independent_sample"><a class="viewcode-back" href="../../API.html#ultranest.flatnuts.ClockedSimpleStepSampler.get_independent_sample">[docs]</a>    <span class="k">def</span> <span class="nf">get_independent_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">):</span>
+<div class="viewcode-block" id="ClockedSimpleStepSampler.get_independent_sample"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedSimpleStepSampler.get_independent_sample">[docs]</a>    <span class="k">def</span> <span class="nf">get_independent_sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Helper interface, call next() until a independent sample is returned &quot;&quot;&quot;</span>
         <span class="n">Llast</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
@@ -386,12 +386,12 @@
                     <span class="n">Llast</span> <span class="o">=</span> <span class="kc">None</span></div></div>
 
 
-<div class="viewcode-block" id="ClockedStepSampler"><a class="viewcode-back" href="../../API.html#ultranest.flatnuts.ClockedStepSampler">[docs]</a><span class="k">class</span> <span class="nc">ClockedStepSampler</span><span class="p">(</span><span class="n">ClockedSimpleStepSampler</span><span class="p">):</span>
+<div class="viewcode-block" id="ClockedStepSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedStepSampler">[docs]</a><span class="k">class</span> <span class="nc">ClockedStepSampler</span><span class="p">(</span><span class="n">ClockedSimpleStepSampler</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Find a new point with a series of small steps</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="ClockedStepSampler.continue_sampling"><a class="viewcode-back" href="../../API.html#ultranest.flatnuts.ClockedStepSampler.continue_sampling">[docs]</a>    <span class="k">def</span> <span class="nf">continue_sampling</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+<div class="viewcode-block" id="ClockedStepSampler.continue_sampling"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedStepSampler.continue_sampling">[docs]</a>    <span class="k">def</span> <span class="nf">continue_sampling</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">contourpath</span><span class="o">.</span><span class="n">samplingpath</span><span class="o">.</span><span class="n">fwd_possible</span> \
         <span class="ow">or</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">contourpath</span><span class="o">.</span><span class="n">samplingpath</span><span class="o">.</span><span class="n">rwd_possible</span><span class="p">:</span>
             <span class="c1"># we are not done:</span>
@@ -417,7 +417,7 @@
             <span class="c1"># make this many steps in the other direction</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">goals</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;sample-at&#39;</span><span class="p">,</span> <span class="n">reversei</span> <span class="o">-</span> <span class="n">deltai</span><span class="p">))</span></div>
     
-<div class="viewcode-block" id="ClockedStepSampler.expand_to"><a class="viewcode-back" href="../../API.html#ultranest.flatnuts.ClockedStepSampler.expand_to">[docs]</a>    <span class="k">def</span> <span class="nf">expand_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+<div class="viewcode-block" id="ClockedStepSampler.expand_to"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedStepSampler.expand_to">[docs]</a>    <span class="k">def</span> <span class="nf">expand_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">contourpath</span><span class="o">.</span><span class="n">samplingpath</span><span class="o">.</span><span class="n">fwd_possible</span><span class="p">:</span>
             <span class="n">starti</span><span class="p">,</span> <span class="n">startx</span><span class="p">,</span> <span class="n">startv</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="n">starti</span><span class="p">:</span>
@@ -451,7 +451,7 @@
             <span class="c1"># skip to other goals</span>
             <span class="k">pass</span></div>
     
-<div class="viewcode-block" id="ClockedStepSampler.eval_at"><a class="viewcode-back" href="../../API.html#ultranest.flatnuts.ClockedStepSampler.eval_at">[docs]</a>    <span class="k">def</span> <span class="nf">eval_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">xj</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">sign</span><span class="p">,</span> <span class="n">Llast</span><span class="p">):</span>
+<div class="viewcode-block" id="ClockedStepSampler.eval_at"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedStepSampler.eval_at">[docs]</a>    <span class="k">def</span> <span class="nf">eval_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">xj</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">sign</span><span class="p">,</span> <span class="n">Llast</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">Llast</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># we can go about our merry way.</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">contourpath</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">xj</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">Llast</span><span class="p">)</span>
@@ -467,7 +467,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">goals</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;reflect-at&#39;</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">xk</span><span class="p">,</span> <span class="n">vk</span><span class="p">,</span> <span class="n">sign</span><span class="p">))</span>
             <span class="k">return</span> <span class="n">xk</span><span class="p">,</span> <span class="kc">False</span></div>
     
-<div class="viewcode-block" id="ClockedStepSampler.reflect_at"><a class="viewcode-back" href="../../API.html#ultranest.flatnuts.ClockedStepSampler.reflect_at">[docs]</a>    <span class="k">def</span> <span class="nf">reflect_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">xk</span><span class="p">,</span> <span class="n">vk</span><span class="p">,</span> <span class="n">sign</span><span class="p">,</span> <span class="n">Llast</span><span class="p">):</span>
+<div class="viewcode-block" id="ClockedStepSampler.reflect_at"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedStepSampler.reflect_at">[docs]</a>    <span class="k">def</span> <span class="nf">reflect_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">xk</span><span class="p">,</span> <span class="n">vk</span><span class="p">,</span> <span class="n">sign</span><span class="p">,</span> <span class="n">Llast</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nreflections</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="k">if</span> <span class="n">Llast</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># we can go about our merry way.</span>
@@ -481,7 +481,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">contourpath</span><span class="o">.</span><span class="n">samplingpath</span><span class="o">.</span><span class="n">rwd_possible</span> <span class="o">=</span> <span class="kc">False</span></div>
 
     
-<div class="viewcode-block" id="ClockedStepSampler.next"><a class="viewcode-back" href="../../API.html#ultranest.flatnuts.ClockedStepSampler.next">[docs]</a>    <span class="k">def</span> <span class="nf">next</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Llast</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="ClockedStepSampler.next"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedStepSampler.next">[docs]</a>    <span class="k">def</span> <span class="nf">next</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Llast</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Run steps forward or backward to step i (can be positive or </span>
 <span class="sd">        negative, 0 is the starting point) </span>
@@ -537,12 +537,12 @@
         
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span></div></div>
 
-<div class="viewcode-block" id="ClockedBisectSampler"><a class="viewcode-back" href="../../API.html#ultranest.flatnuts.ClockedBisectSampler">[docs]</a><span class="k">class</span> <span class="nc">ClockedBisectSampler</span><span class="p">(</span><span class="n">ClockedStepSampler</span><span class="p">):</span>
+<div class="viewcode-block" id="ClockedBisectSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedBisectSampler">[docs]</a><span class="k">class</span> <span class="nc">ClockedBisectSampler</span><span class="p">(</span><span class="n">ClockedStepSampler</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Step sampler that does not require each step to be evaluated</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     
-<div class="viewcode-block" id="ClockedBisectSampler.continue_sampling"><a class="viewcode-back" href="../../API.html#ultranest.flatnuts.ClockedBisectSampler.continue_sampling">[docs]</a>    <span class="k">def</span> <span class="nf">continue_sampling</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+<div class="viewcode-block" id="ClockedBisectSampler.continue_sampling"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedBisectSampler.continue_sampling">[docs]</a>    <span class="k">def</span> <span class="nf">continue_sampling</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">starti</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
             <span class="c1">#fwd = True</span>
@@ -584,7 +584,7 @@
             <span class="c1"># make this many steps in the other direction</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">goals</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;sample-at&#39;</span><span class="p">,</span> <span class="n">reversei</span> <span class="o">-</span> <span class="n">deltai</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="ClockedBisectSampler.expand_to"><a class="viewcode-back" href="../../API.html#ultranest.flatnuts.ClockedBisectSampler.expand_to">[docs]</a>    <span class="k">def</span> <span class="nf">expand_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">j</span><span class="p">):</span>
+<div class="viewcode-block" id="ClockedBisectSampler.expand_to"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedBisectSampler.expand_to">[docs]</a>    <span class="k">def</span> <span class="nf">expand_to</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">j</span><span class="p">):</span>
         <span class="c1"># check if we already tried </span>
         
         <span class="k">if</span> <span class="n">j</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">contourpath</span><span class="o">.</span><span class="n">samplingpath</span><span class="o">.</span><span class="n">fwd_possible</span><span class="p">:</span>
@@ -617,7 +617,7 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;cannot go there&quot;</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
             <span class="k">pass</span></div>
     
-<div class="viewcode-block" id="ClockedBisectSampler.bisect_at"><a class="viewcode-back" href="../../API.html#ultranest.flatnuts.ClockedBisectSampler.bisect_at">[docs]</a>    <span class="k">def</span> <span class="nf">bisect_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lefti</span><span class="p">,</span> <span class="n">leftx</span><span class="p">,</span> <span class="n">leftv</span><span class="p">,</span> <span class="n">midi</span><span class="p">,</span> <span class="n">midx</span><span class="p">,</span> <span class="n">midv</span><span class="p">,</span> <span class="n">righti</span><span class="p">,</span> <span class="n">rightx</span><span class="p">,</span> <span class="n">rightv</span><span class="p">,</span> <span class="n">sign</span><span class="p">,</span> <span class="n">Llast</span><span class="p">):</span>
+<div class="viewcode-block" id="ClockedBisectSampler.bisect_at"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedBisectSampler.bisect_at">[docs]</a>    <span class="k">def</span> <span class="nf">bisect_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lefti</span><span class="p">,</span> <span class="n">leftx</span><span class="p">,</span> <span class="n">leftv</span><span class="p">,</span> <span class="n">midi</span><span class="p">,</span> <span class="n">midx</span><span class="p">,</span> <span class="n">midv</span><span class="p">,</span> <span class="n">righti</span><span class="p">,</span> <span class="n">rightx</span><span class="p">,</span> <span class="n">rightv</span><span class="p">,</span> <span class="n">sign</span><span class="p">,</span> <span class="n">Llast</span><span class="p">):</span>
         <span class="c1"># Bisect to find first point outside</span>
         
         <span class="c1"># left is inside (i: index, x: coordinate, v: direction)</span>
@@ -674,7 +674,7 @@
             <span class="k">return</span> <span class="n">midx</span><span class="p">,</span> <span class="kc">False</span></div>
     
     
-<div class="viewcode-block" id="ClockedBisectSampler.next"><a class="viewcode-back" href="../../API.html#ultranest.flatnuts.ClockedBisectSampler.next">[docs]</a>    <span class="k">def</span> <span class="nf">next</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Llast</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="ClockedBisectSampler.next"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedBisectSampler.next">[docs]</a>    <span class="k">def</span> <span class="nf">next</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Llast</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Run steps forward or backward to step i (can be positive or </span>
 <span class="sd">        negative, 0 is the starting point) </span>
@@ -728,13 +728,13 @@
             
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">False</span></div></div>
 
-<div class="viewcode-block" id="ClockedNUTSSampler"><a class="viewcode-back" href="../../API.html#ultranest.flatnuts.ClockedNUTSSampler">[docs]</a><span class="k">class</span> <span class="nc">ClockedNUTSSampler</span><span class="p">(</span><span class="n">ClockedBisectSampler</span><span class="p">):</span>
+<div class="viewcode-block" id="ClockedNUTSSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedNUTSSampler">[docs]</a><span class="k">class</span> <span class="nc">ClockedNUTSSampler</span><span class="p">(</span><span class="n">ClockedBisectSampler</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    No-U-turn sampler (NUTS) on flat surfaces.</span>
 <span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     
-<div class="viewcode-block" id="ClockedNUTSSampler.reset"><a class="viewcode-back" href="../../API.html#ultranest.flatnuts.ClockedNUTSSampler.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ClockedNUTSSampler.reset"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedNUTSSampler.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">goals</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">left_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">][:</span><span class="mi">3</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">right_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">][:</span><span class="mi">3</span><span class="p">]</span>
@@ -745,7 +745,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">tree_depth</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">current_direction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span></div>
     
-<div class="viewcode-block" id="ClockedNUTSSampler.next"><a class="viewcode-back" href="../../API.html#ultranest.flatnuts.ClockedNUTSSampler.next">[docs]</a>    <span class="k">def</span> <span class="nf">next</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Llast</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="ClockedNUTSSampler.next"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedNUTSSampler.next">[docs]</a>    <span class="k">def</span> <span class="nf">next</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Llast</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Alternatingly doubles the number of steps to forward and backward </span>
 <span class="sd">        direction (which may include reflections, see StepSampler and</span>
@@ -810,7 +810,7 @@
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;sampling between&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">validrange</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_chain_point</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">validrange</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">validrange</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span></div>
     
-<div class="viewcode-block" id="ClockedNUTSSampler.sample_chain_point"><a class="viewcode-back" href="../../API.html#ultranest.flatnuts.ClockedNUTSSampler.sample_chain_point">[docs]</a>    <span class="k">def</span> <span class="nf">sample_chain_point</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+<div class="viewcode-block" id="ClockedNUTSSampler.sample_chain_point"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedNUTSSampler.sample_chain_point">[docs]</a>    <span class="k">def</span> <span class="nf">sample_chain_point</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Gets a point on the track between a and b (inclusive).</span>
 <span class="sd">        </span>
@@ -840,7 +840,7 @@
                 <span class="k">continue</span>
             <span class="k">return</span> <span class="p">(</span><span class="n">xi</span><span class="p">,</span> <span class="n">Li</span><span class="p">),</span> <span class="kc">True</span></div>
     
-<div class="viewcode-block" id="ClockedNUTSSampler.build_tree"><a class="viewcode-back" href="../../API.html#ultranest.flatnuts.ClockedNUTSSampler.build_tree">[docs]</a>    <span class="k">def</span> <span class="nf">build_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">startstate</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">rwd</span><span class="p">):</span>
+<div class="viewcode-block" id="ClockedNUTSSampler.build_tree"><a class="viewcode-back" href="../../ultranest.html#ultranest.flatnuts.ClockedNUTSSampler.build_tree">[docs]</a>    <span class="k">def</span> <span class="nf">build_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">startstate</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">rwd</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Build sub-trees of depth j in direction rwd</span>
 <span class="sd">        </span>

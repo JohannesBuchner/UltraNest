@@ -499,7 +499,7 @@
     <span class="k">return</span> <span class="n">r</span><span class="p">,</span> <span class="n">f</span>
 
 
-<div class="viewcode-block" id="NestedSampler"><a class="viewcode-back" href="../../API.html#ultranest.integrator.NestedSampler">[docs]</a><span class="k">class</span> <span class="nc">NestedSampler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="NestedSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.integrator.NestedSampler">[docs]</a><span class="k">class</span> <span class="nc">NestedSampler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Simple Nested sampler for reference.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -627,7 +627,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">pointstore</span> <span class="o">=</span> <span class="n">NullPointStore</span><span class="p">(</span><span class="mi">3</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_dim</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_params</span><span class="p">)</span>
 
-<div class="viewcode-block" id="NestedSampler.run"><a class="viewcode-back" href="../../API.html#ultranest.integrator.NestedSampler.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span>
+<div class="viewcode-block" id="NestedSampler.run"><a class="viewcode-back" href="../../ultranest.html#ultranest.integrator.NestedSampler.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">update_interval_iter</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">update_interval_ncall</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -983,7 +983,7 @@
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span></div>
 
-<div class="viewcode-block" id="NestedSampler.print_results"><a class="viewcode-back" href="../../API.html#ultranest.integrator.NestedSampler.print_results">[docs]</a>    <span class="k">def</span> <span class="nf">print_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="NestedSampler.print_results"><a class="viewcode-back" href="../../ultranest.html#ultranest.integrator.NestedSampler.print_results">[docs]</a>    <span class="k">def</span> <span class="nf">print_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Give summary of marginal likelihood and parameters.&quot;&quot;&quot;</span>
         <span class="nb">print</span><span class="p">()</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;logZ = </span><span class="si">%(logz).3f</span><span class="s1"> +- </span><span class="si">%(logzerr).3f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)</span>
@@ -1001,7 +1001,7 @@
             <span class="n">fmts</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;    </span><span class="si">%-20s</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="n">fmt</span> <span class="o">+</span> <span class="s2">&quot; +- &quot;</span> <span class="o">+</span> <span class="n">fmt</span><span class="p">])</span>
             <span class="nb">print</span><span class="p">(</span><span class="n">fmts</span> <span class="o">%</span> <span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">med</span><span class="p">,</span> <span class="n">sigma</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="NestedSampler.plot"><a class="viewcode-back" href="../../API.html#ultranest.integrator.NestedSampler.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="NestedSampler.plot"><a class="viewcode-back" href="../../ultranest.html#ultranest.integrator.NestedSampler.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Make corner plot.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_to_disk</span><span class="p">:</span>
             <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
@@ -1020,7 +1020,7 @@
             <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div></div>
 
 
-<div class="viewcode-block" id="warmstart_from_similar_file"><a class="viewcode-back" href="../../API.html#ultranest.integrator.warmstart_from_similar_file">[docs]</a><span class="k">def</span> <span class="nf">warmstart_from_similar_file</span><span class="p">(</span>
+<div class="viewcode-block" id="warmstart_from_similar_file"><a class="viewcode-back" href="../../ultranest.html#ultranest.integrator.warmstart_from_similar_file">[docs]</a><span class="k">def</span> <span class="nf">warmstart_from_similar_file</span><span class="p">(</span>
     <span class="n">usample_filename</span><span class="p">,</span>
     <span class="n">param_names</span><span class="p">,</span>
     <span class="n">loglike</span><span class="p">,</span>
@@ -1105,7 +1105,7 @@
     <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="ReactiveNestedSampler"><a class="viewcode-back" href="../../API.html#ultranest.integrator.ReactiveNestedSampler">[docs]</a><span class="k">class</span> <span class="nc">ReactiveNestedSampler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="ReactiveNestedSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.integrator.ReactiveNestedSampler">[docs]</a><span class="k">class</span> <span class="nc">ReactiveNestedSampler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Nested sampler with reactive exploration strategy.</span>
 
 <span class="sd">    Storage &amp; resume capable, optionally MPI parallelised.</span>
@@ -2354,7 +2354,7 @@
 
         <span class="k">return</span> <span class="n">expand_node</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">too_wide</span>
 
-<div class="viewcode-block" id="ReactiveNestedSampler.run"><a class="viewcode-back" href="../../API.html#ultranest.integrator.ReactiveNestedSampler.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span>
+<div class="viewcode-block" id="ReactiveNestedSampler.run"><a class="viewcode-back" href="../../ultranest.html#ultranest.integrator.ReactiveNestedSampler.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">update_interval_volume_fraction</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span>
             <span class="n">update_interval_ncall</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -2488,7 +2488,7 @@
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span></div>
 
-<div class="viewcode-block" id="ReactiveNestedSampler.run_iter"><a class="viewcode-back" href="../../API.html#ultranest.integrator.ReactiveNestedSampler.run_iter">[docs]</a>    <span class="k">def</span> <span class="nf">run_iter</span><span class="p">(</span>
+<div class="viewcode-block" id="ReactiveNestedSampler.run_iter"><a class="viewcode-back" href="../../ultranest.html#ultranest.integrator.ReactiveNestedSampler.run_iter">[docs]</a>    <span class="k">def</span> <span class="nf">run_iter</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">update_interval_volume_fraction</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span>
             <span class="n">update_interval_ncall</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -2995,13 +2995,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">results</span> <span class="o">=</span> <span class="n">results</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">run_sequence</span> <span class="o">=</span> <span class="n">sequence</span>
 
-<div class="viewcode-block" id="ReactiveNestedSampler.store_tree"><a class="viewcode-back" href="../../API.html#ultranest.integrator.ReactiveNestedSampler.store_tree">[docs]</a>    <span class="k">def</span> <span class="nf">store_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ReactiveNestedSampler.store_tree"><a class="viewcode-back" href="../../ultranest.html#ultranest.integrator.ReactiveNestedSampler.store_tree">[docs]</a>    <span class="k">def</span> <span class="nf">store_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Store tree to disk (results/tree.hdf5).&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_to_disk</span><span class="p">:</span>
             <span class="n">dump_tree</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logs</span><span class="p">[</span><span class="s1">&#39;results&#39;</span><span class="p">],</span> <span class="s1">&#39;tree.hdf5&#39;</span><span class="p">),</span>
                       <span class="bp">self</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">children</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pointpile</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="ReactiveNestedSampler.print_results"><a class="viewcode-back" href="../../API.html#ultranest.integrator.ReactiveNestedSampler.print_results">[docs]</a>    <span class="k">def</span> <span class="nf">print_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">use_unicode</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="ReactiveNestedSampler.print_results"><a class="viewcode-back" href="../../ultranest.html#ultranest.integrator.ReactiveNestedSampler.print_results">[docs]</a>    <span class="k">def</span> <span class="nf">print_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">use_unicode</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Give summary of marginal likelihood and parameter posteriors.</span>
 
 <span class="sd">        Parameters</span>
@@ -3050,7 +3050,7 @@
                     <span class="nb">print</span><span class="p">(</span><span class="n">fmts</span> <span class="o">%</span> <span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">med</span><span class="p">,</span> <span class="n">sigma</span><span class="p">))</span>
             <span class="nb">print</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="ReactiveNestedSampler.plot"><a class="viewcode-back" href="../../API.html#ultranest.integrator.ReactiveNestedSampler.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ReactiveNestedSampler.plot"><a class="viewcode-back" href="../../ultranest.html#ultranest.integrator.ReactiveNestedSampler.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Make corner, run and trace plots.</span>
 
 <span class="sd">        calls:</span>
@@ -3063,7 +3063,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">plot_run</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">plot_trace</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="ReactiveNestedSampler.plot_corner"><a class="viewcode-back" href="../../API.html#ultranest.integrator.ReactiveNestedSampler.plot_corner">[docs]</a>    <span class="k">def</span> <span class="nf">plot_corner</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ReactiveNestedSampler.plot_corner"><a class="viewcode-back" href="../../ultranest.html#ultranest.integrator.ReactiveNestedSampler.plot_corner">[docs]</a>    <span class="k">def</span> <span class="nf">plot_corner</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Make corner plot.</span>
 
 <span class="sd">        Writes corner plot to plots/ directory if log directory was</span>
@@ -3085,7 +3085,7 @@
             <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Making corner plot ... done&#39;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="ReactiveNestedSampler.plot_trace"><a class="viewcode-back" href="../../API.html#ultranest.integrator.ReactiveNestedSampler.plot_trace">[docs]</a>    <span class="k">def</span> <span class="nf">plot_trace</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ReactiveNestedSampler.plot_trace"><a class="viewcode-back" href="../../ultranest.html#ultranest.integrator.ReactiveNestedSampler.plot_trace">[docs]</a>    <span class="k">def</span> <span class="nf">plot_trace</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Make trace plot.</span>
 
 <span class="sd">        Write parameter trace diagnostic plots to plots/ directory</span>
@@ -3109,7 +3109,7 @@
             <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Making trace plot ... done&#39;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="ReactiveNestedSampler.plot_run"><a class="viewcode-back" href="../../API.html#ultranest.integrator.ReactiveNestedSampler.plot_run">[docs]</a>    <span class="k">def</span> <span class="nf">plot_run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ReactiveNestedSampler.plot_run"><a class="viewcode-back" href="../../ultranest.html#ultranest.integrator.ReactiveNestedSampler.plot_run">[docs]</a>    <span class="k">def</span> <span class="nf">plot_run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Make run plot.</span>
 
 <span class="sd">        Write run diagnostic plots to plots/ directory</span>
@@ -3133,7 +3133,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Making run plot ... done&#39;</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="read_file"><a class="viewcode-back" href="../../API.html#ultranest.integrator.read_file">[docs]</a><span class="k">def</span> <span class="nf">read_file</span><span class="p">(</span><span class="n">log_dir</span><span class="p">,</span> <span class="n">x_dim</span><span class="p">,</span> <span class="n">num_bootstraps</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">random</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">check_insertion_order</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="read_file"><a class="viewcode-back" href="../../ultranest.html#ultranest.integrator.read_file">[docs]</a><span class="k">def</span> <span class="nf">read_file</span><span class="p">(</span><span class="n">log_dir</span><span class="p">,</span> <span class="n">x_dim</span><span class="p">,</span> <span class="n">num_bootstraps</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">random</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">check_insertion_order</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Read the output HDF5 file of UltraNest.</span>
 

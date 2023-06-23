@@ -110,7 +110,7 @@
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">listify</span> <span class="k">as</span> <span class="n">_listify</span>
 
 
-<div class="viewcode-block" id="generate_random_direction"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.generate_random_direction">[docs]</a><span class="k">def</span> <span class="nf">generate_random_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="generate_random_direction"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.generate_random_direction">[docs]</a><span class="k">def</span> <span class="nf">generate_random_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Draw uniform direction vector in unit cube space of length `scale`.</span>
 
 <span class="sd">    Parameters</span>
@@ -133,7 +133,7 @@
     <span class="k">return</span> <span class="n">v</span></div>
 
 
-<div class="viewcode-block" id="generate_cube_oriented_direction"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.generate_cube_oriented_direction">[docs]</a><span class="k">def</span> <span class="nf">generate_cube_oriented_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="generate_cube_oriented_direction"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.generate_cube_oriented_direction">[docs]</a><span class="k">def</span> <span class="nf">generate_cube_oriented_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Draw a unit direction vector in direction of a random unit cube axes.</span>
 
 <span class="sd">    Parameters</span>
@@ -160,7 +160,7 @@
     <span class="k">return</span> <span class="n">v</span></div>
 
 
-<div class="viewcode-block" id="generate_cube_oriented_differential_direction"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.generate_cube_oriented_differential_direction">[docs]</a><span class="k">def</span> <span class="nf">generate_cube_oriented_differential_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="generate_cube_oriented_differential_direction"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.generate_cube_oriented_differential_direction">[docs]</a><span class="k">def</span> <span class="nf">generate_cube_oriented_differential_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Draw a unit direction vector in direction of a random unit cube axes.</span>
 
 <span class="sd">    Guess the length from the difference of two points in that axis.</span>
@@ -196,7 +196,7 @@
     <span class="k">return</span> <span class="n">v</span></div>
 
 
-<div class="viewcode-block" id="generate_differential_direction"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.generate_differential_direction">[docs]</a><span class="k">def</span> <span class="nf">generate_differential_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="generate_differential_direction"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.generate_differential_direction">[docs]</a><span class="k">def</span> <span class="nf">generate_differential_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Draw a vector using the difference between two points.</span>
 
 <span class="sd">    Parameters</span>
@@ -225,7 +225,7 @@
     <span class="k">return</span> <span class="n">v</span></div>
 
 
-<div class="viewcode-block" id="generate_partial_differential_direction"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.generate_partial_differential_direction">[docs]</a><span class="k">def</span> <span class="nf">generate_partial_differential_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="generate_partial_differential_direction"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.generate_partial_differential_direction">[docs]</a><span class="k">def</span> <span class="nf">generate_partial_differential_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Draw a unit direction vector in direction of a random unit cube axes.</span>
 
 <span class="sd">    Parameters</span>
@@ -265,7 +265,7 @@
     <span class="k">return</span> <span class="n">v</span></div>
 
 
-<div class="viewcode-block" id="generate_region_oriented_direction"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.generate_region_oriented_direction">[docs]</a><span class="k">def</span> <span class="nf">generate_region_oriented_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="generate_region_oriented_direction"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.generate_region_oriented_direction">[docs]</a><span class="k">def</span> <span class="nf">generate_region_oriented_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Draw a random direction vector in direction of one of the `region` axes.</span>
 
 <span class="sd">    Parameters</span>
@@ -288,7 +288,7 @@
     <span class="k">return</span> <span class="n">v</span></div>
 
 
-<div class="viewcode-block" id="generate_region_random_direction"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.generate_region_random_direction">[docs]</a><span class="k">def</span> <span class="nf">generate_region_random_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="generate_region_random_direction"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.generate_region_random_direction">[docs]</a><span class="k">def</span> <span class="nf">generate_region_random_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Draw a direction vector in a random direction of the region.</span>
 
 <span class="sd">    The vector length is `scale` (in unit cube space).</span>
@@ -314,7 +314,7 @@
     <span class="k">return</span> <span class="n">v</span></div>
 
 
-<div class="viewcode-block" id="generate_mixture_random_direction"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.generate_mixture_random_direction">[docs]</a><span class="k">def</span> <span class="nf">generate_mixture_random_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="generate_mixture_random_direction"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.generate_mixture_random_direction">[docs]</a><span class="k">def</span> <span class="nf">generate_mixture_random_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Draw either from a region-direction or a unit axis.</span>
 
 <span class="sd">    Parameters</span>
@@ -355,7 +355,7 @@
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="n">mask2</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="inside_region"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.inside_region">[docs]</a><span class="k">def</span> <span class="nf">inside_region</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">unew</span><span class="p">,</span> <span class="n">uold</span><span class="p">):</span>
+<div class="viewcode-block" id="inside_region"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.inside_region">[docs]</a><span class="k">def</span> <span class="nf">inside_region</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">unew</span><span class="p">,</span> <span class="n">uold</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Check if `unew` is inside region.</span>
 
 <span class="sd">    Parameters</span>
@@ -376,7 +376,7 @@
     <span class="k">return</span> <span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">unew</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="adapt_proposal_total_distances"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.adapt_proposal_total_distances">[docs]</a><span class="k">def</span> <span class="nf">adapt_proposal_total_distances</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">,</span> <span class="n">ndim</span><span class="p">):</span>
+<div class="viewcode-block" id="adapt_proposal_total_distances"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.adapt_proposal_total_distances">[docs]</a><span class="k">def</span> <span class="nf">adapt_proposal_total_distances</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">,</span> <span class="n">ndim</span><span class="p">):</span>
     <span class="c1"># compute mean vector of each proposed jump</span>
     <span class="c1"># compute total distance of all jumps</span>
     <span class="n">tproposed</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">u</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">history</span><span class="p">]))</span>
@@ -387,7 +387,7 @@
     <span class="k">return</span> <span class="n">far_enough</span><span class="p">,</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">]</span></div>
 
 
-<div class="viewcode-block" id="adapt_proposal_total_distances_NN"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.adapt_proposal_total_distances_NN">[docs]</a><span class="k">def</span> <span class="nf">adapt_proposal_total_distances_NN</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">,</span> <span class="n">ndim</span><span class="p">):</span>
+<div class="viewcode-block" id="adapt_proposal_total_distances_NN"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.adapt_proposal_total_distances_NN">[docs]</a><span class="k">def</span> <span class="nf">adapt_proposal_total_distances_NN</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">,</span> <span class="n">ndim</span><span class="p">):</span>
     <span class="c1"># compute mean vector of each proposed jump</span>
     <span class="c1"># compute total distance of all jumps</span>
     <span class="n">tproposed</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">u</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">history</span><span class="p">]))</span>
@@ -398,7 +398,7 @@
     <span class="k">return</span> <span class="n">far_enough</span><span class="p">,</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span><span class="p">]</span></div>
 
 
-<div class="viewcode-block" id="adapt_proposal_summed_distances"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.adapt_proposal_summed_distances">[docs]</a><span class="k">def</span> <span class="nf">adapt_proposal_summed_distances</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">,</span> <span class="n">ndim</span><span class="p">):</span>
+<div class="viewcode-block" id="adapt_proposal_summed_distances"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.adapt_proposal_summed_distances">[docs]</a><span class="k">def</span> <span class="nf">adapt_proposal_summed_distances</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">,</span> <span class="n">ndim</span><span class="p">):</span>
     <span class="c1"># compute sum of distances from each jump</span>
     <span class="n">tproposed</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">u</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">history</span><span class="p">]))</span>
     <span class="n">d2</span> <span class="o">=</span> <span class="p">(((</span><span class="n">tproposed</span><span class="p">[</span><span class="mi">1</span><span class="p">:,:]</span> <span class="o">-</span> <span class="n">tproposed</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,:])</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
@@ -407,7 +407,7 @@
     <span class="k">return</span> <span class="n">far_enough</span><span class="p">,</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">]</span></div>
 
 
-<div class="viewcode-block" id="adapt_proposal_summed_distances_NN"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.adapt_proposal_summed_distances_NN">[docs]</a><span class="k">def</span> <span class="nf">adapt_proposal_summed_distances_NN</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">,</span> <span class="n">ndim</span><span class="p">):</span>
+<div class="viewcode-block" id="adapt_proposal_summed_distances_NN"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.adapt_proposal_summed_distances_NN">[docs]</a><span class="k">def</span> <span class="nf">adapt_proposal_summed_distances_NN</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">,</span> <span class="n">ndim</span><span class="p">):</span>
     <span class="c1"># compute sum of distances from each jump</span>
     <span class="n">tproposed</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">u</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">history</span><span class="p">]))</span>
     <span class="n">d2</span> <span class="o">=</span> <span class="p">(((</span><span class="n">tproposed</span><span class="p">[</span><span class="mi">1</span><span class="p">:,:]</span> <span class="o">-</span> <span class="n">tproposed</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,:])</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
@@ -416,7 +416,7 @@
     <span class="k">return</span> <span class="n">far_enough</span><span class="p">,</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span><span class="p">]</span></div>
 
 
-<div class="viewcode-block" id="adapt_proposal_move_distances"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.adapt_proposal_move_distances">[docs]</a><span class="k">def</span> <span class="nf">adapt_proposal_move_distances</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">,</span> <span class="n">ndim</span><span class="p">):</span>
+<div class="viewcode-block" id="adapt_proposal_move_distances"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.adapt_proposal_move_distances">[docs]</a><span class="k">def</span> <span class="nf">adapt_proposal_move_distances</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">,</span> <span class="n">ndim</span><span class="p">):</span>
     <span class="c1"># compute distance from start to end</span>
     <span class="n">ustart</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">history</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">ufinal</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
@@ -427,7 +427,7 @@
     <span class="k">return</span> <span class="n">far_enough</span><span class="p">,</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span><span class="p">]</span></div>
 
 
-<div class="viewcode-block" id="adapt_proposal_move_distances_midway"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.adapt_proposal_move_distances_midway">[docs]</a><span class="k">def</span> <span class="nf">adapt_proposal_move_distances_midway</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">,</span> <span class="n">ndim</span><span class="p">):</span>
+<div class="viewcode-block" id="adapt_proposal_move_distances_midway"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.adapt_proposal_move_distances_midway">[docs]</a><span class="k">def</span> <span class="nf">adapt_proposal_move_distances_midway</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">,</span> <span class="n">ndim</span><span class="p">):</span>
     <span class="c1"># compute distance from start to end</span>
     <span class="n">ustart</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">history</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">middle</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">history</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
@@ -439,7 +439,7 @@
     <span class="k">return</span> <span class="n">far_enough</span><span class="p">,</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span><span class="p">]</span></div>
 
 
-<div class="viewcode-block" id="StepSampler"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.StepSampler">[docs]</a><span class="k">class</span> <span class="nc">StepSampler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="StepSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.StepSampler">[docs]</a><span class="k">class</span> <span class="nc">StepSampler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Base class for a simple step sampler, staggering around.</span>
 
 <span class="sd">    Scales proposal towards a 50% acceptance rate.</span>
@@ -570,7 +570,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s1">&#39;(adaptive_nsteps=</span><span class="si">%s</span><span class="s1">, generate_direction=</span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span><span class="p">)</span>
 
-<div class="viewcode-block" id="StepSampler.plot"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.StepSampler.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+<div class="viewcode-block" id="StepSampler.plot"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.StepSampler.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Plot sampler statistics.</span>
 
 <span class="sd">        Parameters</span>
@@ -601,11 +601,11 @@
                    <span class="n">header</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span><span class="p">),</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="StepSampler.move"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.StepSampler.move">[docs]</a>    <span class="k">def</span> <span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="StepSampler.move"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.StepSampler.move">[docs]</a>    <span class="k">def</span> <span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Move around point ``ui``. Stub to be implemented by child classes.&quot;&quot;&quot;</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="StepSampler.adjust_outside_region"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.StepSampler.adjust_outside_region">[docs]</a>    <span class="k">def</span> <span class="nf">adjust_outside_region</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="StepSampler.adjust_outside_region"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.StepSampler.adjust_outside_region">[docs]</a>    <span class="k">def</span> <span class="nf">adjust_outside_region</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Adjust proposal, given that we landed outside region.&quot;&quot;&quot;</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ineffective proposal scale (</span><span class="si">%g</span><span class="s2">). shrinking...&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">)</span>
 
@@ -622,7 +622,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">])</span></div>
 
-<div class="viewcode-block" id="StepSampler.adjust_accept"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.StepSampler.adjust_accept">[docs]</a>    <span class="k">def</span> <span class="nf">adjust_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">accepted</span><span class="p">,</span> <span class="n">unew</span><span class="p">,</span> <span class="n">pnew</span><span class="p">,</span> <span class="n">Lnew</span><span class="p">,</span> <span class="n">nc</span><span class="p">):</span>
+<div class="viewcode-block" id="StepSampler.adjust_accept"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.StepSampler.adjust_accept">[docs]</a>    <span class="k">def</span> <span class="nf">adjust_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">accepted</span><span class="p">,</span> <span class="n">unew</span><span class="p">,</span> <span class="n">pnew</span><span class="p">,</span> <span class="n">Lnew</span><span class="p">,</span> <span class="n">nc</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Adjust proposal, given that a new point was found after `nc` calls.</span>
 
 <span class="sd">        Parameters</span>
@@ -647,7 +647,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_scale</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_scale</span></div>
 
-<div class="viewcode-block" id="StepSampler.adapt_nsteps"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.StepSampler.adapt_nsteps">[docs]</a>    <span class="k">def</span> <span class="nf">adapt_nsteps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
+<div class="viewcode-block" id="StepSampler.adapt_nsteps"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.StepSampler.adapt_nsteps">[docs]</a>    <span class="k">def</span> <span class="nf">adapt_nsteps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Adapt the number of steps.</span>
 
@@ -678,7 +678,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_nudge</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_nsteps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="StepSampler.finalize_chain"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.StepSampler.finalize_chain">[docs]</a>    <span class="k">def</span> <span class="nf">finalize_chain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">Lmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">Ls</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="StepSampler.finalize_chain"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.StepSampler.finalize_chain">[docs]</a>    <span class="k">def</span> <span class="nf">finalize_chain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">Lmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">Ls</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Store chain statistics and adapt proposal.</span>
 
 <span class="sd">        Parameters</span>
@@ -721,12 +721,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nrejects</span> <span class="o">=</span> <span class="mi">0</span></div>
 
-<div class="viewcode-block" id="StepSampler.new_chain"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.StepSampler.new_chain">[docs]</a>    <span class="k">def</span> <span class="nf">new_chain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="StepSampler.new_chain"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.StepSampler.new_chain">[docs]</a>    <span class="k">def</span> <span class="nf">new_chain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Start a new path, reset statistics.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nrejects</span> <span class="o">=</span> <span class="mi">0</span></div>
 
-<div class="viewcode-block" id="StepSampler.region_changed"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.StepSampler.region_changed">[docs]</a>    <span class="k">def</span> <span class="nf">region_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Ls</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
+<div class="viewcode-block" id="StepSampler.region_changed"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.StepSampler.region_changed">[docs]</a>    <span class="k">def</span> <span class="nf">region_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Ls</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;React to change of region.</span>
 
 <span class="sd">        Parameters</span>
@@ -843,10 +843,10 @@
         <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">nc</span></div>
 
 
-<div class="viewcode-block" id="MHSampler"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.MHSampler">[docs]</a><span class="k">class</span> <span class="nc">MHSampler</span><span class="p">(</span><span class="n">StepSampler</span><span class="p">):</span>
+<div class="viewcode-block" id="MHSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.MHSampler">[docs]</a><span class="k">class</span> <span class="nc">MHSampler</span><span class="p">(</span><span class="n">StepSampler</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Gaussian Random Walk.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="MHSampler.move"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.MHSampler.move">[docs]</a>    <span class="k">def</span> <span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="MHSampler.move"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.MHSampler.move">[docs]</a>    <span class="k">def</span> <span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Move in u-space with a Gaussian proposal.</span>
 
 <span class="sd">        Parameters</span>
@@ -867,20 +867,20 @@
         <span class="k">return</span> <span class="n">unew</span></div></div>
 
 
-<div class="viewcode-block" id="CubeMHSampler"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.CubeMHSampler">[docs]</a><span class="k">def</span> <span class="nf">CubeMHSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="CubeMHSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.CubeMHSampler">[docs]</a><span class="k">def</span> <span class="nf">CubeMHSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Gaussian Metropolis-Hastings sampler, using unit cube.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">MHSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">generate_direction</span><span class="o">=</span><span class="n">generate_random_direction</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="RegionMHSampler"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.RegionMHSampler">[docs]</a><span class="k">def</span> <span class="nf">RegionMHSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="RegionMHSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.RegionMHSampler">[docs]</a><span class="k">def</span> <span class="nf">RegionMHSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Gaussian Metropolis-Hastings sampler, using region.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">MHSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">generate_direction</span><span class="o">=</span><span class="n">generate_region_random_direction</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="SliceSampler"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.SliceSampler">[docs]</a><span class="k">class</span> <span class="nc">SliceSampler</span><span class="p">(</span><span class="n">StepSampler</span><span class="p">):</span>
+<div class="viewcode-block" id="SliceSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.SliceSampler">[docs]</a><span class="k">class</span> <span class="nc">SliceSampler</span><span class="p">(</span><span class="n">StepSampler</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Slice sampler, respecting the region.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="SliceSampler.new_chain"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.SliceSampler.new_chain">[docs]</a>    <span class="k">def</span> <span class="nf">new_chain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="SliceSampler.new_chain"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.SliceSampler.new_chain">[docs]</a>    <span class="k">def</span> <span class="nf">new_chain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Start a new path, reset slice.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">found_left</span> <span class="o">=</span> <span class="kc">False</span>
@@ -890,7 +890,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nrejects</span> <span class="o">=</span> <span class="mi">0</span></div>
 
-<div class="viewcode-block" id="SliceSampler.adjust_accept"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.SliceSampler.adjust_accept">[docs]</a>    <span class="k">def</span> <span class="nf">adjust_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">accepted</span><span class="p">,</span> <span class="n">unew</span><span class="p">,</span> <span class="n">pnew</span><span class="p">,</span> <span class="n">Lnew</span><span class="p">,</span> <span class="n">nc</span><span class="p">):</span>
+<div class="viewcode-block" id="SliceSampler.adjust_accept"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.SliceSampler.adjust_accept">[docs]</a>    <span class="k">def</span> <span class="nf">adjust_accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">accepted</span><span class="p">,</span> <span class="n">unew</span><span class="p">,</span> <span class="n">pnew</span><span class="p">,</span> <span class="n">Lnew</span><span class="p">,</span> <span class="n">nc</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;See :py:meth:`StepSampler.adjust_accept`.&quot;&quot;&quot;</span>
         <span class="n">v</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">u</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">interval</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">found_left</span><span class="p">:</span>
@@ -927,11 +927,11 @@
 
                 <span class="bp">self</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="SliceSampler.adjust_outside_region"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.SliceSampler.adjust_outside_region">[docs]</a>    <span class="k">def</span> <span class="nf">adjust_outside_region</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="SliceSampler.adjust_outside_region"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.SliceSampler.adjust_outside_region">[docs]</a>    <span class="k">def</span> <span class="nf">adjust_outside_region</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Adjust proposal given that we landed outside region.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">adjust_accept</span><span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="n">unew</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pnew</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">Lnew</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nc</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="SliceSampler.move"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.SliceSampler.move">[docs]</a>    <span class="k">def</span> <span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="SliceSampler.move"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.SliceSampler.move">[docs]</a>    <span class="k">def</span> <span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Advance the slice sampling move. see :py:meth:`StepSampler.move`.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">interval</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">)</span>
@@ -992,27 +992,27 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="CubeSliceSampler"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.CubeSliceSampler">[docs]</a><span class="k">def</span> <span class="nf">CubeSliceSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="CubeSliceSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.CubeSliceSampler">[docs]</a><span class="k">def</span> <span class="nf">CubeSliceSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Slice sampler, randomly picking region axes.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">SliceSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">generate_direction</span><span class="o">=</span><span class="n">generate_cube_oriented_direction</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="RegionSliceSampler"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.RegionSliceSampler">[docs]</a><span class="k">def</span> <span class="nf">RegionSliceSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="RegionSliceSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.RegionSliceSampler">[docs]</a><span class="k">def</span> <span class="nf">RegionSliceSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Slice sampler, randomly picking region axes.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">SliceSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">generate_direction</span><span class="o">=</span><span class="n">generate_region_oriented_direction</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="BallSliceSampler"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.BallSliceSampler">[docs]</a><span class="k">def</span> <span class="nf">BallSliceSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="BallSliceSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.BallSliceSampler">[docs]</a><span class="k">def</span> <span class="nf">BallSliceSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Hit &amp; run sampler. Choose random directions in space.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">SliceSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">generate_direction</span><span class="o">=</span><span class="n">generate_random_direction</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="RegionBallSliceSampler"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.RegionBallSliceSampler">[docs]</a><span class="k">def</span> <span class="nf">RegionBallSliceSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="RegionBallSliceSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.RegionBallSliceSampler">[docs]</a><span class="k">def</span> <span class="nf">RegionBallSliceSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Hit &amp; run sampler. Choose random directions according to region.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">SliceSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">generate_direction</span><span class="o">=</span><span class="n">generate_region_random_direction</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="SequentialRegionDirectionGenerator"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.SequentialRegionDirectionGenerator">[docs]</a><span class="k">class</span> <span class="nc">SequentialRegionDirectionGenerator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="SequentialRegionDirectionGenerator"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.SequentialRegionDirectionGenerator">[docs]</a><span class="k">class</span> <span class="nc">SequentialRegionDirectionGenerator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Sequentially proposes one region axes after the next.&quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Initialise.&quot;&quot;&quot;</span>
@@ -1053,12 +1053,12 @@
         <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s1">&#39;()&#39;</span></div>
 
 
-<div class="viewcode-block" id="RegionSequentialSliceSampler"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.RegionSequentialSliceSampler">[docs]</a><span class="k">def</span> <span class="nf">RegionSequentialSliceSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="RegionSequentialSliceSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.RegionSequentialSliceSampler">[docs]</a><span class="k">def</span> <span class="nf">RegionSequentialSliceSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Slice sampler, sequentially iterating region axes.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">SliceSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">generate_direction</span><span class="o">=</span><span class="n">SequentialRegionDirectionGenerator</span><span class="p">())</span></div>
 
 
-<div class="viewcode-block" id="OrthogonalDirectionGenerator"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.OrthogonalDirectionGenerator">[docs]</a><span class="k">class</span> <span class="nc">OrthogonalDirectionGenerator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="OrthogonalDirectionGenerator"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.OrthogonalDirectionGenerator">[docs]</a><span class="k">class</span> <span class="nc">OrthogonalDirectionGenerator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Orthogonalizes proposal vectors.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">generate_direction</span><span class="p">):</span>
@@ -1108,7 +1108,7 @@
         <span class="k">return</span> <span class="n">v</span></div>
 
 
-<div class="viewcode-block" id="SpeedVariableGenerator"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.SpeedVariableGenerator">[docs]</a><span class="k">class</span> <span class="nc">SpeedVariableGenerator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="SpeedVariableGenerator"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.SpeedVariableGenerator">[docs]</a><span class="k">class</span> <span class="nc">SpeedVariableGenerator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Propose directions with only some parameters variable.</span>
 
 <span class="sd">    Propose in region direction, but only include some dimensions at a time.</span>
@@ -1189,7 +1189,7 @@
         <span class="k">return</span> <span class="n">uk</span></div>
 
 
-<div class="viewcode-block" id="SpeedVariableRegionSliceSampler"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.SpeedVariableRegionSliceSampler">[docs]</a><span class="k">def</span> <span class="nf">SpeedVariableRegionSliceSampler</span><span class="p">(</span><span class="n">step_matrix</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="SpeedVariableRegionSliceSampler"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.SpeedVariableRegionSliceSampler">[docs]</a><span class="k">def</span> <span class="nf">SpeedVariableRegionSliceSampler</span><span class="p">(</span><span class="n">step_matrix</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Slice sampler, in region axes.</span>
 
 <span class="sd">    Updates only some dimensions at a time, completely user-definable.</span>
@@ -1205,7 +1205,7 @@
     <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="ellipsoid_bracket"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.ellipsoid_bracket">[docs]</a><span class="k">def</span> <span class="nf">ellipsoid_bracket</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">ellipsoid_center</span><span class="p">,</span> <span class="n">ellipsoid_inv_axes</span><span class="p">,</span> <span class="n">ellipsoid_radius_square</span><span class="p">):</span>
+<div class="viewcode-block" id="ellipsoid_bracket"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.ellipsoid_bracket">[docs]</a><span class="k">def</span> <span class="nf">ellipsoid_bracket</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">ellipsoid_center</span><span class="p">,</span> <span class="n">ellipsoid_inv_axes</span><span class="p">,</span> <span class="n">ellipsoid_radius_square</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Find line-ellipsoid intersection points.</span>
 
 <span class="sd">    For a line from ui in direction v through an ellipsoid</span>
@@ -1248,7 +1248,7 @@
     <span class="k">return</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span></div>
 
 
-<div class="viewcode-block" id="crop_bracket_at_unit_cube"><a class="viewcode-back" href="../../API.html#ultranest.stepsampler.crop_bracket_at_unit_cube">[docs]</a><span class="k">def</span> <span class="nf">crop_bracket_at_unit_cube</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">epsilon</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">):</span>
+<div class="viewcode-block" id="crop_bracket_at_unit_cube"><a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.crop_bracket_at_unit_cube">[docs]</a><span class="k">def</span> <span class="nf">crop_bracket_at_unit_cube</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">epsilon</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Find line-cube intersection points.</span>
 
 <span class="sd">    A line segment from *ui* in direction *v* from t between *left* &lt;= 0 &lt;= *right*</span>

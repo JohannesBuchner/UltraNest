@@ -110,7 +110,7 @@
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">vectorize</span><span class="p">,</span> <span class="n">resample_equal</span>
 
 
-<div class="viewcode-block" id="get_auxiliary_problem"><a class="viewcode-back" href="../../API.html#ultranest.hotstart.get_auxiliary_problem">[docs]</a><span class="k">def</span> <span class="nf">get_auxiliary_problem</span><span class="p">(</span><span class="n">loglike</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">ctr</span><span class="p">,</span> <span class="n">invcov</span><span class="p">,</span> <span class="n">enlargement_factor</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="get_auxiliary_problem"><a class="viewcode-back" href="../../ultranest.html#ultranest.hotstart.get_auxiliary_problem">[docs]</a><span class="k">def</span> <span class="nf">get_auxiliary_problem</span><span class="p">(</span><span class="n">loglike</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">ctr</span><span class="p">,</span> <span class="n">invcov</span><span class="p">,</span> <span class="n">enlargement_factor</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Return a new loglike and transform based on an auxiliary distribution.</span>
 
 <span class="sd">    Given a likelihood and prior transform, and information about</span>
@@ -192,7 +192,7 @@
     <span class="k">return</span> <span class="n">aux_loglikelihood</span><span class="p">,</span> <span class="n">aux_aftertransform</span></div>
 
 
-<div class="viewcode-block" id="get_extended_auxiliary_problem"><a class="viewcode-back" href="../../API.html#ultranest.hotstart.get_extended_auxiliary_problem">[docs]</a><span class="k">def</span> <span class="nf">get_extended_auxiliary_problem</span><span class="p">(</span><span class="n">loglike</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">ctr</span><span class="p">,</span> <span class="n">invcov</span><span class="p">,</span> <span class="n">enlargement_factor</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="get_extended_auxiliary_problem"><a class="viewcode-back" href="../../ultranest.html#ultranest.hotstart.get_extended_auxiliary_problem">[docs]</a><span class="k">def</span> <span class="nf">get_extended_auxiliary_problem</span><span class="p">(</span><span class="n">loglike</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">ctr</span><span class="p">,</span> <span class="n">invcov</span><span class="p">,</span> <span class="n">enlargement_factor</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Return a new loglike and transform based on an auxiliary distribution.</span>
 
 <span class="sd">    Given a likelihood and prior transform, and information about</span>
@@ -273,7 +273,7 @@
     <span class="k">return</span> <span class="n">aux_loglikelihood</span><span class="p">,</span> <span class="n">aux_transform</span></div>
 
 
-<div class="viewcode-block" id="get_extended_auxiliary_independent_problem"><a class="viewcode-back" href="../../API.html#ultranest.hotstart.get_extended_auxiliary_independent_problem">[docs]</a><span class="k">def</span> <span class="nf">get_extended_auxiliary_independent_problem</span><span class="p">(</span><span class="n">loglike</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">ctr</span><span class="p">,</span> <span class="n">err</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="get_extended_auxiliary_independent_problem"><a class="viewcode-back" href="../../ultranest.html#ultranest.hotstart.get_extended_auxiliary_independent_problem">[docs]</a><span class="k">def</span> <span class="nf">get_extended_auxiliary_independent_problem</span><span class="p">(</span><span class="n">loglike</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">ctr</span><span class="p">,</span> <span class="n">err</span><span class="p">,</span> <span class="n">df</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Return a new loglike and transform based on an auxiliary distribution.</span>
 
 <span class="sd">    Given a likelihood and prior transform, and information about</span>
@@ -347,7 +347,7 @@
     <span class="k">return</span> <span class="n">aux_loglikelihood</span><span class="p">,</span> <span class="n">aux_transform</span></div>
 
 
-<div class="viewcode-block" id="compute_quantile_intervals"><a class="viewcode-back" href="../../API.html#ultranest.hotstart.compute_quantile_intervals">[docs]</a><span class="k">def</span> <span class="nf">compute_quantile_intervals</span><span class="p">(</span><span class="n">steps</span><span class="p">,</span> <span class="n">upoints</span><span class="p">,</span> <span class="n">uweights</span><span class="p">):</span>
+<div class="viewcode-block" id="compute_quantile_intervals"><a class="viewcode-back" href="../../ultranest.html#ultranest.hotstart.compute_quantile_intervals">[docs]</a><span class="k">def</span> <span class="nf">compute_quantile_intervals</span><span class="p">(</span><span class="n">steps</span><span class="p">,</span> <span class="n">upoints</span><span class="p">,</span> <span class="n">uweights</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Compute lower and upper axis quantiles.</span>
 
 <span class="sd">    Parameters</span>
@@ -382,7 +382,7 @@
     <span class="k">return</span> <span class="n">ulos</span><span class="p">,</span> <span class="n">uhis</span></div>
 
 
-<div class="viewcode-block" id="compute_quantile_intervals_refined"><a class="viewcode-back" href="../../API.html#ultranest.hotstart.compute_quantile_intervals_refined">[docs]</a><span class="k">def</span> <span class="nf">compute_quantile_intervals_refined</span><span class="p">(</span><span class="n">steps</span><span class="p">,</span> <span class="n">upoints</span><span class="p">,</span> <span class="n">uweights</span><span class="p">,</span> <span class="n">logsteps_max</span><span class="o">=</span><span class="mi">20</span><span class="p">):</span>
+<div class="viewcode-block" id="compute_quantile_intervals_refined"><a class="viewcode-back" href="../../ultranest.html#ultranest.hotstart.compute_quantile_intervals_refined">[docs]</a><span class="k">def</span> <span class="nf">compute_quantile_intervals_refined</span><span class="p">(</span><span class="n">steps</span><span class="p">,</span> <span class="n">upoints</span><span class="p">,</span> <span class="n">uweights</span><span class="p">,</span> <span class="n">logsteps_max</span><span class="o">=</span><span class="mi">20</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Compute lower and upper axis quantiles.</span>
 
 <span class="sd">    Parameters</span>
@@ -436,7 +436,7 @@
     <span class="k">return</span> <span class="n">ulos</span><span class="p">,</span> <span class="n">uhis</span><span class="p">,</span> <span class="n">uinterpspace</span></div>
 
 
-<div class="viewcode-block" id="get_auxiliary_contbox_parameterization"><a class="viewcode-back" href="../../API.html#ultranest.hotstart.get_auxiliary_contbox_parameterization">[docs]</a><span class="k">def</span> <span class="nf">get_auxiliary_contbox_parameterization</span><span class="p">(</span>
+<div class="viewcode-block" id="get_auxiliary_contbox_parameterization"><a class="viewcode-back" href="../../ultranest.html#ultranest.hotstart.get_auxiliary_contbox_parameterization">[docs]</a><span class="k">def</span> <span class="nf">get_auxiliary_contbox_parameterization</span><span class="p">(</span>
     <span class="n">param_names</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">upoints</span><span class="p">,</span> <span class="n">uweights</span><span class="p">,</span> <span class="n">vectorized</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Return a new loglike and transform based on an auxiliary distribution.</span>
@@ -556,7 +556,7 @@
         <span class="k">return</span> <span class="n">aux_param_names</span><span class="p">,</span> <span class="n">aux_loglikelihood</span><span class="p">,</span> <span class="n">aux_transform</span><span class="p">,</span> <span class="n">vectorized</span></div>
 
 
-<div class="viewcode-block" id="reuse_samples"><a class="viewcode-back" href="../../API.html#ultranest.hotstart.reuse_samples">[docs]</a><span class="k">def</span> <span class="nf">reuse_samples</span><span class="p">(</span>
+<div class="viewcode-block" id="reuse_samples"><a class="viewcode-back" href="../../ultranest.html#ultranest.hotstart.reuse_samples">[docs]</a><span class="k">def</span> <span class="nf">reuse_samples</span><span class="p">(</span>
     <span class="n">param_names</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">points</span><span class="p">,</span> <span class="n">logl</span><span class="p">,</span> <span class="n">logw</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">logz</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">logzerr</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">upoints</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">batchsize</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">vectorized</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">log_weight_threshold</span><span class="o">=-</span><span class="mi">10</span><span class="p">,</span>

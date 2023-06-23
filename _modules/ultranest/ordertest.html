@@ -94,9 +94,7 @@
            <div itemprop="articleBody">
              
   <h1>Source code for ultranest.ordertest</h1><div class="highlight"><pre>
-<span></span><span class="ch">#!/usr/bin/env python</span>
-<span class="c1"># -*- coding: utf-8 -*-</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Mann-Whitney-Wilcoxon U test for a uniform distribution of integers</span>
 <span class="sd">-------------------------------------------------------------------</span>
 
@@ -124,7 +122,7 @@
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;infinite_U_zscore&#39;</span><span class="p">,</span> <span class="s1">&#39;UniformOrderAccumulator&#39;</span><span class="p">]</span>
 
 
-<div class="viewcode-block" id="infinite_U_zscore"><a class="viewcode-back" href="../../API.html#ultranest.ordertest.infinite_U_zscore">[docs]</a><span class="k">def</span> <span class="nf">infinite_U_zscore</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="n">B</span><span class="p">):</span>
+<div class="viewcode-block" id="infinite_U_zscore"><a class="viewcode-back" href="../../ultranest.html#ultranest.ordertest.infinite_U_zscore">[docs]</a><span class="k">def</span> <span class="nf">infinite_U_zscore</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="n">B</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compute Mann-Whitney-Wilcoxon U test for a *sample* of integers to be uniformly distributed between 0 and *B*.</span>
 
@@ -143,7 +141,7 @@
     <span class="k">return</span> <span class="p">((</span><span class="n">sample</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">-</span> <span class="n">N</span> <span class="o">*</span> <span class="n">B</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">/</span> <span class="p">((</span><span class="n">N</span> <span class="o">/</span> <span class="mf">12.0</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">B</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="UniformOrderAccumulator"><a class="viewcode-back" href="../../API.html#ultranest.ordertest.UniformOrderAccumulator">[docs]</a><span class="k">class</span> <span class="nc">UniformOrderAccumulator</span><span class="p">():</span>
+<div class="viewcode-block" id="UniformOrderAccumulator"><a class="viewcode-back" href="../../ultranest.html#ultranest.ordertest.UniformOrderAccumulator">[docs]</a><span class="k">class</span> <span class="nc">UniformOrderAccumulator</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Mann-Whitney-Wilcoxon U test accumulator.</span>
 
 <span class="sd">    Stores rank orders (1 to N), for comparison with a uniform order.</span>
@@ -154,12 +152,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">N</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">U</span> <span class="o">=</span> <span class="mf">0.0</span>
 
-<div class="viewcode-block" id="UniformOrderAccumulator.reset"><a class="viewcode-back" href="../../API.html#ultranest.ordertest.UniformOrderAccumulator.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="UniformOrderAccumulator.reset"><a class="viewcode-back" href="../../ultranest.html#ultranest.ordertest.UniformOrderAccumulator.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Set all counts to zero.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">N</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">U</span> <span class="o">=</span> <span class="mf">0.0</span></div>
 
-<div class="viewcode-block" id="UniformOrderAccumulator.add"><a class="viewcode-back" href="../../API.html#ultranest.ordertest.UniformOrderAccumulator.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">N</span><span class="p">):</span>
+<div class="viewcode-block" id="UniformOrderAccumulator.add"><a class="viewcode-back" href="../../ultranest.html#ultranest.ordertest.UniformOrderAccumulator.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">N</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Accumulate rank *order* (0 to N).</span>
 
