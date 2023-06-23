@@ -81,7 +81,7 @@ docs: ## generate Sphinx HTML documentation, including API docs
 	python3 setup.py build_ext --inplace
 	#nbstripout docs/*.ipynb
 	sphinx-apidoc -H API -o docs/ ultranest
-	pushd docs; python3 modoverview.py; popd
+	cd docs; python3 modoverview.py
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html O=-jauto
 	sed --in-place '/href="ultranest\/mlfriends.html"/d' docs/build/html/_modules/index.html
