@@ -53,7 +53,9 @@ def laplacify(samples, loglikes, center):
 
     # print("unknown terms:", terms.shape)
     coeffs, residuals, rank, s = np.linalg.lstsq(terms, loglikes, rcond=None)
-    # print("results:", coeffs.shape, coeffs, residuals, rank, s)
+    # print("results:", coeffs.shape, terms.shape, loglikes.shape, coeffs, residuals, rank, s)
+    if rank != terms.shape[1]:
+        raise ValueError("Could not construct laplace approximation: Not full rank")
     offset = coeffs[0]
     linterms = coeffs[1:1 + dim]
     matrix = np.zeros((dim, dim))
@@ -175,8 +177,9 @@ class LaplaceApproximationFilter:
             log-likelihoods of the live points
         """
         samples = p
-        resid, self.laplace_parameters = train_approximator(samples, L)
-        # assume the worst case: all the error comes from a single point prediction
+        resid, laplace_parameters = train_approximator(samples, L)
+        self.laplace_parameters = laplace_parameters
+        # assume the worst case:
         self.maxerr = resid.max()**0.5
         if self.verbose:
             print("quadratic log-likelihood approximation residual: %.2f   " % self.maxerr)
@@ -204,7 +207,7 @@ class LaplaceApproximationFilter:
         mask_outside = Lpredict + Lerr * self.safety < self.sampler.Lmin
         self.ncalls_skipped += mask_outside.sum()
         if self.verbose:
-            print("fraction of proposals discarded: %.2f%%" % (100 * mask_outside.mean()))
+            print("fraction of proposals skipped: %.2f%%" % (100 * mask_outside.mean()))
         if not mask_outside.all():
             # some have a chance:
             Lpredict[~mask_outside] = self.orig_loglike(params[~mask_outside,:])
@@ -224,7 +227,10 @@ class LaplaceApproximationFilter:
             additional arguments, passed on to original viz_callback.
         """
         # train on the regular callbacks
-        self.update_approximator(points['u'], points['p'], points['logl'])
+        try:
+            self.update_approximator(points['u'], points['p'], points['logl'])
+        except ValueError:
+            pass
 
         if self.orig_viz_callback:
             self.orig_viz_callback(points=points, *args, **kwargs)
