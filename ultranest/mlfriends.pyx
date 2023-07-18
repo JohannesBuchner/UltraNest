@@ -18,7 +18,7 @@ import numpy as np
 cimport numpy as np
 from numpy import pi
 cimport cython
-
+from cython.cimports.libc.math import sqrt
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -187,7 +187,7 @@ def compute_mean_pair_distance(
                 pair_dist = 0.0
                 for k in range(ndim):
                     pair_dist += (pts[i,k] - pts[j,k])**2
-                total_dist += pair_dist**0.5
+                total_dist += sqrt(pair_dist)
                 Npairs += 1
 
     assert np.isfinite(total_dist), total_dist
