@@ -1,4 +1,4 @@
-# cython: language_level=3,annotate=True,profile=True,fast_fail=True,warning_errors=True
+# cython: language_level=3,annotate=True,profile=True,fast_fail=True,warning_errors=True,cpow=True
 """
 Region construction methods
 ---------------------------
