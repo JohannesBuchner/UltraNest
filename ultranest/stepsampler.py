@@ -15,7 +15,9 @@ from .utils import listify as _listify
 
 
 def generate_random_direction(ui, region, scale=1):
-    """Draw uniform direction vector in unit cube space of length `scale`.
+    """Sample uniform direction vector in unit cube space of length `scale`.
+
+    Samples a direction from a unit multi-variate Gaussian.
 
     Parameters
     -----------
@@ -38,7 +40,9 @@ def generate_random_direction(ui, region, scale=1):
 
 
 def generate_cube_oriented_direction(ui, region, scale=1):
-    """Draw a unit direction vector in direction of a random unit cube axes.
+    """Sample a unit direction vector in direction of a random unit cube axes.
+
+    Chooses one parameter, randomly uniformly, upon which the slice will be defined.
 
     Parameters
     -----------
@@ -65,8 +69,9 @@ def generate_cube_oriented_direction(ui, region, scale=1):
 
 
 def generate_cube_oriented_differential_direction(ui, region, scale=1):
-    """Draw a unit direction vector in direction of a random unit cube axes.
+    """Sample a direction vector on a randomly chose parameter based on two randomly selected live points.
 
+    Chooses one parameter, randomly uniformly, upon which the slice will be defined.
     Guess the length from the difference of two points in that axis.
 
     Parameters
@@ -101,7 +106,7 @@ def generate_cube_oriented_differential_direction(ui, region, scale=1):
 
 
 def generate_differential_direction(ui, region, scale=1):
-    """Draw a vector using the difference between two points.
+    """Sample a vector using the difference between two randomly selected live points.
 
     Parameters
     -----------
@@ -130,7 +135,9 @@ def generate_differential_direction(ui, region, scale=1):
 
 
 def generate_partial_differential_direction(ui, region, scale=1):
-    """Draw a unit direction vector in direction of a random unit cube axes.
+    """Sample a vector using the difference between two randomly selected live points.
+
+    Only 10% of parameters are allowed to vary at a time.
 
     Parameters
     -----------
@@ -170,7 +177,10 @@ def generate_partial_differential_direction(ui, region, scale=1):
 
 
 def generate_region_oriented_direction(ui, region, scale=1):
-    """Draw a random direction vector in direction of one of the `region` axes.
+    """Sample a vector along one `region` principle axes, chosen at random.
+
+    The region transformLayer axes are considered (:py:class:`AffineLayer` or :py:class:`ScalingLayer`).
+    One axis is chosen at random.
 
     Parameters
     -----------
@@ -193,9 +203,11 @@ def generate_region_oriented_direction(ui, region, scale=1):
 
 
 def generate_region_random_direction(ui, region, scale=1):
-    """Draw a direction vector in a random direction of the region.
+    """Sample a direction vector based on the region covariance.
 
-    The vector length is `scale` (in unit cube space).
+    The region transformLayer axes are considered (:py:class:`AffineLayer` or :py:class:`ScalingLayer`).
+    With this covariance matrix, a random direction is generated.
+    Generating proceeds by transforming a unit multi-variate Gaussian.
 
     Parameters
     -----------
@@ -219,7 +231,13 @@ def generate_region_random_direction(ui, region, scale=1):
 
 
 def generate_mixture_random_direction(ui, region, scale=1):
-    """Draw either from a region-direction or a unit axis.
+    """Sample randomly uniformly from two proposals.
+
+    Randomly applies either :py:func:`generate_differential_direction`,
+    which transports far, or :py:func:`generate_region_oriented_direction`,
+    which is stiffer.
+
+    Best method according to https://arxiv.org/abs/2211.09426
 
     Parameters
     -----------
@@ -241,6 +259,32 @@ def generate_mixture_random_direction(ui, region, scale=1):
     else:
         # region-oriented random axis proposal
         return generate_region_oriented_direction(ui, region, scale=scale)
+
+
+def generate_region_sample_direction(ui, region, scale=1):
+    """Sample a point directly from the region, and return the difference vector to the current point.
+
+    Parameters
+    -----------
+    region: MLFriends
+        region
+    ui: array
+        vector of starting point
+    scale: float
+        length of the vector.
+
+    Returns
+    --------
+    v: array
+        new direction vector
+    """
+    while True:
+        upoints = region.sample(nsamples=200)
+        if len(upoints) != 0:
+            break
+    # we only need the first one
+    u = upoints[0,:]
+    return (u - ui) * scale
 
 
 def _inside_region(region, unew, uold):
@@ -874,8 +918,9 @@ class SliceSampler(StepSampler):
             else:
                 self.found_right = True
 
-                # adjust scale
+                # adjust scale to final slice length
                 if -left > self.next_scale or right > self.next_scale:
+                #if right - left > self.next_scale:
                     self.next_scale *= 1.1
                 else:
                     self.next_scale /= 1.1
@@ -963,7 +1008,11 @@ def RegionSequentialSliceSampler(*args, **kwargs):
 
 
 class OrthogonalDirectionGenerator(object):
-    """Orthogonalizes proposal vectors."""
+    """Orthogonalizes proposal vectors.
+
+    Samples N proposed vectors by a provided method, then orthogonalizes
+    them with Gram-Schmidt (QR decomposition).
+    """
 
     def __init__(self, generate_direction):
         """Initialise.
