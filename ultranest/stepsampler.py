@@ -387,6 +387,100 @@ def adapt_proposal_move_distances_midway(region, history, mean_pair_distance, nd
     return far_enough, [d2, region.maxradiussq**0.5]
 
 
+def select_random_livepoint(us, Ls, Lmin):
+    """Select random live point as chain starting point.
+
+    Parameters
+    -----------
+    us: array
+        positions of live points
+    Ls: array
+        likelihood of live points
+    Lmin: float
+        current log-likelihood threshold
+
+    Returns
+    -------
+    i: int
+        index of live point selected
+    """
+    return np.random.randint(len(Ls))
+
+
+class IslandPopulationRandomLivepointSelector(object):
+    def __init__(self, island_size, exchange_probability=0):
+        """Set up multiple isolated islands.
+
+        To replace dead points, chains are only started from the same
+        island as the dead point. Island refers to chunks of 
+        live point indices (0,1,2,3 as stored, not sorted).
+        Each chunk has size ´island_size´.
+
+        If ´island_size´ is large, for example, the total number of live points,
+        then clumping can occur more easily. This is the observed behaviour
+        that a limited random walk is run from one live point, giving 
+        two similar points, then the next dead point replacement is 
+        likely run again from these, giving more and more similar live points.
+        This gives a run-away process leading to clumps of similar,
+        highly correlated points.
+        
+        If ´island_size´ is small, for example, 1, then each dead point
+        is replaced by a chain started from it. This is a problem because
+        modes can never die out. Nested sampling can then not complete.
+
+        In a multi-modal run, within a given number of live points, 
+        the number of live points per mode is proportional to the mode's
+        prior volume, but can fluctuate. If the number of live points
+        is small, a fluctuation can lead to mode die-out, which cannot
+        be reversed. Therefore, the number of island members should be 
+        large enough to represent each mode.
+
+        Parameters
+        -----------
+        island_size: int
+            maximum number of members on each isolated live point
+            population.
+
+        exchange_probability: float
+            Probability that a member from a random island will be picked.
+
+        """
+        assert island_size > 0
+        self.island_size = island_size
+        assert 0 <= exchange_probability <= 1
+        self.exchange_probability = exchange_probability
+
+    def __call__(self, us, Ls, Lmin):
+        """Select live point as chain starting point.
+
+        Parameters
+        -----------
+        us: array
+            positions of live points
+        Ls: array
+            likelihood of live points
+        Lmin: float
+            current log-likelihood threshold
+
+        Returns
+        -------
+        i: int
+            index of live point selected
+        """
+        mask_deadpoints = Lmin == Ls
+        if not mask_deadpoints.any() or (self.exchange_probability > 0 and np.random.uniform() < self.exchange_probability):
+            return np.random.randint(len(Ls))
+        
+        # find the dead point we should replace
+        j = np.where(mask_deadpoints)[0][0]
+        # start in the same island
+        island = j // self.island_size
+        # pick a random member from the island
+        return np.random.randint(
+            island * self.island_size,
+            min(len(Ls), (island + 1) * self.island_size))
+
+
 class StepSampler(object):
     """Base class for a simple step sampler, staggering around.
 
@@ -397,6 +491,7 @@ class StepSampler(object):
         self, nsteps, generate_direction,
         scale=1.0, adaptive_nsteps=False, max_nsteps=1000,
         region_filter=False, log=False,
+        starting_point_selector=select_random_livepoint,
     ):
         """Initialise sampler.
 
@@ -475,6 +570,15 @@ class StepSampler(object):
             proposal scale, number of steps, jump distance and distance
             between live points
 
+        starting_point_selector: func
+            function which given the live point positions us,
+            their log-likelihoods Ls and the current log-likelihood 
+            threshold Lmin, returns the index i of the selected live 
+            point to start a new chain from.
+            Examples: :py:func:`select_random_livepoint`, which has
+            always been the default behaviour,
+            or an instance of :py:class:`IslandPopulationRandomLivepointSelector`.
+
         """
         self.history = []
         self.nsteps = nsteps
@@ -502,6 +606,7 @@ class StepSampler(object):
         self.adaptive_nsteps_needs_mean_pair_distance = self.adaptive_nsteps in (
             'proposal-total-distances', 'proposal-summed-distances',
         )
+        self.starting_point_selector = starting_point_selector
         self.mean_pair_distance = np.nan
         self.region_filter = region_filter
         self.log = log
@@ -728,7 +833,7 @@ class StepSampler(object):
             # mask = region.inside(us)
             # assert mask.any(), ("One of the live points does not satisfies the current region!",
             #    region.maxradiussq, region.u, region.unormed, us)
-            i = np.random.randint(len(us))
+            i = self.starting_point_selector(us, Ls, Lmin)
             self.starti = i
             ui = us[i,:]
             # print("starting at", ui[0])

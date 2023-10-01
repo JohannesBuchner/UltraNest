@@ -1417,7 +1417,7 @@ class ReactiveNestedSampler(object):
             Ls = np.array([node.value for node in self.root.children])
             Lmin = np.min(Ls)
             if self.log and nroots_needed > num_warn and not user_has_been_warned:
-                self.logger.warn("""Warning: The log-likelihood has a large plateau with L=%g.
+                self.logger.warning("""Warning: The log-likelihood has a large plateau with L=%g.
 
   Probably you are returning a low value when the parameters are problematic/unphysical.
   ultranest can handle this correctly, by discarding live points with the same loglikelihood.

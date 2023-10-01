@@ -4,6 +4,7 @@ from ultranest import ReactiveNestedSampler
 from ultranest.stepsampler import RegionMHSampler, CubeMHSampler, CubeSliceSampler, RegionSliceSampler, SpeedVariableRegionSliceSampler, RegionBallSliceSampler
 from ultranest.stepsampler import generate_region_random_direction, ellipsoid_bracket, crop_bracket_at_unit_cube
 from ultranest.pathsampler import SamplingPathStepSampler
+from ultranest.stepsampler import select_random_livepoint, IslandPopulationRandomLivepointSelector
 from numpy.testing import assert_allclose
 
 #here = os.path.dirname(__file__)
@@ -296,6 +297,61 @@ def test_crop_bracket(plot=False):
     assert (ucurrent + v * right <= 1).all(), (ucurrent, v, ellipsoid_center, ellipsoid_inv_axes, enlarge)
     assert (ucurrent + v * left >= 0).all(), (ucurrent, v, ellipsoid_center, ellipsoid_inv_axes, enlarge)
     assert (ucurrent + v * right >= 0).all(), (ucurrent, v, ellipsoid_center, ellipsoid_inv_axes, enlarge)
+
+def test_random_point_selector():
+    np.random.seed(41)
+    K = 10
+    ndim = 2
+    i1 = np.random.randint(0, K)
+    i2 = np.random.randint(0, K)
+    i3 = np.random.randint(0, K)
+    us = np.random.normal(size=(K, ndim))
+    Ls = np.random.normal(size=K)
+    Lmin = Ls.min()
+    np.random.seed(41)
+    j1 = select_random_livepoint(us, Ls, Lmin)
+    j2 = select_random_livepoint(us, Ls, Lmin)
+    j3 = select_random_livepoint(us, Ls, Lmin)
+    assert i1 == j1, (i1, j1)
+    assert i2 == j2, (i2, j2)
+    assert i3 == j3, (i3, j3)
+
+
+def test_island_point_selector():
+    K = 10
+    ndim = 2
+    self_selector = IslandPopulationRandomLivepointSelector(1)
+    selector = IslandPopulationRandomLivepointSelector(5)
+    imbalanced_selector = IslandPopulationRandomLivepointSelector(9)
+    for i in range(100):
+        us = np.random.normal(size=(K, ndim))
+        Ls = np.random.normal(size=K)
+        Lmin = Ls.min()
+        j1 = np.argmin(Ls)
+        j2 = selector(us, Ls, Lmin)
+        assert j1 == self_selector(us, Ls, Lmin)
+        if j1 >= 5:
+            assert j2 >= 5, (j1, j2)
+        if j1 < 5:
+            assert j2 < 5, (j1, j2)
+        if j1 == 9:
+            assert j1 == imbalanced_selector(us, Ls, Lmin)
+        else:
+            assert imbalanced_selector(us, Ls, Lmin) < 9
+
+    np.random.seed(421)
+    leaked = False
+    selector = IslandPopulationRandomLivepointSelector(5, 0.1)
+    for i in range(100):
+        j1 = np.argmin(Ls)
+        j2 = selector(us, Ls, Lmin)
+        if j1 >= 5 and j2 >= 5 or j1 < 5 and j2 < 5:
+            pass
+        else:
+            # leak, as expected
+            leaked = True
+            break
+    assert leaked
 
 
 if __name__ == '__main__':
