@@ -131,7 +131,7 @@ class PredictionBand(object):
         else:
             return ax.fill_between(self.x, lo, hi, **shadeargs)
 
-    def line(self, ax= None, **kwargs):
+    def line(self, ax=None, **kwargs):
         """Plot the median curve."""
         lineargs = dict(self.lineargs)
         lineargs.update(kwargs)
