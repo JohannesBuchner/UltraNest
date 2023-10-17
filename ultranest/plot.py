@@ -78,7 +78,8 @@ class PredictionBand(object):
         for c in chain:
             band.add(c[0] * x + c[1])
         # add median line. As an option a matplotlib ax can be given.
-        band.line(color='k') # or band.line(color='k', ax = ax)
+        band.line(color='k')
+        # to plot onto a specific axis, use `band.line(..., ax=myaxis)`
         # add 1 sigma quantile
         band.shade(color='k', alpha=0.3)
         # add wider quantile
