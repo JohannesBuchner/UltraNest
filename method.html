@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Method &mdash; UltraNest 3.6.1 documentation</title>
+  <title>Method &mdash; UltraNest 3.6.2 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="_static/icon.ico"/>
@@ -13,11 +13,11 @@
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="_static/doctools.js"></script>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=c0c9fa11"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
     <script src="_static/js/theme.js"></script>
@@ -32,15 +32,19 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search"  style="background: #2980B9" >
-            <a href="index.html" class="icon icon-home"> UltraNest
-            <img src="_static/logo.svg" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            UltraNest
+              <img src="_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.6.1
+                3.6.2
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -97,8 +101,8 @@
         <div class="rst-content style-external-links">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Method</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Method</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -107,32 +111,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  
-<style>
-/* CSS overrides for sphinx_rtd_theme */
-
-/* 24px margin */
-.nbinput.nblast.container,
-.nboutput.nblast.container {
-    margin-bottom: 19px;  /* padding has already 5px */
-}
-
-/* ... except between code cells! */
-.nblast.container + .nbinput.container {
-    margin-top: -19px;
-}
-
-.admonition > p:before {
-    margin-right: 4px;  /* make room for the exclamation icon */
-}
-
-/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
-.math {
-    text-align: unset;
-}
-</style>
-<section id="method">
-<h1>Method<a class="headerlink" href="#method" title="Permalink to this heading"></a></h1>
+  <section id="method">
+<h1>Method<a class="headerlink" href="#method" title="Link to this heading"></a></h1>
 <p>UltraNest combines several methods to improve nested sampling,
 and will be described in detail in a future paper. The key elements are:</p>
 <ol class="arabic">
@@ -164,7 +144,7 @@ For noisy likelihoods, termination when the live points are within a tolerance o
 </li>
 </ol>
 <section id="visualisation">
-<h2>Visualisation<a class="headerlink" href="#visualisation" title="Permalink to this heading"></a></h2>
+<h2>Visualisation<a class="headerlink" href="#visualisation" title="Link to this heading"></a></h2>
 <p>The animation below gives an idea how the algorithm proceeds.
 Choose different 2d target distributions to explore, and compare to a
 simple MCMC algorithm.</p>
@@ -191,7 +171,7 @@ problems. UltraNest provides MCMC-based methods to find a new point.</p>
 and is MIT licenced. The RadFriends implementation was contributed by Johannes Buchner.</p>
 </section>
 <section id="literature">
-<h2>Literature<a class="headerlink" href="#literature" title="Permalink to this heading"></a></h2>
+<h2>Literature<a class="headerlink" href="#literature" title="Link to this heading"></a></h2>
 <p>On the theory behind nested sampling:</p>
 <ul class="simple">
 <li><p>Skilling, J. (2004): Nested sampling</p></li>
@@ -211,12 +191,12 @@ and is MIT licenced. The RadFriends implementation was contributed by Johannes B
 <li><p>Buchner, J. (2019): Collaborative Nested Sampling: Big Data versus Complex Physical Models</p></li>
 </ul>
 <section id="code-concepts">
-<h3>Code Concepts<a class="headerlink" href="#code-concepts" title="Permalink to this heading"></a></h3>
+<h3>Code Concepts<a class="headerlink" href="#code-concepts" title="Link to this heading"></a></h3>
 <p>This content gives some hints for those who want to dive into the codebase.</p>
 </section>
 </section>
 <section id="spaces">
-<h2>Spaces<a class="headerlink" href="#spaces" title="Permalink to this heading"></a></h2>
+<h2>Spaces<a class="headerlink" href="#spaces" title="Link to this heading"></a></h2>
 <p>UltraNest maps four spaces:</p>
 <ul class="simple">
 <li><p>u: The unit cube space</p></li>
@@ -232,7 +212,7 @@ and is MIT licenced. The RadFriends implementation was contributed by Johannes B
 </ul>
 </section>
 <section id="nested-sampler-integrator">
-<h2>Nested sampler &amp; integrator<a class="headerlink" href="#nested-sampler-integrator" title="Permalink to this heading"></a></h2>
+<h2>Nested sampler &amp; integrator<a class="headerlink" href="#nested-sampler-integrator" title="Link to this heading"></a></h2>
 <p>A tree-based concept envisions the full prior volume as the root of a tree.
 Branches indicate divisions. The first children of the tree root are
 sampled directly from the prior, and are called <em>roots</em> in the code (although
@@ -260,7 +240,7 @@ computes logz and adds uncertainty contributions from:</p>
 <p>The combination makes UltraNest’s logz uncertainties very reliable.</p>
 </section>
 <section id="constructing-mlfriends-regions">
-<h2>Constructing MLFriends regions<a class="headerlink" href="#constructing-mlfriends-regions" title="Permalink to this heading"></a></h2>
+<h2>Constructing MLFriends regions<a class="headerlink" href="#constructing-mlfriends-regions" title="Link to this heading"></a></h2>
 <p>Robust likelihood-constrained prior sampling (LCPS) is achieved with the
 parameter-free <strong>MLFriends</strong> algorithm.</p>
 <p>MLFriends (Buchner 2019) is a substantial improvement upon the original RadFriends algorithm (2014 paper).
@@ -296,7 +276,7 @@ distributes the RadFriends bootstraps. This makes clustering very fast
 (MultiNest has to stop for clustering on the master node).</p>
 </section>
 <section id="sampling-from-regions">
-<h2>Sampling from regions<a class="headerlink" href="#sampling-from-regions" title="Permalink to this heading"></a></h2>
+<h2>Sampling from regions<a class="headerlink" href="#sampling-from-regions" title="Link to this heading"></a></h2>
 <p>UltraNest samples in four region sampling schemes:</p>
 <ul class="simple">
 <li><p>Sample from unit cube, filter with MLFriends &amp; ellipsoid</p></li>
@@ -309,7 +289,7 @@ Efficiency here means being able to draw points, not whether they are
 above the likelihood contour.</p>
 </section>
 <section id="transformed-ellipsoid">
-<h2>Transformed ellipsoid<a class="headerlink" href="#transformed-ellipsoid" title="Permalink to this heading"></a></h2>
+<h2>Transformed ellipsoid<a class="headerlink" href="#transformed-ellipsoid" title="Link to this heading"></a></h2>
 <p>Additionally, a ellipsoid is also built in transformed space and used
 for rejecting points. This is only done when the transform is non-linear.
 The parameter transformation, perhaps being closer to the data constraints,

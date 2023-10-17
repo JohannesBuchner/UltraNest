@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest.utils &mdash; UltraNest 3.6.1 documentation</title>
+  <title>ultranest.utils &mdash; UltraNest 3.6.2 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="../../_static/icon.ico"/>
@@ -12,11 +12,11 @@
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/jquery.js"></script>
-        <script src="../../_static/underscore.js"></script>
-        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=c0c9fa11"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -29,15 +29,19 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search"  style="background: #2980B9" >
-            <a href="../../index.html" class="icon icon-home"> UltraNest
-            <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            UltraNest
+              <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.6.1
+                3.6.2
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -82,9 +86,9 @@
         <div class="rst-content style-external-links">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="../index.html">Module code</a> &raquo;</li>
-      <li>ultranest.utils</li>
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">ultranest.utils</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -108,8 +112,10 @@
 <span class="kn">import</span> <span class="nn">errno</span>
 
 
-<div class="viewcode-block" id="create_logger"><a class="viewcode-back" href="../../ultranest.html#ultranest.utils.create_logger">[docs]</a><span class="k">def</span> <span class="nf">create_logger</span><span class="p">(</span><span class="n">module_name</span><span class="p">,</span> <span class="n">log_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="create_logger">
+<a class="viewcode-back" href="../../ultranest.html#ultranest.utils.create_logger">[docs]</a>
+<span class="k">def</span> <span class="nf">create_logger</span><span class="p">(</span><span class="n">module_name</span><span class="p">,</span> <span class="n">log_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Set up the logging channel `module_name`.</span>
 
 <span class="sd">    Append to ``debug.log`` in `log_dir` (if not ``None``).</span>
@@ -155,8 +161,9 @@
     <span class="k">return</span> <span class="n">logger</span></div>
 
 
+
 <span class="k">def</span> <span class="nf">_makedirs</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;python2-compatible makedir.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;python2-compatible makedir.&quot;&quot;&quot;</span>
     <span class="c1"># for Python2 compatibility:</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
@@ -167,8 +174,10 @@
     <span class="c1"># os.makedirs(name, exist_ok=True)</span>
 
 
-<div class="viewcode-block" id="make_run_dir"><a class="viewcode-back" href="../../ultranest.html#ultranest.utils.make_run_dir">[docs]</a><span class="k">def</span> <span class="nf">make_run_dir</span><span class="p">(</span><span class="n">log_dir</span><span class="p">,</span> <span class="n">run_num</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">append_run_num</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_run_num</span><span class="o">=</span><span class="mi">10000</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Generate a new numbered directory for this run to store output.</span>
+<div class="viewcode-block" id="make_run_dir">
+<a class="viewcode-back" href="../../ultranest.html#ultranest.utils.make_run_dir">[docs]</a>
+<span class="k">def</span> <span class="nf">make_run_dir</span><span class="p">(</span><span class="n">log_dir</span><span class="p">,</span> <span class="n">run_num</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">append_run_num</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_run_num</span><span class="o">=</span><span class="mi">10000</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a new numbered directory for this run to store output.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -223,10 +232,13 @@
             <span class="p">}</span></div>
 
 
-<div class="viewcode-block" id="vectorize"><a class="viewcode-back" href="../../ultranest.html#ultranest.utils.vectorize">[docs]</a><span class="k">def</span> <span class="nf">vectorize</span><span class="p">(</span><span class="n">function</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Vectorize likelihood or prior_transform function.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="vectorize">
+<a class="viewcode-back" href="../../ultranest.html#ultranest.utils.vectorize">[docs]</a>
+<span class="k">def</span> <span class="nf">vectorize</span><span class="p">(</span><span class="n">function</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Vectorize likelihood or prior_transform function.&quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">vectorized</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Vectorized version of function.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Vectorized version of function.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">function</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">])</span>
 
     <span class="c1"># give a user-friendly name to the vectorized version of the function</span>
@@ -235,12 +247,15 @@
     <span class="k">return</span> <span class="n">vectorized</span></div>
 
 
+
 <span class="sd">&quot;&quot;&quot;Square root of a small number.&quot;&quot;&quot;</span>
 <span class="n">SQRTEPS</span> <span class="o">=</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">))</span><span class="o">**</span><span class="mf">0.5</span>
 
 
-<div class="viewcode-block" id="resample_equal"><a class="viewcode-back" href="../../ultranest.html#ultranest.utils.resample_equal">[docs]</a><span class="k">def</span> <span class="nf">resample_equal</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">rstate</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Resample the samples so that the final samples all have equal weight.</span>
+<div class="viewcode-block" id="resample_equal">
+<a class="viewcode-back" href="../../ultranest.html#ultranest.utils.resample_equal">[docs]</a>
+<span class="k">def</span> <span class="nf">resample_equal</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">weights</span><span class="p">,</span> <span class="n">rstate</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Resample the samples so that the final samples all have equal weight.</span>
 
 <span class="sd">    Each input sample appears in the output array either</span>
 <span class="sd">    `floor(weights[i] * N)` or `ceil(weights[i] * N)` times, with</span>
@@ -308,8 +323,11 @@
     <span class="k">return</span> <span class="n">samples</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span></div>
 
 
-<div class="viewcode-block" id="listify"><a class="viewcode-back" href="../../ultranest.html#ultranest.utils.listify">[docs]</a><span class="k">def</span> <span class="nf">listify</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="listify">
+<a class="viewcode-back" href="../../ultranest.html#ultranest.utils.listify">[docs]</a>
+<span class="k">def</span> <span class="nf">listify</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Concatenate args, which are (made to be) lists.</span>
 
 <span class="sd">    Parameters</span>
@@ -328,8 +346,11 @@
     <span class="k">return</span> <span class="n">out</span></div>
 
 
-<div class="viewcode-block" id="quantile"><a class="viewcode-back" href="../../ultranest.html#ultranest.utils.quantile">[docs]</a><span class="k">def</span> <span class="nf">quantile</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Compute (weighted) quantiles from an input set of samples.</span>
+
+<div class="viewcode-block" id="quantile">
+<a class="viewcode-back" href="../../ultranest.html#ultranest.utils.quantile">[docs]</a>
+<span class="k">def</span> <span class="nf">quantile</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute (weighted) quantiles from an input set of samples.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -371,8 +392,11 @@
         <span class="k">return</span> <span class="n">quantiles</span></div>
 
 
-<div class="viewcode-block" id="vol_prefactor"><a class="viewcode-back" href="../../ultranest.html#ultranest.utils.vol_prefactor">[docs]</a><span class="k">def</span> <span class="nf">vol_prefactor</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Volume constant for an `n`-dimensional sphere.</span>
+
+<div class="viewcode-block" id="vol_prefactor">
+<a class="viewcode-back" href="../../ultranest.html#ultranest.utils.vol_prefactor">[docs]</a>
+<span class="k">def</span> <span class="nf">vol_prefactor</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Volume constant for an `n`-dimensional sphere.</span>
 
 <span class="sd">    for `n` even:  $$    (2pi)^(n    /2) / (2 * 4 * ... * n)$$</span>
 <span class="sd">    for `n` odd :  $$2 * (2pi)^((n-1)/2) / (1 * 3 * ... * n)$$</span>
@@ -401,8 +425,11 @@
     <span class="k">return</span> <span class="n">f</span></div>
 
 
-<div class="viewcode-block" id="is_affine_transform"><a class="viewcode-back" href="../../ultranest.html#ultranest.utils.is_affine_transform">[docs]</a><span class="k">def</span> <span class="nf">is_affine_transform</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="is_affine_transform">
+<a class="viewcode-back" href="../../ultranest.html#ultranest.utils.is_affine_transform">[docs]</a>
+<span class="k">def</span> <span class="nf">is_affine_transform</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Check if one points *a* and *b* are related by an affine transform.</span>
 
 <span class="sd">    The implementation currently returns False for rotations.</span>
@@ -438,8 +465,11 @@
     <span class="k">return</span> <span class="kc">True</span></div>
 
 
-<div class="viewcode-block" id="normalised_kendall_tau_distance"><a class="viewcode-back" href="../../ultranest.html#ultranest.utils.normalised_kendall_tau_distance">[docs]</a><span class="k">def</span> <span class="nf">normalised_kendall_tau_distance</span><span class="p">(</span><span class="n">values1</span><span class="p">,</span> <span class="n">values2</span><span class="p">,</span> <span class="n">i</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">j</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="normalised_kendall_tau_distance">
+<a class="viewcode-back" href="../../ultranest.html#ultranest.utils.normalised_kendall_tau_distance">[docs]</a>
+<span class="k">def</span> <span class="nf">normalised_kendall_tau_distance</span><span class="p">(</span><span class="n">values1</span><span class="p">,</span> <span class="n">values2</span><span class="p">,</span> <span class="n">i</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">j</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Normalised Kendall tau distance between two equally sized arrays.</span>
 
 <span class="sd">    see https://en.wikipedia.org/wiki/Kendall_tau_distance</span>
@@ -474,16 +504,19 @@
     <span class="k">return</span> <span class="n">ndisordered</span> <span class="o">/</span> <span class="p">(</span><span class="n">N</span> <span class="o">*</span> <span class="p">(</span><span class="n">N</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span></div>
 
 
+
 <span class="k">def</span> <span class="nf">_merge_transform_loglike_gradient_function</span><span class="p">(</span><span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">gradient</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">transform_loglike_gradient</span><span class="p">(</span><span class="n">u</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Combine transform, likelihood and gradient function.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Combine transform, likelihood and gradient function.&quot;&quot;&quot;</span>
         <span class="n">p</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)))</span>
         <span class="k">return</span> <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">loglike</span><span class="p">(</span><span class="n">p</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">gradient</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">transform_loglike_gradient</span>
 
 
-<div class="viewcode-block" id="verify_gradient"><a class="viewcode-back" href="../../ultranest.html#ultranest.utils.verify_gradient">[docs]</a><span class="k">def</span> <span class="nf">verify_gradient</span><span class="p">(</span><span class="n">ndim</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">gradient</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">combination</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="verify_gradient">
+<a class="viewcode-back" href="../../ultranest.html#ultranest.utils.verify_gradient">[docs]</a>
+<span class="k">def</span> <span class="nf">verify_gradient</span><span class="p">(</span><span class="n">ndim</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">gradient</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">combination</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Check with numerical differentiation if gradient function is plausibly correct.</span>
 
 <span class="sd">    Raises AssertError if not fulfilled.</span>
@@ -546,8 +579,11 @@
             <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">uprime</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">thetaprime</span><span class="p">,</span> <span class="n">grad</span><span class="p">,</span> <span class="n">eps</span> <span class="o">*</span> <span class="n">grad</span> <span class="o">/</span> <span class="n">L</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">Lprime</span><span class="p">,</span> <span class="n">Lexpected</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="distributed_work_chunk_size"><a class="viewcode-back" href="../../ultranest.html#ultranest.utils.distributed_work_chunk_size">[docs]</a><span class="k">def</span> <span class="nf">distributed_work_chunk_size</span><span class="p">(</span><span class="n">num_total_tasks</span><span class="p">,</span> <span class="n">mpi_rank</span><span class="p">,</span> <span class="n">mpi_size</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="distributed_work_chunk_size">
+<a class="viewcode-back" href="../../ultranest.html#ultranest.utils.distributed_work_chunk_size">[docs]</a>
+<span class="k">def</span> <span class="nf">distributed_work_chunk_size</span><span class="p">(</span><span class="n">num_total_tasks</span><span class="p">,</span> <span class="n">mpi_rank</span><span class="p">,</span> <span class="n">mpi_size</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Divide tasks uniformly.</span>
 
 <span class="sd">    Computes the number of tasks for process number `mpi_rank`, so that</span>
@@ -565,8 +601,11 @@
     <span class="k">return</span> <span class="p">(</span><span class="n">num_total_tasks</span> <span class="o">+</span> <span class="n">mpi_size</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">mpi_rank</span><span class="p">)</span> <span class="o">//</span> <span class="n">mpi_size</span></div>
 
 
-<div class="viewcode-block" id="submasks"><a class="viewcode-back" href="../../ultranest.html#ultranest.utils.submasks">[docs]</a><span class="k">def</span> <span class="nf">submasks</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="o">*</span><span class="n">masks</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="submasks">
+<a class="viewcode-back" href="../../ultranest.html#ultranest.utils.submasks">[docs]</a>
+<span class="k">def</span> <span class="nf">submasks</span><span class="p">(</span><span class="n">mask</span><span class="p">,</span> <span class="o">*</span><span class="n">masks</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get indices for a submasked array.</span>
 
 <span class="sd">    Returns indices, so that a[indices] is equivalent to a[mask][mask1][mask2].</span>
@@ -588,6 +627,7 @@
     <span class="k">for</span> <span class="n">othermask</span> <span class="ow">in</span> <span class="n">masks</span><span class="p">:</span>
         <span class="n">indices</span> <span class="o">=</span> <span class="n">indices</span><span class="p">[</span><span class="n">othermask</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">indices</span></div>
+
 </pre></div>
 
            </div>

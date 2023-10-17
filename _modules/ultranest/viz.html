@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest.viz &mdash; UltraNest 3.6.1 documentation</title>
+  <title>ultranest.viz &mdash; UltraNest 3.6.2 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="../../_static/icon.ico"/>
@@ -12,11 +12,11 @@
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/jquery.js"></script>
-        <script src="../../_static/underscore.js"></script>
-        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=c0c9fa11"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -29,15 +29,19 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search"  style="background: #2980B9" >
-            <a href="../../index.html" class="icon icon-home"> UltraNest
-            <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            UltraNest
+              <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.6.1
+                3.6.2
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -82,9 +86,9 @@
         <div class="rst-content style-external-links">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="../index.html">Module code</a> &raquo;</li>
-      <li>ultranest.viz</li>
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">ultranest.viz</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -124,8 +128,10 @@
     <span class="k">pass</span>
 
 
-<div class="viewcode-block" id="round_parameterlimits"><a class="viewcode-back" href="../../ultranest.html#ultranest.viz.round_parameterlimits">[docs]</a><span class="k">def</span> <span class="nf">round_parameterlimits</span><span class="p">(</span><span class="n">plo</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">paramlimitguess</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Guess the current parameter range.</span>
+<div class="viewcode-block" id="round_parameterlimits">
+<a class="viewcode-back" href="../../ultranest.html#ultranest.viz.round_parameterlimits">[docs]</a>
+<span class="k">def</span> <span class="nf">round_parameterlimits</span><span class="p">(</span><span class="n">plo</span><span class="p">,</span> <span class="n">phi</span><span class="p">,</span> <span class="n">paramlimitguess</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Guess the current parameter range.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    -----------</span>
@@ -178,8 +184,11 @@
     <span class="k">return</span> <span class="n">plo_rounded</span><span class="p">,</span> <span class="n">phi_rounded</span><span class="p">,</span> <span class="n">formats</span></div>
 
 
-<div class="viewcode-block" id="nicelogger"><a class="viewcode-back" href="../../ultranest.html#ultranest.viz.nicelogger">[docs]</a><span class="k">def</span> <span class="nf">nicelogger</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">transformLayer</span><span class="p">,</span> <span class="n">region_fresh</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Log current live points and integration progress to stdout.</span>
+
+<div class="viewcode-block" id="nicelogger">
+<a class="viewcode-back" href="../../ultranest.html#ultranest.viz.nicelogger">[docs]</a>
+<span class="k">def</span> <span class="nf">nicelogger</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">transformLayer</span><span class="p">,</span> <span class="n">region_fresh</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Log current live points and integration progress to stdout.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    -----------</span>
@@ -296,8 +305,11 @@
     <span class="nb">print</span><span class="p">()</span></div>
 
 
-<div class="viewcode-block" id="isnotebook"><a class="viewcode-back" href="../../ultranest.html#ultranest.viz.isnotebook">[docs]</a><span class="k">def</span> <span class="nf">isnotebook</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;Check if running in a Jupyter notebook.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="isnotebook">
+<a class="viewcode-back" href="../../ultranest.html#ultranest.viz.isnotebook">[docs]</a>
+<span class="k">def</span> <span class="nf">isnotebook</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if running in a Jupyter notebook.&quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">shell</span> <span class="o">=</span> <span class="n">get_ipython</span><span class="p">()</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
         <span class="k">if</span> <span class="n">shell</span> <span class="o">==</span> <span class="s1">&#39;ZMQInteractiveShell&#39;</span><span class="p">:</span>
@@ -310,21 +322,26 @@
         <span class="k">return</span> <span class="kc">False</span>      <span class="c1"># Probably standard Python interpreter</span></div>
 
 
-<div class="viewcode-block" id="LivePointsWidget"><a class="viewcode-back" href="../../ultranest.html#ultranest.viz.LivePointsWidget">[docs]</a><span class="k">class</span> <span class="nc">LivePointsWidget</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="LivePointsWidget">
+<a class="viewcode-back" href="../../ultranest.html#ultranest.viz.LivePointsWidget">[docs]</a>
+<span class="k">class</span> <span class="nc">LivePointsWidget</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Widget for ipython and jupyter notebooks.</span>
 
 <span class="sd">    Shows where the live points are currently in parameter space.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Initialise. To draw, call .initialize().&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialise. To draw, call .initialize().&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">grid</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">laststatus</span> <span class="o">=</span> <span class="kc">None</span>
 
-<div class="viewcode-block" id="LivePointsWidget.initialize"><a class="viewcode-back" href="../../ultranest.html#ultranest.viz.LivePointsWidget.initialize">[docs]</a>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">paramnames</span><span class="p">,</span> <span class="n">width</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Set up and display widget.</span>
+<div class="viewcode-block" id="LivePointsWidget.initialize">
+<a class="viewcode-back" href="../../ultranest.html#ultranest.viz.LivePointsWidget.initialize">[docs]</a>
+    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">paramnames</span><span class="p">,</span> <span class="n">width</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set up and display widget.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -354,8 +371,9 @@
         <span class="n">box</span> <span class="o">=</span> <span class="n">VBox</span><span class="p">(</span><span class="n">children</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="p">,</span> <span class="n">grid</span><span class="p">])</span>
         <span class="n">display</span><span class="p">(</span><span class="n">box</span><span class="p">)</span></div>
 
+
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">points</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">transformLayer</span><span class="p">,</span> <span class="n">region_fresh</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Update widget to show current live points and integration progress to stdout.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update widget to show current live points and integration progress to stdout.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        -----------</span>
@@ -467,8 +485,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">label</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">labeltext</span></div>
 
 
-<div class="viewcode-block" id="get_default_viz_callback"><a class="viewcode-back" href="../../ultranest.html#ultranest.viz.get_default_viz_callback">[docs]</a><span class="k">def</span> <span class="nf">get_default_viz_callback</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;Get default callback.</span>
+
+<div class="viewcode-block" id="get_default_viz_callback">
+<a class="viewcode-back" href="../../ultranest.html#ultranest.viz.get_default_viz_callback">[docs]</a>
+<span class="k">def</span> <span class="nf">get_default_viz_callback</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get default callback.</span>
 
 <span class="sd">    LivePointsWidget for Jupyter notebook, nicelogger otherwise.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -476,6 +497,7 @@
         <span class="k">return</span> <span class="n">LivePointsWidget</span><span class="p">()</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">nicelogger</span></div>
+
 </pre></div>
 
            </div>

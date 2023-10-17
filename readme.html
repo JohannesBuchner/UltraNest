@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>UltraNest &mdash; UltraNest 3.6.1 documentation</title>
+  <title>UltraNest &mdash; UltraNest 3.6.2 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="_static/icon.ico"/>
@@ -13,11 +13,11 @@
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="_static/doctools.js"></script>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=c0c9fa11"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
     <script src="_static/js/theme.js"></script>
@@ -32,15 +32,19 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search"  style="background: #2980B9" >
-            <a href="index.html" class="icon icon-home"> UltraNest
-            <img src="_static/logo.svg" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            UltraNest
+              <img src="_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.6.1
+                3.6.2
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -93,8 +97,8 @@
         <div class="rst-content style-external-links">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>UltraNest</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">UltraNest</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -103,32 +107,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  
-<style>
-/* CSS overrides for sphinx_rtd_theme */
-
-/* 24px margin */
-.nbinput.nblast.container,
-.nboutput.nblast.container {
-    margin-bottom: 19px;  /* padding has already 5px */
-}
-
-/* ... except between code cells! */
-.nblast.container + .nbinput.container {
-    margin-top: -19px;
-}
-
-.admonition > p:before {
-    margin-right: 4px;  /* make room for the exclamation icon */
-}
-
-/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
-.math {
-    text-align: unset;
-}
-</style>
-<section id="ultranest">
-<h1>UltraNest<a class="headerlink" href="#ultranest" title="Permalink to this heading"></a></h1>
+  <section id="ultranest">
+<h1>UltraNest<a class="headerlink" href="#ultranest" title="Link to this heading"></a></h1>
 <p>Fit and compare complex models reliably and rapidly with advanced sampling techniques.</p>
 <a class="reference external image-reference" href="https://pypi.python.org/pypi/ultranest"><img alt="https://img.shields.io/pypi/v/ultranest.svg" src="https://img.shields.io/pypi/v/ultranest.svg" /></a>
 <a class="reference external image-reference" href="https://circleci.com/gh/JohannesBuchner/UltraNest"><img alt="https://circleci.com/gh/JohannesBuchner/UltraNest/tree/master.svg?style=shield" src="https://circleci.com/gh/JohannesBuchner/UltraNest/tree/master.svg?style=shield" /></a>
@@ -137,7 +117,7 @@
 <a class="reference external image-reference" href="https://doi.org/10.21105/joss.03001"><img alt="Software paper" src="https://joss.theoj.org/papers/10.21105/joss.03001/status.svg" /></a>
 <p>Correctness. Speed. Ease of use. 🦔</p>
 <section id="about">
-<h2>About<a class="headerlink" href="#about" title="Permalink to this heading"></a></h2>
+<h2>About<a class="headerlink" href="#about" title="Link to this heading"></a></h2>
 <p>When scientific models are compared to data, two tasks are important:
 1) contraining the model parameters and 2) comparing the model to other models.
 Different techniques have been developed to explore model parameter spaces.
@@ -168,7 +148,7 @@ UltraNest also attempts to provide feature parity compared to other packages
 See the <a class="reference external" href="https://johannesbuchner.github.io/UltraNest/contributing.html">Contributing page</a>.</p>
 </section>
 <section id="features">
-<h2>Features<a class="headerlink" href="#features" title="Permalink to this heading"></a></h2>
+<h2>Features<a class="headerlink" href="#features" title="Link to this heading"></a></h2>
 <ul class="simple">
 <li><p>Pythonic</p>
 <ul>
@@ -222,7 +202,7 @@ See the <a class="reference external" href="https://johannesbuchner.github.io/Ul
 </li>
 </ul>
 <section id="usage">
-<h3>Usage<a class="headerlink" href="#usage" title="Permalink to this heading"></a></h3>
+<h3>Usage<a class="headerlink" href="#usage" title="Link to this heading"></a></h3>
 <p><a class="reference external" href="https://johannesbuchner.github.io/UltraNest/using-ultranest.html">Get started!</a></p>
 <p>Read the full documentation with tutorials at:</p>
 <p><a class="reference external" href="https://johannesbuchner.github.io/UltraNest/">https://johannesbuchner.github.io/UltraNest/</a></p>
@@ -230,7 +210,7 @@ See the <a class="reference external" href="https://johannesbuchner.github.io/Ul
 <p><a class="reference external" href="https://github.com/JohannesBuchner/UltraNest/">Code repository: https://github.com/JohannesBuchner/UltraNest/</a></p>
 </section>
 <section id="licence">
-<h3>Licence<a class="headerlink" href="#licence" title="Permalink to this heading"></a></h3>
+<h3>Licence<a class="headerlink" href="#licence" title="Link to this heading"></a></h3>
 <p>How to <a class="reference external" href="https://johannesbuchner.github.io/UltraNest/issues.html#how-should-i-cite-ultranest">cite UltraNest</a>.</p>
 <p>GPLv3 (see LICENCE file). If you require another license, please contact me.</p>
 <p>The cute hedgehog icon was made by <a class="reference external" href="https://www.flaticon.com/authors/freepik">Freepik</a>.</p>

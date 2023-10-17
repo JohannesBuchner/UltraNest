@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>API &mdash; UltraNest 3.6.1 documentation</title>
+  <title>API &mdash; UltraNest 3.6.2 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
     <link rel="shortcut icon" href="_static/icon.ico"/>
@@ -13,11 +13,11 @@
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="_static/doctools.js"></script>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=c0c9fa11"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
     <script src="_static/js/theme.js"></script>
@@ -32,15 +32,19 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search"  style="background: #2980B9" >
-            <a href="index.html" class="icon icon-home"> UltraNest
-            <img src="_static/logo.svg" class="logo" alt="Logo"/>
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            UltraNest
+              <img src="_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.6.1
+                3.6.2
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -94,8 +98,8 @@
         <div class="rst-content style-external-links">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>API</li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">API</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -104,37 +108,13 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  
-<style>
-/* CSS overrides for sphinx_rtd_theme */
-
-/* 24px margin */
-.nbinput.nblast.container,
-.nboutput.nblast.container {
-    margin-bottom: 19px;  /* padding has already 5px */
-}
-
-/* ... except between code cells! */
-.nblast.container + .nbinput.container {
-    margin-top: -19px;
-}
-
-.admonition > p:before {
-    margin-right: 4px;  /* make room for the exclamation icon */
-}
-
-/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
-.math {
-    text-align: unset;
-}
-</style>
-<section id="api">
-<h1>API<a class="headerlink" href="#api" title="Permalink to this heading"></a></h1>
+  <section id="api">
+<h1>API<a class="headerlink" href="#api" title="Link to this heading"></a></h1>
 <p><a class="reference external" href="ultranest.html">Full API documentation on one page</a></p>
 <p>The main interface is <a class="reference internal" href="ultranest.html#ultranest.integrator.ReactiveNestedSampler" title="ultranest.integrator.ReactiveNestedSampler"><code class="xref py py-class docutils literal notranslate"><span class="pre">ultranest.integrator.ReactiveNestedSampler</span></code></a>,
 also available as <cite>ultranest.ReactiveNestedSampler</cite>.</p>
 <section id="modules-commonly-used-directly">
-<h2>Modules commonly used directly:<a class="headerlink" href="#modules-commonly-used-directly" title="Permalink to this heading"></a></h2>
+<h2>Modules commonly used directly:<a class="headerlink" href="#modules-commonly-used-directly" title="Link to this heading"></a></h2>
 <blockquote>
 <div><ul class="simple">
 <li><p><a class="reference internal" href="ultranest.html#module-ultranest.integrator" title="ultranest.integrator"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ultranest.integrator</span></code></a>: Nested sampling integrators</p></li>
@@ -147,7 +127,7 @@ also available as <cite>ultranest.ReactiveNestedSampler</cite>.</p>
 </div></blockquote>
 </section>
 <section id="internally-used-modules">
-<h2>Internally used modules:<a class="headerlink" href="#internally-used-modules" title="Permalink to this heading"></a></h2>
+<h2>Internally used modules:<a class="headerlink" href="#internally-used-modules" title="Link to this heading"></a></h2>
 <blockquote>
 <div><ul class="simple">
 <li><p><a class="reference internal" href="ultranest.html#module-ultranest.mlfriends" title="ultranest.mlfriends"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ultranest.mlfriends</span></code></a>: Region construction methods</p></li>
@@ -160,7 +140,7 @@ also available as <cite>ultranest.ReactiveNestedSampler</cite>.</p>
 </div></blockquote>
 </section>
 <section id="experimental-modules-no-guarantees">
-<h2>Experimental modules, no guarantees:<a class="headerlink" href="#experimental-modules-no-guarantees" title="Permalink to this heading"></a></h2>
+<h2>Experimental modules, no guarantees:<a class="headerlink" href="#experimental-modules-no-guarantees" title="Link to this heading"></a></h2>
 <blockquote>
 <div><ul class="simple">
 <li><p><a class="reference internal" href="ultranest.html#module-ultranest.dychmc" title="ultranest.dychmc"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ultranest.dychmc</span></code></a>: Constrained Hamiltanean Monte Carlo step sampling.</p></li>
@@ -172,7 +152,7 @@ also available as <cite>ultranest.ReactiveNestedSampler</cite>.</p>
 </div></blockquote>
 </section>
 <section id="alphabetical-list-of-submodules">
-<h2>Alphabetical list of submodules<a class="headerlink" href="#alphabetical-list-of-submodules" title="Permalink to this heading"></a></h2>
+<h2>Alphabetical list of submodules<a class="headerlink" href="#alphabetical-list-of-submodules" title="Link to this heading"></a></h2>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="ultranest.html">ultranest package</a><ul>
