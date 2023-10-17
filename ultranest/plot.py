@@ -77,8 +77,8 @@ class PredictionBand(object):
         band = PredictionBand(x)
         for c in chain:
             band.add(c[0] * x + c[1])
-        # add median line
-        band.line(color='k')
+        # add median line. As an option a matplotlib ax can be given.
+        band.line(color='k') # or band.line(color='k', ax = ax)
         # add 1 sigma quantile
         band.shade(color='k', alpha=0.3)
         # add wider quantile
@@ -127,9 +127,8 @@ class PredictionBand(object):
         lo = self.get_line(0.5 - q)
         hi = self.get_line(0.5 + q)
         if ax is None:
-            return plt.fill_between(self.x, lo, hi, **shadeargs)
-        else:
-            return ax.fill_between(self.x, lo, hi, **shadeargs)
+            ax = plt
+        return ax.fill_between(self.x, lo, hi, **shadeargs)
 
     def line(self, ax=None, **kwargs):
         """Plot the median curve."""
@@ -137,9 +136,8 @@ class PredictionBand(object):
         lineargs.update(kwargs)
         mid = self.get_line(0.5)
         if ax is None:
-            return plt.plot(self.x, mid, **lineargs)
-        else:
-            return ax.plot(self.x, mid, **lineargs)
+            ax = plt
+        return ax.plot(self.x, mid, **lineargs)
 
 
 # the following function is taken from https://github.com/joshspeagle/dynesty/blob/master/dynesty/plotting.py
