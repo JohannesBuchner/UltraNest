@@ -77,8 +77,9 @@ class PredictionBand(object):
         band = PredictionBand(x)
         for c in chain:
             band.add(c[0] * x + c[1])
-        # add median line
+        # add median line. As an option a matplotlib ax can be given.
         band.line(color='k')
+        # to plot onto a specific axis, use `band.line(..., ax=myaxis)`
         # add 1 sigma quantile
         band.shade(color='k', alpha=0.3)
         # add wider quantile
@@ -118,22 +119,26 @@ class PredictionBand(object):
         assert len(self.ys) > 0, self.ys
         return scipy.stats.mstats.mquantiles(self.ys, q, axis=0)[0]
 
-    def shade(self, q=0.341, **kwargs):
+   def shade(self, q=0.341, ax=None, **kwargs):
         """Plot a shaded region between 0.5-q and 0.5+q. Default is 1 sigma."""
         if not 0 <= q <= 0.5:
-            raise ValueError("quantile distance from the median, q, must be between 0 and 0.5, not %s. For a 99%% quantile range, use q=0.48." % q)
+            raise ValueError("quantile distance from the median, q, must be between 0 and 0.5, not %s. For a 99% quantile range, use q=0.48." % q)
         shadeargs = dict(self.shadeargs)
         shadeargs.update(kwargs)
         lo = self.get_line(0.5 - q)
         hi = self.get_line(0.5 + q)
-        return plt.fill_between(self.x, lo, hi, **shadeargs)
+        if ax is None:
+            ax = plt
+        return ax.fill_between(self.x, lo, hi, **shadeargs)
 
-    def line(self, **kwargs):
+    def line(self, ax=None, **kwargs):
         """Plot the median curve."""
         lineargs = dict(self.lineargs)
         lineargs.update(kwargs)
         mid = self.get_line(0.5)
-        return plt.plot(self.x, mid, **lineargs)
+        if ax is None:
+            ax = plt
+        return ax.plot(self.x, mid, **lineargs)
 
 
 # the following function is taken from https://github.com/joshspeagle/dynesty/blob/master/dynesty/plotting.py
