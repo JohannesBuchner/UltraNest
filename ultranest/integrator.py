@@ -1444,10 +1444,11 @@ class ReactiveNestedSampler(object):
             P = (Ls == Lmin).sum()
             if 1 < P < len(Ls) and len(Ls) - P + 1 < nroots:
                 # guess the number of points needed: P-1 are useless
-                self.logger.debug(
-                    'Found plateau of %d/%d initial points at L=%g. '
-                    'Avoid this by a continuously increasing loglikelihood towards good regions.',
-                    P, nroots_needed, Lmin)
+                if self.log:
+                    self.logger.debug(
+                        'Found plateau of %d/%d initial points at L=%g. '
+                        'Avoid this by a continuously increasing loglikelihood towards good regions.',
+                        P, nroots_needed, Lmin)
                 nroots_needed = min(num_stop, nroots_needed + (P - 1))
             else:
                 break
