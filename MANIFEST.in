@@ -12,5 +12,14 @@ recursive-include tests *
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]
 recursive-exclude * *.c
+recursive-exclude * *.orig
+recursive-exclude * *.pdf
 
 recursive-include docs *.rst conf.py Makefile make.bat *.jpg *.png *.gif
+
+# remove extraneous doc and test outputs
+prune docs/static/mcmc-demo
+prune tests/reports
+prune tests/.pytype
+recursive-exclude tests conetestdata.npz
+recursive-exclude tests region-stuck*.npz
