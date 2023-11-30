@@ -1046,6 +1046,214 @@ class SliceSampler(StepSampler):
                 self.interval = (v, left, right, u)
 
 
+class ProjectingSliceSampler(StepSampler):
+    """Slice sampler, using projection to guess slice length."""
+
+    # 0: full projected interval, padded hugely
+    # 1: full projected interval, padded with `scale`
+    # 2: remove gaps in between wider than `scale`
+    # 3: like (1), but also keep only segments with overlapping orthogonal distances
+    OPTIMIZATION = 0
+
+    def new_chain(self, region=None):
+        """Start a new path, reset slice."""
+        self.interval = None
+        self.axis_index = 0
+
+        self.history = []
+        self.nrejects = 0
+
+        # never adapt scale
+        self.nudge = 1
+
+    def adjust_accept(self, accepted, unew, pnew, Lnew, nc):
+        """See :py:meth:`StepSampler.adjust_accept`."""
+        v, left, right, u, tu_filtered_points, tw_filtered_points = self.interval
+        if accepted:
+            # start with a new interval next time
+            self.interval = None
+
+            self.scale = right - left
+            self.history.append((unew.copy(), Lnew.copy()))
+        else:
+            self.nrejects += 1
+            # shrink current interval
+            if u == 0: # this should not happen
+                assert False, u
+            elif u < 0:
+                left = u
+            elif u > 0:
+                right = u
+
+            self.interval = (v, left, right, u, tu_filtered_points, tw_filtered_points)
+
+    def adjust_outside_region(self):
+        """Adjust proposal given that we landed outside region."""
+        self.adjust_accept(False, unew=None, pnew=None, Lnew=None, nc=0)
+
+    def move(self, ui, region, ndraw=1, plot=False):
+        """Advance the slice sampling move. see :py:meth:`StepSampler.move`."""
+        if self.interval is None:
+            # print("creating interval...")
+            # create initial interval
+            v = self.generate_direction(ui, region)
+            # add current point as first point
+            us = np.vstack((ui.reshape((1, -1)), region.u))
+            assert not np.all(us == ui, axis=1).all(), ('all %d live points are the same' % len(region.u))
+            # project live points along the line v centered at u0
+            t = np.dot(us - ui, v)
+            # get positions on the line
+            tsorted = np.sort(t)
+            tstep = np.diff(tsorted)
+            tavgstep = np.median(tstep) + 1e-20
+            # projected positions:
+            uproj = ui.reshape((1, -1)) + t.reshape((-1, 1)) * v.reshape((1, -1))
+            # vectors perpendicular to line
+            urej = us - uproj
+
+            # construct padded interval segments
+            #   which can be interpolated from a..0..b with b-a being the total interval length.
+            #assert self.scale == 4, self.scale
+            if self.OPTIMIZATION < 0:
+                epsilon = t.max() - t.min() + self.scale
+            else:
+                epsilon = np.exp(self.scale + np.log(tavgstep / np.log(2)))
+
+            # print("making segments ...")
+            segments = []
+            if self.OPTIMIZATION <= 0:
+                segments.append((tsorted[0] - epsilon, tsorted[-1] + epsilon))
+            else:
+                t_current = tsorted[0]
+                left = tsorted[0] - epsilon
+                for i in range(len(tsorted)):
+                    if tsorted[i] - epsilon > t_current + epsilon:
+                        # break
+                        segments.append((left, t_current + epsilon))
+                        left = tsorted[i] - epsilon
+                    t_current = tsorted[i]
+                if len(segments) == 0 or segments[-1][1] != t_current + epsilon:
+                    segments.append((left, t_current + epsilon))
+
+            # print("making linear interpolation ...")
+            # now take segments and make linear interpolation
+            t_length = 0
+            tu_points = [] # t interval
+            tw_points = [] # a concatenated space from 0 ... len(segments)
+            for left, right in segments:
+                tu_points.append(left)
+                tu_points.append(right)
+                tw_points.append(t_length)
+                t_length += right - left
+                tw_points.append(t_length)
+
+            # get current point ui, and make 0 corresponds to it
+            assert tu_points[0] <= t[0] <= tu_points[-1], (t[0], tu_points)
+            w0 = np.interp(t[0], tu_points, tw_points, np.nan, np.nan)
+            #print("shifting:", t[0], tu_points, tw_points, w0)
+            tw_points -= w0
+            #print("new:", np.interp(0, tw_points, tu_points, np.nan, np.nan), tu_points, tw_points)
+            np.testing.assert_allclose(0, np.interp(0, tw_points, tu_points, np.nan, np.nan),
+                atol=1e-15, err_msg=str((tw_points, tu_points)))
+
+            if self.OPTIMIZATION < 2:
+                t_filtered_length = t_length
+                tu_filtered_points = tu_points
+                tw_filtered_points = tw_points
+                segments_accepted = segments
+            else:
+                assert False
+                # cluster in both orthogonal distance and projected distance
+                # we have a characteristic scale on t, need one at o
+
+                # but clustering in that 2d space could lead to problems when it is
+                # not a real cluster but a banana, thinning out.
+
+                # best to calculate the minimum and maximum orthogonal distance
+                #  for each t segment, and keep the ones intersecting with the segment
+                #  containing the current point.
+
+                # next problem: construct a padded interval segments
+                #   which can be interpolated from a..0..b with b-a being the total interval length.
+                # now take segments and make linear interpolation
+
+                distance_ranges = []
+                distance_max = 0
+                o = np.linalg.norm(urej, axis=1)
+                for left, right in segments:
+                    mask = np.logical_and(t >= left, t <= right)
+                    distance_ranges.append((o[mask].min(), o[mask].max()))
+
+                # merge all that overlap
+                accepted = True
+                while accepted:
+                    accepted = False
+                    # this could be optimized
+                    for lo, hi in distance_ranges:
+                        #if lo <= distance_max <= hi:
+                        if lo <= distance_max and hi > distance_max:
+                            distance_max = hi
+                            accepted = True
+
+                # only keep segments that we like
+                t_filtered_length = 0
+                tu_filtered_points = []
+                tw_filtered_points = []
+                segments_accepted = []
+                for left, right in segments:
+                    mask = np.logical_and(t >= left, t <= right)
+                    if o[mask].max() <= distance_max:
+                        segments_accepted.append((left, right))
+                        tu_filtered_points.append(left)
+                        tu_filtered_points.append(right)
+                        tw_filtered_points.append(t_filtered_length)
+                        t_filtered_length += right - left
+                        tw_filtered_points.append(t_filtered_length)
+
+                # get current point
+                w0 = np.interp(t[0], tu_filtered_points, tw_filtered_points)
+                tw_filtered_points -= w0
+
+            #np.testing.assert_allclose(np.interp(0, tw_filtered_points, tu_filtered_points), 0, atol=1e-15)
+
+            # print("finishing interval ...")
+            u = 0
+            left = tu_filtered_points[0]
+            assert left < 0, (left, right, segments, tu_filtered_points, tw_filtered_points)
+            right = tu_filtered_points[-1]
+            assert right > 0, (left, right, segments, tu_filtered_points, tw_filtered_points)
+
+            self.interval = (v, left, right, u, tu_filtered_points, tw_filtered_points)
+        else:
+            v, left, right, u, tu_filtered_points, tw_filtered_points = self.interval
+
+        if plot:
+            plt.plot([(ui + v * left)[0], (ui + v * right)[0]],
+                     [(ui + v * left)[1], (ui + v * right)[1]],
+                     ':o', color='k', lw=2, alpha=0.3)
+
+        while True:
+            # propose tw ~ Uniform(tw_left, tw_right)
+            tw = np.random.uniform(left, right)
+            # linearly interpolate with t = np.interp(tw, tw_filtered_points, tu_filtered_points)
+            t = np.interp(tw, tw_filtered_points, tu_filtered_points)
+            # linearly project with u0 + t * v
+            xj = ui + v * t
+            # evaluate likelihood. if accepted, terminate
+            if not self.region_filter or inside_region(region, xj.reshape((1, -1)), ui):
+                self.interval = (v, left, right, tw, tu_filtered_points, tw_filtered_points)
+                return xj.reshape((1, -1))
+            else:
+                assert False
+                # if not, bisect: if tw<0: tw_left = tw, else tw_right = tw
+                if tw < 0:
+                    left = tw
+                else:
+                    right = tw
+                print("new interval:", left, right)
+                self.interval = (v, left, right, tw, tw_filtered_points, tu_filtered_points)
+
+
 def CubeSliceSampler(*args, **kwargs):
     """Slice sampler, randomly picking region axes."""
     return SliceSampler(*args, **kwargs, generate_direction=generate_cube_oriented_direction)
