@@ -13,6 +13,7 @@ from ultranest.utils import submasks
 from ultranest.stepfuncs import evolve, step_back
 from ultranest.stepfuncs import generate_cube_oriented_direction, generate_cube_oriented_direction_scaled
 from ultranest.stepfuncs import generate_random_direction, generate_region_oriented_direction, generate_region_random_direction
+from ultranest.stepfuncs import generate_differential_direction, generate_mixture_random_direction
 import scipy.stats
 
 

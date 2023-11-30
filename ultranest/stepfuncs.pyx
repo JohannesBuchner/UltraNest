@@ -468,3 +468,61 @@ def generate_region_random_direction(ui, region, scale=1):
     v1 *= scale / np.linalg.norm(v1, axis=1).reshape((nsamples, 1))
     v = np.einsum('ij,kj->ki', region.transformLayer.axes, v1)
     return v
+
+def generate_differential_direction(ui, region, scale=1):
+    """Sample a vector using the difference between two randomly selected live points.
+
+    Parameters
+    -----------
+    ui: np.array((npoints, ndim), dtype=float)
+        starting point
+    region: MLFriends object
+        current region
+    scale: float:
+        length of direction vector (in t-space)
+
+    Returns
+    --------
+    v: array
+        new direction vector
+    """
+    nsamples, ndim = ui.shape
+    nlive, ndim = region.u.shape
+    # choose pair
+    i = np.random.randint(nlive, size=nsamples)
+    i2 = np.random.randint(nlive - 1, size=nsamples)
+    i2[i2 >= i] += 1
+
+    # compute difference vector
+    v = (region.u[i,:] - region.u[i2,:]) * scale
+    return v
+
+
+
+def generate_mixture_random_direction(ui, region, scale=1):
+    """Sample randomly uniformly from two proposals.
+
+    Randomly applies either :py:func:`generate_differential_direction`,
+    which transports far, or :py:func:`generate_region_oriented_direction`,
+    which is stiffer.
+
+    Best method according to https://arxiv.org/abs/2211.09426
+
+    Parameters
+    -----------
+    ui: np.array((npoints, ndim), dtype=float)
+        starting point
+    region: MLFriends object
+        current region
+    scale: float:
+        length of direction vector (in t-space)
+
+    Returns
+    --------
+    v: array
+        new direction vector
+    """
+    nsamples, ndim = ui.shape
+    v_DE = generate_differential_direction(ui, region, scale=scale)
+    v_axis = generate_region_oriented_direction(ui, region, scale=scale)
+    return np.where(np.random.uniform(size=nsamples).reshape((-1, 1)) < 0.5, v_DE, v_axis)
