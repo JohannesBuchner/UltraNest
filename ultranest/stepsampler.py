@@ -583,7 +583,7 @@ class StepSampler(object):
         self.history = []
         self.nsteps = nsteps
         self.nrejects = 0
-        self.scale = 1.0
+        self.scale = scale
         self.max_nsteps = max_nsteps
         self.next_scale = self.scale
         self.nudge = 1.1**(1. / self.nsteps)
