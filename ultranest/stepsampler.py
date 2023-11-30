@@ -412,27 +412,27 @@ class IslandPopulationRandomLivepointSelector(object):
         """Set up multiple isolated islands.
 
         To replace dead points, chains are only started from the same
-        island as the dead point. Island refers to chunks of 
+        island as the dead point. Island refers to chunks of
         live point indices (0,1,2,3 as stored, not sorted).
         Each chunk has size ´island_size´.
 
         If ´island_size´ is large, for example, the total number of live points,
         then clumping can occur more easily. This is the observed behaviour
-        that a limited random walk is run from one live point, giving 
-        two similar points, then the next dead point replacement is 
+        that a limited random walk is run from one live point, giving
+        two similar points, then the next dead point replacement is
         likely run again from these, giving more and more similar live points.
         This gives a run-away process leading to clumps of similar,
         highly correlated points.
-        
+
         If ´island_size´ is small, for example, 1, then each dead point
         is replaced by a chain started from it. This is a problem because
         modes can never die out. Nested sampling can then not complete.
 
-        In a multi-modal run, within a given number of live points, 
+        In a multi-modal run, within a given number of live points,
         the number of live points per mode is proportional to the mode's
         prior volume, but can fluctuate. If the number of live points
         is small, a fluctuation can lead to mode die-out, which cannot
-        be reversed. Therefore, the number of island members should be 
+        be reversed. Therefore, the number of island members should be
         large enough to represent each mode.
 
         Parameters
@@ -470,7 +470,7 @@ class IslandPopulationRandomLivepointSelector(object):
         mask_deadpoints = Lmin == Ls
         if not mask_deadpoints.any() or (self.exchange_probability > 0 and np.random.uniform() < self.exchange_probability):
             return np.random.randint(len(Ls))
-        
+
         # find the dead point we should replace
         j = np.where(mask_deadpoints)[0][0]
         # start in the same island
@@ -572,8 +572,8 @@ class StepSampler(object):
 
         starting_point_selector: func
             function which given the live point positions us,
-            their log-likelihoods Ls and the current log-likelihood 
-            threshold Lmin, returns the index i of the selected live 
+            their log-likelihoods Ls and the current log-likelihood
+            threshold Lmin, returns the index i of the selected live
             point to start a new chain from.
             Examples: :py:func:`select_random_livepoint`, which has
             always been the default behaviour,
