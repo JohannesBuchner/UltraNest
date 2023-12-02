@@ -769,7 +769,7 @@ class StepSampler(object):
             self.next_scale = self.scale * self.nudge**10
         elif self.next_scale < self.scale / self.nudge**10:
             self.next_scale = self.scale / self.nudge**10
-        # print("updating scale: %g -> %g" % (self.scale, self.next_scale))
+        print("updating scale: %g -> %g" % (self.scale, self.next_scale))
         self.scale = self.next_scale
         self.history = []
         self.nrejects = 0
@@ -994,6 +994,10 @@ class SliceSampler(StepSampler):
             right = self.scale
             self.found_left = False
             self.found_right = False
+            if getattr(SliceSampler, 'CUBE_CROP', False):
+                left, right, cropped_left, cropped_right = crop_bracket_at_unit_cube(ui, v, -self.scale, self.scale)
+                self.found_left = cropped_left
+                self.found_right = cropped_right
             u = 0
 
             self.interval = (v, left, right, u)
@@ -1030,6 +1034,126 @@ class SliceSampler(StepSampler):
                 else:
                     self.next_scale /= 1.1
                 # print("adjusting scale...", self.next_scale)
+
+        while True:
+            u = np.random.uniform(left, right)
+            xj = ui + v * u
+
+            if not self.region_filter or inside_region(region, xj.reshape((1, -1)), ui):
+                self.interval = (v, left, right, u)
+                return xj.reshape((1, -1))
+            else:
+                if u < 0:
+                    left = u
+                else:
+                    right = u
+                self.interval = (v, left, right, u)
+
+class QuadraticSliceSampler(StepSampler):
+    """Slice sampler, uses a generous quadratic approximation to guess a maximum slice size."""
+
+    def __next__(self, region, Lmin, us, Ls, transform, loglike, ndraw=10, plot=False, tregion=None):
+        if len(self.history) == 0:
+            # store a guess for the quadratic approximation
+
+            # compute distance vector to center
+            d = us - region.ellipsoid_center
+            # distance in normalised coordates: vector . matrix . vector
+            # where the matrix is the ellipsoid inverse covariance
+            r = np.einsum('ij,jk,ik->i', d, region.ellipsoid_invcov, d)
+            #print("delta:", r)
+            #print("Ls:", Ls)
+            # solve for Ls = L0 - 0.5 * r * scale
+            a = np.empty((len(Ls), 2))
+            a[:,0] = 1
+            a[:,1] = -0.5 * r
+            Ls_updated = Ls
+            (L0, scale), resid, rank, s = np.linalg.lstsq(a, Ls_updated, rcond=None)
+            assert rank == 2, rank
+            assert scale > 0, scale
+            Ls_predicted = L0 - 0.5 * r * scale
+            # move any valleys upwards, to make it more conservative
+            print("  ", scale, (Ls_predicted - Ls).min(), (Ls_predicted - Ls).max())
+            if False:
+                Ls_updated = np.where(Ls_predicted > Ls, Ls_predicted, Ls)
+                # repeat fit
+                (L0, scale), resid, rank, s = np.linalg.lstsq(a, Ls_updated, rcond=None)
+                assert rank == 2, rank
+                assert scale > 0, scale
+                print("  ", scale, (Ls_updated - Ls).min(), (Ls_updated - Ls).max())
+
+            self.quadratic_approximation = (Lmin, L0, scale, region.ellipsoid_invcov, region.ellipsoid_center)
+
+        return StepSampler.__next__(self, region=region, Lmin=Lmin, us=us, Ls=Ls, transform=transform, loglike=loglike, ndraw=ndraw, plot=plot, tregion=tregion)
+
+    def new_chain(self, region=None):
+        """Start a new path, reset slice."""
+        self.interval = None
+        self.axis_index = 0
+
+        self.history = []
+        self.nrejects = 0
+
+    def adjust_accept(self, accepted, unew, pnew, Lnew, nc):
+        """See :py:meth:`StepSampler.adjust_accept`."""
+        v, left, right, u = self.interval
+        if accepted:
+            # start with a new interval next time
+            self.interval = None
+
+            self.history.append((unew.copy(), Lnew.copy()))
+        else:
+            self.nrejects += 1
+            # shrink current interval
+            if u == 0:
+                pass
+            elif u < 0:
+                left = u
+            elif u > 0:
+                right = u
+
+            self.interval = (v, left, right, u)
+
+    def adjust_outside_region(self):
+        """Adjust proposal given that we landed outside region."""
+        self.adjust_accept(False, unew=None, pnew=None, Lnew=None, nc=0)
+
+    def move(self, ui, region, ndraw=1, plot=False):
+        """Advance the slice sampling move. see :py:meth:`StepSampler.move`."""
+        if self.interval is None:
+            v = self.generate_direction(ui, region)
+
+            Lmin, L0, scale, Sigma, mu = self.quadratic_approximation
+            # compute expected quadratic linear and quadratic terms along v
+            a = L0 - 0.5 * np.dot(ui - mu, np.dot(Sigma, ui - mu))
+            b = -0.5 * np.dot(v, np.dot(Sigma, ui - mu))
+            c = 0.5 * np.dot(v, np.dot(Sigma, v))
+            # solve quadratic equation
+            discriminant = b**2 - 4 * a * c
+            assert discriminant > 0, discriminant
+            # take these as the end points
+            left  = (-b - np.sqrt(discriminant)) / (2 * a)
+            right = (-b + np.sqrt(discriminant)) / (2 * a)
+            if a < 0:
+                left, right = right, left
+            assert left < 0, (left, right)
+            assert right > 0, (left, right)
+            # pad a bit with scale
+            left *= self.scale
+            right *= self.scale
+            # left, right, _, _ = crop_bracket_at_unit_cube(ui, v, left, right)
+            u = 0
+
+            self.interval = (v, left, right, u)
+
+        else:
+            v, left, right, u = self.interval
+
+        if plot:
+            plt.plot([(ui + v * left)[0], (ui + v * right)[0]],
+                     [(ui + v * left)[1], (ui + v * right)[1]],
+                     ':o', color='k', lw=2, alpha=0.3)
+
 
         while True:
             u = np.random.uniform(left, right)
