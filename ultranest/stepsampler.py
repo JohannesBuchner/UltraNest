@@ -320,8 +320,9 @@ def inside_region(region, unew, uold):
     v: array
         boolean whether point is inside the region
     """
-    del uold
-    return region.inside(unew)
+    # if the region is broken (current point now outside)
+    #   say the new point is inside
+    return np.logical_or(~region.inside(uold), region.inside(unew))
 
 
 def adapt_proposal_total_distances(region, history, mean_pair_distance, ndim):
@@ -769,7 +770,7 @@ class StepSampler(object):
             self.next_scale = self.scale * self.nudge**10
         elif self.next_scale < self.scale / self.nudge**10:
             self.next_scale = self.scale / self.nudge**10
-        print("updating scale: %g -> %g" % (self.scale, self.next_scale))
+        # print("updating scale: %g -> %g" % (self.scale, self.next_scale))
         self.scale = self.next_scale
         self.history = []
         self.nrejects = 0
@@ -857,7 +858,7 @@ class StepSampler(object):
             unew = unew[mask,:]
             nc = 0
             if self.region_filter:
-                mask = inside_region(region, unew, ui)
+                mask = inside_region(region, unew, ui.reshape((1, -1)))
                 if not mask.any():
                     print("rejected by region")
                     self.adjust_outside_region()
@@ -932,6 +933,8 @@ def RegionMHSampler(*args, **kwargs):
 
 class SliceSampler(StepSampler):
     """Slice sampler, respecting the region."""
+    INITIAL_STEP_SCALE_FACTOR = 1
+    SCALE_ADJUST_FACTOR = 1.1
 
     def new_chain(self, region=None):
         """Start a new path, reset slice."""
@@ -958,9 +961,9 @@ class SliceSampler(StepSampler):
                 self.found_right = True
                 # adjust scale
                 if -left > self.next_scale or right > self.next_scale:
-                    self.next_scale *= 1.1
+                    self.next_scale *= self.SCALE_ADJUST_FACTOR
                 else:
-                    self.next_scale /= 1.1
+                    self.next_scale /= self.SCALE_ADJUST_FACTOR
                 # print("adjusting after accept...", self.next_scale)
         else:
             if accepted:
@@ -990,8 +993,8 @@ class SliceSampler(StepSampler):
             v = self.generate_direction(ui, region)
 
             # expand direction until it is surely outside
-            left = -self.scale
-            right = self.scale
+            left = -self.scale * self.INITIAL_STEP_SCALE_FACTOR
+            right = self.scale * self.INITIAL_STEP_SCALE_FACTOR
             self.found_left = False
             self.found_right = False
             if getattr(SliceSampler, 'CUBE_CROP', False):
@@ -1014,7 +1017,7 @@ class SliceSampler(StepSampler):
         if not self.found_left:
             xj = ui + v * left
 
-            if not self.region_filter or inside_region(region, xj.reshape((1, -1)), ui):
+            if not self.region_filter or inside_region(region, xj.reshape((1, -1)), ui.reshape((1, -1))):
                 return xj.reshape((1, -1))
             else:
                 self.found_left = True
@@ -1022,7 +1025,7 @@ class SliceSampler(StepSampler):
         if not self.found_right:
             xj = ui + v * right
 
-            if not self.region_filter or inside_region(region, xj.reshape((1, -1)), ui):
+            if not self.region_filter or inside_region(region, xj.reshape((1, -1)), ui.reshape((1, -1))):
                 return xj.reshape((1, -1))
             else:
                 self.found_right = True
@@ -1039,7 +1042,7 @@ class SliceSampler(StepSampler):
             u = np.random.uniform(left, right)
             xj = ui + v * u
 
-            if not self.region_filter or inside_region(region, xj.reshape((1, -1)), ui):
+            if not self.region_filter or inside_region(region, xj.reshape((1, -1)), ui.reshape((1, -1))):
                 self.interval = (v, left, right, u)
                 return xj.reshape((1, -1))
             else:
@@ -1061,28 +1064,13 @@ class QuadraticSliceSampler(StepSampler):
             # distance in normalised coordates: vector . matrix . vector
             # where the matrix is the ellipsoid inverse covariance
             r = np.einsum('ij,jk,ik->i', d, region.ellipsoid_invcov, d)
-            #print("delta:", r)
-            #print("Ls:", Ls)
-            # solve for Ls = L0 - 0.5 * r * scale
-            a = np.empty((len(Ls), 2))
-            a[:,0] = 1
-            a[:,1] = -0.5 * r
-            Ls_updated = Ls
-            (L0, scale), resid, rank, s = np.linalg.lstsq(a, Ls_updated, rcond=None)
-            assert rank == 2, rank
-            assert scale > 0, scale
-            Ls_predicted = L0 - 0.5 * r * scale
-            # move any valleys upwards, to make it more conservative
-            print("  ", scale, (Ls_predicted - Ls).min(), (Ls_predicted - Ls).max())
-            if False:
-                Ls_updated = np.where(Ls_predicted > Ls, Ls_predicted, Ls)
-                # repeat fit
-                (L0, scale), resid, rank, s = np.linalg.lstsq(a, Ls_updated, rcond=None)
-                assert rank == 2, rank
-                assert scale > 0, scale
-                print("  ", scale, (Ls_updated - Ls).min(), (Ls_updated - Ls).max())
-
-            self.quadratic_approximation = (Lmin, L0, scale, region.ellipsoid_invcov, region.ellipsoid_center)
+            # r > region.enlarge for all live points, by definition of enlarge
+            # Ls_predicted = L0 - 0.5 * r * scale
+            # solve for L0 - 0.5 * r * scale > Ls
+            #   i.e., find highest predicted likelihood by quadratic approximation
+            L0s = Ls + 0.5 * r / region.enlarge
+            L0 = L0s.max()
+            self.quadratic_approximation = (Lmin, L0, region.enlarge, region.ellipsoid_invcov, region.ellipsoid_center)
 
         return StepSampler.__next__(self, region=region, Lmin=Lmin, us=us, Ls=Ls, transform=transform, loglike=loglike, ndraw=ndraw, plot=plot, tregion=tregion)
 
@@ -1125,12 +1113,12 @@ class QuadraticSliceSampler(StepSampler):
 
             Lmin, L0, scale, Sigma, mu = self.quadratic_approximation
             # compute expected quadratic linear and quadratic terms along v
-            a = L0 - 0.5 * np.dot(ui - mu, np.dot(Sigma, ui - mu))
-            b = -0.5 * np.dot(v, np.dot(Sigma, ui - mu))
-            c = 0.5 * np.dot(v, np.dot(Sigma, v))
+            a = scale - np.dot(ui - mu, np.dot(Sigma, ui - mu))
+            b = np.dot(v, np.dot(Sigma, ui - mu))
+            c = np.dot(v, np.dot(Sigma, v))
             # solve quadratic equation
             discriminant = b**2 - 4 * a * c
-            assert discriminant > 0, discriminant
+            assert discriminant > 0, (discriminant, Sigma, mu, ui, a, b, c)
             # take these as the end points
             left  = (-b - np.sqrt(discriminant)) / (2 * a)
             right = (-b + np.sqrt(discriminant)) / (2 * a)
@@ -1159,7 +1147,7 @@ class QuadraticSliceSampler(StepSampler):
             u = np.random.uniform(left, right)
             xj = ui + v * u
 
-            if not self.region_filter or inside_region(region, xj.reshape((1, -1)), ui):
+            if not self.region_filter or inside_region(region, xj.reshape((1, -1)), ui.reshape((1, -1))):
                 self.interval = (v, left, right, u)
                 return xj.reshape((1, -1))
             else:
