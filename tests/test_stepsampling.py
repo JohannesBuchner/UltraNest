@@ -39,6 +39,15 @@ def test_stepsampler_cubemh(plot=False):
     assert a.sum() > 1, a.sum()
     assert b.sum() > 1, b.sum()
 
+    # check that diagnostics fail
+    print("mean jump distance:", sampler.stepsampler.mean_jump_distance)
+    print("far enough fraction:", sampler.stepsampler.far_enough_fraction)
+    assert sampler.stepsampler.mean_jump_distance < 1.0, sampler.stepsampler.mean_jump_distance
+    assert sampler.stepsampler.far_enough_fraction < 0.5, sampler.stepsampler.far_enough_fraction
+
+    print("Diagnostic print:")
+    sampler.stepsampler.print_diagnostic()
+
 def test_stepsampler_regionmh(plot=False):
     np.random.seed(2)
     sampler = ReactiveNestedSampler(paramnames, loglike_vectorized, transform=transform, vectorized=True)
@@ -64,7 +73,7 @@ def test_stepsampler_cubeslice(plot=False):
 def test_stepsampler_regionslice(plot=False):
     np.random.seed(4)
     sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform)
-    sampler.stepsampler = RegionSliceSampler(nsteps=len(paramnames))
+    sampler.stepsampler = RegionSliceSampler(nsteps=2 + len(paramnames))
     r = sampler.run(log_interval=50, min_num_live_points=400)
     sampler.print_results()
     a = (np.abs(r['samples'] - 0.7) < 0.1).all(axis=1)
@@ -72,6 +81,14 @@ def test_stepsampler_regionslice(plot=False):
     assert a.sum() > 1
     assert b.sum() > 1
 
+    # check that diagnostics pass
+    print("mean jump distance:", sampler.stepsampler.mean_jump_distance)
+    print("far enough fraction:", sampler.stepsampler.far_enough_fraction)
+    assert sampler.stepsampler.mean_jump_distance > 1.0, sampler.stepsampler.mean_jump_distance
+    assert sampler.stepsampler.far_enough_fraction > 0.6, sampler.stepsampler.far_enough_fraction
+
+    print("Diagnostic print:")
+    sampler.stepsampler.print_diagnostic()
 
 def test_SpeedVariableGenerator():
     np.random.seed(4)
