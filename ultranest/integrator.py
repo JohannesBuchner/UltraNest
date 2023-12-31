@@ -2923,6 +2923,8 @@ class ReactiveNestedSampler(object):
             print('  tail           : logZ = +- %(logzerr_tail).3f' % self.results)
             print('insert order U test : converged: %(converged)s correlation: %(independent_iterations)s iterations' % (
                 self.results['insertion_order_MWW_test']))
+            if self.stepsampler and hasattr(self.stepsampler, 'print_diagnostic'):
+                self.stepsampler.print_diagnostic()
 
             print()
             for i, p in enumerate(self.paramnames + self.derivedparamnames):

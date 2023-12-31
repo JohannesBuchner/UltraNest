@@ -365,6 +365,29 @@ def adapt_proposal_summed_distances_NN(region, history, mean_pair_distance, ndim
 
 
 def adapt_proposal_move_distances(region, history, mean_pair_distance, ndim):
+    """Compares random walk travel distance to MLFriends radius.
+
+    Compares in whitened space (t-space), the L2 norm between final
+    point and starting point to the MLFriends bootstrapped radius.
+
+    Parameters
+    ----------
+    region: MLFriends
+        built region
+    history: list
+        list of tuples, containing visited point and likelihood.
+    mean_pair_distance: float
+        not used
+    ndim: int
+        dimensionality
+
+    Returns
+    -------
+    far_enough: bool
+        whether the distance is larger than the radius
+    info: tuple
+        distance and radius (both float)
+    """
     # compute distance from start to end
     ustart, _ = history[0]
     ufinal, _ = history[-1]
@@ -376,6 +399,30 @@ def adapt_proposal_move_distances(region, history, mean_pair_distance, ndim):
 
 
 def adapt_proposal_move_distances_midway(region, history, mean_pair_distance, ndim):
+    """Compares first half of the travel distance to MLFriends radius.
+
+    Compares in whitened space (t-space), the L2 norm between the
+    middle point of the walk and the starting point,
+    to the MLFriends bootstrapped radius.
+
+    Parameters
+    ----------
+    region: MLFriends
+        built region
+    history: list
+        list of tuples, containing visited point and likelihood.
+    mean_pair_distance: float
+        not used
+    ndim: int
+        dimensionality
+
+    Returns
+    -------
+    far_enough: bool
+        whether the distance is larger than the radius
+    info: tuple
+        distance and radius (both float)
+    """
     # compute distance from start to end
     ustart, _ = history[0]
     middle = max(1, len(history) // 2)
@@ -489,7 +536,7 @@ class StepSampler(object):
 
     def __init__(
         self, nsteps, generate_direction,
-        scale=1.0, adaptive_nsteps=False, max_nsteps=1000,
+        scale=1.0, check_nsteps=False, adaptive_nsteps=False, max_nsteps=1000,
         region_filter=False, log=False,
         starting_point_selector=select_random_livepoint,
     ):
@@ -529,10 +576,21 @@ class StepSampler(object):
             with robustness against collapse to a subspace.
             :py:func:`generate_cube_oriented_direction` works well too.
 
-        adaptive_nsteps: False, 'proposal-distance', 'move-distance'
-            Strategy to adapt the number of steps. The strategies
-            make sure that:
+        adaptive_nsteps: False or str
+            Strategy to adapt the number of steps. 
+            The possible values are the same as for `check_nsteps`.
 
+            Adapting can give usable results. However, strictly speaking,
+            detailed balance is not maintained, so the results can be biased.
+            You can use the stepsampler.logstat property to find out the `nsteps` learned
+            from one run (third column), and use the largest value for `nsteps`
+            for a fresh run.
+            The forth column is the jump distance, the fifth column is the reference distance.
+
+        check_nsteps: False or str
+            Method to diagnose the step sampler walks. The options are:
+
+            * False: no checking
             * 'move-distance' (recommended): distance between
               start point and final position exceeds the mean distance
               between pairs of live points.
@@ -552,11 +610,9 @@ class StepSampler(object):
               between chain points exceeds mean distance
               between pairs of live points.
 
-            Adapting can give usable results. However, strictly speaking,
-            detailed balance is not maintained, so the results can be biased.
-            You can use the logstat property to find out the `nsteps` learned
-            from one run (third column), and use the largest value for `nsteps`
-            of a fresh run.
+            Each step sampler walk adds one row to stepsampler.logstat.
+            The jump distance (forth column) should be compared to 
+            the reference distance (fifth column).
 
         max_nsteps: int
             Maximum number of steps the adaptive_nsteps can reach.
@@ -589,7 +645,7 @@ class StepSampler(object):
         self.nudge = 1.1**(1. / self.nsteps)
         self.nsteps_nudge = 1.01
         self.generate_direction = generate_direction
-        adaptive_nsteps_options = {
+        check_nsteps_options = {
             False: None,
             'move-distance': adapt_proposal_move_distances,
             'move-distance-midway': adapt_proposal_move_distances_midway,
@@ -598,12 +654,21 @@ class StepSampler(object):
             'proposal-summed-distances': adapt_proposal_summed_distances,
             'proposal-summed-distances-NN': adapt_proposal_summed_distances_NN,
         }
+        adaptive_nsteps_options = dict(check_nsteps_options)
 
         if adaptive_nsteps not in adaptive_nsteps_options.keys():
             raise ValueError("adaptive_nsteps must be one of: %s, not '%s'" % (adaptive_nsteps_options, adaptive_nsteps))
+        if check_nsteps not in check_nsteps_options.keys():
+            raise ValueError("check_nsteps must be one of: %s, not '%s'" % (adaptive_nsteps_options, adaptive_nsteps))
         self.adaptive_nsteps = adaptive_nsteps
+        if self.adaptive_nsteps:
+            assert nsteps <= max_nsteps, 'Invalid adapting configuration: provided nsteps=%d exceeds provided max_nsteps=%d' % (nsteps, max_nsteps)
         self.adaptive_nsteps_function = adaptive_nsteps_options[adaptive_nsteps]
+        self.check_nsteps = check_nsteps
+        self.check_nsteps_function = check_nsteps_options[check_nsteps]
         self.adaptive_nsteps_needs_mean_pair_distance = self.adaptive_nsteps in (
+            'proposal-total-distances', 'proposal-summed-distances',
+        ) or self.check_nsteps in (
             'proposal-total-distances', 'proposal-summed-distances',
         )
         self.starting_point_selector = starting_point_selector
@@ -613,7 +678,7 @@ class StepSampler(object):
 
         self.logstat = []
         self.logstat_labels = ['rejection_rate', 'scale', 'steps']
-        if adaptive_nsteps:
+        if adaptive_nsteps or check_nsteps:
             self.logstat_labels += ['jump-distance', 'reference-distance']
 
     def __str__(self):
@@ -654,6 +719,85 @@ class StepSampler(object):
                    header=','.join(self.logstat_labels), delimiter=',')
         plt.close()
 
+    @property
+    def mean_jump_distance(self):
+        """Geometric mean jump distance."""
+        if len(self.logstat) == 0:
+            return np.nan
+        if 'jump-distance' not in self.logstat_labels or 'reference-distance' not in self.logstat_labels:
+            return np.nan
+        i = self.logstat_labels.index('jump-distance')
+        j = self.logstat_labels.index('reference-distance')
+        jump_distances = np.array([entry[i] for entry in self.logstat])
+        reference_distances = np.array([entry[j] for entry in self.logstat])
+        return np.exp(np.nanmean(np.log(jump_distances / reference_distances)))
+
+    @property
+    def far_enough_fraction(self):
+        """Fraction of jumps exceeding reference distance."""
+        if len(self.logstat) == 0:
+            return np.nan
+        if 'jump-distance' not in self.logstat_labels or 'reference-distance' not in self.logstat_labels:
+            return np.nan
+        i = self.logstat_labels.index('jump-distance')
+        j = self.logstat_labels.index('reference-distance')
+        jump_distances = np.array([entry[i] for entry in self.logstat])
+        reference_distances = np.array([entry[j] for entry in self.logstat])
+        return np.nanmean(jump_distances > reference_distances)
+
+    def get_info_dict(self):
+        return dict(
+            num_logs=len(self.logstat),
+            rejection_rate=np.nanmean([entry[0] for entry in self.logstat]),
+            mean_scale=np.nanmean([entry[1] for entry in self.logstat]),
+            mean_nsteps=np.nanmean([entry[2] for entry in self.logstat]),
+            mean_distance=self.mean_jump_distance,
+            frac_far_enough=self.far_enough_fraction,
+            last_logstat=dict(zip(self.logstat_labels, self.logstat[-1]))
+        )
+
+
+    def print_diagnostic(self):
+        """Print diagnostic of step sampler performance."""
+        if len(self.logstat) == 0:
+            print("diagnostic unavailable, no recorded steps found")
+            return
+        if 'jump-distance' not in self.logstat_labels or 'reference-distance' not in self.logstat_labels:
+            print("turn on check_nsteps in the step sampler for diagnostics")
+            return 
+        frac_farenough = self.far_enough_fraction
+        average_distance = self.mean_jump_distance
+        if frac_farenough < 0.5:
+            advice = ': very fishy. Double nsteps and see if fraction and lnZ change)'
+        elif frac_farenough < 0.66:
+            advice = ': fishy. Double nsteps and see if fraction and lnZ change)'
+        else:
+            advice = ' (should be >50%)'
+        print('step sampler diagnostic: jump distance %.2f (should be >1), far enough fraction: %.2f%% %s' % (
+            average_distance, frac_farenough * 100, advice))
+
+    def plot_jump_diagnostic_histogram(self, filename, **kwargs):
+        """Plot jump diagnostic histogram."""
+        if len(self.logstat) == 0:
+            return
+        if 'jump-distance' not in self.logstat_labels:
+            return 
+        if 'reference-distance' not in self.logstat_labels:
+            return 
+        i = self.logstat_labels.index('jump-distance')
+        j = self.logstat_labels.index('reference-distance')
+        jump_distances = np.array([entry[i] for entry in self.logstat])
+        reference_distances = np.array([entry[j] for entry in self.logstat])
+        plt.hist(np.log10(jump_distances / reference_distances), **kwargs)
+        ylo, yhi = plt.ylim()
+        plt.vlines(self.mean_jump_distance, ylo, yhi)
+        plt.ylim(ylo, yhi)
+        plt.title(self.check_nsteps or self.adaptive_nsteps)
+        plt.xlabel('log(relative step distance)')
+        plt.ylabel('Frequency')
+        plt.savefig(filename, bbox_inches='tight')
+        plt.close()
+
     def move(self, ui, region, ndraw=1, plot=False):
         """Move around point ``ui``. Stub to be implemented by child classes."""
         raise NotImplementedError()
@@ -670,7 +814,7 @@ class StepSampler(object):
         assert self.scale > 0
         assert self.next_scale > 0
         # reset chain
-        if self.adaptive_nsteps:
+        if self.adaptive_nsteps or self.check_nsteps:
             self.logstat.append([-1.0, self.scale, self.nsteps, np.nan, np.nan])
         else:
             self.logstat.append([-1.0, self.scale, self.nsteps])
@@ -709,18 +853,22 @@ class StepSampler(object):
         region: MLFriends object
             current region
         """
-        if not self.adaptive_nsteps:
+        if not (self.adaptive_nsteps or self.check_nsteps):
             return
-        elif len(self.history) < self.nsteps:
+        if len(self.history) < self.nsteps:
             # incomplete or aborted for some reason
-            print("not adapting, incomplete history", len(self.history), self.nsteps)
+            print("not adapting/checking nsteps, incomplete history", len(self.history), self.nsteps)
             return
 
-        # assert self.nrejects < len(self.history), (self.nsteps, self.nrejects, len(self.history))
-        # assert self.nrejects <= self.nsteps, (self.nsteps, self.nrejects, len(self.history))
         if self.adaptive_nsteps_needs_mean_pair_distance:
             assert np.isfinite(self.mean_pair_distance)
         ndim = region.u.shape[1]
+        if self.check_nsteps:
+            far_enough, extra_info = self.check_nsteps_function(region, self.history, self.mean_pair_distance, ndim)
+            self.logstat[-1] += extra_info
+        if not self.adaptive_nsteps:
+            return
+
         far_enough, extra_info = self.adaptive_nsteps_function(region, self.history, self.mean_pair_distance, ndim)
         self.logstat[-1] += extra_info
 
@@ -762,7 +910,7 @@ class StepSampler(object):
                 [self.nsteps, region.maxradiussq**0.5, mean_pair_distance,
                  iLstart, iLfinal, itstart, itfinal])])
 
-        if self.adaptive_nsteps:
+        if self.adaptive_nsteps or self.check_nsteps:
             self.adapt_nsteps(region=region)
 
         if self.next_scale > self.scale * self.nudge**10:

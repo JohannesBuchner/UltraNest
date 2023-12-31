@@ -20,6 +20,7 @@ from numpy import pi
 cimport cython
 from cython.cimports.libc.math import sqrt
 
+
 @cython.boundscheck(False)
 @cython.wraparound(False)
 cdef count_nearby(
@@ -275,7 +276,7 @@ def update_clusters(
     np.float_t maxradiussq,
     clusterids=None,
 ):
-    """Clusters `upoints`, so that clusters are distinct if no 
+    """Clusters `upoints`, so that clusters are distinct if no
     member pair is within a radius of sqrt(`maxradiussq`).
 
     Parameters
@@ -433,7 +434,7 @@ class ScalingLayer(object):
             |      ********      |
         """
         if not self.has_wraps:
-            return 
+            return
 
         N, ndims = points.shape
         self.wrap_cuts = []
@@ -1059,7 +1060,7 @@ class MLFriends(object):
         ----------
         nsamples: int
             number of samples to draw
-        
+
         Returns
         -------
         samples: array of shape (nsamples, dimension)
@@ -1091,7 +1092,7 @@ class MLFriends(object):
         """
         # require points to be inside bounding ellipsoid
         mask = self.inside_ellipsoid(pts)
-        
+
         if mask.any():
             # additionally require points to be near neighbours
             bpts = self.transformLayer.transform(pts[mask,:])
@@ -1247,7 +1248,7 @@ class RobustEllipsoidRegion(MLFriends):
         ----------
         nsamples: int
             number of samples to draw
-        
+
         Returns
         -------
         samples: array of shape (nsamples, dimension)

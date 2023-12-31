@@ -1,6 +1,14 @@
+"""
+Calibration of step sampler
+"""
+
+import numpy as np
 from ultranest.integrator import ReactiveNestedSampler
+import os
+
 
 def substitute_log_dir(init_args, nsteps):
+    """Append nsteps to log_dir argument, if set."""
     if 'log_dir' in init_args:
         args = dict(init_args)
         args['log_dir'] = init_args['log_dir'] + '-nsteps%d' % nsteps
@@ -15,23 +23,24 @@ class ReactiveNestedCalibrator():
     -----
 
     Usage is designed to be a drop-in replacement for ReactiveNestedSampler.
-    
+
     If your code was::
         sampler = ReactiveNestedSampler(my_param_names, my_loglike, my_transform)
         sampler.stepsampler = SliceSampler(nsteps=10, generate_direction=region_oriented_direction)
         sampler.run(min_num_livepoints=400)
-    
+
     You would change it to::
         sampler = ReactiveNestedCalibrator(my_param_names, my_loglike, my_transform)
         sampler.stepsampler = SliceSampler(nsteps=10, generate_direction=region_oriented_direction)
         sampler.run(min_num_livepoints=400)
-    
+
     The run() command will print the number of slice sampler steps
     that appear safe for the inference task.
 
     The initial value for nsteps is ignored, and set to len(param_names)
     instead.
     """
+
     def __init__(self,
                  param_names,
                  loglike,
@@ -55,32 +64,53 @@ class ReactiveNestedCalibrator():
         if `log_dir` is set, then the suffix `-nsteps%d` is added for each
         run where %d is replaced with the number of steps (2, 4, 8 etc).
         """
-        
         self.init_args = dict(param_names=param_names, loglike=loglike, transform=transform, **kwargs)
         self.stepsampler = None
-        
+
     def run(self, **kwargs):
         """Run a sequence of ReactiveNestedSampler with nsteps doubling.
 
-        All arguments are passed to :py:meth:`ReactiveNestedSampler.run`.
-
+        Parameters
+        -----------
+        **kwargs: dict
+            All arguments are passed to :py:meth:`ReactiveNestedSampler.run`.
         """
         assert self.stepsampler is not None
         self.run_args = kwargs
-        
+
         # start with nsteps=d
         nsteps = len(self.init_args['param_names'])
         self.results = []
         self.nsteps = []
+        self.relsteps = []
 
         while True:
             print("running with %d steps ..." % nsteps)
-            sampler = ReactiveNestedSampler(**substitute_log_dir(self.init_args, nsteps))
-            sampler.stepsampler = self.stepsampler.__class__(nsteps, generate_direction=self.stepsampler.generate_direction)
+            init_args = substitute_log_dir(self.init_args, nsteps)
+            sampler = ReactiveNestedSampler(**init_args)
+            sampler.stepsampler = self.stepsampler.__class__(
+                nsteps=nsteps, generate_direction=self.stepsampler.generate_direction,
+                check_nsteps=self.stepsampler.check_nsteps,
+                adaptive_nsteps=self.stepsampler.adaptive_nsteps,
+                log=open(init_args['log_dir'] + '/stepsampler.log', 'w') if 'log_dir' in self.init_args else None)
+            self.sampler = sampler
             result = sampler.run(**self.run_args)
+            print("lnZ=%(logz).2f +- %(logzerr).2f" % result)
+            if self.sampler.log_to_disk:
+                sampler.stepsampler.plot(os.path.join(self.sampler.logs['plots'], 'stepsampler.pdf'))
+                sampler.stepsampler.plot_jump_diagnostic_histogram(
+                    os.path.join(self.sampler.logs['plots'], 'stepsampler-jumphist.pdf'),
+                    histtype='step', bins='auto')
+            sampler.stepsampler.print_diagnostic()
+            if 'jump-distance' in sampler.stepsampler.logstat_labels and 'reference-distance' in sampler.stepsampler.logstat_labels:
+                i = sampler.stepsampler.logstat_labels.index('jump-distance')
+                j = sampler.stepsampler.logstat_labels.index('reference-distance')
+                jump_distances = np.array([entry[i] for entry in sampler.stepsampler.logstat])
+                reference_distances = np.array([entry[j] for entry in sampler.stepsampler.logstat])
+                self.relsteps.append(jump_distances / reference_distances)
+
             self.results.append(result)
             self.nsteps.append(nsteps)
-            print("lnZ=%(logz).2f +- %(logzerr).2f" % result)
             if len(self.results) > 2:
                 last_result = self.results[-2]
                 last_result2 = self.results[-3]
@@ -101,5 +131,58 @@ class ReactiveNestedCalibrator():
                 else:
                     print("converged! nsteps=%d appears safe" % nsteps)
                     break
-            
+
             nsteps *= 2
+
+    def plot(self):
+        """Visualise the convergence diagnostics.
+
+        Stores into `<log_dir>/plots/` folder:
+        * stepsampler.pdf: diagnostic of stepsampler, see :py:meth:`StepSampler.plot`
+        * nsteps-calibration-jumps.pdf: distribution of relative jump distance
+        * nsteps-calibration.pdf: evolution of ln(Z) with nsteps
+        """
+        self.sampler.stepsampler.plot(os.path.join(self.sampler.logs['plots'], 'stepsampler.pdf'))
+
+        # plot U-test convergence run length (at 4 sigma) (or niter) vs nsteps
+        # plot step > reference fraction vs nsteps
+        calibration_results = []
+
+        import matplotlib.pyplot as plt
+        plt.figure("jump-distance")
+        print("jump distance diagnostic:")
+        for nsteps, relsteps, result in zip(self.nsteps, self.relsteps, self.results):
+            calibration_results.append([
+                nsteps, result['logz'], result['logzerr'],
+                min(result['niter'], result['insertion_order_MWW_test']['independent_iterations']),
+                result['insertion_order_MWW_test']['converged'] * 1,
+                np.nanmean(relsteps > 1)])
+            plt.hist(np.log10(relsteps), histtype='step', bins='auto', label=nsteps)
+            print('%-4d: %.2f%%' % (nsteps, np.nanmean(relsteps > 1) * 100.0))
+        if 'log_dir' in self.init_args:
+            print('calibration results:', np.shape(calibration_results))
+            np.savetxt(
+                self.init_args['log_dir'] + 'calibration.csv',
+                calibration_results, delimiter=',', comments='',
+                header='nsteps,logz,logzerr,maxUrun,Uconverged,stepfrac',
+                fmt='%d,%.3f,%.3f,%d,%d,%.5f')
+        plt.xlabel('$log_{10}$(relative step distance)')
+        plt.ylabel('Frequency')
+        plt.legend(title='nsteps', loc='best')
+        if self.sampler.log_to_disk:
+            plt.savefig(os.path.join(self.sampler.logs['plots'], 'nsteps-calibration-jumps.pdf'), bbox_inches='tight')
+            plt.close()
+
+        plt.figure("logz")
+        plt.errorbar(
+            x=self.nsteps,
+            y=[result['logz'] for result in self.results],
+            yerr=[result['logzerr'] for result in self.results],
+        )
+        plt.title('Step sampler calibration')
+        plt.xlabel('Number of steps')
+        plt.ylabel('ln(Z)')
+        if self.sampler.log_to_disk:
+            plt.savefig(os.path.join(self.sampler.logs['plots'], 'nsteps-calibration.pdf'), bbox_inches='tight')
+            plt.close()
+            self.sampler.logger.debug('Making nsteps calibration plot ... done')
