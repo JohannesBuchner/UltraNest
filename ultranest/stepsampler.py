@@ -536,7 +536,7 @@ class StepSampler(object):
 
     def __init__(
         self, nsteps, generate_direction,
-        scale=1.0, check_nsteps=False, adaptive_nsteps=False, max_nsteps=1000,
+        scale=1.0, check_nsteps='move-distance', adaptive_nsteps=False, max_nsteps=1000,
         region_filter=False, log=False,
         starting_point_selector=select_random_livepoint,
     ):
