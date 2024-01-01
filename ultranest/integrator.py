@@ -2621,6 +2621,7 @@ class ReactiveNestedSampler(object):
                                     paramlims=self.transform_limits,
                                     order_test_correlation=insertion_test_quality,
                                     order_test_direction=insertion_test_direction,
+                                    stepsampler_info=self.stepsampler.get_info_dict() if hasattr(self.stepsampler, 'get_info_dict') else {}
                                 ),
                                 region=self.region, transformLayer=self.transformLayer,
                                 region_fresh=region_fresh,

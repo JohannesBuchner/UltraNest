@@ -95,7 +95,7 @@ class ReactiveNestedCalibrator():
                 log=open(init_args['log_dir'] + '/stepsampler.log', 'w') if 'log_dir' in self.init_args else None)
             self.sampler = sampler
             result = sampler.run(**self.run_args)
-            print("lnZ=%(logz).2f +- %(logzerr).2f" % result)
+            print("Z=%(logz).2f +- %(logzerr).2f" % result)
             if self.sampler.log_to_disk:
                 sampler.stepsampler.plot(os.path.join(self.sampler.logs['plots'], 'stepsampler.pdf'))
                 sampler.stepsampler.plot_jump_diagnostic_histogram(
@@ -157,10 +157,9 @@ class ReactiveNestedCalibrator():
                 min(result['niter'], result['insertion_order_MWW_test']['independent_iterations']),
                 result['insertion_order_MWW_test']['converged'] * 1,
                 np.nanmean(relsteps > 1)])
-            plt.hist(np.log10(relsteps), histtype='step', bins='auto', label=nsteps)
-            print('%-4d: %.2f%%' % (nsteps, np.nanmean(relsteps > 1) * 100.0))
+            plt.hist(np.log10(relsteps + 1e-10), histtype='step', bins='auto', label=nsteps)
+            print('  %-4d: %.2f%%  avg:%.2f' % (nsteps, np.nanmean(relsteps > 1) * 100.0, np.exp(np.nanmean(np.log(relsteps)))))
         if 'log_dir' in self.init_args:
-            print('calibration results:', np.shape(calibration_results))
             np.savetxt(
                 self.init_args['log_dir'] + 'calibration.csv',
                 calibration_results, delimiter=',', comments='',

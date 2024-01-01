@@ -395,7 +395,7 @@ def adapt_proposal_move_distances(region, history, mean_pair_distance, ndim):
     d2 = ((tstart - tfinal)**2).sum()
     far_enough = d2 > region.maxradiussq
 
-    return far_enough, [d2, region.maxradiussq**0.5]
+    return far_enough, [d2**0.5, region.maxradiussq**0.5]
 
 
 def adapt_proposal_move_distances_midway(region, history, mean_pair_distance, ndim):
@@ -431,7 +431,7 @@ def adapt_proposal_move_distances_midway(region, history, mean_pair_distance, nd
     d2 = ((tstart - tfinal)**2).sum()
     far_enough = d2 > region.maxradiussq
 
-    return far_enough, [d2, region.maxradiussq**0.5]
+    return far_enough, [d2**0.5, region.maxradiussq**0.5]
 
 
 def select_random_livepoint(us, Ls, Lmin):
@@ -730,7 +730,7 @@ class StepSampler(object):
         j = self.logstat_labels.index('reference-distance')
         jump_distances = np.array([entry[i] for entry in self.logstat])
         reference_distances = np.array([entry[j] for entry in self.logstat])
-        return np.exp(np.nanmean(np.log(jump_distances / reference_distances)))
+        return np.exp(np.nanmean(np.log(jump_distances / reference_distances + 1e-10)))
 
     @property
     def far_enough_fraction(self):
@@ -753,7 +753,7 @@ class StepSampler(object):
             mean_nsteps=np.nanmean([entry[2] for entry in self.logstat]),
             mean_distance=self.mean_jump_distance,
             frac_far_enough=self.far_enough_fraction,
-            last_logstat=dict(zip(self.logstat_labels, self.logstat[-1]))
+            last_logstat=dict(zip(self.logstat_labels, self.logstat[-1] if len(self.logstat) > 1 else [np.nan] * len(self.logstat_labels)))
         )
 
 
@@ -788,7 +788,7 @@ class StepSampler(object):
         j = self.logstat_labels.index('reference-distance')
         jump_distances = np.array([entry[i] for entry in self.logstat])
         reference_distances = np.array([entry[j] for entry in self.logstat])
-        plt.hist(np.log10(jump_distances / reference_distances), **kwargs)
+        plt.hist(np.log10(jump_distances / reference_distances + 1e-10), **kwargs)
         ylo, yhi = plt.ylim()
         plt.vlines(self.mean_jump_distance, ylo, yhi)
         plt.ylim(ylo, yhi)

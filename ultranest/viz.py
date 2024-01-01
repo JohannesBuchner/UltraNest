@@ -139,6 +139,13 @@ def nicelogger(points, info, region, transformLayer, region_fresh=False):
         ("Quality: correlation length: %d (%s)" % (info['order_test_correlation'], '+' if info['order_test_direction'] >= 0 else '-'))
         if np.isfinite(info['order_test_correlation']) else "Quality: ok",
     )
+    if info.get('stepsampler_info', {}).get('num_logs', 0) > 0:
+        print(
+            'Step sampler performance: %(rejection_rate).1f%% rej/step, %(mean_nsteps)d steps/it' % (info['stepsampler_info']),
+            ('mean rel jump distance: %.2f (should be >1), %.2f%% (should be >50%%)' % (
+                info['stepsampler_info']['mean_distance'], 100 * info['stepsampler_info']['frac_far_enough']
+            )) if 'mean_distance' in info['stepsampler_info'] else ''
+        )
 
     print()
     if ndim == 1:
@@ -314,6 +321,14 @@ class LivePointsWidget(object):
             ('' if 'order_test_correlation' not in info else
              (" | Quality: correlation length: %d (%s)" % (info['order_test_correlation'], '+' if info['order_test_direction'] >= 0 else '-'))
              if np.isfinite(info['order_test_correlation']) else " | Quality: ok")
+
+        if info.get('stepsampler_info', {}).get('num_logs', 0) > 0:
+            labeltext += ("<br/>" +
+                'Step sampler performance: %(rejection_rate).1f%% rej/step, %(mean_nsteps)d steps/it' % (info['stepsampler_info']) +
+                ('mean rel jump distance: %.2f (should be >1), %.2f%% (should be >50%%)' % (
+                    info['stepsampler_info']['mean_distance'], 100 * info['stepsampler_info']['frac_far_enough']
+                )) if 'mean_distance' in info['stepsampler_info'] else ''
+            )
 
         if ndim == 1:
             pass
