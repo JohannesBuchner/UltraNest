@@ -526,3 +526,39 @@ def generate_mixture_random_direction(ui, region, scale=1):
     v_DE = generate_differential_direction(ui, region, scale=scale)
     v_axis = generate_region_oriented_direction(ui, region, scale=scale)
     return np.where(np.random.uniform(size=nsamples).reshape((-1, 1)) < 0.5, v_DE, v_axis)
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+cpdef tuple update_vectorised_slice_sampler(\
+                          np.ndarray[np.float_t, ndim=1] Theta, np.ndarray[np.float_t, ndim=1] Theta_min,\
+                          np.ndarray[np.float_t, ndim=1] Theta_max, np.ndarray[np.float_t, ndim=1] proposed_L,\
+                          np.ndarray[np.float_t, ndim=2] proposed_u, np.ndarray[np.float_t, ndim=2] proposed_p,\
+                          np.ndarray[np.int_t, ndim=1] worker, np.ndarray[np.int_t, ndim=1] status,\
+                          np.ndarray[np.float_t, ndim=1] Likelihood_threshold, np.ndarray[np.float_t, ndim=2] allu,\
+                          np.ndarray[np.float_t, ndim=1] allL, np.ndarray[np.float_t, ndim=2] allp, int popsize):
+                            
+    cdef int j, k
+    cdef throwed = 0
+    for l in range(popsize):
+        if Theta[l] > Theta_max[worker[l]] or Theta[l] < Theta_min[worker[l]]:
+            if proposed_L[l]>Likelihood_threshold[worker[l]]:
+                throwed+=1
+            continue
+        if 0 < Theta[l] < Theta_max[worker[l]]:
+            Theta_max[worker[l]] = Theta[l]
+        if 0 > Theta[l] > Theta_min[worker[l]]:
+            Theta_min[worker[l]] = Theta[l]
+        if proposed_L[l] > Likelihood_threshold[worker[l]] and status[worker[l]] == 0:
+            status[worker[l]] = 1
+            allu[worker[l], :] = proposed_u[l, :]
+            allL[worker[l]] = proposed_L[l]
+            allp[worker[l], :] = proposed_p[l, :]
+
+    j = 0
+    while j < popsize and (status == 0).any():
+        for k in range(popsize):
+            if status[k] == 0 and j < popsize:
+                worker[j] = k
+                j += 1
+
+    return (Theta_min, Theta_max, proposed_L, proposed_u, proposed_p, worker, status, Likelihood_threshold, allu, allL, allp,throwed)

@@ -10,7 +10,7 @@ by providing random walks of populations of walkers.
 
 import numpy as np
 from ultranest.utils import submasks
-from ultranest.stepfuncs import evolve, step_back
+from ultranest.stepfuncs import evolve, step_back, update_vectorised_slice_sampler
 from ultranest.stepfuncs import generate_cube_oriented_direction, generate_cube_oriented_direction_scaled
 from ultranest.stepfuncs import generate_random_direction, generate_region_oriented_direction, generate_region_random_direction
 from ultranest.stepfuncs import generate_differential_direction, generate_mixture_random_direction
@@ -536,8 +536,210 @@ class PopulationSliceSampler():
         else:
             return None, None, None, nc
 
+class PopulationEllipticalSliceSampler():
+    """
+       Vectorized Slice sampler taking inspiration from the elliptical slice sampler.
+       In Comparison the PopulationSliceSampler, the sampler calls the likelihood on
+       batch of points of the same size.
+
+       Sliced are defined by the generate_direction function on a interval defined
+       around the current point. The centred interval has the width of the scale parameter.
+       Slices are then shrink towards the current point until a point is found with a
+       likelihood above the threshold.
+
+       A slice can be searched with more than one point at a time. In that case, we 
+       read points as if they were the next selected each after the other. For a points
+       to update the slice, it needs to be still in the part of the slices searched after
+       the first point have been read. In that case, we update as normal, otherwise we
+       discard the point.
+
+    """
+
+    def __init__(
+        self, popsize, nsteps,scale, generate_direction
+        ,scale_adapt_factor=0.9):
+        """Initialise.
+
+        Parameters
+        ----------
+        popsize: int
+            number of walkers to maintain.
+        nsteps: int
+            number of steps to take until the found point is accepted as independent.
+            To calibrate, try several runs with increasing nsteps (doubling).
+            The ln(Z) should become stable at some value.
+        generate_direction: function
+            Function that gives proposal kernel shape, one of:
+            :py:func:`ultranest.popstepsampler.generate_random_direction`
+            :py:func:`ultranest.popstepsampler.generate_region_oriented_direction`
+            :py:func:`ultranest.popstepsampler.generate_region_random_direction`
+        scale: float
+            initial guess for the proposal scaling factor
+        scale_adapt_factor: float
+            if 1, no adapting is done.
+            if <1, the scale is increased if the slice final size is under 1/2 the scale
+            or decreased if it is above, by *scale_adapt_factor*.
+
+        """
+        self.nsteps = nsteps
+        
+        
+        self.nrejects = 0
+        self.generate_direction =  generate_direction
+        self.scale_adapt_factor = scale_adapt_factor
+        self.ncalls = 0
+        self.throwed=0
+        self.scale = scale
+       
+        
+       
+
+        
+        self.prepared_samples = []
+
+        self.popsize = popsize
+        
+
+        
+        
+
+    def __str__(self):
+        """Return string representation."""
+        return 'PopulationEllipticalSliceSampler(popsize=%d, nsteps=%d, generate_direction=%s, scale=%.g)' % (
+            self.popsize, self.nsteps, self.generate_direction, self.scale)
+
+    def region_changed(self, Ls, region):
+        """Act upon region changed. Currently unused."""
+        pass
+
+    
+    
+    def __next__(
+        self, region, Lmin, us, Ls, transform, loglike, ndraw=10,
+        plot=False, tregion=None, log=False
+    ):
+        """Sample a new live point.
+
+        Parameters
+        ----------
+        region: MLFriends object
+            Region
+        Lmin: float
+            current log-likelihood threshold
+        us: np.array((nlive, ndim))
+            live points
+        Ls: np.array(nlive)
+            loglikelihoods live points
+        transform: function
+            prior transform function
+        loglike: function
+            loglikelihood function
+        ndraw: int
+            not used
+        plot: bool
+            not used
+        tregion: bool
+            not used
+        log: bool
+            not used
+
+        Returns
+        -------
+        u: np.array(ndim) or None
+            new point coordinates (None if not yet available)
+        p: np.array(nparams) or None
+            new point transformed coordinates (None if not yet available)
+        L: float or None
+            new point likelihood (None if not yet available)
+        nc: int
+
+        """
+        nlive, ndim = us.shape
+        
+        
+        # fill if empty:
+        if len(self.prepared_samples) == 0:
+            # choose live points
+            ilive = np.random.randint(0, nlive, size=self.popsize)
+            allu = np.array(us[ilive,:])
+            allp = np.zeros((self.popsize, ndim))
+            allL = np.array(Ls[ilive])
+            nc = 0#self.nsteps * self.popsize
+            n_throws=0
+                                       
+                
+            
+            interval_final=0. 
+            Likelihood_threshold=np.ones(self.popsize)*Lmin
+            for k in range(self.nsteps):
+                # Defining scale jitter
+                factor_scale=scipy.stats.truncnorm.rvs(-0.5, 5., loc=0, scale=1)+1.
+                # Defining slice direction
+                v = self.generate_direction(allu, region,scale= 1.0)*self.scale*factor_scale
+                # limite of the slice based on the unit cube boundaries
+                tleft,tright= unitcube_line_intersection(allu, v)
+                # Defining bound of the slice
+                Theta_min_worker,Theta_max_worker = np.fmax(tleft,-1.+np.zeros(self.popsize)),np.fmin(tright,1.+np.zeros(self.popsize))
+                Theta_min,Theta_max=Theta_min_worker.copy(),Theta_max_worker.copy()
+                # Index of the workers working concurrently
+                worker=np.arange(0,self.popsize,1,dtype=int)
+                # Status indicating if a points has already find its next position
+                status=np.zeros(self.popsize,dtype=int) # one for success, zero for running
+               
+                # Loop until each points has found its next position or we reached 100 iterations
+                loop_n=0
+                while (status==0).any() and loop_n<100:
+                
+                    # Sampling points on the slices
+                    Theta=Theta_min_worker+(Theta_max_worker-Theta_min_worker)*np.random.uniform(size=(self.popsize,))
+                
+                    points=allu[worker,:]
+                    v_worker=v[worker,:]
+                    proposed_u=points+Theta.reshape((-1,1))*v_worker
+                
+                    proposed_p = transform(proposed_u)
+                    proposed_L = loglike(proposed_p)
+                    nc+=self.popsize
+                    # Updating the pool of points based on the newly sampled points
+                    Theta_min,Theta_max,proposed_L,proposed_u,proposed_p,worker,status,Likelihood_threshold,allu,allL,allp,nth=\
+                    update_vectorised_slice_sampler(Theta,Theta_min,Theta_max,proposed_L,proposed_u,proposed_p,worker,status,Likelihood_threshold,allu,allL,allp,self.popsize)
+                    n_throws+=nth
+                    # Update of the limits of the slices
+                    Theta_min_worker=Theta_min[worker]
+                    Theta_max_worker=Theta_max[worker]
+                    loop_n+=1
+                # Record of the final interval on theta for scale adaptation
+                interval_final+=np.median(Theta_max-Theta_min)
+
+
+            
+            interval_final=interval_final/self.nsteps
+            
+            
+            self.throwed+=n_throws
+            self.ncalls+=nc
+            
+            assert np.array([p!=np.zeros(ndim) for p in allp]).all(), 'some walkers never moved! Double nsteps of PopulationEllipticalSliceSampler.'
+            self.prepared_samples = list(zip(allu, allp, allL))
+
+            
+            # Scale adaptation such that the final interval is
+            # half the scale. There may be better things to do 
+            # here, but it seems to work.
+            if interval_final>=1./2.:
+                self.scale *= 1./self.scale_adapt_factor
+            else:
+                self.scale *= self.scale_adapt_factor
+            #print("percentage of throws %.3f\n\n"%((self.throwed/self.ncalls)*100.))
+            
+        else:
+            nc = 0
+
+        u, p, L = self.prepared_samples.pop(0)
+        return u, p, L, nc
+
 
 __all__ = [
     "generate_cube_oriented_direction", "generate_cube_oriented_direction_scaled",
     "generate_random_direction", "generate_region_oriented_direction", "generate_region_random_direction",
-    "PopulationRandomWalkSampler", "PopulationSliceSampler"]
+    "PopulationRandomWalkSampler", "PopulationSliceSampler","PopulationEllipticalSliceSampler"]

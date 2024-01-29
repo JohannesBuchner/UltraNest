@@ -1,6 +1,6 @@
 import numpy as np
 from ultranest import ReactiveNestedSampler
-from ultranest.popstepsampler import PopulationSliceSampler, PopulationRandomWalkSampler
+from ultranest.popstepsampler import PopulationSliceSampler, PopulationRandomWalkSampler, PopulationEllipticalSliceSampler
 from ultranest.popstepsampler import generate_cube_oriented_direction, generate_random_direction, generate_cube_oriented_direction_scaled
 from ultranest.popstepsampler import generate_region_oriented_direction, generate_region_random_direction
 
@@ -54,6 +54,25 @@ def test_stepsampler_cubegausswalk(plot=False):
     assert a.sum() > 1
     assert b.sum() > 1
 
+def test_stepsampler_randomEllSlice(plot=False):
+    np.random.seed(4)
+    nsteps = np.random.randint(10, 50)
+    popsize = np.random.randint(1, 20)
+    sampler = ReactiveNestedSampler(paramnames, loglike_vectorized, transform=transform, vectorized=True)
+
+    sampler.stepsampler = PopulationEllipticalSliceSampler(
+        popsize=popsize, nsteps=nsteps, 
+        generate_direction=generate_random_direction,
+        scale=1.0,
+    )
+    r = sampler.run(viz_callback=None, log_interval=50, max_iters=200, max_num_improvement_loops=0)
+    sampler.print_results()
+    a = (np.abs(r['samples'] - 0.7) < 0.1).all(axis=1)
+    b = (np.abs(r['samples'] - 0.3) < 0.1).all(axis=1)
+    assert a.sum() > 1
+    assert b.sum() > 1
+
+
 from ultranest.mlfriends import AffineLayer, ScalingLayer, MLFriends, RobustEllipsoidRegion, SimpleRegion
 
 def test_direction_proposals():
@@ -81,5 +100,6 @@ def test_direction_proposals():
                 #assert np.allclose(norms, scale), (norms, scale)
 
 if __name__ == '__main__':
-    test_stepsampler_cubegausswalk()
+    #test_stepsampler_cubegausswalk()
+    test_stepsampler_randomEllSlice()
     test_direction_proposals()
