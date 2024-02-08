@@ -89,7 +89,8 @@ def main(args):
             z[:,0] = x[:,0] * 6 - 3
             return z
         import string
-        paramnames = ['sigma'] + list(string.ascii_lowercase)[:ndim]
+        #print(ndim, len(list(string.ascii_lowercase)))
+        paramnames = ['sigma'] + ['param%d' % (i+1) for i in range(ndim)][:ndim]
 
     
     from ultranest import ReactiveNestedSampler
@@ -98,8 +99,8 @@ def main(args):
     draw_multiple=False, vectorized=True,)
     if args.ElliSlice:
         import ultranest.popstepsampler as ultrapop
-        direction=[ultrapop.generate_random_direction, ultrapop.generate_region_oriented_direction, ultrapop.generate_region_random_direction]
-        sampler.stepsampler = ultrapop.PopulationEllipticalSliceSampler(popsize=args.popsize,nsteps=args.nstep,generate_direction=direction[1],scale=1.0)
+        direction=[ultrapop.generate_cube_oriented_direction,ultrapop.generate_random_direction, ultrapop.generate_region_oriented_direction, ultrapop.generate_region_random_direction]
+        sampler.stepsampler = ultrapop.PopulationEllipticalSliceSampler(popsize=args.popsize,nsteps=args.nstep,generate_direction=direction[1],scale=1.0,scale_adapt_factor=0.9)
     if args.PopSlice:
         import ultranest.popstepsampler as ultrapop
         direction=[ultrapop.generate_cube_oriented_direction,ultrapop.generate_random_direction, ultrapop.generate_region_oriented_direction, ultrapop.generate_region_random_direction]
