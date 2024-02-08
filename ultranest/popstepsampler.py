@@ -557,7 +557,7 @@ class PopulationEllipticalSliceSampler():
 
     def __init__(
         self, popsize, nsteps,scale, generate_direction
-        ,scale_adapt_factor=0.9):
+        ,scale_adapt_factor=0.9, slice_size=2.0):
         """Initialise.
 
         Parameters
@@ -579,7 +579,8 @@ class PopulationEllipticalSliceSampler():
             if 1, no adapting is done.
             if <1, the scale is increased if the slice final size is under 1/2 the scale
             or decreased if it is above, by *scale_adapt_factor*.
-
+        slice_size: float
+            size of the slice in units of distance between the previous and next point.
         """
         self.nsteps = nsteps
         
@@ -590,6 +591,7 @@ class PopulationEllipticalSliceSampler():
         self.ncalls = 0
         self.throwed=0
         self.scale = scale
+        self.slice_size=slice_size
        
         
        
@@ -729,7 +731,7 @@ class PopulationEllipticalSliceSampler():
             # Scale adaptation such that the final interval is
             # half the scale. There may be better things to do 
             # here, but it seems to work.
-            if interval_final>=1./2.:
+            if interval_final>=1./self.slice_size
                 self.scale *= 1./self.scale_adapt_factor
             else:
                 self.scale *= self.scale_adapt_factor
