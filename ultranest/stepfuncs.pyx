@@ -536,6 +536,57 @@ cpdef tuple update_vectorised_slice_sampler(\
                           np.ndarray[np.int_t, ndim=1] worker, np.ndarray[np.int_t, ndim=1] status,\
                           np.ndarray[np.float_t, ndim=1] Likelihood_threshold, np.ndarray[np.float_t, ndim=2] allu,\
                           np.ndarray[np.float_t, ndim=1] allL, np.ndarray[np.float_t, ndim=2] allp, int popsize):
+
+    """Update the slice sampler state of each walker in the populations.
+
+    Parameters
+    -----------
+    Theta: array
+        proposed slice coordinate
+    Theta_min: array
+        current slice negative end
+    Theta_max: array
+        current slice positive end
+    proposed_L: array
+        log-likelihood of proposed point
+    proposed_u: array
+        proposed point in unit cube space
+    proposed_p: array
+        proposed point in transformed space
+    worker: array
+        index of the point associated with each worker
+    status: array
+        integer status of the point
+    Likelihood_threshold: array
+        current log-likelihood threshold
+    allu: array
+        Accepted points in unit cube space
+    allL: array
+        log-likelihoods of accepted points
+    allp: array
+        Accepted points in transformed space
+    popsize: int
+        number of points
+
+    Returns
+    --------
+    Theta_min: array
+        updated current slice negative end
+    Theta_max: array
+        updated current slice positive end
+    worker: array
+        updated index of the point associated with each worker
+    status: array
+        updated integer status of the point
+    allu: array
+        updated accepted points in unit cube space
+    allL: array
+        updated log-likelihoods of accepted points
+    allp: array
+        updated accepted points in transformed space
+    throwed: int
+        number of points that were rejected because they were outside the slice
+    """
                             
     cdef int j, k
     cdef throwed = 0
@@ -561,4 +612,4 @@ cpdef tuple update_vectorised_slice_sampler(\
                 worker[j] = k
                 j += 1
 
-    return (Theta_min, Theta_max, proposed_L, proposed_u, proposed_p, worker, status, Likelihood_threshold, allu, allL, allp,throwed)
+    return (Theta_min, Theta_max, worker, status, allu, allL, allp,throwed)

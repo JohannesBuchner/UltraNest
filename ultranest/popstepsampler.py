@@ -656,11 +656,12 @@ class PopulationEllipticalSliceSampler():
         """
         nlive, ndim = us.shape
         
-        
+        assert nlive>=self.popsize, "The number of live points should be greater than the population size" 
         # fill if empty:
         if len(self.prepared_samples) == 0:
             # choose live points
-            ilive = np.random.randint(0, nlive, size=self.popsize)
+            #ilive = np.random.randint(0, nlive, size=self.popsize)
+            ilive = np.random.choice(nlive, size=self.popsize, replace=False)
             allu = np.array(us[ilive,:])
             allp = np.zeros((self.popsize, ndim))
             allL = np.array(Ls[ilive])
@@ -670,7 +671,7 @@ class PopulationEllipticalSliceSampler():
                 
             
             interval_final=0. 
-            Likelihood_threshold=np.ones(self.popsize)*Lmin
+            #Likelihood_threshold=np.ones(self.popsize)*Lmin
             for k in range(self.nsteps):
                 # Defining scale jitter
                 factor_scale=scipy.stats.truncnorm.rvs(-0.5, 5., loc=0, scale=1)+1.
@@ -685,7 +686,8 @@ class PopulationEllipticalSliceSampler():
                 worker=np.arange(0,self.popsize,1,dtype=int)
                 # Status indicating if a points has already find its next position
                 status=np.zeros(self.popsize,dtype=int) # one for success, zero for running
-               
+                mask_threshold=(np.random.uniform(size=(self.popsize,))>0.5).astype(int)
+                Likelihood_threshold=Lmin*mask_threshold+np.fmax(allL+np.log(np.random.uniform(size=(self.popsize,))),Lmin)*(1-mask_threshold)
                 # Loop until each points has found its next position or we reached 100 iterations
                 loop_n=0
                 while (status==0).any() and loop_n<100:
@@ -701,8 +703,9 @@ class PopulationEllipticalSliceSampler():
                     proposed_L = loglike(proposed_p)
                     nc+=self.popsize
                     # Updating the pool of points based on the newly sampled points
-                    Theta_min,Theta_max,proposed_L,proposed_u,proposed_p,worker,status,Likelihood_threshold,allu,allL,allp,nth=\
-                    update_vectorised_slice_sampler(Theta,Theta_min,Theta_max,proposed_L,proposed_u,proposed_p,worker,status,Likelihood_threshold,allu,allL,allp,self.popsize)
+                    Theta_min,Theta_max,worker,status,allu,allL,allp,nth=update_vectorised_slice_sampler(\
+                    Theta,Theta_min,Theta_max,proposed_L,proposed_u,proposed_p,worker,status,Likelihood_threshold\
+                    ,allu,allL,allp,self.popsize)
                     n_throws+=nth
                     # Update of the limits of the slices
                     Theta_min_worker=Theta_min[worker]
