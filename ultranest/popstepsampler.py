@@ -573,6 +573,10 @@ class PopulationEllipticalSliceSampler():
             :py:func:`ultranest.popstepsampler.generate_random_direction`
             :py:func:`ultranest.popstepsampler.generate_region_oriented_direction`
             :py:func:`ultranest.popstepsampler.generate_region_random_direction`
+            :py:func:`ultranest.popstepsampler.generate_differential_direction`
+            :py:func:`ultranest.popstepsampler.generate_mixture_random_direction`
+            :py:func:`ultranest.popstepsampler.generate_cube_oriented_direction` -> no adaptation in that case
+            :py:func:`ultranest.popstepsampler.generate_cube_oriented_direction_scaled` -> no adaptation in that case
         scale: float
             initial guess for the proposal scaling factor
         scale_adapt_factor: float
