@@ -536,9 +536,9 @@ class PopulationSliceSampler():
         else:
             return None, None, None, nc
 
-class PopulationEllipticalSliceSampler():
+class PopulationSimpleSliceSampler():
     """
-       Vectorized Slice sampler taking inspiration from the elliptical slice sampler.
+       Vectorized Slice sampler without stepping out procedure.
        In Comparison the PopulationSliceSampler, the sampler calls the likelihood on
        batch of points of the same size.
 
@@ -557,7 +557,7 @@ class PopulationEllipticalSliceSampler():
 
     def __init__(
         self, popsize, nsteps,scale, generate_direction
-        ,scale_adapt_factor=0.9, slice_size=2.0):
+        ,scale_adapt_factor=1.0, slice_size=2.0, scale_jitter=False):
         """Initialise.
 
         Parameters
@@ -597,12 +597,11 @@ class PopulationEllipticalSliceSampler():
         self.scale = scale
         self.slice_size=slice_size
        
-        
-       
-
-        
+        if scale_jitter:
+            self.scale_jitter_func= lambda : scipy.stats.truncnorm.rvs(-0.5, 5., loc=0, scale=1)+1.
+        else:
+            self.scale_jitter_func= lambda : 1.              
         self.prepared_samples = []
-
         self.popsize = popsize
         
 
@@ -666,21 +665,20 @@ class PopulationEllipticalSliceSampler():
         # fill if empty:
         if len(self.prepared_samples) == 0:
             # choose live points
-            #ilive = np.random.randint(0, nlive, size=self.popsize)
             ilive = np.random.choice(nlive, size=self.popsize, replace=False)
             allu = np.array(us[ilive,:])
             allp = np.zeros((self.popsize, ndim))
             allL = np.array(Ls[ilive])
-            nc = 0#self.nsteps * self.popsize
+            nc = 0
             n_throws=0
                                        
                 
             
             interval_final=0. 
-            #Likelihood_threshold=np.ones(self.popsize)*Lmin
+            
             for k in range(self.nsteps):
                 # Defining scale jitter
-                factor_scale=scipy.stats.truncnorm.rvs(-0.5, 5., loc=0, scale=1)+1.
+                factor_scale=self.scale_jitter_func()
                 # Defining slice direction
                 v = self.generate_direction(allu, region,scale= 1.0)*self.scale*factor_scale
                 # limite of the slice based on the unit cube boundaries
@@ -692,8 +690,7 @@ class PopulationEllipticalSliceSampler():
                 worker=np.arange(0,self.popsize,1,dtype=int)
                 # Status indicating if a points has already find its next position
                 status=np.zeros(self.popsize,dtype=int) # one for success, zero for running
-                mask_threshold=(np.random.uniform(size=(self.popsize,))>0.5).astype(int)
-                Likelihood_threshold=Lmin*mask_threshold+np.fmax(allL+np.log(np.random.uniform(size=(self.popsize,))),Lmin)*(1-mask_threshold)
+                
                 # Loop until each points has found its next position or we reached 100 iterations
                 loop_n=0
                 while (status==0).any() and loop_n<100:
@@ -710,7 +707,7 @@ class PopulationEllipticalSliceSampler():
                     nc+=self.popsize
                     # Updating the pool of points based on the newly sampled points
                     Theta_min,Theta_max,worker,status,allu,allL,allp,nth=update_vectorised_slice_sampler(\
-                    Theta,Theta_min,Theta_max,proposed_L,proposed_u,proposed_p,worker,status,Likelihood_threshold\
+                    Theta,Theta_min,Theta_max,proposed_L,proposed_u,proposed_p,worker,status,Lmin\
                     ,allu,allL,allp,self.popsize)
                     n_throws+=nth
                     # Update of the limits of the slices
@@ -735,7 +732,7 @@ class PopulationEllipticalSliceSampler():
             # Scale adaptation such that the final interval is
             # half the scale. There may be better things to do 
             # here, but it seems to work.
-            if interval_final>=1./self.slice_size
+            if interval_final>=1./self.slice_size:
                 self.scale *= 1./self.scale_adapt_factor
             else:
                 self.scale *= self.scale_adapt_factor
@@ -751,4 +748,4 @@ class PopulationEllipticalSliceSampler():
 __all__ = [
     "generate_cube_oriented_direction", "generate_cube_oriented_direction_scaled",
     "generate_random_direction", "generate_region_oriented_direction", "generate_region_random_direction",
-    "PopulationRandomWalkSampler", "PopulationSliceSampler","PopulationEllipticalSliceSampler"]
+    "PopulationRandomWalkSampler", "PopulationSliceSampler","PopulationSimpleSliceSampler"]

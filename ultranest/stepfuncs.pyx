@@ -534,7 +534,7 @@ cpdef tuple update_vectorised_slice_sampler(\
                           np.ndarray[np.float_t, ndim=1] Theta_max, np.ndarray[np.float_t, ndim=1] proposed_L,\
                           np.ndarray[np.float_t, ndim=2] proposed_u, np.ndarray[np.float_t, ndim=2] proposed_p,\
                           np.ndarray[np.int_t, ndim=1] worker, np.ndarray[np.int_t, ndim=1] status,\
-                          np.ndarray[np.float_t, ndim=1] Likelihood_threshold, np.ndarray[np.float_t, ndim=2] allu,\
+                          np.float_t Likelihood_threshold, np.ndarray[np.float_t, ndim=2] allu,\
                           np.ndarray[np.float_t, ndim=1] allL, np.ndarray[np.float_t, ndim=2] allp, int popsize):
 
     """Update the slice sampler state of each walker in the populations.
@@ -557,7 +557,7 @@ cpdef tuple update_vectorised_slice_sampler(\
         index of the point associated with each worker
     status: array
         integer status of the point
-    Likelihood_threshold: array
+    Likelihood_threshold: float
         current log-likelihood threshold
     allu: array
         Accepted points in unit cube space
@@ -592,14 +592,14 @@ cpdef tuple update_vectorised_slice_sampler(\
     cdef throwed = 0
     for l in range(popsize):
         if Theta[l] > Theta_max[worker[l]] or Theta[l] < Theta_min[worker[l]]:
-            if proposed_L[l]>Likelihood_threshold[worker[l]]:
+            if proposed_L[l]>Likelihood_threshold:
                 throwed+=1
             continue
         if 0 < Theta[l] < Theta_max[worker[l]]:
             Theta_max[worker[l]] = Theta[l]
         if 0 > Theta[l] > Theta_min[worker[l]]:
             Theta_min[worker[l]] = Theta[l]
-        if proposed_L[l] > Likelihood_threshold[worker[l]] and status[worker[l]] == 0:
+        if proposed_L[l] > Likelihood_threshold and status[worker[l]] == 0:
             status[worker[l]] = 1
             allu[worker[l], :] = proposed_u[l, :]
             allL[worker[l]] = proposed_L[l]
