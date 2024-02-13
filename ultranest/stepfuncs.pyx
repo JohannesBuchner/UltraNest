@@ -526,3 +526,90 @@ def generate_mixture_random_direction(ui, region, scale=1):
     v_DE = generate_differential_direction(ui, region, scale=scale)
     v_axis = generate_region_oriented_direction(ui, region, scale=scale)
     return np.where(np.random.uniform(size=nsamples).reshape((-1, 1)) < 0.5, v_DE, v_axis)
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+cpdef tuple update_vectorised_slice_sampler(\
+                          np.ndarray[np.float_t, ndim=1] Theta, np.ndarray[np.float_t, ndim=1] Theta_min,\
+                          np.ndarray[np.float_t, ndim=1] Theta_max, np.ndarray[np.float_t, ndim=1] proposed_L,\
+                          np.ndarray[np.float_t, ndim=2] proposed_u, np.ndarray[np.float_t, ndim=2] proposed_p,\
+                          np.ndarray[np.int_t, ndim=1] worker, np.ndarray[np.int_t, ndim=1] status,\
+                          np.float_t Likelihood_threshold, np.ndarray[np.float_t, ndim=2] allu,\
+                          np.ndarray[np.float_t, ndim=1] allL, np.ndarray[np.float_t, ndim=2] allp, int popsize):
+
+    """Update the slice sampler state of each walker in the populations.
+
+    Parameters
+    -----------
+    Theta: array
+        proposed slice coordinate
+    Theta_min: array
+        current slice negative end
+    Theta_max: array
+        current slice positive end
+    proposed_L: array
+        log-likelihood of proposed point
+    proposed_u: array
+        proposed point in unit cube space
+    proposed_p: array
+        proposed point in transformed space
+    worker: array
+        index of the point associated with each worker
+    status: array
+        integer status of the point
+    Likelihood_threshold: float
+        current log-likelihood threshold
+    allu: array
+        Accepted points in unit cube space
+    allL: array
+        log-likelihoods of accepted points
+    allp: array
+        Accepted points in transformed space
+    popsize: int
+        number of points
+
+    Returns
+    --------
+    Theta_min: array
+        updated current slice negative end
+    Theta_max: array
+        updated current slice positive end
+    worker: array
+        updated index of the point associated with each worker
+    status: array
+        updated integer status of the point
+    allu: array
+        updated accepted points in unit cube space
+    allL: array
+        updated log-likelihoods of accepted points
+    allp: array
+        updated accepted points in transformed space
+    throwed: int
+        number of points that were rejected because they were outside the slice
+    """
+                            
+    cdef int j, k
+    cdef throwed = 0
+    for l in range(popsize):
+        if Theta[l] > Theta_max[worker[l]] or Theta[l] < Theta_min[worker[l]]:
+            if proposed_L[l]>Likelihood_threshold:
+                throwed+=1
+            continue
+        if 0 < Theta[l] < Theta_max[worker[l]]:
+            Theta_max[worker[l]] = Theta[l]
+        if 0 > Theta[l] > Theta_min[worker[l]]:
+            Theta_min[worker[l]] = Theta[l]
+        if proposed_L[l] > Likelihood_threshold and status[worker[l]] == 0:
+            status[worker[l]] = 1
+            allu[worker[l], :] = proposed_u[l, :]
+            allL[worker[l]] = proposed_L[l]
+            allp[worker[l], :] = proposed_p[l, :]
+
+    j = 0
+    while j < popsize and (status == 0).any():
+        for k in range(popsize):
+            if status[k] == 0 and j < popsize:
+                worker[j] = k
+                j += 1
+
+    return (Theta_min, Theta_max, worker, status, allu, allL, allp,throwed)
