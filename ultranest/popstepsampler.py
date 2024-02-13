@@ -600,10 +600,13 @@ class PopulationSimpleSliceSampler():
         if scale_jitter:
             self.scale_jitter_func= lambda : scipy.stats.truncnorm.rvs(-0.5, 5., loc=0, scale=1)+1.
         else:
-            self.scale_jitter_func= lambda : 1.              
+            self.scale_jitter_func= lambda : 1.         
         self.prepared_samples = []
         self.popsize = popsize
-        
+        if self.scale_adapt_factor!=1.:
+            self.slice_limit=lambda tleft,tright:np.fmax(tleft,-1.+np.zeros(self.popsize)),np.fmin(tright,1.+np.zeros(self.popsize))
+        else:
+            self.slice_limit=lambda tleft,tright:tleft,tright
 
         
         
@@ -684,7 +687,7 @@ class PopulationSimpleSliceSampler():
                 # limite of the slice based on the unit cube boundaries
                 tleft,tright= unitcube_line_intersection(allu, v)
                 # Defining bound of the slice
-                Theta_min_worker,Theta_max_worker = np.fmax(tleft,-1.+np.zeros(self.popsize)),np.fmin(tright,1.+np.zeros(self.popsize))
+                Theta_min_worker,Theta_max_worker = self.slice_limit(tleft,tright)
                 Theta_min,Theta_max=Theta_min_worker.copy(),Theta_max_worker.copy()
                 # Index of the workers working concurrently
                 worker=np.arange(0,self.popsize,1,dtype=int)
