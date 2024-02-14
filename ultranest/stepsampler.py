@@ -790,7 +790,7 @@ class StepSampler(object):
         reference_distances = np.array([entry[j] for entry in self.logstat])
         plt.hist(np.log10(jump_distances / reference_distances + 1e-10), **kwargs)
         ylo, yhi = plt.ylim()
-        plt.vlines(self.mean_jump_distance, ylo, yhi)
+        plt.vlines(np.log10(self.mean_jump_distance), ylo, yhi)
         plt.ylim(ylo, yhi)
         plt.title(self.check_nsteps or self.adaptive_nsteps)
         plt.xlabel('log(relative step distance)')

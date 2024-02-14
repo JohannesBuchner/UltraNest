@@ -111,6 +111,7 @@ class ReactiveNestedCalibrator():
 
             self.results.append(result)
             self.nsteps.append(nsteps)
+            yield nsteps, result
             if len(self.results) > 2:
                 last_result = self.results[-2]
                 last_result2 = self.results[-3]
