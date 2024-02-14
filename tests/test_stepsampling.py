@@ -1,8 +1,8 @@
 import numpy as np
 from ultranest.mlfriends import ScalingLayer, AffineLayer, MLFriends
 from ultranest import ReactiveNestedSampler
-from ultranest.stepsampler import RegionMHSampler, CubeMHSampler, CubeSliceSampler, RegionSliceSampler, SpeedVariableRegionSliceSampler, RegionBallSliceSampler
-from ultranest.stepsampler import generate_region_random_direction, ellipsoid_bracket, crop_bracket_at_unit_cube
+from ultranest.stepsampler import RegionMHSampler, CubeMHSampler, CubeSliceSampler, RegionSliceSampler, SpeedVariableRegionSliceSampler, RegionBallSliceSampler, SpeedVariableGenerator
+from ultranest.stepsampler import generate_region_random_direction, generate_random_direction, ellipsoid_bracket, crop_bracket_at_unit_cube
 from ultranest.pathsampler import SamplingPathStepSampler
 from ultranest.stepsampler import select_random_livepoint, IslandPopulationRandomLivepointSelector
 from numpy.testing import assert_allclose
@@ -71,6 +71,30 @@ def test_stepsampler_regionslice(plot=False):
     b = (np.abs(r['samples'] - 0.3) < 0.1).all(axis=1)
     assert a.sum() > 1
     assert b.sum() > 1
+
+
+def test_SpeedVariableGenerator():
+    np.random.seed(4)
+    ndims = [3, 10]
+    matrices = [
+        np.array([[True, True, True], [False, True, True], [False, False, True]]),
+        [Ellipsis, slice(1,None), slice(2,4)]
+    ]
+    for matrix, ndim in zip(matrices, ndims):
+        direction_generator = SpeedVariableGenerator(matrix, generate_direction=generate_random_direction)
+        for i in range(10):
+            u0 = np.random.uniform(size=ndim)
+            for mask_varying in matrix:
+                mask = np.zeros(ndim, dtype=bool)
+                mask[mask_varying] = True
+                print("starting at u0", u0)
+                print("varying:", mask_varying, mask)
+                v = direction_generator(u0, None)
+                print("direction:", v)
+                assert_allclose(v[~mask], 0)
+                u1 = u0 + np.random.uniform() * v
+                print("new point:", u1)
+                assert_allclose(u1[~mask], u0[~mask])
 
 
 def test_stepsampler_variable_speed_SLOW(plot=False):
