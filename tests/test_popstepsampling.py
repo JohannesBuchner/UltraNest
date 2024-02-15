@@ -1,8 +1,25 @@
+import os
 import numpy as np
+
 from ultranest import ReactiveNestedSampler
+from ultranest.mlfriends import AffineLayer, ScalingLayer, MLFriends
 from ultranest.popstepsampler import PopulationSliceSampler, PopulationRandomWalkSampler
 from ultranest.popstepsampler import generate_cube_oriented_direction, generate_random_direction, generate_cube_oriented_direction_scaled
 from ultranest.popstepsampler import generate_region_oriented_direction, generate_region_random_direction
+
+def make_region(ndim, us=None, nlive=400):
+    if us is None:
+        us = np.random.uniform(size=(nlive, ndim))
+    
+    if ndim > 1:
+        transformLayer = AffineLayer()
+    else:
+        transformLayer = ScalingLayer()
+    transformLayer.optimize(us, us)
+    region = MLFriends(us, transformLayer)
+    region.maxradiussq, region.enlarge = region.compute_enlargement(nbootstraps=30)
+    region.create_ellipsoid(minvol=1.0)
+    return region
 
 def loglike_vectorized(z):
     a = np.array([-0.5 * sum([((xi - 0.7 + i*0.001)/0.1)**2 for i, xi in enumerate(x)]) for x in z])
@@ -36,6 +53,16 @@ def test_stepsampler_cubeslice(plot=False):
     assert a.sum() > 1
     assert b.sum() > 1
 
+    if os.path.exists('test-popstepsampler-plot.pdf'):
+        os.unlink('test-popstepsampler-plot.pdf')
+    sampler.stepsampler.plot('test-popstepsampler-plot.pdf')
+    assert os.path.exists('test-popstepsampler-plot.pdf')
+    if os.path.exists('test-popstepsampler-plot-jumps.pdf'):
+        os.unlink('test-popstepsampler-plot-jumps.pdf')
+    sampler.stepsampler.plot_jump_diagnostic_histogram('test-popstepsampler-plot-jumps.pdf')
+    assert os.path.exists('test-popstepsampler-plot-jumps.pdf')
+    sampler.stepsampler.print_diagnostic()
+
 def test_stepsampler_cubegausswalk(plot=False):
     np.random.seed(2)
     nsteps = np.random.randint(10, 50)
@@ -53,6 +80,16 @@ def test_stepsampler_cubegausswalk(plot=False):
     b = (np.abs(r['samples'] - 0.3) < 0.1).all(axis=1)
     assert a.sum() > 1
     assert b.sum() > 1
+
+    if os.path.exists('test-popstepsampler-plot.pdf'):
+        os.unlink('test-popstepsampler-plot.pdf')
+    sampler.stepsampler.plot('test-popstepsampler-plot.pdf')
+    assert os.path.exists('test-popstepsampler-plot.pdf')
+    if os.path.exists('test-popstepsampler-plot-jumps.pdf'):
+        os.unlink('test-popstepsampler-plot-jumps.pdf')
+    sampler.stepsampler.plot_jump_diagnostic_histogram('test-popstepsampler-plot-jumps.pdf')
+    assert os.path.exists('test-popstepsampler-plot-jumps.pdf')
+    sampler.stepsampler.print_diagnostic()
 
 from ultranest.mlfriends import AffineLayer, ScalingLayer, MLFriends, RobustEllipsoidRegion, SimpleRegion
 
@@ -79,6 +116,28 @@ def test_direction_proposals():
                 directions = prop(points, region, scale=scale)
                 assert directions.shape == points.shape, (directions.shape, points.shape)
                 #assert np.allclose(norms, scale), (norms, scale)
+
+
+def test_direction_proposal_values():
+    ndim = 10
+    np.random.seed(12)
+    region = make_region(ndim, nlive=400)
+    ui = region.u[::2]
+    
+    scale = np.random.uniform()
+    vcube = generate_cube_oriented_direction(ui, region, scale)
+    assert vcube.shape == ui.shape
+    assert vcube.sum(axis=1).shape == (len(ui),)
+    assert ((vcube != 0).sum(axis=1) == 1).all(), vcube
+    assert np.allclose(np.linalg.norm(vcube, axis=1), scale), (vcube, np.linalg.norm(vcube, axis=1), scale)
+    
+    vharm = generate_random_direction(ui, region, scale)
+    assert (vharm != 0).all(), vharm
+    vregionslice = generate_region_oriented_direction(ui, region, scale)
+    assert (vregionslice != 0).all(), vregionslice
+    vregionharm = generate_region_random_direction(ui, region, scale)
+    assert (vregionharm != 0).all(), vregionharm
+
 
 if __name__ == '__main__':
     test_stepsampler_cubegausswalk()
