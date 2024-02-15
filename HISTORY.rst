@@ -13,6 +13,7 @@ Release Notes
 ------------------
 
 * replace :py:class:`ultranest.mlfriends.AffineLayer` with new :py:class:`ultranest.mlfriends.MaxPrincipleGapAffineLayer`
+
   * This changes the learned covariance to be hopefully boost local features, make MLFriends identify smaller neighbourhoods, and thereby make sampling faster.
 
 3.6.5 (2023-07-18)
