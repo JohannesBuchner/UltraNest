@@ -48,7 +48,6 @@ def get_auxiliary_problem(loglike, transform, ctr, invcov, enlargement_factor, d
     enlargement_factor: float
         Factor by which the scale of the auxiliary distribution is enlarged
         in all dimensions.
-
         For Gaussian-like posteriors, sqrt(ndim) seems to work,
         Heavier tailed or non-elliptical distributions may need larger factors.
     df: float
