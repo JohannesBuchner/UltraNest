@@ -60,7 +60,7 @@ class ReactiveNestedCalibrator():
     The run() command will print the number of slice sampler steps
     that appear safe for the inference task.
 
-    The initial value for nsteps (e.g. in `SliceSampler(nsteps=...)`) 
+    The initial value for nsteps (e.g. in `SliceSampler(nsteps=...)`)
     is overwritten by this class.
     """
 
@@ -125,7 +125,7 @@ class ReactiveNestedCalibrator():
 
         while True:
             print("running with %d steps ..." % nsteps)
-            init_args = substitute_log_dir(self.init_args, nsteps)
+            init_args = _substitute_log_dir(self.init_args, nsteps)
             sampler = ReactiveNestedSampler(**init_args)
             sampler.stepsampler = self.stepsampler.__class__(
                 nsteps=nsteps, generate_direction=self.stepsampler.generate_direction,
