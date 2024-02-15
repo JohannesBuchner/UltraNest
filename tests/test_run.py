@@ -68,11 +68,8 @@ def test_failing_update_region_bootstrap():
     transformLayer = AffineLayer()
     transformLayer.optimize(u, u)
     region = MLFriends(u, transformLayer)
-    try:
+    with pytest.raises(np.linalg.LinAlgError):
         _update_region_bootstrap(region, nbootstraps=30)
-        assert False, 'expected a linalg error'
-    except np.linalg.LinAlgError:
-        pass
 
 
 def test_clustering_recursion(plot=False):
