@@ -2,7 +2,7 @@ import os
 import numpy as np
 
 from ultranest import ReactiveNestedSampler
-from ultranest.mlfriends import AffineLayer, ScalingLayer, MLFriends
+from ultranest.mlfriends import AffineLayer, ScalingLayer, MLFriends, RobustEllipsoidRegion, SimpleRegion
 from ultranest.popstepsampler import PopulationSliceSampler, PopulationRandomWalkSampler
 from ultranest.popstepsampler import generate_cube_oriented_direction, generate_random_direction, generate_cube_oriented_direction_scaled
 from ultranest.popstepsampler import generate_region_oriented_direction, generate_region_random_direction
@@ -91,8 +91,6 @@ def test_stepsampler_cubegausswalk(plot=False):
     assert os.path.exists('test-popstepsampler-plot-jumps.pdf')
     sampler.stepsampler.print_diagnostic()
 
-from ultranest.mlfriends import AffineLayer, ScalingLayer, MLFriends, RobustEllipsoidRegion, SimpleRegion
-
 def test_direction_proposals():
     proposals = [generate_cube_oriented_direction, generate_random_direction, 
         generate_region_oriented_direction, generate_region_random_direction]
@@ -130,13 +128,17 @@ def test_direction_proposal_values():
     assert vcube.sum(axis=1).shape == (len(ui),)
     assert ((vcube != 0).sum(axis=1) == 1).all(), vcube
     assert np.allclose(np.linalg.norm(vcube, axis=1), scale), (vcube, np.linalg.norm(vcube, axis=1), scale)
-    
+
     vharm = generate_random_direction(ui, region, scale)
     assert (vharm != 0).all(), vharm
     vregionslice = generate_region_oriented_direction(ui, region, scale)
     assert (vregionslice != 0).all(), vregionslice
     vregionharm = generate_region_random_direction(ui, region, scale)
     assert (vregionharm != 0).all(), vregionharm
+    vcubestd = generate_cube_oriented_direction_scaled(ui, region, scale)
+    assert vcubestd.shape == ui.shape
+    assert vcubestd.sum(axis=1).shape == (len(ui),)
+    assert ((vcubestd != 0).sum(axis=1) == 1).all(), vcubestd
 
 
 if __name__ == '__main__':
