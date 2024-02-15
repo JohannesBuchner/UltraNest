@@ -2,13 +2,22 @@
 Release Notes
 ==============
 
+4.1.0 (2023-02-15)
+------------------
+
+* add number of steps calibrator :py:class:`ultranest.calibrator.ReactiveNestedCalibrator`
+* add relative jump distance diagnostic for step samplers
+* make population step samplers more consistent with other step samplers
+
 4.0.0 (2023-02-15)
 ------------------
-* replace :py:class:`AffineLayer` with new :py:class:`MaxPrincipleGapAffineLayer`
+
+* replace :py:class:`ultranest.mlfriends.AffineLayer` with new :py:class:`ultranest.mlfriends.MaxPrincipleGapAffineLayer`
   * This changes the learned covariance to be hopefully boost local features, make MLFriends identify smaller neighbourhoods, and thereby make sampling faster.
 
 3.6.5 (2023-07-18)
 ------------------
+
 * documentation improvements
 * logging with MPI fixes `by adipol-ph <https://github.com/JohannesBuchner/UltraNest/issues/109>`_ and `by gregorydavidmartinez <https://github.com/JohannesBuchner/UltraNest/issues/110>`_
 * more flexible plotting `by facero <https://github.com/JohannesBuchner/UltraNest/issues/108>`_
