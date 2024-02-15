@@ -2,6 +2,11 @@
 Release Notes
 ==============
 
+3.6.5 (2023-07-18)
+------------------
+* documentation improvements
+* logging with MPI fixes `by adipol-ph <https://github.com/JohannesBuchner/UltraNest/issues/109>`_ and `by gregorydavidmartinez <https://github.com/JohannesBuchner/UltraNest/issues/110>`_
+* more flexible plotting `by facero <https://github.com/JohannesBuchner/UltraNest/issues/108>`_
 
 3.6.0 (2023-06-22)
 ------------------
