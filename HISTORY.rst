@@ -2,6 +2,11 @@
 Release Notes
 ==============
 
+4.0.0 (2023-02-15)
+------------------
+* replace :py:class:`AffineLayer` with new :py:class:`MaxPrincipleGapAffineLayer`
+  * This changes the learned covariance to be hopefully boost local features, make MLFriends identify smaller neighbourhoods, and thereby make sampling faster.
+
 3.6.5 (2023-07-18)
 ------------------
 * documentation improvements
