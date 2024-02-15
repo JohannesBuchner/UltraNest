@@ -150,9 +150,6 @@ class GenericPopulationSampler():
         if len(self.logstat) == 0:
             print("diagnostic unavailable, no recorded steps found")
             return
-        if 'jump-distance' not in self.logstat_labels or 'reference-distance' not in self.logstat_labels:
-            print("turn on check_nsteps in the step sampler for diagnostics")
-            return 
         frac_farenough = self.far_enough_fraction
         average_distance = self.mean_jump_distance
         if frac_farenough < 0.5:
