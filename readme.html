@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>UltraNest &mdash; UltraNest 3.6.3 documentation</title>
+  <title>UltraNest &mdash; UltraNest 4.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b76e3c8a" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
@@ -17,7 +17,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=64b17e08"></script>
+        <script src="_static/documentation_options.js?v=42d1b3bd"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -42,7 +42,7 @@
               <img src="_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.6.3
+                4.1.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -159,7 +159,7 @@ See the <a class="reference external" href="https://johannesbuchner.github.io/Ul
 <li><p>Can control the run programmatically and check status</p></li>
 <li><p>Reasonable defaults, but customizable</p></li>
 <li><p>Thoroughly tested with many unit and integration tests</p></li>
-<li><p>NEW: allows likelihood functions written in <a class="reference external" href="https://github.com/JohannesBuchner/UltraNest/tree/master/languages/python">Python</a>, <a class="reference external" href="https://github.com/JohannesBuchner/UltraNest/tree/master/languages/c">C</a>, <a class="reference external" href="https://github.com/JohannesBuchner/UltraNest/tree/master/languages/c%2B%2B">C++</a>, <a class="reference external" href="https://github.com/JohannesBuchner/UltraNest/tree/master/languages/fortran">Fortran</a>, <a class="reference external" href="https://github.com/JohannesBuchner/UltraNest/tree/master/languages/julia">Julia</a> and <a class="reference external" href="https://github.com/JohannesBuchner/UltraNest/tree/master/languages/r">R</a></p></li>
+<li><p>NEW: supports likelihood functions written in <a class="reference external" href="https://github.com/JohannesBuchner/UltraNest/tree/master/languages/python">Python</a>, <a class="reference external" href="https://github.com/JohannesBuchner/UltraNest/tree/master/languages/c">C</a>, <a class="reference external" href="https://github.com/JohannesBuchner/UltraNest/tree/master/languages/c%2B%2B">C++</a>, <a class="reference external" href="https://github.com/JohannesBuchner/UltraNest/tree/master/languages/fortran">Fortran</a>, <a class="reference external" href="https://github.com/JohannesBuchner/UltraNest/tree/master/languages/julia">Julia</a> and <a class="reference external" href="https://github.com/JohannesBuchner/UltraNest/tree/master/languages/r">R</a></p></li>
 </ul>
 </li>
 <li><p>Robust exploration easily handles:</p>
@@ -168,10 +168,29 @@ See the <a class="reference external" href="https://johannesbuchner.github.io/Ul
 <li><p>Multiple modes/solutions in the parameter space</p></li>
 <li><p>Robust, parameter-free MLFriends algorithm
 (metric learning RadFriends, Buchner+14,+19), with new improvements
-(region follows new live points, clustering improves metric iteratively).</p></li>
+(region follows new live points, clustering improves metric iteratively,
+NEW in v4.0: refined local metric).</p></li>
 <li><p>High-dimensional problems with hit-and-run sampling</p></li>
 <li><p>Wrapped/circular parameters, derived parameters</p></li>
 <li><p>Fast-slow parameters</p></li>
+</ul>
+</li>
+<li><p>Lightweight and fast</p>
+<ul>
+<li><p>some functions implemented in Cython</p></li>
+<li><p><a class="reference external" href="https://johannesbuchner.github.io/UltraNest/performance.html">vectorized likelihood function calls</a>,
+optimally supporting models with deep learning emulators</p></li>
+<li><p>Use multiple cores, fully parallelizable from laptops to computing clusters</p></li>
+<li><p><a class="reference external" href="https://johannesbuchner.github.io/UltraNest/performance.html">MPI support</a></p></li>
+</ul>
+</li>
+<li><p>Advanced visualisation and crash recovery:</p>
+<ul>
+<li><p>Live view of the exploration for Jupyter notebooks and terminals</p></li>
+<li><p>Publication-ready visualisations</p></li>
+<li><p>Corner plots, run and parameter exploration diagnostic plots</p></li>
+<li><p>Checkpointing and resuming, even with different number of live points</p></li>
+<li><p><a class="reference external" href="https://johannesbuchner.github.io/UltraNest/example-warmstart.html">Warm-start: resume from modified data / model</a></p></li>
 </ul>
 </li>
 <li><p>strategic nested sampling</p>
@@ -183,23 +202,6 @@ See the <a class="reference external" href="https://johannesbuchner.github.io/Ul
 <li><p>can target a desired number of effective samples</p></li>
 <li><p>or any combination of the above</p></li>
 <li><p>Robust ln(Z) uncertainties by bootstrapping live points.</p></li>
-</ul>
-</li>
-<li><p>Lightweight and fast</p>
-<ul>
-<li><p>some functions implemented in Cython</p></li>
-<li><p><a class="reference external" href="https://johannesbuchner.github.io/UltraNest/performance.html">vectorized likelihood function calls</a></p></li>
-<li><p>Use multiple cores, fully parallelizable from laptops to computing clusters</p></li>
-<li><p><a class="reference external" href="https://johannesbuchner.github.io/UltraNest/performance.html">MPI support</a></p></li>
-</ul>
-</li>
-<li><p>Advanced visualisation and crash recovery:</p>
-<ul>
-<li><p>Live view of the exploration for Jupyter notebooks and terminals</p></li>
-<li><p>Publication-ready visualisations</p></li>
-<li><p>Corner plots, run and parameter exploration diagnostic plots</p></li>
-<li><p>Checkpointing and resuming, even with different number of live points</p></li>
-<li><p>NEW: <a class="reference external" href="https://johannesbuchner.github.io/UltraNest/example-warmstart.html">Warm-start: resume from modified data / model</a></p></li>
 </ul>
 </li>
 </ul>
@@ -215,7 +217,9 @@ See the <a class="reference external" href="https://johannesbuchner.github.io/Ul
 <h3>Licence<a class="headerlink" href="#licence" title="Link to this heading"></a></h3>
 <p>How to <a class="reference external" href="https://johannesbuchner.github.io/UltraNest/issues.html#how-should-i-cite-ultranest">cite UltraNest</a>.</p>
 <p>GPLv3 (see LICENCE file). If you require another license, please contact me.</p>
-<p>The cute hedgehog icon was made by <a class="reference external" href="https://www.flaticon.com/authors/freepik">Freepik</a>.</p>
+<p>The cute hedgehog icon was made by <a class="reference external" href="https://www.flaticon.com/authors/freepik">Freepik</a>.
+It symbolises UltraNest’s approach of carefully walking up a likelihood,
+ready to defend against any encountered danger.</p>
 </section>
 </section>
 </section>
@@ -231,7 +235,7 @@ See the <a class="reference external" href="https://johannesbuchner.github.io/Ul
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2014-2022, Johannes Buchner.</p>
+    <p>&#169; Copyright 2014-2024, Johannes Buchner.</p>
   </div>
 
    

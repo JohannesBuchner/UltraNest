@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>API &mdash; UltraNest 3.6.3 documentation</title>
+  <title>API &mdash; UltraNest 4.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b76e3c8a" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
@@ -17,7 +17,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=64b17e08"></script>
+        <script src="_static/documentation_options.js?v=42d1b3bd"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -42,7 +42,7 @@
               <img src="_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.6.3
+                4.1.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -120,11 +120,12 @@ also available as <cite>ultranest.ReactiveNestedSampler</cite>.</p>
 <blockquote>
 <div><ul class="simple">
 <li><p><a class="reference internal" href="ultranest.html#module-ultranest.integrator" title="ultranest.integrator"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ultranest.integrator</span></code></a>: Nested sampling integrators</p></li>
-<li><p><a class="reference internal" href="ultranest.html#module-ultranest.hotstart" title="ultranest.hotstart"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ultranest.hotstart</span></code></a>: Warm start</p></li>
 <li><p><a class="reference internal" href="ultranest.html#module-ultranest.plot" title="ultranest.plot"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ultranest.plot</span></code></a>: Plotting utilities</p></li>
 <li><p><a class="reference internal" href="ultranest.html#module-ultranest.stepsampler" title="ultranest.stepsampler"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ultranest.stepsampler</span></code></a>: MCMC-like step sampling</p></li>
 <li><p><a class="reference internal" href="ultranest.html#module-ultranest.popstepsampler" title="ultranest.popstepsampler"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ultranest.popstepsampler</span></code></a>: Vectorized step samplers</p></li>
+<li><p><a class="reference internal" href="ultranest.html#module-ultranest.calibrator" title="ultranest.calibrator"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ultranest.calibrator</span></code></a>: Calibration of step sampler</p></li>
 <li><p><a class="reference internal" href="ultranest.html#module-ultranest.solvecompat" title="ultranest.solvecompat"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ultranest.solvecompat</span></code></a>: Drop-in replacement for pymultinest.solve.</p></li>
+<li><p><a class="reference internal" href="ultranest.html#module-ultranest.hotstart" title="ultranest.hotstart"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ultranest.hotstart</span></code></a>: Warm start</p></li>
 </ul>
 </div></blockquote>
 </section>
@@ -134,7 +135,7 @@ also available as <cite>ultranest.ReactiveNestedSampler</cite>.</p>
 <div><ul class="simple">
 <li><p><a class="reference internal" href="ultranest.html#module-ultranest.mlfriends" title="ultranest.mlfriends"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ultranest.mlfriends</span></code></a>: Region construction methods</p></li>
 <li><p><a class="reference internal" href="ultranest.html#module-ultranest.netiter" title="ultranest.netiter"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ultranest.netiter</span></code></a>: Graph-based nested sampling</p></li>
-<li><p><a class="reference internal" href="ultranest.html#module-ultranest.ordertest" title="ultranest.ordertest"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ultranest.ordertest</span></code></a>: Mann-Whitney-Wilcoxon U test for a uniform distribution of integers</p></li>
+<li><p><a class="reference internal" href="ultranest.html#module-ultranest.ordertest" title="ultranest.ordertest"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ultranest.ordertest</span></code></a>: U test for a uniform distribution of integers</p></li>
 <li><p><a class="reference internal" href="ultranest.html#module-ultranest.stepfuncs" title="ultranest.stepfuncs"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ultranest.stepfuncs</span></code></a>: Efficient helper functions for vectorized step-samplers</p></li>
 <li><p><a class="reference internal" href="ultranest.html#module-ultranest.store" title="ultranest.store"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ultranest.store</span></code></a>: Storage for nested sampling points</p></li>
 <li><p><a class="reference internal" href="ultranest.html#module-ultranest.viz" title="ultranest.viz"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ultranest.viz</span></code></a>: Live point visualisations</p></li>
@@ -159,6 +160,7 @@ also available as <cite>ultranest.ReactiveNestedSampler</cite>.</p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="ultranest.html">ultranest package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="ultranest.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ultranest.html#module-ultranest.calibrator">ultranest.calibrator module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ultranest.html#module-ultranest.dychmc">ultranest.dychmc module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ultranest.html#module-ultranest.dyhmc">ultranest.dyhmc module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ultranest.html#module-ultranest.flatnuts">ultranest.flatnuts module</a></li>
@@ -196,7 +198,7 @@ also available as <cite>ultranest.ReactiveNestedSampler</cite>.</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2014-2022, Johannes Buchner.</p>
+    <p>&#169; Copyright 2014-2024, Johannes Buchner.</p>
   </div>
 
    

@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ultranest.calibrator &mdash; UltraNest 4.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b76e3c8a" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../../_static/icon.ico"/>
+    <link rel="canonical" href="https://johannesbuchner.github.io/UltraNest/_modules/ultranest/calibrator.html" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=42d1b3bd"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            UltraNest
+              <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                4.1.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../readme.html">UltraNest</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../method.html">Method</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../using-ultranest.html">Basic usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../priors.html">Specifying priors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../performance.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../API.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../issues.html">Frequently Asked Questions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../history.html">Release Notes</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../example-sine-line.html">Time series fitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-sine-modelcomparison.html">Model comparison</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-sine-highd.html">Higher-dimensional fitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-intrinsic-distribution.html">Tutorial: intrinsic distribution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-line.html">Tutorial: fitting a line</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-outliers.html">Tutorial: distribution with outliers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-sine-bayesian-workflow.html">Bayesian workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-warmstart.html">Warm starting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../debugging.html">Debugging techniques</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">UltraNest</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">ultranest.calibrator</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ultranest.calibrator</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Calibration of step sampler</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">ultranest.integrator</span> <span class="kn">import</span> <span class="n">ReactiveNestedSampler</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+
+<span class="k">def</span> <span class="nf">_substitute_log_dir</span><span class="p">(</span><span class="n">init_args</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Append `nsteps` to `log_dir` argument, if set.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    -----------</span>
+<span class="sd">    init_args: dict</span>
+<span class="sd">        arguments passed :py:class:`ReactiveNestedSampler`,</span>
+<span class="sd">        may contain the key `&#39;log_dir&#39;`.</span>
+<span class="sd">    nsteps: int</span>
+<span class="sd">        number of steps</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    new_init_args: dict</span>
+<span class="sd">        same as init_args, but if `&#39;log_dir&#39;` was set,</span>
+<span class="sd">        it now has `&#39;-nsteps&#39;+str(nsteps)` appended.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="s1">&#39;log_dir&#39;</span> <span class="ow">in</span> <span class="n">init_args</span><span class="p">:</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">init_args</span><span class="p">)</span>
+        <span class="n">args</span><span class="p">[</span><span class="s1">&#39;log_dir&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">init_args</span><span class="p">[</span><span class="s1">&#39;log_dir&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;-nsteps</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">nsteps</span>
+        <span class="k">return</span> <span class="n">args</span>
+    <span class="k">return</span> <span class="n">init_args</span>
+
+
+<div class="viewcode-block" id="ReactiveNestedCalibrator">
+<a class="viewcode-back" href="../../ultranest.html#ultranest.calibrator.ReactiveNestedCalibrator">[docs]</a>
+<span class="k">class</span> <span class="nc">ReactiveNestedCalibrator</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calibrator for the number of steps in step samplers.</span>
+
+<span class="sd">    The number of steps in a step sampler needs to be chosen.</span>
+<span class="sd">    A calibration recommended (e.g. https://ui.adsabs.harvard.edu/abs/2019MNRAS.483.2044H)</span>
+<span class="sd">    is to run a sequence of nested sampling runs with increasing number of steps,</span>
+<span class="sd">    and stop when log(Z) converges.</span>
+
+<span class="sd">    This class automates this. See the :py:meth:`ReactiveNestedCalibrator.run`</span>
+<span class="sd">    for details.</span>
+
+<span class="sd">    Usage</span>
+<span class="sd">    -----</span>
+
+<span class="sd">    Usage is designed to be a drop-in replacement for ReactiveNestedSampler.</span>
+
+<span class="sd">    If your code was::</span>
+<span class="sd">        sampler = ReactiveNestedSampler(my_param_names, my_loglike, my_transform)</span>
+<span class="sd">        sampler.stepsampler = SliceSampler(nsteps=10, generate_direction=region_oriented_direction)</span>
+<span class="sd">        sampler.run(min_num_livepoints=400)</span>
+
+<span class="sd">    You would change it to::</span>
+<span class="sd">        sampler = ReactiveNestedCalibrator(my_param_names, my_loglike, my_transform)</span>
+<span class="sd">        sampler.stepsampler = SliceSampler(nsteps=10, generate_direction=region_oriented_direction)</span>
+<span class="sd">        sampler.run(min_num_livepoints=400)</span>
+
+<span class="sd">    The run() command will print the number of slice sampler steps</span>
+<span class="sd">    that appear safe for the inference task.</span>
+
+<span class="sd">    The initial value for nsteps (e.g. in `SliceSampler(nsteps=...)`)</span>
+<span class="sd">    is overwritten by this class.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">param_names</span><span class="p">,</span>
+                 <span class="n">loglike</span><span class="p">,</span>
+                 <span class="n">transform</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">kwargs</span>
+                 <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialise nested sampler calibrator.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        -----------</span>
+<span class="sd">        param_names: list of str</span>
+<span class="sd">            Names of the parameters.</span>
+<span class="sd">            Length gives dimensionality of the sampling problem.</span>
+<span class="sd">        loglike: function</span>
+<span class="sd">            log-likelihood function.</span>
+<span class="sd">        transform: function</span>
+<span class="sd">            parameter transform from unit cube to physical parameters.</span>
+<span class="sd">        kwargs: dict</span>
+<span class="sd">            further arguments passed to ReactiveNestedSampler</span>
+
+<span class="sd">        if `log_dir` is set, then the suffix `-nsteps%d` is added for each</span>
+<span class="sd">        run where %d is replaced with the number of steps (2, 4, 8 etc).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_args</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">param_names</span><span class="o">=</span><span class="n">param_names</span><span class="p">,</span> <span class="n">loglike</span><span class="o">=</span><span class="n">loglike</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">transform</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stepsampler</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="ReactiveNestedCalibrator.run">
+<a class="viewcode-back" href="../../ultranest.html#ultranest.calibrator.ReactiveNestedCalibrator.run">[docs]</a>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run a sequence of ReactiveNestedSampler runs until convergence.</span>
+
+<span class="sd">        The first run is made with the number of steps set to the number of parameters.</span>
+<span class="sd">        Each subsequent run doubles the number of steps.</span>
+<span class="sd">        Runs are made until convergence is reached.</span>
+<span class="sd">        Then this generator stops yielding results.</span>
+
+<span class="sd">        Convergence is defined as three consecutive runs which</span>
+<span class="sd">        1) are not ordered in their log(Z) results,</span>
+<span class="sd">        and 2) the consecutive log(Z) error bars must overlap.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        -----------</span>
+<span class="sd">        **kwargs: dict</span>
+<span class="sd">            All arguments are passed to :py:meth:`ReactiveNestedSampler.run`.</span>
+
+<span class="sd">        Yields</span>
+<span class="sd">        -------</span>
+<span class="sd">        nsteps: int</span>
+<span class="sd">            number of steps for the current run</span>
+<span class="sd">        result: dict</span>
+<span class="sd">            return value of :py:meth:`ReactiveNestedSampler.run` for the current run</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">stepsampler</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">run_args</span> <span class="o">=</span> <span class="n">kwargs</span>
+
+        <span class="c1"># start with nsteps=d</span>
+        <span class="n">nsteps</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">init_args</span><span class="p">[</span><span class="s1">&#39;param_names&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">relsteps</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;running with </span><span class="si">%d</span><span class="s2"> steps ...&quot;</span> <span class="o">%</span> <span class="n">nsteps</span><span class="p">)</span>
+            <span class="n">init_args</span> <span class="o">=</span> <span class="n">_substitute_log_dir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">init_args</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">)</span>
+            <span class="n">sampler</span> <span class="o">=</span> <span class="n">ReactiveNestedSampler</span><span class="p">(</span><span class="o">**</span><span class="n">init_args</span><span class="p">)</span>
+            <span class="n">sampler</span><span class="o">.</span><span class="n">stepsampler</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span>
+                <span class="n">nsteps</span><span class="o">=</span><span class="n">nsteps</span><span class="p">,</span> <span class="n">generate_direction</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="n">generate_direction</span><span class="p">,</span>
+                <span class="n">check_nsteps</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="n">check_nsteps</span><span class="p">,</span>
+                <span class="n">adaptive_nsteps</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="n">adaptive_nsteps</span><span class="p">,</span>
+                <span class="n">log</span><span class="o">=</span><span class="nb">open</span><span class="p">(</span><span class="n">init_args</span><span class="p">[</span><span class="s1">&#39;log_dir&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;/stepsampler.log&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="s1">&#39;log_dir&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_args</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span> <span class="o">=</span> <span class="n">sampler</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">sampler</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">run_args</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Z=</span><span class="si">%(logz).2f</span><span class="s2"> +- </span><span class="si">%(logzerr).2f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">result</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">log_to_disk</span><span class="p">:</span>
+                <span class="n">sampler</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">logs</span><span class="p">[</span><span class="s1">&#39;plots&#39;</span><span class="p">],</span> <span class="s1">&#39;stepsampler.pdf&#39;</span><span class="p">))</span>
+                <span class="n">sampler</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="n">plot_jump_diagnostic_histogram</span><span class="p">(</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">logs</span><span class="p">[</span><span class="s1">&#39;plots&#39;</span><span class="p">],</span> <span class="s1">&#39;stepsampler-jumphist.pdf&#39;</span><span class="p">),</span>
+                    <span class="n">histtype</span><span class="o">=</span><span class="s1">&#39;step&#39;</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">)</span>
+            <span class="n">sampler</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="n">print_diagnostic</span><span class="p">()</span>
+            <span class="k">if</span> <span class="s1">&#39;jump-distance&#39;</span> <span class="ow">in</span> <span class="n">sampler</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="n">logstat_labels</span> <span class="ow">and</span> <span class="s1">&#39;reference-distance&#39;</span> <span class="ow">in</span> <span class="n">sampler</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="n">logstat_labels</span><span class="p">:</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="n">sampler</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="n">logstat_labels</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;jump-distance&#39;</span><span class="p">)</span>
+                <span class="n">j</span> <span class="o">=</span> <span class="n">sampler</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="n">logstat_labels</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;reference-distance&#39;</span><span class="p">)</span>
+                <span class="n">jump_distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">entry</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">sampler</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="n">logstat</span><span class="p">])</span>
+                <span class="n">reference_distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">entry</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">sampler</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="n">logstat</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">relsteps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">jump_distances</span> <span class="o">/</span> <span class="n">reference_distances</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nsteps</span><span class="p">)</span>
+            <span class="k">yield</span> <span class="n">nsteps</span><span class="p">,</span> <span class="n">result</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">last_result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+                <span class="n">last_result2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span>
+                <span class="c1"># check if they agree within the error bars</span>
+                <span class="n">last_significant</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;logz&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">last_result</span><span class="p">[</span><span class="s1">&#39;logz&#39;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;logzerr&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">last_result</span><span class="p">[</span><span class="s1">&#39;logzerr&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span>
+                <span class="n">last2_significant</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">last_result2</span><span class="p">[</span><span class="s1">&#39;logz&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">last_result</span><span class="p">[</span><span class="s1">&#39;logz&#39;</span><span class="p">])</span> <span class="o">&gt;</span> <span class="p">(</span><span class="n">last_result2</span><span class="p">[</span><span class="s1">&#39;logzerr&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">last_result</span><span class="p">[</span><span class="s1">&#39;logzerr&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span>
+                <span class="c1"># check if there is order</span>
+                <span class="n">monotonic_increase</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;logz&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">last_result</span><span class="p">[</span><span class="s1">&#39;logz&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">last_result2</span><span class="p">[</span><span class="s1">&#39;logz&#39;</span><span class="p">]</span>
+                <span class="n">monotonic_decrease</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;logz&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">last_result</span><span class="p">[</span><span class="s1">&#39;logz&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">last_result2</span><span class="p">[</span><span class="s1">&#39;logz&#39;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">last_significant</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;not converged: last two Z were significantly different&quot;</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">last2_significant</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;not yet converged: previous two Z were significantly different&quot;</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">monotonic_increase</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;not converged: monotonic increase in the last three Z results&quot;</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">monotonic_decrease</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;not converged: monotonic decrease in the last three Z results&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;converged! nsteps=</span><span class="si">%d</span><span class="s2"> appears safe&quot;</span> <span class="o">%</span> <span class="n">nsteps</span><span class="p">)</span>
+                    <span class="k">break</span>
+
+            <span class="n">nsteps</span> <span class="o">*=</span> <span class="mi">2</span></div>
+
+
+<div class="viewcode-block" id="ReactiveNestedCalibrator.plot">
+<a class="viewcode-back" href="../../ultranest.html#ultranest.calibrator.ReactiveNestedCalibrator.plot">[docs]</a>
+    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Visualise the convergence diagnostics.</span>
+
+<span class="sd">        Stores into `&lt;log_dir&gt;/plots/` folder:</span>
+<span class="sd">        * stepsampler.pdf: diagnostic of stepsampler, see :py:meth:`StepSampler.plot`</span>
+<span class="sd">        * nsteps-calibration-jumps.pdf: distribution of relative jump distance</span>
+<span class="sd">        * nsteps-calibration.pdf: evolution of ln(Z) with nsteps</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">stepsampler</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">logs</span><span class="p">[</span><span class="s1">&#39;plots&#39;</span><span class="p">],</span> <span class="s1">&#39;stepsampler.pdf&#39;</span><span class="p">))</span>
+
+        <span class="c1"># plot U-test convergence run length (at 4 sigma) (or niter) vs nsteps</span>
+        <span class="c1"># plot step &gt; reference fraction vs nsteps</span>
+        <span class="n">calibration_results</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="s2">&quot;jump-distance&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;jump distance diagnostic:&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">nsteps</span><span class="p">,</span> <span class="n">relsteps</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">relsteps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">):</span>
+            <span class="n">calibration_results</span><span class="o">.</span><span class="n">append</span><span class="p">([</span>
+                <span class="n">nsteps</span><span class="p">,</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;logz&#39;</span><span class="p">],</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;logzerr&#39;</span><span class="p">],</span>
+                <span class="nb">min</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;niter&#39;</span><span class="p">],</span> <span class="n">result</span><span class="p">[</span><span class="s1">&#39;insertion_order_MWW_test&#39;</span><span class="p">][</span><span class="s1">&#39;independent_iterations&#39;</span><span class="p">]),</span>
+                <span class="n">result</span><span class="p">[</span><span class="s1">&#39;insertion_order_MWW_test&#39;</span><span class="p">][</span><span class="s1">&#39;converged&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">relsteps</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)])</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">relsteps</span> <span class="o">+</span> <span class="mf">1e-10</span><span class="p">),</span> <span class="n">histtype</span><span class="o">=</span><span class="s1">&#39;step&#39;</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">nsteps</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;  </span><span class="si">%-4d</span><span class="s1">: </span><span class="si">%.2f%%</span><span class="s1">  avg:</span><span class="si">%.2f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">nsteps</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">relsteps</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mf">100.0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">relsteps</span><span class="p">)))))</span>
+        <span class="k">if</span> <span class="s1">&#39;log_dir&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_args</span><span class="p">:</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">init_args</span><span class="p">[</span><span class="s1">&#39;log_dir&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;calibration.csv&#39;</span><span class="p">,</span>
+                <span class="n">calibration_results</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="n">comments</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="n">header</span><span class="o">=</span><span class="s1">&#39;nsteps,logz,logzerr,maxUrun,Uconverged,stepfrac&#39;</span><span class="p">,</span>
+                <span class="n">fmt</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%d</span><span class="s1">,</span><span class="si">%.3f</span><span class="s1">,</span><span class="si">%.3f</span><span class="s1">,</span><span class="si">%d</span><span class="s1">,</span><span class="si">%d</span><span class="s1">,</span><span class="si">%.5f</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;$log_</span><span class="si">{10}</span><span class="s1">$(relative step distance)&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Frequency&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s1">&#39;nsteps&#39;</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">log_to_disk</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">logs</span><span class="p">[</span><span class="s1">&#39;plots&#39;</span><span class="p">],</span> <span class="s1">&#39;nsteps-calibration-jumps.pdf&#39;</span><span class="p">),</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="s2">&quot;logz&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span>
+            <span class="n">x</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">,</span>
+            <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;logz&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">],</span>
+            <span class="n">yerr</span><span class="o">=</span><span class="p">[</span><span class="n">result</span><span class="p">[</span><span class="s1">&#39;logzerr&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">],</span>
+        <span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Step sampler calibration&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Number of steps&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;ln(Z)&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">log_to_disk</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">logs</span><span class="p">[</span><span class="s1">&#39;plots&#39;</span><span class="p">],</span> <span class="s1">&#39;nsteps-calibration.pdf&#39;</span><span class="p">),</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Making nsteps calibration plot ... done&#39;</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2014-2024, Johannes Buchner.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

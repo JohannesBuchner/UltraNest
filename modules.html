@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>API &mdash; UltraNest 3.6.3 documentation</title>
+  <title>API &mdash; UltraNest 4.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b76e3c8a" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
@@ -17,7 +17,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=64b17e08"></script>
+        <script src="_static/documentation_options.js?v=42d1b3bd"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -40,7 +40,7 @@
               <img src="_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.6.3
+                4.1.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -105,6 +105,14 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="ultranest.html">ultranest package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="ultranest.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ultranest.html#module-ultranest.calibrator">ultranest.calibrator module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ultranest.html#ultranest.calibrator.ReactiveNestedCalibrator"><code class="docutils literal notranslate"><span class="pre">ReactiveNestedCalibrator</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ultranest.html#ultranest.calibrator.ReactiveNestedCalibrator.run"><code class="docutils literal notranslate"><span class="pre">ReactiveNestedCalibrator.run()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ultranest.html#ultranest.calibrator.ReactiveNestedCalibrator.plot"><code class="docutils literal notranslate"><span class="pre">ReactiveNestedCalibrator.plot()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="ultranest.html#module-ultranest.dychmc">ultranest.dychmc module</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="ultranest.html#ultranest.dychmc.stop_criterion"><code class="docutils literal notranslate"><span class="pre">stop_criterion()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ultranest.html#ultranest.dychmc.step_or_reflect"><code class="docutils literal notranslate"><span class="pre">step_or_reflect()</span></code></a></li>
@@ -260,6 +268,10 @@
 <li class="toctree-l4"><a class="reference internal" href="ultranest.html#ultranest.mlfriends.MLFriends.set_transformLayer"><code class="docutils literal notranslate"><span class="pre">MLFriends.set_transformLayer()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="ultranest.html#ultranest.mlfriends.MaxPrincipleGapAffineLayer"><code class="docutils literal notranslate"><span class="pre">MaxPrincipleGapAffineLayer</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ultranest.html#ultranest.mlfriends.MaxPrincipleGapAffineLayer.create_new"><code class="docutils literal notranslate"><span class="pre">MaxPrincipleGapAffineLayer.create_new()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="ultranest.html#ultranest.mlfriends.RobustEllipsoidRegion"><code class="docutils literal notranslate"><span class="pre">RobustEllipsoidRegion</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="ultranest.html#ultranest.mlfriends.RobustEllipsoidRegion.compute_enlargement"><code class="docutils literal notranslate"><span class="pre">RobustEllipsoidRegion.compute_enlargement()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ultranest.html#ultranest.mlfriends.RobustEllipsoidRegion.estimate_volume"><code class="docutils literal notranslate"><span class="pre">RobustEllipsoidRegion.estimate_volume()</span></code></a></li>
@@ -343,7 +355,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="ultranest.html#module-ultranest.ordertest">ultranest.ordertest module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="ultranest.html#mann-whitney-wilcoxon-u-test-for-a-uniform-distribution-of-integers">Mann-Whitney-Wilcoxon U test for a uniform distribution of integers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ultranest.html#u-test-for-a-uniform-distribution-of-integers">U test for a uniform distribution of integers</a></li>
 <li class="toctree-l3"><a class="reference internal" href="ultranest.html#ultranest.ordertest.infinite_U_zscore"><code class="docutils literal notranslate"><span class="pre">infinite_U_zscore()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ultranest.html#ultranest.ordertest.UniformOrderAccumulator"><code class="docutils literal notranslate"><span class="pre">UniformOrderAccumulator</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="ultranest.html#ultranest.ordertest.UniformOrderAccumulator.reset"><code class="docutils literal notranslate"><span class="pre">UniformOrderAccumulator.reset()</span></code></a></li>
@@ -464,6 +476,8 @@
 <li class="toctree-l3"><a class="reference internal" href="ultranest.html#ultranest.stepfuncs.evolve_update"><code class="docutils literal notranslate"><span class="pre">evolve_update()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ultranest.html#ultranest.stepfuncs.generate_cube_oriented_direction"><code class="docutils literal notranslate"><span class="pre">generate_cube_oriented_direction()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ultranest.html#ultranest.stepfuncs.generate_cube_oriented_direction_scaled"><code class="docutils literal notranslate"><span class="pre">generate_cube_oriented_direction_scaled()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ultranest.html#ultranest.stepfuncs.generate_differential_direction"><code class="docutils literal notranslate"><span class="pre">generate_differential_direction()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ultranest.html#ultranest.stepfuncs.generate_mixture_random_direction"><code class="docutils literal notranslate"><span class="pre">generate_mixture_random_direction()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ultranest.html#ultranest.stepfuncs.generate_random_direction"><code class="docutils literal notranslate"><span class="pre">generate_random_direction()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ultranest.html#ultranest.stepfuncs.generate_region_oriented_direction"><code class="docutils literal notranslate"><span class="pre">generate_region_oriented_direction()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ultranest.html#ultranest.stepfuncs.generate_region_random_direction"><code class="docutils literal notranslate"><span class="pre">generate_region_random_direction()</span></code></a></li>
@@ -493,6 +507,11 @@
 <li class="toctree-l3"><a class="reference internal" href="ultranest.html#ultranest.stepsampler.IslandPopulationRandomLivepointSelector"><code class="docutils literal notranslate"><span class="pre">IslandPopulationRandomLivepointSelector</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ultranest.html#ultranest.stepsampler.StepSampler"><code class="docutils literal notranslate"><span class="pre">StepSampler</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="ultranest.html#ultranest.stepsampler.StepSampler.plot"><code class="docutils literal notranslate"><span class="pre">StepSampler.plot()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ultranest.html#ultranest.stepsampler.StepSampler.mean_jump_distance"><code class="docutils literal notranslate"><span class="pre">StepSampler.mean_jump_distance</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ultranest.html#ultranest.stepsampler.StepSampler.far_enough_fraction"><code class="docutils literal notranslate"><span class="pre">StepSampler.far_enough_fraction</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ultranest.html#ultranest.stepsampler.StepSampler.get_info_dict"><code class="docutils literal notranslate"><span class="pre">StepSampler.get_info_dict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ultranest.html#ultranest.stepsampler.StepSampler.print_diagnostic"><code class="docutils literal notranslate"><span class="pre">StepSampler.print_diagnostic()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="ultranest.html#ultranest.stepsampler.StepSampler.plot_jump_diagnostic_histogram"><code class="docutils literal notranslate"><span class="pre">StepSampler.plot_jump_diagnostic_histogram()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ultranest.html#ultranest.stepsampler.StepSampler.move"><code class="docutils literal notranslate"><span class="pre">StepSampler.move()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ultranest.html#ultranest.stepsampler.StepSampler.adjust_outside_region"><code class="docutils literal notranslate"><span class="pre">StepSampler.adjust_outside_region()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="ultranest.html#ultranest.stepsampler.StepSampler.adjust_accept"><code class="docutils literal notranslate"><span class="pre">StepSampler.adjust_accept()</span></code></a></li>
@@ -519,6 +538,7 @@
 <li class="toctree-l3"><a class="reference internal" href="ultranest.html#ultranest.stepsampler.RegionSliceSampler"><code class="docutils literal notranslate"><span class="pre">RegionSliceSampler()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ultranest.html#ultranest.stepsampler.BallSliceSampler"><code class="docutils literal notranslate"><span class="pre">BallSliceSampler()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ultranest.html#ultranest.stepsampler.RegionBallSliceSampler"><code class="docutils literal notranslate"><span class="pre">RegionBallSliceSampler()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ultranest.html#ultranest.stepsampler.SequentialDirectionGenerator"><code class="docutils literal notranslate"><span class="pre">SequentialDirectionGenerator</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ultranest.html#ultranest.stepsampler.SequentialRegionDirectionGenerator"><code class="docutils literal notranslate"><span class="pre">SequentialRegionDirectionGenerator</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ultranest.html#ultranest.stepsampler.RegionSequentialSliceSampler"><code class="docutils literal notranslate"><span class="pre">RegionSequentialSliceSampler()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="ultranest.html#ultranest.stepsampler.OrthogonalDirectionGenerator"><code class="docutils literal notranslate"><span class="pre">OrthogonalDirectionGenerator</span></code></a></li>
@@ -599,7 +619,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2014-2022, Johannes Buchner.</p>
+    <p>&#169; Copyright 2014-2024, Johannes Buchner.</p>
   </div>
 
    

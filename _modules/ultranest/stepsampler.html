@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest.stepsampler &mdash; UltraNest 3.6.3 documentation</title>
+  <title>ultranest.stepsampler &mdash; UltraNest 4.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b76e3c8a" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=64b17e08"></script>
+        <script src="../../_static/documentation_options.js?v=42d1b3bd"></script>
         <script src="../../_static/doctools.js?v=888ff710"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -39,7 +39,7 @@
               <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                3.6.3
+                4.1.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -279,9 +279,10 @@
 
         <span class="n">v</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="n">i2</span><span class="p">]</span>
 
+        <span class="c1"># choose which parameters to be off</span>
         <span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">ndim</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.1</span>
-        <span class="c1"># at least one must be on</span>
-        <span class="n">mask</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">ndim</span><span class="p">)]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="c1"># at least one must be free to vary</span>
+        <span class="n">mask</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">ndim</span><span class="p">)]</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">v</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">v</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
             <span class="c1"># repeat if live points are identical</span>
@@ -511,6 +512,29 @@
 <div class="viewcode-block" id="adapt_proposal_move_distances">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.adapt_proposal_move_distances">[docs]</a>
 <span class="k">def</span> <span class="nf">adapt_proposal_move_distances</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">,</span> <span class="n">ndim</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compares random walk travel distance to MLFriends radius.</span>
+
+<span class="sd">    Compares in whitened space (t-space), the L2 norm between final</span>
+<span class="sd">    point and starting point to the MLFriends bootstrapped radius.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    region: MLFriends</span>
+<span class="sd">        built region</span>
+<span class="sd">    history: list</span>
+<span class="sd">        list of tuples, containing visited point and likelihood.</span>
+<span class="sd">    mean_pair_distance: float</span>
+<span class="sd">        not used</span>
+<span class="sd">    ndim: int</span>
+<span class="sd">        dimensionality</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    far_enough: bool</span>
+<span class="sd">        whether the distance is larger than the radius</span>
+<span class="sd">    info: tuple</span>
+<span class="sd">        distance and radius (both float)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># compute distance from start to end</span>
     <span class="n">ustart</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">history</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">ufinal</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">history</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
@@ -518,13 +542,37 @@
     <span class="n">d2</span> <span class="o">=</span> <span class="p">((</span><span class="n">tstart</span> <span class="o">-</span> <span class="n">tfinal</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
     <span class="n">far_enough</span> <span class="o">=</span> <span class="n">d2</span> <span class="o">&gt;</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span>
 
-    <span class="k">return</span> <span class="n">far_enough</span><span class="p">,</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span><span class="p">]</span></div>
+    <span class="k">return</span> <span class="n">far_enough</span><span class="p">,</span> <span class="p">[</span><span class="n">d2</span><span class="o">**</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span><span class="p">]</span></div>
 
 
 
 <div class="viewcode-block" id="adapt_proposal_move_distances_midway">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.adapt_proposal_move_distances_midway">[docs]</a>
 <span class="k">def</span> <span class="nf">adapt_proposal_move_distances_midway</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">,</span> <span class="n">ndim</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compares first half of the travel distance to MLFriends radius.</span>
+
+<span class="sd">    Compares in whitened space (t-space), the L2 norm between the</span>
+<span class="sd">    middle point of the walk and the starting point,</span>
+<span class="sd">    to the MLFriends bootstrapped radius.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    region: MLFriends</span>
+<span class="sd">        built region</span>
+<span class="sd">    history: list</span>
+<span class="sd">        list of tuples, containing visited point and likelihood.</span>
+<span class="sd">    mean_pair_distance: float</span>
+<span class="sd">        not used</span>
+<span class="sd">    ndim: int</span>
+<span class="sd">        dimensionality</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    far_enough: bool</span>
+<span class="sd">        whether the distance is larger than the radius</span>
+<span class="sd">    info: tuple</span>
+<span class="sd">        distance and radius (both float)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># compute distance from start to end</span>
     <span class="n">ustart</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">history</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">middle</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">history</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
@@ -533,7 +581,7 @@
     <span class="n">d2</span> <span class="o">=</span> <span class="p">((</span><span class="n">tstart</span> <span class="o">-</span> <span class="n">tfinal</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
     <span class="n">far_enough</span> <span class="o">=</span> <span class="n">d2</span> <span class="o">&gt;</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span>
 
-    <span class="k">return</span> <span class="n">far_enough</span><span class="p">,</span> <span class="p">[</span><span class="n">d2</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span><span class="p">]</span></div>
+    <span class="k">return</span> <span class="n">far_enough</span><span class="p">,</span> <span class="p">[</span><span class="n">d2</span><span class="o">**</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span><span class="p">]</span></div>
 
 
 
@@ -567,27 +615,27 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set up multiple isolated islands.</span>
 
 <span class="sd">        To replace dead points, chains are only started from the same</span>
-<span class="sd">        island as the dead point. Island refers to chunks of </span>
+<span class="sd">        island as the dead point. Island refers to chunks of</span>
 <span class="sd">        live point indices (0,1,2,3 as stored, not sorted).</span>
 <span class="sd">        Each chunk has size ´island_size´.</span>
 
 <span class="sd">        If ´island_size´ is large, for example, the total number of live points,</span>
 <span class="sd">        then clumping can occur more easily. This is the observed behaviour</span>
-<span class="sd">        that a limited random walk is run from one live point, giving </span>
-<span class="sd">        two similar points, then the next dead point replacement is </span>
+<span class="sd">        that a limited random walk is run from one live point, giving</span>
+<span class="sd">        two similar points, then the next dead point replacement is</span>
 <span class="sd">        likely run again from these, giving more and more similar live points.</span>
 <span class="sd">        This gives a run-away process leading to clumps of similar,</span>
 <span class="sd">        highly correlated points.</span>
-<span class="sd">        </span>
+
 <span class="sd">        If ´island_size´ is small, for example, 1, then each dead point</span>
 <span class="sd">        is replaced by a chain started from it. This is a problem because</span>
 <span class="sd">        modes can never die out. Nested sampling can then not complete.</span>
 
-<span class="sd">        In a multi-modal run, within a given number of live points, </span>
+<span class="sd">        In a multi-modal run, within a given number of live points,</span>
 <span class="sd">        the number of live points per mode is proportional to the mode&#39;s</span>
 <span class="sd">        prior volume, but can fluctuate. If the number of live points</span>
 <span class="sd">        is small, a fluctuation can lead to mode die-out, which cannot</span>
-<span class="sd">        be reversed. Therefore, the number of island members should be </span>
+<span class="sd">        be reversed. Therefore, the number of island members should be</span>
 <span class="sd">        large enough to represent each mode.</span>
 
 <span class="sd">        Parameters</span>
@@ -625,7 +673,7 @@
         <span class="n">mask_deadpoints</span> <span class="o">=</span> <span class="n">Lmin</span> <span class="o">==</span> <span class="n">Ls</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">mask_deadpoints</span><span class="o">.</span><span class="n">any</span><span class="p">()</span> <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exchange_probability</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">()</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">exchange_probability</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">Ls</span><span class="p">))</span>
-        
+
         <span class="c1"># find the dead point we should replace</span>
         <span class="n">j</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">mask_deadpoints</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
         <span class="c1"># start in the same island</span>
@@ -647,7 +695,7 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">,</span> <span class="n">generate_direction</span><span class="p">,</span>
-        <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">adaptive_nsteps</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">max_nsteps</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+        <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">check_nsteps</span><span class="o">=</span><span class="s1">&#39;move-distance&#39;</span><span class="p">,</span> <span class="n">adaptive_nsteps</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">max_nsteps</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
         <span class="n">region_filter</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">starting_point_selector</span><span class="o">=</span><span class="n">select_random_livepoint</span><span class="p">,</span>
     <span class="p">):</span>
@@ -661,36 +709,47 @@
 <span class="sd">        nsteps: int</span>
 <span class="sd">            number of accepted steps until the sample is considered independent.</span>
 
-<span class="sd">            To find the right value, run nested sampling several time,</span>
-<span class="sd">            always doubling nsteps, until Z is stable.</span>
+<span class="sd">            To find the right value, see :py:class:`ultranest.calibrator.ReactiveNestedCalibrator`</span>
 
 <span class="sd">        generate_direction: function</span>
 <span class="sd">            direction proposal function.</span>
 
 <span class="sd">            Available are:</span>
 
-<span class="sd">            * :py:func:`generate_cube_oriented_direction` (slice sampling)</span>
-<span class="sd">            * :py:func:`generate_region_oriented_direction` (slice sampling on the whitened parameter space)</span>
-<span class="sd">            * :py:class:`SequentialDirectionGenerator` (sequential slice sampling on the whitened parameter space)</span>
-<span class="sd">            * :py:func:`generate_random_direction` (hit-and-run sampling)</span>
-<span class="sd">            * :py:func:`generate_region_random_direction` (hit-and-run sampling on the whitened parameter space)</span>
-<span class="sd">            * :py:func:`generate_cube_oriented_differential_direction` (slice sampling with better proposal scale)</span>
-<span class="sd">            * :py:func:`generate_differential_direction` (differential evolution slice proposal)</span>
+<span class="sd">            * :py:func:`generate_cube_oriented_direction` (slice sampling, picking one random parameter to vary)</span>
+<span class="sd">            * :py:func:`generate_random_direction` (hit-and-run sampling, picking a random direction varying all parameters)</span>
+<span class="sd">            * :py:func:`generate_differential_direction` (differential evolution direction proposal)</span>
+<span class="sd">            * :py:func:`generate_region_oriented_direction` (slice sampling, but in the whitened parameter space)</span>
+<span class="sd">            * :py:func:`generate_region_random_direction` (hit-and-run sampling, but in the whitened parameter space)</span>
+<span class="sd">            * :py:class:`SequentialDirectionGenerator` (sequential slice sampling, i.e., iterate deterministically through the parameters)</span>
+<span class="sd">            * :py:class:`SequentialRegionDirectionGenerator` (sequential slice sampling in the whitened parameter space, i.e., iterate deterministically through the principle axes)</span>
+<span class="sd">            * :py:func:`generate_cube_oriented_differential_direction` (like generate_differential_direction, but along only one randomly chosen parameter)</span>
 <span class="sd">            * :py:func:`generate_partial_differential_direction` (differential evolution slice proposal on only 10% of the parameters)</span>
-<span class="sd">            * :py:func:`generate_mixture_random_direction` (generate_differential_direction and generate_cube_oriented_differential_direction)</span>
+<span class="sd">            * :py:func:`generate_mixture_random_direction` (combined proposal)</span>
 
 <span class="sd">            Additionally, :py:class:`OrthogonalDirectionGenerator`</span>
-<span class="sd">            can be applied to a generate_direction.</span>
+<span class="sd">            can be applied to any generate_direction function.</span>
 
 <span class="sd">            When in doubt, try :py:func:`generate_mixture_random_direction`.</span>
 <span class="sd">            It combines efficient moves along the live point distribution,</span>
 <span class="sd">            with robustness against collapse to a subspace.</span>
 <span class="sd">            :py:func:`generate_cube_oriented_direction` works well too.</span>
 
-<span class="sd">        adaptive_nsteps: False, &#39;proposal-distance&#39;, &#39;move-distance&#39;</span>
-<span class="sd">            Strategy to adapt the number of steps. The strategies</span>
-<span class="sd">            make sure that:</span>
+<span class="sd">        adaptive_nsteps: False or str</span>
+<span class="sd">            Strategy to adapt the number of steps. </span>
+<span class="sd">            The possible values are the same as for `check_nsteps`.</span>
 
+<span class="sd">            Adapting can give usable results. However, strictly speaking,</span>
+<span class="sd">            detailed balance is not maintained, so the results can be biased.</span>
+<span class="sd">            You can use the stepsampler.logstat property to find out the `nsteps` learned</span>
+<span class="sd">            from one run (third column), and use the largest value for `nsteps`</span>
+<span class="sd">            for a fresh run.</span>
+<span class="sd">            The forth column is the jump distance, the fifth column is the reference distance.</span>
+
+<span class="sd">        check_nsteps: False or str</span>
+<span class="sd">            Method to diagnose the step sampler walks. The options are:</span>
+
+<span class="sd">            * False: no checking</span>
 <span class="sd">            * &#39;move-distance&#39; (recommended): distance between</span>
 <span class="sd">              start point and final position exceeds the mean distance</span>
 <span class="sd">              between pairs of live points.</span>
@@ -710,11 +769,9 @@
 <span class="sd">              between chain points exceeds mean distance</span>
 <span class="sd">              between pairs of live points.</span>
 
-<span class="sd">            Adapting can give usable results. However, strictly speaking,</span>
-<span class="sd">            detailed balance is not maintained, so the results can be biased.</span>
-<span class="sd">            You can use the logstat property to find out the `nsteps` learned</span>
-<span class="sd">            from one run (third column), and use the largest value for `nsteps`</span>
-<span class="sd">            of a fresh run.</span>
+<span class="sd">            Each step sampler walk adds one row to stepsampler.logstat.</span>
+<span class="sd">            The jump distance (forth column) should be compared to </span>
+<span class="sd">            the reference distance (fifth column).</span>
 
 <span class="sd">        max_nsteps: int</span>
 <span class="sd">            Maximum number of steps the adaptive_nsteps can reach.</span>
@@ -730,8 +787,8 @@
 
 <span class="sd">        starting_point_selector: func</span>
 <span class="sd">            function which given the live point positions us,</span>
-<span class="sd">            their log-likelihoods Ls and the current log-likelihood </span>
-<span class="sd">            threshold Lmin, returns the index i of the selected live </span>
+<span class="sd">            their log-likelihoods Ls and the current log-likelihood</span>
+<span class="sd">            threshold Lmin, returns the index i of the selected live</span>
 <span class="sd">            point to start a new chain from.</span>
 <span class="sd">            Examples: :py:func:`select_random_livepoint`, which has</span>
 <span class="sd">            always been the default behaviour,</span>
@@ -741,13 +798,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">=</span> <span class="n">nsteps</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nrejects</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">scale</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_nsteps</span> <span class="o">=</span> <span class="n">max_nsteps</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">next_scale</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nudge</span> <span class="o">=</span> <span class="mf">1.1</span><span class="o">**</span><span class="p">(</span><span class="mf">1.</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nsteps_nudge</span> <span class="o">=</span> <span class="mf">1.01</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span> <span class="o">=</span> <span class="n">generate_direction</span>
-        <span class="n">adaptive_nsteps_options</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">check_nsteps_options</span> <span class="o">=</span> <span class="p">{</span>
             <span class="kc">False</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
             <span class="s1">&#39;move-distance&#39;</span><span class="p">:</span> <span class="n">adapt_proposal_move_distances</span><span class="p">,</span>
             <span class="s1">&#39;move-distance-midway&#39;</span><span class="p">:</span> <span class="n">adapt_proposal_move_distances_midway</span><span class="p">,</span>
@@ -756,22 +813,33 @@
             <span class="s1">&#39;proposal-summed-distances&#39;</span><span class="p">:</span> <span class="n">adapt_proposal_summed_distances</span><span class="p">,</span>
             <span class="s1">&#39;proposal-summed-distances-NN&#39;</span><span class="p">:</span> <span class="n">adapt_proposal_summed_distances_NN</span><span class="p">,</span>
         <span class="p">}</span>
+        <span class="n">adaptive_nsteps_options</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">check_nsteps_options</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">adaptive_nsteps</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">adaptive_nsteps_options</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;adaptive_nsteps must be one of: </span><span class="si">%s</span><span class="s2">, not &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">adaptive_nsteps_options</span><span class="p">,</span> <span class="n">adaptive_nsteps</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">check_nsteps</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">check_nsteps_options</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;check_nsteps must be one of: </span><span class="si">%s</span><span class="s2">, not &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">adaptive_nsteps_options</span><span class="p">,</span> <span class="n">adaptive_nsteps</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="o">=</span> <span class="n">adaptive_nsteps</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">nsteps</span> <span class="o">&lt;=</span> <span class="n">max_nsteps</span><span class="p">,</span> <span class="s1">&#39;Invalid adapting configuration: provided nsteps=</span><span class="si">%d</span><span class="s1"> exceeds provided max_nsteps=</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">nsteps</span><span class="p">,</span> <span class="n">max_nsteps</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps_function</span> <span class="o">=</span> <span class="n">adaptive_nsteps_options</span><span class="p">[</span><span class="n">adaptive_nsteps</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_nsteps</span> <span class="o">=</span> <span class="n">check_nsteps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_nsteps_function</span> <span class="o">=</span> <span class="n">check_nsteps_options</span><span class="p">[</span><span class="n">check_nsteps</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps_needs_mean_pair_distance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="ow">in</span> <span class="p">(</span>
+            <span class="s1">&#39;proposal-total-distances&#39;</span><span class="p">,</span> <span class="s1">&#39;proposal-summed-distances&#39;</span><span class="p">,</span>
+        <span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_nsteps</span> <span class="ow">in</span> <span class="p">(</span>
             <span class="s1">&#39;proposal-total-distances&#39;</span><span class="p">,</span> <span class="s1">&#39;proposal-summed-distances&#39;</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">starting_point_selector</span> <span class="o">=</span> <span class="n">starting_point_selector</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mean_pair_distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">region_filter</span> <span class="o">=</span> <span class="n">region_filter</span>
+        <span class="k">if</span> <span class="n">log</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">log</span><span class="p">,</span> <span class="s1">&#39;write&#39;</span><span class="p">),</span> <span class="s1">&#39;log argument should be a file, use log=open(filename, &quot;w&quot;) or similar&#39;</span> 
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="o">=</span> <span class="n">log</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;rejection_rate&#39;</span><span class="p">,</span> <span class="s1">&#39;scale&#39;</span><span class="p">,</span> <span class="s1">&#39;steps&#39;</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">adaptive_nsteps</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">adaptive_nsteps</span> <span class="ow">or</span> <span class="n">check_nsteps</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;jump-distance&#39;</span><span class="p">,</span> <span class="s1">&#39;reference-distance&#39;</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -815,6 +883,94 @@
         <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
 
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">mean_jump_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Geometric mean jump distance.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="k">if</span> <span class="s1">&#39;jump-distance&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span> <span class="ow">or</span> <span class="s1">&#39;reference-distance&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;jump-distance&#39;</span><span class="p">)</span>
+        <span class="n">j</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;reference-distance&#39;</span><span class="p">)</span>
+        <span class="n">jump_distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">entry</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">])</span>
+        <span class="n">reference_distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">entry</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">jump_distances</span> <span class="o">/</span> <span class="n">reference_distances</span> <span class="o">+</span> <span class="mf">1e-10</span><span class="p">)))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">far_enough_fraction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fraction of jumps exceeding reference distance.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="k">if</span> <span class="s1">&#39;jump-distance&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span> <span class="ow">or</span> <span class="s1">&#39;reference-distance&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;jump-distance&#39;</span><span class="p">)</span>
+        <span class="n">j</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;reference-distance&#39;</span><span class="p">)</span>
+        <span class="n">jump_distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">entry</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">])</span>
+        <span class="n">reference_distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">entry</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">(</span><span class="n">jump_distances</span> <span class="o">&gt;</span> <span class="n">reference_distances</span><span class="p">)</span>
+
+<div class="viewcode-block" id="StepSampler.get_info_dict">
+<a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.StepSampler.get_info_dict">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_info_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">num_logs</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">),</span>
+            <span class="n">rejection_rate</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">([</span><span class="n">entry</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">]),</span>
+            <span class="n">mean_scale</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">([</span><span class="n">entry</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">]),</span>
+            <span class="n">mean_nsteps</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">([</span><span class="n">entry</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">]),</span>
+            <span class="n">mean_distance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mean_jump_distance</span><span class="p">,</span>
+            <span class="n">frac_far_enough</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">far_enough_fraction</span><span class="p">,</span>
+            <span class="n">last_logstat</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span><span class="p">)))</span>
+        <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="StepSampler.print_diagnostic">
+<a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.StepSampler.print_diagnostic">[docs]</a>
+    <span class="k">def</span> <span class="nf">print_diagnostic</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Print diagnostic of step sampler performance.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;diagnostic unavailable, no recorded steps found&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="s1">&#39;jump-distance&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span> <span class="ow">or</span> <span class="s1">&#39;reference-distance&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;turn on check_nsteps in the step sampler for diagnostics&quot;</span><span class="p">)</span>
+            <span class="k">return</span> 
+        <span class="n">frac_farenough</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">far_enough_fraction</span>
+        <span class="n">average_distance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_jump_distance</span>
+        <span class="k">if</span> <span class="n">frac_farenough</span> <span class="o">&lt;</span> <span class="mf">0.5</span><span class="p">:</span>
+            <span class="n">advice</span> <span class="o">=</span> <span class="s1">&#39;: very fishy. Double nsteps and see if fraction and lnZ change)&#39;</span>
+        <span class="k">elif</span> <span class="n">frac_farenough</span> <span class="o">&lt;</span> <span class="mf">0.66</span><span class="p">:</span>
+            <span class="n">advice</span> <span class="o">=</span> <span class="s1">&#39;: fishy. Double nsteps and see if fraction and lnZ change)&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">advice</span> <span class="o">=</span> <span class="s1">&#39; (should be &gt;50%)&#39;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;step sampler diagnostic: jump distance </span><span class="si">%.2f</span><span class="s1"> (should be &gt;1), far enough fraction: </span><span class="si">%.2f%%</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="n">average_distance</span><span class="p">,</span> <span class="n">frac_farenough</span> <span class="o">*</span> <span class="mi">100</span><span class="p">,</span> <span class="n">advice</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="StepSampler.plot_jump_diagnostic_histogram">
+<a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.StepSampler.plot_jump_diagnostic_histogram">[docs]</a>
+    <span class="k">def</span> <span class="nf">plot_jump_diagnostic_histogram</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot jump diagnostic histogram.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="s1">&#39;jump-distance&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span><span class="p">:</span>
+            <span class="k">return</span> 
+        <span class="k">if</span> <span class="s1">&#39;reference-distance&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span><span class="p">:</span>
+            <span class="k">return</span> 
+        <span class="n">i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;jump-distance&#39;</span><span class="p">)</span>
+        <span class="n">j</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;reference-distance&#39;</span><span class="p">)</span>
+        <span class="n">jump_distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">entry</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">])</span>
+        <span class="n">reference_distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">entry</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">])</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">jump_distances</span> <span class="o">/</span> <span class="n">reference_distances</span> <span class="o">+</span> <span class="mf">1e-10</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">ylo</span><span class="p">,</span> <span class="n">yhi</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">vlines</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mean_jump_distance</span><span class="p">),</span> <span class="n">ylo</span><span class="p">,</span> <span class="n">yhi</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="n">ylo</span><span class="p">,</span> <span class="n">yhi</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">check_nsteps</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;log(relative step distance)&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Frequency&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
 <div class="viewcode-block" id="StepSampler.move">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.StepSampler.move">[docs]</a>
     <span class="k">def</span> <span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
@@ -836,7 +992,7 @@
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">&gt;</span> <span class="mi">0</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_scale</span> <span class="o">&gt;</span> <span class="mi">0</span>
         <span class="c1"># reset chain</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_nsteps</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">])</span></div>
@@ -881,18 +1037,22 @@
 <span class="sd">        region: MLFriends object</span>
 <span class="sd">            current region</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_nsteps</span><span class="p">):</span>
             <span class="k">return</span>
-        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">:</span>
             <span class="c1"># incomplete or aborted for some reason</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;not adapting, incomplete history&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;not adapting/checking nsteps, incomplete history&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">)</span>
             <span class="k">return</span>
 
-        <span class="c1"># assert self.nrejects &lt; len(self.history), (self.nsteps, self.nrejects, len(self.history))</span>
-        <span class="c1"># assert self.nrejects &lt;= self.nsteps, (self.nsteps, self.nrejects, len(self.history))</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps_needs_mean_pair_distance</span><span class="p">:</span>
             <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mean_pair_distance</span><span class="p">)</span>
         <span class="n">ndim</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_nsteps</span><span class="p">:</span>
+            <span class="n">far_enough</span><span class="p">,</span> <span class="n">extra_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_nsteps_function</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_pair_distance</span><span class="p">,</span> <span class="n">ndim</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">extra_info</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span><span class="p">:</span>
+            <span class="k">return</span>
+
         <span class="n">far_enough</span><span class="p">,</span> <span class="n">extra_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps_function</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_pair_distance</span><span class="p">,</span> <span class="n">ndim</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">extra_info</span>
 
@@ -936,8 +1096,9 @@
                 <span class="p">[</span><span class="n">Lmin</span><span class="p">],</span> <span class="n">ustart</span><span class="p">,</span> <span class="n">ufinal</span><span class="p">,</span> <span class="n">tstart</span><span class="p">,</span> <span class="n">tfinal</span><span class="p">,</span>
                 <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">,</span>
                  <span class="n">iLstart</span><span class="p">,</span> <span class="n">iLfinal</span><span class="p">,</span> <span class="n">itstart</span><span class="p">,</span> <span class="n">itfinal</span><span class="p">])])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
 
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">adaptive_nsteps</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_nsteps</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">adapt_nsteps</span><span class="p">(</span><span class="n">region</span><span class="o">=</span><span class="n">region</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_scale</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">nudge</span><span class="o">**</span><span class="mi">10</span><span class="p">:</span>
@@ -1260,7 +1421,7 @@
 <a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.CubeSliceSampler">[docs]</a>
 <span class="k">def</span> <span class="nf">CubeSliceSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Slice sampler, randomly picking region axes.&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">SliceSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">generate_direction</span><span class="o">=</span><span class="n">generate_cube_oriented_direction</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">SliceSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">generate_direction</span><span class="o">=</span><span class="n">SequentialDirectionGenerator</span><span class="p">())</span></div>
 
 
 
@@ -1285,6 +1446,52 @@
 <span class="k">def</span> <span class="nf">RegionBallSliceSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Hit &amp; run sampler. Choose random directions according to region.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">SliceSampler</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">generate_direction</span><span class="o">=</span><span class="n">generate_region_random_direction</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="SequentialDirectionGenerator">
+<a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.SequentialDirectionGenerator">[docs]</a>
+<span class="k">class</span> <span class="nc">SequentialDirectionGenerator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sequentially proposes one parameter after the next.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialise.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">axis_index</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Choose the next axis in u-space.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        -----------</span>
+<span class="sd">        ui: array</span>
+<span class="sd">            current point (in u-space)</span>
+<span class="sd">        region: MLFriends object</span>
+<span class="sd">            pick random two live points for length along axis</span>
+<span class="sd">        scale: float</span>
+<span class="sd">            length of direction vector</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        --------</span>
+<span class="sd">        v: array</span>
+<span class="sd">            new direction vector (in u-space)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">nlive</span><span class="p">,</span> <span class="n">ndim</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">j</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">axis_index</span> <span class="o">%</span> <span class="n">ndim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">axis_index</span> <span class="o">=</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span>
+
+        <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">ndim</span><span class="p">)</span>
+        <span class="c1"># choose pair of live points</span>
+        <span class="k">while</span> <span class="n">v</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">nlive</span><span class="p">)</span>
+            <span class="n">i2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">nlive</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">i2</span> <span class="o">&gt;=</span> <span class="n">i</span><span class="p">:</span>
+                <span class="n">i2</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="n">v</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="n">i2</span><span class="p">,</span><span class="n">j</span><span class="p">])</span> <span class="o">*</span> <span class="n">scale</span>
+
+        <span class="k">return</span> <span class="n">v</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s1">&#39;()&#39;</span></div>
 
 
 
@@ -1636,7 +1843,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2014-2022, Johannes Buchner.</p>
+    <p>&#169; Copyright 2014-2024, Johannes Buchner.</p>
   </div>
 
    
