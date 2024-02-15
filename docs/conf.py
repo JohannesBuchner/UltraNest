@@ -39,7 +39,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
     'sphinx.ext.mathjax',
-    'sphinx.ext.doctests',
+    'sphinx.ext.doctest',
     'sphinx.ext.autosectionlabel',
     'nbsphinx',
     'sphinx_rtd_theme',
