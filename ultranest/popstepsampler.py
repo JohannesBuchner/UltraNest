@@ -197,8 +197,7 @@ class PopulationRandomWalkSampler(GenericPopulationSampler):
             Observe the nested sampling efficiency.
         nsteps: int
             number of steps to take until the found point is accepted as independent.
-            To calibrate, try several runs with increasing nsteps (doubling).
-            The ln(Z) should become stable at some value.
+            To find the right value, see :py:class:`ultranest.calibrator.ReactiveNestedCalibrator`
         generate_direction: function
             Function that gives proposal kernel shape, one of:
             :py:func:`ultranest.popstepsampler.generate_cube_oriented_direction`
@@ -368,6 +367,7 @@ class PopulationSliceSampler(GenericPopulationSampler):
             number of walkers to maintain
         nsteps: int
             number of steps to take until the found point is accepted as independent.
+            To find the right value, see :py:class:`ultranest.calibrator.ReactiveNestedCalibrator`
         generate_direction: function `(u, region, scale) -> v`
             function such as `generate_unit_directions`, which
             generates a random slice direction.

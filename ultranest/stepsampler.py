@@ -551,8 +551,7 @@ class StepSampler(object):
         nsteps: int
             number of accepted steps until the sample is considered independent.
 
-            To find the right value, run nested sampling several time,
-            always doubling nsteps, until Z is stable.
+            To find the right value, see :py:class:`ultranest.calibrator.ReactiveNestedCalibrator`
 
         generate_direction: function
             direction proposal function.
