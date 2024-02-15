@@ -5,7 +5,7 @@ import tempfile
 import pytest
 import json
 import pandas
-from ultranest.mlfriends import MLFriends, AffineLayer, MaxPrincipleGapAffineLayer
+from ultranest.mlfriends import MLFriends, ScalingLayer, AffineLayer, MaxPrincipleGapAffineLayer
 from ultranest import NestedSampler, ReactiveNestedSampler, read_file
 from ultranest.integrator import warmstart_from_similar_file, _update_region_bootstrap, _get_cumsum_range
 import ultranest.mlfriends
@@ -65,7 +65,7 @@ def test_failing_update_region_bootstrap():
     # make linearly dependent, so building a region should fail
     u[:,-1] = u[:,0]
     # boot-strap an affine layer after clustering
-    transformLayer = AffineLayer()
+    transformLayer = ScalingLayer()
     transformLayer.optimize(u, u)
     region = MLFriends(u, transformLayer)
     with pytest.raises(np.linalg.LinAlgError):
