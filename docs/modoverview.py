@@ -1,7 +1,7 @@
 import importlib
 
 sections = [
-	('Modules commonly used directly', ['integrator', 'hotstart', 'plot', 'stepsampler', 'popstepsampler', 'solvecompat']),
+	('Modules commonly used directly', ['integrator', 'plot', 'stepsampler', 'popstepsampler', 'calibrator', 'solvecompat', 'hotstart']),
 	('Internally used modules', ['mlfriends', 'netiter', 'ordertest', 'stepfuncs', 'store', 'viz']),
 	('Experimental modules, no guarantees', ['dychmc', 'dyhmc', 'flatnuts', 'pathsampler', 'samplingpath']),
 ]

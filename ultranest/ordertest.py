@@ -1,6 +1,6 @@
 """
-Mann-Whitney-Wilcoxon U test for a uniform distribution of integers
--------------------------------------------------------------------
+U test for a uniform distribution of integers
+---------------------------------------------
 
 A test for biased nested sampling, presented in
 section 4.5.2 of Buchner (2023, https://arxiv.org/abs/2101.09675).
