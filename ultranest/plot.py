@@ -71,7 +71,12 @@ class PredictionBand(object):
 
     call add(y) to add predictions from each chain point
 
-    Example::
+    .. testsetup::
+
+        import numpy
+        chain = numpy.random.uniform(size=(20, 2))
+
+    .. testcode::
 
         x = numpy.linspace(0, 1, 100)
         band = PredictionBand(x)

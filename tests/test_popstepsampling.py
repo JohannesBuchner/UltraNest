@@ -45,6 +45,7 @@ def test_stepsampler_cubeslice(plot=False):
     sampler.stepsampler = PopulationSliceSampler(
         popsize=popsize, nsteps=nsteps, 
         generate_direction=generate_cube_oriented_direction,
+        log=True,
     )
     r = sampler.run(viz_callback=None, log_interval=50)
     sampler.print_results()
@@ -62,6 +63,8 @@ def test_stepsampler_cubeslice(plot=False):
     sampler.stepsampler.plot_jump_diagnostic_histogram('test-popstepsampler-plot-jumps.pdf')
     assert os.path.exists('test-popstepsampler-plot-jumps.pdf')
     sampler.stepsampler.print_diagnostic()
+    print(sampler.stepsampler)
+    print(sampler.stepsampler.status)
 
 def test_stepsampler_cubegausswalk(plot=False):
     np.random.seed(2)
@@ -72,7 +75,7 @@ def test_stepsampler_cubegausswalk(plot=False):
     sampler.stepsampler = PopulationRandomWalkSampler(
         popsize=popsize, nsteps=nsteps, 
         generate_direction=generate_cube_oriented_direction,
-        scale=0.1,
+        scale=0.1, log=True,
     )
     r = sampler.run(viz_callback=None, log_interval=50, max_iters=200, max_num_improvement_loops=0)
     sampler.print_results()
