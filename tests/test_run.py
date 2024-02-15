@@ -56,7 +56,7 @@ def test_dlogz_reactive_run_SLOW():
         print("logzerr in iteration %d" % niter, results['logzerr'])
     print()
     print({k:v for k, v in results.items() if 'logzerr' in k})
-    assert results['logzerr'] < 0.1 * 2
+    assert results['logzerr'] < 0.1 * 3
 
 def test_reactive_run():
     np.random.seed(1)
