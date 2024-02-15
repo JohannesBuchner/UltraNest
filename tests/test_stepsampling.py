@@ -433,6 +433,20 @@ def test_crop_bracket(plot=False):
     assert (ucurrent + v * left >= 0).all(), (ucurrent, v, ellipsoid_center, ellipsoid_inv_axes, enlarge)
     assert (ucurrent + v * right >= 0).all(), (ucurrent, v, ellipsoid_center, ellipsoid_inv_axes, enlarge)
 
+    left, right, cropleft, cropright = crop_bracket_at_unit_cube(ucurrent, -v, eleft, eright)
+    if plot:
+        plt.plot([ucurrent[0] - left * v[0], ucurrent[0] - right * v[0]],
+            [ucurrent[1] - left * v[1], ucurrent[1] - right * v[1]],
+            's--', ms=8)
+        plt.savefig('test_crop_bracket_negative.pdf', bbox_inches='tight')
+        plt.close()
+    assert cropleft
+    assert cropright
+    assert (ucurrent - v * left <= 1).all(), (ucurrent, v, ellipsoid_center, ellipsoid_inv_axes, enlarge)
+    assert (ucurrent - v * right <= 1).all(), (ucurrent, v, ellipsoid_center, ellipsoid_inv_axes, enlarge)
+    assert (ucurrent - v * left >= 0).all(), (ucurrent, v, ellipsoid_center, ellipsoid_inv_axes, enlarge)
+    assert (ucurrent - v * right >= 0).all(), (ucurrent, v, ellipsoid_center, ellipsoid_inv_axes, enlarge)
+
 def test_random_point_selector():
     np.random.seed(41)
     K = 10
