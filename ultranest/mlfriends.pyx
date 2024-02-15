@@ -548,6 +548,12 @@ class AffineLayer(ScalingLayer):
     """Affine whitening transformation.
 
     Learns the covariance of points.
+
+    For learning the next layer's covariance, the clustering
+    is considered: the sample covariance is computed after subtracting
+    the cluster mean. This co-centers all clusters and gets
+    the average cluster shape, avoiding learning a covariance dominated
+    by the distance between clusters.
     """
 
     def __init__(self, ctr=0, T=1, invT=1, nclusters=1, wrapped_dims=[], clusterids=None):
@@ -560,9 +566,11 @@ class AffineLayer(ScalingLayer):
         ctr: vector
             Center of points
         T: matrix
-            transformation matrix
+            Transformation matrix. This matrix whitens the points 
+            to a unit Gaussian.
         invT: matrix
-            inverse transformation matrix
+            Inverse transformation matrix. For transforming a unit
+            Gaussian into something with the sample cov.
         nclusters: int
             number of clusters
         wrapped_dims: array of bools
@@ -599,18 +607,28 @@ class AffineLayer(ScalingLayer):
         """
         self.optimize_wrap(points)
         wrapped_points = self.wrap(points)
+        # point center
         self.ctr = np.mean(wrapped_points, axis=0)
+        # compute sample covariance
         cov = np.cov(centered_points, rowvar=0)
         cov *= (len(self.ctr) + 2)
         self.cov = cov
+        # Eigen decomposition of the covariance, with numerical stability
         eigval, eigvec = np.linalg.eigh(cov)
         eigvalmin = eigval.max() * 1e-40
         eigval[eigval < eigvalmin] = eigvalmin
+        # Try explicit inversion; if this fails, the error is escalated.
         a = np.linalg.inv(cov)
+        # log-volume of the space
         self.logvolscale = np.linalg.slogdet(a)[1] * -0.5
 
+        # Transformation matrix with the correct scale
+        # this matrix whitens the points to a unit Gaussian.
         self.T = eigvec * eigval**-0.5
+        # Inverse transformation matrix, for transforming a unit 
+        # Gaussian into something with the sample cov.
         self.invT = np.linalg.inv(self.T)
+        # These also are the principle axes of the space
         self.axes = self.invT
         # print('transform used:', self.T, self.invT, 'cov:', cov, 'eigen:', eigval, eigvec)
         self.set_clusterids(clusterids=clusterids, npoints=len(points))
@@ -656,6 +674,71 @@ class AffineLayer(ScalingLayer):
         else:
             u = w.reshape(ww.shape)
         return u
+
+class MaxPrincipleGapAffineLayer(AffineLayer):
+    """Affine whitening transformation.
+
+    For learning the next layer's covariance, the clustering
+    and principal axis is considered: 
+    the sample covariance is computed after subtracting
+    the cluster mean. All points are projected onto the line
+    defined by the principle axis vector starting from the origin.
+    Then, on the sorted line positions, the largest gap is identified.
+    All points before the gap are mean-subtracted, and all points
+    after the gap are mean-subtracted. Then, the final
+    sample covariance is computed. This should give a more "local"
+    covariance, even in the case where clusters could not yet be 
+    clearly identified.
+    """
+
+    def create_new(self, upoints, maxradiussq, minvol=0.):
+        """Learn next layer from this optimized layer's clustering.
+
+        Parameters
+        ----------
+        upoints: array
+            points to use for optimize (in u-space)
+        maxradiussq: float
+            square of the MLFriends radius
+        minvol: float
+            Minimum volume to regularize sample covariance
+
+        Returns
+        ---------
+        A new, optimized MaxPrincipleGapAffineLayer.
+        """
+        # perform clustering in transformed space
+        uwpoints = self.wrap(upoints)
+        tpoints = self.transform(upoints)
+        nclusters, clusteridxs, overlapped_uwpoints = update_clusters(uwpoints, tpoints, maxradiussq, self.clusterids)
+
+        cov = np.cov(overlapped_uwpoints, rowvar=0)
+        cov *= (len(self.ctr) + 2)
+        eigval, eigvec = np.linalg.eigh(cov)
+        # identify principle axis
+        principal_vector = eigvec[:, -1]
+        # project all overlapped_uwpoints onto principle axis,
+        # obtaining position on line
+        t = np.dot(overlapped_uwpoints - overlapped_uwpoints.mean(axis=0).reshape((1,-1)), principal_vector)
+        # sort positions, identify largest gap
+        tsorted = np.sort(t)
+        tgapindex = np.argmax(np.diff(tsorted))
+        # compute center of largest gap
+        tsep = (tsorted[tgapindex] + tsorted[tgapindex + 1]) / 2
+        # assign point to left and right cluster
+        left_cluster = t < tsep
+        # subtract the respective cluster mean from overlapped_uwpoints
+        left_mean = overlapped_uwpoints[left_cluster, :].mean(axis=0)
+        right_mean = overlapped_uwpoints[~left_cluster, :].mean(axis=0)
+        halved_overlapped_uwpoints = overlapped_uwpoints.copy()
+        halved_overlapped_uwpoints[left_cluster, :] -= left_mean
+        halved_overlapped_uwpoints[~left_cluster, :] -= right_mean
+
+        # re-optimize with the new subtracted points
+        s = MaxPrincipleGapAffineLayer(nclusters=nclusters, wrapped_dims=self.wrapped_dims, clusterids=clusteridxs)
+        s.optimize(upoints, halved_overlapped_uwpoints, minvol=minvol)
+        return s
+
 
 
 def vol_prefactor(np.int_t n):

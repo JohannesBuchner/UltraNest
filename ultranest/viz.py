@@ -98,7 +98,7 @@ def nicelogger(points, info, region, transformLayer, region_fresh=False):
 
     region: MLFriends
         Current region.
-    transformLayer: ScaleLayer or AffineLayer
+    transformLayer: ScaleLayer or AffineLayer or MaxPrincipleGapAffineLayer
         Current transformLayer (for clustering information).
     region_fresh: bool
         Whether the region was just updated.
@@ -274,7 +274,7 @@ class LivePointsWidget(object):
 
         region: MLFriends
             Current region.
-        transformLayer: ScaleLayer or AffineLayer
+        transformLayer: ScaleLayer or AffineLayer or MaxPrincipleGapAffineLayer
             Current transformLayer (for clustering information).
         region_fresh: bool
             Whether the region was just updated.

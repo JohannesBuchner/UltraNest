@@ -5,10 +5,134 @@ import tempfile
 import pytest
 import json
 import pandas
+from ultranest.mlfriends import MLFriends, AffineLayer, MaxPrincipleGapAffineLayer
 from ultranest import NestedSampler, ReactiveNestedSampler, read_file
-from ultranest.integrator import warmstart_from_similar_file
+from ultranest.integrator import warmstart_from_similar_file, _update_region_bootstrap
 import ultranest.mlfriends
 from numpy.testing import assert_allclose
+
+def sample_ellipsoid(rng, nsamples, ndim, sigma=0.01, center=0.5):
+    """ Sample from a unit sphere with constant density """
+    z = rng.normal(size=(nsamples, ndim))
+    z /= ((z**2).sum(axis=1)**0.5).reshape((nsamples, 1))
+    u = z * rng.uniform(size=(nsamples, 1))**(1./ndim)
+    return u * sigma + center
+
+def generate_two_blob_points(rng, d, Nlive1, Nlive2, offset2, sigma):
+    """ generate live points from two spheres """
+    return np.vstack((sample_ellipsoid(rng, Nlive1, d, sigma=sigma), sample_ellipsoid(rng, Nlive2, d, sigma=sigma) + offset2))
+
+def test_clustering_recursion(plot=False):
+    # generate two blobs separated by 2 sigma
+    # check that they are *not* separated with AffineLayer+MLFriends
+    # check that they are separated with MaxPrincipleGapAffineLayer+MLFriends
+    nbootstraps = 30
+
+    sigma = 0.001
+    d = 20
+    
+    Nlive = 100
+    Nlive1 = Nlive // 2
+    Nlive2 = Nlive // 2
+    
+    offset2 = 1.0 * sigma
+    
+    nwithclusters = 0
+    nwithclusters2 = 0
+    noverclustered = 0
+    gapped_nwithclusters = 0
+    gapped_nwithclusters2 = 0
+    gapped_noverclustered = 0
+
+    for seed in range(25):
+        rng = np.random.RandomState(54 + seed)
+        u = generate_two_blob_points(rng, d, Nlive1, Nlive2, offset2, sigma)
+
+        # boot-strap an affine layer after clustering
+        transformLayer = AffineLayer()
+        transformLayer.optimize(u, u)
+        region = MLFriends(u, transformLayer)
+        _update_region_bootstrap(region, nbootstraps)
+        region.create_ellipsoid()
+        layer = transformLayer.create_new(u, region.maxradiussq)
+        nextregion = MLFriends(u, layer)
+        _update_region_bootstrap(nextregion, nbootstraps=30)
+        nextLayer = layer.create_new(u, nextregion.maxradiussq)
+        nextNextLayer = nextLayer.create_new(u, region.maxradiussq)
+
+        nwithclusters += layer.nclusters
+        nwithclusters2 += nextLayer.nclusters
+        noverclustered += nextLayer.nclusters > 2
+        if plot:
+            import matplotlib.pyplot as plt
+            plt.figure("AffineLayer", figsize=(20, 20))
+            plt.subplot(5, 5, seed + 1)
+            plt.title('%d -> %d -> %d' % (transformLayer.nclusters, nextLayer.nclusters, nextNextLayer.nclusters))
+            plt.scatter(u[:,0], u[:,1], label='points')
+            # Plot the principal vectors
+            plt.quiver(0.5, 0.5, transformLayer.invT[0, 0], transformLayer.invT[0, 1], angles='xy', scale_units='xy', scale=1, color='r', label='First Principal Vector')
+            plt.quiver(0.5, 0.5, transformLayer.invT[1, 0], transformLayer.invT[1, 1], angles='xy', scale_units='xy', scale=1, color='b', label='Second Principal Vector')
+            ylo, yhi = plt.ylim()
+            ymax = max(0.5 - ylo, yhi - 0.5)
+            xlo, xhi = plt.xlim()
+            xmax = max(0.5 - xlo, xhi - 0.5)
+            xymax = 1.5 * max(ymax, xmax)
+            plt.xlim(0.5 - xymax, 0.5 + xymax)
+            plt.ylim(0.5 - xymax, 0.5 + xymax)
+
+        # boot-strap an MaxPrincipleGapAffineLayer layer after clustering
+        transformLayer = MaxPrincipleGapAffineLayer()
+        transformLayer.optimize(u, u)
+        region = MLFriends(u, transformLayer)
+        _update_region_bootstrap(region, nbootstraps)
+        region.create_ellipsoid()
+        layer = transformLayer.create_new(u, region.maxradiussq)
+        nextregion = MLFriends(u, layer)
+        _update_region_bootstrap(nextregion, nbootstraps=30)
+        nextLayer = layer.create_new(u, nextregion.maxradiussq)
+        nextNextLayer = nextLayer.create_new(u, region.maxradiussq)
+
+        gapped_nwithclusters += layer.nclusters
+        gapped_nwithclusters2 += nextLayer.nclusters
+        gapped_noverclustered += nextLayer.nclusters > 2
+        if plot:
+            plt.figure("MaxPrincipleGapAffineLayer", figsize=(20, 20))
+            plt.subplot(5, 5, seed + 1)
+            plt.title('%d -> %d -> %d' % (transformLayer.nclusters, nextLayer.nclusters, nextNextLayer.nclusters))
+            plt.scatter(u[:,0], u[:,1], label='points')
+            # Plot the principal vectors
+            plt.quiver(0.5, 0.5, transformLayer.invT[0, 0], transformLayer.invT[0, 1], angles='xy', scale_units='xy', scale=1, color='r', label='First Principal Vector')
+            plt.quiver(0.5, 0.5, transformLayer.invT[1, 0], transformLayer.invT[1, 1], angles='xy', scale_units='xy', scale=1, color='b', label='Second Principal Vector')
+            ylo, yhi = plt.ylim()
+            ymax = max(0.5 - ylo, yhi - 0.5)
+            xlo, xhi = plt.xlim()
+            xmax = max(0.5 - xlo, xhi - 0.5)
+            xymax = 1.5 * max(ymax, xmax)
+            plt.xlim(0.5 - xymax, 0.5 + xymax)
+            plt.ylim(0.5 - xymax, 0.5 + xymax)
+
+    if plot:
+        plt.savefig('layercov_MaxPrincipleGapAffineLayer.pdf')
+        plt.close()
+        plt.savefig('layercov_AffineLayer.pdf')
+        plt.close()
+
+    print("clustering statistics: (%d runs)" % (seed+1))
+    print("  number of clusters iteration 1, iteration 2, number of overclusterings")
+    print("AffineLayer:")
+    print("  ", nwithclusters, nwithclusters2, noverclustered)
+    print("MaxPrincipleGapAffineLayer:")
+    print("  ", gapped_nwithclusters, gapped_nwithclusters2, gapped_noverclustered)
+    # with the affine layer we only see one cluster, because they are
+    # so close together and the covariance spans them
+    assert nwithclusters in (25, 26, 27)
+    assert nwithclusters2 in (25, 26, 27)
+    # MaxPrincipleGapAffineLayer builds a more local covariance
+    # so the subsequent iteration splits the cluster
+    assert gapped_nwithclusters in (25, 26, 27)
+    assert gapped_nwithclusters2 in (49, 50, 51, 52)
+    assert noverclustered in (0, 1, 2)
+    assert gapped_noverclustered in (0, 1, 2)
 
 def test_run():
     def loglike(y):
@@ -585,4 +709,5 @@ if __name__ == '__main__':
     #test_reactive_run_extraparams()
     #test_reactive_run_resume_eggbox('hdf5')
     #test_dlogz_reactive_run()
-    test_plateau()
+    #test_plateau()
+    test_clustering_recursion(plot=True)

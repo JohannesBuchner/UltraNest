@@ -25,7 +25,7 @@ import numpy as np
 
 from .utils import create_logger, make_run_dir, resample_equal, vol_prefactor, vectorize, listify as _listify
 from .utils import is_affine_transform, normalised_kendall_tau_distance, distributed_work_chunk_size
-from ultranest.mlfriends import MLFriends, AffineLayer, ScalingLayer, find_nearby, WrappingEllipsoid, RobustEllipsoidRegion
+from ultranest.mlfriends import MLFriends, MaxPrincipleGapAffineLayer, AffineLayer, ScalingLayer, find_nearby, WrappingEllipsoid, RobustEllipsoidRegion
 from .store import HDF5PointStore, TextPointStore, NullPointStore
 from .viz import get_default_viz_callback
 from .ordertest import UniformOrderAccumulator
@@ -661,7 +661,7 @@ class NestedSampler(object):
         ncall = num_live_points_missing  # number of calls we already made
         first_time = True
         if self.x_dim > 1:
-            transformLayer = AffineLayer(wrapped_dims=self.wrapped_axes)
+            transformLayer = MaxPrincipleGapAffineLayer(wrapped_dims=self.wrapped_axes)
         else:
             transformLayer = ScalingLayer(wrapped_dims=self.wrapped_axes)
         transformLayer.optimize(active_u, active_u)
@@ -1115,7 +1115,7 @@ class ReactiveNestedSampler(object):
 
         self.sampler = 'reactive-nested'
         self.x_dim = x_dim
-        self.transform_layer_class = AffineLayer if x_dim > 1 else ScalingLayer
+        self.transform_layer_class = MaxPrincipleGapAffineLayer if x_dim > 1 else ScalingLayer
         self.derivedparamnames = derived_param_names
         self.num_bootstraps = int(num_bootstraps)
         num_derived = len(self.derivedparamnames)
