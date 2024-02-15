@@ -2,7 +2,12 @@ import numpy as np
 from ultranest.mlfriends import ScalingLayer, AffineLayer, MLFriends
 from ultranest import ReactiveNestedSampler
 from ultranest.stepsampler import RegionMHSampler, CubeMHSampler, CubeSliceSampler, RegionSliceSampler, SpeedVariableRegionSliceSampler, RegionBallSliceSampler, SpeedVariableGenerator
-from ultranest.stepsampler import generate_region_random_direction, generate_random_direction, ellipsoid_bracket, crop_bracket_at_unit_cube
+from ultranest.stepsampler import ellipsoid_bracket, crop_bracket_at_unit_cube, _inside_region
+from ultranest.stepsampler import generate_random_direction, generate_cube_oriented_direction
+from ultranest.stepsampler import SequentialDirectionGenerator, OrthogonalDirectionGenerator, SequentialRegionDirectionGenerator
+from ultranest.stepsampler import generate_region_random_direction, generate_region_oriented_direction, generate_cube_oriented_differential_direction
+from ultranest.stepsampler import generate_differential_direction, generate_partial_differential_direction, generate_mixture_random_direction
+
 from ultranest.pathsampler import SamplingPathStepSampler
 from ultranest.stepsampler import select_random_livepoint, IslandPopulationRandomLivepointSelector
 from numpy.testing import assert_allclose
@@ -58,6 +63,69 @@ def test_stepsampler_regionmh(plot=False):
     b = (np.abs(r['samples'] - 0.3) < 0.1).all(axis=1)
     assert a.sum() > 1, a
     assert b.sum() > 1, b
+
+def test_direction_proposals():
+    ndim = 10
+    np.random.seed(12)
+    region = make_region(ndim)
+    ui = region.u[0]
+    
+    scale = np.random.uniform()
+    vcube = generate_cube_oriented_direction(ui, region, scale)
+    assert (vcube != 0).sum() == 1, vcube
+    assert np.linalg.norm(vcube) == scale, vcube
+    
+    vcubede = generate_cube_oriented_differential_direction(ui, region, scale)
+    assert (vcubede != 0).sum() == 1, vcubede
+    assert np.linalg.norm(vcubede) > 0, vcubede
+    
+    vharm = generate_random_direction(ui, region, scale)
+    assert (vharm != 0).all(), vharm
+    
+    vde = generate_differential_direction(ui, region, scale)
+    assert (vde != 0).all(), vde
+    
+    vregionslice = generate_region_oriented_direction(ui, region, scale)
+    assert (vregionslice != 0).all(), vregionslice
+    
+    vmix = generate_mixture_random_direction(ui, region, scale)
+    assert (vmix != 0).all(), vmix
+    
+    vregionharm = generate_region_random_direction(ui, region, scale)
+    assert (vregionharm != 0).all(), vregionharm
+
+    direction_generator = SequentialDirectionGenerator()
+    for i in range(ndim * 2):
+        vdir = direction_generator(ui, region, scale)
+        assert (vdir != 0).sum() == 1, vdir
+        assert np.abs(vdir[i % ndim]) > 0, vdir
+
+    region_direction_generator = SequentialRegionDirectionGenerator()
+    for i in range(ndim * 2):
+        vdirharm = region_direction_generator(ui, region, scale)
+        assert (vdirharm != 0).all(), vdirharm
+    
+    vpartialde = generate_partial_differential_direction(ui, region, scale)
+    assert (vpartialde != 0).sum() > 1, vpartialde
+    assert (vpartialde != 0).sum() < ndim, vpartialde
+    
+    # test that applying OrthogonalDirectionGenerator to SequentialDirectionGenerator has no effect
+    ortho_direction_generator = OrthogonalDirectionGenerator(SequentialDirectionGenerator())
+    for i in range(ndim * 2):
+        vdir = ortho_direction_generator(ui, region, scale)
+        assert (vdir != 0).sum() == 1, vdir
+        assert np.abs(vdir[i % ndim]) > 0, vdir
+
+def test_inside_region():
+    ndim = 10
+    np.random.seed(12)
+    region = make_region(ndim, us = np.random.uniform(0.5, 0.51, size=(400, ndim)))
+    i = np.random.randint(400)
+    ui = region.u[i]
+    assert _inside_region(region, ui, ui)
+    # corner case where a new point is close to a old case, but both are somehow outside the region
+    unew, uold = np.random.uniform(0.4, 0.401, size=(2, ndim))
+    assert _inside_region(region, unew, uold)
 
 def test_stepsampler_cubeslice(plot=False):
     np.random.seed(3)

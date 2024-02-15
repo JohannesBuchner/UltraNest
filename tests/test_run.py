@@ -7,7 +7,7 @@ import json
 import pandas
 from ultranest.mlfriends import MLFriends, AffineLayer, MaxPrincipleGapAffineLayer
 from ultranest import NestedSampler, ReactiveNestedSampler, read_file
-from ultranest.integrator import warmstart_from_similar_file, _update_region_bootstrap
+from ultranest.integrator import warmstart_from_similar_file, _update_region_bootstrap, _get_cumsum_range
 import ultranest.mlfriends
 from numpy.testing import assert_allclose
 
@@ -21,6 +21,43 @@ def sample_ellipsoid(rng, nsamples, ndim, sigma=0.01, center=0.5):
 def generate_two_blob_points(rng, d, Nlive1, Nlive2, offset2, sigma):
     """ generate live points from two spheres """
     return np.vstack((sample_ellipsoid(rng, Nlive1, d, sigma=sigma), sample_ellipsoid(rng, Nlive2, d, sigma=sigma) + offset2))
+
+def test_get_cumsum_range1():
+    # cumulative probabilities are: array([0.1, 0.3, 0.6, 1. ])
+    pi = np.array([0.1, 0.2, 0.3, 0.4])
+    dp = 0.2
+    ilo, ihi = _get_cumsum_range(pi, dp)
+    assert ilo == 1, ilo
+    assert ihi == 2, ihi
+
+def test_get_cumsum_range_equal_prob():
+    p = np.ones(100) * 1.0
+    p = p * 1. / p.sum()
+    print(p, p.sum())
+    for percentile in 1, 5, 10, 20, 45:
+        ilo, ihi = _get_cumsum_range(p, percentile / 100.)
+        print(percentile, ilo, ihi, np.cumsum(p))
+        print(np.cumsum(p)[ilo], np.cumsum(p)[ihi])
+        # due to rounding issues, can slip to a lower index
+        assert ilo in (percentile, percentile - 1)
+        assert ihi in (100 - percentile - 1, 100 - percentile - 2)
+        assert np.cumsum(p)[ilo] >= percentile / 100.
+        assert np.cumsum(p)[ihi] <= 1 - percentile / 100.
+        assert p[ilo:ihi].sum() <= (1 - percentile / 100.) * 2, (p[ilo:ihi], p[ilo:ihi].sum(), percentile)
+
+
+def test_get_cumsum_range_random_prob():
+    np.random.seed(100)
+    for i in range(100):
+        size = int(10**np.random.uniform(0, 4))
+        p = np.random.uniform(size=size)
+        p = p * 1. / p.sum()
+        dp = np.random.uniform()
+        ilo, ihi = _get_cumsum_range(p, dp)
+        print(dp, p, np.cumsum(p), '-->', ilo, ihi, np.cumsum(p)[ilo], np.cumsum(p)[ihi])
+        # check that the selected interval contains the desired probability
+        assert p[ilo:ihi].sum() <= (1 - dp) * 2, (p[ilo:ihi], p[ilo:ihi].sum(), (1 - dp) * 2)
+
 
 def test_clustering_recursion(plot=False):
     # generate two blobs separated by 2 sigma

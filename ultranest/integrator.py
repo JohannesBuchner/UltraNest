@@ -55,9 +55,12 @@ def _get_cumsum_range(pi, dp):
         Index of the item corresponding to quantile ``1-dp``.
     """
     ci = pi.cumsum()
-    ilo = np.where(ci > dp)[0]
+    # this builds a conservatively narrow interval
+    # find first index where the cumulative is surely above
+    ilo, = np.where(ci >= dp)
     ilo = ilo[0] if len(ilo) > 0 else 0
-    ihi = np.where(ci < 1. - dp)[0]
+    # find last index where the cumulative is surely below
+    ihi, = np.where(ci <= 1. - dp)
     ihi = ihi[-1] if len(ihi) > 0 else -1
     return ilo, ihi
 

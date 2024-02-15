@@ -163,9 +163,10 @@ def generate_partial_differential_direction(ui, region, scale=1):
 
         v = region.u[i] - region.u[i2]
 
+        # choose which parameters to be off
         mask = np.random.uniform(size=ndim) > 0.1
-        # at least one must be on
-        mask[np.random.randint(ndim)] = True
+        # at least one must be free to vary
+        mask[np.random.randint(ndim)] = False
         v[mask] = 0
         if (v != 0).any():
             # repeat if live points are identical
@@ -558,18 +559,19 @@ class StepSampler(object):
 
             Available are:
 
-            * :py:func:`generate_cube_oriented_direction` (slice sampling)
-            * :py:func:`generate_region_oriented_direction` (slice sampling on the whitened parameter space)
-            * :py:class:`SequentialDirectionGenerator` (sequential slice sampling on the whitened parameter space)
-            * :py:func:`generate_random_direction` (hit-and-run sampling)
-            * :py:func:`generate_region_random_direction` (hit-and-run sampling on the whitened parameter space)
-            * :py:func:`generate_cube_oriented_differential_direction` (slice sampling with better proposal scale)
-            * :py:func:`generate_differential_direction` (differential evolution slice proposal)
+            * :py:func:`generate_cube_oriented_direction` (slice sampling, picking one random parameter to vary)
+            * :py:func:`generate_random_direction` (hit-and-run sampling, picking a random direction varying all parameters)
+            * :py:func:`generate_differential_direction` (differential evolution direction proposal)
+            * :py:func:`generate_region_oriented_direction` (slice sampling, but in the whitened parameter space)
+            * :py:func:`generate_region_random_direction` (hit-and-run sampling, but in the whitened parameter space)
+            * :py:class:`SequentialDirectionGenerator` (sequential slice sampling, i.e., iterate deterministically through the parameters)
+            * :py:class:`SequentialRegionDirectionGenerator` (sequential slice sampling in the whitened parameter space, i.e., iterate deterministically through the principle axes)
+            * :py:func:`generate_cube_oriented_differential_direction` (like generate_differential_direction, but along only one randomly chosen parameter)
             * :py:func:`generate_partial_differential_direction` (differential evolution slice proposal on only 10% of the parameters)
-            * :py:func:`generate_mixture_random_direction` (generate_differential_direction and generate_cube_oriented_differential_direction)
+            * :py:func:`generate_mixture_random_direction` (combined proposal)
 
             Additionally, :py:class:`OrthogonalDirectionGenerator`
-            can be applied to a generate_direction.
+            can be applied to any generate_direction function.
 
             When in doubt, try :py:func:`generate_mixture_random_direction`.
             It combines efficient moves along the live point distribution,
@@ -1212,6 +1214,49 @@ def BallSliceSampler(*args, **kwargs):
 def RegionBallSliceSampler(*args, **kwargs):
     """Hit & run sampler. Choose random directions according to region."""
     return SliceSampler(*args, **kwargs, generate_direction=generate_region_random_direction)
+
+
+class SequentialDirectionGenerator(object):
+    """Sequentially proposes one parameter after the next."""
+    def __init__(self):
+        """Initialise."""
+        self.axis_index = 0
+
+    def __call__(self, ui, region, scale=1):
+        """Choose the next axis in u-space.
+
+        Parameters
+        -----------
+        ui: array
+            current point (in u-space)
+        region: MLFriends object
+            pick random two live points for length along axis
+        scale: float
+            length of direction vector
+
+        Returns
+        --------
+        v: array
+            new direction vector (in u-space)
+        """
+        nlive, ndim = region.u.shape
+        j = self.axis_index % ndim
+        self.axis_index = j + 1
+
+        v = np.zeros(ndim)
+        # choose pair of live points
+        while v[j] == 0:
+            i = np.random.randint(nlive)
+            i2 = np.random.randint(nlive - 1)
+            if i2 >= i:
+                i2 += 1
+
+            v[j] = (region.u[i,j] - region.u[i2,j]) * scale
+
+        return v
+
+    def __str__(self):
+        return type(self).__name__ + '()'
 
 
 class SequentialRegionDirectionGenerator(object):
