@@ -59,6 +59,22 @@ def test_get_cumsum_range_random_prob():
         assert p[ilo:ihi].sum() <= (1 - dp) * 2, (p[ilo:ihi], p[ilo:ihi].sum(), (1 - dp) * 2)
 
 
+def test_failing_update_region_bootstrap():
+    rng = np.random.RandomState(10)
+    u = rng.uniform(size=(200, 4))
+    # make linearly dependent, so building a region should fail
+    u[:,-1] = u[:,0]
+    # boot-strap an affine layer after clustering
+    transformLayer = AffineLayer()
+    transformLayer.optimize(u, u)
+    region = MLFriends(u, transformLayer)
+    try:
+        _update_region_bootstrap(region, nbootstraps=30)
+        assert False, 'expected a linalg error'
+    except np.linalg.LinAlgError:
+        pass
+
+
 def test_clustering_recursion(plot=False):
     # generate two blobs separated by 2 sigma
     # check that they are *not* separated with AffineLayer+MLFriends
