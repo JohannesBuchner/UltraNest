@@ -676,6 +676,8 @@ class StepSampler(object):
         self.starting_point_selector = starting_point_selector
         self.mean_pair_distance = np.nan
         self.region_filter = region_filter
+        if log:
+            assert hasattr(log, 'write'), 'log argument should be a file, use log=open(filename, "w") or similar' 
         self.log = log
 
         self.logstat = []
@@ -911,6 +913,7 @@ class StepSampler(object):
                 [Lmin], ustart, ufinal, tstart, tfinal,
                 [self.nsteps, region.maxradiussq**0.5, mean_pair_distance,
                  iLstart, iLfinal, itstart, itfinal])])
+            self.log.flush()
 
         if self.adaptive_nsteps or self.check_nsteps:
             self.adapt_nsteps(region=region)
@@ -1198,7 +1201,7 @@ class SliceSampler(StepSampler):
 
 def CubeSliceSampler(*args, **kwargs):
     """Slice sampler, randomly picking region axes."""
-    return SliceSampler(*args, **kwargs, generate_direction=generate_cube_oriented_direction)
+    return SliceSampler(*args, **kwargs, generate_direction=SequentialDirectionGenerator())
 
 
 def RegionSliceSampler(*args, **kwargs):

@@ -1,7 +1,9 @@
 import numpy as np
+import os
+
 from ultranest.mlfriends import ScalingLayer, AffineLayer, MLFriends
 from ultranest import ReactiveNestedSampler
-from ultranest.stepsampler import RegionMHSampler, CubeMHSampler, CubeSliceSampler, RegionSliceSampler, SpeedVariableRegionSliceSampler, RegionBallSliceSampler, SpeedVariableGenerator
+from ultranest.stepsampler import RegionMHSampler, CubeMHSampler, SliceSampler, CubeSliceSampler, RegionSliceSampler, SpeedVariableRegionSliceSampler, RegionBallSliceSampler, SpeedVariableGenerator
 from ultranest.stepsampler import ellipsoid_bracket, crop_bracket_at_unit_cube, _inside_region
 from ultranest.stepsampler import generate_random_direction, generate_cube_oriented_direction
 from ultranest.stepsampler import SequentialDirectionGenerator, OrthogonalDirectionGenerator, SequentialRegionDirectionGenerator
@@ -258,7 +260,7 @@ def test_stepsampler_adapt_when_stuck(plot=False):
     assert new_scale < 0.01, (new_scale, unew)
     
     print('CubeSliceSampler')
-    stepsampler = CubeSliceSampler(nsteps=1, region_filter=True)
+    stepsampler = SliceSampler(nsteps=1, region_filter=True, generate_direction=generate_cube_oriented_direction)
     np.random.seed(23)
     old_scale = stepsampler.scale
     for j in range(100):
@@ -273,7 +275,7 @@ def test_stepsampler_adapt_when_stuck(plot=False):
     assert new_scale != old_scale
     assert new_scale < 0.01, (new_scale, unew)
 
-def test_stepsampler_regionmh_adapt(plot=False):
+def test_stepsampler_adapt(plot=True):
     np.random.seed(8)
     region = make_region(len(paramnames))
     Ls = loglike_vectorized(region.u)
@@ -284,9 +286,15 @@ def test_stepsampler_regionmh_adapt(plot=False):
         pass
     
     for sampler_class in RegionMHSampler, CubeMHSampler, CubeSliceSampler, RegionSliceSampler: 
-        for adaptation in False, 'move-distance', 'proposal-total-distances', 'proposal-summed-distances':
+        for adaptation in False, 'move-distance', 'move-distance-midway', 'proposal-total-distances', 'proposal-summed-distances':
             print()
-            stepsampler = sampler_class(nsteps=len(paramnames), adaptive_nsteps=adaptation)
+            if sampler_class in (CubeMHSampler, CubeSliceSampler):
+                logfilename = 'test-stepsampler-%s.log' % adaptation
+                log = open(logfilename, 'w')
+            else:
+                logfilename = None
+                log = False
+            stepsampler = sampler_class(nsteps=len(paramnames), adaptive_nsteps=adaptation, log=log)
             print(stepsampler)
             stepsampler.region_changed(Ls, region)
             np.random.seed(23)
@@ -303,6 +311,24 @@ def test_stepsampler_regionmh_adapt(plot=False):
                 assert stepsampler.nsteps != len(paramnames)
             else:
                 assert stepsampler.nsteps == len(paramnames)
+
+            if logfilename:
+                print(np.loadtxt(logfilename).shape)
+                log_nentries, log_ncolumns = np.loadtxt(logfilename).shape
+                assert log_nentries == 5
+                assert log_ncolumns == (1 + 4 * len(unew) + 7)
+                os.unlink(logfilename)
+            
+            if adaptation == 'move-distance' and sampler_class == RegionSliceSampler and plot:
+                # test plotting
+                if os.path.exists('test-stepsampler-plot.pdf'):
+                    os.unlink('test-stepsampler-plot.pdf')
+                stepsampler.plot('test-stepsampler-plot.pdf')
+                assert os.path.exists('test-stepsampler-plot.pdf')
+                if os.path.exists('test-stepsampler-plot-jumps.pdf'):
+                    os.unlink('test-stepsampler-plot-jumps.pdf')
+                stepsampler.plot_jump_diagnostic_histogram('test-stepsampler-plot-jumps.pdf')
+                assert os.path.exists('test-stepsampler-plot-jumps.pdf')
 
 def assert_point_touches_ellipsoid(ucurrent, v, t, ellipsoid_center, ellipsoid_invcov, enlarge):
     unext = ucurrent + v * t
