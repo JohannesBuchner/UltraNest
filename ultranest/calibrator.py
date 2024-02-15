@@ -7,8 +7,23 @@ from ultranest.integrator import ReactiveNestedSampler
 import os
 
 
-def substitute_log_dir(init_args, nsteps):
-    """Append nsteps to log_dir argument, if set."""
+def _substitute_log_dir(init_args, nsteps):
+    """Append `nsteps` to `log_dir` argument, if set.
+
+    Parameters
+    -----------
+    init_args: dict
+        arguments passed :py:class:`ReactiveNestedSampler`,
+        may contain the key `'log_dir'`.
+    nsteps: int
+        number of steps
+
+    Returns
+    -------
+    new_init_args: dict
+        same as init_args, but if `'log_dir'` was set,
+        it now has `'-nsteps'+str(nsteps)` appended.
+    """
     if 'log_dir' in init_args:
         args = dict(init_args)
         args['log_dir'] = init_args['log_dir'] + '-nsteps%d' % nsteps
@@ -18,6 +33,14 @@ def substitute_log_dir(init_args, nsteps):
 
 class ReactiveNestedCalibrator():
     """Calibrator for the number of steps in step samplers.
+
+    The number of steps in a step sampler needs to be chosen.
+    A calibration recommended (e.g. https://ui.adsabs.harvard.edu/abs/2019MNRAS.483.2044H)
+    is to run a sequence of nested sampling runs with increasing number of steps,
+    and stop when log(Z) converges.
+
+    This class automates this. See the :py:meth:`ReactiveNestedCalibrator.run`
+    for details.
 
     Usage
     -----
@@ -37,8 +60,8 @@ class ReactiveNestedCalibrator():
     The run() command will print the number of slice sampler steps
     that appear safe for the inference task.
 
-    The initial value for nsteps is ignored, and set to len(param_names)
-    instead.
+    The initial value for nsteps (e.g. in `SliceSampler(nsteps=...)`) 
+    is overwritten by this class.
     """
 
     def __init__(self,
@@ -68,12 +91,28 @@ class ReactiveNestedCalibrator():
         self.stepsampler = None
 
     def run(self, **kwargs):
-        """Run a sequence of ReactiveNestedSampler with nsteps doubling.
+        """Run a sequence of ReactiveNestedSampler runs until convergence.
+
+        The first run is made with the number of steps set to the number of parameters.
+        Each subsequent run doubles the number of steps.
+        Runs are made until convergence is reached.
+        Then this generator stops yielding results.
+
+        Convergence is defined as three consecutive runs which
+        1) are not ordered in their log(Z) results,
+        and 2) the consecutive log(Z) error bars must overlap.
 
         Parameters
         -----------
         **kwargs: dict
             All arguments are passed to :py:meth:`ReactiveNestedSampler.run`.
+
+        Yields
+        -------
+        nsteps: int
+            number of steps for the current run
+        result: dict
+            return value of :py:meth:`ReactiveNestedSampler.run` for the current run
         """
         assert self.stepsampler is not None
         self.run_args = kwargs
