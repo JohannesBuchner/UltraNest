@@ -58,7 +58,7 @@ def test_stepsampler_cubeslice(plot=False):
     with tempfile.TemporaryDirectory() as tempdir:
         prefix = os.path.join(tempdir, 'test-stepsampler')
         sampler.stepsampler.plot(prefix + '-plot.pdf')
-        assert os.path.exists('test-popstepsampler-plot.pdf')
+        assert os.path.exists(prefix + '-plot.pdf')
         sampler.stepsampler.plot_jump_diagnostic_histogram(prefix + '-plot-jumps.pdf')
         assert os.path.exists(prefix + '-plot-jumps.pdf')
         sampler.stepsampler.print_diagnostic()
@@ -86,7 +86,7 @@ def test_stepsampler_cubegausswalk(plot=False):
     with tempfile.TemporaryDirectory() as tempdir:
         prefix = os.path.join(tempdir, 'test-stepsampler')
         sampler.stepsampler.plot(prefix + '-plot.pdf')
-        assert os.path.exists('test-popstepsampler-plot.pdf')
+        assert os.path.exists(prefix + '-plot.pdf')
         sampler.stepsampler.plot_jump_diagnostic_histogram(prefix + '-plot-jumps.pdf')
         assert os.path.exists(prefix + '-plot-jumps.pdf')
         sampler.stepsampler.print_diagnostic()
