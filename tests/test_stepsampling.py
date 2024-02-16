@@ -1,6 +1,7 @@
 import numpy as np
 import os
 import pytest
+import tempfile
 
 from ultranest.mlfriends import ScalingLayer, AffineLayer, MLFriends
 from ultranest import ReactiveNestedSampler
@@ -283,50 +284,50 @@ def test_stepsampler_adapt(plot=True):
     with pytest.raises(ValueError):
         RegionMHSampler(nsteps=len(paramnames), adaptive_nsteps='Hello')
 
-    for sampler_class in RegionMHSampler, CubeMHSampler, CubeSliceSampler, RegionSliceSampler:
-        for adaptation in False, 'move-distance', 'move-distance-midway', 'proposal-total-distances', 'proposal-summed-distances':
-            print()
-            if sampler_class in (CubeMHSampler, CubeSliceSampler):
-                logfilename = 'test-stepsampler-%s.log' % adaptation
-                log = open(logfilename, 'w')
-            else:
-                logfilename = None
-                log = False
-            stepsampler = sampler_class(nsteps=len(paramnames), adaptive_nsteps=adaptation, log=log)
-            print(stepsampler)
-            stepsampler.region_changed(Ls, region)
-            np.random.seed(23)
-            old_scale = stepsampler.scale
-            for i in range(5):
-                while True:
-                    unew, pnew, Lnew, nc = stepsampler.__next__(region, -1e100, region.u, Ls, transform, loglike)
-                    if unew is not None:
-                        break
-            new_scale = stepsampler.scale
-            assert new_scale != old_scale
+    with tempfile.TemporaryDirectory() as tempdir:
+        for sampler_class in RegionMHSampler, CubeMHSampler, CubeSliceSampler, RegionSliceSampler:
+            for adaptation in False, 'move-distance', 'move-distance-midway', 'proposal-total-distances', 'proposal-summed-distances':
+                print()
+                if sampler_class in (CubeMHSampler, CubeSliceSampler):
+                    logfilename = os.path.join(tempdir, 'test-stepsampler-%s.log' % adaptation)
+                    log = open(logfilename, 'w')
+                else:
+                    logfilename = None
+                    log = False
+                stepsampler = sampler_class(nsteps=len(paramnames), adaptive_nsteps=adaptation, log=log)
+                print(stepsampler)
+                stepsampler.region_changed(Ls, region)
+                np.random.seed(23)
+                old_scale = stepsampler.scale
+                for i in range(5):
+                    while True:
+                        unew, pnew, Lnew, nc = stepsampler.__next__(region, -1e100, region.u, Ls, transform, loglike)
+                        if unew is not None:
+                            break
+                new_scale = stepsampler.scale
+                assert new_scale != old_scale
 
-            if adaptation:
-                assert stepsampler.nsteps != len(paramnames)
-            else:
-                assert stepsampler.nsteps == len(paramnames)
+                if adaptation:
+                    assert stepsampler.nsteps != len(paramnames)
+                else:
+                    assert stepsampler.nsteps == len(paramnames)
 
-            if logfilename:
-                print(np.loadtxt(logfilename).shape)
-                log_nentries, log_ncolumns = np.loadtxt(logfilename).shape
-                assert log_nentries == 5
-                assert log_ncolumns == (1 + 4 * len(unew) + 7)
-                os.unlink(logfilename)
+                if logfilename:
+                    print(np.loadtxt(logfilename).shape)
+                    log_nentries, log_ncolumns = np.loadtxt(logfilename).shape
+                    assert log_nentries == 5
+                    assert log_ncolumns == (1 + 4 * len(unew) + 7)
 
-            if adaptation == 'move-distance' and sampler_class == RegionSliceSampler and plot:
-                # test plotting
-                if os.path.exists('test-stepsampler-plot.pdf'):
-                    os.unlink('test-stepsampler-plot.pdf')
-                stepsampler.plot('test-stepsampler-plot.pdf')
-                assert os.path.exists('test-stepsampler-plot.pdf')
-                if os.path.exists('test-stepsampler-plot-jumps.pdf'):
-                    os.unlink('test-stepsampler-plot-jumps.pdf')
-                stepsampler.plot_jump_diagnostic_histogram('test-stepsampler-plot-jumps.pdf')
-                assert os.path.exists('test-stepsampler-plot-jumps.pdf')
+                if adaptation == 'move-distance' and sampler_class == RegionSliceSampler and plot:
+                    # test plotting
+                    prefix = os.path.join(tempdir, 'test-stepsampler')
+                    assert not os.path.exists(prefix + '-plot.pdf')
+                    stepsampler.plot(prefix + '-plot.pdf')
+                    assert os.path.exists(prefix + '-plot.pdf')
+
+                    assert not os.path.exists(prefix + '-plot-jumps.pdf')
+                    stepsampler.plot_jump_diagnostic_histogram(prefix + '-plot-jumps.pdf')
+                    assert os.path.exists(prefix + '-plot-jumps.pdf')
 
 def assert_point_touches_ellipsoid(ucurrent, v, t, ellipsoid_center, ellipsoid_invcov, enlarge):
     unext = ucurrent + v * t

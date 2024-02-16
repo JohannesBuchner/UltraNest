@@ -147,6 +147,7 @@ class ReactiveNestedCalibrator():
                 jump_distances = np.array([entry[i] for entry in sampler.stepsampler.logstat])
                 reference_distances = np.array([entry[j] for entry in sampler.stepsampler.logstat])
                 self.relsteps.append(jump_distances / reference_distances)
+            # TODO: handle population step samplers
 
             self.results.append(result)
             self.nsteps.append(nsteps)

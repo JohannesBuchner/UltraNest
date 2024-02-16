@@ -1,4 +1,5 @@
 import os
+import tempfile
 import numpy as np
 
 from ultranest import ReactiveNestedSampler
@@ -54,17 +55,15 @@ def test_stepsampler_cubeslice(plot=False):
     assert a.sum() > 1
     assert b.sum() > 1
 
-    if os.path.exists('test-popstepsampler-plot.pdf'):
-        os.unlink('test-popstepsampler-plot.pdf')
-    sampler.stepsampler.plot('test-popstepsampler-plot.pdf')
-    assert os.path.exists('test-popstepsampler-plot.pdf')
-    if os.path.exists('test-popstepsampler-plot-jumps.pdf'):
-        os.unlink('test-popstepsampler-plot-jumps.pdf')
-    sampler.stepsampler.plot_jump_diagnostic_histogram('test-popstepsampler-plot-jumps.pdf')
-    assert os.path.exists('test-popstepsampler-plot-jumps.pdf')
-    sampler.stepsampler.print_diagnostic()
-    print(sampler.stepsampler)
-    print(sampler.stepsampler.status)
+    with tempfile.TemporaryDirectory() as tempdir:
+        prefix = os.path.join(tempdir, 'test-stepsampler')
+        sampler.stepsampler.plot(prefix + '-plot.pdf')
+        assert os.path.exists('test-popstepsampler-plot.pdf')
+        sampler.stepsampler.plot_jump_diagnostic_histogram(prefix + '-plot-jumps.pdf')
+        assert os.path.exists(prefix + '-plot-jumps.pdf')
+        sampler.stepsampler.print_diagnostic()
+        print(sampler.stepsampler)
+        print(sampler.stepsampler.status)
 
 def test_stepsampler_cubegausswalk(plot=False):
     np.random.seed(2)
@@ -84,15 +83,14 @@ def test_stepsampler_cubegausswalk(plot=False):
     assert a.sum() > 1
     assert b.sum() > 1
 
-    if os.path.exists('test-popstepsampler-plot.pdf'):
-        os.unlink('test-popstepsampler-plot.pdf')
-    sampler.stepsampler.plot('test-popstepsampler-plot.pdf')
-    assert os.path.exists('test-popstepsampler-plot.pdf')
-    if os.path.exists('test-popstepsampler-plot-jumps.pdf'):
-        os.unlink('test-popstepsampler-plot-jumps.pdf')
-    sampler.stepsampler.plot_jump_diagnostic_histogram('test-popstepsampler-plot-jumps.pdf')
-    assert os.path.exists('test-popstepsampler-plot-jumps.pdf')
-    sampler.stepsampler.print_diagnostic()
+    with tempfile.TemporaryDirectory() as tempdir:
+        prefix = os.path.join(tempdir, 'test-stepsampler')
+        sampler.stepsampler.plot(prefix + '-plot.pdf')
+        assert os.path.exists('test-popstepsampler-plot.pdf')
+        sampler.stepsampler.plot_jump_diagnostic_histogram(prefix + '-plot-jumps.pdf')
+        assert os.path.exists(prefix + '-plot-jumps.pdf')
+        sampler.stepsampler.print_diagnostic()
+        print(sampler.stepsampler)
 
 def test_direction_proposals():
     proposals = [generate_cube_oriented_direction, generate_random_direction, 
