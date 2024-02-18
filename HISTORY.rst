@@ -2,14 +2,14 @@
 Release Notes
 ==============
 
-4.1.0 (2023-02-15)
+4.1.0 (2024-02-15)
 ------------------
 
 * add number of steps calibrator :py:class:`ultranest.calibrator.ReactiveNestedCalibrator`
 * add relative jump distance diagnostic for step samplers
 * make population step samplers more consistent with other step samplers
 
-4.0.0 (2023-02-15)
+4.0.0 (2024-02-15)
 ------------------
 
 * replace :py:class:`ultranest.mlfriends.AffineLayer` with new :py:class:`ultranest.mlfriends.MaxPrincipleGapAffineLayer`
