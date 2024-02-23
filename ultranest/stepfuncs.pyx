@@ -530,10 +530,10 @@ def generate_mixture_random_direction(ui, region, scale=1):
 @cython.boundscheck(False)
 @cython.wraparound(False)
 cpdef tuple update_vectorised_slice_sampler(\
-                          np.ndarray[np.float_t, ndim=1] Theta, np.ndarray[np.float_t, ndim=1] Theta_min,\
-                          np.ndarray[np.float_t, ndim=1] Theta_max, np.ndarray[np.float_t, ndim=1] proposed_L,\
+                          np.ndarray[np.float_t, ndim=1] t, np.ndarray[np.float_t, ndim=1] tleft,\
+                          np.ndarray[np.float_t, ndim=1] tright, np.ndarray[np.float_t, ndim=1] proposed_L,\
                           np.ndarray[np.float_t, ndim=2] proposed_u, np.ndarray[np.float_t, ndim=2] proposed_p,\
-                          np.ndarray[np.int_t, ndim=1] worker, np.ndarray[np.int_t, ndim=1] status,\
+                          np.ndarray[np.int_t, ndim=1] worker_running, np.ndarray[np.int_t, ndim=1] status,\
                           np.float_t Likelihood_threshold, np.ndarray[np.float_t, ndim=2] allu,\
                           np.ndarray[np.float_t, ndim=1] allL, np.ndarray[np.float_t, ndim=2] allp, int popsize):
 
@@ -541,11 +541,11 @@ cpdef tuple update_vectorised_slice_sampler(\
 
     Parameters
     -----------
-    Theta: array
+    t: array
         proposed slice coordinate
-    Theta_min: array
+    tleft: array
         current slice negative end
-    Theta_max: array
+    tright: array
         current slice positive end
     proposed_L: array
         log-likelihood of proposed point
@@ -553,7 +553,7 @@ cpdef tuple update_vectorised_slice_sampler(\
         proposed point in unit cube space
     proposed_p: array
         proposed point in transformed space
-    worker: array
+    worker_running: array
         index of the point associated with each worker
     status: array
         integer status of the point
@@ -570,11 +570,11 @@ cpdef tuple update_vectorised_slice_sampler(\
 
     Returns
     --------
-    Theta_min: array
+    tleft: array
         updated current slice negative end
-    Theta_max: array
+    tright: array
         updated current slice positive end
-    worker: array
+    worker_running: array
         updated index of the point associated with each worker
     status: array
         updated integer status of the point
@@ -584,32 +584,32 @@ cpdef tuple update_vectorised_slice_sampler(\
         updated log-likelihoods of accepted points
     allp: array
         updated accepted points in transformed space
-    throwed: int
-        number of points that were rejected because they were outside the slice
+    discarded: int
+        Point where the likelihood was evaluated but was not taken into account.
     """
                             
     cdef int j, k
-    cdef throwed = 0
+    cdef discarded = 0
     for l in range(popsize):
-        if Theta[l] > Theta_max[worker[l]] or Theta[l] < Theta_min[worker[l]]:
+        if t[l] > tright[worker_running[l]] or t[l] < tleft[worker_running[l]]:
             if proposed_L[l]>Likelihood_threshold:
-                throwed+=1
+                discarded+=1
             continue
-        if 0 < Theta[l] < Theta_max[worker[l]]:
-            Theta_max[worker[l]] = Theta[l]
-        if 0 > Theta[l] > Theta_min[worker[l]]:
-            Theta_min[worker[l]] = Theta[l]
-        if proposed_L[l] > Likelihood_threshold and status[worker[l]] == 0:
-            status[worker[l]] = 1
-            allu[worker[l], :] = proposed_u[l, :]
-            allL[worker[l]] = proposed_L[l]
-            allp[worker[l], :] = proposed_p[l, :]
+        if 0 < t[l] < tright[worker_running[l]]:
+            tright[worker_running[l]] = t[l]
+        if 0 > t[l] > tright[worker_running[l]]:
+            tright[worker_running[l]] = t[l]
+        if proposed_L[l] > Likelihood_threshold and status[worker_running[l]] == 0:
+            status[worker_running[l]] = 1
+            allu[worker_running[l], :] = proposed_u[l, :]
+            allL[worker_running[l]] = proposed_L[l]
+            allp[worker_running[l], :] = proposed_p[l, :]
 
     j = 0
     while j < popsize and (status == 0).any():
         for k in range(popsize):
             if status[k] == 0 and j < popsize:
-                worker[j] = k
+                worker_running[j] = k
                 j += 1
 
-    return (Theta_min, Theta_max, worker, status, allu, allL, allp,throwed)
+    return (tleft, tright, worker_running, status, allu, allL, allp,discarded)

@@ -754,7 +754,7 @@ class PopulationSimpleSliceSampler():
             allp = np.zeros((self.popsize, ndim))
             allL = np.array(Ls[ilive])
             nc = 0
-            n_throws=0
+            n_discarded=0
                                        
                 
             
@@ -790,10 +790,10 @@ class PopulationSimpleSliceSampler():
                     proposed_L = loglike(proposed_p)
                     nc+=self.popsize
                     # Updating the pool of points based on the newly sampled points
-                    tleft,tright,worker_running,status,allu,allL,allp,nth=update_vectorised_slice_sampler(\
+                    tleft,tright,worker_running,status,allu,allL,allp,n_discarded_it=update_vectorised_slice_sampler(\
                     t,tleft,tright,proposed_L,proposed_u,proposed_p,worker_running,status,Lmin\
                     ,allu,allL,allp,self.popsize)
-                    n_throws+=nth
+                    n_discarded+=n_discarded_it
                     # Update of the limits of the slices
                     tleft_worker=tleft[worker_running]
                     tright_worker=tright[worker_running]
