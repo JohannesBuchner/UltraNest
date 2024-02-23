@@ -100,7 +100,7 @@ def main(args):
     if args.SimSlice:
         import ultranest.popstepsampler as ultrapop
         direction=[ultrapop.generate_cube_oriented_direction,ultrapop.generate_mixture_random_direction,ultrapop.generate_differential_direction,ultrapop.generate_region_random_direction,ultrapop.generate_region_oriented_direction,ultrapop.generate_random_direction]
-        sampler.stepsampler = ultrapop.PopulationSimpleSliceSampler(popsize=args.popsize,nsteps=args.nstep,generate_direction=direction[args.direction],scale=1.0,scale_adapt_factor=1.0,scale_jitter=False)
+        sampler.stepsampler = ultrapop.PopulationSimpleSliceSampler(popsize=args.popsize,nsteps=args.nstep,generate_direction=direction[args.direction])
     if args.PopSlice:
         import ultranest.popstepsampler as ultrapop
         direction=[ultrapop.generate_cube_oriented_direction,ultrapop.generate_mixture_random_direction,ultrapop.generate_differential_direction,ultrapop.generate_region_random_direction,ultrapop.generate_region_oriented_direction,ultrapop.generate_random_direction]

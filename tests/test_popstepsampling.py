@@ -54,16 +54,15 @@ def test_stepsampler_cubegausswalk(plot=False):
     assert a.sum() > 1
     assert b.sum() > 1
 
-def test_stepsampler_randomEllSlice(plot=False):
+def test_stepsampler_randomSimSlice(plot=False):
     np.random.seed(4)
     nsteps = np.random.randint(10, 50)
     popsize = np.random.randint(1, 20)
     sampler = ReactiveNestedSampler(paramnames, loglike_vectorized, transform=transform, vectorized=True)
 
-    sampler.stepsampler = PopulationEllipticalSliceSampler(
+    sampler.stepsampler = PopulationSimpleSliceSampler(
         popsize=popsize, nsteps=nsteps, 
         generate_direction=generate_random_direction,
-        scale=1.0,
     )
     r = sampler.run(viz_callback=None, log_interval=50, max_iters=200, max_num_improvement_loops=0)
     sampler.print_results()
