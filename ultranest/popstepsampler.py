@@ -673,7 +673,7 @@ class PopulationSimpleSliceSampler():
         self.generate_direction =  generate_direction
         self.scale_adapt_factor = scale_adapt_factor
         self.ncalls = 0
-        self.throwed=0
+        self.discarded=0
         if scale is None:
             self.scale = 1.0
         else:
