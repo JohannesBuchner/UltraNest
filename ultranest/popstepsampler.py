@@ -807,7 +807,7 @@ class PopulationSimpleSliceSampler():
             interval_final=interval_final/self.nsteps
             
             
-            self.throwed+=n_throws
+            self.discarded+=n_discarded
             self.ncalls+=nc
             
             assert np.array([p!=np.zeros(ndim) for p in allp]).all(), 'some walkers never moved! Double nsteps of PopulationSimpleSliceSampler.'
