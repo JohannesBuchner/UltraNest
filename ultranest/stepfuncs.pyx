@@ -534,7 +534,7 @@ cpdef tuple update_vectorised_slice_sampler(\
                           np.ndarray[np.float_t, ndim=1] tright, np.ndarray[np.float_t, ndim=1] proposed_L,\
                           np.ndarray[np.float_t, ndim=2] proposed_u, np.ndarray[np.float_t, ndim=2] proposed_p,\
                           np.ndarray[np.int_t, ndim=1] worker_running, np.ndarray[np.int_t, ndim=1] status,\
-                          np.float_t Likelihood_threshold, np.ndarray[np.float_t, ndim=2] allu,\
+                          np.float_t Likelihood_threshold,np.float_t shrink_factor, np.ndarray[np.float_t, ndim=2] allu,\
                           np.ndarray[np.float_t, ndim=1] allL, np.ndarray[np.float_t, ndim=2] allp, int popsize):
 
     """Update the slice sampler state of each walker in the populations.
@@ -559,6 +559,8 @@ cpdef tuple update_vectorised_slice_sampler(\
         integer status of the point
     Likelihood_threshold: float
         current log-likelihood threshold
+    shrink_factor: float
+        factor by which to shrink the slice
     allu: array
         Accepted points in unit cube space
     allL: array
@@ -596,9 +598,9 @@ cpdef tuple update_vectorised_slice_sampler(\
                 discarded+=1
             continue
         if 0 < t[l] < tright[worker_running[l]]:
-            tright[worker_running[l]] = t[l]
-        if 0 > t[l] > tright[worker_running[l]]:
-            tright[worker_running[l]] = t[l]
+            tright[worker_running[l]] = t[l]/shrink_factor
+        if 0 > t[l] > tleft[worker_running[l]]:
+            tleft[worker_running[l]] = t[l]/shrink_factor
         if proposed_L[l] > Likelihood_threshold and status[worker_running[l]] == 0:
             status[worker_running[l]] = 1
             allu[worker_running[l], :] = proposed_u[l, :]

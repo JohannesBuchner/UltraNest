@@ -622,7 +622,7 @@ class PopulationSimpleSliceSampler():
         self, popsize, nsteps, generate_direction,
         scale_adapt_factor=1.0, adapt_slice_scale_target=2.0,
         scale=None, scale_jitter_func=None,slice_limit=slice_limit_to_unitcube,
-        max_it=100):
+        max_it=100,shrink_factor=1.0):
         """Initialise.
 
         Parameters
@@ -665,6 +665,10 @@ class PopulationSimpleSliceSampler():
         max_it: int
             maximum number of iterations to find a point on the slice. If the maximum number of iterations is reached,
             the current point is returned as the next one.
+        shrink_factor: float
+            During the shrinking procedure, a new slice bound is set to the last tested point that don't respect the Lmin
+            condition if `shrink_factor` is set to 1.0. If its value is larger than 1.0, the new slice bound is set to the
+            `1/shrink_factor` of the distance between the current point and the last tested point that don't respect the Lmin condition.
         """
         self.nsteps = nsteps
         
@@ -674,6 +678,8 @@ class PopulationSimpleSliceSampler():
         self.scale_adapt_factor = scale_adapt_factor
         self.ncalls = 0
         self.discarded=0
+        self.shrink_factor=shrink_factor
+        assert shrink_factor>=1.0, "The shrink factor should be greater than 1.0 to be efficient"
         if scale is None:
             self.scale = 1.0
         else:
@@ -765,6 +771,8 @@ class PopulationSimpleSliceSampler():
                 factor_scale=self.scale_jitter_func()
                 # Defining slice direction
                 v = self.generate_direction(allu, region,scale= 1.0)*self.scale*factor_scale
+                
+                
                 # limite of the slice based on the unit cube boundaries
                 tleft_unitcube,tright_unitcube= unitcube_line_intersection(allu, v)
                 # Defining bound of the slice
@@ -781,7 +789,7 @@ class PopulationSimpleSliceSampler():
                 
                     # Sampling points on the slices
                     t=tleft_worker+(tright_worker-tleft_worker)*np.random.uniform(size=(self.popsize,))
-                
+                    
                     points=allu[worker_running,:]
                     v_worker=v[worker_running,:]
                     proposed_u=points+t.reshape((-1,1))*v_worker
@@ -791,8 +799,8 @@ class PopulationSimpleSliceSampler():
                     nc+=self.popsize
                     # Updating the pool of points based on the newly sampled points
                     tleft,tright,worker_running,status,allu,allL,allp,n_discarded_it=update_vectorised_slice_sampler(\
-                    t,tleft,tright,proposed_L,proposed_u,proposed_p,worker_running,status,Lmin\
-                    ,allu,allL,allp,self.popsize)
+                    t,tleft,tright,proposed_L,proposed_u,proposed_p,worker_running,status,Lmin,self.shrink_factor,\
+                    allu,allL,allp,self.popsize)
                     n_discarded+=n_discarded_it
                     # Update of the limits of the slices
                     tleft_worker=tleft[worker_running]
