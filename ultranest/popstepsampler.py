@@ -751,11 +751,11 @@ class PopulationSimpleSliceSampler():
         """
         nlive, ndim = us.shape
         
-        assert nlive>=self.popsize, "The number of live points should be greater than the population size" 
+         
         # fill if empty:
         if len(self.prepared_samples) == 0:
             # choose live points
-            ilive = np.random.choice(nlive, size=self.popsize, replace=False)
+            ilive = np.random.randint(0, nlive, size=self.popsize)
             allu = np.array(us[ilive,:])
             allp = np.zeros((self.popsize, ndim))
             allL = np.array(Ls[ilive])
