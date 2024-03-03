@@ -578,7 +578,7 @@ class StepSampler(object):
             :py:func:`generate_cube_oriented_direction` works well too.
 
         adaptive_nsteps: False or str
-            Strategy to adapt the number of steps. 
+            Strategy to adapt the number of steps.
             The possible values are the same as for `check_nsteps`.
 
             Adapting can give usable results. However, strictly speaking,
@@ -612,7 +612,7 @@ class StepSampler(object):
               between pairs of live points.
 
             Each step sampler walk adds one row to stepsampler.logstat.
-            The jump distance (forth column) should be compared to 
+            The jump distance (forth column) should be compared to
             the reference distance (fifth column).
 
         max_nsteps: int
@@ -676,7 +676,7 @@ class StepSampler(object):
         self.mean_pair_distance = np.nan
         self.region_filter = region_filter
         if log:
-            assert hasattr(log, 'write'), 'log argument should be a file, use log=open(filename, "w") or similar' 
+            assert hasattr(log, 'write'), 'log argument should be a file, use log=open(filename, "w") or similar'
         self.log = log
 
         self.logstat = []
@@ -751,9 +751,9 @@ class StepSampler(object):
     def get_info_dict(self):
         return dict(
             num_logs=len(self.logstat),
-            rejection_rate=np.nanmean([entry[0] for entry in self.logstat]),
-            mean_scale=np.nanmean([entry[1] for entry in self.logstat]),
-            mean_nsteps=np.nanmean([entry[2] for entry in self.logstat]),
+            rejection_rate=np.nanmean([entry[0] for entry in self.logstat]) if len(self.logstat) > 0 else np.nan,
+            mean_scale=np.nanmean([entry[1] for entry in self.logstat]) if len(self.logstat) > 0 else np.nan,
+            mean_nsteps=np.nanmean([entry[2] for entry in self.logstat]) if len(self.logstat) > 0 else np.nan,
             mean_distance=self.mean_jump_distance,
             frac_far_enough=self.far_enough_fraction,
             last_logstat=dict(zip(self.logstat_labels, self.logstat[-1] if len(self.logstat) > 1 else [np.nan] * len(self.logstat_labels)))
@@ -767,7 +767,7 @@ class StepSampler(object):
             return
         if 'jump-distance' not in self.logstat_labels or 'reference-distance' not in self.logstat_labels:
             print("turn on check_nsteps in the step sampler for diagnostics")
-            return 
+            return
         frac_farenough = self.far_enough_fraction
         average_distance = self.mean_jump_distance
         if frac_farenough < 0.5:
@@ -784,9 +784,9 @@ class StepSampler(object):
         if len(self.logstat) == 0:
             return
         if 'jump-distance' not in self.logstat_labels:
-            return 
+            return
         if 'reference-distance' not in self.logstat_labels:
-            return 
+            return
         i = self.logstat_labels.index('jump-distance')
         j = self.logstat_labels.index('reference-distance')
         jump_distances = np.array([entry[i] for entry in self.logstat])
