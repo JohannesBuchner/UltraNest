@@ -1720,7 +1720,7 @@ class ReactiveNestedSampler(object):
             with np.errstate(divide='ignore', invalid='ignore'):
                 widthratio = 1 - np.exp(logweights[1:,0] - logweights[:-1,0])
                 nlive = 1. / np.log((1 - np.sqrt(1 - 4 * widthratio)) / (2 * widthratio))
-                nlive[~(nlive > 1)] = 1
+                nlive[~np.logical_and(np.isfinite(nlive), nlive > 1)] = 1
 
             # build iteration groups
             nlive_sets, niter = np.unique(nlive.astype(int), return_counts=True)
