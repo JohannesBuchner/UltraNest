@@ -66,6 +66,88 @@ def cornerplot(results, logger=None):
     logging.warning = oldfunc
 
 
+def highest_density_interval_from_samples(xsamples, xlo=None, xhi=None, probability_level=0.68):
+    """
+    Compute the highest density interval (HDI) from posterior samples.
+
+    Parameters
+    ----------
+    xsamples : array_like
+        The posterior samples from which to compute the HDI.
+    xlo : float or None, optional
+        Lower boundary limiting the space. Default is None.
+    xhi : float or None, optional
+        Upper boundary limiting the space. Default is None.
+    probability_level : float, optional
+        The desired probability level for the HDI. Default is 0.68.
+
+    Returns
+    -------
+    x_MAP: float
+        maximum a posteriori (MAP) estimate.
+    xerrlo: float
+        lower uncertainty (lower HDI bound minus x_MAP).
+    xerrhi: float
+        upper uncertainty (x_MAP minus upper HDI bound).
+
+    Notes
+    -----
+    The function starts at the highest density point and accumulates neighboring points
+    until the specified probability level is reached. If `xlo` or `xhi` is provided,
+    the HDI is constrained within these bounds.
+
+    Requires getdist to be installed for a kernel density estimation.
+
+    For uniform distributions, this function will give unpredictable results for the MAP.
+
+    Examples
+    --------
+    >>> xsamples = np.random.normal(loc=0, scale=1, size=100000)
+    >>> hdi = highest_density_interval_from_samples(xsamples)
+    >>> print('x = %.1f + %.2f - %.2f' % hdi)
+    x = 0.0 + 1.02 - 0.96
+    """
+    from getdist.mcsamples import MCSamples
+    import getdist.chains
+    getdist.chains.print_load_details = False
+    samples = MCSamples(
+        samples=xsamples, names=['x'], ranges={'x':[xlo,xhi]},
+        settings = dict(mult_bias_correction_order=1))
+    samples.raise_on_bandwidth_errors = True
+    density_bounded = samples.get1DDensityGridData('x')
+
+    x = density_bounded.x
+    y = density_bounded.P / np.sum(density_bounded.P)
+
+    # Sort the y values in descending order
+    sorted_indices = np.argsort(y)[::-1]
+
+    # define MAP as the peak. This works well if the peak is declining to both sides
+    MAP = x[sorted_indices[0]]
+    # if the peak is very flat, this is unstable, so lets use the top 10 per cent
+    # if KDE is multi-peaked or very flat, then the part identified with map_tolerance may be very large
+    #MAP_mask = y > map_tolerance * y.max()
+    #peak_weight = y[MAP_mask]
+    #if peak_weight.sum() > probability_level:
+    #    MAP = np.average(x[MAP_mask], weights=peak_weight)
+
+    total_probability = y[sorted_indices[0]]
+    i_lo = sorted_indices[0]
+    i_hi = sorted_indices[0]
+    for i in sorted_indices[1:]:
+        # Add the current probability to the total
+        i_lo = min(i_lo, i)
+        i_hi = max(i_hi, i)
+        total_probability = y[i_lo : i_hi + 1].sum()
+        # Check if the total probability exceeds or equals the desired level
+        if total_probability >= probability_level:
+            break
+
+    x_lo = x[i_lo]
+    x_hi = x[i_hi]
+    return MAP, MAP - x_lo, x_hi - MAP
+
+
 class PredictionBand(object):
     """Plot bands of model predictions as calculated from a chain.
 
