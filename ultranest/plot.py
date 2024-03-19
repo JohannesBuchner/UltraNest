@@ -124,13 +124,6 @@ def highest_density_interval_from_samples(xsamples, xlo=None, xhi=None, probabil
 
     # define MAP as the peak. This works well if the peak is declining to both sides
     MAP = x[sorted_indices[0]]
-    # if the peak is very flat, this is unstable, so lets use the top 10 per cent
-    # if KDE is multi-peaked or very flat, then the part identified with map_tolerance may be very large
-    #MAP_mask = y > map_tolerance * y.max()
-    #peak_weight = y[MAP_mask]
-    #if peak_weight.sum() > probability_level:
-    #    MAP = np.average(x[MAP_mask], weights=peak_weight)
-
     total_probability = y[sorted_indices[0]]
     i_lo = sorted_indices[0]
     i_hi = sorted_indices[0]
