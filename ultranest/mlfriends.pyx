@@ -65,6 +65,76 @@ cdef count_nearby(
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
+def _subtract_nearby(np.ndarray[np.float_t, ndim=2] apts, np.ndarray[np.float_t, ndim=2] bpts, np.float_t radiussq):
+    """Subtract from each point apts the mean of points within square radius `radiussq`, store in bpts.
+
+    Parameters
+    ----------
+    apts: array
+        points
+    bpts: array
+        resulting points
+    radiussq: float
+        square of the MLFriends radius
+
+    """
+    cdef size_t n = apts.shape[0]
+    cdef size_t ndim = apts.shape[1]
+    assert n == bpts.shape[0]
+    assert ndim == bpts.shape[1]
+
+    cdef unsigned long i, j
+    cdef size_t nnearby
+    cdef np.float_t d
+
+    # go through each point
+    for j in range(n):
+        # find all nearest points
+        bpts[j,:] = 0
+        nnearby = 0
+        for i in range(n):
+            # check if it is within the radius
+            d = 0.0
+            for k in range(ndim):
+                d += (apts[i,k] - apts[j,k])**2
+            if d <= radiussq:
+                # accumulate to point average
+                nnearby += 1
+                for k in range(ndim):
+                    bpts[j,k] += apts[i,k]
+
+        # compute and subtract mean
+        for k in range(ndim):
+            bpts[j,k] = apts[j,k] - bpts[j,k] / float(nnearby)
+
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+def subtract_nearby(
+    np.ndarray[np.float_t, ndim=2] upoints,
+    np.float_t maxradiussq):
+    """Subtract from each point apts the mean of points within square radius `radiussq`, store in bpts.
+
+    Parameters
+    ----------
+    apts: array
+        points
+    radiussq: float
+        square of the MLFriends radius
+
+    Returns
+    ---------
+    overlapped_points:
+        upoints with the nearby centers subtracted.
+
+    """
+    upoints_out = np.zeros_like(upoints)
+    _subtract_nearby(upoints, upoints_out, maxradiussq)
+    return upoints_out
+
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
 def find_nearby(
     np.ndarray[np.float_t, ndim=2] apts,
     np.ndarray[np.float_t, ndim=2] bpts,
@@ -740,6 +810,39 @@ class MaxPrincipleGapAffineLayer(AffineLayer):
         s.optimize(upoints, halved_overlapped_uwpoints, minvol=minvol)
         return s
 
+
+class LocalAffineLayer(AffineLayer):
+    """Affine whitening transformation.
+
+    For learning the next layer's covariance, the points within 
+    the MLradius are co-centered. This should give a more "local"
+    covariance.
+    """
+
+    def create_new(self, upoints, maxradiussq, minvol=0.):
+        """Learn next layer from this optimized layer's clustering.
+
+        Parameters
+        ----------
+        upoints: array
+            points to use for optimize (in u-space)
+        maxradiussq: float
+            square of the MLFriends radius
+        minvol: float
+            Minimum volume to regularize sample covariance
+
+        Returns
+        ---------
+        A new, optimized LocalAffineLayer.
+        """
+        # perform clustering in transformed space
+        uwpoints = self.wrap(upoints)
+        tpoints = self.transform(upoints)
+        nclusters, clusteridxs, overlapped_uwpoints = update_clusters(uwpoints, tpoints, maxradiussq, self.clusterids)
+        s = LocalAffineLayer(nclusters=nclusters, wrapped_dims=self.wrapped_dims, clusterids=clusteridxs)
+        local_overlapped_uwpoints = subtract_nearby(uwpoints, maxradiussq)
+        s.optimize(upoints, local_overlapped_uwpoints, minvol=minvol)
+        return s
 
 
 def vol_prefactor(np.int_t n):

@@ -5,7 +5,7 @@ import tempfile
 import pytest
 import json
 import pandas
-from ultranest.mlfriends import MLFriends, ScalingLayer, AffineLayer, MaxPrincipleGapAffineLayer
+from ultranest.mlfriends import MLFriends, ScalingLayer, AffineLayer, MaxPrincipleGapAffineLayer, LocalAffineLayer
 from ultranest import NestedSampler, ReactiveNestedSampler, read_file
 from ultranest.integrator import warmstart_from_similar_file, _update_region_bootstrap, _get_cumsum_range
 import ultranest.mlfriends
@@ -90,6 +90,9 @@ def test_clustering_recursion(plot=False):
     nwithclusters = 0
     nwithclusters2 = 0
     noverclustered = 0
+    n2withclusters = 0
+    n2withclusters2 = 0
+    n2overclustered = 0
     gapped_nwithclusters = 0
     gapped_nwithclusters2 = 0
     gapped_noverclustered = 0
@@ -129,6 +132,22 @@ def test_clustering_recursion(plot=False):
             xymax = 1.5 * max(ymax, xmax)
             plt.xlim(0.5 - xymax, 0.5 + xymax)
             plt.ylim(0.5 - xymax, 0.5 + xymax)
+
+        # boot-strap an affine layer after clustering
+        transformLayer = LocalAffineLayer()
+        transformLayer.optimize(u, u)
+        region = MLFriends(u, transformLayer)
+        _update_region_bootstrap(region, nbootstraps)
+        region.create_ellipsoid()
+        layer = transformLayer.create_new(u, region.maxradiussq)
+        nextregion = MLFriends(u, layer)
+        _update_region_bootstrap(nextregion, nbootstraps=30)
+        nextLayer = layer.create_new(u, nextregion.maxradiussq)
+        nextNextLayer = nextLayer.create_new(u, region.maxradiussq)
+
+        n2withclusters += layer.nclusters
+        n2withclusters2 += nextLayer.nclusters
+        n2overclustered += nextLayer.nclusters > 2
 
         # boot-strap an MaxPrincipleGapAffineLayer layer after clustering
         transformLayer = MaxPrincipleGapAffineLayer()
@@ -171,17 +190,22 @@ def test_clustering_recursion(plot=False):
     print("  number of clusters iteration 1, iteration 2, number of overclusterings")
     print("AffineLayer:")
     print("  ", nwithclusters, nwithclusters2, noverclustered)
+    print("LocalAffineLayer:")
+    print("  ", nwithclusters, nwithclusters2, noverclustered)
     print("MaxPrincipleGapAffineLayer:")
     print("  ", gapped_nwithclusters, gapped_nwithclusters2, gapped_noverclustered)
     # with the affine layer we only see one cluster, because they are
     # so close together and the covariance spans them
     assert nwithclusters in (25, 26, 27)
     assert nwithclusters2 in (25, 26, 27)
+    assert n2withclusters in (25, 26, 27)
+    assert n2withclusters2 in (25, 26, 27)
     # MaxPrincipleGapAffineLayer builds a more local covariance
     # so the subsequent iteration splits the cluster
     assert gapped_nwithclusters in (25, 26, 27)
     assert gapped_nwithclusters2 in (49, 50, 51, 52)
     assert noverclustered in (0, 1, 2)
+    assert n2overclustered in (0, 1, 2)
     assert gapped_noverclustered in (0, 1, 2)
 
 def test_run():
