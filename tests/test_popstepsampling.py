@@ -1,8 +1,9 @@
 import numpy as np
 from ultranest import ReactiveNestedSampler
-from ultranest.popstepsampler import PopulationSliceSampler, PopulationRandomWalkSampler, PopulationEllipticalSliceSampler
+from ultranest.popstepsampler import PopulationSliceSampler, PopulationRandomWalkSampler, PopulationSimpleSliceSampler
 from ultranest.popstepsampler import generate_cube_oriented_direction, generate_random_direction, generate_cube_oriented_direction_scaled
 from ultranest.popstepsampler import generate_region_oriented_direction, generate_region_random_direction
+from ultranest.popstepsampler import slice_limit_to_unitcube,slice_limit_to_scale
 
 def loglike_vectorized(z):
     a = np.array([-0.5 * sum([((xi - 0.7 + i*0.001)/0.1)**2 for i, xi in enumerate(x)]) for x in z])
@@ -98,7 +99,87 @@ def test_direction_proposals():
                 assert directions.shape == points.shape, (directions.shape, points.shape)
                 #assert np.allclose(norms, scale), (norms, scale)
 
+
+def test_slice_limit():
+
+    slice_limit_func = [slice_limit_to_unitcube, slice_limit_to_scale]
+    fake_tleft = [-0.5, -0.2, -1.5]
+    fake_tright = [0.2, 2.4, 0.2]
+
+    fake_tleft_scale = [-0.5, -0.2, -1.]
+    fake_tright_scale = [0.2, 1.0, 0.2]
+
+    true_tleft = [fake_tleft, fake_tleft_scale]
+    true_tright = [fake_tright, fake_tright_scale]
+
+    for i,func in enumerate(slice_limit_func):
+        tleft, tright = func(fake_tleft, fake_tright)
+        assert np.allclose(tleft, true_tleft[i]), (tleft, true_tleft[i])
+        assert np.allclose(tright, true_tright[i]), (tright, true_tright[i])
+
+
+from ultranest.stepfuncs import update_vectorised_slice_sampler
+
+def test_update_slice_sampler():
+    """
+    Test goal: Testing the update in each different typical cases.
+    
+    There are 3 points searched with 4 points sampled on their slices:
+        - In the first case, no point is satisfying the Lmin condition. 
+    The functions should just update the slice limits and keep the status
+    unchanged.
+        - In the second case, one point is satisfying the Lmin condition.
+    But it will be discarded as it will be outside the slice limits. The
+    function should update the slice limits and keep the same status.
+        - In the third case, one point is satisfying the Lmin condition and
+    the slice limits. The function should update the slice limits and change
+    the status.
+
+    The workers should be split among the 2 unfinished points at the end.
+    """
+    
+    worker_running = np.array([0,0,0,0,1,1,1,1,2,2,2,2])
+    popsize = 12
+    status = np.zeros(12, dtype=int)
+    status[3:] = 1
+    Lmin = 1.
+    shrink = 1.0 
+    proposed_L = np.array([-12.,0.5,0.09,-2.,0.4,-5,2.4,0.3,-3.4,1.2,0.1,0.5])
+    tleft = -np.ones(12)
+    tright = np.ones(12)
+    t = np.array([-0.8,-0.2,0.4,-0.5,-0.3,0.9,-0.7,0.2,-0.8,0.5,-0.4,0.6])
+    proposed_u = np.array([[0.,0.,0.,0.,1.,1.,1.,1.,2.,2.5,2.,2.]]).T
+    proposed_p = np.array([[0.,0.,0.,0.,1.,1.,1.,1.,2.,2.5,2.,2.]]).T
+    allL = np.zeros(12)
+    allu = np.zeros((12,1))
+    allp = np.zeros((12,1))
+   
+    
+    tleft, tright, worker_running, status, allu, allL, allp,discarded= update_vectorised_slice_sampler(
+        t, tleft,tright,proposed_L,proposed_u,proposed_p,worker_running,status,Lmin,shrink,allu,allL,allp,popsize)
+
+    true_worker= np.array([0,1,0,1,0,1,0,1,0,1,0,1])
+    true_status = np.array([0,0,1,1,1,1,1,1,1,1,1,1])
+    true_allL = np.array([0.,0.,1.2,0,0,0,0,0,0,0,0,0])
+    true_allu = np.array([[0.,0.,2.5,0,0,0,0,0,0,0,0,0]]).T
+    true_allp = np.array([[0.,0.,2.5,0,0,0,0,0,0,0,0,0]]).T
+    true_discarded = 1
+    true_tleft = np.array([-0.2,-.3,-0.4,-1,-1,-1,-1,-1,-1,-1,-1,-1])
+    true_tright = np.array([0.4,0.2,0.5,1,1,1,1,1,1,1,1,1])
+
+    assert np.allclose(worker_running, true_worker), (worker_running, true_worker)
+    assert np.allclose(status, true_status), (status, true_status)
+    assert np.allclose(allL, true_allL), (allL, true_allL)
+    assert np.allclose(allu, true_allu), (allu, true_allu)
+    assert np.allclose(allp, true_allp), (allp, true_allp)
+    assert np.allclose(discarded, true_discarded), (discarded, true_discarded)
+    assert np.allclose(tleft, true_tleft), (tleft, true_tleft)
+    assert np.allclose(tright, true_tright), (tright, true_tright)
+
+
 if __name__ == '__main__':
     #test_stepsampler_cubegausswalk()
-    test_stepsampler_randomEllSlice()
-    test_direction_proposals()
+    #test_stepsampler_randomSimSlice()
+    #test_direction_proposals()
+    test_slice_limit()
+    test_update_slice_sampler()
