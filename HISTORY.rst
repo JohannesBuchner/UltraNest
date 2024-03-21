@@ -2,6 +2,12 @@
 Release Notes
 ==============
 
+4.2.0 (2024-02-15)
+------------------
+
+* new :py:class:`ultranest.mlfriends.LocalAffineLayer` for metric learning, set as default (see `issue 124 <https://github.com/JohannesBuchner/UltraNest/issues/124>`_)
+* add Highest Density Interval function (ultranest.plot.hdi)
+
 4.1.0 (2024-02-15)
 ------------------
 
@@ -12,9 +18,7 @@ Release Notes
 4.0.0 (2024-02-15)
 ------------------
 
-* replace :py:class:`ultranest.mlfriends.AffineLayer` with new :py:class:`ultranest.mlfriends.MaxPrincipleGapAffineLayer`
-
-  * This changes the learned covariance to be hopefully boost local features, make MLFriends identify smaller neighbourhoods, and thereby make sampling faster.
+* new :py:class:`ultranest.mlfriends.MaxPrincipleGapAffineLayer` for metric learning, set as default
 
 3.6.5 (2023-07-18)
 ------------------
