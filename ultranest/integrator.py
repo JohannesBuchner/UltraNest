@@ -25,7 +25,7 @@ import numpy as np
 
 from .utils import create_logger, make_run_dir, resample_equal, vol_prefactor, vectorize, listify as _listify
 from .utils import is_affine_transform, normalised_kendall_tau_distance, distributed_work_chunk_size
-from ultranest.mlfriends import MLFriends, AffineLayer, ScalingLayer, find_nearby, WrappingEllipsoid, RobustEllipsoidRegion
+from ultranest.mlfriends import MLFriends, AffineLayer, LocalAffineLayer, ScalingLayer, find_nearby, WrappingEllipsoid, RobustEllipsoidRegion
 from .store import HDF5PointStore, TextPointStore, NullPointStore
 from .viz import get_default_viz_callback
 from .ordertest import UniformOrderAccumulator
@@ -1118,7 +1118,7 @@ class ReactiveNestedSampler(object):
 
         self.sampler = 'reactive-nested'
         self.x_dim = x_dim
-        self.transform_layer_class = AffineLayer if x_dim > 1 else ScalingLayer
+        self.transform_layer_class = LocalAffineLayer if x_dim > 1 else ScalingLayer
         self.derivedparamnames = derived_param_names
         self.num_bootstraps = int(num_bootstraps)
         num_derived = len(self.derivedparamnames)
