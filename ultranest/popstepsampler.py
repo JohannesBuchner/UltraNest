@@ -124,21 +124,27 @@ class GenericPopulationSampler():
         """Geometric mean jump distance."""
         if len(self.logstat) == 0:
             return np.nan
-        return np.exp(np.nanmean(np.log([entry[-1] for entry in self.logstat])))
+        return np.exp(np.average(
+            np.log([entry[-1] + 1e-10 for entry in self.logstat]),
+            weights=([entry[0] for entry in self.logstat])
+        ))
 
     @property
     def far_enough_fraction(self):
         """Fraction of jumps exceeding reference distance."""
         if len(self.logstat) == 0:
             return np.nan
-        return np.nanmean([entry[-2] for entry in self.logstat])
+        return np.average(
+            [entry[-2] for entry in self.logstat],
+            weights=([entry[0] for entry in self.logstat])
+        )
 
     def get_info_dict(self):
         return dict(
             num_logs=len(self.logstat),
-            rejection_rate=np.nanmean([entry[0] for entry in self.logstat]),
-            mean_scale=np.nanmean([entry[1] for entry in self.logstat]),
-            mean_nsteps=np.nanmean([entry[2] for entry in self.logstat]),
+            rejection_rate=1 - np.nanmean([entry[0] for entry in self.logstat]) if len(self.logstat) > 0 else np.nan,
+            mean_scale=np.nanmean([entry[1] for entry in self.logstat]) if len(self.logstat) > 0 else np.nan,
+            mean_nsteps=np.nanmean([entry[2] for entry in self.logstat]) if len(self.logstat) > 0 else np.nan,
             mean_distance=self.mean_jump_distance,
             frac_far_enough=self.far_enough_fraction,
             last_logstat=dict(zip(self.logstat_labels, self.logstat[-1] if len(self.logstat) > 1 else [np.nan] * len(self.logstat_labels)))
@@ -174,7 +180,7 @@ class GenericPopulationSampler():
         plt.ylabel('Frequency')
         plt.savefig(filename, bbox_inches='tight')
         plt.close()
-    
+
 
 class PopulationRandomWalkSampler(GenericPopulationSampler):
     """Vectorized Gaussian Random Walk sampler."""
@@ -538,6 +544,7 @@ class PopulationSliceSampler(GenericPopulationSampler):
         if self.log:
             print("evolve will advance:", movable)
 
+        uorig = args[0].copy()
         (
             (
                 currentt, currentv,
@@ -546,17 +553,18 @@ class PopulationSliceSampler(GenericPopulationSampler):
             (success, unew, pnew, Lnew),
             nc
         ) = evolve(transform, loglike, Lmin, *args)
-        
-        far_enough, (move_distance, reference_distance) = diagnose_move_distances(region, args[0][success,:], unew)
-        self.logstat.append([
-            success.mean(),
-            self.scale,
-            self.nsteps,
-            np.mean(far_enough),
-            np.exp(np.mean(np.log(move_distance / reference_distance + 1e-10)))
-        ])
-        if self.logfile:
-            self.logfile.write("rescale\t%.4f\t%.4f\t%g\t%.4f%g\n" % self.logstat[-1])
+
+        if success.any():
+            far_enough, (move_distance, reference_distance) = diagnose_move_distances(region, uorig[success,:], unew)
+            self.logstat.append([
+                success.mean(),
+                self.scale,
+                self.nsteps,
+                np.mean(far_enough) if len(far_enough) > 0 else 0,
+                np.exp(np.mean(np.log(move_distance / reference_distance + 1e-10))) if len(far_enough) > 0 else 0
+            ])
+            if self.logfile:
+                self.logfile.write("rescale\t%.4f\t%.4f\t%g\t%.4f%g\n" % self.logstat[-1])
 
         if self.log:
             print("movable", movable.shape, movable.sum(), success.shape)
