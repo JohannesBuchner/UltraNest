@@ -6,7 +6,9 @@ Release Notes
 ------------------
 
 * new :py:class:`ultranest.mlfriends.LocalAffineLayer` for metric learning, set as default (see `issue 124 <https://github.com/JohannesBuchner/UltraNest/issues/124>`_)
-* add Highest Density Interval function (ultranest.plot.hdi)
+* add Highest Density Interval function (ultranest.plot.highest_density_interval_from_samples)
+* corner plot style with higher signal-to-ink ratio.
+* bug fixes in popstepsampler
 
 4.1.0 (2024-02-15)
 ------------------
