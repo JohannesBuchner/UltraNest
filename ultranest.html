@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest package &mdash; UltraNest 4.1.5 documentation</title>
+  <title>ultranest package &mdash; UltraNest 4.2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b76e3c8a" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
@@ -17,7 +17,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=1ad82d03"></script>
+        <script src="_static/documentation_options.js?v=d0ae6d56"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -44,7 +44,7 @@
               <img src="_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                4.1.5
+                4.2.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -1619,6 +1619,50 @@ collapse.</p>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="ultranest.mlfriends.LocalAffineLayer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ultranest.mlfriends.</span></span><span class="sig-name descname"><span class="pre">LocalAffineLayer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">invT</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nclusters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wrapped_dims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clusterids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.mlfriends.LocalAffineLayer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ultranest.mlfriends.AffineLayer" title="ultranest.mlfriends.AffineLayer"><code class="xref py py-class docutils literal notranslate"><span class="pre">AffineLayer</span></code></a></p>
+<p>Affine whitening transformation.</p>
+<p>For learning the next layer’s covariance, the points within
+the MLradius are co-centered. This should give a more “local”
+covariance.</p>
+<p>Initialise layer.</p>
+<p>The parameters are optional and can be learned from points with <code class="xref py py-meth docutils literal notranslate"><span class="pre">optimize()</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ctr</strong> (<em>vector</em>) – Center of points</p></li>
+<li><p><strong>T</strong> (<em>matrix</em>) – Transformation matrix. This matrix whitens the points
+to a unit Gaussian.</p></li>
+<li><p><strong>invT</strong> (<em>matrix</em>) – Inverse transformation matrix. For transforming a unit
+Gaussian into something with the sample cov.</p></li>
+<li><p><strong>nclusters</strong> (<em>int</em>) – number of clusters</p></li>
+<li><p><strong>wrapped_dims</strong> (<em>array</em><em> of </em><em>bools</em>) – indicates which parameter axes are circular.</p></li>
+<li><p><strong>clusterids</strong> (<em>array</em><em> of </em><em>int</em>) – cluster id for each point</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="ultranest.mlfriends.LocalAffineLayer.create_new">
+<span class="sig-name descname"><span class="pre">create_new</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">upoints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxradiussq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minvol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.mlfriends.LocalAffineLayer.create_new" title="Link to this definition"></a></dt>
+<dd><p>Learn next layer from this optimized layer’s clustering.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>upoints</strong> (<em>array</em>) – points to use for optimize (in u-space)</p></li>
+<li><p><strong>maxradiussq</strong> (<em>float</em>) – square of the MLFriends radius</p></li>
+<li><p><strong>minvol</strong> (<em>float</em>) – Minimum volume to regularize sample covariance</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new, optimized LocalAffineLayer.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="ultranest.mlfriends.MLFriends">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ultranest.mlfriends.</span></span><span class="sig-name descname"><span class="pre">MLFriends</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transformLayer</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.mlfriends.MLFriends" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
@@ -2260,6 +2304,26 @@ to fulfill a target product of eigenvalues.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>covariance matrix</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ultranest.mlfriends.subtract_nearby">
+<span class="sig-prename descclassname"><span class="pre">ultranest.mlfriends.</span></span><span class="sig-name descname"><span class="pre">subtract_nearby</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">upoints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxradiussq</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.mlfriends.subtract_nearby" title="Link to this definition"></a></dt>
+<dd><p>Subtract from each point apts the mean of points within square radius <cite>radiussq</cite>, store in bpts.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>apts</strong> (<em>array</em>) – points</p></li>
+<li><p><strong>radiussq</strong> (<em>float</em>) – square of the MLFriends radius</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>upoints with the nearby centers subtracted.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>overlapped_points</p>
 </dd>
 </dl>
 </dd></dl>
@@ -3137,8 +3201,43 @@ Otherwise, by default an internal figure is generated.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ultranest.plot.cornerplot">
-<span class="sig-prename descclassname"><span class="pre">ultranest.plot.</span></span><span class="sig-name descname"><span class="pre">cornerplot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/plot.html#cornerplot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.plot.cornerplot" title="Link to this definition"></a></dt>
-<dd><p>Make a corner plot with corner.</p>
+<span class="sig-prename descclassname"><span class="pre">ultranest.plot.</span></span><span class="sig-name descname"><span class="pre">cornerplot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">results</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_legend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">levels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0.9973,</span> <span class="pre">0.9545,</span> <span class="pre">0.6827,</span> <span class="pre">0.3934]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_datapoints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_density</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_titles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quiet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">contour_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'colors':</span> <span class="pre">['navy',</span> <span class="pre">'navy',</span> <span class="pre">'navy',</span> <span class="pre">'purple'],</span> <span class="pre">'linestyles':</span> <span class="pre">['-',</span> <span class="pre">'-.',</span> <span class="pre">':',</span> <span class="pre">'--']}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'purple'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantiles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0.15866,</span> <span class="pre">0.5,</span> <span class="pre">0.8413]</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">corner_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/plot.html#cornerplot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.plot.cornerplot" title="Link to this definition"></a></dt>
+<dd><p>Make a healthy corner plot with corner.</p>
+<p>Essentially does:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">paramnames</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="s1">&#39;paramnames&#39;</span><span class="p">]</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="s1">&#39;weighted_samples&#39;</span><span class="p">][</span><span class="s1">&#39;points&#39;</span><span class="p">]</span>
+<span class="n">weights</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="s1">&#39;weighted_samples&#39;</span><span class="p">][</span><span class="s1">&#39;weights&#39;</span><span class="p">]</span>
+
+<span class="k">return</span> <span class="n">corner</span><span class="o">.</span><span class="n">corner</span><span class="p">(</span>
+    <span class="n">results</span><span class="p">[</span><span class="s1">&#39;weighted_samples&#39;</span><span class="p">][</span><span class="s1">&#39;points&#39;</span><span class="p">],</span>
+    <span class="n">weights</span><span class="o">=</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;weighted_samples&#39;</span><span class="p">][</span><span class="s1">&#39;weights&#39;</span><span class="p">],</span>
+    <span class="n">labels</span><span class="o">=</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;paramnames&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>min_weight</strong> (<em>float</em>) – cut off low-weight posterior points. Avoids meaningless
+stragglers when plot_datapoints is True.</p></li>
+<li><p><strong>with_legend</strong> (<em>bool</em>) – whether to add a legend to show meaning of the lines.</p></li>
+<li><p><strong>color</strong> (<em>str</em>) – <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> style color for all histograms.</p></li>
+<li><p><strong>plot_density</strong> (<em>bool</em>) – Draw the density colormap.</p></li>
+<li><p><strong>plot_contours</strong> (<em>bool</em>) – Draw the contours.</p></li>
+<li><p><strong>show_titles</strong> (<em>bool</em>) – Displays a title above each 1-D histogram showing the 0.5 quantile
+with the upper and lower errors supplied by the quantiles argument.</p></li>
+<li><p><strong>quiet</strong> (<em>bool</em>) – If true, suppress warnings for small datasets.</p></li>
+<li><p><strong>contour_kwargs</strong> (<em>dict</em>) – Any additional keyword arguments to pass to the <cite>contour</cite> method.</p></li>
+<li><p><strong>quantiles</strong> (<em>list</em>) – fractional quantiles to show on the 1-D histograms as vertical dashed lines.</p></li>
+<li><p><strong>**corner_kwargs</strong> (<em>dict</em>) – Any remaining keyword arguments are sent to <code class="xref py py-func docutils literal notranslate"><span class="pre">corner.corner()</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>fig</strong> – The <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> figure instance for the corner plot.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><cite>~matplotlib.figure.Figure</cite></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">

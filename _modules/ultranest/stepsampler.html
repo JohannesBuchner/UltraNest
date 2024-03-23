@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest.stepsampler &mdash; UltraNest 4.1.5 documentation</title>
+  <title>ultranest.stepsampler &mdash; UltraNest 4.2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b76e3c8a" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=1ad82d03"></script>
+        <script src="../../_static/documentation_options.js?v=d0ae6d56"></script>
         <script src="../../_static/doctools.js?v=888ff710"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -39,7 +39,7 @@
               <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                4.1.5
+                4.2.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -736,7 +736,7 @@
 <span class="sd">            :py:func:`generate_cube_oriented_direction` works well too.</span>
 
 <span class="sd">        adaptive_nsteps: False or str</span>
-<span class="sd">            Strategy to adapt the number of steps. </span>
+<span class="sd">            Strategy to adapt the number of steps.</span>
 <span class="sd">            The possible values are the same as for `check_nsteps`.</span>
 
 <span class="sd">            Adapting can give usable results. However, strictly speaking,</span>
@@ -770,7 +770,7 @@
 <span class="sd">              between pairs of live points.</span>
 
 <span class="sd">            Each step sampler walk adds one row to stepsampler.logstat.</span>
-<span class="sd">            The jump distance (forth column) should be compared to </span>
+<span class="sd">            The jump distance (forth column) should be compared to</span>
 <span class="sd">            the reference distance (fifth column).</span>
 
 <span class="sd">        max_nsteps: int</span>
@@ -834,7 +834,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">mean_pair_distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">region_filter</span> <span class="o">=</span> <span class="n">region_filter</span>
         <span class="k">if</span> <span class="n">log</span><span class="p">:</span>
-            <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">log</span><span class="p">,</span> <span class="s1">&#39;write&#39;</span><span class="p">),</span> <span class="s1">&#39;log argument should be a file, use log=open(filename, &quot;w&quot;) or similar&#39;</span> 
+            <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">log</span><span class="p">,</span> <span class="s1">&#39;write&#39;</span><span class="p">),</span> <span class="s1">&#39;log argument should be a file, use log=open(filename, &quot;w&quot;) or similar&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="o">=</span> <span class="n">log</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span> <span class="o">=</span> <span class="p">[]</span>
@@ -914,9 +914,9 @@
     <span class="k">def</span> <span class="nf">get_info_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span>
             <span class="n">num_logs</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">),</span>
-            <span class="n">rejection_rate</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">([</span><span class="n">entry</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">]),</span>
-            <span class="n">mean_scale</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">([</span><span class="n">entry</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">]),</span>
-            <span class="n">mean_nsteps</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">([</span><span class="n">entry</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">]),</span>
+            <span class="n">rejection_rate</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">([</span><span class="n">entry</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">])</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+            <span class="n">mean_scale</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">([</span><span class="n">entry</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">])</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+            <span class="n">mean_nsteps</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">([</span><span class="n">entry</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">])</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
             <span class="n">mean_distance</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mean_jump_distance</span><span class="p">,</span>
             <span class="n">frac_far_enough</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">far_enough_fraction</span><span class="p">,</span>
             <span class="n">last_logstat</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span><span class="p">)))</span>
@@ -933,7 +933,7 @@
             <span class="k">return</span>
         <span class="k">if</span> <span class="s1">&#39;jump-distance&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span> <span class="ow">or</span> <span class="s1">&#39;reference-distance&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;turn on check_nsteps in the step sampler for diagnostics&quot;</span><span class="p">)</span>
-            <span class="k">return</span> 
+            <span class="k">return</span>
         <span class="n">frac_farenough</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">far_enough_fraction</span>
         <span class="n">average_distance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean_jump_distance</span>
         <span class="k">if</span> <span class="n">frac_farenough</span> <span class="o">&lt;</span> <span class="mf">0.5</span><span class="p">:</span>
@@ -953,9 +953,9 @@
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span>
         <span class="k">if</span> <span class="s1">&#39;jump-distance&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span><span class="p">:</span>
-            <span class="k">return</span> 
+            <span class="k">return</span>
         <span class="k">if</span> <span class="s1">&#39;reference-distance&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span><span class="p">:</span>
-            <span class="k">return</span> 
+            <span class="k">return</span>
         <span class="n">i</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;jump-distance&#39;</span><span class="p">)</span>
         <span class="n">j</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;reference-distance&#39;</span><span class="p">)</span>
         <span class="n">jump_distances</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">entry</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">])</span>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest.viz &mdash; UltraNest 4.1.5 documentation</title>
+  <title>ultranest.viz &mdash; UltraNest 4.2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b76e3c8a" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=1ad82d03"></script>
+        <script src="../../_static/documentation_options.js?v=d0ae6d56"></script>
         <script src="../../_static/doctools.js?v=888ff710"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -39,7 +39,7 @@
               <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                4.1.5
+                4.2.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -248,8 +248,8 @@
     <span class="p">)</span>
     <span class="k">if</span> <span class="n">info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;stepsampler_info&#39;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;num_logs&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span>
-            <span class="s1">&#39;Step sampler performance: </span><span class="si">%(rejection_rate).1f%%</span><span class="s1"> rej/step, </span><span class="si">%(mean_nsteps)d</span><span class="s1"> steps/it&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;stepsampler_info&#39;</span><span class="p">]),</span>
-            <span class="p">(</span><span class="s1">&#39;mean rel jump distance: </span><span class="si">%.2f</span><span class="s1"> (should be &gt;1), </span><span class="si">%.2f%%</span><span class="s1"> (should be &gt;50</span><span class="si">%%</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="p">(</span><span class="s1">&#39;Step sampler performance: </span><span class="si">%(rejection_rate).1f</span><span class="s1"> rej/step, </span><span class="si">%(mean_nsteps)d</span><span class="s1"> steps/it&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;stepsampler_info&#39;</span><span class="p">]))</span> <span class="o">+</span>
+            <span class="p">(</span><span class="s1">&#39;, rel jump distance: </span><span class="si">%.2f</span><span class="s1"> (should be &gt;1), </span><span class="si">%.2f%%</span><span class="s1"> (should be &gt;50</span><span class="si">%%</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="p">(</span>
                 <span class="n">info</span><span class="p">[</span><span class="s1">&#39;stepsampler_info&#39;</span><span class="p">][</span><span class="s1">&#39;mean_distance&#39;</span><span class="p">],</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;stepsampler_info&#39;</span><span class="p">][</span><span class="s1">&#39;frac_far_enough&#39;</span><span class="p">]</span>
             <span class="p">))</span> <span class="k">if</span> <span class="s1">&#39;mean_distance&#39;</span> <span class="ow">in</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;stepsampler_info&#39;</span><span class="p">]</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
         <span class="p">)</span>

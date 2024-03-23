@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest.integrator &mdash; UltraNest 4.1.5 documentation</title>
+  <title>ultranest.integrator &mdash; UltraNest 4.2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b76e3c8a" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=1ad82d03"></script>
+        <script src="../../_static/documentation_options.js?v=d0ae6d56"></script>
         <script src="../../_static/doctools.js?v=888ff710"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -39,7 +39,7 @@
               <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                4.1.5
+                4.2.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -127,7 +127,7 @@
 
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">create_logger</span><span class="p">,</span> <span class="n">make_run_dir</span><span class="p">,</span> <span class="n">resample_equal</span><span class="p">,</span> <span class="n">vol_prefactor</span><span class="p">,</span> <span class="n">vectorize</span><span class="p">,</span> <span class="n">listify</span> <span class="k">as</span> <span class="n">_listify</span>
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">is_affine_transform</span><span class="p">,</span> <span class="n">normalised_kendall_tau_distance</span><span class="p">,</span> <span class="n">distributed_work_chunk_size</span>
-<span class="kn">from</span> <span class="nn">ultranest.mlfriends</span> <span class="kn">import</span> <span class="n">MLFriends</span><span class="p">,</span> <span class="n">MaxPrincipleGapAffineLayer</span><span class="p">,</span> <span class="n">AffineLayer</span><span class="p">,</span> <span class="n">ScalingLayer</span><span class="p">,</span> <span class="n">find_nearby</span><span class="p">,</span> <span class="n">WrappingEllipsoid</span><span class="p">,</span> <span class="n">RobustEllipsoidRegion</span>
+<span class="kn">from</span> <span class="nn">ultranest.mlfriends</span> <span class="kn">import</span> <span class="n">MLFriends</span><span class="p">,</span> <span class="n">AffineLayer</span><span class="p">,</span> <span class="n">LocalAffineLayer</span><span class="p">,</span> <span class="n">ScalingLayer</span><span class="p">,</span> <span class="n">find_nearby</span><span class="p">,</span> <span class="n">WrappingEllipsoid</span><span class="p">,</span> <span class="n">RobustEllipsoidRegion</span>
 <span class="kn">from</span> <span class="nn">.store</span> <span class="kn">import</span> <span class="n">HDF5PointStore</span><span class="p">,</span> <span class="n">TextPointStore</span><span class="p">,</span> <span class="n">NullPointStore</span>
 <span class="kn">from</span> <span class="nn">.viz</span> <span class="kn">import</span> <span class="n">get_default_viz_callback</span>
 <span class="kn">from</span> <span class="nn">.ordertest</span> <span class="kn">import</span> <span class="n">UniformOrderAccumulator</span>
@@ -770,7 +770,7 @@
         <span class="n">ncall</span> <span class="o">=</span> <span class="n">num_live_points_missing</span>  <span class="c1"># number of calls we already made</span>
         <span class="n">first_time</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_dim</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">transformLayer</span> <span class="o">=</span> <span class="n">MaxPrincipleGapAffineLayer</span><span class="p">(</span><span class="n">wrapped_dims</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">wrapped_axes</span><span class="p">)</span>
+            <span class="n">transformLayer</span> <span class="o">=</span> <span class="n">AffineLayer</span><span class="p">(</span><span class="n">wrapped_dims</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">wrapped_axes</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">transformLayer</span> <span class="o">=</span> <span class="n">ScalingLayer</span><span class="p">(</span><span class="n">wrapped_dims</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">wrapped_axes</span><span class="p">)</span>
         <span class="n">transformLayer</span><span class="o">.</span><span class="n">optimize</span><span class="p">(</span><span class="n">active_u</span><span class="p">,</span> <span class="n">active_u</span><span class="p">)</span>
@@ -1237,7 +1237,7 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span> <span class="o">=</span> <span class="s1">&#39;reactive-nested&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">x_dim</span> <span class="o">=</span> <span class="n">x_dim</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">transform_layer_class</span> <span class="o">=</span> <span class="n">MaxPrincipleGapAffineLayer</span> <span class="k">if</span> <span class="n">x_dim</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">ScalingLayer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transform_layer_class</span> <span class="o">=</span> <span class="n">LocalAffineLayer</span> <span class="k">if</span> <span class="n">x_dim</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">ScalingLayer</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">derivedparamnames</span> <span class="o">=</span> <span class="n">derived_param_names</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">num_bootstraps</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">num_bootstraps</span><span class="p">)</span>
         <span class="n">num_derived</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">derivedparamnames</span><span class="p">)</span>
@@ -1839,7 +1839,7 @@
             <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">,</span> <span class="n">invalid</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">):</span>
                 <span class="n">widthratio</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">logweights</span><span class="p">[</span><span class="mi">1</span><span class="p">:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">logweights</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
                 <span class="n">nlive</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">widthratio</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">widthratio</span><span class="p">))</span>
-                <span class="n">nlive</span><span class="p">[</span><span class="o">~</span><span class="p">(</span><span class="n">nlive</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="n">nlive</span><span class="p">[</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">nlive</span><span class="p">),</span> <span class="n">nlive</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">1</span>
 
             <span class="c1"># build iteration groups</span>
             <span class="n">nlive_sets</span><span class="p">,</span> <span class="n">niter</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">nlive</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span> <span class="n">return_counts</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>

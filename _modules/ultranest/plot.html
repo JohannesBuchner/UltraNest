@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest.plot &mdash; UltraNest 4.1.5 documentation</title>
+  <title>ultranest.plot &mdash; UltraNest 4.2.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b76e3c8a" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=1ad82d03"></script>
+        <script src="../../_static/documentation_options.js?v=d0ae6d56"></script>
         <script src="../../_static/doctools.js?v=888ff710"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -39,7 +39,7 @@
               <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                4.1.5
+                4.2.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -142,14 +142,63 @@
 
 <div class="viewcode-block" id="cornerplot">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.plot.cornerplot">[docs]</a>
-<span class="k">def</span> <span class="nf">cornerplot</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a corner plot with corner.&quot;&quot;&quot;</span>
+<span class="k">def</span> <span class="nf">cornerplot</span><span class="p">(</span>
+    <span class="n">results</span><span class="p">,</span> <span class="n">min_weight</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">with_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">levels</span><span class="o">=</span><span class="p">[</span><span class="mf">0.9973</span><span class="p">,</span> <span class="mf">0.9545</span><span class="p">,</span> <span class="mf">0.6827</span><span class="p">,</span> <span class="mf">0.3934</span><span class="p">],</span>
+    <span class="n">plot_datapoints</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">plot_density</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">show_titles</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">quiet</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">contour_kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">linestyles</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;-&#39;</span><span class="p">,</span><span class="s1">&#39;-.&#39;</span><span class="p">,</span><span class="s1">&#39;:&#39;</span><span class="p">,</span><span class="s1">&#39;--&#39;</span><span class="p">],</span> <span class="n">colors</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;navy&#39;</span><span class="p">,</span><span class="s1">&#39;navy&#39;</span><span class="p">,</span><span class="s1">&#39;navy&#39;</span><span class="p">,</span><span class="s1">&#39;purple&#39;</span><span class="p">]),</span>
+    <span class="n">color</span><span class="o">=</span><span class="s1">&#39;purple&#39;</span><span class="p">,</span> <span class="n">quantiles</span><span class="o">=</span><span class="p">[</span><span class="mf">0.15866</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.8413</span><span class="p">],</span> <span class="o">**</span><span class="n">corner_kwargs</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Make a healthy corner plot with corner.</span>
+
+<span class="sd">    Essentially does::</span>
+
+<span class="sd">        paramnames = results[&#39;paramnames&#39;]</span>
+<span class="sd">        data = results[&#39;weighted_samples&#39;][&#39;points&#39;]</span>
+<span class="sd">        weights = results[&#39;weighted_samples&#39;][&#39;weights&#39;]</span>
+
+<span class="sd">        return corner.corner(</span>
+<span class="sd">            results[&#39;weighted_samples&#39;][&#39;points&#39;],</span>
+<span class="sd">            weights=results[&#39;weighted_samples&#39;][&#39;weights&#39;],</span>
+<span class="sd">            labels=results[&#39;paramnames&#39;])</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    min_weight: float</span>
+<span class="sd">        cut off low-weight posterior points. Avoids meaningless</span>
+<span class="sd">        stragglers when plot_datapoints is True.</span>
+<span class="sd">    with_legend: bool</span>
+<span class="sd">        whether to add a legend to show meaning of the lines.</span>
+<span class="sd">    color : str</span>
+<span class="sd">        ``matplotlib`` style color for all histograms.</span>
+<span class="sd">    plot_density : bool</span>
+<span class="sd">        Draw the density colormap.</span>
+<span class="sd">    plot_contours : bool</span>
+<span class="sd">        Draw the contours.</span>
+<span class="sd">    show_titles : bool</span>
+<span class="sd">        Displays a title above each 1-D histogram showing the 0.5 quantile</span>
+<span class="sd">        with the upper and lower errors supplied by the quantiles argument.</span>
+<span class="sd">    quiet : bool</span>
+<span class="sd">        If true, suppress warnings for small datasets.</span>
+<span class="sd">    contour_kwargs : dict</span>
+<span class="sd">        Any additional keyword arguments to pass to the `contour` method.</span>
+<span class="sd">    quantiles: list</span>
+<span class="sd">        fractional quantiles to show on the 1-D histograms as vertical dashed lines.</span>
+<span class="sd">    **corner_kwargs: dict</span>
+<span class="sd">        Any remaining keyword arguments are sent to :func:`corner.corner`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    fig : `~matplotlib.figure.Figure`</span>
+<span class="sd">        The ``matplotlib`` figure instance for the corner plot.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">paramnames</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="s1">&#39;paramnames&#39;</span><span class="p">]</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;weighted_samples&#39;</span><span class="p">][</span><span class="s1">&#39;points&#39;</span><span class="p">])</span>
     <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;weighted_samples&#39;</span><span class="p">][</span><span class="s1">&#39;weights&#39;</span><span class="p">])</span>
     <span class="n">cumsumweights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
 
-    <span class="n">mask</span> <span class="o">=</span> <span class="n">cumsumweights</span> <span class="o">&gt;</span> <span class="mf">1e-4</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">cumsumweights</span> <span class="o">&gt;</span> <span class="n">min_weight</span>
 
     <span class="k">if</span> <span class="n">mask</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -165,10 +214,111 @@
     <span class="c1"># monkey patch to disable a useless warning</span>
     <span class="n">oldfunc</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">warning</span>
     <span class="n">logging</span><span class="o">.</span><span class="n">warning</span> <span class="o">=</span> <span class="k">lambda</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="kc">None</span>
-    <span class="n">corner</span><span class="o">.</span><span class="n">corner</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">mask</span><span class="p">,:],</span> <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span>
-                  <span class="n">labels</span><span class="o">=</span><span class="n">paramnames</span><span class="p">,</span> <span class="n">show_titles</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">quiet</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">logging</span><span class="o">.</span><span class="n">warning</span> <span class="o">=</span> <span class="n">oldfunc</span></div>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">corner</span><span class="o">.</span><span class="n">corner</span><span class="p">(</span>
+        <span class="n">data</span><span class="p">[</span><span class="n">mask</span><span class="p">,:],</span> <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">[</span><span class="n">mask</span><span class="p">],</span>
+        <span class="n">labels</span><span class="o">=</span><span class="n">paramnames</span><span class="p">,</span> <span class="n">show_titles</span><span class="o">=</span><span class="n">show_titles</span><span class="p">,</span> <span class="n">quiet</span><span class="o">=</span><span class="n">quiet</span><span class="p">,</span>
+        <span class="n">plot_datapoints</span><span class="o">=</span><span class="n">plot_datapoints</span><span class="p">,</span> <span class="n">plot_density</span><span class="o">=</span><span class="n">plot_density</span><span class="p">,</span>
+        <span class="n">levels</span><span class="o">=</span><span class="n">levels</span><span class="p">,</span> <span class="n">quantiles</span><span class="o">=</span><span class="n">quantiles</span><span class="p">,</span>
+        <span class="n">contour_kwargs</span><span class="o">=</span><span class="n">contour_kwargs</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span> <span class="o">**</span><span class="n">corner_kwargs</span>
+    <span class="p">)</span>
+    <span class="c1"># Create legend handles</span>
+    <span class="k">if</span> <span class="n">with_legend</span> <span class="ow">and</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">legend_handles</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">Line2D</span><span class="p">(</span>
+                <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
+                <span class="n">label</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%.1f%%</span><span class="s1"> marginal&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="p">(</span><span class="n">quantiles</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">quantiles</span><span class="p">[</span><span class="mi">0</span><span class="p">]))),</span>
+        <span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">plt</span><span class="o">.</span><span class="n">Line2D</span><span class="p">(</span>
+            <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">linestyle</span><span class="o">=</span><span class="n">ls</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">linecolor</span><span class="p">,</span>
+            <span class="n">label</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%.1f%%</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="n">level</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">ls</span><span class="p">,</span> <span class="n">linecolor</span><span class="p">,</span> <span class="n">level</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span>
+                <span class="n">contour_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;linestyles&#39;</span><span class="p">,</span> <span class="p">[])[::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                <span class="n">contour_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;colors&#39;</span><span class="p">,</span> <span class="p">[</span><span class="n">color</span><span class="p">]</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                <span class="n">levels</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">legend_handles</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">levels</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">legend_handles</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span>
+                <span class="n">title</span><span class="o">=</span><span class="s1">&#39;credible prob level&#39;</span><span class="p">,</span>
+                <span class="n">handles</span><span class="o">=</span><span class="n">legend_handles</span><span class="p">,</span>
+                <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;lower right&#39;</span><span class="p">,</span> <span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mf">1.01</span><span class="p">,</span><span class="mf">1.2</span><span class="p">),</span> <span class="n">frameon</span><span class="o">=</span><span class="kc">False</span>
+            <span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">warning</span> <span class="o">=</span> <span class="n">oldfunc</span>
+    <span class="k">return</span> <span class="n">fig</span></div>
 
+
+
+<span class="k">def</span> <span class="nf">highest_density_interval_from_samples</span><span class="p">(</span><span class="n">xsamples</span><span class="p">,</span> <span class="n">xlo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xhi</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">probability_level</span><span class="o">=</span><span class="mf">0.68</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the highest density interval (HDI) from posterior samples.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    xsamples : array_like</span>
+<span class="sd">        The posterior samples from which to compute the HDI.</span>
+<span class="sd">    xlo : float or None, optional</span>
+<span class="sd">        Lower boundary limiting the space. Default is None.</span>
+<span class="sd">    xhi : float or None, optional</span>
+<span class="sd">        Upper boundary limiting the space. Default is None.</span>
+<span class="sd">    probability_level : float, optional</span>
+<span class="sd">        The desired probability level for the HDI. Default is 0.68.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    x_MAP: float</span>
+<span class="sd">        maximum a posteriori (MAP) estimate.</span>
+<span class="sd">    xerrlo: float</span>
+<span class="sd">        lower uncertainty (lower HDI bound minus x_MAP).</span>
+<span class="sd">    xerrhi: float</span>
+<span class="sd">        upper uncertainty (x_MAP minus upper HDI bound).</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The function starts at the highest density point and accumulates neighboring points</span>
+<span class="sd">    until the specified probability level is reached. If `xlo` or `xhi` is provided,</span>
+<span class="sd">    the HDI is constrained within these bounds.</span>
+
+<span class="sd">    Requires getdist to be installed for a kernel density estimation.</span>
+
+<span class="sd">    For uniform distributions, this function will give unpredictable results for the MAP.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; xsamples = np.random.normal(loc=0, scale=1, size=100000)</span>
+<span class="sd">    &gt;&gt;&gt; hdi = highest_density_interval_from_samples(xsamples)</span>
+<span class="sd">    &gt;&gt;&gt; print(&#39;x = %.1f + %.2f - %.2f&#39; % hdi)</span>
+<span class="sd">    x = 0.0 + 1.02 - 0.96</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">getdist.mcsamples</span> <span class="kn">import</span> <span class="n">MCSamples</span>
+    <span class="kn">import</span> <span class="nn">getdist.chains</span>
+    <span class="n">getdist</span><span class="o">.</span><span class="n">chains</span><span class="o">.</span><span class="n">print_load_details</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">samples</span> <span class="o">=</span> <span class="n">MCSamples</span><span class="p">(</span>
+        <span class="n">samples</span><span class="o">=</span><span class="n">xsamples</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">],</span> <span class="n">ranges</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:[</span><span class="n">xlo</span><span class="p">,</span><span class="n">xhi</span><span class="p">]},</span>
+        <span class="n">settings</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">mult_bias_correction_order</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">samples</span><span class="o">.</span><span class="n">raise_on_bandwidth_errors</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">density_bounded</span> <span class="o">=</span> <span class="n">samples</span><span class="o">.</span><span class="n">get1DDensityGridData</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">density_bounded</span><span class="o">.</span><span class="n">x</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">density_bounded</span><span class="o">.</span><span class="n">P</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">density_bounded</span><span class="o">.</span><span class="n">P</span><span class="p">)</span>
+
+    <span class="c1"># Sort the y values in descending order</span>
+    <span class="n">sorted_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">y</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># define MAP as the peak. This works well if the peak is declining to both sides</span>
+    <span class="n">MAP</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">sorted_indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+    <span class="n">total_probability</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">sorted_indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+    <span class="n">i_lo</span> <span class="o">=</span> <span class="n">sorted_indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">i_hi</span> <span class="o">=</span> <span class="n">sorted_indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">sorted_indices</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+        <span class="c1"># Add the current probability to the total</span>
+        <span class="n">i_lo</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">i_lo</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+        <span class="n">i_hi</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">i_hi</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+        <span class="n">total_probability</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">i_lo</span><span class="p">:</span><span class="n">i_hi</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="c1"># Check if the total probability exceeds or equals the desired level</span>
+        <span class="k">if</span> <span class="n">total_probability</span> <span class="o">&gt;=</span> <span class="n">probability_level</span><span class="p">:</span>
+            <span class="k">break</span>
+
+    <span class="n">x_lo</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">i_lo</span><span class="p">]</span>
+    <span class="n">x_hi</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">i_hi</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">MAP</span><span class="p">,</span> <span class="n">MAP</span> <span class="o">-</span> <span class="n">x_lo</span><span class="p">,</span> <span class="n">x_hi</span> <span class="o">-</span> <span class="n">MAP</span>
 
 
 <div class="viewcode-block" id="PredictionBand">
