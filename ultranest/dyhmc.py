@@ -467,7 +467,7 @@ class DynamicHMCSampler(object):
         plt.savefig(filename, bbox_inches='tight')
         plt.close()
 
-    def __next__(self, region, Lmin, us, Ls, transform, loglike, ndraw=40, plot=False):
+    def __next__(self, region, Lmin, us, Ls, transform, loglike, ndraw=40, plot=False, tregion=None):
         """Get a new point.
 
         Parameters

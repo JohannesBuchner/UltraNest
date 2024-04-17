@@ -163,9 +163,10 @@ def generate_partial_differential_direction(ui, region, scale=1):
 
         v = region.u[i] - region.u[i2]
 
+        # choose which parameters to be off
         mask = np.random.uniform(size=ndim) > 0.1
-        # at least one must be on
-        mask[np.random.randint(ndim)] = True
+        # at least one must be free to vary
+        mask[np.random.randint(ndim)] = False
         v[mask] = 0
         if (v != 0).any():
             # repeat if live points are identical
@@ -365,6 +366,29 @@ def adapt_proposal_summed_distances_NN(region, history, mean_pair_distance, ndim
 
 
 def adapt_proposal_move_distances(region, history, mean_pair_distance, ndim):
+    """Compares random walk travel distance to MLFriends radius.
+
+    Compares in whitened space (t-space), the L2 norm between final
+    point and starting point to the MLFriends bootstrapped radius.
+
+    Parameters
+    ----------
+    region: MLFriends
+        built region
+    history: list
+        list of tuples, containing visited point and likelihood.
+    mean_pair_distance: float
+        not used
+    ndim: int
+        dimensionality
+
+    Returns
+    -------
+    far_enough: bool
+        whether the distance is larger than the radius
+    info: tuple
+        distance and radius (both float)
+    """
     # compute distance from start to end
     ustart, _ = history[0]
     ufinal, _ = history[-1]
@@ -372,10 +396,34 @@ def adapt_proposal_move_distances(region, history, mean_pair_distance, ndim):
     d2 = ((tstart - tfinal)**2).sum()
     far_enough = d2 > region.maxradiussq
 
-    return far_enough, [d2, region.maxradiussq**0.5]
+    return far_enough, [d2**0.5, region.maxradiussq**0.5]
 
 
 def adapt_proposal_move_distances_midway(region, history, mean_pair_distance, ndim):
+    """Compares first half of the travel distance to MLFriends radius.
+
+    Compares in whitened space (t-space), the L2 norm between the
+    middle point of the walk and the starting point,
+    to the MLFriends bootstrapped radius.
+
+    Parameters
+    ----------
+    region: MLFriends
+        built region
+    history: list
+        list of tuples, containing visited point and likelihood.
+    mean_pair_distance: float
+        not used
+    ndim: int
+        dimensionality
+
+    Returns
+    -------
+    far_enough: bool
+        whether the distance is larger than the radius
+    info: tuple
+        distance and radius (both float)
+    """
     # compute distance from start to end
     ustart, _ = history[0]
     middle = max(1, len(history) // 2)
@@ -384,7 +432,7 @@ def adapt_proposal_move_distances_midway(region, history, mean_pair_distance, nd
     d2 = ((tstart - tfinal)**2).sum()
     far_enough = d2 > region.maxradiussq
 
-    return far_enough, [d2, region.maxradiussq**0.5]
+    return far_enough, [d2**0.5, region.maxradiussq**0.5]
 
 
 def select_random_livepoint(us, Ls, Lmin):
@@ -489,7 +537,7 @@ class StepSampler(object):
 
     def __init__(
         self, nsteps, generate_direction,
-        scale=1.0, adaptive_nsteps=False, max_nsteps=1000,
+        scale=1.0, check_nsteps='move-distance', adaptive_nsteps=False, max_nsteps=1000,
         region_filter=False, log=False,
         starting_point_selector=select_random_livepoint,
     ):
@@ -503,36 +551,47 @@ class StepSampler(object):
         nsteps: int
             number of accepted steps until the sample is considered independent.
 
-            To find the right value, run nested sampling several time,
-            always doubling nsteps, until Z is stable.
+            To find the right value, see :py:class:`ultranest.calibrator.ReactiveNestedCalibrator`
 
         generate_direction: function
             direction proposal function.
 
             Available are:
 
-            * :py:func:`generate_cube_oriented_direction` (slice sampling)
-            * :py:func:`generate_region_oriented_direction` (slice sampling on the whitened parameter space)
-            * :py:class:`SequentialDirectionGenerator` (sequential slice sampling on the whitened parameter space)
-            * :py:func:`generate_random_direction` (hit-and-run sampling)
-            * :py:func:`generate_region_random_direction` (hit-and-run sampling on the whitened parameter space)
-            * :py:func:`generate_cube_oriented_differential_direction` (slice sampling with better proposal scale)
-            * :py:func:`generate_differential_direction` (differential evolution slice proposal)
+            * :py:func:`generate_cube_oriented_direction` (slice sampling, picking one random parameter to vary)
+            * :py:func:`generate_random_direction` (hit-and-run sampling, picking a random direction varying all parameters)
+            * :py:func:`generate_differential_direction` (differential evolution direction proposal)
+            * :py:func:`generate_region_oriented_direction` (slice sampling, but in the whitened parameter space)
+            * :py:func:`generate_region_random_direction` (hit-and-run sampling, but in the whitened parameter space)
+            * :py:class:`SequentialDirectionGenerator` (sequential slice sampling, i.e., iterate deterministically through the parameters)
+            * :py:class:`SequentialRegionDirectionGenerator` (sequential slice sampling in the whitened parameter space, i.e., iterate deterministically through the principle axes)
+            * :py:func:`generate_cube_oriented_differential_direction` (like generate_differential_direction, but along only one randomly chosen parameter)
             * :py:func:`generate_partial_differential_direction` (differential evolution slice proposal on only 10% of the parameters)
-            * :py:func:`generate_mixture_random_direction` (generate_differential_direction and generate_cube_oriented_differential_direction)
+            * :py:func:`generate_mixture_random_direction` (combined proposal)
 
             Additionally, :py:class:`OrthogonalDirectionGenerator`
-            can be applied to a generate_direction.
+            can be applied to any generate_direction function.
 
             When in doubt, try :py:func:`generate_mixture_random_direction`.
             It combines efficient moves along the live point distribution,
             with robustness against collapse to a subspace.
             :py:func:`generate_cube_oriented_direction` works well too.
 
-        adaptive_nsteps: False, 'proposal-distance', 'move-distance'
-            Strategy to adapt the number of steps. The strategies
-            make sure that:
+        adaptive_nsteps: False or str
+            Strategy to adapt the number of steps.
+            The possible values are the same as for `check_nsteps`.
 
+            Adapting can give usable results. However, strictly speaking,
+            detailed balance is not maintained, so the results can be biased.
+            You can use the stepsampler.logstat property to find out the `nsteps` learned
+            from one run (third column), and use the largest value for `nsteps`
+            for a fresh run.
+            The forth column is the jump distance, the fifth column is the reference distance.
+
+        check_nsteps: False or str
+            Method to diagnose the step sampler walks. The options are:
+
+            * False: no checking
             * 'move-distance' (recommended): distance between
               start point and final position exceeds the mean distance
               between pairs of live points.
@@ -552,11 +611,9 @@ class StepSampler(object):
               between chain points exceeds mean distance
               between pairs of live points.
 
-            Adapting can give usable results. However, strictly speaking,
-            detailed balance is not maintained, so the results can be biased.
-            You can use the logstat property to find out the `nsteps` learned
-            from one run (third column), and use the largest value for `nsteps`
-            of a fresh run.
+            Each step sampler walk adds one row to stepsampler.logstat.
+            The jump distance (forth column) should be compared to
+            the reference distance (fifth column).
 
         max_nsteps: int
             Maximum number of steps the adaptive_nsteps can reach.
@@ -589,7 +646,7 @@ class StepSampler(object):
         self.nudge = 1.1**(1. / self.nsteps)
         self.nsteps_nudge = 1.01
         self.generate_direction = generate_direction
-        adaptive_nsteps_options = {
+        check_nsteps_options = {
             False: None,
             'move-distance': adapt_proposal_move_distances,
             'move-distance-midway': adapt_proposal_move_distances_midway,
@@ -598,22 +655,33 @@ class StepSampler(object):
             'proposal-summed-distances': adapt_proposal_summed_distances,
             'proposal-summed-distances-NN': adapt_proposal_summed_distances_NN,
         }
+        adaptive_nsteps_options = dict(check_nsteps_options)
 
         if adaptive_nsteps not in adaptive_nsteps_options.keys():
             raise ValueError("adaptive_nsteps must be one of: %s, not '%s'" % (adaptive_nsteps_options, adaptive_nsteps))
+        if check_nsteps not in check_nsteps_options.keys():
+            raise ValueError("check_nsteps must be one of: %s, not '%s'" % (adaptive_nsteps_options, adaptive_nsteps))
         self.adaptive_nsteps = adaptive_nsteps
+        if self.adaptive_nsteps:
+            assert nsteps <= max_nsteps, 'Invalid adapting configuration: provided nsteps=%d exceeds provided max_nsteps=%d' % (nsteps, max_nsteps)
         self.adaptive_nsteps_function = adaptive_nsteps_options[adaptive_nsteps]
+        self.check_nsteps = check_nsteps
+        self.check_nsteps_function = check_nsteps_options[check_nsteps]
         self.adaptive_nsteps_needs_mean_pair_distance = self.adaptive_nsteps in (
+            'proposal-total-distances', 'proposal-summed-distances',
+        ) or self.check_nsteps in (
             'proposal-total-distances', 'proposal-summed-distances',
         )
         self.starting_point_selector = starting_point_selector
         self.mean_pair_distance = np.nan
         self.region_filter = region_filter
+        if log:
+            assert hasattr(log, 'write'), 'log argument should be a file, use log=open(filename, "w") or similar'
         self.log = log
 
         self.logstat = []
         self.logstat_labels = ['rejection_rate', 'scale', 'steps']
-        if adaptive_nsteps:
+        if adaptive_nsteps or check_nsteps:
             self.logstat_labels += ['jump-distance', 'reference-distance']
 
     def __str__(self):
@@ -654,6 +722,85 @@ class StepSampler(object):
                    header=','.join(self.logstat_labels), delimiter=',')
         plt.close()
 
+    @property
+    def mean_jump_distance(self):
+        """Geometric mean jump distance."""
+        if len(self.logstat) == 0:
+            return np.nan
+        if 'jump-distance' not in self.logstat_labels or 'reference-distance' not in self.logstat_labels:
+            return np.nan
+        i = self.logstat_labels.index('jump-distance')
+        j = self.logstat_labels.index('reference-distance')
+        jump_distances = np.array([entry[i] for entry in self.logstat])
+        reference_distances = np.array([entry[j] for entry in self.logstat])
+        return np.exp(np.nanmean(np.log(jump_distances / reference_distances + 1e-10)))
+
+    @property
+    def far_enough_fraction(self):
+        """Fraction of jumps exceeding reference distance."""
+        if len(self.logstat) == 0:
+            return np.nan
+        if 'jump-distance' not in self.logstat_labels or 'reference-distance' not in self.logstat_labels:
+            return np.nan
+        i = self.logstat_labels.index('jump-distance')
+        j = self.logstat_labels.index('reference-distance')
+        jump_distances = np.array([entry[i] for entry in self.logstat])
+        reference_distances = np.array([entry[j] for entry in self.logstat])
+        return np.nanmean(jump_distances > reference_distances)
+
+    def get_info_dict(self):
+        return dict(
+            num_logs=len(self.logstat),
+            rejection_rate=np.nanmean([entry[0] for entry in self.logstat]) if len(self.logstat) > 0 else np.nan,
+            mean_scale=np.nanmean([entry[1] for entry in self.logstat]) if len(self.logstat) > 0 else np.nan,
+            mean_nsteps=np.nanmean([entry[2] for entry in self.logstat]) if len(self.logstat) > 0 else np.nan,
+            mean_distance=self.mean_jump_distance,
+            frac_far_enough=self.far_enough_fraction,
+            last_logstat=dict(zip(self.logstat_labels, self.logstat[-1] if len(self.logstat) > 1 else [np.nan] * len(self.logstat_labels)))
+        )
+
+
+    def print_diagnostic(self):
+        """Print diagnostic of step sampler performance."""
+        if len(self.logstat) == 0:
+            print("diagnostic unavailable, no recorded steps found")
+            return
+        if 'jump-distance' not in self.logstat_labels or 'reference-distance' not in self.logstat_labels:
+            print("turn on check_nsteps in the step sampler for diagnostics")
+            return
+        frac_farenough = self.far_enough_fraction
+        average_distance = self.mean_jump_distance
+        if frac_farenough < 0.5:
+            advice = ': very fishy. Double nsteps and see if fraction and lnZ change)'
+        elif frac_farenough < 0.66:
+            advice = ': fishy. Double nsteps and see if fraction and lnZ change)'
+        else:
+            advice = ' (should be >50%)'
+        print('step sampler diagnostic: jump distance %.2f (should be >1), far enough fraction: %.2f%% %s' % (
+            average_distance, frac_farenough * 100, advice))
+
+    def plot_jump_diagnostic_histogram(self, filename, **kwargs):
+        """Plot jump diagnostic histogram."""
+        if len(self.logstat) == 0:
+            return
+        if 'jump-distance' not in self.logstat_labels:
+            return
+        if 'reference-distance' not in self.logstat_labels:
+            return
+        i = self.logstat_labels.index('jump-distance')
+        j = self.logstat_labels.index('reference-distance')
+        jump_distances = np.array([entry[i] for entry in self.logstat])
+        reference_distances = np.array([entry[j] for entry in self.logstat])
+        plt.hist(np.log10(jump_distances / reference_distances + 1e-10), **kwargs)
+        ylo, yhi = plt.ylim()
+        plt.vlines(np.log10(self.mean_jump_distance), ylo, yhi)
+        plt.ylim(ylo, yhi)
+        plt.title(self.check_nsteps or self.adaptive_nsteps)
+        plt.xlabel('log(relative step distance)')
+        plt.ylabel('Frequency')
+        plt.savefig(filename, bbox_inches='tight')
+        plt.close()
+
     def move(self, ui, region, ndraw=1, plot=False):
         """Move around point ``ui``. Stub to be implemented by child classes."""
         raise NotImplementedError()
@@ -670,7 +817,7 @@ class StepSampler(object):
         assert self.scale > 0
         assert self.next_scale > 0
         # reset chain
-        if self.adaptive_nsteps:
+        if self.adaptive_nsteps or self.check_nsteps:
             self.logstat.append([-1.0, self.scale, self.nsteps, np.nan, np.nan])
         else:
             self.logstat.append([-1.0, self.scale, self.nsteps])
@@ -709,18 +856,22 @@ class StepSampler(object):
         region: MLFriends object
             current region
         """
-        if not self.adaptive_nsteps:
+        if not (self.adaptive_nsteps or self.check_nsteps):
             return
-        elif len(self.history) < self.nsteps:
+        if len(self.history) < self.nsteps:
             # incomplete or aborted for some reason
-            print("not adapting, incomplete history", len(self.history), self.nsteps)
+            print("not adapting/checking nsteps, incomplete history", len(self.history), self.nsteps)
             return
 
-        # assert self.nrejects < len(self.history), (self.nsteps, self.nrejects, len(self.history))
-        # assert self.nrejects <= self.nsteps, (self.nsteps, self.nrejects, len(self.history))
         if self.adaptive_nsteps_needs_mean_pair_distance:
             assert np.isfinite(self.mean_pair_distance)
         ndim = region.u.shape[1]
+        if self.check_nsteps:
+            far_enough, extra_info = self.check_nsteps_function(region, self.history, self.mean_pair_distance, ndim)
+            self.logstat[-1] += extra_info
+        if not self.adaptive_nsteps:
+            return
+
         far_enough, extra_info = self.adaptive_nsteps_function(region, self.history, self.mean_pair_distance, ndim)
         self.logstat[-1] += extra_info
 
@@ -761,8 +912,9 @@ class StepSampler(object):
                 [Lmin], ustart, ufinal, tstart, tfinal,
                 [self.nsteps, region.maxradiussq**0.5, mean_pair_distance,
                  iLstart, iLfinal, itstart, itfinal])])
+            self.log.flush()
 
-        if self.adaptive_nsteps:
+        if self.adaptive_nsteps or self.check_nsteps:
             self.adapt_nsteps(region=region)
 
         if self.next_scale > self.scale * self.nudge**10:
@@ -1048,7 +1200,7 @@ class SliceSampler(StepSampler):
 
 def CubeSliceSampler(*args, **kwargs):
     """Slice sampler, randomly picking region axes."""
-    return SliceSampler(*args, **kwargs, generate_direction=generate_cube_oriented_direction)
+    return SliceSampler(*args, **kwargs, generate_direction=SequentialDirectionGenerator())
 
 
 def RegionSliceSampler(*args, **kwargs):
@@ -1064,6 +1216,49 @@ def BallSliceSampler(*args, **kwargs):
 def RegionBallSliceSampler(*args, **kwargs):
     """Hit & run sampler. Choose random directions according to region."""
     return SliceSampler(*args, **kwargs, generate_direction=generate_region_random_direction)
+
+
+class SequentialDirectionGenerator(object):
+    """Sequentially proposes one parameter after the next."""
+    def __init__(self):
+        """Initialise."""
+        self.axis_index = 0
+
+    def __call__(self, ui, region, scale=1):
+        """Choose the next axis in u-space.
+
+        Parameters
+        -----------
+        ui: array
+            current point (in u-space)
+        region: MLFriends object
+            pick random two live points for length along axis
+        scale: float
+            length of direction vector
+
+        Returns
+        --------
+        v: array
+            new direction vector (in u-space)
+        """
+        nlive, ndim = region.u.shape
+        j = self.axis_index % ndim
+        self.axis_index = j + 1
+
+        v = np.zeros(ndim)
+        # choose pair of live points
+        while v[j] == 0:
+            i = np.random.randint(nlive)
+            i2 = np.random.randint(nlive - 1)
+            if i2 >= i:
+                i2 += 1
+
+            v[j] = (region.u[i,j] - region.u[i2,j]) * scale
+
+        return v
+
+    def __str__(self):
+        return type(self).__name__ + '()'
 
 
 class SequentialRegionDirectionGenerator(object):

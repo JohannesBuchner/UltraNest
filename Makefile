@@ -99,7 +99,7 @@ release-test: install
 	#grep -- --random examples/runfeatures.sh | sed s,python3,,g | xargs -rt --max-lines=1 mpiexec -np 5 coverage run --parallel-mode 
 
 release: release-test dist ## package and upload a release
-	twine upload dist/*.tar.gz
+	twine upload --verbose dist/*.tar.gz
 
 dist: clean ## builds source and wheel package
 	$(PYTHON) setup.py sdist

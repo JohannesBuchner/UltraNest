@@ -54,8 +54,135 @@ def unitcube_line_intersection(ray_origin, ray_direction):
         t2 = -n + k
         return np.nanmax(t1, axis=1), np.nanmin(t2, axis=1)
 
+def diagnose_move_distances(region, ustart, ufinal):
+    """Compares random walk travel distance to MLFriends radius.
 
-class PopulationRandomWalkSampler():
+    Compares in whitened space (t-space), the L2 norm between final
+    point and starting point to the MLFriends bootstrapped radius.
+
+    Parameters
+    ----------
+    region: MLFriends
+        built region
+    ustart: array
+        starting positions
+    ufinal: array
+        final positions
+
+    Returns
+    -------
+    far_enough: bool
+        whether the distance is larger than the radius
+    move_distance: float
+        distance between start and final point in whitened space
+    reference_distance: float
+        MLFriends radius
+    """
+    assert ustart.shape == ufinal.shape, (ustart.shape, ufinal.shape)
+    tstart = region.transformLayer.transform(ustart)
+    tfinal = region.transformLayer.transform(ufinal)
+    d2 = ((tstart - tfinal)**2).sum(axis=1)
+    far_enough = d2 > region.maxradiussq
+
+    return far_enough, [d2**0.5, region.maxradiussq**0.5]
+
+class GenericPopulationSampler():
+    def plot(self, filename):
+        """Plot sampler statistics.
+
+        Parameters
+        -----------
+        filename: str
+            Stores plot into ``filename`` and data into
+            ``filename + ".txt.gz"``.
+        """
+        if len(self.logstat) == 0:
+            return
+
+        import matplotlib.pyplot as plt
+        plt.figure(figsize=(10, 1 + 3 * len(self.logstat_labels)))
+        for i, label in enumerate(self.logstat_labels):
+            part = [entry[i] for entry in self.logstat]
+            plt.subplot(len(self.logstat_labels), 1, 1 + i)
+            plt.ylabel(label)
+            plt.plot(part)
+            x = []
+            y = []
+            for j in range(0, len(part), 20):
+                x.append(j)
+                y.append(np.mean(part[j:j + 20]))
+            plt.plot(x, y)
+            if np.min(part) > 0:
+                plt.yscale('log')
+        plt.savefig(filename, bbox_inches='tight')
+        np.savetxt(filename + '.txt.gz', self.logstat,
+                   header=','.join(self.logstat_labels), delimiter=',')
+        plt.close()
+
+    @property
+    def mean_jump_distance(self):
+        """Geometric mean jump distance."""
+        if len(self.logstat) == 0:
+            return np.nan
+        return np.exp(np.average(
+            np.log([entry[-1] + 1e-10 for entry in self.logstat]),
+            weights=([entry[0] for entry in self.logstat])
+        ))
+
+    @property
+    def far_enough_fraction(self):
+        """Fraction of jumps exceeding reference distance."""
+        if len(self.logstat) == 0:
+            return np.nan
+        return np.average(
+            [entry[-2] for entry in self.logstat],
+            weights=([entry[0] for entry in self.logstat])
+        )
+
+    def get_info_dict(self):
+        return dict(
+            num_logs=len(self.logstat),
+            rejection_rate=1 - np.nanmean([entry[0] for entry in self.logstat]) if len(self.logstat) > 0 else np.nan,
+            mean_scale=np.nanmean([entry[1] for entry in self.logstat]) if len(self.logstat) > 0 else np.nan,
+            mean_nsteps=np.nanmean([entry[2] for entry in self.logstat]) if len(self.logstat) > 0 else np.nan,
+            mean_distance=self.mean_jump_distance,
+            frac_far_enough=self.far_enough_fraction,
+            last_logstat=dict(zip(self.logstat_labels, self.logstat[-1] if len(self.logstat) > 1 else [np.nan] * len(self.logstat_labels)))
+        )
+
+
+    def print_diagnostic(self):
+        """Print diagnostic of step sampler performance."""
+        if len(self.logstat) == 0:
+            print("diagnostic unavailable, no recorded steps found")
+            return
+        frac_farenough = self.far_enough_fraction
+        average_distance = self.mean_jump_distance
+        if frac_farenough < 0.5:
+            advice = ': very fishy. Double nsteps and see if fraction and lnZ change)'
+        elif frac_farenough < 0.66:
+            advice = ': fishy. Double nsteps and see if fraction and lnZ change)'
+        else:
+            advice = ' (should be >50%)'
+        print('step sampler diagnostic: jump distance %.2f (should be >1), far enough fraction: %.2f%% %s' % (
+            average_distance, frac_farenough * 100, advice))
+
+    def plot_jump_diagnostic_histogram(self, filename, **kwargs):
+        """Plot jump diagnostic histogram."""
+        if len(self.logstat) == 0:
+            return
+        import matplotlib.pyplot as plt
+        plt.hist(np.log10([entry[-1] for entry in self.logstat]), **kwargs)
+        ylo, yhi = plt.ylim()
+        plt.vlines(self.mean_jump_distance, ylo, yhi)
+        plt.ylim(ylo, yhi)
+        plt.xlabel('log(relative step distance)')
+        plt.ylabel('Frequency')
+        plt.savefig(filename, bbox_inches='tight')
+        plt.close()
+
+
+class PopulationRandomWalkSampler(GenericPopulationSampler):
     """Vectorized Gaussian Random Walk sampler."""
 
     def __init__(
@@ -73,8 +200,7 @@ class PopulationRandomWalkSampler():
             Observe the nested sampling efficiency.
         nsteps: int
             number of steps to take until the found point is accepted as independent.
-            To calibrate, try several runs with increasing nsteps (doubling).
-            The ln(Z) should become stable at some value.
+            To find the right value, see :py:class:`ultranest.calibrator.ReactiveNestedCalibrator`
         generate_direction: function
             Function that gives proposal kernel shape, one of:
             :py:func:`ultranest.popstepsampler.generate_cube_oriented_direction`
@@ -107,6 +233,8 @@ class PopulationRandomWalkSampler():
 
         self.log = log
         self.logfile = logfile
+        self.logstat = []
+        self.logstat_labels = ['accept_rate', 'efficiency', 'scale', 'far_enough', 'mean_rel_jump']
         self.prepared_samples = []
 
         self.popsize = popsize
@@ -196,14 +324,21 @@ class PopulationRandomWalkSampler():
                 allp[mask_accept,:] = proposed_p[mask_accept,:]
                 allL[mask_accept] = proposed_L[mask_accept]
             assert np.isfinite(allp).all(), 'some walkers never moved! Double nsteps of PopulationRandomWalkSampler.'
+            far_enough, (move_distance, reference_distance) = diagnose_move_distances(region, us[ilive[mask_accept],:], allu[mask_accept,:])
             self.prepared_samples = list(zip(allu, allp, allL))
 
-            # adapt slightly
+            self.logstat.append([
+                mask_accept.mean(),
+                1 - (self.nrejects - (nrejects_expected - self.nsteps * self.popsize * (1 - 0.234))) / (self.nsteps * self.popsize),
+                self.scale,
+                self.nsteps,
+                np.mean(far_enough),
+                np.exp(np.mean(np.log(move_distance / reference_distance + 1e-10)))
+            ])
             if self.logfile:
-                self.logfile.write("rescale\t%.4f\t%.4f\t%g\n" % (
-                    mask_accept.mean() * 100,
-                    100 - (self.nrejects - (nrejects_expected - self.nsteps * self.popsize * (1 - 0.234))) * 100. / (self.nsteps * self.popsize),
-                    self.scale))
+                self.logfile.write("rescale\t%.4f\t%.4f\t%g\t%.4f%g\n" % self.logstat[-1])
+
+            # adapt slightly
             if self.nrejects > nrejects_expected and self.scale > self.scale_min:
                 # lots of rejects, decrease scale
                 self.scale *= self.scale_adapt_factor
@@ -216,7 +351,7 @@ class PopulationRandomWalkSampler():
         return u, p, L, nc
 
 
-class PopulationSliceSampler():
+class PopulationSliceSampler(GenericPopulationSampler):
     """Vectorized slice/HARM sampler.
 
     Can revert until all previous steps have likelihoods allL above Lmin.
@@ -235,6 +370,7 @@ class PopulationSliceSampler():
             number of walkers to maintain
         nsteps: int
             number of steps to take until the found point is accepted as independent.
+            To find the right value, see :py:class:`ultranest.calibrator.ReactiveNestedCalibrator`
         generate_direction: function `(u, region, scale) -> v`
             function such as `generate_unit_directions`, which
             generates a random slice direction.
@@ -264,6 +400,8 @@ class PopulationSliceSampler():
 
         self.log = log
         self.logfile = logfile
+        self.logstat = []
+        self.logstat_labels = ['accept_rate', 'efficiency', 'scale', 'far_enough', 'mean_rel_jump']
 
         self.popsize = popsize
         self.generate_direction = generate_direction
@@ -361,7 +499,7 @@ class PopulationSliceSampler():
             print("setting currentp")
         self.currentp = np.zeros((self.popsize, nparams)) + np.nan
 
-    def advance(self, transform, loglike, Lmin):
+    def advance(self, transform, loglike, Lmin, region):
         """Advance the walker population.
 
         Parameters
@@ -406,6 +544,7 @@ class PopulationSliceSampler():
         if self.log:
             print("evolve will advance:", movable)
 
+        uorig = args[0].copy()
         (
             (
                 currentt, currentv,
@@ -414,6 +553,18 @@ class PopulationSliceSampler():
             (success, unew, pnew, Lnew),
             nc
         ) = evolve(transform, loglike, Lmin, *args)
+
+        if success.any():
+            far_enough, (move_distance, reference_distance) = diagnose_move_distances(region, uorig[success,:], unew)
+            self.logstat.append([
+                success.mean(),
+                self.scale,
+                self.nsteps,
+                np.mean(far_enough) if len(far_enough) > 0 else 0,
+                np.exp(np.mean(np.log(move_distance / reference_distance + 1e-10))) if len(far_enough) > 0 else 0
+            ])
+            if self.logfile:
+                self.logfile.write("rescale\t%.4f\t%.4f\t%g\t%.4f%g\n" % self.logstat[-1])
 
         if self.log:
             print("movable", movable.shape, movable.sum(), success.shape)
@@ -511,7 +662,7 @@ class PopulationSliceSampler():
 
         if self.log:
             print(str(self), "(before)")
-        nc = self.advance(transform, loglike, Lmin)
+        nc = self.advance(transform, loglike, Lmin, region)
         if self.log:
             print(str(self), "(after)")
 
@@ -585,7 +736,7 @@ def slice_limit_to_scale(tleft, tright):
 
 
 
-class PopulationSimpleSliceSampler():
+class PopulationSimpleSliceSampler(GenericPopulationSampler):
     """
        Vectorized Slice sampler without stepping out procedure for quick look fits.
        Unlike `:py:class:PopulationSliceSampler`, in `:py:class:PopulationSimpleSliceSampler`,
@@ -694,6 +845,9 @@ class PopulationSimpleSliceSampler():
         self.popsize = popsize
         
         self.slice_limit=slice_limit
+
+        self.logstat = []
+        self.logstat_labels = ['accept_rate', 'efficiency', 'scale', 'far_enough', 'mean_rel_jump']
 
         
         
@@ -829,8 +983,19 @@ class PopulationSimpleSliceSampler():
             self.ncalls+=nc
             
             assert np.array([p!=np.zeros(ndim) for p in allp]).all(), 'some walkers never moved! Double nsteps of PopulationSimpleSliceSampler.'
-            
+            far_enough, (move_distance, reference_distance) = diagnose_move_distances(region, us[ilive,:], allu)
             self.prepared_samples = list(zip(allu, allp, allL))
+
+            self.logstat.append([
+                1., # we always find a point or we will break at the assert before
+                1., # same here?
+                self.scale, # will always be 1. in the default case
+                self.nsteps,
+                np.mean(far_enough) if len(far_enough) > 0 else 0,
+                np.exp(np.mean(np.log(move_distance / reference_distance + 1e-10))) if len(far_enough) > 0 else 0
+            ])
+
+            
 
             
             # Scale adaptation such that the final interval is

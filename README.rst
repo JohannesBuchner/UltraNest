@@ -71,7 +71,7 @@ Features
   * Can control the run programmatically and check status
   * Reasonable defaults, but customizable
   * Thoroughly tested with many unit and integration tests
-  * NEW: allows likelihood functions written in `Python <https://github.com/JohannesBuchner/UltraNest/tree/master/languages/python>`_, `C <https://github.com/JohannesBuchner/UltraNest/tree/master/languages/c>`_, `C++ <https://github.com/JohannesBuchner/UltraNest/tree/master/languages/c%2B%2B>`_, `Fortran <https://github.com/JohannesBuchner/UltraNest/tree/master/languages/fortran>`_, `Julia <https://github.com/JohannesBuchner/UltraNest/tree/master/languages/julia>`_ and `R <https://github.com/JohannesBuchner/UltraNest/tree/master/languages/r>`_
+  * NEW: supports likelihood functions written in `Python <https://github.com/JohannesBuchner/UltraNest/tree/master/languages/python>`_, `C <https://github.com/JohannesBuchner/UltraNest/tree/master/languages/c>`_, `C++ <https://github.com/JohannesBuchner/UltraNest/tree/master/languages/c%2B%2B>`_, `Fortran <https://github.com/JohannesBuchner/UltraNest/tree/master/languages/fortran>`_, `Julia <https://github.com/JohannesBuchner/UltraNest/tree/master/languages/julia>`_ and `R <https://github.com/JohannesBuchner/UltraNest/tree/master/languages/r>`_
 
 * Robust exploration easily handles:
 
@@ -79,10 +79,27 @@ Features
   * Multiple modes/solutions in the parameter space
   * Robust, parameter-free MLFriends algorithm 
     (metric learning RadFriends, Buchner+14,+19), with new improvements
-    (region follows new live points, clustering improves metric iteratively).
+    (region follows new live points, clustering improves metric iteratively, 
+    NEW in v4.0: refined local metric).
   * High-dimensional problems with hit-and-run sampling
   * Wrapped/circular parameters, derived parameters
   * Fast-slow parameters
+
+* Lightweight and fast
+
+  * some functions implemented in Cython
+  * `vectorized likelihood function calls <https://johannesbuchner.github.io/UltraNest/performance.html>`__, 
+    optimally supporting models with deep learning emulators
+  * Use multiple cores, fully parallelizable from laptops to computing clusters
+  * `MPI support <https://johannesbuchner.github.io/UltraNest/performance.html>`__
+
+* Advanced visualisation and crash recovery:
+
+  * Live view of the exploration for Jupyter notebooks and terminals
+  * Publication-ready visualisations
+  * Corner plots, run and parameter exploration diagnostic plots
+  * Checkpointing and resuming, even with different number of live points
+  * `Warm-start: resume from modified data / model <https://johannesbuchner.github.io/UltraNest/example-warmstart.html>`__
 
 * strategic nested sampling
 
@@ -93,21 +110,6 @@ Features
   * can target a desired number of effective samples
   * or any combination of the above
   * Robust ln(Z) uncertainties by bootstrapping live points.
-
-* Lightweight and fast
-
-  * some functions implemented in Cython
-  * `vectorized likelihood function calls <https://johannesbuchner.github.io/UltraNest/performance.html>`__
-  * Use multiple cores, fully parallelizable from laptops to computing clusters
-  * `MPI support <https://johannesbuchner.github.io/UltraNest/performance.html>`__
-
-* Advanced visualisation and crash recovery:
-
-  * Live view of the exploration for Jupyter notebooks and terminals
-  * Publication-ready visualisations
-  * Corner plots, run and parameter exploration diagnostic plots
-  * Checkpointing and resuming, even with different number of live points
-  * NEW: `Warm-start: resume from modified data / model <https://johannesbuchner.github.io/UltraNest/example-warmstart.html>`__
 
 Usage
 ^^^^^
@@ -130,3 +132,5 @@ How to `cite UltraNest <https://johannesbuchner.github.io/UltraNest/issues.html#
 GPLv3 (see LICENCE file). If you require another license, please contact me.
 
 The cute hedgehog icon was made by `Freepik <https://www.flaticon.com/authors/freepik>`_.
+It symbolises UltraNest's approach of carefully walking up a likelihood,
+ready to defend against any encountered danger.

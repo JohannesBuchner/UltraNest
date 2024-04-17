@@ -1,15 +1,13 @@
 from __future__ import print_function, division
 import numpy as np
+import pytest
 from ultranest.ordertest import UniformOrderAccumulator, infinite_U_zscore
 
 def test_invalid_order():
 	sample_acc = UniformOrderAccumulator()
 	sample_acc.add(2, 3)
-	try:
+	with pytest.raises(ValueError):
 		sample_acc.add(4, 3)
-		assert False
-	except ValueError:
-		pass
 
 def test_diff_expand():
 	sample_acc = UniformOrderAccumulator()

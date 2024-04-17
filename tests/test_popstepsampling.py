@@ -1,9 +1,27 @@
+import os
+import tempfile
 import numpy as np
+
 from ultranest import ReactiveNestedSampler
+from ultranest.mlfriends import AffineLayer, ScalingLayer, MLFriends, RobustEllipsoidRegion, SimpleRegion
 from ultranest.popstepsampler import PopulationSliceSampler, PopulationRandomWalkSampler, PopulationSimpleSliceSampler
 from ultranest.popstepsampler import generate_cube_oriented_direction, generate_random_direction, generate_cube_oriented_direction_scaled
 from ultranest.popstepsampler import generate_region_oriented_direction, generate_region_random_direction
 from ultranest.popstepsampler import slice_limit_to_unitcube,slice_limit_to_scale
+
+def make_region(ndim, us=None, nlive=400):
+    if us is None:
+        us = np.random.uniform(size=(nlive, ndim))
+    
+    if ndim > 1:
+        transformLayer = AffineLayer()
+    else:
+        transformLayer = ScalingLayer()
+    transformLayer.optimize(us, us)
+    region = MLFriends(us, transformLayer)
+    region.maxradiussq, region.enlarge = region.compute_enlargement(nbootstraps=30)
+    region.create_ellipsoid(minvol=1.0)
+    return region
 
 def loglike_vectorized(z):
     a = np.array([-0.5 * sum([((xi - 0.7 + i*0.001)/0.1)**2 for i, xi in enumerate(x)]) for x in z])
@@ -29,6 +47,7 @@ def test_stepsampler_cubeslice(plot=False):
     sampler.stepsampler = PopulationSliceSampler(
         popsize=popsize, nsteps=nsteps, 
         generate_direction=generate_cube_oriented_direction,
+        log=True,
     )
     r = sampler.run(viz_callback=None, log_interval=50)
     sampler.print_results()
@@ -36,6 +55,16 @@ def test_stepsampler_cubeslice(plot=False):
     b = (np.abs(r['samples'] - 0.3) < 0.1).all(axis=1)
     assert a.sum() > 1
     assert b.sum() > 1
+
+    with tempfile.TemporaryDirectory() as tempdir:
+        prefix = os.path.join(tempdir, 'test-stepsampler')
+        sampler.stepsampler.plot(prefix + '-plot.pdf')
+        assert os.path.exists(prefix + '-plot.pdf')
+        sampler.stepsampler.plot_jump_diagnostic_histogram(prefix + '-plot-jumps.pdf')
+        assert os.path.exists(prefix + '-plot-jumps.pdf')
+        sampler.stepsampler.print_diagnostic()
+        print(sampler.stepsampler)
+        print(sampler.stepsampler.status)
 
 def test_stepsampler_cubegausswalk(plot=False):
     np.random.seed(2)
@@ -46,7 +75,7 @@ def test_stepsampler_cubegausswalk(plot=False):
     sampler.stepsampler = PopulationRandomWalkSampler(
         popsize=popsize, nsteps=nsteps, 
         generate_direction=generate_cube_oriented_direction,
-        scale=0.1,
+        scale=0.1, log=True,
     )
     r = sampler.run(viz_callback=None, log_interval=50, max_iters=200, max_num_improvement_loops=0)
     sampler.print_results()
@@ -73,7 +102,15 @@ def test_stepsampler_randomSimSlice(plot=False):
     assert b.sum() > 1
 
 
-from ultranest.mlfriends import AffineLayer, ScalingLayer, MLFriends, RobustEllipsoidRegion, SimpleRegion
+
+    with tempfile.TemporaryDirectory() as tempdir:
+        prefix = os.path.join(tempdir, 'test-stepsampler')
+        sampler.stepsampler.plot(prefix + '-plot.pdf')
+        assert os.path.exists(prefix + '-plot.pdf')
+        sampler.stepsampler.plot_jump_diagnostic_histogram(prefix + '-plot-jumps.pdf')
+        assert os.path.exists(prefix + '-plot-jumps.pdf')
+        sampler.stepsampler.print_diagnostic()
+        print(sampler.stepsampler)
 
 def test_direction_proposals():
     proposals = [generate_cube_oriented_direction, generate_random_direction, 
@@ -177,14 +214,6 @@ def test_update_slice_sampler():
     assert np.allclose(tright, true_tright), (tright, true_tright)
 
 
-
-
-
-
-
-
-
-
 def Test_SimpleSliceSampler_reversibility(seed):
 
     
@@ -224,6 +253,29 @@ def Test_SimpleSliceSampler_reversibility(seed):
     assert np.allclose(Ls, L2), (Ls, L2)
 
     
+def test_direction_proposal_values():
+    ndim = 10
+    np.random.seed(12)
+    region = make_region(ndim, nlive=400)
+    ui = region.u[::2]
+    
+    scale = np.random.uniform()
+    vcube = generate_cube_oriented_direction(ui, region, scale)
+    assert vcube.shape == ui.shape
+    assert vcube.sum(axis=1).shape == (len(ui),)
+    assert ((vcube != 0).sum(axis=1) == 1).all(), vcube
+    assert np.allclose(np.linalg.norm(vcube, axis=1), scale), (vcube, np.linalg.norm(vcube, axis=1), scale)
+
+    vharm = generate_random_direction(ui, region, scale)
+    assert (vharm != 0).all(), vharm
+    vregionslice = generate_region_oriented_direction(ui, region, scale)
+    assert (vregionslice != 0).all(), vregionslice
+    vregionharm = generate_region_random_direction(ui, region, scale)
+    assert (vregionharm != 0).all(), vregionharm
+    vcubestd = generate_cube_oriented_direction_scaled(ui, region, scale)
+    assert vcubestd.shape == ui.shape
+    assert vcubestd.sum(axis=1).shape == (len(ui),)
+    assert ((vcubestd != 0).sum(axis=1) == 1).all(), vcubestd
 
 
 if __name__ == '__main__':

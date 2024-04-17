@@ -1,8 +1,17 @@
 import numpy as np
+import os
+import pytest
+import tempfile
+
 from ultranest.mlfriends import ScalingLayer, AffineLayer, MLFriends
 from ultranest import ReactiveNestedSampler
-from ultranest.stepsampler import RegionMHSampler, CubeMHSampler, CubeSliceSampler, RegionSliceSampler, SpeedVariableRegionSliceSampler, RegionBallSliceSampler
-from ultranest.stepsampler import generate_region_random_direction, ellipsoid_bracket, crop_bracket_at_unit_cube
+from ultranest.stepsampler import RegionMHSampler, CubeMHSampler, SliceSampler, CubeSliceSampler, RegionSliceSampler, SpeedVariableRegionSliceSampler, RegionBallSliceSampler, SpeedVariableGenerator
+from ultranest.stepsampler import ellipsoid_bracket, crop_bracket_at_unit_cube, _inside_region
+from ultranest.stepsampler import generate_random_direction, generate_cube_oriented_direction
+from ultranest.stepsampler import SequentialDirectionGenerator, OrthogonalDirectionGenerator, SequentialRegionDirectionGenerator
+from ultranest.stepsampler import generate_region_random_direction, generate_region_oriented_direction, generate_cube_oriented_differential_direction
+from ultranest.stepsampler import generate_differential_direction, generate_partial_differential_direction, generate_mixture_random_direction
+
 from ultranest.pathsampler import SamplingPathStepSampler
 from ultranest.stepsampler import select_random_livepoint, IslandPopulationRandomLivepointSelector
 from numpy.testing import assert_allclose
@@ -39,6 +48,15 @@ def test_stepsampler_cubemh(plot=False):
     assert a.sum() > 1, a.sum()
     assert b.sum() > 1, b.sum()
 
+    # check that diagnostics fail
+    print("mean jump distance:", sampler.stepsampler.mean_jump_distance)
+    print("far enough fraction:", sampler.stepsampler.far_enough_fraction)
+    assert sampler.stepsampler.mean_jump_distance < 1.0, sampler.stepsampler.mean_jump_distance
+    assert sampler.stepsampler.far_enough_fraction < 0.5, sampler.stepsampler.far_enough_fraction
+
+    print("Diagnostic print:")
+    sampler.stepsampler.print_diagnostic()
+
 def test_stepsampler_regionmh(plot=False):
     np.random.seed(2)
     sampler = ReactiveNestedSampler(paramnames, loglike_vectorized, transform=transform, vectorized=True)
@@ -49,6 +67,69 @@ def test_stepsampler_regionmh(plot=False):
     b = (np.abs(r['samples'] - 0.3) < 0.1).all(axis=1)
     assert a.sum() > 1, a
     assert b.sum() > 1, b
+
+def test_direction_proposals():
+    ndim = 10
+    np.random.seed(12)
+    region = make_region(ndim)
+    ui = region.u[0]
+
+    scale = np.random.uniform()
+    vcube = generate_cube_oriented_direction(ui, region, scale)
+    assert (vcube != 0).sum() == 1, vcube
+    assert np.linalg.norm(vcube) == scale, vcube
+
+    vcubede = generate_cube_oriented_differential_direction(ui, region, scale)
+    assert (vcubede != 0).sum() == 1, vcubede
+    assert np.linalg.norm(vcubede) > 0, vcubede
+
+    vharm = generate_random_direction(ui, region, scale)
+    assert (vharm != 0).all(), vharm
+
+    vde = generate_differential_direction(ui, region, scale)
+    assert (vde != 0).all(), vde
+
+    vregionslice = generate_region_oriented_direction(ui, region, scale)
+    assert (vregionslice != 0).all(), vregionslice
+
+    vmix = generate_mixture_random_direction(ui, region, scale)
+    assert (vmix != 0).all(), vmix
+
+    vregionharm = generate_region_random_direction(ui, region, scale)
+    assert (vregionharm != 0).all(), vregionharm
+
+    direction_generator = SequentialDirectionGenerator()
+    for i in range(ndim * 2):
+        vdir = direction_generator(ui, region, scale)
+        assert (vdir != 0).sum() == 1, vdir
+        assert np.abs(vdir[i % ndim]) > 0, vdir
+
+    region_direction_generator = SequentialRegionDirectionGenerator()
+    for i in range(ndim * 2):
+        vdirharm = region_direction_generator(ui, region, scale)
+        assert (vdirharm != 0).all(), vdirharm
+
+    vpartialde = generate_partial_differential_direction(ui, region, scale)
+    assert (vpartialde != 0).sum() > 1, vpartialde
+    assert (vpartialde != 0).sum() < ndim, vpartialde
+
+    # test that applying OrthogonalDirectionGenerator to SequentialDirectionGenerator has no effect
+    ortho_direction_generator = OrthogonalDirectionGenerator(SequentialDirectionGenerator())
+    for i in range(ndim * 2):
+        vdir = ortho_direction_generator(ui, region, scale)
+        assert (vdir != 0).sum() == 1, vdir
+        assert np.abs(vdir[i % ndim]) > 0, vdir
+
+def test_inside_region():
+    ndim = 10
+    np.random.seed(12)
+    region = make_region(ndim, us = np.random.uniform(0.5, 0.51, size=(400, ndim)))
+    i = np.random.randint(400)
+    ui = region.u[i]
+    assert _inside_region(region, ui, ui)
+    # corner case where a new point is close to a old case, but both are somehow outside the region
+    unew, uold = np.random.uniform(0.4, 0.401, size=(2, ndim))
+    assert _inside_region(region, unew, uold)
 
 def test_stepsampler_cubeslice(plot=False):
     np.random.seed(3)
@@ -64,13 +145,45 @@ def test_stepsampler_cubeslice(plot=False):
 def test_stepsampler_regionslice(plot=False):
     np.random.seed(4)
     sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform)
-    sampler.stepsampler = RegionSliceSampler(nsteps=len(paramnames))
+    sampler.stepsampler = RegionSliceSampler(nsteps=2 + len(paramnames))
     r = sampler.run(log_interval=50, min_num_live_points=400)
     sampler.print_results()
     a = (np.abs(r['samples'] - 0.7) < 0.1).all(axis=1)
     b = (np.abs(r['samples'] - 0.3) < 0.1).all(axis=1)
     assert a.sum() > 1
     assert b.sum() > 1
+
+    # check that diagnostics pass
+    print("mean jump distance:", sampler.stepsampler.mean_jump_distance)
+    print("far enough fraction:", sampler.stepsampler.far_enough_fraction)
+    assert sampler.stepsampler.mean_jump_distance > 1.0, sampler.stepsampler.mean_jump_distance
+    assert sampler.stepsampler.far_enough_fraction > 0.6, sampler.stepsampler.far_enough_fraction
+
+    print("Diagnostic print:")
+    sampler.stepsampler.print_diagnostic()
+
+def test_SpeedVariableGenerator():
+    np.random.seed(4)
+    ndims = [3, 10]
+    matrices = [
+        np.array([[True, True, True], [False, True, True], [False, False, True]]),
+        [Ellipsis, slice(1,None), slice(2,4)]
+    ]
+    for matrix, ndim in zip(matrices, ndims):
+        direction_generator = SpeedVariableGenerator(matrix, generate_direction=generate_random_direction)
+        for i in range(10):
+            u0 = np.random.uniform(size=ndim)
+            for mask_varying in matrix:
+                mask = np.zeros(ndim, dtype=bool)
+                mask[mask_varying] = True
+                print("starting at u0", u0)
+                print("varying:", mask_varying, mask)
+                v = direction_generator(u0, None)
+                print("direction:", v)
+                assert_allclose(v[~mask], 0)
+                u1 = u0 + np.random.uniform() * v
+                print("new point:", u1)
+                assert_allclose(u1[~mask], u0[~mask])
 
 
 def test_stepsampler_variable_speed_SLOW(plot=False):
@@ -92,7 +205,7 @@ def test_stepsampler_variable_speed_SLOW(plot=False):
 def make_region(ndim, us=None):
     if us is None:
         us = np.random.uniform(size=(1000, ndim))
-    
+
     if ndim > 1:
         transformLayer = AffineLayer()
     else:
@@ -108,7 +221,7 @@ def test_stepsampler(plot=False):
     np.random.seed(6)
     region = make_region(len(paramnames))
     Ls = loglike_vectorized(region.u)
-    
+
     stepsampler = CubeMHSampler(nsteps=len(paramnames))
     while True:
         u1, p1, L1, nc = stepsampler.__next__(region, -1e100, region.u, Ls, transform, loglike)
@@ -143,13 +256,13 @@ def test_stepsampler_adapt_when_stuck(plot=False):
         unew, pnew, Lnew, nc = stepsampler.__next__(region, Lmin, us, Ls, transform, loglike, ndraw=10)
         if unew is not None:
             break
-    
+
     new_scale = stepsampler.scale
     assert new_scale != old_scale
     assert new_scale < 0.01, (new_scale, unew)
-    
+
     print('CubeSliceSampler')
-    stepsampler = CubeSliceSampler(nsteps=1, region_filter=True)
+    stepsampler = SliceSampler(nsteps=1, region_filter=True, generate_direction=generate_cube_oriented_direction)
     np.random.seed(23)
     old_scale = stepsampler.scale
     for j in range(100):
@@ -159,41 +272,62 @@ def test_stepsampler_adapt_when_stuck(plot=False):
             unew, pnew, Lnew, nc = stepsampler.__next__(region, Lmin, us, Ls, transform, loglike, ndraw=10)
             if unew is not None:
                 break
-    
+
     new_scale = stepsampler.scale
     assert new_scale != old_scale
     assert new_scale < 0.01, (new_scale, unew)
 
-def test_stepsampler_regionmh_adapt(plot=False):
+def test_stepsampler_adapt(plot=True):
     np.random.seed(8)
     region = make_region(len(paramnames))
     Ls = loglike_vectorized(region.u)
-    try:
+    with pytest.raises(ValueError):
         RegionMHSampler(nsteps=len(paramnames), adaptive_nsteps='Hello')
-        assert False, 'expected error'
-    except ValueError:
-        pass
-    
-    for sampler_class in RegionMHSampler, CubeMHSampler, CubeSliceSampler, RegionSliceSampler: 
-        for adaptation in False, 'move-distance', 'proposal-total-distances', 'proposal-summed-distances':
-            print()
-            stepsampler = sampler_class(nsteps=len(paramnames), adaptive_nsteps=adaptation)
-            print(stepsampler)
-            stepsampler.region_changed(Ls, region)
-            np.random.seed(23)
-            old_scale = stepsampler.scale
-            for i in range(5):
-                while True:
-                    unew, pnew, Lnew, nc = stepsampler.__next__(region, -1e100, region.u, Ls, transform, loglike)
-                    if unew is not None:
-                        break
-            new_scale = stepsampler.scale
-            assert new_scale != old_scale
-            
-            if adaptation:
-                assert stepsampler.nsteps != len(paramnames)
-            else:
-                assert stepsampler.nsteps == len(paramnames)
+
+    with tempfile.TemporaryDirectory() as tempdir:
+        for sampler_class in RegionMHSampler, CubeMHSampler, CubeSliceSampler, RegionSliceSampler:
+            for adaptation in False, 'move-distance', 'move-distance-midway', 'proposal-total-distances', 'proposal-summed-distances':
+                print()
+                if sampler_class in (CubeMHSampler, CubeSliceSampler):
+                    logfilename = os.path.join(tempdir, 'test-stepsampler-%s.log' % adaptation)
+                    log = open(logfilename, 'w')
+                else:
+                    logfilename = None
+                    log = False
+                stepsampler = sampler_class(nsteps=len(paramnames), adaptive_nsteps=adaptation, log=log)
+                print(stepsampler)
+                stepsampler.region_changed(Ls, region)
+                np.random.seed(23)
+                old_scale = stepsampler.scale
+                for i in range(5):
+                    while True:
+                        unew, pnew, Lnew, nc = stepsampler.__next__(region, -1e100, region.u, Ls, transform, loglike)
+                        if unew is not None:
+                            break
+                new_scale = stepsampler.scale
+                assert new_scale != old_scale
+
+                if adaptation:
+                    assert stepsampler.nsteps != len(paramnames)
+                else:
+                    assert stepsampler.nsteps == len(paramnames)
+
+                if logfilename:
+                    print(np.loadtxt(logfilename).shape)
+                    log_nentries, log_ncolumns = np.loadtxt(logfilename).shape
+                    assert log_nentries == 5
+                    assert log_ncolumns == (1 + 4 * len(unew) + 7)
+
+                if adaptation == 'move-distance' and sampler_class == RegionSliceSampler and plot:
+                    # test plotting
+                    prefix = os.path.join(tempdir, 'test-stepsampler')
+                    assert not os.path.exists(prefix + '-plot.pdf')
+                    stepsampler.plot(prefix + '-plot.pdf')
+                    assert os.path.exists(prefix + '-plot.pdf')
+
+                    assert not os.path.exists(prefix + '-plot-jumps.pdf')
+                    stepsampler.plot_jump_diagnostic_histogram(prefix + '-plot-jumps.pdf')
+                    assert os.path.exists(prefix + '-plot-jumps.pdf')
 
 def assert_point_touches_ellipsoid(ucurrent, v, t, ellipsoid_center, ellipsoid_invcov, enlarge):
     unext = ucurrent + v * t
@@ -211,11 +345,11 @@ def test_ellipsoid_bracket(plot=False):
             us = us * 0.1 + 0.5
         else:
             us = np.random.uniform(size=(2**np.random.randint(3, 10), 2))
-        
+
         if plot:
             import matplotlib.pyplot as plt
             plt.plot(us[:,0], us[:,1], 'o ', ms=2)
-        
+
         transformLayer = ScalingLayer()
         region = MLFriends(us, transformLayer)
         try:
@@ -240,15 +374,15 @@ def test_ellipsoid_bracket(plot=False):
         uleft = ucurrent + v * left
         uright = ucurrent + v * right
 
-        if plot: 
+        if plot:
             plt.plot([uleft[0], uright[0]], [uleft[1], uright[1]], 'x-')
-            
+
             plt.savefig('test_ellipsoid_bracket.pdf', bbox_inches='tight')
             plt.close()
         print("ellipsoid bracket:", left, right)
         assert left <= 0, left
         assert right >= 0, right
-        
+
         assert_point_touches_ellipsoid(ucurrent, v, left, region.ellipsoid_center, region.ellipsoid_invcov, region.enlarge)
         assert_point_touches_ellipsoid(ucurrent, v, right, region.ellipsoid_center, region.ellipsoid_invcov, region.enlarge)
 
@@ -261,7 +395,7 @@ def test_crop_bracket(plot=False):
     ellipsoid_invcov = np.array([[11.29995701, -3.17051875], [-3.17051875,  4.76837493]])
     #enlarge = 1.0
     #ellipsoid_inv_axes = np.array([[1.0, 0.], [0., 1]])
-    
+
 
     eleft, eright = ellipsoid_bracket(ucurrent, v, ellipsoid_center, ellipsoid_inv_axes, enlarge)
     if plot:
@@ -269,7 +403,7 @@ def test_crop_bracket(plot=False):
         d = us - ellipsoid_center
         r = np.einsum('ij,jk,ik->i', d, ellipsoid_invcov, d)
         mask_inside = r <= enlarge
-        
+
         import matplotlib.pyplot as plt
         plt.plot(us[mask_inside,0], us[mask_inside,1], '+', ms=2)
         plt.plot(ucurrent[0], ucurrent[1], 'o ', ms=2)
@@ -297,6 +431,20 @@ def test_crop_bracket(plot=False):
     assert (ucurrent + v * right <= 1).all(), (ucurrent, v, ellipsoid_center, ellipsoid_inv_axes, enlarge)
     assert (ucurrent + v * left >= 0).all(), (ucurrent, v, ellipsoid_center, ellipsoid_inv_axes, enlarge)
     assert (ucurrent + v * right >= 0).all(), (ucurrent, v, ellipsoid_center, ellipsoid_inv_axes, enlarge)
+
+    left, right, cropleft, cropright = crop_bracket_at_unit_cube(ucurrent, -v, eleft, eright)
+    if plot:
+        plt.plot([ucurrent[0] - left * v[0], ucurrent[0] - right * v[0]],
+            [ucurrent[1] - left * v[1], ucurrent[1] - right * v[1]],
+            's--', ms=8)
+        plt.savefig('test_crop_bracket_negative.pdf', bbox_inches='tight')
+        plt.close()
+    assert cropleft
+    assert cropright
+    assert (ucurrent - v * left <= 1).all(), (ucurrent, v, ellipsoid_center, ellipsoid_inv_axes, enlarge)
+    assert (ucurrent - v * right <= 1).all(), (ucurrent, v, ellipsoid_center, ellipsoid_inv_axes, enlarge)
+    assert (ucurrent - v * left >= 0).all(), (ucurrent, v, ellipsoid_center, ellipsoid_inv_axes, enlarge)
+    assert (ucurrent - v * right >= 0).all(), (ucurrent, v, ellipsoid_center, ellipsoid_inv_axes, enlarge)
 
 def test_random_point_selector():
     np.random.seed(41)

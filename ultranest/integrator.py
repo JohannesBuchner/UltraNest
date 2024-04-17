@@ -25,7 +25,7 @@ import numpy as np
 
 from .utils import create_logger, make_run_dir, resample_equal, vol_prefactor, vectorize, listify as _listify
 from .utils import is_affine_transform, normalised_kendall_tau_distance, distributed_work_chunk_size
-from ultranest.mlfriends import MLFriends, AffineLayer, ScalingLayer, find_nearby, WrappingEllipsoid, RobustEllipsoidRegion
+from ultranest.mlfriends import MLFriends, AffineLayer, LocalAffineLayer, ScalingLayer, find_nearby, WrappingEllipsoid, RobustEllipsoidRegion
 from .store import HDF5PointStore, TextPointStore, NullPointStore
 from .viz import get_default_viz_callback
 from .ordertest import UniformOrderAccumulator
@@ -55,9 +55,12 @@ def _get_cumsum_range(pi, dp):
         Index of the item corresponding to quantile ``1-dp``.
     """
     ci = pi.cumsum()
-    ilo = np.where(ci > dp)[0]
+    # this builds a conservatively narrow interval
+    # find first index where the cumulative is surely above
+    ilo, = np.where(ci >= dp)
     ilo = ilo[0] if len(ilo) > 0 else 0
-    ihi = np.where(ci < 1. - dp)[0]
+    # find last index where the cumulative is surely below
+    ihi, = np.where(ci <= 1. - dp)
     ihi = ihi[-1] if len(ihi) > 0 else -1
     return ilo, ihi
 
@@ -1115,7 +1118,7 @@ class ReactiveNestedSampler(object):
 
         self.sampler = 'reactive-nested'
         self.x_dim = x_dim
-        self.transform_layer_class = AffineLayer if x_dim > 1 else ScalingLayer
+        self.transform_layer_class = LocalAffineLayer if x_dim > 1 else ScalingLayer
         self.derivedparamnames = derived_param_names
         self.num_bootstraps = int(num_bootstraps)
         num_derived = len(self.derivedparamnames)
@@ -1717,7 +1720,7 @@ class ReactiveNestedSampler(object):
             with np.errstate(divide='ignore', invalid='ignore'):
                 widthratio = 1 - np.exp(logweights[1:,0] - logweights[:-1,0])
                 nlive = 1. / np.log((1 - np.sqrt(1 - 4 * widthratio)) / (2 * widthratio))
-                nlive[~(nlive > 1)] = 1
+                nlive[~np.logical_and(np.isfinite(nlive), nlive > 1)] = 1
 
             # build iteration groups
             nlive_sets, niter = np.unique(nlive.astype(int), return_counts=True)
@@ -2621,6 +2624,7 @@ class ReactiveNestedSampler(object):
                                     paramlims=self.transform_limits,
                                     order_test_correlation=insertion_test_quality,
                                     order_test_direction=insertion_test_direction,
+                                    stepsampler_info=self.stepsampler.get_info_dict() if hasattr(self.stepsampler, 'get_info_dict') else {}
                                 ),
                                 region=self.region, transformLayer=self.transformLayer,
                                 region_fresh=region_fresh,
@@ -2923,6 +2927,8 @@ class ReactiveNestedSampler(object):
             print('  tail           : logZ = +- %(logzerr_tail).3f' % self.results)
             print('insert order U test : converged: %(converged)s correlation: %(independent_iterations)s iterations' % (
                 self.results['insertion_order_MWW_test']))
+            if self.stepsampler and hasattr(self.stepsampler, 'print_diagnostic'):
+                self.stepsampler.print_diagnostic()
 
             print()
             for i, p in enumerate(self.paramnames + self.derivedparamnames):

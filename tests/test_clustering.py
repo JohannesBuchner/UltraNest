@@ -4,7 +4,7 @@ import os
 import matplotlib.pyplot as plt
 from ultranest.utils import create_logger
 from ultranest import ReactiveNestedSampler
-from ultranest.mlfriends import MLFriends, AffineLayer
+from ultranest.mlfriends import MLFriends, AffineLayer, LocalAffineLayer
 
 here = os.path.dirname(__file__)
 
@@ -53,6 +53,29 @@ def test_clusteringcase():
         plt.scatter(x, y)
     plt.savefig('testclustering_2.pdf', bbox_inches='tight')
     plt.close()
+
+
+def test_subtract_nearby():
+    from ultranest.mlfriends import subtract_nearby
+    
+    rng = np.random.RandomState(2)
+    u = rng.uniform(size=(20, 2))
+    u[:10,:] += 10
+    assert not np.all(np.abs(u) < 0.5)
+    print(u)
+    overlapped_points = subtract_nearby(u, 1.0)
+    print(overlapped_points)
+    assert np.all(np.abs(overlapped_points) < 0.5)
+
+    u = rng.uniform(size=(200, 2))
+    u[:100,0] = rng.uniform(0, 10, size=100)
+    u[100:,1] = rng.uniform(0, 10, size=100)
+    print(u)
+    assert not np.all(np.abs(u) < 0.5)
+    overlapped_points = subtract_nearby(u, 1.0)
+    print(overlapped_points)
+    print(overlapped_points.min(axis=0), overlapped_points.max(axis=0))
+    assert np.all(np.abs(overlapped_points) < 0.6)
 
 
 def test_clusteringcase_eggbox():

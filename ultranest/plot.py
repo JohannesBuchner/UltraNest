@@ -38,14 +38,63 @@ import corner
 __all__ = ["runplot", "cornerplot", "traceplot", "PredictionBand"]
 
 
-def cornerplot(results, logger=None):
-    """Make a corner plot with corner."""
+def cornerplot(
+    results, min_weight=1e-4, with_legend=True, logger=None,
+    levels=[0.9973, 0.9545, 0.6827, 0.3934],
+    plot_datapoints=False, plot_density=False, show_titles=True, quiet=True,
+    contour_kwargs=dict(linestyles=['-','-.',':','--'], colors=['navy','navy','navy','purple']),
+    color='purple', quantiles=[0.15866, 0.5, 0.8413], **corner_kwargs
+):
+    """Make a healthy corner plot with corner.
+
+    Essentially does::
+
+        paramnames = results['paramnames']
+        data = results['weighted_samples']['points']
+        weights = results['weighted_samples']['weights']
+
+        return corner.corner(
+            results['weighted_samples']['points'],
+            weights=results['weighted_samples']['weights'],
+            labels=results['paramnames'])
+
+    Parameters
+    ----------
+    min_weight: float
+        cut off low-weight posterior points. Avoids meaningless
+        stragglers when plot_datapoints is True.
+    with_legend: bool
+        whether to add a legend to show meaning of the lines.
+    color : str
+        ``matplotlib`` style color for all histograms.
+    plot_density : bool
+        Draw the density colormap.
+    plot_contours : bool
+        Draw the contours.
+    show_titles : bool
+        Displays a title above each 1-D histogram showing the 0.5 quantile
+        with the upper and lower errors supplied by the quantiles argument.
+    quiet : bool
+        If true, suppress warnings for small datasets.
+    contour_kwargs : dict
+        Any additional keyword arguments to pass to the `contour` method.
+    quantiles: list
+        fractional quantiles to show on the 1-D histograms as vertical dashed lines.
+    **corner_kwargs: dict
+        Any remaining keyword arguments are sent to :func:`corner.corner`.
+
+    Returns
+    -------
+    fig : `~matplotlib.figure.Figure`
+        The ``matplotlib`` figure instance for the corner plot.
+
+    """
     paramnames = results['paramnames']
     data = np.array(results['weighted_samples']['points'])
     weights = np.array(results['weighted_samples']['weights'])
     cumsumweights = np.cumsum(weights)
 
-    mask = cumsumweights > 1e-4
+    mask = cumsumweights > min_weight
 
     if mask.sum() == 1:
         if logger is not None:
@@ -61,9 +110,110 @@ def cornerplot(results, logger=None):
     # monkey patch to disable a useless warning
     oldfunc = logging.warning
     logging.warning = lambda *args, **kwargs: None
-    corner.corner(data[mask,:], weights=weights[mask],
-                  labels=paramnames, show_titles=True, quiet=True)
+    fig = corner.corner(
+        data[mask,:], weights=weights[mask],
+        labels=paramnames, show_titles=show_titles, quiet=quiet,
+        plot_datapoints=plot_datapoints, plot_density=plot_density,
+        levels=levels, quantiles=quantiles,
+        contour_kwargs=contour_kwargs, color=color, **corner_kwargs
+    )
+    # Create legend handles
+    if with_legend and data.shape[1] > 1:
+        legend_handles = [
+            plt.Line2D(
+                [0], [0], linestyle='--', color=color,
+                label='%.1f%% marginal' % (100 * (quantiles[-1] - quantiles[0]))),
+        ] + [plt.Line2D(
+            [0], [0], linestyle=ls, color=linecolor,
+            label='%.1f%%' % (100 * level))
+            for ls, linecolor, level in zip(
+                contour_kwargs.get('linestyles', [])[::-1],
+                contour_kwargs.get('colors', [color] * 100)[::-1],
+                levels[::-1])
+        ]
+        if len(legend_handles) == len(levels) + 1 and len(legend_handles) > 0:
+            plt.legend(
+                title='credible prob level',
+                handles=legend_handles,
+                loc='lower right', bbox_to_anchor=(1.01,1.2), frameon=False
+            )
     logging.warning = oldfunc
+    return fig
+
+
+def highest_density_interval_from_samples(xsamples, xlo=None, xhi=None, probability_level=0.68):
+    """
+    Compute the highest density interval (HDI) from posterior samples.
+
+    Parameters
+    ----------
+    xsamples : array_like
+        The posterior samples from which to compute the HDI.
+    xlo : float or None, optional
+        Lower boundary limiting the space. Default is None.
+    xhi : float or None, optional
+        Upper boundary limiting the space. Default is None.
+    probability_level : float, optional
+        The desired probability level for the HDI. Default is 0.68.
+
+    Returns
+    -------
+    x_MAP: float
+        maximum a posteriori (MAP) estimate.
+    xerrlo: float
+        lower uncertainty (lower HDI bound minus x_MAP).
+    xerrhi: float
+        upper uncertainty (x_MAP minus upper HDI bound).
+
+    Notes
+    -----
+    The function starts at the highest density point and accumulates neighboring points
+    until the specified probability level is reached. If `xlo` or `xhi` is provided,
+    the HDI is constrained within these bounds.
+
+    Requires getdist to be installed for a kernel density estimation.
+
+    For uniform distributions, this function will give unpredictable results for the MAP.
+
+    Examples
+    --------
+    >>> xsamples = np.random.normal(loc=0, scale=1, size=100000)
+    >>> hdi = highest_density_interval_from_samples(xsamples)
+    >>> print('x = %.1f + %.2f - %.2f' % hdi)
+    x = 0.0 + 1.02 - 0.96
+    """
+    from getdist.mcsamples import MCSamples
+    import getdist.chains
+    getdist.chains.print_load_details = False
+    samples = MCSamples(
+        samples=xsamples, names=['x'], ranges={'x':[xlo,xhi]},
+        settings=dict(mult_bias_correction_order=1))
+    samples.raise_on_bandwidth_errors = True
+    density_bounded = samples.get1DDensityGridData('x')
+
+    x = density_bounded.x
+    y = density_bounded.P / np.sum(density_bounded.P)
+
+    # Sort the y values in descending order
+    sorted_indices = np.argsort(y)[::-1]
+
+    # define MAP as the peak. This works well if the peak is declining to both sides
+    MAP = x[sorted_indices[0]]
+    total_probability = y[sorted_indices[0]]
+    i_lo = sorted_indices[0]
+    i_hi = sorted_indices[0]
+    for i in sorted_indices[1:]:
+        # Add the current probability to the total
+        i_lo = min(i_lo, i)
+        i_hi = max(i_hi, i)
+        total_probability = y[i_lo:i_hi + 1].sum()
+        # Check if the total probability exceeds or equals the desired level
+        if total_probability >= probability_level:
+            break
+
+    x_lo = x[i_lo]
+    x_hi = x[i_hi]
+    return MAP, MAP - x_lo, x_hi - MAP
 
 
 class PredictionBand(object):
@@ -71,7 +221,12 @@ class PredictionBand(object):
 
     call add(y) to add predictions from each chain point
 
-    Example::
+    .. testsetup::
+
+        import numpy
+        chain = numpy.random.uniform(size=(20, 2))
+
+    .. testcode::
 
         x = numpy.linspace(0, 1, 100)
         band = PredictionBand(x)

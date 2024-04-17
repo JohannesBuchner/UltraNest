@@ -39,6 +39,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
     'sphinx.ext.mathjax',
+    'sphinx.ext.doctest',
     'sphinx.ext.autosectionlabel',
     'nbsphinx',
     'sphinx_rtd_theme',
@@ -60,7 +61,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'UltraNest'
-copyright = u"2014-2022, Johannes Buchner"
+copyright = u"2014-2024, Johannes Buchner"
 author = u"Johannes Buchner"
 
 # The version info for the project you're documenting, acts as replacement

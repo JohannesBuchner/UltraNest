@@ -6,6 +6,7 @@ try:
 except:
     from distutils.core import setup
 
+import re
 from Cython.Build import cythonize
 from distutils.extension import Extension
 from Cython.Distutils import build_ext
@@ -28,7 +29,9 @@ with open('README.rst', encoding="utf-8") as readme_file:
     readme = readme_file.read()
 
 with open('HISTORY.rst', encoding="utf-8") as history_file:
-    history = history_file.read()
+    history = re.sub(r':py:class:`([^`]+)`', r'\1', 
+        history_file.read())
+    
 
 requirements = ['numpy', 'cython', 'matplotlib', 'corner']
 
@@ -71,7 +74,7 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/JohannesBuchner/ultranest',
-    version='3.6.4',
+    version='4.2.0',
     zip_safe=False,
     cmdclass={'build_ext': build_ext},
 )

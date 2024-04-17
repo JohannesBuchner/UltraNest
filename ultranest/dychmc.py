@@ -326,7 +326,7 @@ class DynamicCHMCSampler(object):
             header=','.join(self.logstat_labels), delimiter=',')
         plt.close()
 
-    def __next__(self, region, Lmin, us, Ls, transform, loglike, ndraw=40, plot=False):
+    def __next__(self, region, Lmin, us, Ls, transform, loglike, ndraw=40, plot=False, tregion=None):
         """Get a new point.
 
         Parameters

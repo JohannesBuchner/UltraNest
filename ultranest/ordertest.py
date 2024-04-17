@@ -1,6 +1,6 @@
 """
-Mann-Whitney-Wilcoxon U test for a uniform distribution of integers
--------------------------------------------------------------------
+U test for a uniform distribution of integers
+---------------------------------------------
 
 A test for biased nested sampling, presented in
 section 4.5.2 of Buchner (2023, https://arxiv.org/abs/2101.09675).
@@ -46,9 +46,13 @@ def infinite_U_zscore(sample, B):
 
 
 class UniformOrderAccumulator():
-    """Mann-Whitney-Wilcoxon U test accumulator.
+    """U test accumulator.
 
     Stores rank orders (1 to N), for comparison with a uniform order.
+
+    See section 4.5.2 of Buchner (2023, https://arxiv.org/abs/2101.09675),
+    based on the Mann-Whitney-Wilcoxon U test against a uniform integer
+    distribution.
     """
 
     def __init__(self):

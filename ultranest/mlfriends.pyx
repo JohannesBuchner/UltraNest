@@ -20,6 +20,7 @@ from numpy import pi
 cimport cython
 from cython.cimports.libc.math import sqrt
 
+
 @cython.boundscheck(False)
 @cython.wraparound(False)
 cdef count_nearby(
@@ -60,6 +61,76 @@ cdef count_nearby(
                 d += (apts[i,k] - bpts[j,k])**2
             if d <= radiussq:
                 nnearby[j] += 1
+
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+def _subtract_nearby(np.ndarray[np.float_t, ndim=2] apts, np.ndarray[np.float_t, ndim=2] bpts, np.float_t radiussq):
+    """Subtract from each point apts the mean of points within square radius `radiussq`, store in bpts.
+
+    Parameters
+    ----------
+    apts: array
+        points
+    bpts: array
+        resulting points
+    radiussq: float
+        square of the MLFriends radius
+
+    """
+    cdef size_t n = apts.shape[0]
+    cdef size_t ndim = apts.shape[1]
+    assert n == bpts.shape[0]
+    assert ndim == bpts.shape[1]
+
+    cdef unsigned long i, j
+    cdef size_t nnearby
+    cdef np.float_t d
+
+    # go through each point
+    for j in range(n):
+        # find all nearest points
+        bpts[j,:] = 0
+        nnearby = 0
+        for i in range(n):
+            # check if it is within the radius
+            d = 0.0
+            for k in range(ndim):
+                d += (apts[i,k] - apts[j,k])**2
+            if d <= radiussq:
+                # accumulate to point average
+                nnearby += 1
+                for k in range(ndim):
+                    bpts[j,k] += apts[i,k]
+
+        # compute and subtract mean
+        for k in range(ndim):
+            bpts[j,k] = apts[j,k] - bpts[j,k] / float(nnearby)
+
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+def subtract_nearby(
+    np.ndarray[np.float_t, ndim=2] upoints,
+    np.float_t maxradiussq):
+    """Subtract from each point apts the mean of points within square radius `radiussq`, store in bpts.
+
+    Parameters
+    ----------
+    apts: array
+        points
+    radiussq: float
+        square of the MLFriends radius
+
+    Returns
+    ---------
+    overlapped_points:
+        upoints with the nearby centers subtracted.
+
+    """
+    upoints_out = np.zeros_like(upoints)
+    _subtract_nearby(upoints, upoints_out, maxradiussq)
+    return upoints_out
 
 
 @cython.boundscheck(False)
@@ -275,7 +346,7 @@ def update_clusters(
     np.float_t maxradiussq,
     clusterids=None,
 ):
-    """Clusters `upoints`, so that clusters are distinct if no 
+    """Clusters `upoints`, so that clusters are distinct if no
     member pair is within a radius of sqrt(`maxradiussq`).
 
     Parameters
@@ -433,7 +504,7 @@ class ScalingLayer(object):
             |      ********      |
         """
         if not self.has_wraps:
-            return 
+            return
 
         N, ndims = points.shape
         self.wrap_cuts = []
@@ -548,6 +619,12 @@ class AffineLayer(ScalingLayer):
     """Affine whitening transformation.
 
     Learns the covariance of points.
+
+    For learning the next layer's covariance, the clustering
+    is considered: the sample covariance is computed after subtracting
+    the cluster mean. This co-centers all clusters and gets
+    the average cluster shape, avoiding learning a covariance dominated
+    by the distance between clusters.
     """
 
     def __init__(self, ctr=0, T=1, invT=1, nclusters=1, wrapped_dims=[], clusterids=None):
@@ -560,9 +637,11 @@ class AffineLayer(ScalingLayer):
         ctr: vector
             Center of points
         T: matrix
-            transformation matrix
+            Transformation matrix. This matrix whitens the points 
+            to a unit Gaussian.
         invT: matrix
-            inverse transformation matrix
+            Inverse transformation matrix. For transforming a unit
+            Gaussian into something with the sample cov.
         nclusters: int
             number of clusters
         wrapped_dims: array of bools
@@ -599,18 +678,28 @@ class AffineLayer(ScalingLayer):
         """
         self.optimize_wrap(points)
         wrapped_points = self.wrap(points)
+        # point center
         self.ctr = np.mean(wrapped_points, axis=0)
+        # compute sample covariance
         cov = np.cov(centered_points, rowvar=0)
         cov *= (len(self.ctr) + 2)
         self.cov = cov
+        # Eigen decomposition of the covariance, with numerical stability
         eigval, eigvec = np.linalg.eigh(cov)
         eigvalmin = eigval.max() * 1e-40
         eigval[eigval < eigvalmin] = eigvalmin
+        # Try explicit inversion; if this fails, the error is escalated.
         a = np.linalg.inv(cov)
+        # log-volume of the space
         self.logvolscale = np.linalg.slogdet(a)[1] * -0.5
 
+        # Transformation matrix with the correct scale
+        # this matrix whitens the points to a unit Gaussian.
         self.T = eigvec * eigval**-0.5
+        # Inverse transformation matrix, for transforming a unit 
+        # Gaussian into something with the sample cov.
         self.invT = np.linalg.inv(self.T)
+        # These also are the principle axes of the space
         self.axes = self.invT
         # print('transform used:', self.T, self.invT, 'cov:', cov, 'eigen:', eigval, eigvec)
         self.set_clusterids(clusterids=clusterids, npoints=len(points))
@@ -656,6 +745,104 @@ class AffineLayer(ScalingLayer):
         else:
             u = w.reshape(ww.shape)
         return u
+
+class MaxPrincipleGapAffineLayer(AffineLayer):
+    """Affine whitening transformation.
+
+    For learning the next layer's covariance, the clustering
+    and principal axis is considered: 
+    the sample covariance is computed after subtracting
+    the cluster mean. All points are projected onto the line
+    defined by the principle axis vector starting from the origin.
+    Then, on the sorted line positions, the largest gap is identified.
+    All points before the gap are mean-subtracted, and all points
+    after the gap are mean-subtracted. Then, the final
+    sample covariance is computed. This should give a more "local"
+    covariance, even in the case where clusters could not yet be 
+    clearly identified.
+    """
+
+    def create_new(self, upoints, maxradiussq, minvol=0.):
+        """Learn next layer from this optimized layer's clustering.
+
+        Parameters
+        ----------
+        upoints: array
+            points to use for optimize (in u-space)
+        maxradiussq: float
+            square of the MLFriends radius
+        minvol: float
+            Minimum volume to regularize sample covariance
+
+        Returns
+        ---------
+        A new, optimized MaxPrincipleGapAffineLayer.
+        """
+        # perform clustering in transformed space
+        uwpoints = self.wrap(upoints)
+        tpoints = self.transform(upoints)
+        nclusters, clusteridxs, overlapped_uwpoints = update_clusters(uwpoints, tpoints, maxradiussq, self.clusterids)
+
+        cov = np.cov(overlapped_uwpoints, rowvar=0)
+        cov *= (len(self.ctr) + 2)
+        eigval, eigvec = np.linalg.eigh(cov)
+        # identify principle axis
+        principal_vector = eigvec[:, -1]
+        # project all overlapped_uwpoints onto principle axis,
+        # obtaining position on line
+        t = np.dot(overlapped_uwpoints - overlapped_uwpoints.mean(axis=0).reshape((1,-1)), principal_vector)
+        # sort positions, identify largest gap
+        tsorted = np.sort(t)
+        tgapindex = np.argmax(np.diff(tsorted))
+        # compute center of largest gap
+        tsep = (tsorted[tgapindex] + tsorted[tgapindex + 1]) / 2
+        # assign point to left and right cluster
+        left_cluster = t < tsep
+        # subtract the respective cluster mean from overlapped_uwpoints
+        left_mean = overlapped_uwpoints[left_cluster, :].mean(axis=0)
+        right_mean = overlapped_uwpoints[~left_cluster, :].mean(axis=0)
+        halved_overlapped_uwpoints = overlapped_uwpoints.copy()
+        halved_overlapped_uwpoints[left_cluster, :] -= left_mean
+        halved_overlapped_uwpoints[~left_cluster, :] -= right_mean
+
+        # re-optimize with the new subtracted points
+        s = MaxPrincipleGapAffineLayer(nclusters=nclusters, wrapped_dims=self.wrapped_dims, clusterids=clusteridxs)
+        s.optimize(upoints, halved_overlapped_uwpoints, minvol=minvol)
+        return s
+
+
+class LocalAffineLayer(AffineLayer):
+    """Affine whitening transformation.
+
+    For learning the next layer's covariance, the points within 
+    the MLradius are co-centered. This should give a more "local"
+    covariance.
+    """
+
+    def create_new(self, upoints, maxradiussq, minvol=0.):
+        """Learn next layer from this optimized layer's clustering.
+
+        Parameters
+        ----------
+        upoints: array
+            points to use for optimize (in u-space)
+        maxradiussq: float
+            square of the MLFriends radius
+        minvol: float
+            Minimum volume to regularize sample covariance
+
+        Returns
+        ---------
+        A new, optimized LocalAffineLayer.
+        """
+        # perform clustering in transformed space
+        uwpoints = self.wrap(upoints)
+        tpoints = self.transform(upoints)
+        nclusters, clusteridxs, overlapped_uwpoints = update_clusters(uwpoints, tpoints, maxradiussq, self.clusterids)
+        s = LocalAffineLayer(nclusters=nclusters, wrapped_dims=self.wrapped_dims, clusterids=clusteridxs)
+        local_overlapped_uwpoints = subtract_nearby(uwpoints, maxradiussq)
+        s.optimize(upoints, local_overlapped_uwpoints, minvol=minvol)
+        return s
 
 
 def vol_prefactor(np.int_t n):
@@ -976,7 +1163,7 @@ class MLFriends(object):
         ----------
         nsamples: int
             number of samples to draw
-        
+
         Returns
         -------
         samples: array of shape (nsamples, dimension)
@@ -1008,7 +1195,7 @@ class MLFriends(object):
         """
         # require points to be inside bounding ellipsoid
         mask = self.inside_ellipsoid(pts)
-        
+
         if mask.any():
             # additionally require points to be near neighbours
             bpts = self.transformLayer.transform(pts[mask,:])
@@ -1164,7 +1351,7 @@ class RobustEllipsoidRegion(MLFriends):
         ----------
         nsamples: int
             number of samples to draw
-        
+
         Returns
         -------
         samples: array of shape (nsamples, dimension)
