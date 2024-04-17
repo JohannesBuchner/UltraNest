@@ -711,7 +711,7 @@ class PopulationSimpleSliceSampler():
     
     def __next__(
         self, region, Lmin, us, Ls, transform, loglike, ndraw=10,
-        plot=False, tregion=None, log=False
+        plot=False, tregion=None, log=False, test=False
     ):
         """Sample a new live point.
 
@@ -737,6 +737,10 @@ class PopulationSimpleSliceSampler():
             not used
         log: bool
             not used
+        test: bool
+            In case of test of the reversibility of the sampler, the points drawn
+            from the live points needs to be deterministic. This parameters is
+            ensuring that.
 
         Returns
         -------
@@ -756,12 +760,13 @@ class PopulationSimpleSliceSampler():
         if len(self.prepared_samples) == 0:
             # choose live points
             ilive = np.random.randint(0, nlive, size=self.popsize)
-            allu = np.array(us[ilive,:])
+            allu = np.array(us[ilive,:]) if not test else np.array(us)
             allp = np.zeros((self.popsize, ndim))
             allL = np.array(Ls[ilive])
             nc = 0
             n_discarded=0
-                                       
+            
+                                         
                 
             
             interval_final=0. 
@@ -771,7 +776,7 @@ class PopulationSimpleSliceSampler():
                 factor_scale=self.scale_jitter_func()
                 # Defining slice direction
                 v = self.generate_direction(allu, region,scale= 1.0)*self.scale*factor_scale
-                
+                 
                 
                 # limite of the slice based on the unit cube boundaries
                 tleft_unitcube,tright_unitcube= unitcube_line_intersection(allu, v)
@@ -783,12 +788,17 @@ class PopulationSimpleSliceSampler():
                 # Status indicating if a points has already find its next position
                 status=np.zeros(self.popsize,dtype=int) # one for success, zero for running
                 
+
                 # Loop until each points has found its next position or we reached 100 iterations
                 
                 for it in range(self.max_it):
                 
                     # Sampling points on the slices
-                    t=tleft_worker+(tright_worker-tleft_worker)*np.random.uniform(size=(self.popsize,))
+                    slice_position = np.random.uniform(size=(self.popsize,))
+                    
+                    t=tleft_worker+(tright_worker-tleft_worker)*slice_position
+                    
+                    
                     
                     points=allu[worker_running,:]
                     v_worker=v[worker_running,:]
@@ -819,6 +829,7 @@ class PopulationSimpleSliceSampler():
             self.ncalls+=nc
             
             assert np.array([p!=np.zeros(ndim) for p in allp]).all(), 'some walkers never moved! Double nsteps of PopulationSimpleSliceSampler.'
+            
             self.prepared_samples = list(zip(allu, allp, allL))
 
             

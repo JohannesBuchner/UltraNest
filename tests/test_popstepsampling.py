@@ -177,9 +177,61 @@ def test_update_slice_sampler():
     assert np.allclose(tright, true_tright), (tright, true_tright)
 
 
+
+
+
+
+
+
+
+
+def Test_SimpleSliceSampler_reversibility(seed):
+
+    
+    Loglikelihood = lambda x: np.zeros(x.shape[0]) # flat likelihood so we don't need to care about Lmin contours
+    Lmin = -1.
+    transform = lambda x: x
+    popsize = 5
+    np.random.seed(seed)
+    us = np.zeros((popsize,3)) +0.5
+    Ls = np.zeros(popsize)
+    
+    stepsampler = PopulationSimpleSliceSampler(
+        popsize=popsize, nsteps=20,
+        generate_direction=generate_random_direction,
+        slice_limit=slice_limit_to_scale,scale=1e-3
+    )
+    np.random.seed(seed)
+    u,L=np.zeros((popsize,3)),np.zeros(popsize)
+    for i in range(popsize):
+        u[i],_,L[i],_= stepsampler.__next__(None,Lmin,us.copy(),Ls.copy(),transform,Loglikelihood,test=True)
+     
+    def opposite_direction(ui, region, scale=1):
+        return -generate_random_direction(ui, region, scale)
+
+    
+    stepsampler.generate_direction = opposite_direction
+
+    us_2 = u.reshape((popsize,-1))
+    Ls_2 = np.zeros(popsize)+L
+    np.random.seed(seed)
+    u2,L2=np.zeros((popsize,3)),np.zeros(popsize)
+    
+    for i in range(popsize):
+        u2[i],_,L2[i],_= stepsampler.__next__(None,Lmin,us_2,Ls_2,transform,Loglikelihood,test=True)
+    
+    assert np.allclose(us, u2), (us, u2)
+    assert np.allclose(Ls, L2), (Ls, L2)
+
+    
+
+
 if __name__ == '__main__':
     #test_stepsampler_cubegausswalk()
     #test_stepsampler_randomSimSlice()
     #test_direction_proposals()
     test_slice_limit()
     test_update_slice_sampler()
+    Test_SimpleSliceSampler_reversibility(4)
+    
+    
