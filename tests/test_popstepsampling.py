@@ -214,43 +214,56 @@ def test_update_slice_sampler():
     assert np.allclose(tright, true_tright), (tright, true_tright)
 
 
-def Test_SimpleSliceSampler_reversibility(seed):
+# aim at checking the sanity of the results of 
+# one iteration of the slice sampler. 
+def Test_SimpleSliceSampler(seed):
 
-    
-    Loglikelihood = lambda x: np.zeros(x.shape[0]) # flat likelihood so we don't need to care about Lmin contours
-    Lmin = -1.
-    transform = lambda x: x
-    popsize = 5
     np.random.seed(seed)
-    us = np.zeros((popsize,3)) +0.5
-    Ls = np.zeros(popsize)
-    
-    stepsampler = PopulationSimpleSliceSampler(
-        popsize=popsize, nsteps=20,
+    nsteps = 1 
+    popsize = 100
+    ndim = 10
+    sampler = ReactiveNestedSampler(paramnames, loglike_vectorized, transform=transform, vectorized=True)
+
+    sampler.stepsampler = PopulationSimpleSliceSampler(
+        popsize=popsize, nsteps=nsteps, 
         generate_direction=generate_random_direction,
-        slice_limit=slice_limit_to_scale,scale=1e-3
     )
-    np.random.seed(seed)
-    u,L=np.zeros((popsize,3)),np.zeros(popsize)
-    for i in range(popsize):
-        u[i],_,L[i],_= stepsampler.__next__(None,Lmin,us.copy(),Ls.copy(),transform,Loglikelihood,test=True)
-     
-    def opposite_direction(ui, region, scale=1):
-        return -generate_random_direction(ui, region, scale)
+    stepsampler = sampler.stepsampler
+    # start with a random point in the unit cube
+    us = (np.random.uniform(size=(popsize, ndim))-0.5)*0.9+0.5
+    Ls = loglike_vectorized(us)
+    Lmin = np.min(Ls)
 
-    
-    stepsampler.generate_direction = opposite_direction
+    u,L=np.zeros((popsize,ndim)),np.zeros(popsize)
 
-    us_2 = u.reshape((popsize,-1))
-    Ls_2 = np.zeros(popsize)+L
+    # initialising a region
+    #print(us) 
+    region= RobustEllipsoidRegion(us, AffineLayer())
+    region.maxradiussq, region.enlarge = region.compute_enlargement(nbootstraps=30)
+    region.create_ellipsoid(minvol=1.0)
+
+    # resetting the seed to check the slice axes
     np.random.seed(seed)
-    u2,L2=np.zeros((popsize,3)),np.zeros(popsize)
-    
     for i in range(popsize):
-        u2[i],_,L2[i],_= stepsampler.__next__(None,Lmin,us_2,Ls_2,transform,Loglikelihood,test=True)
+        u[i],_,L[i],_= stepsampler.__next__(region,Lmin,us.copy(),Ls.copy(),transform,loglike_vectorized,test=True)
+
+    # Basic check
+    assert (L>Lmin).all(), (L,Lmin) # Lmin check
+    assert (u>0).all() and (u<1).all(), u # u in the unit cube check
     
-    assert np.allclose(us, u2), (us, u2)
-    assert np.allclose(Ls, L2), (Ls, L2)
+    np.random.seed(seed)
+    # resetting the random generation inside the sampler
+    _=np.random.randint(0, us.shape[0], size=stepsampler.popsize)
+    _=stepsampler.scale_jitter_func()
+
+    # Getting the slice axes
+    slice_axes =  stepsampler.generate_direction(us.copy(), region,scale= 1.0)
+    for i in range(popsize):
+        v=(u[i,:]-us[i,:])/slice_axes[i,:]
+        mean_v = np.mean(v)
+        assert np.allclose(mean_v, v, atol=1e-10), (mean_v, v)
+
+
 
     
 def test_direction_proposal_values():
@@ -282,8 +295,8 @@ if __name__ == '__main__':
     #test_stepsampler_cubegausswalk()
     #test_stepsampler_randomSimSlice()
     #test_direction_proposals()
-    test_slice_limit()
-    test_update_slice_sampler()
-    Test_SimpleSliceSampler_reversibility(4)
+    #test_slice_limit()
+    #test_update_slice_sampler()
+    Test_SimpleSliceSampler(4)
     
     
