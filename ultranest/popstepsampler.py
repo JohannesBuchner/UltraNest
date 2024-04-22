@@ -693,22 +693,22 @@ class PopulationSliceSampler(GenericPopulationSampler):
 def slice_limit_to_unitcube(tleft, tright):
     
     """
-    return the slice limits as a copy of intersection between the slice and the unit cube boundaries
+    return the slice limits as of the intersection between the slice and the unit cube boundaries
 
 
     parameters
     ----------
         tleft: float
-                Intersection of the slice and the unit cube boundaries in the inverse direction of the slice
+                Intersection of the unit cube with the slice in the negative direction
         tright: float
-                Intersection of the slice and the unit cube boundaries in the direction of the slice
+                Intersection of the unit cube with the slice in the positive direction
     Returns
     -------
         (tleft_new,tright_new): tuple
                 Positive and negative slice limits
     """
-    tleft_new,tright_new = tleft.copy(),tright.copy()
-    return (tleft_new,tright_new)
+    tleft_new, tright_new = tleft.copy(), tright.copy()
+    return (tleft_new, tright_new)
 
 
 def slice_limit_to_scale(tleft, tright):
@@ -720,9 +720,9 @@ def slice_limit_to_scale(tleft, tright):
     parameters
     ----------
         tleft: float
-                Intersection of the slice and the unit cube boundaries in the inverse direction of the slice
+                Intersection of the unit cube with the slice in the negative direction
         tright: float
-                Intersection of the slice and the unit cube boundaries in the direction of the slice
+                Intersection of the unit cube with the slice in the positive direction
     Returns
     -------
         (tleft_new,tright_new): tuple
@@ -730,9 +730,9 @@ def slice_limit_to_scale(tleft, tright):
     """
 
     
-    tleft_new = np.fmax(tleft,-1.+np.zeros_like(tleft)).copy()
-    tright_new = np.fmin(tright,1.+np.zeros_like(tright)).copy()
-    return (tleft_new,tright_new)
+    tleft_new = np.fmax(tleft , -1. + np.zeros_like(tleft))
+    tright_new = np.fmin(tright , 1. + np.zeros_like(tright))
+    return (tleft_new, tright_new)
 
 
 
@@ -772,7 +772,7 @@ class PopulationSimpleSliceSampler(GenericPopulationSampler):
     def __init__(
         self, popsize, nsteps, generate_direction,
         scale_adapt_factor=1.0, adapt_slice_scale_target=2.0,
-        scale=None, scale_jitter_func=None,slice_limit=slice_limit_to_unitcube,
+        scale=1.0, scale_jitter_func=None,slice_limit=slice_limit_to_unitcube,
         max_it=100,shrink_factor=1.0):
         """Initialise.
 
@@ -793,49 +793,46 @@ class PopulationSimpleSliceSampler(GenericPopulationSampler):
             :py:func:`ultranest.popstepsampler.generate_mixture_random_direction`
             :py:func:`ultranest.popstepsampler.generate_cube_oriented_direction` -> no adaptation in that case
             :py:func:`ultranest.popstepsampler.generate_cube_oriented_direction_scaled` -> no adaptation in that case
+        scale: float
+            initial guess for the slice width.
         scale_jitter_func: function
             User supplied function to multiply the `scale` by a random factor. For example, 
             :py:func:`lambda : scipy.stats.truncnorm.rvs(-0.5, 5., loc=0, scale=1)+1.`
-        scale: float
-            initial guess for the slice width. If None, the slice width is defined as the
-            intersection between itself and the unit cube.
         scale_adapt_factor: float
-            if 1, no adapting is done.
-            if <1, the scale is increased if the slice final size is under 1/2 the scale
-            or decreased if it is above, by *scale_adapt_factor*.
+            adaptation of `scale`. If 1: no adaptation. if <1, the scale is increased/decreased by this factor if the
+            final slice length is shorter/longer than the `adapt_slice_scale_target*scale`.        
         adapt_slice_scale_target: float
-            Target size of the median distance between a current point and the next one among all chains in unit of
-            `scale`. If the median distance is above `scale/adapt_slice_scale_target`, the scale is increased by 
-            `scale_adapt_factor`, and decreased otherwise.
+            Targeted ratio of the median distance between slice mid and final point among all chains of `scale`.
+            Default: 2.0. Higher values are more conservative, lower values are faster. 
         slice_limit: function
-            function to define the slice limit based on the intersection of the slice and the unit cube. The slice
-            limit are defined in unit of `scale`. The default is `:py:func:slice_limit_to_unitcube` which defines
-            the slice limit as the intersection between the slice and the unit cube. An alternative when the `scale`
-            is used is `:py:func:slice_limit_to_scale` which defines the slice limit as an interval of size `2*scale`.
-            This function should return a copy of the `tleft` and `tright` or another arrays of the same shape. 
+            Function setting the initial slice upper and lower bound. The default is `:py:func:slice_limit_to_unitcube`
+            which defines  the slice limit as the intersection between the slice and the unit cube. An alternative 
+            when the `scale` is used is `:py:func:slice_limit_to_scale` which defines the slice limit as an interval
+            of size `2*scale`. This function should either return a copy of the `tleft` and `tright` arguments or 
+            new arrays of the same shape. 
         max_it: int
             maximum number of iterations to find a point on the slice. If the maximum number of iterations is reached,
             the current point is returned as the next one.
         shrink_factor: float
-            During the shrinking procedure, a new slice bound is set to the last tested point that don't respect the Lmin
-            condition if `shrink_factor` is set to 1.0. If its value is larger than 1.0, the new slice bound is set to the
-            `1/shrink_factor` of the distance between the current point and the last tested point that don't respect the Lmin condition.
+            For standard slice sampling shrinking, `shrink_factor=1`, the slice bound is updated to the last 
+            rejected point. Setting `shrink_factor>1` aggressively accelerates the shrinkage, by updating the 
+            new slice bound to `1/shrink_factor` of the distance between the current point and rejected point.
         """
+
         self.nsteps = nsteps
         
-        self.max_it=max_it
+        self.max_it = max_it
         self.nrejects = 0
         self.generate_direction =  generate_direction
         self.scale_adapt_factor = scale_adapt_factor
         self.ncalls = 0
-        self.discarded=0
-        self.shrink_factor=shrink_factor
+        self.discarded = 0
+        self.shrink_factor = shrink_factor
         assert shrink_factor>=1.0, "The shrink factor should be greater than 1.0 to be efficient"
-        if scale is None:
-            self.scale = 1.0
-        else:
-            self.scale = scale
-        self.adapt_slice_scale_target=adapt_slice_scale_target
+
+        self.scale = float(scale)
+
+        self.adapt_slice_scale_target = adapt_slice_scale_target
         
         if scale_jitter_func is None:
             self.scale_jitter_func= lambda : 1.
@@ -844,7 +841,7 @@ class PopulationSimpleSliceSampler(GenericPopulationSampler):
         self.prepared_samples = []
         self.popsize = popsize
         
-        self.slice_limit=slice_limit
+        self.slice_limit = slice_limit
 
         self.logstat = []
         self.logstat_labels = ['accept_rate', 'efficiency', 'scale', 'far_enough', 'mean_rel_jump']
@@ -918,29 +915,35 @@ class PopulationSimpleSliceSampler(GenericPopulationSampler):
             allp = np.zeros((self.popsize, ndim))
             allL = np.array(Ls[ilive])
             nc = 0
-            n_discarded=0
+            n_discarded = 0
             
                                          
                 
             
-            interval_final=0. 
+            interval_final = 0. 
             
             for k in range(self.nsteps):
                 # Defining scale jitter
-                factor_scale=self.scale_jitter_func()
+                factor_scale = self.scale_jitter_func()
                 # Defining slice direction
-                v = self.generate_direction(allu, region,scale= 1.0)*self.scale*factor_scale
+                v = self.generate_direction(allu, region, scale = 1.0)*self.scale*factor_scale
                  
                 
                 # limite of the slice based on the unit cube boundaries
-                tleft_unitcube,tright_unitcube= unitcube_line_intersection(allu, v)
+                tleft_unitcube, tright_unitcube = unitcube_line_intersection(allu, v)
+
                 # Defining bound of the slice
-                tleft_worker,tright_worker = self.slice_limit(tleft_unitcube,tright_unitcube)
-                tleft,tright = self.slice_limit(tleft_unitcube,tright_unitcube)
+                # Bounds for each points and likelihood calls are identical initially
+
+                # Slice bounds for each likelihood call
+                tleft_worker, tright_worker = self.slice_limit(tleft_unitcube,tright_unitcube)
+
+                # Slice bounds for each points
+                tleft, tright = self.slice_limit(tleft_unitcube,tright_unitcube)
                 # Index of the workers working concurrently
-                worker_running=np.arange(0,self.popsize,1,dtype=int)
+                worker_running = np.arange(0,self.popsize,1,dtype=int)
                 # Status indicating if a points has already find its next position
-                status=np.zeros(self.popsize,dtype=int) # one for success, zero for running
+                status = np.zeros(self.popsize,dtype=int) # one for success, zero for running
                 
 
                 # Loop until each points has found its next position or we reached 100 iterations
@@ -950,45 +953,44 @@ class PopulationSimpleSliceSampler(GenericPopulationSampler):
                     # Sampling points on the slices
                     slice_position = np.random.uniform(size=(self.popsize,))
                     
-                    t=tleft_worker+(tright_worker-tleft_worker)*slice_position
+                    t = tleft_worker+(tright_worker-tleft_worker)*slice_position
                     
                     
                     
-                    points=allu[worker_running,:]
-                    v_worker=v[worker_running,:]
-                    proposed_u=points+t.reshape((-1,1))*v_worker
+                    points = allu[worker_running,:]
+                    v_worker = v[worker_running,:]
+                    proposed_u = points+t.reshape((-1,1))*v_worker
                 
                     proposed_p = transform(proposed_u)
                     proposed_L = loglike(proposed_p)
-                    nc+=self.popsize
+                    nc += self.popsize
                     # Updating the pool of points based on the newly sampled points
-                    tleft,tright,worker_running,status,allu,allL,allp,n_discarded_it=update_vectorised_slice_sampler(\
+                    tleft,tright,worker_running,status,allu,allL,allp,n_discarded_it = update_vectorised_slice_sampler(\
                     t,tleft,tright,proposed_L,proposed_u,proposed_p,worker_running,status,Lmin,self.shrink_factor,\
                     allu,allL,allp,self.popsize)
-                    n_discarded+=n_discarded_it
+                    n_discarded += n_discarded_it
                     # Update of the limits of the slices
-                    tleft_worker=tleft[worker_running]
-                    tright_worker=tright[worker_running]
+                    tleft_worker = tleft[worker_running]
+                    tright_worker = tright[worker_running]
                     if not np.any(status==0):
                         break
                 # Record of the final interval on theta for scale adaptation
-                interval_final+=np.median(tright-tleft)
+                interval_final += np.median(tright-tleft)
 
 
             
-            interval_final=interval_final/self.nsteps
+            interval_final = interval_final/self.nsteps
             
             
-            self.discarded+=n_discarded
-            self.ncalls+=nc
+            self.discarded += n_discarded
+            self.ncalls += nc
             
             assert np.array([p!=np.zeros(ndim) for p in allp]).all(), 'some walkers never moved! Double nsteps of PopulationSimpleSliceSampler.'
             far_enough, (move_distance, reference_distance) = diagnose_move_distances(region, us[ilive,:], allu)
             self.prepared_samples = list(zip(allu, allp, allL))
 
             self.logstat.append([
-                1., # we always find a point or we will break at the assert before
-                1., # same here?
+                self.popsize/nc,
                 self.scale, # will always be 1. in the default case
                 self.nsteps,
                 np.mean(far_enough) if len(far_enough) > 0 else 0,
