@@ -526,3 +526,92 @@ def generate_mixture_random_direction(ui, region, scale=1):
     v_DE = generate_differential_direction(ui, region, scale=scale)
     v_axis = generate_region_oriented_direction(ui, region, scale=scale)
     return np.where(np.random.uniform(size=nsamples).reshape((-1, 1)) < 0.5, v_DE, v_axis)
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+cpdef tuple update_vectorised_slice_sampler(\
+                          np.ndarray[np.float_t, ndim=1] t, np.ndarray[np.float_t, ndim=1] tleft,\
+                          np.ndarray[np.float_t, ndim=1] tright, np.ndarray[np.float_t, ndim=1] proposed_L,\
+                          np.ndarray[np.float_t, ndim=2] proposed_u, np.ndarray[np.float_t, ndim=2] proposed_p,\
+                          np.ndarray[np.int_t, ndim=1] worker_running, np.ndarray[np.int_t, ndim=1] status,\
+                          np.float_t Likelihood_threshold,np.float_t shrink_factor, np.ndarray[np.float_t, ndim=2] allu,\
+                          np.ndarray[np.float_t, ndim=1] allL, np.ndarray[np.float_t, ndim=2] allp, int popsize):
+
+    """Update the slice sampler state of each walker in the populations.
+
+    Parameters
+    -----------
+    t: array
+        proposed slice coordinate
+    tleft: array
+        current slice negative end
+    tright: array
+        current slice positive end
+    proposed_L: array
+        log-likelihood of proposed point
+    proposed_u: array
+        proposed point in unit cube space
+    proposed_p: array
+        proposed point in transformed space
+    worker_running: array
+        index of the point associated with each worker
+    status: array
+        integer status of the point
+    Likelihood_threshold: float
+        current log-likelihood threshold
+    shrink_factor: float
+        factor by which to shrink the slice
+    allu: array
+        Accepted points in unit cube space
+    allL: array
+        log-likelihoods of accepted points
+    allp: array
+        Accepted points in transformed space
+    popsize: int
+        number of points
+
+    Returns
+    --------
+    tleft: array
+        updated current slice negative end
+    tright: array
+        updated current slice positive end
+    worker_running: array
+        updated index of the point associated with each worker
+    status: array
+        updated integer status of the point
+    allu: array
+        updated accepted points in unit cube space
+    allL: array
+        updated log-likelihoods of accepted points
+    allp: array
+        updated accepted points in transformed space
+    discarded: int
+        Point where the likelihood was evaluated but was not taken into account.
+    """
+                            
+    cdef int j, k
+    cdef discarded = 0
+    for l in range(popsize):
+        if t[l] > tright[worker_running[l]] or t[l] < tleft[worker_running[l]]:
+            if proposed_L[l]>Likelihood_threshold:
+                discarded+=1
+            continue
+        if 0 < t[l] < tright[worker_running[l]]:
+            tright[worker_running[l]] = t[l]/shrink_factor
+        if 0 > t[l] > tleft[worker_running[l]]:
+            tleft[worker_running[l]] = t[l]/shrink_factor
+        if proposed_L[l] > Likelihood_threshold and status[worker_running[l]] == 0:
+            status[worker_running[l]] = 1
+            allu[worker_running[l], :] = proposed_u[l, :]
+            allL[worker_running[l]] = proposed_L[l]
+            allp[worker_running[l], :] = proposed_p[l, :]
+
+    j = 0
+    while j < popsize and (status == 0).any():
+        for k in range(popsize):
+            if status[k] == 0 and j < popsize:
+                worker_running[j] = k
+                j += 1
+
+    return (tleft, tright, worker_running, status, allu, allL, allp,discarded)
