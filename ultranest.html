@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest package &mdash; UltraNest 4.2.0 documentation</title>
+  <title>ultranest package &mdash; UltraNest 4.3.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b76e3c8a" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
@@ -17,7 +17,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=d0ae6d56"></script>
+        <script src="_static/documentation_options.js?v=a17b270f"></script>
         <script src="_static/doctools.js?v=888ff710"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -44,7 +44,7 @@
               <img src="_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                4.2.0
+                4.3.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -3648,6 +3648,77 @@ the last slice length is used as a initial guess for the next.</p></li>
 
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="ultranest.popstepsampler.PopulationSimpleSliceSampler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ultranest.popstepsampler.</span></span><span class="sig-name descname"><span class="pre">PopulationSimpleSliceSampler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">popsize</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nsteps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generate_direction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_adapt_factor=1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adapt_slice_scale_target=2.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale=1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_jitter_func=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice_limit=&lt;function</span> <span class="pre">slice_limit_to_unitcube&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_it=100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shrink_factor=1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/popstepsampler.html#PopulationSimpleSliceSampler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.popstepsampler.PopulationSimpleSliceSampler" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">GenericPopulationSampler</span></code></p>
+<p>Vectorized Slice sampler without stepping out procedure for quick look fits.
+Unlike <cite>:py:class:PopulationSliceSampler</cite>, in <cite>:py:class:PopulationSimpleSliceSampler</cite>,
+the likelihood is always called with the same number of points.</p>
+<p>Sliced are defined by the <cite>:py:func:generate_direction</cite> function on a interval defined
+around the current point. The centred interval has the width of the scale parameter,
+i.e, there is no stepping out procedure as in <cite>:py:class:PopulationSliceSampler</cite>.
+Slices are then shrink towards the current point until a point is found with a
+likelihood above the threshold.</p>
+<p>In the default case, i.e. <cite>scale=None</cite>, the slice width is defined as the
+intersection between itself and the unit cube. To improve the efficiency of the sampler,
+the slice can be reduced to an interval of size <cite>2*scale</cite> centred on the point. <cite>scale</cite>
+can be adapted with the <cite>scale_adapt_factor</cite> parameter based on the median distance
+between the current and the next point in a chains among all the chains. If the median
+distance is above <cite>scale/adapt_slice_scale_target</cite>, the scale is increased by <cite>scale_adapt_factor</cite>,
+and decreased otherwise. The <cite>scale</cite> parameter can also be jittered by a user supplied
+function <cite>:py:func:scale_jitter_func</cite> to counter balance the effect of a strong adaptation.</p>
+<p>In the case <cite>scale!=None</cite>, the detailed balance is not guaranteed, so this sampler should
+be use with caution.</p>
+<p>Multiple (<cite>popsize</cite>) slice sampling chains are run independently and in parallel.
+In that case, we read points as if they were the next selected each after the other.
+For a points to update the slice, it needs to be still in the part of the slices
+searched after the first point have been read. In that case, we update as normal,
+otherwise we discard the point.</p>
+<p>Initialise.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>popsize</strong> (<em>int</em>) – number of walkers to maintain.</p></li>
+<li><p><strong>nsteps</strong> (<em>int</em>) – number of steps to take until the found point is accepted as independent.
+To calibrate, try several runs with increasing nsteps (doubling).
+The ln(Z) should become stable at some value.</p></li>
+<li><p><strong>generate_direction</strong> (<em>function</em>) – Function that gives proposal kernel shape, one of:
+<a class="reference internal" href="#ultranest.popstepsampler.generate_random_direction" title="ultranest.popstepsampler.generate_random_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">ultranest.popstepsampler.generate_random_direction()</span></code></a>
+<a class="reference internal" href="#ultranest.popstepsampler.generate_region_oriented_direction" title="ultranest.popstepsampler.generate_region_oriented_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">ultranest.popstepsampler.generate_region_oriented_direction()</span></code></a>
+<a class="reference internal" href="#ultranest.popstepsampler.generate_region_random_direction" title="ultranest.popstepsampler.generate_region_random_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">ultranest.popstepsampler.generate_region_random_direction()</span></code></a>
+<code class="xref py py-func docutils literal notranslate"><span class="pre">ultranest.popstepsampler.generate_differential_direction()</span></code>
+<code class="xref py py-func docutils literal notranslate"><span class="pre">ultranest.popstepsampler.generate_mixture_random_direction()</span></code>
+<a class="reference internal" href="#ultranest.popstepsampler.generate_cube_oriented_direction" title="ultranest.popstepsampler.generate_cube_oriented_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">ultranest.popstepsampler.generate_cube_oriented_direction()</span></code></a> -&gt; no adaptation in that case
+<a class="reference internal" href="#ultranest.popstepsampler.generate_cube_oriented_direction_scaled" title="ultranest.popstepsampler.generate_cube_oriented_direction_scaled"><code class="xref py py-func docutils literal notranslate"><span class="pre">ultranest.popstepsampler.generate_cube_oriented_direction_scaled()</span></code></a> -&gt; no adaptation in that case</p></li>
+<li><p><strong>scale</strong> (<em>float</em>) – initial guess for the slice width.</p></li>
+<li><p><strong>scale_jitter_func</strong> (<em>function</em>) – User supplied function to multiply the <cite>scale</cite> by a random factor. For example,
+<code class="xref py py-func docutils literal notranslate"><span class="pre">lambda</span> <span class="pre">:</span> <span class="pre">scipy.stats.truncnorm.rvs(-0.5,</span> <span class="pre">5.,</span> <span class="pre">loc=0,</span> <span class="pre">scale=1)+1.()</span></code></p></li>
+<li><p><strong>scale_adapt_factor</strong> (<em>float</em>) – adaptation of <cite>scale</cite>. If 1: no adaptation. if &lt;1, the scale is increased/decreased by this factor if the
+final slice length is shorter/longer than the <cite>adapt_slice_scale_target*scale</cite>.</p></li>
+<li><p><strong>adapt_slice_scale_target</strong> (<em>float</em>) – Targeted ratio of the median distance between slice mid and final point among all chains of <cite>scale</cite>.
+Default: 2.0. Higher values are more conservative, lower values are faster.</p></li>
+<li><p><strong>slice_limit</strong> (<em>function</em>) – Function setting the initial slice upper and lower bound. The default is <cite>:py:func:slice_limit_to_unitcube</cite>
+which defines  the slice limit as the intersection between the slice and the unit cube. An alternative
+when the <cite>scale</cite> is used is <cite>:py:func:slice_limit_to_scale</cite> which defines the slice limit as an interval
+of size <cite>2*scale</cite>. This function should either return a copy of the <cite>tleft</cite> and <cite>tright</cite> arguments or
+new arrays of the same shape.</p></li>
+<li><p><strong>max_it</strong> (<em>int</em>) – maximum number of iterations to find a point on the slice. If the maximum number of iterations is reached,
+the current point is returned as the next one.</p></li>
+<li><p><strong>shrink_factor</strong> (<em>float</em>) – For standard slice sampling shrinking, <cite>shrink_factor=1</cite>, the slice bound is updated to the last
+rejected point. Setting <cite>shrink_factor&gt;1</cite> aggressively accelerates the shrinkage, by updating the
+new slice bound to <cite>1/shrink_factor</cite> of the distance between the current point and rejected point.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="ultranest.popstepsampler.PopulationSimpleSliceSampler.region_changed">
+<span class="sig-name descname"><span class="pre">region_changed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Ls</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/popstepsampler.html#PopulationSimpleSliceSampler.region_changed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.popstepsampler.PopulationSimpleSliceSampler.region_changed" title="Link to this definition"></a></dt>
+<dd><p>Act upon region changed. Currently unused.</p>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 <section id="module-ultranest.samplingpath">
 <span id="ultranest-samplingpath-module"></span><h2>ultranest.samplingpath module<a class="headerlink" href="#module-ultranest.samplingpath" title="Link to this heading"></a></h2>
@@ -4266,6 +4337,45 @@ Updates currentt, generation and allL, in-place.</p>
 <li><p><strong>currentt</strong> (<em>np.array</em><em>(</em><em>nwalkers</em><em>)</em>) – current slice coordinate</p></li>
 <li><p><strong>log</strong> (<em>bool</em>) – whether to print when steps are reverted</p></li>
 </ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ultranest.stepfuncs.update_vectorised_slice_sampler">
+<span class="sig-prename descclassname"><span class="pre">ultranest.stepfuncs.</span></span><span class="sig-name descname"><span class="pre">update_vectorised_slice_sampler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tleft</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tright</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proposed_L</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proposed_u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proposed_p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">worker_running</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">status</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Likelihood_threshold</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shrink_factor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">popsize</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.stepfuncs.update_vectorised_slice_sampler" title="Link to this definition"></a></dt>
+<dd><p>Update the slice sampler state of each walker in the populations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> (<em>array</em>) – proposed slice coordinate</p></li>
+<li><p><strong>tleft</strong> (<em>array</em>) – current slice negative end</p></li>
+<li><p><strong>tright</strong> (<em>array</em>) – current slice positive end</p></li>
+<li><p><strong>proposed_L</strong> (<em>array</em>) – log-likelihood of proposed point</p></li>
+<li><p><strong>proposed_u</strong> (<em>array</em>) – proposed point in unit cube space</p></li>
+<li><p><strong>proposed_p</strong> (<em>array</em>) – proposed point in transformed space</p></li>
+<li><p><strong>worker_running</strong> (<em>array</em>) – index of the point associated with each worker</p></li>
+<li><p><strong>status</strong> (<em>array</em>) – integer status of the point</p></li>
+<li><p><strong>Likelihood_threshold</strong> (<em>float</em>) – current log-likelihood threshold</p></li>
+<li><p><strong>shrink_factor</strong> (<em>float</em>) – factor by which to shrink the slice</p></li>
+<li><p><strong>allu</strong> (<em>array</em>) – Accepted points in unit cube space</p></li>
+<li><p><strong>allL</strong> (<em>array</em>) – log-likelihoods of accepted points</p></li>
+<li><p><strong>allp</strong> (<em>array</em>) – Accepted points in transformed space</p></li>
+<li><p><strong>popsize</strong> (<em>int</em>) – number of points</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>tleft</strong> (<em>array</em>) – updated current slice negative end</p></li>
+<li><p><strong>tright</strong> (<em>array</em>) – updated current slice positive end</p></li>
+<li><p><strong>worker_running</strong> (<em>array</em>) – updated index of the point associated with each worker</p></li>
+<li><p><strong>status</strong> (<em>array</em>) – updated integer status of the point</p></li>
+<li><p><strong>allu</strong> (<em>array</em>) – updated accepted points in unit cube space</p></li>
+<li><p><strong>allL</strong> (<em>array</em>) – updated log-likelihoods of accepted points</p></li>
+<li><p><strong>allp</strong> (<em>array</em>) – updated accepted points in transformed space</p></li>
+<li><p><strong>discarded</strong> (<em>int</em>) – Point where the likelihood was evaluated but was not taken into account.</p></li>
+</ul>
+</p>
 </dd>
 </dl>
 </dd></dl>
