@@ -24,7 +24,7 @@ from numpy import log, exp, logaddexp
 import numpy as np
 
 from .utils import create_logger, make_run_dir, resample_equal, vol_prefactor, vectorize, listify as _listify
-from .utils import is_affine_transform, normalised_kendall_tau_distance, distributed_work_chunk_size
+from .utils import is_affine_transform, normalised_kendall_tau_distance, distributed_work_chunk_size, NumpyEncoder
 from ultranest.mlfriends import MLFriends, AffineLayer, LocalAffineLayer, ScalingLayer, find_nearby, WrappingEllipsoid, RobustEllipsoidRegion
 from .store import HDF5PointStore, TextPointStore, NullPointStore
 from .viz import get_default_viz_callback
@@ -2882,7 +2882,7 @@ class ReactiveNestedSampler(object):
                        comments='')
 
             with open(os.path.join(self.logs['info'], 'results.json'), 'w') as f:
-                json.dump(results_simple, f, indent=4)
+                json.dump(results_simple, f, indent=4, cls=NumpyEncoder)
 
             np.savetxt(
                 os.path.join(self.logs['info'], 'post_summary.csv'),

@@ -10,6 +10,7 @@ import os
 import numpy as np
 from numpy import pi
 import errno
+import json
 
 
 def create_logger(module_name, log_dir=None, level=logging.INFO):
@@ -492,3 +493,27 @@ def submasks(mask, *masks):
     for othermask in masks:
         indices = indices[othermask]
     return indices
+
+
+class NumpyEncoder(json.JSONEncoder):
+    """
+    Custom JSON Encoder for NumPy data types.
+
+    This encoder extends the default JSONEncoder to handle NumPy's
+    numeric types (integers, floats) and arrays, converting them
+    to native Python types that are JSON serializable.
+
+    Methods
+    -------
+    default(obj)
+        Converts NumPy types to Python types for JSON serialization.
+    """
+    def default(self, obj):
+        # Handle all numpy numeric types
+        if isinstance(obj, (np.integer, np.floating)):
+            return obj.item()
+        # Handle numpy arrays
+        elif isinstance(obj, np.ndarray):
+            return obj.tolist()
+        # Fall back to the default behavior
+        return super().default(obj)
