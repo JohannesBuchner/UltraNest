@@ -6,6 +6,7 @@ from ultranest.utils import distributed_work_chunk_size
 from ultranest.utils import NumpyEncoder
 from numpy.testing import assert_allclose
 import pytest
+import json
 
 def test_vectorize():
     
@@ -145,3 +146,24 @@ def test_numpy_encoder():
         pass
     else:
         assert False, "TypeError not raised for non-numpy types."
+
+
+def test_numpy_encoder_with_json():
+
+    numpy_integer = np.int32(1)
+    numpy_float = np.float32(1.0)
+    numpy_array = np.array([1, 2, 3])
+
+    json_string = json.dumps(
+        {
+            "numpy_integer": numpy_integer,
+            "numpy_float": numpy_float,
+            "numpy_array": numpy_array,
+        },
+        cls=NumpyEncoder,
+    )
+
+    assert (
+        json_string
+        == '{"numpy_integer": 1, "numpy_float": 1.0, "numpy_array": [1, 2, 3]}'
+    ), "JSON string not as expected."
