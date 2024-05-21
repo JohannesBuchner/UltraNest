@@ -452,6 +452,7 @@ class NestedSampler(object):
             unique run number. If None, will be automatically incremented.
 
         """
+        assert isinstance(param_names, list), "param_names must be of type list !"
         self.paramnames = param_names
         x_dim = len(self.paramnames)
         self.num_live_points = num_live_points
