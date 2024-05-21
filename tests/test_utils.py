@@ -3,6 +3,7 @@ import tempfile
 import os
 from ultranest.utils import vectorize, is_affine_transform, normalised_kendall_tau_distance, make_run_dir, verify_gradient
 from ultranest.utils import distributed_work_chunk_size
+from ultranest.utils import NumpyEncoder
 from numpy.testing import assert_allclose
 import pytest
 
@@ -118,3 +119,29 @@ def test_distributed_work_chunk_size(mpi_size, num_live_points_missing):
     todo = [distributed_work_chunk_size(num_live_points_missing, rank, mpi_size) for rank in processes]
     assert sum(todo) == num_live_points_missing
     assert max(todo) - min(todo) in {0, 1}
+
+def test_numpy_encoder():
+    encoder = NumpyEncoder()
+    numpy_integer = np.int32(1)
+    numpy_float = np.float32(1.0)
+    numpy_array = np.array([1, 2, 3])
+    normal_obj = "normal object"
+
+    assert encoder.default(numpy_integer) == int(
+        numpy_integer
+    ), "Numpy integer not correctly converted."
+
+    assert encoder.default(numpy_float) == float(
+        numpy_float
+    ), "Numpy float not correctly converted."
+
+    assert encoder.default(numpy_array) == list(
+        numpy_array
+    ), "Numpy array not correctly converted."
+
+    try:
+        encoder.default(normal_obj)
+    except TypeError:
+        pass
+    else:
+        assert False, "TypeError not raised for non-numpy types."
