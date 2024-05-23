@@ -2438,6 +2438,42 @@ class ReactiveNestedSampler:
         Yields
         ------
         results: dict
+            - niter (int): number of sampler iterations (not likelihood evaluations!)
+            - logz (float64): natural logarithm of the evidence $Z = \int p(d|\theta) p(\theta) \text{d}\theta$
+            - logzerr (float64): $1\sigma$ error on $\log Z$ ([can be safely assumed to be Gaussian](https://github.com/JohannesBuchner/UltraNest/issues/63))
+            - logz_bs (float64): estimate of $\log Z$ from bootstrapping
+            - logzerr_bs (float64): error on the estimate of $\log Z$ from bootstrapping
+            - logz_single (float64): (?)
+            - logzerr_single (float64): (?)
+            - logzerr_tail (float64): remainder integral contribution (?)
+            - ess (float64): effective sample size, i.e. number of samples divided by the estimated correlation length
+            - H (float64): [information gained](https://arxiv.org/abs/2205.00009)
+            - Herr (float64): (Gaussian) $1\sigma$ error on $H$
+            - posterior (dict): summary information on the posterior marginals - a dictionary of lists each with as many items as the fit parameters, indexed as $\theta_i$ in the following:
+                - mean (list): expectation value of $\theta_i$
+                - stdev (list): standard deviation of $\theta_i$
+                - median (list): median of $\theta_i$
+                - errlo (list): one-sigma lower quantile of the marginal for $\theta_i$, i.e. $15.8655$% quantile
+                - errup (list): one-sigma upper quantile of the marginal for $\theta_i$, i.e. $84.1345$% quantile
+                - information_gain_bits (list): information gain from the marginal prior on $\theta_i$ to the posterior
+        - weighted_samples (dict): weighted samples from the posterior, as computed during sampling, sorted by their log-likelihood value
+            - upoints (ndarray): sample locations in the unit cube $[0, 1]^{d}$, where $d$ is the number of parameters - the shape is  `n_iter` by $d$
+            - points (ndarray): sample locations in the physical, user-provided space (same shape as `upoints`)
+            - weights (ndarray): sample weights - shape `n_iter`, they add to 1
+            - logw (ndarray): ?
+            - bootstrapped_weights (ndarray): ?
+            - logl (ndarray): log-likelihood values at the sample points (?)
+        - samples (ndarray): re-weighted posterior samples: distributed according to $p(\theta | d)$ - these points are not sorted, and can be assumed to have been randomly shuffled (?)
+        - maximum_likelihood (dict): summary information on the maximum likelihood value $\theta_{ML}$ found by the posterior exploration
+            - logl (float64): value of the log-likelihood at this point: $p(d | \theta_{ML})$
+            - point (list): coordinates of $\theta_{ML}$ in the physical space
+            - point_untransformed (list): coordinates of $\theta_{ML}$ in the unit cube
+        - ncall (int): total number of likelihood evaluations (accepted and not)
+        - paramnames (list): input parameter names
+        - insertion_order_MWW_test (dict): results for the MWW test (?, what is [Buchner+21 in prep](https://johannesbuchner.github.io/UltraNest/performance.html#output-files)?)
+            - independent_iterations (float)
+            - converged (bool)
+
         """
         # frac_remain=1  means 1:1 -> dlogz=log(0.5)
         # frac_remain=0.1 means 1:10 -> dlogz=log(0.1)
