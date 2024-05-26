@@ -1,5 +1,7 @@
+# noqa: D400 D205
 """
 Calibration of step sampler
+---------------------------
 """
 
 import numpy as np

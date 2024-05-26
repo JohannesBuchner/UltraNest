@@ -1,3 +1,4 @@
+# noqa: D400 D205
 """
 Storage for nested sampling points
 -----------------------------------

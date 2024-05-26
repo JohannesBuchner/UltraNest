@@ -331,7 +331,7 @@ def step_back(Lmin, allL, generation, currentt, log=False):
 
 cdef _fill_directions(
     np.ndarray[np.float_t, ndim=2] v,
-    np.ndarray[np.int_t, ndim=1] indices,
+    np.ndarray[np.int_, ndim=1] indices,
     float scale
 ):
     cdef size_t nsamples = v.shape[0]
@@ -533,7 +533,7 @@ cpdef tuple update_vectorised_slice_sampler(\
                           np.ndarray[np.float_t, ndim=1] t, np.ndarray[np.float_t, ndim=1] tleft,\
                           np.ndarray[np.float_t, ndim=1] tright, np.ndarray[np.float_t, ndim=1] proposed_L,\
                           np.ndarray[np.float_t, ndim=2] proposed_u, np.ndarray[np.float_t, ndim=2] proposed_p,\
-                          np.ndarray[np.int_t, ndim=1] worker_running, np.ndarray[np.int_t, ndim=1] status,\
+                          np.ndarray[np.int_, ndim=1] worker_running, np.ndarray[np.int_, ndim=1] status,\
                           np.float_t Likelihood_threshold,np.float_t shrink_factor, np.ndarray[np.float_t, ndim=2] allu,\
                           np.ndarray[np.float_t, ndim=1] allL, np.ndarray[np.float_t, ndim=2] allp, int popsize):
 

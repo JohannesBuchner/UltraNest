@@ -1,3 +1,4 @@
+# noqa: D400 D205
 """
 Live point visualisations
 -------------------------
@@ -140,12 +141,13 @@ def nicelogger(points, info, region, transformLayer, region_fresh=False):
         if np.isfinite(info['order_test_correlation']) else "Quality: ok",
     )
     if info.get('stepsampler_info', {}).get('num_logs', 0) > 0:
-        print(
-            ('Step sampler performance: %(rejection_rate).1f rej/step, %(mean_nsteps)d steps/it' % (info['stepsampler_info'])) +
-            (', rel jump distance: %.2f (should be >1), %.2f%% (should be >50%%)' % (
-                info['stepsampler_info']['mean_distance'], 100 * info['stepsampler_info']['frac_far_enough']
-            )) if 'mean_distance' in info['stepsampler_info'] else ''
-        )
+        stepsampler_info = dict(info['stepsampler_info'])
+        stepsampler_info['frac_far_enough'] *= 100
+        if 'mean_distance' in stepsampler_info:
+            print((
+                'Step sampler performance: %(rejection_rate).1f rej/step, %(mean_nsteps)d steps/it, '
+                'rel jump distance: %(mean_distance).2f (should be >1), %(frac_far_enough).2f%% (should be >50%%)') % stepsampler_info
+            )
 
     print()
     if ndim == 1:
@@ -323,12 +325,14 @@ class LivePointsWidget(object):
              if np.isfinite(info['order_test_correlation']) else " | Quality: ok")
 
         if info.get('stepsampler_info', {}).get('num_logs', 0) > 0:
-            labeltext += ("<br/>" +
-                'Step sampler performance: %(rejection_rate).1f%% rej/step, %(mean_nsteps)d steps/it' % (info['stepsampler_info']) +
-                ('mean rel jump distance: %.2f (should be >1), %.2f%% (should be >50%%)' % (
-                    info['stepsampler_info']['mean_distance'], 100 * info['stepsampler_info']['frac_far_enough']
-                )) if 'mean_distance' in info['stepsampler_info'] else ''
-            )
+            stepsampler_info = dict(info['stepsampler_info'])
+            stepsampler_info['frac_far_enough'] *= 100
+            if 'mean_distance' in stepsampler_info:
+                labeltext += (
+                    "<br/>"
+                    'Step sampler performance: %(rejection_rate).1f%% rej/step, %(mean_nsteps)d steps/it'
+                    'mean rel jump distance: %(mean_distance).2f (should be >1), %(frac_far_enough).2f%% (should be >50%%)'
+                ) % stepsampler_info
 
         if ndim == 1:
             pass

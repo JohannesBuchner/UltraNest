@@ -1,3 +1,4 @@
+# noqa: D400 D205
 """
 Utility functions for logging and statistics
 --------------------------------------------
@@ -198,7 +199,7 @@ def resample_equal(samples, weights, rstate=None):
     # make N subdivisions, and choose positions with a consistent random offset
     positions = (rstate.random() + np.arange(N)) / N
 
-    idx = np.zeros(N, dtype=int)
+    idx = np.zeros(N, dtype=np.int_)
     cumulative_sum = np.cumsum(weights)
     i, j = 0, 0
     while i < N:
@@ -484,7 +485,7 @@ def submasks(mask, *masks):
 
     Returns
     -------
-    indices : np.array(dtype=int)
+    indices : np.array(dtype=np.int_)
         indices which select the subselection in the original array
 
     """

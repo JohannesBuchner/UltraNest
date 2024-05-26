@@ -1,3 +1,4 @@
+# noqa: D400 D205
 """
 Nested sampling integrators
 ---------------------------
@@ -452,8 +453,7 @@ class NestedSampler(object):
             unique run number. If None, will be automatically incremented.
 
         """
-        assert isinstance(param_names, list), "param_names must be of type list !"
-        self.paramnames = param_names
+        self.paramnames = list(param_names)
         x_dim = len(self.paramnames)
         self.num_live_points = num_live_points
         self.sampler = 'nested'
@@ -2015,8 +2015,8 @@ class ReactiveNestedSampler(object):
 
             # instead, track the clusters from before by matching manually
             oldt = self.transformLayer.transform(oldu)
-            clusterids = np.zeros(len(active_u), dtype=int)
-            nnearby = np.empty(len(self.region.unormed), dtype=int)
+            clusterids = np.zeros(len(active_u), dtype=np.int_)
+            nnearby = np.empty(len(self.region.unormed), dtype=np.int_)
             for ci in np.unique(self.transformLayer.clusterids):
                 if ci == 0:
                     continue

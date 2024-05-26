@@ -1,3 +1,4 @@
+# noqa: D400 D205
 """
 U test for a uniform distribution of integers
 ---------------------------------------------

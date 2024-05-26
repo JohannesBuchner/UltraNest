@@ -1,6 +1,5 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-__doc__ = """
+# noqa: D400 D205
+"""
 Graph-based nested sampling
 ---------------------------
 
@@ -20,8 +19,6 @@ children of the tree root (main branches).
 The exploration is bootstrap-capable without requiring additional
 computational effort: The roots are indexed, and the bootstrap explorer
 can ignore the rootids it does not know about.
-
-
 """
 
 import numpy as np

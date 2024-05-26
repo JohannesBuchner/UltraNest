@@ -1,3 +1,4 @@
+# noqa: D400 D205
 """
 MCMC-like step sampling
 -----------------------
@@ -12,6 +13,7 @@ from __future__ import print_function, division
 import numpy as np
 import matplotlib.pyplot as plt
 from .utils import listify as _listify
+from warnings import warn
 
 
 def generate_random_direction(ui, region, scale=1):
@@ -326,8 +328,10 @@ def inside_region(region, unew, uold):
 
 
 def adapt_proposal_total_distances(region, history, mean_pair_distance, ndim):
+    """Check jump distance (deprecated function)."""
     # compute mean vector of each proposed jump
     # compute total distance of all jumps
+    warn('adapt_proposal_total_distances is deprecated and will be removed in future versions of UltraNest.', DeprecationWarning, stacklevel=2)
     tproposed = region.transformLayer.transform(np.asarray([u for u, _ in history]))
     assert len(tproposed.sum(axis=1)) == len(tproposed)
     d2 = ((((tproposed[0] - tproposed)**2).sum(axis=1))**0.5).sum()
@@ -337,8 +341,10 @@ def adapt_proposal_total_distances(region, history, mean_pair_distance, ndim):
 
 
 def adapt_proposal_total_distances_NN(region, history, mean_pair_distance, ndim):
+    """Check jump distance (deprecated function)."""
     # compute mean vector of each proposed jump
     # compute total distance of all jumps
+    warn('adapt_proposal_total_distances_NN is deprecated and will be removed in future versions of UltraNest.', DeprecationWarning, stacklevel=2)
     tproposed = region.transformLayer.transform(np.asarray([u for u, _ in history]))
     assert len(tproposed.sum(axis=1)) == len(tproposed)
     d2 = ((((tproposed[0] - tproposed)**2).sum(axis=1))**0.5).sum()
@@ -348,7 +354,9 @@ def adapt_proposal_total_distances_NN(region, history, mean_pair_distance, ndim)
 
 
 def adapt_proposal_summed_distances(region, history, mean_pair_distance, ndim):
+    """Check jump distance (deprecated function)."""
     # compute sum of distances from each jump
+    warn('adapt_proposal_summed_distances is deprecated and will be removed in future versions of UltraNest.', DeprecationWarning, stacklevel=2)
     tproposed = region.transformLayer.transform(np.asarray([u for u, _ in history]))
     d2 = (((tproposed[1:,:] - tproposed[:-1,:])**2).sum(axis=1)**0.5).sum()
     far_enough = d2 > mean_pair_distance / ndim
@@ -357,7 +365,9 @@ def adapt_proposal_summed_distances(region, history, mean_pair_distance, ndim):
 
 
 def adapt_proposal_summed_distances_NN(region, history, mean_pair_distance, ndim):
+    """Check jump distance (deprecated function)."""
     # compute sum of distances from each jump
+    warn('adapt_proposal_summed_distances_NN is deprecated and will be removed in future versions of UltraNest.', DeprecationWarning, stacklevel=2)
     tproposed = region.transformLayer.transform(np.asarray([u for u, _ in history]))
     d2 = (((tproposed[1:,:] - tproposed[:-1,:])**2).sum(axis=1)**0.5).sum()
     far_enough = d2 > region.maxradiussq**0.5
@@ -366,7 +376,7 @@ def adapt_proposal_summed_distances_NN(region, history, mean_pair_distance, ndim
 
 
 def adapt_proposal_move_distances(region, history, mean_pair_distance, ndim):
-    """Compares random walk travel distance to MLFriends radius.
+    """Compare random walk travel distance to MLFriends radius.
 
     Compares in whitened space (t-space), the L2 norm between final
     point and starting point to the MLFriends bootstrapped radius.
@@ -400,7 +410,7 @@ def adapt_proposal_move_distances(region, history, mean_pair_distance, ndim):
 
 
 def adapt_proposal_move_distances_midway(region, history, mean_pair_distance, ndim):
-    """Compares first half of the travel distance to MLFriends radius.
+    """Compare first half of the travel distance to MLFriends radius.
 
     Compares in whitened space (t-space), the L2 norm between the
     middle point of the walk and the starting point,
@@ -558,16 +568,26 @@ class StepSampler(object):
 
             Available are:
 
-            * :py:func:`generate_cube_oriented_direction` (slice sampling, picking one random parameter to vary)
-            * :py:func:`generate_random_direction` (hit-and-run sampling, picking a random direction varying all parameters)
-            * :py:func:`generate_differential_direction` (differential evolution direction proposal)
-            * :py:func:`generate_region_oriented_direction` (slice sampling, but in the whitened parameter space)
-            * :py:func:`generate_region_random_direction` (hit-and-run sampling, but in the whitened parameter space)
-            * :py:class:`SequentialDirectionGenerator` (sequential slice sampling, i.e., iterate deterministically through the parameters)
-            * :py:class:`SequentialRegionDirectionGenerator` (sequential slice sampling in the whitened parameter space, i.e., iterate deterministically through the principle axes)
-            * :py:func:`generate_cube_oriented_differential_direction` (like generate_differential_direction, but along only one randomly chosen parameter)
-            * :py:func:`generate_partial_differential_direction` (differential evolution slice proposal on only 10% of the parameters)
-            * :py:func:`generate_mixture_random_direction` (combined proposal)
+            * :py:func:`generate_cube_oriented_direction`
+                (slice sampling, picking one random parameter to vary)
+            * :py:func:`generate_random_direction`
+                (hit-and-run sampling, picking a random direction varying all parameters)
+            * :py:func:`generate_differential_direction`
+                (differential evolution direction proposal)
+            * :py:func:`generate_region_oriented_direction`
+                (slice sampling, but in the whitened parameter space)
+            * :py:func:`generate_region_random_direction`
+                (hit-and-run sampling, but in the whitened parameter space)
+            * :py:class:`SequentialDirectionGenerator`
+                (sequential slice sampling, i.e., iterate deterministically through the parameters)
+            * :py:class:`SequentialRegionDirectionGenerator`
+                (sequential slice sampling in the whitened parameter space, i.e., iterate deterministically through the principle axes)
+            * :py:func:`generate_cube_oriented_differential_direction`
+                (like generate_differential_direction, but along only one randomly chosen parameter)
+            * :py:func:`generate_partial_differential_direction`
+                (differential evolution slice proposal on only 10% of the parameters)
+            * :py:func:`generate_mixture_random_direction`
+                (combined proposal)
 
             Additionally, :py:class:`OrthogonalDirectionGenerator`
             can be applied to any generate_direction function.
@@ -749,6 +769,20 @@ class StepSampler(object):
         return np.nanmean(jump_distances > reference_distances)
 
     def get_info_dict(self):
+        """Return diagnostics of the step sampler performance.
+
+        Returns
+        --------
+        v: dict
+            the keys are:
+                * num_logs: number of log entries being summarized
+                * rejection_rate: fraction of steps rejected
+                * mean_scale: average value of `scale`
+                * mean_nsteps: average `nsteps`
+                * mean_distance: mean jump distance (see `Buchner+24 <https://arxiv.org/abs/2402.11936>`_)
+                * frac_far_enough: fraction of jumps with sufficient distance (see `Buchner+24 <https://arxiv.org/abs/2402.11936>`_)
+                * last_logstat: content of the last log entry
+        """
         return dict(
             num_logs=len(self.logstat),
             rejection_rate=np.nanmean([entry[0] for entry in self.logstat]) if len(self.logstat) > 0 else np.nan,
@@ -758,7 +792,6 @@ class StepSampler(object):
             frac_far_enough=self.far_enough_fraction,
             last_logstat=dict(zip(self.logstat_labels, self.logstat[-1] if len(self.logstat) > 1 else [np.nan] * len(self.logstat_labels)))
         )
-
 
     def print_diagnostic(self):
         """Print diagnostic of step sampler performance."""
@@ -1177,7 +1210,6 @@ class SliceSampler(StepSampler):
 
                 # adjust scale to final slice length
                 if -left > self.next_scale or right > self.next_scale:
-                #if right - left > self.next_scale:
                     self.next_scale *= 1.1
                 else:
                     self.next_scale /= 1.1
@@ -1220,6 +1252,7 @@ def RegionBallSliceSampler(*args, **kwargs):
 
 class SequentialDirectionGenerator(object):
     """Sequentially proposes one parameter after the next."""
+
     def __init__(self):
         """Initialise."""
         self.axis_index = 0
@@ -1258,11 +1291,13 @@ class SequentialDirectionGenerator(object):
         return v
 
     def __str__(self):
+        """Create string representation."""
         return type(self).__name__ + '()'
 
 
 class SequentialRegionDirectionGenerator(object):
     """Sequentially proposes one region axes after the next."""
+
     def __init__(self):
         """Initialise."""
         self.axis_index = 0
@@ -1299,6 +1334,7 @@ class SequentialRegionDirectionGenerator(object):
         return v
 
     def __str__(self):
+        """Create string representation."""
         return type(self).__name__ + '()'
 
 
