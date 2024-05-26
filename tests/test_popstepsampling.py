@@ -216,8 +216,7 @@ def test_update_slice_sampler():
 
 # aim at checking the sanity of the results of 
 # one iteration of the slice sampler. 
-def Test_SimpleSliceSampler(seed):
-
+def test_SimpleSliceSampler_SLOW(seed=4):
     np.random.seed(seed)
     nsteps = 1 
     popsize = 100
@@ -245,7 +244,7 @@ def Test_SimpleSliceSampler(seed):
     # resetting the seed to check the slice axes
     np.random.seed(seed)
     for i in range(popsize):
-        u[i],_,L[i],_= stepsampler.__next__(region,Lmin,us.copy(),Ls.copy(),transform,loglike_vectorized,test=True)
+        u[i],_,L[i],_= stepsampler.__next__(region, Lmin, us.copy(), Ls.copy(), transform, loglike_vectorized, test=True)
 
     # Basic check
     assert (L>Lmin).all(), (L,Lmin) # Lmin check
@@ -253,13 +252,13 @@ def Test_SimpleSliceSampler(seed):
     
     np.random.seed(seed)
     # resetting the random generation inside the sampler
-    _=np.random.randint(0, us.shape[0], size=stepsampler.popsize)
-    _=stepsampler.scale_jitter_func()
+    np.random.randint(0, us.shape[0], size=stepsampler.popsize)
+    stepsampler.scale_jitter_func()
 
     # Getting the slice axes
     slice_axes =  stepsampler.generate_direction(us.copy(), region,scale= 1.0)
     for i in range(popsize):
-        v=(u[i,:]-us[i,:])/slice_axes[i,:]
+        v = (u[i,:] - us[i,:]) / slice_axes[i, :]
         mean_v = np.mean(v)
         assert np.allclose(mean_v, v, atol=1e-10), (mean_v, v)
 
