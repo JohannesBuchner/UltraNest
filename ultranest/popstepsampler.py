@@ -17,6 +17,8 @@ from ultranest.stepfuncs import generate_random_direction, generate_region_orien
 from ultranest.stepfuncs import generate_differential_direction, generate_mixture_random_direction
 import scipy.stats
 
+int_t = int
+
 
 def unitcube_line_intersection(ray_origin, ray_direction):
     r"""Compute intersection of a line (ray) and a unit box (0:1 in all axes).
@@ -425,7 +427,7 @@ class PopulationSliceSampler(GenericPopulationSampler):
         self.allL = np.zeros((self.popsize, self.nsteps + 1)) + np.nan
         self.currentt = np.zeros(self.popsize) + np.nan
         self.currentv = np.zeros((self.popsize, ndim)) + np.nan
-        self.generation = np.zeros(self.popsize, dtype=np.int_) - 1
+        self.generation = np.zeros(self.popsize, dtype=int_t) - 1
         self.current_left = np.zeros(self.popsize)
         self.current_right = np.zeros(self.popsize)
         self.searching_left = np.zeros(self.popsize, dtype=bool)
@@ -923,9 +925,9 @@ class PopulationSimpleSliceSampler(GenericPopulationSampler):
                 # Slice bounds for each points
                 tleft, tright = self.slice_limit(tleft_unitcube,tright_unitcube)
                 # Index of the workers working concurrently
-                worker_running = np.arange(0, self.popsize, 1, dtype=np.int_)
+                worker_running = np.arange(0, self.popsize, 1, dtype=int_t)
                 # Status indicating if a points has already find its next position
-                status = np.zeros(self.popsize, dtype=np.int_)  # one for success, zero for running
+                status = np.zeros(self.popsize, dtype=int_t)  # one for success, zero for running
 
                 # Loop until each points has found its next position or we reached 100 iterations
                 for it in range(self.max_it):

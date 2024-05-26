@@ -27,7 +27,7 @@ cdef count_nearby(
     np.ndarray[np.float_t, ndim=2] apts,
     np.ndarray[np.float_t, ndim=2] bpts,
     np.float_t radiussq,
-    np.ndarray[np.int_, ndim=1] nnearby
+    np.ndarray[np.int_t, ndim=1] nnearby
 ):
     """Count the number of points in ``apts`` within square radius ``radiussq`` for each point ``b`` in `bpts``.
 
@@ -139,7 +139,7 @@ def find_nearby(
     np.ndarray[np.float_t, ndim=2] apts,
     np.ndarray[np.float_t, ndim=2] bpts,
     np.float_t radiussq,
-    np.ndarray[np.int_, ndim=1] nnearby
+    np.ndarray[np.int_t, ndim=1] nnearby
 ):
     """Gets the index of a point in `a` within square radius `radiussq`, for each point `b` in `bpts`.
 
@@ -223,7 +223,7 @@ cdef float compute_maxradiussq(np.ndarray[np.float_t, ndim=2] apts, np.ndarray[n
 @cython.wraparound(False)
 def compute_mean_pair_distance(
     np.ndarray[np.float_t, ndim=2] pts,
-    np.ndarray[np.int_, ndim=1] clusterids
+    np.ndarray[np.int_t, ndim=1] clusterids
 ):
     """Compute the average distance between pairs of points.
     Pairs from different clusters are excluded in the computation.
@@ -271,7 +271,7 @@ cdef _update_clusters(
     np.ndarray[np.float_t, ndim=2] upoints,
     np.ndarray[np.float_t, ndim=2] tpoints,
     np.float_t maxradiussq,
-    np.ndarray[np.int_, ndim=1] clusterids,
+    np.ndarray[np.int_t, ndim=1] clusterids,
 ):
     """same signature as ``update_clusters()``, see there."""
     assert upoints.shape[0] == tpoints.shape[0], ('different number of points', upoints.shape[0], tpoints.shape[0])
@@ -845,7 +845,7 @@ class LocalAffineLayer(AffineLayer):
         return s
 
 
-def vol_prefactor(np.int_ n):
+def vol_prefactor(np.int_t n):
     """Volume constant for an ``n``-dimensional sphere.
 
     for ``n`` even:  $$    (2pi)^(n    /2) / (2 * 4 * ... * n)$$

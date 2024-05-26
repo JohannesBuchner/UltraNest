@@ -37,6 +37,8 @@ from .hotstart import get_auxiliary_contbox_parameterization
 
 __all__ = ['ReactiveNestedSampler', 'NestedSampler', 'read_file', 'warmstart_from_similar_file']
 
+int_t = int
+
 
 def _get_cumsum_range(pi, dp):
     """Compute quantile indices from probabilities.
@@ -2015,8 +2017,8 @@ class ReactiveNestedSampler(object):
 
             # instead, track the clusters from before by matching manually
             oldt = self.transformLayer.transform(oldu)
-            clusterids = np.zeros(len(active_u), dtype=np.int_)
-            nnearby = np.empty(len(self.region.unormed), dtype=np.int_)
+            clusterids = np.zeros(len(active_u), dtype=int_t)
+            nnearby = np.empty(len(self.region.unormed), dtype=int_t)
             for ci in np.unique(self.transformLayer.clusterids):
                 if ci == 0:
                     continue

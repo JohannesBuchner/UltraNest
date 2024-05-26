@@ -17,7 +17,8 @@ jobs:
       
       - run: sudo ln -s /usr/lib/python3/dist-packages/numpy/core/include/numpy/ /usr/include/numpy
 
-      - run: sudo python3 -m pip install -r pip-requirements.txt pytest-html coveralls pyyaml mpi4py
+      - run: sudo python3 -m pip install -r pip-requirements.txt pytest-html coveralls pyyaml mpi4py pydocstyle pycodestyle flake8
+
       - run: mkdir -p test-reports
 
       - run: python3 -m pip install -e .
@@ -34,6 +35,10 @@ jobs:
       - run: coverage3 combine
       - run: coverage3 report --include="$PWD/*" --omit="$PWD/.eggs/*"
       - run: coverage3 html --include="$PWD/*" --omit="$PWD/.eggs/*" && mv htmlcov test-reports
+
+      - run: flake8 $(ls ultranest/*.py | grep -Ev '^ultranest/(flatnuts|dychmc|dyhmc).py')
+      - run: pycodestyle $(ls ultranest/*.py | grep -Ev '^ultranest/(flatnuts|dychmc|dyhmc).py')
+      - run: pydocstyle $(ls ultranest/*.py | grep -Ev '^ultranest/(flatnuts|dychmc|dyhmc).py')
 
       - run: coveralls
       
