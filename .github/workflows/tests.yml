@@ -26,7 +26,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Install dependencies
-      run: python -m pip install -r pip-requirements.txt
+      run: python -m pip install cython numpy scipy matplotlib corner getdist h5py pandas flake8 pycodestyle pydocstyle pytest-html pytest-xdist
 
     - name: Lint with flake8
       run: flake8 $(ls ultranest/*.py | grep -Ev '^ultranest/(flatnuts|dychmc|dyhmc|pathsampler).py')
