@@ -148,6 +148,8 @@ def nicelogger(points, info, region, transformLayer, region_fresh=False):
                 'Step sampler performance: %(rejection_rate).1f rej/step, %(mean_nsteps)d steps/it, '
                 'rel jump distance: %(mean_distance).2f (should be >1), %(frac_far_enough).2f%% (should be >50%%)') % stepsampler_info
             )
+        else:
+            print()
 
     print()
     if ndim == 1:
