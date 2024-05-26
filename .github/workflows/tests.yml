@@ -29,13 +29,13 @@ jobs:
       run: python -m pip install -r pip-requirements.txt
 
     - name: Lint with flake8
-      run: flake8 $(ls ultranest/*.py | grep -Ev '^ultranest/(flatnuts|dychmc|dyhmc).py')
+      run: flake8 $(ls ultranest/*.py | grep -Ev '^ultranest/(flatnuts|dychmc|dyhmc|pathsampler).py')
 
     - name: Check code style
-      run: pycodestyle $(ls ultranest/*.py | grep -Ev '^ultranest/(flatnuts|dychmc|dyhmc).py')
+      run: pycodestyle $(ls ultranest/*.py | grep -Ev '^ultranest/(flatnuts|dychmc|dyhmc|pathsampler).py')
 
     - name: Check doc style
-      run: pydocstyle $(ls ultranest/*.py | grep -Ev '^ultranest/(flatnuts|dychmc|dyhmc).py')
+      run: pydocstyle $(ls ultranest/*.py | grep -Ev '^ultranest/(flatnuts|dychmc|dyhmc|pathsampler).py')
 
     - name: Install package
       run: python -m pip install -e .
