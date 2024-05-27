@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest.popstepsampler &mdash; UltraNest 4.3.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b76e3c8a" />
+  <title>ultranest.popstepsampler &mdash; UltraNest 4.3.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
   
@@ -16,8 +16,8 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=a17b270f"></script>
-        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/documentation_options.js?v=0503a316"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
@@ -39,7 +39,7 @@
               <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                4.3.0
+                4.3.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -100,7 +100,8 @@
            <div itemprop="articleBody">
              
   <h1>Source code for ultranest.popstepsampler</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="c1"># noqa: D400 D205</span>
+<span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Vectorized step samplers</span>
 <span class="sd">------------------------</span>
 
@@ -111,12 +112,19 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">ultranest.utils</span> <span class="kn">import</span> <span class="n">submasks</span>
-<span class="kn">from</span> <span class="nn">ultranest.stepfuncs</span> <span class="kn">import</span> <span class="n">evolve</span><span class="p">,</span> <span class="n">step_back</span><span class="p">,</span> <span class="n">update_vectorised_slice_sampler</span>
-<span class="kn">from</span> <span class="nn">ultranest.stepfuncs</span> <span class="kn">import</span> <span class="n">generate_cube_oriented_direction</span><span class="p">,</span> <span class="n">generate_cube_oriented_direction_scaled</span>
-<span class="kn">from</span> <span class="nn">ultranest.stepfuncs</span> <span class="kn">import</span> <span class="n">generate_random_direction</span><span class="p">,</span> <span class="n">generate_region_oriented_direction</span><span class="p">,</span> <span class="n">generate_region_random_direction</span>
-<span class="kn">from</span> <span class="nn">ultranest.stepfuncs</span> <span class="kn">import</span> <span class="n">generate_differential_direction</span><span class="p">,</span> <span class="n">generate_mixture_random_direction</span>
 <span class="kn">import</span> <span class="nn">scipy.stats</span>
+
+<span class="kn">from</span> <span class="nn">ultranest.stepfuncs</span> <span class="kn">import</span> <span class="p">(</span><span class="n">evolve</span><span class="p">,</span> <span class="n">generate_cube_oriented_direction</span><span class="p">,</span>
+                                 <span class="n">generate_cube_oriented_direction_scaled</span><span class="p">,</span>
+                                 <span class="n">generate_differential_direction</span><span class="p">,</span>
+                                 <span class="n">generate_mixture_random_direction</span><span class="p">,</span>
+                                 <span class="n">generate_random_direction</span><span class="p">,</span>
+                                 <span class="n">generate_region_oriented_direction</span><span class="p">,</span>
+                                 <span class="n">generate_region_random_direction</span><span class="p">,</span> <span class="n">step_back</span><span class="p">,</span>
+                                 <span class="n">update_vectorised_slice_sampler</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">ultranest.utils</span> <span class="kn">import</span> <span class="n">submasks</span>
+
+<span class="n">int_t</span> <span class="o">=</span> <span class="nb">int</span>
 
 
 <span class="k">def</span> <span class="nf">unitcube_line_intersection</span><span class="p">(</span><span class="n">ray_origin</span><span class="p">,</span> <span class="n">ray_direction</span><span class="p">):</span>
@@ -156,8 +164,9 @@
         <span class="n">t2</span> <span class="o">=</span> <span class="o">-</span><span class="n">n</span> <span class="o">+</span> <span class="n">k</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmin</span><span class="p">(</span><span class="n">t2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
+
 <span class="k">def</span> <span class="nf">diagnose_move_distances</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">ustart</span><span class="p">,</span> <span class="n">ufinal</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compares random walk travel distance to MLFriends radius.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compare random walk travel distance to MLFriends radius.</span>
 
 <span class="sd">    Compares in whitened space (t-space), the L2 norm between final</span>
 <span class="sd">    point and starting point to the MLFriends bootstrapped radius.</span>
@@ -187,6 +196,7 @@
     <span class="n">far_enough</span> <span class="o">=</span> <span class="n">d2</span> <span class="o">&gt;</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span>
 
     <span class="k">return</span> <span class="n">far_enough</span><span class="p">,</span> <span class="p">[</span><span class="n">d2</span><span class="o">**</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span><span class="p">]</span>
+
 
 <span class="k">class</span> <span class="nc">GenericPopulationSampler</span><span class="p">():</span>
     <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
@@ -251,7 +261,6 @@
             <span class="n">frac_far_enough</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">far_enough_fraction</span><span class="p">,</span>
             <span class="n">last_logstat</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span><span class="p">)))</span>
         <span class="p">)</span>
-
 
     <span class="k">def</span> <span class="nf">print_diagnostic</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Print diagnostic of step sampler performance.&quot;&quot;&quot;</span>
@@ -536,7 +545,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">allL</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">popsize</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">currentt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">popsize</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">currentv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">popsize</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">generation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">popsize</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">generation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">popsize</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">int_t</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">current_left</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">popsize</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">current_right</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">popsize</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">searching_left</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">popsize</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
@@ -814,13 +823,9 @@
 
 
 
-
-
 <span class="k">def</span> <span class="nf">slice_limit_to_unitcube</span><span class="p">(</span><span class="n">tleft</span><span class="p">,</span> <span class="n">tright</span><span class="p">):</span>
-<span class="w">    </span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    return the slice limits as of the intersection between the slice and the unit cube boundaries</span>
-
+<span class="sd">    Return the slice limits as of the intersection between the slice and the unit cube boundaries.</span>
 
 <span class="sd">    parameters</span>
 <span class="sd">    ----------</span>
@@ -834,14 +839,12 @@
 <span class="sd">                Positive and negative slice limits</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">tleft_new</span><span class="p">,</span> <span class="n">tright_new</span> <span class="o">=</span> <span class="n">tleft</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">tright</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">tleft_new</span><span class="p">,</span> <span class="n">tright_new</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">tleft_new</span><span class="p">,</span> <span class="n">tright_new</span>
 
 
 <span class="k">def</span> <span class="nf">slice_limit_to_scale</span><span class="p">(</span><span class="n">tleft</span><span class="p">,</span> <span class="n">tright</span><span class="p">):</span>
-
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    return the slice limits as an interval of size `2*scale` or the intersection between the slice and the unit cube boundaries</span>
-<span class="sd">    if the interval is larger than the unit cube boundaries.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return -1..+1 or the intersection between slice and unit cube if that is shorter.</span>
 
 <span class="sd">    parameters</span>
 <span class="sd">    ----------</span>
@@ -854,54 +857,51 @@
 <span class="sd">        (tleft_new,tright_new): tuple</span>
 <span class="sd">                Positive and negative slice limits</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tleft_new</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fmax</span><span class="p">(</span><span class="n">tleft</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">tleft</span><span class="p">))</span>
+    <span class="n">tright_new</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fmin</span><span class="p">(</span><span class="n">tright</span><span class="p">,</span> <span class="mf">1.</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">tright</span><span class="p">))</span>
 
-    
-    <span class="n">tleft_new</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fmax</span><span class="p">(</span><span class="n">tleft</span> <span class="p">,</span> <span class="o">-</span><span class="mf">1.</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">tleft</span><span class="p">))</span>
-    <span class="n">tright_new</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fmin</span><span class="p">(</span><span class="n">tright</span> <span class="p">,</span> <span class="mf">1.</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">tright</span><span class="p">))</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">tleft_new</span><span class="p">,</span> <span class="n">tright_new</span><span class="p">)</span>
-
+    <span class="k">return</span> <span class="n">tleft_new</span><span class="p">,</span> <span class="n">tright_new</span>
 
 
 <div class="viewcode-block" id="PopulationSimpleSliceSampler">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.popstepsampler.PopulationSimpleSliceSampler">[docs]</a>
 <span class="k">class</span> <span class="nc">PopulationSimpleSliceSampler</span><span class="p">(</span><span class="n">GenericPopulationSampler</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">       Vectorized Slice sampler without stepping out procedure for quick look fits.</span>
-<span class="sd">       Unlike `:py:class:PopulationSliceSampler`, in `:py:class:PopulationSimpleSliceSampler`,</span>
-<span class="sd">       the likelihood is always called with the same number of points.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Vectorized Slice sampler without stepping out procedure for quick look fits.</span>
 
-<span class="sd">       Sliced are defined by the `:py:func:generate_direction` function on a interval defined</span>
-<span class="sd">       around the current point. The centred interval has the width of the scale parameter,</span>
-<span class="sd">       i.e, there is no stepping out procedure as in `:py:class:PopulationSliceSampler`.</span>
-<span class="sd">       Slices are then shrink towards the current point until a point is found with a</span>
-<span class="sd">       likelihood above the threshold.</span>
+<span class="sd">    Unlike `:py:class:PopulationSliceSampler`, in `:py:class:PopulationSimpleSliceSampler`,</span>
+<span class="sd">    the likelihood is always called with the same number of points.</span>
 
-<span class="sd">       In the default case, i.e. `scale=None`, the slice width is defined as the</span>
-<span class="sd">       intersection between itself and the unit cube. To improve the efficiency of the sampler,</span>
-<span class="sd">       the slice can be reduced to an interval of size `2*scale` centred on the point. `scale`</span>
-<span class="sd">       can be adapted with the `scale_adapt_factor` parameter based on the median distance </span>
-<span class="sd">       between the current and the next point in a chains among all the chains. If the median</span>
-<span class="sd">       distance is above `scale/adapt_slice_scale_target`, the scale is increased by `scale_adapt_factor`,</span>
-<span class="sd">       and decreased otherwise. The `scale` parameter can also be jittered by a user supplied</span>
-<span class="sd">       function `:py:func:scale_jitter_func` to counter balance the effect of a strong adaptation.</span>
+<span class="sd">    Sliced are defined by the `:py:func:generate_direction` function on a interval defined</span>
+<span class="sd">    around the current point. The centred interval has the width of the scale parameter,</span>
+<span class="sd">    i.e, there is no stepping out procedure as in `:py:class:PopulationSliceSampler`.</span>
+<span class="sd">    Slices are then shrink towards the current point until a point is found with a</span>
+<span class="sd">    likelihood above the threshold.</span>
 
-<span class="sd">       In the case `scale!=None`, the detailed balance is not guaranteed, so this sampler should</span>
-<span class="sd">       be use with caution.</span>
+<span class="sd">    In the default case, i.e. `scale=None`, the slice width is defined as the</span>
+<span class="sd">    intersection between itself and the unit cube. To improve the efficiency of the sampler,</span>
+<span class="sd">    the slice can be reduced to an interval of size `2*scale` centred on the point. `scale`</span>
+<span class="sd">    can be adapted with the `scale_adapt_factor` parameter based on the median distance</span>
+<span class="sd">    between the current and the next point in a chains among all the chains. If the median</span>
+<span class="sd">    distance is above `scale/adapt_slice_scale_target`, the scale is increased by `scale_adapt_factor`,</span>
+<span class="sd">    and decreased otherwise. The `scale` parameter can also be jittered by a user supplied</span>
+<span class="sd">    function `:py:func:scale_jitter_func` to counter balance the effect of a strong adaptation.</span>
 
-<span class="sd">       Multiple (`popsize`) slice sampling chains are run independently and in parallel. </span>
-<span class="sd">       In that case, we read points as if they were the next selected each after the other.</span>
-<span class="sd">       For a points to update the slice, it needs to be still in the part of the slices</span>
-<span class="sd">       searched after the first point have been read. In that case, we update as normal, </span>
-<span class="sd">       otherwise we discard the point.</span>
+<span class="sd">    In the case `scale!=None`, the detailed balance is not guaranteed, so this sampler should</span>
+<span class="sd">    be use with caution.</span>
 
-
+<span class="sd">    Multiple (`popsize`) slice sampling chains are run independently and in parallel.</span>
+<span class="sd">    In that case, we read points as if they were the next selected each after the other.</span>
+<span class="sd">    For a points to update the slice, it needs to be still in the part of the slices</span>
+<span class="sd">    searched after the first point have been read. In that case, we update as normal,</span>
+<span class="sd">    otherwise we discard the point.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">popsize</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">,</span> <span class="n">generate_direction</span><span class="p">,</span>
         <span class="n">scale_adapt_factor</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">adapt_slice_scale_target</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span>
-        <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">scale_jitter_func</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span><span class="n">slice_limit</span><span class="o">=</span><span class="n">slice_limit_to_unitcube</span><span class="p">,</span>
-        <span class="n">max_it</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span><span class="n">shrink_factor</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+        <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">scale_jitter_func</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">slice_limit</span><span class="o">=</span><span class="n">slice_limit_to_unitcube</span><span class="p">,</span>
+        <span class="n">max_it</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">shrink_factor</span><span class="o">=</span><span class="mf">1.0</span>
+    <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialise.</span>
 
 <span class="sd">        Parameters</span>
@@ -924,58 +924,54 @@
 <span class="sd">        scale: float</span>
 <span class="sd">            initial guess for the slice width.</span>
 <span class="sd">        scale_jitter_func: function</span>
-<span class="sd">            User supplied function to multiply the `scale` by a random factor. For example, </span>
+<span class="sd">            User supplied function to multiply the `scale` by a random factor. For example,</span>
 <span class="sd">            :py:func:`lambda : scipy.stats.truncnorm.rvs(-0.5, 5., loc=0, scale=1)+1.`</span>
 <span class="sd">        scale_adapt_factor: float</span>
 <span class="sd">            adaptation of `scale`. If 1: no adaptation. if &lt;1, the scale is increased/decreased by this factor if the</span>
-<span class="sd">            final slice length is shorter/longer than the `adapt_slice_scale_target*scale`.        </span>
+<span class="sd">            final slice length is shorter/longer than the `adapt_slice_scale_target*scale`.</span>
 <span class="sd">        adapt_slice_scale_target: float</span>
 <span class="sd">            Targeted ratio of the median distance between slice mid and final point among all chains of `scale`.</span>
-<span class="sd">            Default: 2.0. Higher values are more conservative, lower values are faster. </span>
+<span class="sd">            Default: 2.0. Higher values are more conservative, lower values are faster.</span>
 <span class="sd">        slice_limit: function</span>
 <span class="sd">            Function setting the initial slice upper and lower bound. The default is `:py:func:slice_limit_to_unitcube`</span>
-<span class="sd">            which defines  the slice limit as the intersection between the slice and the unit cube. An alternative </span>
+<span class="sd">            which defines  the slice limit as the intersection between the slice and the unit cube. An alternative</span>
 <span class="sd">            when the `scale` is used is `:py:func:slice_limit_to_scale` which defines the slice limit as an interval</span>
-<span class="sd">            of size `2*scale`. This function should either return a copy of the `tleft` and `tright` arguments or </span>
-<span class="sd">            new arrays of the same shape. </span>
+<span class="sd">            of size `2*scale`. This function should either return a copy of the `tleft` and `tright` arguments or</span>
+<span class="sd">            new arrays of the same shape.</span>
 <span class="sd">        max_it: int</span>
 <span class="sd">            maximum number of iterations to find a point on the slice. If the maximum number of iterations is reached,</span>
 <span class="sd">            the current point is returned as the next one.</span>
 <span class="sd">        shrink_factor: float</span>
-<span class="sd">            For standard slice sampling shrinking, `shrink_factor=1`, the slice bound is updated to the last </span>
-<span class="sd">            rejected point. Setting `shrink_factor&gt;1` aggressively accelerates the shrinkage, by updating the </span>
+<span class="sd">            For standard slice sampling shrinking, `shrink_factor=1`, the slice bound is updated to the last</span>
+<span class="sd">            rejected point. Setting `shrink_factor&gt;1` aggressively accelerates the shrinkage, by updating the</span>
 <span class="sd">            new slice bound to `1/shrink_factor` of the distance between the current point and rejected point.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">=</span> <span class="n">nsteps</span>
-        
+
         <span class="bp">self</span><span class="o">.</span><span class="n">max_it</span> <span class="o">=</span> <span class="n">max_it</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">nrejects</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span> <span class="o">=</span>  <span class="n">generate_direction</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span> <span class="o">=</span> <span class="n">generate_direction</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">scale_adapt_factor</span> <span class="o">=</span> <span class="n">scale_adapt_factor</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ncalls</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">discarded</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">shrink_factor</span> <span class="o">=</span> <span class="n">shrink_factor</span>
-        <span class="k">assert</span> <span class="n">shrink_factor</span><span class="o">&gt;=</span><span class="mf">1.0</span><span class="p">,</span> <span class="s2">&quot;The shrink factor should be greater than 1.0 to be efficient&quot;</span>
+        <span class="k">assert</span> <span class="n">shrink_factor</span> <span class="o">&gt;=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="s2">&quot;The shrink factor should be greater than 1.0 to be efficient&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">scale</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">adapt_slice_scale_target</span> <span class="o">=</span> <span class="n">adapt_slice_scale_target</span>
-        
+
         <span class="k">if</span> <span class="n">scale_jitter_func</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">scale_jitter_func</span><span class="o">=</span> <span class="k">lambda</span> <span class="p">:</span> <span class="mf">1.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scale_jitter_func</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="mf">1.</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">scale_jitter_func</span><span class="o">=</span> <span class="n">scale_jitter_func</span>      
+            <span class="bp">self</span><span class="o">.</span><span class="n">scale_jitter_func</span> <span class="o">=</span> <span class="n">scale_jitter_func</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">prepared_samples</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">popsize</span> <span class="o">=</span> <span class="n">popsize</span>
-        
+
         <span class="bp">self</span><span class="o">.</span><span class="n">slice_limit</span> <span class="o">=</span> <span class="n">slice_limit</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;accept_rate&#39;</span><span class="p">,</span> <span class="s1">&#39;efficiency&#39;</span><span class="p">,</span> <span class="s1">&#39;scale&#39;</span><span class="p">,</span> <span class="s1">&#39;far_enough&#39;</span><span class="p">,</span> <span class="s1">&#39;mean_rel_jump&#39;</span><span class="p">]</span>
-
-        
-        
 
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return string representation.&quot;&quot;&quot;</span>
@@ -989,8 +985,6 @@
         <span class="k">pass</span></div>
 
 
-    
-    
     <span class="k">def</span> <span class="fm">__next__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">,</span> <span class="n">us</span><span class="p">,</span> <span class="n">Ls</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
         <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">tregion</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">test</span><span class="o">=</span><span class="kc">False</span>
@@ -1036,30 +1030,25 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">nlive</span><span class="p">,</span> <span class="n">ndim</span> <span class="o">=</span> <span class="n">us</span><span class="o">.</span><span class="n">shape</span>
-        
-         
+
         <span class="c1"># fill if empty:</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prepared_samples</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="c1"># choose live points</span>
             <span class="n">ilive</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nlive</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">popsize</span><span class="p">)</span>
             <span class="n">allu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">us</span><span class="p">[</span><span class="n">ilive</span><span class="p">,:])</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">test</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">us</span><span class="p">)</span>
-            <span class="n">allp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">popsize</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))</span>
+            <span class="n">allp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">popsize</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
             <span class="n">allL</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">Ls</span><span class="p">[</span><span class="n">ilive</span><span class="p">])</span>
             <span class="n">nc</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="n">n_discarded</span> <span class="o">=</span> <span class="mi">0</span>
-            
-                                         
-                
-            
-            <span class="n">interval_final</span> <span class="o">=</span> <span class="mf">0.</span> 
-            
+
+            <span class="n">interval_final</span> <span class="o">=</span> <span class="mf">0.</span>
+
             <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">):</span>
                 <span class="c1"># Defining scale jitter</span>
                 <span class="n">factor_scale</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_jitter_func</span><span class="p">()</span>
                 <span class="c1"># Defining slice direction</span>
-                <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span><span class="p">(</span><span class="n">allu</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="o">*</span><span class="n">factor_scale</span>
-                 
-                
+                <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span><span class="p">(</span><span class="n">allu</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">*</span> <span class="n">factor_scale</span>
+
                 <span class="c1"># limite of the slice based on the unit cube boundaries</span>
                 <span class="n">tleft_unitcube</span><span class="p">,</span> <span class="n">tright_unitcube</span> <span class="o">=</span> <span class="n">unitcube_line_intersection</span><span class="p">(</span><span class="n">allu</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
 
@@ -1072,74 +1061,65 @@
                 <span class="c1"># Slice bounds for each points</span>
                 <span class="n">tleft</span><span class="p">,</span> <span class="n">tright</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">slice_limit</span><span class="p">(</span><span class="n">tleft_unitcube</span><span class="p">,</span><span class="n">tright_unitcube</span><span class="p">)</span>
                 <span class="c1"># Index of the workers working concurrently</span>
-                <span class="n">worker_running</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">popsize</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+                <span class="n">worker_running</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">popsize</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">int_t</span><span class="p">)</span>
                 <span class="c1"># Status indicating if a points has already find its next position</span>
-                <span class="n">status</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">popsize</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span> <span class="c1"># one for success, zero for running</span>
-                
+                <span class="n">status</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">popsize</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">int_t</span><span class="p">)</span>  <span class="c1"># one for success, zero for running</span>
 
                 <span class="c1"># Loop until each points has found its next position or we reached 100 iterations</span>
-                
                 <span class="k">for</span> <span class="n">it</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_it</span><span class="p">):</span>
-                
                     <span class="c1"># Sampling points on the slices</span>
                     <span class="n">slice_position</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">popsize</span><span class="p">,))</span>
-                    
-                    <span class="n">t</span> <span class="o">=</span> <span class="n">tleft_worker</span><span class="o">+</span><span class="p">(</span><span class="n">tright_worker</span><span class="o">-</span><span class="n">tleft_worker</span><span class="p">)</span><span class="o">*</span><span class="n">slice_position</span>
-                    
-                    
-                    
-                    <span class="n">points</span> <span class="o">=</span> <span class="n">allu</span><span class="p">[</span><span class="n">worker_running</span><span class="p">,:]</span>
-                    <span class="n">v_worker</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="n">worker_running</span><span class="p">,:]</span>
-                    <span class="n">proposed_u</span> <span class="o">=</span> <span class="n">points</span><span class="o">+</span><span class="n">t</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span><span class="o">*</span><span class="n">v_worker</span>
-                
+                    <span class="n">t</span> <span class="o">=</span> <span class="n">tleft_worker</span> <span class="o">+</span> <span class="p">(</span><span class="n">tright_worker</span> <span class="o">-</span> <span class="n">tleft_worker</span><span class="p">)</span> <span class="o">*</span> <span class="n">slice_position</span>
+
+                    <span class="n">points</span> <span class="o">=</span> <span class="n">allu</span><span class="p">[</span><span class="n">worker_running</span><span class="p">,</span> <span class="p">:]</span>
+                    <span class="n">v_worker</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="n">worker_running</span><span class="p">,</span> <span class="p">:]</span>
+                    <span class="n">proposed_u</span> <span class="o">=</span> <span class="n">points</span> <span class="o">+</span> <span class="n">t</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span> <span class="o">*</span> <span class="n">v_worker</span>
+
                     <span class="n">proposed_p</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">proposed_u</span><span class="p">)</span>
                     <span class="n">proposed_L</span> <span class="o">=</span> <span class="n">loglike</span><span class="p">(</span><span class="n">proposed_p</span><span class="p">)</span>
                     <span class="n">nc</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">popsize</span>
+
                     <span class="c1"># Updating the pool of points based on the newly sampled points</span>
-                    <span class="n">tleft</span><span class="p">,</span><span class="n">tright</span><span class="p">,</span><span class="n">worker_running</span><span class="p">,</span><span class="n">status</span><span class="p">,</span><span class="n">allu</span><span class="p">,</span><span class="n">allL</span><span class="p">,</span><span class="n">allp</span><span class="p">,</span><span class="n">n_discarded_it</span> <span class="o">=</span> <span class="n">update_vectorised_slice_sampler</span><span class="p">(</span>\
-                    <span class="n">t</span><span class="p">,</span><span class="n">tleft</span><span class="p">,</span><span class="n">tright</span><span class="p">,</span><span class="n">proposed_L</span><span class="p">,</span><span class="n">proposed_u</span><span class="p">,</span><span class="n">proposed_p</span><span class="p">,</span><span class="n">worker_running</span><span class="p">,</span><span class="n">status</span><span class="p">,</span><span class="n">Lmin</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">shrink_factor</span><span class="p">,</span>\
-                    <span class="n">allu</span><span class="p">,</span><span class="n">allL</span><span class="p">,</span><span class="n">allp</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">popsize</span><span class="p">)</span>
+                    <span class="n">tleft</span><span class="p">,</span> <span class="n">tright</span><span class="p">,</span> <span class="n">worker_running</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">allu</span><span class="p">,</span> <span class="n">allL</span><span class="p">,</span> <span class="n">allp</span><span class="p">,</span> <span class="n">n_discarded_it</span> <span class="o">=</span> <span class="n">update_vectorised_slice_sampler</span><span class="p">(</span>
+                        <span class="n">t</span><span class="p">,</span> <span class="n">tleft</span><span class="p">,</span> <span class="n">tright</span><span class="p">,</span> <span class="n">proposed_L</span><span class="p">,</span> <span class="n">proposed_u</span><span class="p">,</span> <span class="n">proposed_p</span><span class="p">,</span> <span class="n">worker_running</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">shrink_factor</span><span class="p">,</span>
+                        <span class="n">allu</span><span class="p">,</span> <span class="n">allL</span><span class="p">,</span> <span class="n">allp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">popsize</span><span class="p">)</span>
                     <span class="n">n_discarded</span> <span class="o">+=</span> <span class="n">n_discarded_it</span>
+
                     <span class="c1"># Update of the limits of the slices</span>
                     <span class="n">tleft_worker</span> <span class="o">=</span> <span class="n">tleft</span><span class="p">[</span><span class="n">worker_running</span><span class="p">]</span>
                     <span class="n">tright_worker</span> <span class="o">=</span> <span class="n">tright</span><span class="p">[</span><span class="n">worker_running</span><span class="p">]</span>
-                    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">status</span><span class="o">==</span><span class="mi">0</span><span class="p">):</span>
+
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">status</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
                         <span class="k">break</span>
+
                 <span class="c1"># Record of the final interval on theta for scale adaptation</span>
-                <span class="n">interval_final</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">tright</span><span class="o">-</span><span class="n">tleft</span><span class="p">)</span>
+                <span class="n">interval_final</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">tright</span> <span class="o">-</span> <span class="n">tleft</span><span class="p">)</span>
 
-
-            
-            <span class="n">interval_final</span> <span class="o">=</span> <span class="n">interval_final</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span>
-            
-            
+            <span class="n">interval_final</span> <span class="o">=</span> <span class="n">interval_final</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">discarded</span> <span class="o">+=</span> <span class="n">n_discarded</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">ncalls</span> <span class="o">+=</span> <span class="n">nc</span>
-            
-            <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">p</span><span class="o">!=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">ndim</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">allp</span><span class="p">])</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="s1">&#39;some walkers never moved! Double nsteps of PopulationSimpleSliceSampler.&#39;</span>
+
+            <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">allp</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">(),</span> <span class="s1">&#39;some walkers never moved! Double nsteps of PopulationSimpleSliceSampler.&#39;</span>
             <span class="n">far_enough</span><span class="p">,</span> <span class="p">(</span><span class="n">move_distance</span><span class="p">,</span> <span class="n">reference_distance</span><span class="p">)</span> <span class="o">=</span> <span class="n">diagnose_move_distances</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">us</span><span class="p">[</span><span class="n">ilive</span><span class="p">,:],</span> <span class="n">allu</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">prepared_samples</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">allu</span><span class="p">,</span> <span class="n">allp</span><span class="p">,</span> <span class="n">allL</span><span class="p">))</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="o">.</span><span class="n">append</span><span class="p">([</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">popsize</span><span class="o">/</span><span class="n">nc</span><span class="p">,</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">,</span> <span class="c1"># will always be 1. in the default case</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">popsize</span> <span class="o">/</span> <span class="n">nc</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">,</span>  <span class="c1"># will always be 1. in the default case</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">,</span>
                 <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">far_enough</span><span class="p">)</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">far_enough</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span><span class="p">,</span>
                 <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">move_distance</span> <span class="o">/</span> <span class="n">reference_distance</span> <span class="o">+</span> <span class="mf">1e-10</span><span class="p">)))</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">far_enough</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span>
             <span class="p">])</span>
 
-            
-
-            
             <span class="c1"># Scale adaptation such that the final interval is</span>
-            <span class="c1"># half the scale. There may be better things to do </span>
+            <span class="c1"># half the scale. There may be better things to do</span>
             <span class="c1"># here, but it seems to work.</span>
-            <span class="k">if</span> <span class="n">interval_final</span><span class="o">&gt;=</span><span class="mf">1.</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">adapt_slice_scale_target</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">*=</span> <span class="mf">1.</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">scale_adapt_factor</span>
+            <span class="k">if</span> <span class="n">interval_final</span> <span class="o">&gt;=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">adapt_slice_scale_target</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">*=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_adapt_factor</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_adapt_factor</span>
-            <span class="c1">#print(&quot;percentage of throws %.3f\n\n&quot;%((self.throwed/self.ncalls)*100.))</span>
-            
+            <span class="c1"># print(&quot;percentage of throws %.3f\n\n&quot;%((self.throwed/self.ncalls)*100.))</span>
+
         <span class="k">else</span><span class="p">:</span>
             <span class="n">nc</span> <span class="o">=</span> <span class="mi">0</span>
 

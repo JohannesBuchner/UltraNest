@@ -4,8 +4,8 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest package &mdash; UltraNest 4.3.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b76e3c8a" />
+  <title>ultranest package &mdash; UltraNest 4.3.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
   
@@ -17,8 +17,8 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=a17b270f"></script>
-        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/documentation_options.js?v=0503a316"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
@@ -44,7 +44,7 @@
               <img src="_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                4.3.0
+                4.3.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -111,7 +111,9 @@
 </section>
 <section id="module-ultranest.calibrator">
 <span id="ultranest-calibrator-module"></span><h2>ultranest.calibrator module<a class="headerlink" href="#module-ultranest.calibrator" title="Link to this heading"></a></h2>
-<p>Calibration of step sampler</p>
+<section id="calibration-of-step-sampler">
+<h3>Calibration of step sampler<a class="headerlink" href="#calibration-of-step-sampler" title="Link to this heading"></a></h3>
+</section>
 <dl class="py class">
 <dt class="sig sig-object py" id="ultranest.calibrator.ReactiveNestedCalibrator">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ultranest.calibrator.</span></span><span class="sig-name descname"><span class="pre">ReactiveNestedCalibrator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param_names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loglike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/calibrator.html#ReactiveNestedCalibrator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.calibrator.ReactiveNestedCalibrator" title="Link to this definition"></a></dt>
@@ -1507,10 +1509,10 @@ contains posteriors in u-space (untransformed) of a previous run.
 Columns are weight, logl, param1, param2, …</p></li>
 <li><p><strong>min_num_samples</strong> (<em>int</em>) – minimum number of samples in the usample_filename file required.
 Too few samples will give a poor approximation.</p></li>
-<li><p><strong>param_names</strong> (<em>list</em>) – </p></li>
-<li><p><strong>loglike</strong> (<em>function</em>) – </p></li>
-<li><p><strong>transform</strong> (<em>function</em>) – </p></li>
-<li><p><strong>vectorized</strong> (<em>bool</em>) – </p></li>
+<li><p><strong>param_names</strong> (<em>list</em>)</p></li>
+<li><p><strong>loglike</strong> (<em>function</em>)</p></li>
+<li><p><strong>transform</strong> (<em>function</em>)</p></li>
+<li><p><strong>vectorized</strong> (<em>bool</em>)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -1685,7 +1687,7 @@ likelihood constraints</p></li>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="ultranest.mlfriends.MLFriends.compute_enlargement">
-<span class="sig-name descname"><span class="pre">compute_enlargement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nbootstraps=50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minvol=0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=&lt;module</span> <span class="pre">'numpy.random'</span> <span class="pre">from</span> <span class="pre">'/home/user/.local/lib/python3.11/site-packages/numpy/random/__init__.py'&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.mlfriends.MLFriends.compute_enlargement" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">compute_enlargement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nbootstraps=50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minvol=0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=&lt;module</span> <span class="pre">'numpy.random'</span> <span class="pre">from</span> <span class="pre">'/usr/lib/python3/dist-packages/numpy/random/__init__.py'&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.mlfriends.MLFriends.compute_enlargement" title="Link to this definition"></a></dt>
 <dd><p>Return MLFriends radius and ellipsoid enlargement using bootstrapping.</p>
 <p>The wrapping ellipsoid covariance is determined in each bootstrap round.</p>
 <dl class="field-list simple">
@@ -1929,7 +1931,7 @@ likelihood constraints</p></li>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="ultranest.mlfriends.RobustEllipsoidRegion.compute_enlargement">
-<span class="sig-name descname"><span class="pre">compute_enlargement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nbootstraps=50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minvol=0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=&lt;module</span> <span class="pre">'numpy.random'</span> <span class="pre">from</span> <span class="pre">'/home/user/.local/lib/python3.11/site-packages/numpy/random/__init__.py'&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.mlfriends.RobustEllipsoidRegion.compute_enlargement" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">compute_enlargement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nbootstraps=50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minvol=0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=&lt;module</span> <span class="pre">'numpy.random'</span> <span class="pre">from</span> <span class="pre">'/usr/lib/python3/dist-packages/numpy/random/__init__.py'&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.mlfriends.RobustEllipsoidRegion.compute_enlargement" title="Link to this definition"></a></dt>
 <dd><p>Return MLFriends radius and ellipsoid enlargement using bootstrapping.</p>
 <p>The wrapping ellipsoid covariance is determined in each bootstrap round.</p>
 <dl class="field-list simple">
@@ -2078,12 +2080,12 @@ Does nothing if there are no wrapped/circular parameters.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>points</strong> (<em>array</em>) – points to use for optimization (in u-space)</p></li>
-<li><p><strong>there.</strong> (<em>Find largest gap in live points and wrap parameter space</em>) – </p></li>
-<li><p><strong>example</strong> (<em>For</em>) – <a href="#id1"><span class="problematic" id="id2">|*****           ****|</span></a></p></li>
-<li><p><strong>has::</strong> (<em>if a wrapped axis</em>) – <a href="#id3"><span class="problematic" id="id4">|*****           ****|</span></a></p></li>
-<li><p><strong>middle</strong> (<em>it would identify the</em>) – </p></li>
-<li><p><strong>it</strong> (<em>subtract</em>) – </p></li>
-<li><p><strong>space</strong> (<em>so that the new</em>) – </p></li>
+<li><p><strong>there.</strong> (<em>Find largest gap in live points and wrap parameter space</em>)</p></li>
+<li><p><strong>example</strong> (<em>For</em>) – <a href="#id2"><span class="problematic" id="id3">|*****           ****|</span></a></p></li>
+<li><p><strong>has::</strong> (<em>if a wrapped axis</em>) – <a href="#id4"><span class="problematic" id="id5">|*****           ****|</span></a></p></li>
+<li><p><strong>middle</strong> (<em>it would identify the</em>)</p></li>
+<li><p><strong>it</strong> (<em>subtract</em>)</p></li>
+<li><p><strong>space</strong> (<em>so that the new</em>)</p></li>
 <li><p><strong>is::</strong> – <div class="line-block">
 <div class="line"><strong>****</strong>      |</div>
 </div>
@@ -2148,7 +2150,7 @@ likelihood constraints</p></li>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="ultranest.mlfriends.SimpleRegion.compute_enlargement">
-<span class="sig-name descname"><span class="pre">compute_enlargement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nbootstraps=50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minvol=0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=&lt;module</span> <span class="pre">'numpy.random'</span> <span class="pre">from</span> <span class="pre">'/home/user/.local/lib/python3.11/site-packages/numpy/random/__init__.py'&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.mlfriends.SimpleRegion.compute_enlargement" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">compute_enlargement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nbootstraps=50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">minvol=0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=&lt;module</span> <span class="pre">'numpy.random'</span> <span class="pre">from</span> <span class="pre">'/usr/lib/python3/dist-packages/numpy/random/__init__.py'&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.mlfriends.SimpleRegion.compute_enlargement" title="Link to this definition"></a></dt>
 <dd><p>Return MLFriends radius and ellipsoid enlargement using bootstrapping.</p>
 <p>The wrapping ellipsoid covariance is determined in each bootstrap round.</p>
 <dl class="field-list simple">
@@ -2195,7 +2197,7 @@ likelihood constraints</p></li>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="ultranest.mlfriends.WrappingEllipsoid.compute_enlargement">
-<span class="sig-name descname"><span class="pre">compute_enlargement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nbootstraps=50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=&lt;module</span> <span class="pre">'numpy.random'</span> <span class="pre">from</span> <span class="pre">'/home/user/.local/lib/python3.11/site-packages/numpy/random/__init__.py'&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.mlfriends.WrappingEllipsoid.compute_enlargement" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">compute_enlargement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nbootstraps=50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng=&lt;module</span> <span class="pre">'numpy.random'</span> <span class="pre">from</span> <span class="pre">'/usr/lib/python3/dist-packages/numpy/random/__init__.py'&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ultranest.mlfriends.WrappingEllipsoid.compute_enlargement" title="Link to this definition"></a></dt>
 <dd><p>Return ellipsoid enlargement after <cite>nbootstraps</cite> bootstrapping rounds.</p>
 <p>The wrapping ellipsoid covariance is determined in each bootstrap round.</p>
 </dd></dl>
@@ -3652,8 +3654,8 @@ the last slice length is used as a initial guess for the next.</p></li>
 <dt class="sig sig-object py" id="ultranest.popstepsampler.PopulationSimpleSliceSampler">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ultranest.popstepsampler.</span></span><span class="sig-name descname"><span class="pre">PopulationSimpleSliceSampler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">popsize</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nsteps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generate_direction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_adapt_factor=1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adapt_slice_scale_target=2.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale=1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_jitter_func=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slice_limit=&lt;function</span> <span class="pre">slice_limit_to_unitcube&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_it=100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shrink_factor=1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/popstepsampler.html#PopulationSimpleSliceSampler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.popstepsampler.PopulationSimpleSliceSampler" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">GenericPopulationSampler</span></code></p>
-<p>Vectorized Slice sampler without stepping out procedure for quick look fits.
-Unlike <cite>:py:class:PopulationSliceSampler</cite>, in <cite>:py:class:PopulationSimpleSliceSampler</cite>,
+<p>Vectorized Slice sampler without stepping out procedure for quick look fits.</p>
+<p>Unlike <cite>:py:class:PopulationSliceSampler</cite>, in <cite>:py:class:PopulationSimpleSliceSampler</cite>,
 the likelihood is always called with the same number of points.</p>
 <p>Sliced are defined by the <cite>:py:func:generate_direction</cite> function on a interval defined
 around the current point. The centred interval has the width of the scale parameter,
@@ -4634,27 +4636,31 @@ which is stiffer.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="ultranest.stepsampler.adapt_proposal_total_distances">
 <span class="sig-prename descclassname"><span class="pre">ultranest.stepsampler.</span></span><span class="sig-name descname"><span class="pre">adapt_proposal_total_distances</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">region</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">history</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mean_pair_distance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndim</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#adapt_proposal_total_distances"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.stepsampler.adapt_proposal_total_distances" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Check jump distance (deprecated function).</p>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ultranest.stepsampler.adapt_proposal_total_distances_NN">
 <span class="sig-prename descclassname"><span class="pre">ultranest.stepsampler.</span></span><span class="sig-name descname"><span class="pre">adapt_proposal_total_distances_NN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">region</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">history</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mean_pair_distance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndim</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#adapt_proposal_total_distances_NN"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.stepsampler.adapt_proposal_total_distances_NN" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Check jump distance (deprecated function).</p>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ultranest.stepsampler.adapt_proposal_summed_distances">
 <span class="sig-prename descclassname"><span class="pre">ultranest.stepsampler.</span></span><span class="sig-name descname"><span class="pre">adapt_proposal_summed_distances</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">region</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">history</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mean_pair_distance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndim</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#adapt_proposal_summed_distances"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.stepsampler.adapt_proposal_summed_distances" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Check jump distance (deprecated function).</p>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ultranest.stepsampler.adapt_proposal_summed_distances_NN">
 <span class="sig-prename descclassname"><span class="pre">ultranest.stepsampler.</span></span><span class="sig-name descname"><span class="pre">adapt_proposal_summed_distances_NN</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">region</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">history</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mean_pair_distance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndim</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#adapt_proposal_summed_distances_NN"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.stepsampler.adapt_proposal_summed_distances_NN" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Check jump distance (deprecated function).</p>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="ultranest.stepsampler.adapt_proposal_move_distances">
 <span class="sig-prename descclassname"><span class="pre">ultranest.stepsampler.</span></span><span class="sig-name descname"><span class="pre">adapt_proposal_move_distances</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">region</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">history</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mean_pair_distance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndim</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#adapt_proposal_move_distances"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.stepsampler.adapt_proposal_move_distances" title="Link to this definition"></a></dt>
-<dd><p>Compares random walk travel distance to MLFriends radius.</p>
+<dd><p>Compare random walk travel distance to MLFriends radius.</p>
 <p>Compares in whitened space (t-space), the L2 norm between final
 point and starting point to the MLFriends bootstrapped radius.</p>
 <dl class="field-list simple">
@@ -4679,7 +4685,7 @@ point and starting point to the MLFriends bootstrapped radius.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="ultranest.stepsampler.adapt_proposal_move_distances_midway">
 <span class="sig-prename descclassname"><span class="pre">ultranest.stepsampler.</span></span><span class="sig-name descname"><span class="pre">adapt_proposal_move_distances_midway</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">region</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">history</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mean_pair_distance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndim</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#adapt_proposal_move_distances_midway"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.stepsampler.adapt_proposal_move_distances_midway" title="Link to this definition"></a></dt>
-<dd><p>Compares first half of the travel distance to MLFriends radius.</p>
+<dd><p>Compare first half of the travel distance to MLFriends radius.</p>
 <p>Compares in whitened space (t-space), the L2 norm between the
 middle point of the walk and the starting point,
 to the MLFriends bootstrapped radius.</p>
@@ -4727,7 +4733,7 @@ to the MLFriends bootstrapped radius.</p>
 <dt class="sig sig-object py" id="ultranest.stepsampler.IslandPopulationRandomLivepointSelector">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ultranest.stepsampler.</span></span><span class="sig-name descname"><span class="pre">IslandPopulationRandomLivepointSelector</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">island_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exchange_probability</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#IslandPopulationRandomLivepointSelector"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.stepsampler.IslandPopulationRandomLivepointSelector" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Set up multiple isolated islands.</p>
+<p>Mutually isolated live point subsets.</p>
 <p>To replace dead points, chains are only started from the same
 island as the dead point. Island refers to chunks of
 live point indices (0,1,2,3 as stored, not sorted).
@@ -4748,6 +4754,7 @@ prior volume, but can fluctuate. If the number of live points
 is small, a fluctuation can lead to mode die-out, which cannot
 be reversed. Therefore, the number of island members should be
 large enough to represent each mode.</p>
+<p>Set up multiple isolated islands.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -4776,16 +4783,56 @@ population.</p></li>
 <li><p><strong>generate_direction</strong> (<em>function</em>) – <p>direction proposal function.</p>
 <p>Available are:</p>
 <ul>
-<li><p><a class="reference internal" href="#ultranest.stepsampler.generate_cube_oriented_direction" title="ultranest.stepsampler.generate_cube_oriented_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_cube_oriented_direction()</span></code></a> (slice sampling, picking one random parameter to vary)</p></li>
-<li><p><a class="reference internal" href="#ultranest.stepsampler.generate_random_direction" title="ultranest.stepsampler.generate_random_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_random_direction()</span></code></a> (hit-and-run sampling, picking a random direction varying all parameters)</p></li>
-<li><p><a class="reference internal" href="#ultranest.stepsampler.generate_differential_direction" title="ultranest.stepsampler.generate_differential_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_differential_direction()</span></code></a> (differential evolution direction proposal)</p></li>
-<li><p><a class="reference internal" href="#ultranest.stepsampler.generate_region_oriented_direction" title="ultranest.stepsampler.generate_region_oriented_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_region_oriented_direction()</span></code></a> (slice sampling, but in the whitened parameter space)</p></li>
-<li><p><a class="reference internal" href="#ultranest.stepsampler.generate_region_random_direction" title="ultranest.stepsampler.generate_region_random_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_region_random_direction()</span></code></a> (hit-and-run sampling, but in the whitened parameter space)</p></li>
-<li><p><a class="reference internal" href="#ultranest.stepsampler.SequentialDirectionGenerator" title="ultranest.stepsampler.SequentialDirectionGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">SequentialDirectionGenerator</span></code></a> (sequential slice sampling, i.e., iterate deterministically through the parameters)</p></li>
-<li><p><a class="reference internal" href="#ultranest.stepsampler.SequentialRegionDirectionGenerator" title="ultranest.stepsampler.SequentialRegionDirectionGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">SequentialRegionDirectionGenerator</span></code></a> (sequential slice sampling in the whitened parameter space, i.e., iterate deterministically through the principle axes)</p></li>
-<li><p><a class="reference internal" href="#ultranest.stepsampler.generate_cube_oriented_differential_direction" title="ultranest.stepsampler.generate_cube_oriented_differential_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_cube_oriented_differential_direction()</span></code></a> (like generate_differential_direction, but along only one randomly chosen parameter)</p></li>
-<li><p><a class="reference internal" href="#ultranest.stepsampler.generate_partial_differential_direction" title="ultranest.stepsampler.generate_partial_differential_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_partial_differential_direction()</span></code></a> (differential evolution slice proposal on only 10% of the parameters)</p></li>
-<li><p><a class="reference internal" href="#ultranest.stepsampler.generate_mixture_random_direction" title="ultranest.stepsampler.generate_mixture_random_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_mixture_random_direction()</span></code></a> (combined proposal)</p></li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#ultranest.stepsampler.generate_cube_oriented_direction" title="ultranest.stepsampler.generate_cube_oriented_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_cube_oriented_direction()</span></code></a></dt><dd><p>(slice sampling, picking one random parameter to vary)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#ultranest.stepsampler.generate_random_direction" title="ultranest.stepsampler.generate_random_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_random_direction()</span></code></a></dt><dd><p>(hit-and-run sampling, picking a random direction varying all parameters)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#ultranest.stepsampler.generate_differential_direction" title="ultranest.stepsampler.generate_differential_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_differential_direction()</span></code></a></dt><dd><p>(differential evolution direction proposal)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#ultranest.stepsampler.generate_region_oriented_direction" title="ultranest.stepsampler.generate_region_oriented_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_region_oriented_direction()</span></code></a></dt><dd><p>(slice sampling, but in the whitened parameter space)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#ultranest.stepsampler.generate_region_random_direction" title="ultranest.stepsampler.generate_region_random_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_region_random_direction()</span></code></a></dt><dd><p>(hit-and-run sampling, but in the whitened parameter space)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#ultranest.stepsampler.SequentialDirectionGenerator" title="ultranest.stepsampler.SequentialDirectionGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">SequentialDirectionGenerator</span></code></a></dt><dd><p>(sequential slice sampling, i.e., iterate deterministically through the parameters)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#ultranest.stepsampler.SequentialRegionDirectionGenerator" title="ultranest.stepsampler.SequentialRegionDirectionGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">SequentialRegionDirectionGenerator</span></code></a></dt><dd><p>(sequential slice sampling in the whitened parameter space, i.e., iterate deterministically through the principle axes)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#ultranest.stepsampler.generate_cube_oriented_differential_direction" title="ultranest.stepsampler.generate_cube_oriented_differential_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_cube_oriented_differential_direction()</span></code></a></dt><dd><p>(like generate_differential_direction, but along only one randomly chosen parameter)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#ultranest.stepsampler.generate_partial_differential_direction" title="ultranest.stepsampler.generate_partial_differential_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_partial_differential_direction()</span></code></a></dt><dd><p>(differential evolution slice proposal on only 10% of the parameters)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#ultranest.stepsampler.generate_mixture_random_direction" title="ultranest.stepsampler.generate_mixture_random_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_mixture_random_direction()</span></code></a></dt><dd><p>(combined proposal)</p>
+</dd>
+</dl>
+</li>
 </ul>
 <p>Additionally, <a class="reference internal" href="#ultranest.stepsampler.OrthogonalDirectionGenerator" title="ultranest.stepsampler.OrthogonalDirectionGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">OrthogonalDirectionGenerator</span></code></a>
 can be applied to any generate_direction function.</p>
@@ -4872,7 +4919,29 @@ or an instance of <a class="reference internal" href="#ultranest.stepsampler.Isl
 <dl class="py method">
 <dt class="sig sig-object py" id="ultranest.stepsampler.StepSampler.get_info_dict">
 <span class="sig-name descname"><span class="pre">get_info_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#StepSampler.get_info_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.stepsampler.StepSampler.get_info_dict" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Return diagnostics of the step sampler performance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><p><strong>v</strong> –</p>
+<dl class="simple">
+<dt>the keys are:</dt><dd><ul class="simple">
+<li><p>num_logs: number of log entries being summarized</p></li>
+<li><p>rejection_rate: fraction of steps rejected</p></li>
+<li><p>mean_scale: average value of <cite>scale</cite></p></li>
+<li><p>mean_nsteps: average <cite>nsteps</cite></p></li>
+<li><p>mean_distance: mean jump distance (see <a class="reference external" href="https://arxiv.org/abs/2402.11936">Buchner+24</a>)</p></li>
+<li><p>frac_far_enough: fraction of jumps with sufficient distance (see <a class="reference external" href="https://arxiv.org/abs/2402.11936">Buchner+24</a>)</p></li>
+<li><p>last_logstat: content of the last log entry</p></li>
+</ul>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ultranest.stepsampler.StepSampler.print_diagnostic">
@@ -4979,16 +5048,56 @@ or an instance of <a class="reference internal" href="#ultranest.stepsampler.Isl
 <li><p><strong>generate_direction</strong> (<em>function</em>) – <p>direction proposal function.</p>
 <p>Available are:</p>
 <ul>
-<li><p><a class="reference internal" href="#ultranest.stepsampler.generate_cube_oriented_direction" title="ultranest.stepsampler.generate_cube_oriented_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_cube_oriented_direction()</span></code></a> (slice sampling, picking one random parameter to vary)</p></li>
-<li><p><a class="reference internal" href="#ultranest.stepsampler.generate_random_direction" title="ultranest.stepsampler.generate_random_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_random_direction()</span></code></a> (hit-and-run sampling, picking a random direction varying all parameters)</p></li>
-<li><p><a class="reference internal" href="#ultranest.stepsampler.generate_differential_direction" title="ultranest.stepsampler.generate_differential_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_differential_direction()</span></code></a> (differential evolution direction proposal)</p></li>
-<li><p><a class="reference internal" href="#ultranest.stepsampler.generate_region_oriented_direction" title="ultranest.stepsampler.generate_region_oriented_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_region_oriented_direction()</span></code></a> (slice sampling, but in the whitened parameter space)</p></li>
-<li><p><a class="reference internal" href="#ultranest.stepsampler.generate_region_random_direction" title="ultranest.stepsampler.generate_region_random_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_region_random_direction()</span></code></a> (hit-and-run sampling, but in the whitened parameter space)</p></li>
-<li><p><a class="reference internal" href="#ultranest.stepsampler.SequentialDirectionGenerator" title="ultranest.stepsampler.SequentialDirectionGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">SequentialDirectionGenerator</span></code></a> (sequential slice sampling, i.e., iterate deterministically through the parameters)</p></li>
-<li><p><a class="reference internal" href="#ultranest.stepsampler.SequentialRegionDirectionGenerator" title="ultranest.stepsampler.SequentialRegionDirectionGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">SequentialRegionDirectionGenerator</span></code></a> (sequential slice sampling in the whitened parameter space, i.e., iterate deterministically through the principle axes)</p></li>
-<li><p><a class="reference internal" href="#ultranest.stepsampler.generate_cube_oriented_differential_direction" title="ultranest.stepsampler.generate_cube_oriented_differential_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_cube_oriented_differential_direction()</span></code></a> (like generate_differential_direction, but along only one randomly chosen parameter)</p></li>
-<li><p><a class="reference internal" href="#ultranest.stepsampler.generate_partial_differential_direction" title="ultranest.stepsampler.generate_partial_differential_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_partial_differential_direction()</span></code></a> (differential evolution slice proposal on only 10% of the parameters)</p></li>
-<li><p><a class="reference internal" href="#ultranest.stepsampler.generate_mixture_random_direction" title="ultranest.stepsampler.generate_mixture_random_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_mixture_random_direction()</span></code></a> (combined proposal)</p></li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#ultranest.stepsampler.generate_cube_oriented_direction" title="ultranest.stepsampler.generate_cube_oriented_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_cube_oriented_direction()</span></code></a></dt><dd><p>(slice sampling, picking one random parameter to vary)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#ultranest.stepsampler.generate_random_direction" title="ultranest.stepsampler.generate_random_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_random_direction()</span></code></a></dt><dd><p>(hit-and-run sampling, picking a random direction varying all parameters)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#ultranest.stepsampler.generate_differential_direction" title="ultranest.stepsampler.generate_differential_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_differential_direction()</span></code></a></dt><dd><p>(differential evolution direction proposal)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#ultranest.stepsampler.generate_region_oriented_direction" title="ultranest.stepsampler.generate_region_oriented_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_region_oriented_direction()</span></code></a></dt><dd><p>(slice sampling, but in the whitened parameter space)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#ultranest.stepsampler.generate_region_random_direction" title="ultranest.stepsampler.generate_region_random_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_region_random_direction()</span></code></a></dt><dd><p>(hit-and-run sampling, but in the whitened parameter space)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#ultranest.stepsampler.SequentialDirectionGenerator" title="ultranest.stepsampler.SequentialDirectionGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">SequentialDirectionGenerator</span></code></a></dt><dd><p>(sequential slice sampling, i.e., iterate deterministically through the parameters)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#ultranest.stepsampler.SequentialRegionDirectionGenerator" title="ultranest.stepsampler.SequentialRegionDirectionGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">SequentialRegionDirectionGenerator</span></code></a></dt><dd><p>(sequential slice sampling in the whitened parameter space, i.e., iterate deterministically through the principle axes)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#ultranest.stepsampler.generate_cube_oriented_differential_direction" title="ultranest.stepsampler.generate_cube_oriented_differential_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_cube_oriented_differential_direction()</span></code></a></dt><dd><p>(like generate_differential_direction, but along only one randomly chosen parameter)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#ultranest.stepsampler.generate_partial_differential_direction" title="ultranest.stepsampler.generate_partial_differential_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_partial_differential_direction()</span></code></a></dt><dd><p>(differential evolution slice proposal on only 10% of the parameters)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#ultranest.stepsampler.generate_mixture_random_direction" title="ultranest.stepsampler.generate_mixture_random_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_mixture_random_direction()</span></code></a></dt><dd><p>(combined proposal)</p>
+</dd>
+</dl>
+</li>
 </ul>
 <p>Additionally, <a class="reference internal" href="#ultranest.stepsampler.OrthogonalDirectionGenerator" title="ultranest.stepsampler.OrthogonalDirectionGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">OrthogonalDirectionGenerator</span></code></a>
 can be applied to any generate_direction function.</p>
@@ -5094,16 +5203,56 @@ or an instance of <a class="reference internal" href="#ultranest.stepsampler.Isl
 <li><p><strong>generate_direction</strong> (<em>function</em>) – <p>direction proposal function.</p>
 <p>Available are:</p>
 <ul>
-<li><p><a class="reference internal" href="#ultranest.stepsampler.generate_cube_oriented_direction" title="ultranest.stepsampler.generate_cube_oriented_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_cube_oriented_direction()</span></code></a> (slice sampling, picking one random parameter to vary)</p></li>
-<li><p><a class="reference internal" href="#ultranest.stepsampler.generate_random_direction" title="ultranest.stepsampler.generate_random_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_random_direction()</span></code></a> (hit-and-run sampling, picking a random direction varying all parameters)</p></li>
-<li><p><a class="reference internal" href="#ultranest.stepsampler.generate_differential_direction" title="ultranest.stepsampler.generate_differential_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_differential_direction()</span></code></a> (differential evolution direction proposal)</p></li>
-<li><p><a class="reference internal" href="#ultranest.stepsampler.generate_region_oriented_direction" title="ultranest.stepsampler.generate_region_oriented_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_region_oriented_direction()</span></code></a> (slice sampling, but in the whitened parameter space)</p></li>
-<li><p><a class="reference internal" href="#ultranest.stepsampler.generate_region_random_direction" title="ultranest.stepsampler.generate_region_random_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_region_random_direction()</span></code></a> (hit-and-run sampling, but in the whitened parameter space)</p></li>
-<li><p><a class="reference internal" href="#ultranest.stepsampler.SequentialDirectionGenerator" title="ultranest.stepsampler.SequentialDirectionGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">SequentialDirectionGenerator</span></code></a> (sequential slice sampling, i.e., iterate deterministically through the parameters)</p></li>
-<li><p><a class="reference internal" href="#ultranest.stepsampler.SequentialRegionDirectionGenerator" title="ultranest.stepsampler.SequentialRegionDirectionGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">SequentialRegionDirectionGenerator</span></code></a> (sequential slice sampling in the whitened parameter space, i.e., iterate deterministically through the principle axes)</p></li>
-<li><p><a class="reference internal" href="#ultranest.stepsampler.generate_cube_oriented_differential_direction" title="ultranest.stepsampler.generate_cube_oriented_differential_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_cube_oriented_differential_direction()</span></code></a> (like generate_differential_direction, but along only one randomly chosen parameter)</p></li>
-<li><p><a class="reference internal" href="#ultranest.stepsampler.generate_partial_differential_direction" title="ultranest.stepsampler.generate_partial_differential_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_partial_differential_direction()</span></code></a> (differential evolution slice proposal on only 10% of the parameters)</p></li>
-<li><p><a class="reference internal" href="#ultranest.stepsampler.generate_mixture_random_direction" title="ultranest.stepsampler.generate_mixture_random_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_mixture_random_direction()</span></code></a> (combined proposal)</p></li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#ultranest.stepsampler.generate_cube_oriented_direction" title="ultranest.stepsampler.generate_cube_oriented_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_cube_oriented_direction()</span></code></a></dt><dd><p>(slice sampling, picking one random parameter to vary)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#ultranest.stepsampler.generate_random_direction" title="ultranest.stepsampler.generate_random_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_random_direction()</span></code></a></dt><dd><p>(hit-and-run sampling, picking a random direction varying all parameters)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#ultranest.stepsampler.generate_differential_direction" title="ultranest.stepsampler.generate_differential_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_differential_direction()</span></code></a></dt><dd><p>(differential evolution direction proposal)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#ultranest.stepsampler.generate_region_oriented_direction" title="ultranest.stepsampler.generate_region_oriented_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_region_oriented_direction()</span></code></a></dt><dd><p>(slice sampling, but in the whitened parameter space)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#ultranest.stepsampler.generate_region_random_direction" title="ultranest.stepsampler.generate_region_random_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_region_random_direction()</span></code></a></dt><dd><p>(hit-and-run sampling, but in the whitened parameter space)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#ultranest.stepsampler.SequentialDirectionGenerator" title="ultranest.stepsampler.SequentialDirectionGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">SequentialDirectionGenerator</span></code></a></dt><dd><p>(sequential slice sampling, i.e., iterate deterministically through the parameters)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#ultranest.stepsampler.SequentialRegionDirectionGenerator" title="ultranest.stepsampler.SequentialRegionDirectionGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">SequentialRegionDirectionGenerator</span></code></a></dt><dd><p>(sequential slice sampling in the whitened parameter space, i.e., iterate deterministically through the principle axes)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#ultranest.stepsampler.generate_cube_oriented_differential_direction" title="ultranest.stepsampler.generate_cube_oriented_differential_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_cube_oriented_differential_direction()</span></code></a></dt><dd><p>(like generate_differential_direction, but along only one randomly chosen parameter)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#ultranest.stepsampler.generate_partial_differential_direction" title="ultranest.stepsampler.generate_partial_differential_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_partial_differential_direction()</span></code></a></dt><dd><p>(differential evolution slice proposal on only 10% of the parameters)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#ultranest.stepsampler.generate_mixture_random_direction" title="ultranest.stepsampler.generate_mixture_random_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_mixture_random_direction()</span></code></a></dt><dd><p>(combined proposal)</p>
+</dd>
+</dl>
+</li>
 </ul>
 <p>Additionally, <a class="reference internal" href="#ultranest.stepsampler.OrthogonalDirectionGenerator" title="ultranest.stepsampler.OrthogonalDirectionGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">OrthogonalDirectionGenerator</span></code></a>
 can be applied to any generate_direction function.</p>
@@ -5751,7 +5900,7 @@ given unit cube point.</p></li>
 <dd class="field-even"><p><strong>indices</strong> – indices which select the subselection in the original array</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>np.array(dtype=int)</p>
+<dd class="field-odd"><p>np.array(dtype=np.int_)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -5850,9 +5999,10 @@ logl: loglikelihood values)</p></li>
 </section>
 <section id="module-ultranest">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ultranest" title="Link to this heading"></a></h2>
-<p>Performs nested sampling to calculate the Bayesian evidence and posterior samples
-Some parts are from the Nestle library by Kyle Barbary (<a class="reference external" href="https://github.com/kbarbary/nestle">https://github.com/kbarbary/nestle</a>)
-Some parts are from the nnest library by Adam Moss (<a class="reference external" href="https://github.com/adammoss/nnest">https://github.com/adammoss/nnest</a>)</p>
+<p>Performs nested sampling to calculate the Bayesian evidence and posterior samples</p>
+<p>Some ellipsoid code is adopted from the Nestle library by Kyle Barbary (<a class="reference external" href="https://github.com/kbarbary/nestle">https://github.com/kbarbary/nestle</a>)
+Some of the architecture and parallelisation is adopted from the nnest library by Adam Moss (<a class="reference external" href="https://github.com/adammoss/nnest">https://github.com/adammoss/nnest</a>)
+Some visualisations are adopted from the dynesty library by Josh Speagle (<a class="reference external" href="https://github.com/joshspeagle/dynesty/">https://github.com/joshspeagle/dynesty/</a>)</p>
 </section>
 </section>
 

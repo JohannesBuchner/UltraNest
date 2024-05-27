@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest.pathsampler &mdash; UltraNest 4.3.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b76e3c8a" />
+  <title>ultranest.pathsampler &mdash; UltraNest 4.3.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
   
@@ -16,8 +16,8 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=a17b270f"></script>
-        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/documentation_options.js?v=0503a316"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
@@ -39,7 +39,7 @@
               <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                4.3.0
+                4.3.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -105,16 +105,17 @@
 <span class="sd">These features are experimental.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-
-<span class="kn">from</span> <span class="nn">ultranest.samplingpath</span> <span class="kn">import</span> <span class="n">SamplingPath</span><span class="p">,</span> <span class="n">ContourSamplingPath</span><span class="p">,</span> <span class="n">extrapolate_ahead</span>
-<span class="kn">from</span> <span class="nn">ultranest.stepsampler</span> <span class="kn">import</span> <span class="n">StepSampler</span>
-<span class="kn">from</span> <span class="nn">ultranest.stepsampler</span> <span class="kn">import</span> <span class="n">generate_region_oriented_direction</span><span class="p">,</span> <span class="n">generate_region_random_direction</span><span class="p">,</span> <span class="n">generate_random_direction</span>
-
-<span class="kn">from</span> <span class="nn">ultranest.flatnuts</span> <span class="kn">import</span> <span class="n">ClockedStepSampler</span><span class="p">,</span> <span class="n">ClockedBisectSampler</span><span class="p">,</span> <span class="n">ClockedNUTSSampler</span>
-<span class="kn">from</span> <span class="nn">ultranest.flatnuts</span> <span class="kn">import</span> <span class="n">SingleJumper</span><span class="p">,</span> <span class="n">DirectJumper</span><span class="p">,</span> <span class="n">IntervalJumper</span>
+<span class="kn">from</span> <span class="nn">ultranest.flatnuts</span> <span class="kn">import</span> <span class="p">(</span><span class="n">ClockedBisectSampler</span><span class="p">,</span> <span class="n">ClockedNUTSSampler</span><span class="p">,</span>
+                                <span class="n">ClockedStepSampler</span><span class="p">,</span> <span class="n">DirectJumper</span><span class="p">,</span>
+                                <span class="n">IntervalJumper</span><span class="p">,</span> <span class="n">SingleJumper</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">ultranest.samplingpath</span> <span class="kn">import</span> <span class="p">(</span><span class="n">ContourSamplingPath</span><span class="p">,</span> <span class="n">SamplingPath</span><span class="p">,</span>
+                                    <span class="n">extrapolate_ahead</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">ultranest.stepsampler</span> <span class="kn">import</span> <span class="p">(</span><span class="n">StepSampler</span><span class="p">,</span> <span class="n">generate_random_direction</span><span class="p">,</span>
+                                   <span class="n">generate_region_oriented_direction</span><span class="p">,</span>
+                                   <span class="n">generate_region_random_direction</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="SamplingPathSliceSampler">

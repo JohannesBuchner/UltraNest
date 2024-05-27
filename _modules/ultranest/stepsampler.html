@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest.stepsampler &mdash; UltraNest 4.3.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b76e3c8a" />
+  <title>ultranest.stepsampler &mdash; UltraNest 4.3.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
   
@@ -16,8 +16,8 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=a17b270f"></script>
-        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/documentation_options.js?v=0503a316"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
@@ -39,7 +39,7 @@
               <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                4.3.0
+                4.3.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -100,7 +100,8 @@
            <div itemprop="articleBody">
              
   <h1>Source code for ultranest.stepsampler</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="c1"># noqa: D400 D205</span>
+<span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">MCMC-like step sampling</span>
 <span class="sd">-----------------------</span>
 
@@ -110,9 +111,13 @@
 <span class="sd">even if they do not terminate at the same number of iterations.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span><span class="p">,</span> <span class="n">division</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span><span class="p">,</span> <span class="n">print_function</span>
+
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">listify</span> <span class="k">as</span> <span class="n">_listify</span>
 
 
@@ -460,8 +465,10 @@
 <div class="viewcode-block" id="adapt_proposal_total_distances">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.adapt_proposal_total_distances">[docs]</a>
 <span class="k">def</span> <span class="nf">adapt_proposal_total_distances</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">,</span> <span class="n">ndim</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check jump distance (deprecated function).&quot;&quot;&quot;</span>
     <span class="c1"># compute mean vector of each proposed jump</span>
     <span class="c1"># compute total distance of all jumps</span>
+    <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;adapt_proposal_total_distances is deprecated and will be removed in future versions of UltraNest.&#39;</span><span class="p">,</span> <span class="ne">DeprecationWarning</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
     <span class="n">tproposed</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">u</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">history</span><span class="p">]))</span>
     <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">tproposed</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">tproposed</span><span class="p">)</span>
     <span class="n">d2</span> <span class="o">=</span> <span class="p">((((</span><span class="n">tproposed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">tproposed</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">**</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
@@ -474,8 +481,10 @@
 <div class="viewcode-block" id="adapt_proposal_total_distances_NN">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.adapt_proposal_total_distances_NN">[docs]</a>
 <span class="k">def</span> <span class="nf">adapt_proposal_total_distances_NN</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">,</span> <span class="n">ndim</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check jump distance (deprecated function).&quot;&quot;&quot;</span>
     <span class="c1"># compute mean vector of each proposed jump</span>
     <span class="c1"># compute total distance of all jumps</span>
+    <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;adapt_proposal_total_distances_NN is deprecated and will be removed in future versions of UltraNest.&#39;</span><span class="p">,</span> <span class="ne">DeprecationWarning</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
     <span class="n">tproposed</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">u</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">history</span><span class="p">]))</span>
     <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">tproposed</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">tproposed</span><span class="p">)</span>
     <span class="n">d2</span> <span class="o">=</span> <span class="p">((((</span><span class="n">tproposed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">tproposed</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">**</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
@@ -488,7 +497,9 @@
 <div class="viewcode-block" id="adapt_proposal_summed_distances">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.adapt_proposal_summed_distances">[docs]</a>
 <span class="k">def</span> <span class="nf">adapt_proposal_summed_distances</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">,</span> <span class="n">ndim</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check jump distance (deprecated function).&quot;&quot;&quot;</span>
     <span class="c1"># compute sum of distances from each jump</span>
+    <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;adapt_proposal_summed_distances is deprecated and will be removed in future versions of UltraNest.&#39;</span><span class="p">,</span> <span class="ne">DeprecationWarning</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
     <span class="n">tproposed</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">u</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">history</span><span class="p">]))</span>
     <span class="n">d2</span> <span class="o">=</span> <span class="p">(((</span><span class="n">tproposed</span><span class="p">[</span><span class="mi">1</span><span class="p">:,:]</span> <span class="o">-</span> <span class="n">tproposed</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,:])</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
     <span class="n">far_enough</span> <span class="o">=</span> <span class="n">d2</span> <span class="o">&gt;</span> <span class="n">mean_pair_distance</span> <span class="o">/</span> <span class="n">ndim</span>
@@ -500,7 +511,9 @@
 <div class="viewcode-block" id="adapt_proposal_summed_distances_NN">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.adapt_proposal_summed_distances_NN">[docs]</a>
 <span class="k">def</span> <span class="nf">adapt_proposal_summed_distances_NN</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">,</span> <span class="n">ndim</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check jump distance (deprecated function).&quot;&quot;&quot;</span>
     <span class="c1"># compute sum of distances from each jump</span>
+    <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;adapt_proposal_summed_distances_NN is deprecated and will be removed in future versions of UltraNest.&#39;</span><span class="p">,</span> <span class="ne">DeprecationWarning</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
     <span class="n">tproposed</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">u</span> <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">history</span><span class="p">]))</span>
     <span class="n">d2</span> <span class="o">=</span> <span class="p">(((</span><span class="n">tproposed</span><span class="p">[</span><span class="mi">1</span><span class="p">:,:]</span> <span class="o">-</span> <span class="n">tproposed</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,:])</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
     <span class="n">far_enough</span> <span class="o">=</span> <span class="n">d2</span> <span class="o">&gt;</span> <span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="o">**</span><span class="mf">0.5</span>
@@ -512,7 +525,7 @@
 <div class="viewcode-block" id="adapt_proposal_move_distances">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.adapt_proposal_move_distances">[docs]</a>
 <span class="k">def</span> <span class="nf">adapt_proposal_move_distances</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">,</span> <span class="n">ndim</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compares random walk travel distance to MLFriends radius.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compare random walk travel distance to MLFriends radius.</span>
 
 <span class="sd">    Compares in whitened space (t-space), the L2 norm between final</span>
 <span class="sd">    point and starting point to the MLFriends bootstrapped radius.</span>
@@ -549,7 +562,7 @@
 <div class="viewcode-block" id="adapt_proposal_move_distances_midway">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.adapt_proposal_move_distances_midway">[docs]</a>
 <span class="k">def</span> <span class="nf">adapt_proposal_move_distances_midway</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">history</span><span class="p">,</span> <span class="n">mean_pair_distance</span><span class="p">,</span> <span class="n">ndim</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compares first half of the travel distance to MLFriends radius.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compare first half of the travel distance to MLFriends radius.</span>
 
 <span class="sd">    Compares in whitened space (t-space), the L2 norm between the</span>
 <span class="sd">    middle point of the walk and the starting point,</span>
@@ -611,32 +624,35 @@
 <div class="viewcode-block" id="IslandPopulationRandomLivepointSelector">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.IslandPopulationRandomLivepointSelector">[docs]</a>
 <span class="k">class</span> <span class="nc">IslandPopulationRandomLivepointSelector</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Mutually isolated live point subsets.</span>
+
+<span class="sd">    To replace dead points, chains are only started from the same</span>
+<span class="sd">    island as the dead point. Island refers to chunks of</span>
+<span class="sd">    live point indices (0,1,2,3 as stored, not sorted).</span>
+<span class="sd">    Each chunk has size ´island_size´.</span>
+
+<span class="sd">    If ´island_size´ is large, for example, the total number of live points,</span>
+<span class="sd">    then clumping can occur more easily. This is the observed behaviour</span>
+<span class="sd">    that a limited random walk is run from one live point, giving</span>
+<span class="sd">    two similar points, then the next dead point replacement is</span>
+<span class="sd">    likely run again from these, giving more and more similar live points.</span>
+<span class="sd">    This gives a run-away process leading to clumps of similar,</span>
+<span class="sd">    highly correlated points.</span>
+
+<span class="sd">    If ´island_size´ is small, for example, 1, then each dead point</span>
+<span class="sd">    is replaced by a chain started from it. This is a problem because</span>
+<span class="sd">    modes can never die out. Nested sampling can then not complete.</span>
+
+<span class="sd">    In a multi-modal run, within a given number of live points,</span>
+<span class="sd">    the number of live points per mode is proportional to the mode&#39;s</span>
+<span class="sd">    prior volume, but can fluctuate. If the number of live points</span>
+<span class="sd">    is small, a fluctuation can lead to mode die-out, which cannot</span>
+<span class="sd">    be reversed. Therefore, the number of island members should be</span>
+<span class="sd">    large enough to represent each mode.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">island_size</span><span class="p">,</span> <span class="n">exchange_probability</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set up multiple isolated islands.</span>
-
-<span class="sd">        To replace dead points, chains are only started from the same</span>
-<span class="sd">        island as the dead point. Island refers to chunks of</span>
-<span class="sd">        live point indices (0,1,2,3 as stored, not sorted).</span>
-<span class="sd">        Each chunk has size ´island_size´.</span>
-
-<span class="sd">        If ´island_size´ is large, for example, the total number of live points,</span>
-<span class="sd">        then clumping can occur more easily. This is the observed behaviour</span>
-<span class="sd">        that a limited random walk is run from one live point, giving</span>
-<span class="sd">        two similar points, then the next dead point replacement is</span>
-<span class="sd">        likely run again from these, giving more and more similar live points.</span>
-<span class="sd">        This gives a run-away process leading to clumps of similar,</span>
-<span class="sd">        highly correlated points.</span>
-
-<span class="sd">        If ´island_size´ is small, for example, 1, then each dead point</span>
-<span class="sd">        is replaced by a chain started from it. This is a problem because</span>
-<span class="sd">        modes can never die out. Nested sampling can then not complete.</span>
-
-<span class="sd">        In a multi-modal run, within a given number of live points,</span>
-<span class="sd">        the number of live points per mode is proportional to the mode&#39;s</span>
-<span class="sd">        prior volume, but can fluctuate. If the number of live points</span>
-<span class="sd">        is small, a fluctuation can lead to mode die-out, which cannot</span>
-<span class="sd">        be reversed. Therefore, the number of island members should be</span>
-<span class="sd">        large enough to represent each mode.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        -----------</span>
@@ -716,16 +732,26 @@
 
 <span class="sd">            Available are:</span>
 
-<span class="sd">            * :py:func:`generate_cube_oriented_direction` (slice sampling, picking one random parameter to vary)</span>
-<span class="sd">            * :py:func:`generate_random_direction` (hit-and-run sampling, picking a random direction varying all parameters)</span>
-<span class="sd">            * :py:func:`generate_differential_direction` (differential evolution direction proposal)</span>
-<span class="sd">            * :py:func:`generate_region_oriented_direction` (slice sampling, but in the whitened parameter space)</span>
-<span class="sd">            * :py:func:`generate_region_random_direction` (hit-and-run sampling, but in the whitened parameter space)</span>
-<span class="sd">            * :py:class:`SequentialDirectionGenerator` (sequential slice sampling, i.e., iterate deterministically through the parameters)</span>
-<span class="sd">            * :py:class:`SequentialRegionDirectionGenerator` (sequential slice sampling in the whitened parameter space, i.e., iterate deterministically through the principle axes)</span>
-<span class="sd">            * :py:func:`generate_cube_oriented_differential_direction` (like generate_differential_direction, but along only one randomly chosen parameter)</span>
-<span class="sd">            * :py:func:`generate_partial_differential_direction` (differential evolution slice proposal on only 10% of the parameters)</span>
-<span class="sd">            * :py:func:`generate_mixture_random_direction` (combined proposal)</span>
+<span class="sd">            * :py:func:`generate_cube_oriented_direction`</span>
+<span class="sd">                (slice sampling, picking one random parameter to vary)</span>
+<span class="sd">            * :py:func:`generate_random_direction`</span>
+<span class="sd">                (hit-and-run sampling, picking a random direction varying all parameters)</span>
+<span class="sd">            * :py:func:`generate_differential_direction`</span>
+<span class="sd">                (differential evolution direction proposal)</span>
+<span class="sd">            * :py:func:`generate_region_oriented_direction`</span>
+<span class="sd">                (slice sampling, but in the whitened parameter space)</span>
+<span class="sd">            * :py:func:`generate_region_random_direction`</span>
+<span class="sd">                (hit-and-run sampling, but in the whitened parameter space)</span>
+<span class="sd">            * :py:class:`SequentialDirectionGenerator`</span>
+<span class="sd">                (sequential slice sampling, i.e., iterate deterministically through the parameters)</span>
+<span class="sd">            * :py:class:`SequentialRegionDirectionGenerator`</span>
+<span class="sd">                (sequential slice sampling in the whitened parameter space, i.e., iterate deterministically through the principle axes)</span>
+<span class="sd">            * :py:func:`generate_cube_oriented_differential_direction`</span>
+<span class="sd">                (like generate_differential_direction, but along only one randomly chosen parameter)</span>
+<span class="sd">            * :py:func:`generate_partial_differential_direction`</span>
+<span class="sd">                (differential evolution slice proposal on only 10% of the parameters)</span>
+<span class="sd">            * :py:func:`generate_mixture_random_direction`</span>
+<span class="sd">                (combined proposal)</span>
 
 <span class="sd">            Additionally, :py:class:`OrthogonalDirectionGenerator`</span>
 <span class="sd">            can be applied to any generate_direction function.</span>
@@ -912,6 +938,20 @@
 <div class="viewcode-block" id="StepSampler.get_info_dict">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.StepSampler.get_info_dict">[docs]</a>
     <span class="k">def</span> <span class="nf">get_info_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return diagnostics of the step sampler performance.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        --------</span>
+<span class="sd">        v: dict</span>
+<span class="sd">            the keys are:</span>
+<span class="sd">                * num_logs: number of log entries being summarized</span>
+<span class="sd">                * rejection_rate: fraction of steps rejected</span>
+<span class="sd">                * mean_scale: average value of `scale`</span>
+<span class="sd">                * mean_nsteps: average `nsteps`</span>
+<span class="sd">                * mean_distance: mean jump distance (see `Buchner+24 &lt;https://arxiv.org/abs/2402.11936&gt;`_)</span>
+<span class="sd">                * frac_far_enough: fraction of jumps with sufficient distance (see `Buchner+24 &lt;https://arxiv.org/abs/2402.11936&gt;`_)</span>
+<span class="sd">                * last_logstat: content of the last log entry</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span>
             <span class="n">num_logs</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">),</span>
             <span class="n">rejection_rate</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nanmean</span><span class="p">([</span><span class="n">entry</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">])</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
@@ -921,7 +961,6 @@
             <span class="n">frac_far_enough</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">far_enough_fraction</span><span class="p">,</span>
             <span class="n">last_logstat</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span><span class="p">)))</span>
         <span class="p">)</span></div>
-
 
 
 <div class="viewcode-block" id="StepSampler.print_diagnostic">
@@ -1394,7 +1433,6 @@
 
                 <span class="c1"># adjust scale to final slice length</span>
                 <span class="k">if</span> <span class="o">-</span><span class="n">left</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_scale</span> <span class="ow">or</span> <span class="n">right</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_scale</span><span class="p">:</span>
-                <span class="c1">#if right - left &gt; self.next_scale:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">next_scale</span> <span class="o">*=</span> <span class="mf">1.1</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">next_scale</span> <span class="o">/=</span> <span class="mf">1.1</span>
@@ -1453,6 +1491,7 @@
 <a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.SequentialDirectionGenerator">[docs]</a>
 <span class="k">class</span> <span class="nc">SequentialDirectionGenerator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Sequentially proposes one parameter after the next.&quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialise.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">axis_index</span> <span class="o">=</span> <span class="mi">0</span>
@@ -1491,6 +1530,7 @@
         <span class="k">return</span> <span class="n">v</span>
 
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create string representation.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s1">&#39;()&#39;</span></div>
 
 
@@ -1499,6 +1539,7 @@
 <a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.SequentialRegionDirectionGenerator">[docs]</a>
 <span class="k">class</span> <span class="nc">SequentialRegionDirectionGenerator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Sequentially proposes one region axes after the next.&quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialise.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">axis_index</span> <span class="o">=</span> <span class="mi">0</span>
@@ -1535,6 +1576,7 @@
         <span class="k">return</span> <span class="n">v</span>
 
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create string representation.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s1">&#39;()&#39;</span></div>
 
 

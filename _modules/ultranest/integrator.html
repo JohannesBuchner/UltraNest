@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest.integrator &mdash; UltraNest 4.3.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b76e3c8a" />
+  <title>ultranest.integrator &mdash; UltraNest 4.3.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
   
@@ -16,8 +16,8 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=a17b270f"></script>
-        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/documentation_options.js?v=0503a316"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
@@ -39,7 +39,7 @@
               <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                4.3.0
+                4.3.1
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -100,7 +100,8 @@
            <div itemprop="articleBody">
              
   <h1>Source code for ultranest.integrator</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="c1"># noqa: D400 D205</span>
+<span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Nested sampling integrators</span>
 <span class="sd">---------------------------</span>
 
@@ -112,31 +113,40 @@
 <span class="c1"># Some parts are from the Nestle library by Kyle Barbary (https://github.com/kbarbary/nestle)</span>
 <span class="c1"># Some parts are from the nnest library by Adam Moss (https://github.com/adammoss/nnest)</span>
 
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span><span class="p">,</span> <span class="n">division</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span><span class="p">,</span> <span class="n">print_function</span>
 
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">csv</span>
 <span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">operator</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
 
-<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">log</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">logaddexp</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">exp</span><span class="p">,</span> <span class="n">log</span><span class="p">,</span> <span class="n">logaddexp</span>
 
-<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">create_logger</span><span class="p">,</span> <span class="n">make_run_dir</span><span class="p">,</span> <span class="n">resample_equal</span><span class="p">,</span> <span class="n">vol_prefactor</span><span class="p">,</span> <span class="n">vectorize</span><span class="p">,</span> <span class="n">listify</span> <span class="k">as</span> <span class="n">_listify</span>
-<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">is_affine_transform</span><span class="p">,</span> <span class="n">normalised_kendall_tau_distance</span><span class="p">,</span> <span class="n">distributed_work_chunk_size</span>
-<span class="kn">from</span> <span class="nn">ultranest.mlfriends</span> <span class="kn">import</span> <span class="n">MLFriends</span><span class="p">,</span> <span class="n">AffineLayer</span><span class="p">,</span> <span class="n">LocalAffineLayer</span><span class="p">,</span> <span class="n">ScalingLayer</span><span class="p">,</span> <span class="n">find_nearby</span><span class="p">,</span> <span class="n">WrappingEllipsoid</span><span class="p">,</span> <span class="n">RobustEllipsoidRegion</span>
-<span class="kn">from</span> <span class="nn">.store</span> <span class="kn">import</span> <span class="n">HDF5PointStore</span><span class="p">,</span> <span class="n">TextPointStore</span><span class="p">,</span> <span class="n">NullPointStore</span>
-<span class="kn">from</span> <span class="nn">.viz</span> <span class="kn">import</span> <span class="n">get_default_viz_callback</span>
-<span class="kn">from</span> <span class="nn">.ordertest</span> <span class="kn">import</span> <span class="n">UniformOrderAccumulator</span>
-<span class="kn">from</span> <span class="nn">.netiter</span> <span class="kn">import</span> <span class="n">PointPile</span><span class="p">,</span> <span class="n">SingleCounter</span><span class="p">,</span> <span class="n">MultiCounter</span><span class="p">,</span> <span class="n">BreadthFirstIterator</span><span class="p">,</span> <span class="n">TreeNode</span><span class="p">,</span> <span class="n">count_tree_between</span><span class="p">,</span> <span class="n">find_nodes_before</span><span class="p">,</span> <span class="n">logz_sequence</span>
-<span class="kn">from</span> <span class="nn">.netiter</span> <span class="kn">import</span> <span class="n">dump_tree</span><span class="p">,</span> <span class="n">combine_results</span>
+<span class="kn">from</span> <span class="nn">ultranest.mlfriends</span> <span class="kn">import</span> <span class="p">(</span><span class="n">AffineLayer</span><span class="p">,</span> <span class="n">LocalAffineLayer</span><span class="p">,</span> <span class="n">MLFriends</span><span class="p">,</span>
+                                 <span class="n">RobustEllipsoidRegion</span><span class="p">,</span> <span class="n">ScalingLayer</span><span class="p">,</span>
+                                 <span class="n">WrappingEllipsoid</span><span class="p">,</span> <span class="n">find_nearby</span><span class="p">)</span>
+
 <span class="kn">from</span> <span class="nn">.hotstart</span> <span class="kn">import</span> <span class="n">get_auxiliary_contbox_parameterization</span>
-
+<span class="kn">from</span> <span class="nn">.netiter</span> <span class="kn">import</span> <span class="p">(</span><span class="n">BreadthFirstIterator</span><span class="p">,</span> <span class="n">MultiCounter</span><span class="p">,</span> <span class="n">PointPile</span><span class="p">,</span>
+                      <span class="n">SingleCounter</span><span class="p">,</span> <span class="n">TreeNode</span><span class="p">,</span> <span class="n">combine_results</span><span class="p">,</span>
+                      <span class="n">count_tree_between</span><span class="p">,</span> <span class="n">dump_tree</span><span class="p">,</span> <span class="n">find_nodes_before</span><span class="p">,</span>
+                      <span class="n">logz_sequence</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.ordertest</span> <span class="kn">import</span> <span class="n">UniformOrderAccumulator</span>
+<span class="kn">from</span> <span class="nn">.store</span> <span class="kn">import</span> <span class="n">HDF5PointStore</span><span class="p">,</span> <span class="n">NullPointStore</span><span class="p">,</span> <span class="n">TextPointStore</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="p">(</span><span class="n">create_logger</span><span class="p">,</span> <span class="n">distributed_work_chunk_size</span><span class="p">,</span>
+                    <span class="n">is_affine_transform</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">listify</span> <span class="k">as</span> <span class="n">_listify</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="p">(</span><span class="n">make_run_dir</span><span class="p">,</span> <span class="n">normalised_kendall_tau_distance</span><span class="p">,</span>
+                    <span class="n">resample_equal</span><span class="p">,</span> <span class="n">vectorize</span><span class="p">,</span> <span class="n">vol_prefactor</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.viz</span> <span class="kn">import</span> <span class="n">get_default_viz_callback</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ReactiveNestedSampler&#39;</span><span class="p">,</span> <span class="s1">&#39;NestedSampler&#39;</span><span class="p">,</span> <span class="s1">&#39;read_file&#39;</span><span class="p">,</span> <span class="s1">&#39;warmstart_from_similar_file&#39;</span><span class="p">]</span>
+
+<span class="n">int_t</span> <span class="o">=</span> <span class="nb">int</span>
 
 
 <span class="k">def</span> <span class="nf">_get_cumsum_range</span><span class="p">(</span><span class="n">pi</span><span class="p">,</span> <span class="n">dp</span><span class="p">):</span>
@@ -556,7 +566,7 @@
 <span class="sd">            unique run number. If None, will be automatically incremented.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">paramnames</span> <span class="o">=</span> <span class="n">param_names</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">paramnames</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">param_names</span><span class="p">)</span>
         <span class="n">x_dim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">paramnames</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">num_live_points</span> <span class="o">=</span> <span class="n">num_live_points</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sampler</span> <span class="o">=</span> <span class="s1">&#39;nested&#39;</span>
@@ -1023,8 +1033,8 @@
     <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Make corner plot.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_to_disk</span><span class="p">:</span>
-            <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
             <span class="kn">import</span> <span class="nn">corner</span>
+            <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;weighted_samples&#39;</span><span class="p">][</span><span class="s1">&#39;points&#39;</span><span class="p">])</span>
             <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;weighted_samples&#39;</span><span class="p">][</span><span class="s1">&#39;weights&#39;</span><span class="p">])</span>
             <span class="n">cumsumweights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
@@ -2133,8 +2143,8 @@
 
             <span class="c1"># instead, track the clusters from before by matching manually</span>
             <span class="n">oldt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">oldu</span><span class="p">)</span>
-            <span class="n">clusterids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">active_u</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
-            <span class="n">nnearby</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">unormed</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+            <span class="n">clusterids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">active_u</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">int_t</span><span class="p">)</span>
+            <span class="n">nnearby</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">unormed</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">int_t</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">ci</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transformLayer</span><span class="o">.</span><span class="n">clusterids</span><span class="p">):</span>
                 <span class="k">if</span> <span class="n">ci</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="k">continue</span>
@@ -3122,8 +3132,9 @@
 <span class="sd">            cornerplot(results)</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">.plot</span> <span class="kn">import</span> <span class="n">cornerplot</span>
         <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+        <span class="kn">from</span> <span class="nn">.plot</span> <span class="kn">import</span> <span class="n">cornerplot</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Making corner plot ...&#39;</span><span class="p">)</span>
         <span class="n">cornerplot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
@@ -3147,8 +3158,9 @@
 <span class="sd">            traceplot(results=results, labels=paramnames + derivedparamnames)</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">.plot</span> <span class="kn">import</span> <span class="n">traceplot</span>
         <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+        <span class="kn">from</span> <span class="nn">.plot</span> <span class="kn">import</span> <span class="n">traceplot</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Making trace plot ... &#39;</span><span class="p">)</span>
         <span class="n">paramnames</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">paramnames</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">derivedparamnames</span>
@@ -3174,8 +3186,9 @@
 <span class="sd">            runplot(results=results)</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">from</span> <span class="nn">.plot</span> <span class="kn">import</span> <span class="n">runplot</span>
         <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+        <span class="kn">from</span> <span class="nn">.plot</span> <span class="kn">import</span> <span class="n">runplot</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Making run plot ... &#39;</span><span class="p">)</span>
         <span class="c1"># get dynesty-compatible sequences</span>
