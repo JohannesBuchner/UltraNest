@@ -10,12 +10,17 @@ by providing random walks of populations of walkers.
 """
 
 import numpy as np
-from ultranest.utils import submasks
-from ultranest.stepfuncs import evolve, step_back, update_vectorised_slice_sampler
-from ultranest.stepfuncs import generate_cube_oriented_direction, generate_cube_oriented_direction_scaled
-from ultranest.stepfuncs import generate_random_direction, generate_region_oriented_direction, generate_region_random_direction
-from ultranest.stepfuncs import generate_differential_direction, generate_mixture_random_direction
 import scipy.stats
+
+from ultranest.stepfuncs import (evolve, generate_cube_oriented_direction,
+                                 generate_cube_oriented_direction_scaled,
+                                 generate_differential_direction,
+                                 generate_mixture_random_direction,
+                                 generate_random_direction,
+                                 generate_region_oriented_direction,
+                                 generate_region_random_direction, step_back,
+                                 update_vectorised_slice_sampler)
+from ultranest.utils import submasks
 
 int_t = int
 

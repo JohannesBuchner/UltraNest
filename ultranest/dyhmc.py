@@ -4,8 +4,8 @@ Contrary to CHMC, this uses the likelihood gradients throughout the path.
 A helper surface is created using the live points.
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import scipy.special
 import scipy.stats
 

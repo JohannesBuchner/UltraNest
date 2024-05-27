@@ -4,9 +4,9 @@ Supports reflections at unit cube boundaries, and regions.
 """
 
 
+import matplotlib.pyplot as plt
 import numpy as np
 from numpy.linalg import norm
-import matplotlib.pyplot as plt
 
 
 def nearest_box_intersection_line(ray_origin, ray_direction, fwd=True):

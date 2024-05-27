@@ -12,7 +12,8 @@ Based on ideas from Petrosyan & Handley (2022, https://arxiv.org/abs/2212.01760)
 
 import numpy as np
 import scipy.stats
-from .utils import vectorize, resample_equal
+
+from .utils import resample_equal, vectorize
 
 
 def get_auxiliary_problem(loglike, transform, ctr, invcov, enlargement_factor, df=1):

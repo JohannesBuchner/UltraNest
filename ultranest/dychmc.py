@@ -3,9 +3,11 @@
 Uses gradient to reflect at nested sampling boundaries.
 """
 
-from __future__ import print_function, division
-import numpy as np
+from __future__ import division, print_function
+
 import matplotlib.pyplot as plt
+import numpy as np
+
 
 def stop_criterion(thetaminus, thetaplus, rminus, rplus):
     """Compute the stop condition in the main loop

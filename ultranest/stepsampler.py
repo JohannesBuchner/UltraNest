@@ -9,11 +9,14 @@ population of samplers that have the same execution time per call,
 even if they do not terminate at the same number of iterations.
 """
 
-from __future__ import print_function, division
-import numpy as np
-import matplotlib.pyplot as plt
-from .utils import listify as _listify
+from __future__ import division, print_function
+
 from warnings import warn
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+from .utils import listify as _listify
 
 
 def generate_random_direction(ui, region, scale=1):

@@ -4,9 +4,11 @@ Calibration of step sampler
 ---------------------------
 """
 
-import numpy as np
-from ultranest.integrator import ReactiveNestedSampler
 import os
+
+import numpy as np
+
+from ultranest.integrator import ReactiveNestedSampler
 
 
 def _substitute_log_dir(init_args, nsteps):

@@ -12,8 +12,9 @@ Example::
 """
 
 
-import numpy as np
 import string
+
+import numpy as np
 
 from .integrator import ReactiveNestedSampler
 from .stepsampler import SliceSampler, generate_mixture_random_direction

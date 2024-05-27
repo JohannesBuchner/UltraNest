@@ -11,29 +11,36 @@ for calculating the Bayesian evidence and posterior samples of arbitrary models.
 # Some parts are from the Nestle library by Kyle Barbary (https://github.com/kbarbary/nestle)
 # Some parts are from the nnest library by Adam Moss (https://github.com/adammoss/nnest)
 
-from __future__ import print_function, division
+from __future__ import division, print_function
 
-import os
-import sys
 import csv
 import json
 import operator
+import os
+import sys
 import time
 import warnings
 
-from numpy import log, exp, logaddexp
 import numpy as np
+from numpy import exp, log, logaddexp
 
-from .utils import create_logger, make_run_dir, resample_equal, vol_prefactor, vectorize, listify as _listify
-from .utils import is_affine_transform, normalised_kendall_tau_distance, distributed_work_chunk_size
-from ultranest.mlfriends import MLFriends, AffineLayer, LocalAffineLayer, ScalingLayer, find_nearby, WrappingEllipsoid, RobustEllipsoidRegion
-from .store import HDF5PointStore, TextPointStore, NullPointStore
-from .viz import get_default_viz_callback
-from .ordertest import UniformOrderAccumulator
-from .netiter import PointPile, SingleCounter, MultiCounter, BreadthFirstIterator, TreeNode, count_tree_between, find_nodes_before, logz_sequence
-from .netiter import dump_tree, combine_results
+from ultranest.mlfriends import (AffineLayer, LocalAffineLayer, MLFriends,
+                                 RobustEllipsoidRegion, ScalingLayer,
+                                 WrappingEllipsoid, find_nearby)
+
 from .hotstart import get_auxiliary_contbox_parameterization
-
+from .netiter import (BreadthFirstIterator, MultiCounter, PointPile,
+                      SingleCounter, TreeNode, combine_results,
+                      count_tree_between, dump_tree, find_nodes_before,
+                      logz_sequence)
+from .ordertest import UniformOrderAccumulator
+from .store import HDF5PointStore, NullPointStore, TextPointStore
+from .utils import (create_logger, distributed_work_chunk_size,
+                    is_affine_transform)
+from .utils import listify as _listify
+from .utils import (make_run_dir, normalised_kendall_tau_distance,
+                    resample_equal, vectorize, vol_prefactor)
+from .viz import get_default_viz_callback
 
 __all__ = ['ReactiveNestedSampler', 'NestedSampler', 'read_file', 'warmstart_from_similar_file']
 
@@ -914,8 +921,8 @@ class NestedSampler(object):
     def plot(self):
         """Make corner plot."""
         if self.log_to_disk:
-            import matplotlib.pyplot as plt
             import corner
+            import matplotlib.pyplot as plt
             data = np.array(self.results['weighted_samples']['points'])
             weights = np.array(self.results['weighted_samples']['weights'])
             cumsumweights = np.cumsum(weights)
@@ -2989,8 +2996,9 @@ class ReactiveNestedSampler(object):
             cornerplot(results)
 
         """
-        from .plot import cornerplot
         import matplotlib.pyplot as plt
+
+        from .plot import cornerplot
         if self.log:
             self.logger.debug('Making corner plot ...')
         cornerplot(self.results, logger=self.logger if self.log else None)
@@ -3011,8 +3019,9 @@ class ReactiveNestedSampler(object):
             traceplot(results=results, labels=paramnames + derivedparamnames)
 
         """
-        from .plot import traceplot
         import matplotlib.pyplot as plt
+
+        from .plot import traceplot
         if self.log:
             self.logger.debug('Making trace plot ... ')
         paramnames = self.paramnames + self.derivedparamnames
@@ -3035,8 +3044,9 @@ class ReactiveNestedSampler(object):
             runplot(results=results)
 
         """
-        from .plot import runplot
         import matplotlib.pyplot as plt
+
+        from .plot import runplot
         if self.log:
             self.logger.debug('Making run plot ... ')
         # get dynesty-compatible sequences

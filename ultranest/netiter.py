@@ -21,12 +21,14 @@ computational effort: The roots are indexed, and the bootstrap explorer
 can ignore the rootids it does not know about.
 """
 
-import numpy as np
-from numpy import log, log1p, exp, logaddexp
 import math
 import sys
-from .utils import resample_equal
+
+import numpy as np
+from numpy import exp, log, log1p, logaddexp
+
 from .ordertest import UniformOrderAccumulator
+from .utils import resample_equal
 
 
 class TreeNode(object):

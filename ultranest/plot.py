@@ -5,25 +5,23 @@ Plotting utilities
 
 """
 
-from __future__ import (print_function, division)
-from six.moves import range
+from __future__ import division, print_function
 
 import logging
 import types
 import warnings
 
-import numpy as np
 import matplotlib.pyplot as pl
-from matplotlib.ticker import MaxNLocator, NullLocator
-# from matplotlib.colors import LinearSegmentedColormap, colorConverter
-from matplotlib.ticker import ScalarFormatter
-
-import scipy.stats
 import matplotlib.pyplot as plt
 import numpy
+import numpy as np
+import scipy.stats
+# from matplotlib.colors import LinearSegmentedColormap, colorConverter
+from matplotlib.ticker import MaxNLocator, NullLocator, ScalarFormatter
+from six.moves import range
 
-from .utils import resample_equal
 from .utils import quantile as _quantile
+from .utils import resample_equal
 
 try:
     str_type = types.StringTypes
@@ -183,8 +181,8 @@ def highest_density_interval_from_samples(xsamples, xlo=None, xhi=None, probabil
     >>> print('x = %.1f + %.2f - %.2f' % hdi)
     x = 0.0 + 1.02 - 0.96
     """
-    from getdist.mcsamples import MCSamples
     import getdist.chains
+    from getdist.mcsamples import MCSamples
     getdist.chains.print_load_details = False
     samples = MCSamples(
         samples=xsamples, names=['x'], ranges={'x':[xlo,xhi]},
@@ -431,6 +429,7 @@ def runplot(results, span=None, logplot=False, kde=True, nkde=1000,
         try:
             # from scipy.ndimage import gaussian_filter as norm_kde
             from scipy.stats import gaussian_kde
+
             # Derive kernel density estimate.
             wt_kde = gaussian_kde(resample_equal(-logvol, weights))  # KDE
             logvol_new = np.linspace(logvol[0], logvol[-1], nkde)  # resample
@@ -723,6 +722,7 @@ def traceplot(results, span=None, quantiles=[0.025, 0.5, 0.975], smooth=0.02,
         try:
             from scipy.ndimage import gaussian_filter as norm_kde
             from scipy.stats import gaussian_kde
+
             # Derive kernel density estimate.
             wt_kde = gaussian_kde(resample_equal(-logvol, weights))  # KDE
             logvol_grid = np.linspace(logvol[0], logvol[-1], nkde)  # resample

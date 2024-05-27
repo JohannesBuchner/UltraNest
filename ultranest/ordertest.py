@@ -22,7 +22,7 @@ without detection of a insertion order problem.
 
 """
 
-from __future__ import print_function, division
+from __future__ import division, print_function
 
 __all__ = ['infinite_U_zscore', 'UniformOrderAccumulator']
 

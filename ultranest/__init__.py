@@ -10,7 +10,6 @@ Some visualisations are adopted from the dynesty library by Josh Speagle (https:
 from .integrator import NestedSampler, ReactiveNestedSampler, read_file
 from .utils import vectorize
 
-
 __author__ = """Johannes Buchner"""
 __email__ = 'johannes.buchner.acad@gmx.com'
 __version__ = '4.3.1'

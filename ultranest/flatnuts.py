@@ -51,9 +51,10 @@ Drawbacks:
 """
 
 
+import matplotlib.pyplot as plt
 import numpy as np
 from numpy.linalg import norm
-import matplotlib.pyplot as plt
+
 from .samplingpath import angle, extrapolate_ahead
 
 

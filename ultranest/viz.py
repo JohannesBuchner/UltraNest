@@ -9,15 +9,15 @@ converges to unreasonable values.
 
 """
 
-from __future__ import print_function, division
+from __future__ import division, print_function
 
-import sys
 import shutil
-from numpy import log10
-import numpy as np
 import string
+import sys
 from xml.sax.saxutils import escape as html_escape
 
+import numpy as np
+from numpy import log10
 
 clusteridstrings = ['%d' % i for i in range(10)] + list(string.ascii_uppercase) + list(string.ascii_lowercase)
 
@@ -249,8 +249,8 @@ class LivePointsWidget(object):
             number of html table columns.
 
         """
-        from ipywidgets import HTML, VBox, Layout, GridspecLayout
         from IPython.display import display
+        from ipywidgets import HTML, GridspecLayout, Layout, VBox
 
         grid = GridspecLayout(len(paramnames), width + 3)
         self.laststatus = []

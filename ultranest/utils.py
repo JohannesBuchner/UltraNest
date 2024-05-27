@@ -4,13 +4,15 @@ Utility functions for logging and statistics
 --------------------------------------------
 """
 
-from __future__ import print_function, division
+from __future__ import division, print_function
+
+import errno
 import logging
-import sys
 import os
+import sys
+
 import numpy as np
 from numpy import pi
-import errno
 
 
 def create_logger(module_name, log_dir=None, level=logging.INFO):

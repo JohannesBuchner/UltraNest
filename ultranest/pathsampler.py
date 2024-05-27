@@ -3,16 +3,17 @@
 These features are experimental.
 """
 
+import matplotlib.pyplot as plt
 import numpy as np
 
-import matplotlib.pyplot as plt
-
-from ultranest.samplingpath import SamplingPath, ContourSamplingPath, extrapolate_ahead
-from ultranest.stepsampler import StepSampler
-from ultranest.stepsampler import generate_region_oriented_direction, generate_region_random_direction, generate_random_direction
-
-from ultranest.flatnuts import ClockedStepSampler, ClockedBisectSampler, ClockedNUTSSampler
-from ultranest.flatnuts import SingleJumper, DirectJumper, IntervalJumper
+from ultranest.flatnuts import (ClockedBisectSampler, ClockedNUTSSampler,
+                                ClockedStepSampler, DirectJumper,
+                                IntervalJumper, SingleJumper)
+from ultranest.samplingpath import (ContourSamplingPath, SamplingPath,
+                                    extrapolate_ahead)
+from ultranest.stepsampler import (StepSampler, generate_random_direction,
+                                   generate_region_oriented_direction,
+                                   generate_region_random_direction)
 
 
 class SamplingPathSliceSampler(StepSampler):
