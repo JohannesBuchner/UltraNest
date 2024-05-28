@@ -2386,13 +2386,13 @@ class ReactiveNestedSampler:
             - niter (int): number of sampler iterations
             - ncall (int): total number of likelihood evaluations (accepted and not)
             - logz (float64): natural logarithm of the evidence :math:`\log Z = \log \int p(d|\theta) p(\theta) \text{d}\theta`
-            - logzerr (float64): :math:`1\sigma` error on :math:`\log Z` (`can be safely assumed to be Gaussian <https://github.com/JohannesBuchner/UltraNest/issues/63>`_)
+            - logzerr (float64): global estimate of the :math:`1\sigma` error on :math:`\log Z` (`can be safely assumed to be Gaussian <https://github.com/JohannesBuchner/UltraNest/issues/63>`_); obtained as the quadratic mean of ``logz_bs`` and ``logz_tail``
             - logz_bs (float64): estimate of :math:`\log Z` from bootstrapping - for details, see the `ultranest paper <https://joss.theoj.org/papers/10.21105/joss.03001>`_
             - logzerr_bs (float64): estimate of the error on the  of :math:`\log Z` from bootstrapping
             - logz_single (float64): estimate of :math:`\log Z` from a single sampler
             - logzerr_single (float64): estimate of the error :math:`\log Z` from a single sampler
             - logzerr_tail (float64): contribution of the tail (i.e. the terminal leaves of the tree) to the error on :math:`\log Z` (?)
-            - ess (float64): effective sample size, i.e. number of samples divided by the estimated correlation length
+            - ess (float64): effective sample size, i.e. number of samples divided by the estimated correlation length, estimated as :math:`N / (1 + N^{-1} \sum_i (N w_i - 1)^2)`
             - H (float64): `information gained <https://arxiv.org/abs/2205.00009>`_
             - Herr (float64): (Gaussian) :math:`1\sigma` error on :math:`H`
             - posterior (dict): summary information on the posterior marginal distributions for each parameter - a dictionary of lists each with as many items as the fit parameters, indexed as :math:`\theta_i` in the following:
