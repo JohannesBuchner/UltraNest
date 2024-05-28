@@ -2392,7 +2392,7 @@ class ReactiveNestedSampler:
             - logz_single (float64): estimate of :math:`\log Z` from a single sampler
             - logzerr_single (float64): estimate of the error :math:`\log Z` from a single sampler
             - logzerr_tail (float64): contribution of the tail (i.e. the terminal leaves of the tree) to the error on :math:`\log Z` (?)
-            - ess (float64): effective sample size, i.e. number of samples divided by the estimated correlation length, estimated as :math:`N / (1 + N^{-1} \sum_i (N w_i - 1)^2)`
+            - ess (float64): effective sample size, i.e. number of samples divided by the estimated correlation length, estimated as :math:`N / (1 + N^{-1} \sum_i (N w_i - 1)^2)` where :math:`w_i` are the sample weights
             - H (float64): `information gained <https://arxiv.org/abs/2205.00009>`_
             - Herr (float64): (Gaussian) :math:`1\sigma` error on :math:`H`
             - posterior (dict): summary information on the posterior marginal distributions for each parameter - a dictionary of lists each with as many items as the fit parameters, indexed as :math:`\theta_i` in the following:
@@ -2403,9 +2403,9 @@ class ReactiveNestedSampler:
                 - errup (list): one-sigma upper quantile of the marginal for :math:`\theta_i`, i.e. 84.1345% quantile
                 - information_gain_bits (list): information gain from the marginal prior on :math:`\theta_i` to the posterior
             - weighted_samples (dict): weighted samples from the posterior, as computed during sampling, sorted by their log-likelihood value
-                - upoints (ndarray): sample locations in the unit cube :math:`[0, 1]^{d}`, where $d$ is the number of parameters - the shape is  `n_iter` by :math:`d`
-                - points (ndarray): sample locations in the physical, user-provided space (same shape as `upoints`)
-                - weights (ndarray): sample weights - shape `n_iter`, they add up to 1
+                - upoints (ndarray): sample locations in the unit cube :math:`[0, 1]^{d}`, where $d$ is the number of parameters - the shape is ``n_iter`` by :math:`d`
+                - points (ndarray): sample locations in the physical, user-provided space (same shape as ``upoints``)
+                - weights (ndarray): sample weights - shape ``n_iter``, they add up to 1
                 - logw (ndarray): ?
                 - bootstrapped_weights (ndarray): ?
                 - logl (ndarray): log-likelihood values at the sample points (?)
