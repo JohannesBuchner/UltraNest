@@ -310,7 +310,7 @@ class PopulationRandomWalkSampler(GenericPopulationSampler):
             nc = self.nsteps * self.popsize
             nrejects_expected = self.nrejects + self.nsteps * self.popsize * (1 - 0.234)
 
-            for i in range(self.nsteps):
+            for _i in range(self.nsteps):
                 # perturb walker population
                 v = self.generate_direction(allu, region, self.scale)
                 # compute intersection of u + t * v with unit cube
@@ -912,7 +912,7 @@ class PopulationSimpleSliceSampler(GenericPopulationSampler):
 
             interval_final = 0.
 
-            for k in range(self.nsteps):
+            for _k in range(self.nsteps):
                 # Defining scale jitter
                 factor_scale = self.scale_jitter_func()
                 # Defining slice direction
@@ -935,7 +935,7 @@ class PopulationSimpleSliceSampler(GenericPopulationSampler):
                 status = np.zeros(self.popsize, dtype=int_t)  # one for success, zero for running
 
                 # Loop until each points has found its next position or we reached 100 iterations
-                for it in range(self.max_it):
+                for _it in range(self.max_it):
                     # Sampling points on the slices
                     slice_position = np.random.uniform(size=(self.popsize,))
                     t = tleft_worker + (tright_worker - tleft_worker) * slice_position

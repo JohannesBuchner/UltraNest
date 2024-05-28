@@ -468,7 +468,7 @@ def select_random_livepoint(us, Ls, Lmin):
     return np.random.randint(len(Ls))
 
 
-class IslandPopulationRandomLivepointSelector(object):
+class IslandPopulationRandomLivepointSelector:
     """Mutually isolated live point subsets.
 
     To replace dead points, chains are only started from the same
@@ -545,7 +545,7 @@ class IslandPopulationRandomLivepointSelector(object):
             min(len(Ls), (island + 1) * self.island_size))
 
 
-class StepSampler(object):
+class StepSampler:
     """Base class for a simple step sampler, staggering around.
 
     Scales proposal towards a 50% acceptance rate.
@@ -1010,7 +1010,7 @@ class StepSampler(object):
 
         """
         # find most recent point in history conforming to current Lmin
-        for j, (uj, Lj) in enumerate(self.history):
+        for j, (_uj, Lj) in enumerate(self.history):
             if not Lj > Lmin:
                 self.history = self.history[:j]
                 # print("wandered out of L constraint; reverting", ui[0])
@@ -1256,7 +1256,7 @@ def RegionBallSliceSampler(*args, **kwargs):
     return SliceSampler(*args, **kwargs, generate_direction=generate_region_random_direction)
 
 
-class SequentialDirectionGenerator(object):
+class SequentialDirectionGenerator:
     """Sequentially proposes one parameter after the next."""
 
     def __init__(self):
@@ -1301,7 +1301,7 @@ class SequentialDirectionGenerator(object):
         return type(self).__name__ + '()'
 
 
-class SequentialRegionDirectionGenerator(object):
+class SequentialRegionDirectionGenerator:
     """Sequentially proposes one region axes after the next."""
 
     def __init__(self):
@@ -1349,7 +1349,7 @@ def RegionSequentialSliceSampler(*args, **kwargs):
     return SliceSampler(*args, **kwargs, generate_direction=SequentialRegionDirectionGenerator())
 
 
-class OrthogonalDirectionGenerator(object):
+class OrthogonalDirectionGenerator:
     """Orthogonalizes proposal vectors.
 
     Samples N proposed vectors by a provided method, then orthogonalizes
@@ -1403,7 +1403,7 @@ class OrthogonalDirectionGenerator(object):
         return v
 
 
-class SpeedVariableGenerator(object):
+class SpeedVariableGenerator:
     """Propose directions with only some parameters variable.
 
     Propose in region direction, but only include some dimensions at a time.

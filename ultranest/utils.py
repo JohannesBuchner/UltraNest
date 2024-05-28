@@ -421,7 +421,7 @@ def verify_gradient(ndim, transform, loglike, gradient, verbose=False, combinati
 
     eps = 1e-6
     N = 10
-    for i in range(N):
+    for _i in range(N):
         u = np.random.uniform(2 * eps, 1 - 2 * eps, size=(1, ndim))
         theta = transform(u)
         if verbose:

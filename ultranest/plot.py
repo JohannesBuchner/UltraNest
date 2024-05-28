@@ -215,7 +215,7 @@ def highest_density_interval_from_samples(xsamples, xlo=None, xhi=None, probabil
     return MAP, MAP - x_lo, x_hi - MAP
 
 
-class PredictionBand(object):
+class PredictionBand:
     """Plot bands of model predictions as calculated from a chain.
 
     call add(y) to add predictions from each chain point
@@ -418,7 +418,8 @@ def runplot(results, span=None, logplot=False, kde=True, nkde=1000,
         else:
             warnings.warn("The number of iterations and samples differ "
                           "by an amount that isn't the number of final "
-                          "live points. `mark_final_live` has been disabled.")
+                          "live points. `mark_final_live` has been disabled.",
+                          stacklevel=3)
             mark_final_live = False
 
     # Determine plotting bounds for each subplot.
@@ -786,7 +787,7 @@ def traceplot(results, span=None, quantiles=[0.025, 0.5, 0.975], smooth=0.02,
         labels = [r"$x_{%d}$" % (i + 1) for i in range(ndim)]
 
     # Setting up smoothing.
-    if (isinstance(smooth, int_type) or isinstance(smooth, float_type)):
+    if (isinstance(smooth, int_type) or isinstance(smooth, float_type)):  # noqa: SIM101
         smooth = [smooth for i in range(ndim)]
 
     # Setting up default plot layout.

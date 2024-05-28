@@ -24,11 +24,10 @@ import warnings
 import numpy as np
 from numpy import exp, log, logaddexp
 
-from ultranest.mlfriends import (AffineLayer, LocalAffineLayer, MLFriends,
-                                 RobustEllipsoidRegion, ScalingLayer,
-                                 WrappingEllipsoid, find_nearby)
-
 from .hotstart import get_auxiliary_contbox_parameterization
+from .mlfriends import (AffineLayer, LocalAffineLayer, MLFriends,
+                        RobustEllipsoidRegion, ScalingLayer, WrappingEllipsoid,
+                        find_nearby)
 from .netiter import (BreadthFirstIterator, MultiCounter, PointPile,
                       SingleCounter, TreeNode, combine_results,
                       count_tree_between, dump_tree, find_nodes_before,
@@ -280,7 +279,7 @@ def resume_from_similar_file(
             logls_new = []
 
         j = 0
-        for Lmin, active_values, children in batch:
+        for _Lmin, active_values, children in batch:
 
             next_node2 = explorer2.next_node()
             rootid2, node2, (active_nodes2, _, active_values2, _) = next_node2
@@ -325,7 +324,7 @@ def resume_from_similar_file(
                 last_good_like = last_good_like * epsilon
                 break
 
-            for u, v, logl_old in children:
+            for u, v, _logl_old in children:
                 logl_new = logls_new[j]
                 j += 1
 
@@ -416,7 +415,7 @@ def _update_region_bootstrap(region, nbootstraps, minvol=0., comm=None, mpi_size
     return r, f
 
 
-class NestedSampler(object):
+class NestedSampler:
     """Simple Nested sampler for reference."""
 
     def __init__(self,
@@ -591,7 +590,7 @@ class NestedSampler(object):
         if self.log:
             # try to resume:
             self.logger.info('Resuming...')
-            for i in range(self.num_live_points):
+            for _i in range(self.num_live_points):
                 _, row = self.pointstore.pop(-np.inf)
                 if row is not None:
                     prev_logl.append(row[1])
@@ -995,7 +994,7 @@ def warmstart_from_similar_file(
             old_param_names = f.readline().lstrip('#').strip().split()
             auxiliary_usamples = np.loadtxt(f)
     except IOError:
-        warnings.warn('not hot-resuming, could not load file "%s"' % usample_filename)
+        warnings.warn('not hot-resuming, could not load file "%s"' % usample_filename, stacklevel=2)
         return param_names, loglike, transform, vectorized
 
     ulogl = auxiliary_usamples[:,1]
@@ -1022,7 +1021,7 @@ def warmstart_from_similar_file(
     )
 
 
-class ReactiveNestedSampler(object):
+class ReactiveNestedSampler:
     """Nested sampler with reactive exploration strategy.
 
     Storage & resume capable, optionally MPI parallelised.
@@ -1491,7 +1490,7 @@ class ReactiveNestedSampler(object):
         if self.log and self.use_point_stack:
             # try to resume:
             # self.logger.info('Resuming...')
-            for i in range(nnewroots):
+            for _i in range(nnewroots):
                 rowid, row = self.pointstore.pop(-np.inf)
                 if row is None:
                     break
@@ -1681,7 +1680,7 @@ class ReactiveNestedSampler(object):
 
         Llo_KL = np.inf
         Lhi_KL = -np.inf
-        for i, (pi, dKLi, logwi) in enumerate(zip(p.transpose(), dKLtot, other_logw)):
+        for pi, dKLi, logwi in zip(p.transpose(), dKLtot, other_logw):
             if dKLi > dKL:
                 ilo, ihi = _get_cumsum_range(pi, 1. / 400)
                 # ilo and ihi are most likely missing in this iterator
@@ -1711,9 +1710,8 @@ class ReactiveNestedSampler(object):
         logzerr_tail = logaddexp(log(tail_fraction) + main_iterator.logZ, main_iterator.logZ) - main_iterator.logZ
         maxlogzerr = max(main_iterator.logZerr, deltalogZ.max(), main_iterator.logZerr_bs)
         if maxlogzerr > dlogz:
-            if logzerr_tail > maxlogzerr:
-                if self.log:
-                    self.logger.info("logz error is dominated by tail. Decrease frac_remain to make progress.")
+            if self.log and logzerr_tail > maxlogzerr:
+                self.logger.info("logz error is dominated by tail. Decrease frac_remain to make progress.")
             # very convervative estimation using all iterations
             # this punishes short intervals with many live points
             niter_max = len(saved_logl)
@@ -1815,7 +1813,7 @@ class ReactiveNestedSampler(object):
                 warning_message = warning_message1 + (warning_message2 % (' (stored for you in %s.csv)' % debug_filename))
             else:
                 warning_message = warning_message1 + warning_message2 % ''
-            warnings.warn(warning_message)
+            warnings.warn(warning_message, stacklevel=2)
             logl_region = self.loglike(self.transform(self.region.u))
             if (logl_region == Lmin).all():
                 raise ValueError(
@@ -1850,12 +1848,12 @@ class ReactiveNestedSampler(object):
             assert self.region.inside(active_u).any(), \
                 ("None of the live points satisfies the current region!",
                  self.region.maxradiussq, self.region.u, self.region.unormed, active_u,
-                 getattr(self.region, 'bbox_lo'),
-                 getattr(self.region, 'bbox_hi'),
-                 getattr(self.region, 'ellipsoid_cov'),
-                 getattr(self.region, 'ellipsoid_center'),
-                 getattr(self.region, 'ellipsoid_invcov'),
-                 getattr(self.region, 'ellipsoid_cov'),
+                 self.region.bbox_lo,
+                 self.region.bbox_hi,
+                 self.region.ellipsoid_cov,
+                 self.region.ellipsoid_center,
+                 self.region.ellipsoid_invcov,
+                 self.region.ellipsoid_cov,
                  )
 
         nit = 0
@@ -2074,11 +2072,10 @@ class ReactiveNestedSampler(object):
                 nextregion = self.region_class(active_u, nextTransformLayer)
                 assert np.isfinite(nextregion.unormed).all()
 
-                if not nextTransformLayer.nclusters < 20:
-                    if self.log:
-                        self.logger.info(
-                            "Found a lot of clusters: %d (%d with >1 members)",
-                            nextTransformLayer.nclusters, (cluster_sizes > 1).sum())
+                if self.log and not nextTransformLayer.nclusters < 20:
+                    self.logger.info(
+                        "Found a lot of clusters: %d (%d with >1 members)",
+                        nextTransformLayer.nclusters, (cluster_sizes > 1).sum())
 
                 # if self.log:
                 #     self.logger.info("computing maxradius...")
@@ -2380,7 +2377,7 @@ class ReactiveNestedSampler(object):
             *min_num_live_points* live points remain, but not more than
             *widen_before_initial_plateau_num_warn*.
         """
-        for result in self.run_iter(
+        for _result in self.run_iter(
             update_interval_volume_fraction=update_interval_volume_fraction,
             update_interval_ncall=update_interval_ncall,
             log_interval=log_interval,

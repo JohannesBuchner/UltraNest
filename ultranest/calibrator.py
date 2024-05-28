@@ -135,7 +135,7 @@ class ReactiveNestedCalibrator():
                 nsteps=nsteps, generate_direction=self.stepsampler.generate_direction,
                 check_nsteps=self.stepsampler.check_nsteps,
                 adaptive_nsteps=self.stepsampler.adaptive_nsteps,
-                log=open(init_args['log_dir'] + '/stepsampler.log', 'w') if 'log_dir' in self.init_args else None)
+                log=open(init_args['log_dir'] + '/stepsampler.log', 'w') if 'log_dir' in self.init_args else None)  # noqa: SIM115
             self.sampler = sampler
             result = sampler.run(**self.run_args)
             print("Z=%(logz).2f +- %(logzerr).2f" % result)

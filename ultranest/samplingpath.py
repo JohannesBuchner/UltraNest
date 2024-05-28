@@ -90,8 +90,7 @@ def box_line_intersection(ray_origin, ray_direction):
     """
     pF, tF, iF = nearest_box_intersection_line(ray_origin, ray_direction, fwd=True)
     pN, tN, iN = nearest_box_intersection_line(ray_origin, ray_direction, fwd=False)
-    if tN > tF or tF < 0:
-        assert False, "no intersection"
+    assert not (tN > tF or tF < 0), "no intersection"
     return (pN, tN, iN), (pF, tF, iF)
 
 
@@ -365,7 +364,7 @@ def interpolate(i, points, fwd_possible, rwd_possible, contourpath=None):
     if j == i:  # we have this exact point in the chain
         return xj, vj, Lj, True
 
-    assert not k == i  # otherwise the above would be true too
+    assert k != i  # otherwise the above would be true too
 
     # expand_to_step explores each reflection in detail, so
     # any points with change in v should have j == i
@@ -389,7 +388,7 @@ def interpolate(i, points, fwd_possible, rwd_possible, contourpath=None):
     return xl, vj, None, True
 
 
-class SamplingPath(object):
+class SamplingPath:
     """Path described by a (potentially sparse) sequence of points.
 
     Convention of the stored point tuple ``(i, x, v, L)``:
@@ -466,7 +465,7 @@ class SamplingPath(object):
         return newpoint
 
 
-class ContourSamplingPath(object):
+class ContourSamplingPath:
     """Region-aware form of the sampling path.
 
     Uses region points to guess a likelihood contour gradient.

@@ -31,7 +31,7 @@ from .ordertest import UniformOrderAccumulator
 from .utils import resample_equal
 
 
-class TreeNode(object):
+class TreeNode:
     """Simple tree node."""
 
     def __init__(self, value=None, id=None, children=None):
@@ -60,7 +60,7 @@ class TreeNode(object):
         return self.value < other.value
 
 
-class BreadthFirstIterator(object):
+class BreadthFirstIterator:
     """Generator exploring the tree.
 
     Nodes are ordered by value and expanded in order.
@@ -204,14 +204,14 @@ def print_tree(roots, title='Tree:'):
             lanes[laneid] = node.children[0]
         else:
             # expand width:
-            for j, child in enumerate(node.children):
+            for j, _child in enumerate(node.children):
                 rightstr2 = _stringify_lanes(lanes[laneid + 1:], char='\\')
                 if len(rightstr2) != 0:
                     sys.stdout.write(leftstr + '║' + ' ' * j + rightstr2 + "\n")
             sys.stdout.write(leftstr + '╠' + '╦' * (nchildren - 2) + '╗' + rightstr + "\n")
 
             lanes.pop(laneid)
-            for j, child in enumerate(node.children):
+            for child in node.children:
                 lanes.insert(laneid, child)
         explorer.expand_children_of(rootid, node)
         lastlane = laneid
@@ -383,7 +383,7 @@ def find_nodes_before(root, value):
     return parents, parent_weights
 
 
-class PointPile(object):
+class PointPile:
     """A in-memory linearized storage of point coordinates.
 
     :py:class:`TreeNode` objects only store the logL value and id,
@@ -465,7 +465,7 @@ class PointPile(object):
         return TreeNode(value=value, id=index)
 
 
-class SingleCounter(object):
+class SingleCounter:
     """Evidence log(Z) and posterior weight summation for a Nested Sampling tree."""
 
     def __init__(self, random=False):
@@ -568,7 +568,7 @@ class SingleCounter(object):
                 self.logVolremaining += log1p(-1.0 / nlive)
 
 
-class MultiCounter(object):
+class MultiCounter:
     """Like :py:class:`SingleCounter`, but bootstrap capable.
 
     **Attributes**:
@@ -612,7 +612,7 @@ class MultiCounter(object):
         self.rootids = [allyes]
         self.insertion_order_sample = []
         # np.random.seed(1)
-        for i in range(nbootstraps):
+        for _i in range(nbootstraps):
             mask = ~allyes
             rootids = np.unique(np.random.randint(nroots, size=nroots))
             mask[rootids] = True

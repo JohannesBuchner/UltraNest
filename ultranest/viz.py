@@ -215,9 +215,9 @@ def isnotebook():
     """Check if running in a Jupyter notebook."""
     try:
         shell = get_ipython().__class__.__name__
-        if shell == 'ZMQInteractiveShell':
+        if shell == 'ZMQInteractiveShell':  # noqa: SIM103
             return True   # Jupyter notebook or qtconsole
-        elif shell == 'TerminalInteractiveShell':
+        elif shell == 'TerminalInteractiveShell':  # noqa: SIM103
             return False  # Terminal running IPython
         else:
             return False  # Other type (?)
@@ -225,7 +225,7 @@ def isnotebook():
         return False      # Probably standard Python interpreter
 
 
-class LivePointsWidget(object):
+class LivePointsWidget:
     """
     Widget for ipython and jupyter notebooks.
 
@@ -357,7 +357,7 @@ class LivePointsWidget(object):
                             'positive degeneracy' if rho[i,j] > 0 else 'negative degeneracy',
                             param2, param, rho[i,j]))
 
-        for i, (param, fmt) in enumerate(zip(paramnames, paramformats)):
+        for i, (_param, fmt) in enumerate(zip(paramnames, paramformats)):
             if nmodes == 1:
                 line = [' ' for _ in range(width)]
                 for j in np.unique(indices[:,i]):

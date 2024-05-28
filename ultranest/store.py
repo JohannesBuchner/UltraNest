@@ -12,13 +12,14 @@ The information stored is a table with
 
 from __future__ import division, print_function
 
+import contextlib
 import os
 import warnings
 
 import numpy as np
 
 
-class NullPointStore(object):
+class NullPointStore:
     """No storage."""
 
     def __init__(self, ncols):
@@ -51,7 +52,7 @@ class NullPointStore(object):
         return None, None
 
 
-class FilePointStore(object):
+class FilePointStore:
     """Base class for storing points in a file."""
 
     def reset(self):
@@ -119,7 +120,7 @@ class TextPointStore(FilePointStore):
         self.nrows = 0
         self.stack_empty = True
         self._load(filepath)
-        self.fileobj = open(filepath, 'ab')
+        self.fileobj = open(filepath, 'ab')  # noqa: SIM115
         self.fmt = '%.18e'
         self.delimiter = '\t'
 
@@ -127,18 +128,16 @@ class TextPointStore(FilePointStore):
         """Load from data file *filepath*."""
         stack = []
         if os.path.exists(filepath):
-            try:
-                for line in open(filepath):
+            with contextlib.suppress(IOError), open(filepath) as f:
+                for line in f:
                     try:
                         parts = [float(p) for p in line.split()]
                         if len(parts) != self.ncols:
-                            warnings.warn("skipping lines in '%s' with different number of columns" % (filepath))
+                            warnings.warn("skipping lines in '%s' with different number of columns" % (filepath), stacklevel=3)
                             continue
                         stack.append(parts)
                     except ValueError:
-                        warnings.warn("skipping unparsable line in '%s'" % (filepath))
-            except IOError:
-                pass
+                        warnings.warn("skipping unparsable line in '%s'" % (filepath), stacklevel=3)
 
         self.stack = list(enumerate(stack))
         self.ncalls = len(self.stack)
