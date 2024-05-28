@@ -2292,7 +2292,7 @@ class ReactiveNestedSampler:
             widen_before_initial_plateau_num_warn=10000,
             widen_before_initial_plateau_num_max=50000,
     ):
-        """Run until target convergence criteria are fulfilled.
+        r"""Run until target convergence criteria are fulfilled.
 
         Parameters
         ----------
@@ -2376,6 +2376,48 @@ class ReactiveNestedSampler:
             of initial live points so that once the plateau is traversed,
             *min_num_live_points* live points remain, but not more than
             *widen_before_initial_plateau_num_warn*.
+            
+            
+        Returns
+        ------
+        results (dict): Results dictionary, with the following entries:
+        
+            - samples (ndarray): re-weighted posterior samples: distributed according to :math:`p(\theta | d)` - these points are not sorted, and can be assumed to have been randomly shuffled. See :py:func:`ultranest.utils.resample_equal` for more details.
+            - niter (int): number of sampler iterations
+            - ncall (int): total number of likelihood evaluations (accepted and not)
+            - logz (float64): natural logarithm of the evidence :math:`\log Z = \log \int p(d|\theta) p(\theta) \text{d}\theta`
+            - logzerr (float64): :math:`1\sigma` error on :math:`\log Z` (`can be safely assumed to be Gaussian <https://github.com/JohannesBuchner/UltraNest/issues/63>`_)
+            - logz_bs (float64): estimate of :math:`\log Z` from bootstrapping - for details, see the `ultranest paper <https://joss.theoj.org/papers/10.21105/joss.03001>`_
+            - logzerr_bs (float64): estimate of the error on the  of :math:`\log Z` from bootstrapping
+            - logz_single (float64): estimate of :math:`\log Z` from a single sampler
+            - logzerr_single (float64): estimate of the error :math:`\log Z` from a single sampler
+            - logzerr_tail (float64): contribution of the tail (i.e. the terminal leaves of the tree) to the error on :math:`\log Z` (?)
+            - ess (float64): effective sample size, i.e. number of samples divided by the estimated correlation length
+            - H (float64): `information gained <https://arxiv.org/abs/2205.00009>`_
+            - Herr (float64): (Gaussian) :math:`1\sigma` error on :math:`H`
+            - posterior (dict): summary information on the posterior marginal distributions for each parameter - a dictionary of lists each with as many items as the fit parameters, indexed as :math:`\theta_i` in the following:
+                - mean (list): expectation value of :math:`\theta_i`
+                - stdev (list): standard deviation of :math:`\theta_i`
+                - median (list): median of :math:`\theta_i`
+                - errlo (list): one-sigma lower quantile of the marginal for :math:`\theta_i`, i.e. 15.8655% quantile
+                - errup (list): one-sigma upper quantile of the marginal for :math:`\theta_i`, i.e. 84.1345% quantile
+                - information_gain_bits (list): information gain from the marginal prior on :math:`\theta_i` to the posterior
+            - weighted_samples (dict): weighted samples from the posterior, as computed during sampling, sorted by their log-likelihood value
+                - upoints (ndarray): sample locations in the unit cube :math:`[0, 1]^{d}`, where $d$ is the number of parameters - the shape is  `n_iter` by :math:`d`
+                - points (ndarray): sample locations in the physical, user-provided space (same shape as `upoints`)
+                - weights (ndarray): sample weights - shape `n_iter`, they add up to 1
+                - logw (ndarray): ?
+                - bootstrapped_weights (ndarray): ?
+                - logl (ndarray): log-likelihood values at the sample points (?)
+            - maximum_likelihood (dict): summary information on the maximum likelihood value :math:`\theta_{ML}` found by the posterior exploration
+                - logl (float64): value of the log-likelihood at this point: :math:`\log p(d | \theta_{ML})`
+                - point (list): coordinates of :math:`\theta_{ML}` in the physical space
+                - point_untransformed (list): coordinates of :math:`\theta_{ML}` in the unit cube :math:`[0, 1]^{d}`
+            - paramnames (list): input parameter names
+            - insertion_order_MWW_test (dict): results for the `Mann-Whitney U-test <https://en.wikipedia.org/wiki/Mann%E2%80%93Whitney_U_test>`_; for more information, see the :py:class:`ultranest.netiter.MultiCounter` class
+                - independent_iterations (float): shortest insertion order test run length
+                - converged (bool): whether the run is converged according to the MWW test, at the given threshold
+
         """
         for _result in self.run_iter(
             update_interval_volume_fraction=update_interval_volume_fraction,
@@ -2426,7 +2468,7 @@ class ReactiveNestedSampler:
             widen_before_initial_plateau_num_warn=10000,
             widen_before_initial_plateau_num_max=50000,
     ):
-        """Iterate towards convergence.
+        r"""Iterate towards convergence.
 
         Use as an iterator like so::
 
@@ -2437,43 +2479,11 @@ class ReactiveNestedSampler:
 
         Yields
         ------
-        results: dict
-            - niter (int): number of sampler iterations (not likelihood evaluations!)
-            - logz (float64): natural logarithm of the evidence $Z = \int p(d|\theta) p(\theta) \text{d}\theta$
-            - logzerr (float64): $1\sigma$ error on $\log Z$ ([can be safely assumed to be Gaussian](https://github.com/JohannesBuchner/UltraNest/issues/63))
-            - logz_bs (float64): estimate of $\log Z$ from bootstrapping
-            - logzerr_bs (float64): error on the estimate of $\log Z$ from bootstrapping
-            - logz_single (float64): (?)
-            - logzerr_single (float64): (?)
-            - logzerr_tail (float64): remainder integral contribution (?)
-            - ess (float64): effective sample size, i.e. number of samples divided by the estimated correlation length
-            - H (float64): [information gained](https://arxiv.org/abs/2205.00009)
-            - Herr (float64): (Gaussian) $1\sigma$ error on $H$
-            - posterior (dict): summary information on the posterior marginals - a dictionary of lists each with as many items as the fit parameters, indexed as $\theta_i$ in the following:
-                - mean (list): expectation value of $\theta_i$
-                - stdev (list): standard deviation of $\theta_i$
-                - median (list): median of $\theta_i$
-                - errlo (list): one-sigma lower quantile of the marginal for $\theta_i$, i.e. $15.8655$% quantile
-                - errup (list): one-sigma upper quantile of the marginal for $\theta_i$, i.e. $84.1345$% quantile
-                - information_gain_bits (list): information gain from the marginal prior on $\theta_i$ to the posterior
-        - weighted_samples (dict): weighted samples from the posterior, as computed during sampling, sorted by their log-likelihood value
-            - upoints (ndarray): sample locations in the unit cube $[0, 1]^{d}$, where $d$ is the number of parameters - the shape is  `n_iter` by $d$
-            - points (ndarray): sample locations in the physical, user-provided space (same shape as `upoints`)
-            - weights (ndarray): sample weights - shape `n_iter`, they add to 1
-            - logw (ndarray): ?
-            - bootstrapped_weights (ndarray): ?
-            - logl (ndarray): log-likelihood values at the sample points (?)
-        - samples (ndarray): re-weighted posterior samples: distributed according to $p(\theta | d)$ - these points are not sorted, and can be assumed to have been randomly shuffled (?)
-        - maximum_likelihood (dict): summary information on the maximum likelihood value $\theta_{ML}$ found by the posterior exploration
-            - logl (float64): value of the log-likelihood at this point: $p(d | \theta_{ML})$
-            - point (list): coordinates of $\theta_{ML}$ in the physical space
-            - point_untransformed (list): coordinates of $\theta_{ML}$ in the unit cube
-        - ncall (int): total number of likelihood evaluations (accepted and not)
-        - paramnames (list): input parameter names
-        - insertion_order_MWW_test (dict): results for the MWW test (?, what is [Buchner+21 in prep](https://johannesbuchner.github.io/UltraNest/performance.html#output-files)?)
-            - independent_iterations (float)
-            - converged (bool)
-
+        
+        results (dict):
+        
+            Results dictionary computed at the current iteration, with the same
+            keys as discussed in the :py:meth:`run` method. 
         """
         # frac_remain=1  means 1:1 -> dlogz=log(0.5)
         # frac_remain=0.1 means 1:10 -> dlogz=log(0.1)
