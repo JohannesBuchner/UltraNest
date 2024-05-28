@@ -2381,16 +2381,16 @@ class ReactiveNestedSampler:
         Returns
         ------
         results (dict): Results dictionary, with the following entries:
-        
+                
             - samples (ndarray): re-weighted posterior samples: distributed according to :math:`p(\theta | d)` - these points are not sorted, and can be assumed to have been randomly shuffled. See :py:func:`ultranest.utils.resample_equal` for more details.
+            - logz (float64): natural logarithm of the evidence :math:`\log Z = \log \int p(d|\theta) p(\theta) \text{d}\theta`
+            - logzerr (float64): global estimate of the :math:`1\sigma` error on :math:`\log Z` (`can be safely assumed to be Gaussian <https://github.com/JohannesBuchner/UltraNest/issues/63>`_); obtained as the quadratic sum of ``logz_bs`` and ``logz_tail``. Users are advised to use ``logz`` :math:`\pm` ``logzerr`` as the best estimate for the evidence and its error.
             - niter (int): number of sampler iterations
             - ncall (int): total number of likelihood evaluations (accepted and not)
-            - logz (float64): natural logarithm of the evidence :math:`\log Z = \log \int p(d|\theta) p(\theta) \text{d}\theta`
-            - logzerr (float64): global estimate of the :math:`1\sigma` error on :math:`\log Z` (`can be safely assumed to be Gaussian <https://github.com/JohannesBuchner/UltraNest/issues/63>`_); obtained as the quadratic mean of ``logz_bs`` and ``logz_tail``
             - logz_bs (float64): estimate of :math:`\log Z` from bootstrapping - for details, see the `ultranest paper <https://joss.theoj.org/papers/10.21105/joss.03001>`_
             - logzerr_bs (float64): estimate of the error on the  of :math:`\log Z` from bootstrapping
             - logz_single (float64): estimate of :math:`\log Z` from a single sampler
-            - logzerr_single (float64): estimate of the error :math:`\log Z` from a single sampler
+            - logzerr_single (float64): estimate of the error :math:`\log Z` from a single sampler, obtained as :math:`\sqrt{H / n_{\text{live}}}`
             - logzerr_tail (float64): contribution of the tail (i.e. the terminal leaves of the tree) to the error on :math:`\log Z` (?)
             - ess (float64): effective sample size, i.e. number of samples divided by the estimated correlation length, estimated as :math:`N / (1 + N^{-1} \sum_i (N w_i - 1)^2)` where :math:`w_i` are the sample weights
             - H (float64): `information gained <https://arxiv.org/abs/2205.00009>`_
@@ -2405,19 +2405,18 @@ class ReactiveNestedSampler:
             - weighted_samples (dict): weighted samples from the posterior, as computed during sampling, sorted by their log-likelihood value
                 - upoints (ndarray): sample locations in the unit cube :math:`[0, 1]^{d}`, where $d$ is the number of parameters - the shape is ``n_iter`` by :math:`d`
                 - points (ndarray): sample locations in the physical, user-provided space (same shape as ``upoints``)
-                - weights (ndarray): sample weights - shape ``n_iter``, they add up to 1
-                - logw (ndarray): ?
-                - bootstrapped_weights (ndarray): ?
-                - logl (ndarray): log-likelihood values at the sample points (?)
+                - weights (ndarray): sample weights - shape ``n_iter``, they sum to 1
+                - logw (ndarray): logs of the sample weights (?)
+                - bootstrapped_weights (ndarray): bootstrapped estimate of the sample weights
+                - logl (ndarray): log-likelihood values at the sample points
             - maximum_likelihood (dict): summary information on the maximum likelihood value :math:`\theta_{ML}` found by the posterior exploration
                 - logl (float64): value of the log-likelihood at this point: :math:`\log p(d | \theta_{ML})`
                 - point (list): coordinates of :math:`\theta_{ML}` in the physical space
                 - point_untransformed (list): coordinates of :math:`\theta_{ML}` in the unit cube :math:`[0, 1]^{d}`
             - paramnames (list): input parameter names
-            - insertion_order_MWW_test (dict): results for the `Mann-Whitney U-test <https://en.wikipedia.org/wiki/Mann%E2%80%93Whitney_U_test>`_; for more information, see the :py:class:`ultranest.netiter.MultiCounter` class
+            - insertion_order_MWW_test (dict): results for the Mann-Whitney U-test; for more information, see the :py:class:`ultranest.netiter.MultiCounter` class or `section 4.5.2 of Buchner 2023 <http://arxiv.org/abs/2101.09675>`_
                 - independent_iterations (float): shortest insertion order test run length
                 - converged (bool): whether the run is converged according to the MWW test, at the given threshold
-
         """
         for _result in self.run_iter(
             update_interval_volume_fraction=update_interval_volume_fraction,
