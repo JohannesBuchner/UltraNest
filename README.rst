@@ -116,13 +116,11 @@ Usage
 
 * `Get started! <https://johannesbuchner.github.io/UltraNest/using-ultranest.html>`_
 
-Read the full documentation with tutorials at:
+* Read the full documentation with tutorials at:
 
-* https://johannesbuchner.github.io/UltraNest/
-
-* `API Reference: <https://johannesbuchner.github.io/UltraNest/ultranest.html#ultranest.integrator.ReactiveNestedSampler>`_.
-
-* `Code repository: https://github.com/JohannesBuchner/UltraNest/ <https://github.com/JohannesBuchner/UltraNest/>`_
+  * https://johannesbuchner.github.io/UltraNest/
+  * `API Reference: <https://johannesbuchner.github.io/UltraNest/ultranest.html#ultranest.integrator.ReactiveNestedSampler>`_.
+  * `Code repository: https://github.com/JohannesBuchner/UltraNest/ <https://github.com/JohannesBuchner/UltraNest/>`_
 
 Licence
 ^^^^^^^
@@ -139,7 +137,7 @@ Contributors
 ^^^^^^^^^^^^
 
 * Nicholas Susemiehl
-* QZ Gao
+* Quinn Gao
 * Sigfried Vanaverbeke
 * Warrick Ball
 * Adipol Phosrisom
