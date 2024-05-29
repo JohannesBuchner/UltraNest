@@ -119,7 +119,7 @@ Usage
 * Read the full documentation with tutorials at:
 
   * https://johannesbuchner.github.io/UltraNest/
-  * `API Reference: <https://johannesbuchner.github.io/UltraNest/ultranest.html#ultranest.integrator.ReactiveNestedSampler>`_.
+  * `API Reference <https://johannesbuchner.github.io/UltraNest/ultranest.html#ultranest.integrator.ReactiveNestedSampler>`_.
   * `Code repository: https://github.com/JohannesBuchner/UltraNest/ <https://github.com/JohannesBuchner/UltraNest/>`_
 
 Licence
