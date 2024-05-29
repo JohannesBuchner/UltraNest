@@ -2502,11 +2502,10 @@ class ReactiveNestedSampler:
 
         Yields
         ------
-
         results (dict):
             Results dictionary computed at the current iteration, with the same
             keys as discussed in the :py:meth:`run` method.
-"""
+        """
         # frac_remain=1  means 1:1 -> dlogz=log(0.5)
         # frac_remain=0.1 means 1:10 -> dlogz=log(0.1)
         # dlogz_min = log(1./(1 + frac_remain))
