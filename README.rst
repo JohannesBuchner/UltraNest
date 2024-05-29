@@ -141,6 +141,7 @@ Contributors
 * Sigfried Vanaverbeke
 * Warrick Ball
 * Adipol Phosrisom
+* Pieter Vuylsteke
 * Alexander Harvey Nitz
 * Gregory David Martinez
 * Grigorii Smirnov-Pinchukov
