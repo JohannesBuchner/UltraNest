@@ -114,15 +114,15 @@ Features
 Usage
 ^^^^^
 
-`Get started! <https://johannesbuchner.github.io/UltraNest/using-ultranest.html>`_
+* `Get started! <https://johannesbuchner.github.io/UltraNest/using-ultranest.html>`_
 
 Read the full documentation with tutorials at:
 
-https://johannesbuchner.github.io/UltraNest/
+* https://johannesbuchner.github.io/UltraNest/
 
-`API Reference: <https://johannesbuchner.github.io/UltraNest/ultranest.html#ultranest.integrator.ReactiveNestedSampler>`_.
+* `API Reference: <https://johannesbuchner.github.io/UltraNest/ultranest.html#ultranest.integrator.ReactiveNestedSampler>`_.
 
-`Code repository: https://github.com/JohannesBuchner/UltraNest/ <https://github.com/JohannesBuchner/UltraNest/>`_
+* `Code repository: https://github.com/JohannesBuchner/UltraNest/ <https://github.com/JohannesBuchner/UltraNest/>`_
 
 Licence
 ^^^^^^^
@@ -134,3 +134,21 @@ GPLv3 (see LICENCE file). If you require another license, please contact me.
 The cute hedgehog icon was made by `Freepik <https://www.flaticon.com/authors/freepik>`_.
 It symbolises UltraNest's approach of carefully walking up a likelihood,
 ready to defend against any encountered danger.
+
+Contributors
+^^^^^^^^^^^^
+ * Nicholas Susemiehl
+ * QZ Gao
+ * Sigfried Vanaverbeke
+ * Warrick Ball
+ * Adipol Phosrisom
+ * Alexander Harvey Nitz
+ * Gregory David Martinez
+ * Grigorii Smirnov-Pinchukov
+ * Fabio F Acero
+ * Jacopo Tissino
+ * Benjamin Beauchesne
+ * Kyle Barbary (some ellipsoid code adopted from https://github.com/kbarbary/nestle)
+ * Adam Moss (some architecture and parallelisation adopted from https://github.com/adammoss/nnest)
+ * Josh Speagle (some visualisations adopted from https://github.com/joshspeagle/dynesty/)
+ * Johannes Buchner

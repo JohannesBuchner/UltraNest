@@ -59,14 +59,21 @@ clean-doc:
 	rm -rf docs/build
 	nbstripout docs/*.ipynb
 
-lint: ## check style with flake8
-	flake8 ultranest tests
+SOURCES := $(shell ls ultranest/*.py | grep -Ev '^ultranest/(flatnuts|dychmc|dyhmc|pathsampler).py' | grep -v .pyx.py)
+
+lint: ${SOURCES} ## check style
+	flake8 ${SOURCES}
+	pycodestyle ${SOURCES}
+	pydocstyle ${SOURCES}
 
 test: ## run tests quickly with the default Python
 	PYTHONPATH=. pytest
 
 test-all: ## run tests on every Python version with tox
 	tox
+
+build:
+	$(PYTHON) setup.py build_ext --inplace
 
 coverage: ## check code coverage quickly with the default Python
 	PYTHONPATH=. coverage run --source ultranest -m pytest
