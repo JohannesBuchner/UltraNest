@@ -126,11 +126,10 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">exp</span><span class="p">,</span> <span class="n">log</span><span class="p">,</span> <span class="n">logaddexp</span>
 
-<span class="kn">from</span> <span class="nn">ultranest.mlfriends</span> <span class="kn">import</span> <span class="p">(</span><span class="n">AffineLayer</span><span class="p">,</span> <span class="n">LocalAffineLayer</span><span class="p">,</span> <span class="n">MLFriends</span><span class="p">,</span>
-                                 <span class="n">RobustEllipsoidRegion</span><span class="p">,</span> <span class="n">ScalingLayer</span><span class="p">,</span>
-                                 <span class="n">WrappingEllipsoid</span><span class="p">,</span> <span class="n">find_nearby</span><span class="p">)</span>
-
 <span class="kn">from</span> <span class="nn">.hotstart</span> <span class="kn">import</span> <span class="n">get_auxiliary_contbox_parameterization</span>
+<span class="kn">from</span> <span class="nn">.mlfriends</span> <span class="kn">import</span> <span class="p">(</span><span class="n">AffineLayer</span><span class="p">,</span> <span class="n">LocalAffineLayer</span><span class="p">,</span> <span class="n">MLFriends</span><span class="p">,</span>
+                        <span class="n">RobustEllipsoidRegion</span><span class="p">,</span> <span class="n">ScalingLayer</span><span class="p">,</span> <span class="n">WrappingEllipsoid</span><span class="p">,</span>
+                        <span class="n">find_nearby</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">.netiter</span> <span class="kn">import</span> <span class="p">(</span><span class="n">BreadthFirstIterator</span><span class="p">,</span> <span class="n">MultiCounter</span><span class="p">,</span> <span class="n">PointPile</span><span class="p">,</span>
                       <span class="n">SingleCounter</span><span class="p">,</span> <span class="n">TreeNode</span><span class="p">,</span> <span class="n">combine_results</span><span class="p">,</span>
                       <span class="n">count_tree_between</span><span class="p">,</span> <span class="n">dump_tree</span><span class="p">,</span> <span class="n">find_nodes_before</span><span class="p">,</span>
@@ -382,7 +381,7 @@
             <span class="n">logls_new</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">for</span> <span class="n">Lmin</span><span class="p">,</span> <span class="n">active_values</span><span class="p">,</span> <span class="n">children</span> <span class="ow">in</span> <span class="n">batch</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">_Lmin</span><span class="p">,</span> <span class="n">active_values</span><span class="p">,</span> <span class="n">children</span> <span class="ow">in</span> <span class="n">batch</span><span class="p">:</span>
 
             <span class="n">next_node2</span> <span class="o">=</span> <span class="n">explorer2</span><span class="o">.</span><span class="n">next_node</span><span class="p">()</span>
             <span class="n">rootid2</span><span class="p">,</span> <span class="n">node2</span><span class="p">,</span> <span class="p">(</span><span class="n">active_nodes2</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">active_values2</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="o">=</span> <span class="n">next_node2</span>
@@ -427,7 +426,7 @@
                 <span class="n">last_good_like</span> <span class="o">=</span> <span class="n">last_good_like</span> <span class="o">*</span> <span class="n">epsilon</span>
                 <span class="k">break</span>
 
-            <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">logl_old</span> <span class="ow">in</span> <span class="n">children</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">_logl_old</span> <span class="ow">in</span> <span class="n">children</span><span class="p">:</span>
                 <span class="n">logl_new</span> <span class="o">=</span> <span class="n">logls_new</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
                 <span class="n">j</span> <span class="o">+=</span> <span class="mi">1</span>
 
@@ -520,7 +519,7 @@
 
 <div class="viewcode-block" id="NestedSampler">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.integrator.NestedSampler">[docs]</a>
-<span class="k">class</span> <span class="nc">NestedSampler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">NestedSampler</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Simple Nested sampler for reference.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -697,7 +696,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
             <span class="c1"># try to resume:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Resuming...&#39;</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_live_points</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">_i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_live_points</span><span class="p">):</span>
                 <span class="n">_</span><span class="p">,</span> <span class="n">row</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pointstore</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">row</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">prev_logl</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
@@ -1111,7 +1110,7 @@
             <span class="n">old_param_names</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
             <span class="n">auxiliary_usamples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
-        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;not hot-resuming, could not load file &quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="n">usample_filename</span><span class="p">)</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;not hot-resuming, could not load file &quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="n">usample_filename</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">param_names</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">vectorized</span>
 
     <span class="n">ulogl</span> <span class="o">=</span> <span class="n">auxiliary_usamples</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span>
@@ -1141,7 +1140,7 @@
 
 <div class="viewcode-block" id="ReactiveNestedSampler">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.integrator.ReactiveNestedSampler">[docs]</a>
-<span class="k">class</span> <span class="nc">ReactiveNestedSampler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">ReactiveNestedSampler</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Nested sampler with reactive exploration strategy.</span>
 
 <span class="sd">    Storage &amp; resume capable, optionally MPI parallelised.</span>
@@ -1610,7 +1609,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_point_stack</span><span class="p">:</span>
             <span class="c1"># try to resume:</span>
             <span class="c1"># self.logger.info(&#39;Resuming...&#39;)</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nnewroots</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">_i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nnewroots</span><span class="p">):</span>
                 <span class="n">rowid</span><span class="p">,</span> <span class="n">row</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pointstore</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">row</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="k">break</span>
@@ -1800,7 +1799,7 @@
 
         <span class="n">Llo_KL</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
         <span class="n">Lhi_KL</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">pi</span><span class="p">,</span> <span class="n">dKLi</span><span class="p">,</span> <span class="n">logwi</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">transpose</span><span class="p">(),</span> <span class="n">dKLtot</span><span class="p">,</span> <span class="n">other_logw</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">pi</span><span class="p">,</span> <span class="n">dKLi</span><span class="p">,</span> <span class="n">logwi</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">transpose</span><span class="p">(),</span> <span class="n">dKLtot</span><span class="p">,</span> <span class="n">other_logw</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">dKLi</span> <span class="o">&gt;</span> <span class="n">dKL</span><span class="p">:</span>
                 <span class="n">ilo</span><span class="p">,</span> <span class="n">ihi</span> <span class="o">=</span> <span class="n">_get_cumsum_range</span><span class="p">(</span><span class="n">pi</span><span class="p">,</span> <span class="mf">1.</span> <span class="o">/</span> <span class="mi">400</span><span class="p">)</span>
                 <span class="c1"># ilo and ihi are most likely missing in this iterator</span>
@@ -1830,9 +1829,8 @@
         <span class="n">logzerr_tail</span> <span class="o">=</span> <span class="n">logaddexp</span><span class="p">(</span><span class="n">log</span><span class="p">(</span><span class="n">tail_fraction</span><span class="p">)</span> <span class="o">+</span> <span class="n">main_iterator</span><span class="o">.</span><span class="n">logZ</span><span class="p">,</span> <span class="n">main_iterator</span><span class="o">.</span><span class="n">logZ</span><span class="p">)</span> <span class="o">-</span> <span class="n">main_iterator</span><span class="o">.</span><span class="n">logZ</span>
         <span class="n">maxlogzerr</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">main_iterator</span><span class="o">.</span><span class="n">logZerr</span><span class="p">,</span> <span class="n">deltalogZ</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">main_iterator</span><span class="o">.</span><span class="n">logZerr_bs</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">maxlogzerr</span> <span class="o">&gt;</span> <span class="n">dlogz</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">logzerr_tail</span> <span class="o">&gt;</span> <span class="n">maxlogzerr</span><span class="p">:</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;logz error is dominated by tail. Decrease frac_remain to make progress.&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="ow">and</span> <span class="n">logzerr_tail</span> <span class="o">&gt;</span> <span class="n">maxlogzerr</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;logz error is dominated by tail. Decrease frac_remain to make progress.&quot;</span><span class="p">)</span>
             <span class="c1"># very convervative estimation using all iterations</span>
             <span class="c1"># this punishes short intervals with many live points</span>
             <span class="n">niter_max</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">saved_logl</span><span class="p">)</span>
@@ -1934,7 +1932,7 @@
                 <span class="n">warning_message</span> <span class="o">=</span> <span class="n">warning_message1</span> <span class="o">+</span> <span class="p">(</span><span class="n">warning_message2</span> <span class="o">%</span> <span class="p">(</span><span class="s1">&#39; (stored for you in </span><span class="si">%s</span><span class="s1">.csv)&#39;</span> <span class="o">%</span> <span class="n">debug_filename</span><span class="p">))</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">warning_message</span> <span class="o">=</span> <span class="n">warning_message1</span> <span class="o">+</span> <span class="n">warning_message2</span> <span class="o">%</span> <span class="s1">&#39;&#39;</span>
-            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">warning_message</span><span class="p">)</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">warning_message</span><span class="p">,</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
             <span class="n">logl_region</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loglike</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="p">))</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">logl_region</span> <span class="o">==</span> <span class="n">Lmin</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
@@ -1969,12 +1967,12 @@
             <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">inside</span><span class="p">(</span><span class="n">active_u</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">(),</span> \
                 <span class="p">(</span><span class="s2">&quot;None of the live points satisfies the current region!&quot;</span><span class="p">,</span>
                  <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">maxradiussq</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">u</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">unormed</span><span class="p">,</span> <span class="n">active_u</span><span class="p">,</span>
-                 <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span> <span class="s1">&#39;bbox_lo&#39;</span><span class="p">),</span>
-                 <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span> <span class="s1">&#39;bbox_hi&#39;</span><span class="p">),</span>
-                 <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span> <span class="s1">&#39;ellipsoid_cov&#39;</span><span class="p">),</span>
-                 <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span> <span class="s1">&#39;ellipsoid_center&#39;</span><span class="p">),</span>
-                 <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span> <span class="s1">&#39;ellipsoid_invcov&#39;</span><span class="p">),</span>
-                 <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="p">,</span> <span class="s1">&#39;ellipsoid_cov&#39;</span><span class="p">),</span>
+                 <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">bbox_lo</span><span class="p">,</span>
+                 <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">bbox_hi</span><span class="p">,</span>
+                 <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_cov</span><span class="p">,</span>
+                 <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_center</span><span class="p">,</span>
+                 <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_invcov</span><span class="p">,</span>
+                 <span class="bp">self</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">ellipsoid_cov</span><span class="p">,</span>
                  <span class="p">)</span>
 
         <span class="n">nit</span> <span class="o">=</span> <span class="mi">0</span>
@@ -2193,11 +2191,10 @@
                 <span class="n">nextregion</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">region_class</span><span class="p">(</span><span class="n">active_u</span><span class="p">,</span> <span class="n">nextTransformLayer</span><span class="p">)</span>
                 <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">nextregion</span><span class="o">.</span><span class="n">unormed</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
 
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">nextTransformLayer</span><span class="o">.</span><span class="n">nclusters</span> <span class="o">&lt;</span> <span class="mi">20</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-                            <span class="s2">&quot;Found a lot of clusters: </span><span class="si">%d</span><span class="s2"> (</span><span class="si">%d</span><span class="s2"> with &gt;1 members)&quot;</span><span class="p">,</span>
-                            <span class="n">nextTransformLayer</span><span class="o">.</span><span class="n">nclusters</span><span class="p">,</span> <span class="p">(</span><span class="n">cluster_sizes</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">nextTransformLayer</span><span class="o">.</span><span class="n">nclusters</span> <span class="o">&lt;</span> <span class="mi">20</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                        <span class="s2">&quot;Found a lot of clusters: </span><span class="si">%d</span><span class="s2"> (</span><span class="si">%d</span><span class="s2"> with &gt;1 members)&quot;</span><span class="p">,</span>
+                        <span class="n">nextTransformLayer</span><span class="o">.</span><span class="n">nclusters</span><span class="p">,</span> <span class="p">(</span><span class="n">cluster_sizes</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
 
                 <span class="c1"># if self.log:</span>
                 <span class="c1">#     self.logger.info(&quot;computing maxradius...&quot;)</span>
@@ -2416,7 +2413,7 @@
             <span class="n">widen_before_initial_plateau_num_warn</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
             <span class="n">widen_before_initial_plateau_num_max</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run until target convergence criteria are fulfilled.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Run until target convergence criteria are fulfilled.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -2500,8 +2497,73 @@
 <span class="sd">            of initial live points so that once the plateau is traversed,</span>
 <span class="sd">            *min_num_live_points* live points remain, but not more than</span>
 <span class="sd">            *widen_before_initial_plateau_num_warn*.</span>
+
+
+<span class="sd">        Returns</span>
+<span class="sd">        ------</span>
+<span class="sd">        results (dict): Results dictionary, with the following entries:</span>
+
+<span class="sd">            - samples (ndarray): re-weighted posterior samples: distributed according</span>
+<span class="sd">            to :math:`p(\theta | d)` - these points are not sorted, and can be assumed</span>
+<span class="sd">            to have been randomly shuffled.</span>
+<span class="sd">            See :py:func:`ultranest.utils.resample_equal` for more details.</span>
+<span class="sd">            - logz (float64): natural logarithm of the evidence</span>
+<span class="sd">            :math:`\log Z = \log \int p(d|\theta) p(\theta) \text{d}\theta`</span>
+<span class="sd">            - logzerr (float64): global estimate of the :math:`1\sigma` error on</span>
+<span class="sd">            :math:`\log Z`</span>
+<span class="sd">            (`can be safely assumed to be Gaussian &lt;https://github.com/JohannesBuchner/UltraNest/issues/63&gt;`_);</span>
+<span class="sd">            obtained as the quadratic sum of ``logz_bs`` and ``logz_tail``.</span>
+<span class="sd">            Users are advised to use ``logz`` :math:`\pm` ``logzerr``</span>
+<span class="sd">            as the best estimate for the evidence and its error.</span>
+<span class="sd">            - niter (int): number of sampler iterations</span>
+<span class="sd">            - ncall (int): total number of likelihood evaluations (accepted and not)</span>
+<span class="sd">            - logz_bs (float64): estimate of :math:`\log Z` from bootstrapping -</span>
+<span class="sd">            for details, see the</span>
+<span class="sd">            `ultranest paper &lt;https://joss.theoj.org/papers/10.21105/joss.03001&gt;`_</span>
+<span class="sd">            - logzerr_bs (float64): estimate of the error on the  of :math:`\log Z`</span>
+<span class="sd">            from bootstrapping</span>
+<span class="sd">            - logz_single (float64): estimate of :math:`\log Z` from a single sampler</span>
+<span class="sd">            - logzerr_single (float64): estimate of the error :math:`\log Z` from a</span>
+<span class="sd">            single sampler, obtained as :math:`\sqrt{H / n_{\text{live}}}`</span>
+<span class="sd">            - logzerr_tail (float64): contribution of the tail (i.e. the terminal</span>
+<span class="sd">            leaves of the tree) to the error on :math:`\log Z` (?)</span>
+<span class="sd">            - ess (float64): effective sample size, i.e. number of samples divided by</span>
+<span class="sd">            the estimated correlation length, estimated as</span>
+<span class="sd">            :math:`N / (1 + N^{-1} \sum_i (N w_i - 1)^2)` where :math:`w_i` are</span>
+<span class="sd">            the sample weights while :math:`N` is the number of samples</span>
+<span class="sd">            - H (float64): `information gained &lt;https://arxiv.org/abs/2205.00009&gt;`_</span>
+<span class="sd">            - Herr (float64): (Gaussian) :math:`1\sigma` error on :math:`H`</span>
+<span class="sd">            - posterior (dict): summary information on the posterior marginal distributions for each parameter -</span>
+<span class="sd">            a dictionary of lists each with as many items as the fit parameters,</span>
+<span class="sd">            indexed as :math:`\theta_i` in the following:</span>
+<span class="sd">                - mean (list): expectation value of :math:`\theta_i`</span>
+<span class="sd">                - stdev (list): standard deviation of :math:`\theta_i`</span>
+<span class="sd">                - median (list): median of :math:`\theta_i`</span>
+<span class="sd">                - errlo (list): one-sigma lower quantile of the marginal for :math:`\theta_i`, i.e. 15.8655% quantile</span>
+<span class="sd">                - errup (list): one-sigma upper quantile of the marginal for :math:`\theta_i`, i.e. 84.1345% quantile</span>
+<span class="sd">                - information_gain_bits (list): information gain from the marginal prior on :math:`\theta_i` to the posterior</span>
+<span class="sd">            - weighted_samples (dict): weighted samples from the posterior, as computed during sampling,</span>
+<span class="sd">            sorted by their log-likelihood value</span>
+<span class="sd">                - upoints (ndarray): sample locations in the unit cube :math:`[0, 1]^{d}`,</span>
+<span class="sd">                where :math:`d` is the number of parameters - the shape is ``n_iter`` by :math:`d`</span>
+<span class="sd">                - points (ndarray): sample locations in the physical, user-provided space (same shape as ``upoints``)</span>
+<span class="sd">                - weights (ndarray): sample weights - shape ``n_iter``, they sum to 1</span>
+<span class="sd">                - logw (ndarray): logs of the sample weights (?)</span>
+<span class="sd">                - bootstrapped_weights (ndarray): bootstrapped estimate of the sample weights</span>
+<span class="sd">                - logl (ndarray): log-likelihood values at the sample points</span>
+<span class="sd">            - maximum_likelihood (dict): summary information on the maximum likelihood value</span>
+<span class="sd">            :math:`\theta_{ML}` found by the posterior exploration</span>
+<span class="sd">                - logl (float64): value of the log-likelihood at this point: :math:`\log p(d | \theta_{ML})`</span>
+<span class="sd">                - point (list): coordinates of :math:`\theta_{ML}` in the physical space</span>
+<span class="sd">                - point_untransformed (list): coordinates of :math:`\theta_{ML}` in the unit cube :math:`[0, 1]^{d}`</span>
+<span class="sd">            - paramnames (list): input parameter names</span>
+<span class="sd">            - insertion_order_MWW_test (dict): results for the Mann-Whitney U-test;</span>
+<span class="sd">            for more information, see the :py:class:`ultranest.netiter.MultiCounter` class</span>
+<span class="sd">            or `section 4.5.2 of Buchner 2023 &lt;http://arxiv.org/abs/2101.09675&gt;`_</span>
+<span class="sd">                - independent_iterations (float): shortest insertion order test run length</span>
+<span class="sd">                - converged (bool): whether the run is converged according to the MWW test, at the given threshold</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_iter</span><span class="p">(</span>
+        <span class="k">for</span> <span class="n">_result</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_iter</span><span class="p">(</span>
             <span class="n">update_interval_volume_fraction</span><span class="o">=</span><span class="n">update_interval_volume_fraction</span><span class="p">,</span>
             <span class="n">update_interval_ncall</span><span class="o">=</span><span class="n">update_interval_ncall</span><span class="p">,</span>
             <span class="n">log_interval</span><span class="o">=</span><span class="n">log_interval</span><span class="p">,</span>
@@ -2553,7 +2615,7 @@
             <span class="n">widen_before_initial_plateau_num_warn</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
             <span class="n">widen_before_initial_plateau_num_max</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Iterate towards convergence.</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Iterate towards convergence.</span>
 
 <span class="sd">        Use as an iterator like so::</span>
 
@@ -2564,7 +2626,9 @@
 
 <span class="sd">        Yields</span>
 <span class="sd">        ------</span>
-<span class="sd">        results: dict</span>
+<span class="sd">        results (dict):</span>
+<span class="sd">            Results dictionary computed at the current iteration, with the same</span>
+<span class="sd">            keys as discussed in the :py:meth:`run` method.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># frac_remain=1  means 1:1 -&gt; dlogz=log(0.5)</span>
         <span class="c1"># frac_remain=0.1 means 1:10 -&gt; dlogz=log(0.1)</span>

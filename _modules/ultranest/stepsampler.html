@@ -623,7 +623,7 @@
 
 <div class="viewcode-block" id="IslandPopulationRandomLivepointSelector">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.IslandPopulationRandomLivepointSelector">[docs]</a>
-<span class="k">class</span> <span class="nc">IslandPopulationRandomLivepointSelector</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">IslandPopulationRandomLivepointSelector</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Mutually isolated live point subsets.</span>
 
 <span class="sd">    To replace dead points, chains are only started from the same</span>
@@ -703,7 +703,7 @@
 
 <div class="viewcode-block" id="StepSampler">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.StepSampler">[docs]</a>
-<span class="k">class</span> <span class="nc">StepSampler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">StepSampler</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for a simple step sampler, staggering around.</span>
 
 <span class="sd">    Scales proposal towards a 50% acceptance rate.</span>
@@ -1201,7 +1201,7 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># find most recent point in history conforming to current Lmin</span>
-        <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="p">(</span><span class="n">uj</span><span class="p">,</span> <span class="n">Lj</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="p">(</span><span class="n">_uj</span><span class="p">,</span> <span class="n">Lj</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">):</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">Lj</span> <span class="o">&gt;</span> <span class="n">Lmin</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">[:</span><span class="n">j</span><span class="p">]</span>
                 <span class="c1"># print(&quot;wandered out of L constraint; reverting&quot;, ui[0])</span>
@@ -1489,7 +1489,7 @@
 
 <div class="viewcode-block" id="SequentialDirectionGenerator">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.SequentialDirectionGenerator">[docs]</a>
-<span class="k">class</span> <span class="nc">SequentialDirectionGenerator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">SequentialDirectionGenerator</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Sequentially proposes one parameter after the next.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1537,7 +1537,7 @@
 
 <div class="viewcode-block" id="SequentialRegionDirectionGenerator">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.SequentialRegionDirectionGenerator">[docs]</a>
-<span class="k">class</span> <span class="nc">SequentialRegionDirectionGenerator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">SequentialRegionDirectionGenerator</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Sequentially proposes one region axes after the next.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1591,7 +1591,7 @@
 
 <div class="viewcode-block" id="OrthogonalDirectionGenerator">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.OrthogonalDirectionGenerator">[docs]</a>
-<span class="k">class</span> <span class="nc">OrthogonalDirectionGenerator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">OrthogonalDirectionGenerator</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Orthogonalizes proposal vectors.</span>
 
 <span class="sd">    Samples N proposed vectors by a provided method, then orthogonalizes</span>
@@ -1648,7 +1648,7 @@
 
 <div class="viewcode-block" id="SpeedVariableGenerator">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.SpeedVariableGenerator">[docs]</a>
-<span class="k">class</span> <span class="nc">SpeedVariableGenerator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">SpeedVariableGenerator</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Propose directions with only some parameters variable.</span>
 
 <span class="sd">    Propose in region direction, but only include some dimensions at a time.</span>

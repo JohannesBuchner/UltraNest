@@ -322,7 +322,7 @@
 
 <div class="viewcode-block" id="PredictionBand">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.plot.PredictionBand">[docs]</a>
-<span class="k">class</span> <span class="nc">PredictionBand</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">PredictionBand</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Plot bands of model predictions as calculated from a chain.</span>
 
 <span class="sd">    call add(y) to add predictions from each chain point</span>
@@ -546,7 +546,8 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;The number of iterations and samples differ &quot;</span>
                           <span class="s2">&quot;by an amount that isn&#39;t the number of final &quot;</span>
-                          <span class="s2">&quot;live points. `mark_final_live` has been disabled.&quot;</span><span class="p">)</span>
+                          <span class="s2">&quot;live points. `mark_final_live` has been disabled.&quot;</span><span class="p">,</span>
+                          <span class="n">stacklevel</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
             <span class="n">mark_final_live</span> <span class="o">=</span> <span class="kc">False</span>
 
     <span class="c1"># Determine plotting bounds for each subplot.</span>
@@ -917,7 +918,7 @@
         <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="sa">r</span><span class="s2">&quot;$x_{</span><span class="si">%d</span><span class="s2">}$&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndim</span><span class="p">)]</span>
 
     <span class="c1"># Setting up smoothing.</span>
-    <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">smooth</span><span class="p">,</span> <span class="n">int_type</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">smooth</span><span class="p">,</span> <span class="n">float_type</span><span class="p">)):</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">smooth</span><span class="p">,</span> <span class="n">int_type</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">smooth</span><span class="p">,</span> <span class="n">float_type</span><span class="p">)):</span>  <span class="c1"># noqa: SIM101</span>
         <span class="n">smooth</span> <span class="o">=</span> <span class="p">[</span><span class="n">smooth</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndim</span><span class="p">)]</span>
 
     <span class="c1"># Setting up default plot layout.</span>

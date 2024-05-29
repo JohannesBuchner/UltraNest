@@ -197,8 +197,7 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">pF</span><span class="p">,</span> <span class="n">tF</span><span class="p">,</span> <span class="n">iF</span> <span class="o">=</span> <span class="n">nearest_box_intersection_line</span><span class="p">(</span><span class="n">ray_origin</span><span class="p">,</span> <span class="n">ray_direction</span><span class="p">,</span> <span class="n">fwd</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">pN</span><span class="p">,</span> <span class="n">tN</span><span class="p">,</span> <span class="n">iN</span> <span class="o">=</span> <span class="n">nearest_box_intersection_line</span><span class="p">(</span><span class="n">ray_origin</span><span class="p">,</span> <span class="n">ray_direction</span><span class="p">,</span> <span class="n">fwd</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">tN</span> <span class="o">&gt;</span> <span class="n">tF</span> <span class="ow">or</span> <span class="n">tF</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;no intersection&quot;</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="p">(</span><span class="n">tN</span> <span class="o">&gt;</span> <span class="n">tF</span> <span class="ow">or</span> <span class="n">tF</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">),</span> <span class="s2">&quot;no intersection&quot;</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">pN</span><span class="p">,</span> <span class="n">tN</span><span class="p">,</span> <span class="n">iN</span><span class="p">),</span> <span class="p">(</span><span class="n">pF</span><span class="p">,</span> <span class="n">tF</span><span class="p">,</span> <span class="n">iF</span><span class="p">)</span></div>
 
 
@@ -499,7 +498,7 @@
     <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="n">i</span><span class="p">:</span>  <span class="c1"># we have this exact point in the chain</span>
         <span class="k">return</span> <span class="n">xj</span><span class="p">,</span> <span class="n">vj</span><span class="p">,</span> <span class="n">Lj</span><span class="p">,</span> <span class="kc">True</span>
 
-    <span class="k">assert</span> <span class="ow">not</span> <span class="n">k</span> <span class="o">==</span> <span class="n">i</span>  <span class="c1"># otherwise the above would be true too</span>
+    <span class="k">assert</span> <span class="n">k</span> <span class="o">!=</span> <span class="n">i</span>  <span class="c1"># otherwise the above would be true too</span>
 
     <span class="c1"># expand_to_step explores each reflection in detail, so</span>
     <span class="c1"># any points with change in v should have j == i</span>
@@ -526,7 +525,7 @@
 
 <div class="viewcode-block" id="SamplingPath">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.samplingpath.SamplingPath">[docs]</a>
-<span class="k">class</span> <span class="nc">SamplingPath</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">SamplingPath</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Path described by a (potentially sparse) sequence of points.</span>
 
 <span class="sd">    Convention of the stored point tuple ``(i, x, v, L)``:</span>
@@ -621,7 +620,7 @@
 
 <div class="viewcode-block" id="ContourSamplingPath">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.samplingpath.ContourSamplingPath">[docs]</a>
-<span class="k">class</span> <span class="nc">ContourSamplingPath</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">ContourSamplingPath</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Region-aware form of the sampling path.</span>
 
 <span class="sd">    Uses region points to guess a likelihood contour gradient.</span>

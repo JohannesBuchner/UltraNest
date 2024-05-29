@@ -98,16 +98,7 @@ If a `log_dir` directory was specified, you will find these files:
 * info folder: machine-readable summaries of the posterior
 
   * **post_summary.csv**: for each parameter: mean, std, median, upper and lower 1 sigma error. Can be read with `pandas.read_csv <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html>`_.
-  * **results.json**: Contains detailed output of the nested sampling run. Can be read with `json.load <https://docs.python.org/3/library/json.html>`_.
-
-    * paramnames: parameter names
-    * ncall, niter: Number of likelihood calls, nested sampling iterations
-    * maximum_likelihood: highest loglikelihood point found so far
-    * H, Herr: (global) information gain
-    * ess: effective sample size
-    * logz, logzerr: ln(Z) and its uncertainty. logzerr_tail is the remainder integral contribution, logzerr_bs is from bootstrapping
-    * posterior: for each parameter: mean, std, median, upper and lower 1 sigma error, and `information gain <https://arxiv.org/abs/2205.00009>`_.
-    * insertion_order_MWW_test: MWW test results (see Buchner+21 in prep)
+  * **results.json**: Contains detailed output of the nested sampling run, with all the same keys as the result dictionary in :py:meth:`ultranest.integrator.ReactiveNestedSampler.run`, except for ``samples`` and ``weighted_samples`` (as the sample information is saved in separate files - see the following entries in this list). Can be read with `json.load <https://docs.python.org/3/library/json.html>`_.
 
 * chains: machine-readable chains
 

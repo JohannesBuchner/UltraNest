@@ -417,7 +417,7 @@
             <span class="n">nc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">popsize</span>
             <span class="n">nrejects_expected</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">nrejects</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">popsize</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="mf">0.234</span><span class="p">)</span>
 
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">_i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">):</span>
                 <span class="c1"># perturb walker population</span>
                 <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span><span class="p">(</span><span class="n">allu</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">)</span>
                 <span class="c1"># compute intersection of u + t * v with unit cube</span>
@@ -1043,7 +1043,7 @@
 
             <span class="n">interval_final</span> <span class="o">=</span> <span class="mf">0.</span>
 
-            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">_k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">):</span>
                 <span class="c1"># Defining scale jitter</span>
                 <span class="n">factor_scale</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_jitter_func</span><span class="p">()</span>
                 <span class="c1"># Defining slice direction</span>
@@ -1066,7 +1066,7 @@
                 <span class="n">status</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">popsize</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">int_t</span><span class="p">)</span>  <span class="c1"># one for success, zero for running</span>
 
                 <span class="c1"># Loop until each points has found its next position or we reached 100 iterations</span>
-                <span class="k">for</span> <span class="n">it</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_it</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">_it</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_it</span><span class="p">):</span>
                     <span class="c1"># Sampling points on the slices</span>
                     <span class="n">slice_position</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">popsize</span><span class="p">,))</span>
                     <span class="n">t</span> <span class="o">=</span> <span class="n">tleft_worker</span> <span class="o">+</span> <span class="p">(</span><span class="n">tright_worker</span> <span class="o">-</span> <span class="n">tleft_worker</span><span class="p">)</span> <span class="o">*</span> <span class="n">slice_position</span>

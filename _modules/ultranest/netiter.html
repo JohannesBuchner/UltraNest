@@ -135,7 +135,7 @@
 
 <div class="viewcode-block" id="TreeNode">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.TreeNode">[docs]</a>
-<span class="k">class</span> <span class="nc">TreeNode</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">TreeNode</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Simple tree node.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">children</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -167,7 +167,7 @@
 
 <div class="viewcode-block" id="BreadthFirstIterator">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.BreadthFirstIterator">[docs]</a>
-<span class="k">class</span> <span class="nc">BreadthFirstIterator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">BreadthFirstIterator</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Generator exploring the tree.</span>
 
 <span class="sd">    Nodes are ordered by value and expanded in order.</span>
@@ -326,14 +326,14 @@
             <span class="n">lanes</span><span class="p">[</span><span class="n">laneid</span><span class="p">]</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># expand width:</span>
-            <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">child</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">_child</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">):</span>
                 <span class="n">rightstr2</span> <span class="o">=</span> <span class="n">_stringify_lanes</span><span class="p">(</span><span class="n">lanes</span><span class="p">[</span><span class="n">laneid</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:],</span> <span class="n">char</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&#39;</span><span class="p">)</span>
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rightstr2</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
                     <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">leftstr</span> <span class="o">+</span> <span class="s1">&#39;║&#39;</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">*</span> <span class="n">j</span> <span class="o">+</span> <span class="n">rightstr2</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">leftstr</span> <span class="o">+</span> <span class="s1">&#39;╠&#39;</span> <span class="o">+</span> <span class="s1">&#39;╦&#39;</span> <span class="o">*</span> <span class="p">(</span><span class="n">nchildren</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;╗&#39;</span> <span class="o">+</span> <span class="n">rightstr</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 
             <span class="n">lanes</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">laneid</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">child</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
                 <span class="n">lanes</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">laneid</span><span class="p">,</span> <span class="n">child</span><span class="p">)</span>
         <span class="n">explorer</span><span class="o">.</span><span class="n">expand_children_of</span><span class="p">(</span><span class="n">rootid</span><span class="p">,</span> <span class="n">node</span><span class="p">)</span>
         <span class="n">lastlane</span> <span class="o">=</span> <span class="n">laneid</span></div>
@@ -520,7 +520,7 @@
 
 <div class="viewcode-block" id="PointPile">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.PointPile">[docs]</a>
-<span class="k">class</span> <span class="nc">PointPile</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">PointPile</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A in-memory linearized storage of point coordinates.</span>
 
 <span class="sd">    :py:class:`TreeNode` objects only store the logL value and id,</span>
@@ -617,7 +617,7 @@
 
 <div class="viewcode-block" id="SingleCounter">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.SingleCounter">[docs]</a>
-<span class="k">class</span> <span class="nc">SingleCounter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">SingleCounter</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Evidence log(Z) and posterior weight summation for a Nested Sampling tree.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">random</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
@@ -729,7 +729,7 @@
 
 <div class="viewcode-block" id="MultiCounter">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.netiter.MultiCounter">[docs]</a>
-<span class="k">class</span> <span class="nc">MultiCounter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span> <span class="nc">MultiCounter</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Like :py:class:`SingleCounter`, but bootstrap capable.</span>
 
 <span class="sd">    **Attributes**:</span>
@@ -773,7 +773,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">rootids</span> <span class="o">=</span> <span class="p">[</span><span class="n">allyes</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">insertion_order_sample</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="c1"># np.random.seed(1)</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nbootstraps</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">_i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nbootstraps</span><span class="p">):</span>
             <span class="n">mask</span> <span class="o">=</span> <span class="o">~</span><span class="n">allyes</span>
             <span class="n">rootids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">nroots</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">nroots</span><span class="p">))</span>
             <span class="n">mask</span><span class="p">[</span><span class="n">rootids</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>

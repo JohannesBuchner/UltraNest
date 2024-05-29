@@ -231,18 +231,7 @@ and the parameter constraints:</p>
 <li><p>info folder: machine-readable summaries of the posterior</p>
 <ul>
 <li><p><strong>post_summary.csv</strong>: for each parameter: mean, std, median, upper and lower 1 sigma error. Can be read with <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html">pandas.read_csv</a>.</p></li>
-<li><p><strong>results.json</strong>: Contains detailed output of the nested sampling run. Can be read with <a class="reference external" href="https://docs.python.org/3/library/json.html">json.load</a>.</p>
-<ul>
-<li><p>paramnames: parameter names</p></li>
-<li><p>ncall, niter: Number of likelihood calls, nested sampling iterations</p></li>
-<li><p>maximum_likelihood: highest loglikelihood point found so far</p></li>
-<li><p>H, Herr: (global) information gain</p></li>
-<li><p>ess: effective sample size</p></li>
-<li><p>logz, logzerr: ln(Z) and its uncertainty. logzerr_tail is the remainder integral contribution, logzerr_bs is from bootstrapping</p></li>
-<li><p>posterior: for each parameter: mean, std, median, upper and lower 1 sigma error, and <a class="reference external" href="https://arxiv.org/abs/2205.00009">information gain</a>.</p></li>
-<li><p>insertion_order_MWW_test: MWW test results (see Buchner+21 in prep)</p></li>
-</ul>
-</li>
+<li><p><strong>results.json</strong>: Contains detailed output of the nested sampling run, with all the same keys as the result dictionary in <a class="reference internal" href="ultranest.html#ultranest.integrator.ReactiveNestedSampler.run" title="ultranest.integrator.ReactiveNestedSampler.run"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ultranest.integrator.ReactiveNestedSampler.run()</span></code></a>, except for <code class="docutils literal notranslate"><span class="pre">samples</span></code> and <code class="docutils literal notranslate"><span class="pre">weighted_samples</span></code> (as the sample information is saved in separate files - see the following entries in this list). Can be read with <a class="reference external" href="https://docs.python.org/3/library/json.html">json.load</a>.</p></li>
 </ul>
 </li>
 <li><p>chains: machine-readable chains</p>
