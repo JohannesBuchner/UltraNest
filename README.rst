@@ -137,18 +137,19 @@ ready to defend against any encountered danger.
 
 Contributors
 ^^^^^^^^^^^^
- * Nicholas Susemiehl
- * QZ Gao
- * Sigfried Vanaverbeke
- * Warrick Ball
- * Adipol Phosrisom
- * Alexander Harvey Nitz
- * Gregory David Martinez
- * Grigorii Smirnov-Pinchukov
- * Fabio F Acero
- * Jacopo Tissino
- * Benjamin Beauchesne
- * Kyle Barbary (some ellipsoid code adopted from https://github.com/kbarbary/nestle)
- * Adam Moss (some architecture and parallelisation adopted from https://github.com/adammoss/nnest)
- * Josh Speagle (some visualisations adopted from https://github.com/joshspeagle/dynesty/)
- * Johannes Buchner
+
+* Nicholas Susemiehl
+* QZ Gao
+* Sigfried Vanaverbeke
+* Warrick Ball
+* Adipol Phosrisom
+* Alexander Harvey Nitz
+* Gregory David Martinez
+* Grigorii Smirnov-Pinchukov
+* Fabio F Acero
+* Jacopo Tissino
+* Benjamin Beauchesne
+* Kyle Barbary (some ellipsoid code adopted from https://github.com/kbarbary/nestle)
+* Adam Moss (some architecture and parallelisation adopted from https://github.com/adammoss/nnest)
+* Josh Speagle (some visualisations adopted from https://github.com/joshspeagle/dynesty/)
+* Johannes Buchner
