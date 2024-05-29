@@ -2382,39 +2382,63 @@ class ReactiveNestedSampler:
         ------
         results (dict): Results dictionary, with the following entries:
 
-            - samples (ndarray): re-weighted posterior samples: distributed according to :math:`p(\theta | d)` - these points are not sorted, and can be assumed to have been randomly shuffled. See :py:func:`ultranest.utils.resample_equal` for more details.
-            - logz (float64): natural logarithm of the evidence :math:`\log Z = \log \int p(d|\theta) p(\theta) \text{d}\theta`
-            - logzerr (float64): global estimate of the :math:`1\sigma` error on :math:`\log Z` (`can be safely assumed to be Gaussian <https://github.com/JohannesBuchner/UltraNest/issues/63>`_); obtained as the quadratic sum of ``logz_bs`` and ``logz_tail``. Users are advised to use ``logz`` :math:`\pm` ``logzerr`` as the best estimate for the evidence and its error.
+            - samples (ndarray): re-weighted posterior samples: distributed according
+            to :math:`p(\theta | d)` - these points are not sorted, and can be assumed
+            to have been randomly shuffled.
+            See :py:func:`ultranest.utils.resample_equal` for more details.
+            - logz (float64): natural logarithm of the evidence
+            :math:`\log Z = \log \int p(d|\theta) p(\theta) \text{d}\theta`
+            - logzerr (float64): global estimate of the :math:`1\sigma` error on
+            :math:`\log Z`
+            (`can be safely assumed to be Gaussian <https://github.com/JohannesBuchner/UltraNest/issues/63>`_);
+            obtained as the quadratic sum of ``logz_bs`` and ``logz_tail``.
+            Users are advised to use ``logz`` :math:`\pm` ``logzerr``
+            as the best estimate for the evidence and its error.
             - niter (int): number of sampler iterations
             - ncall (int): total number of likelihood evaluations (accepted and not)
-            - logz_bs (float64): estimate of :math:`\log Z` from bootstrapping - for details, see the `ultranest paper <https://joss.theoj.org/papers/10.21105/joss.03001>`_
-            - logzerr_bs (float64): estimate of the error on the  of :math:`\log Z` from bootstrapping
+            - logz_bs (float64): estimate of :math:`\log Z` from bootstrapping -
+            for details, see the
+            `ultranest paper <https://joss.theoj.org/papers/10.21105/joss.03001>`_
+            - logzerr_bs (float64): estimate of the error on the  of :math:`\log Z`
+            from bootstrapping
             - logz_single (float64): estimate of :math:`\log Z` from a single sampler
-            - logzerr_single (float64): estimate of the error :math:`\log Z` from a single sampler, obtained as :math:`\sqrt{H / n_{\text{live}}}`
-            - logzerr_tail (float64): contribution of the tail (i.e. the terminal leaves of the tree) to the error on :math:`\log Z` (?)
-            - ess (float64): effective sample size, i.e. number of samples divided by the estimated correlation length, estimated as :math:`N / (1 + N^{-1} \sum_i (N w_i - 1)^2)` where :math:`w_i` are the sample weights
+            - logzerr_single (float64): estimate of the error :math:`\log Z` from a
+            single sampler, obtained as :math:`\sqrt{H / n_{\text{live}}}`
+            - logzerr_tail (float64): contribution of the tail (i.e. the terminal
+            leaves of the tree) to the error on :math:`\log Z` (?)
+            - ess (float64): effective sample size, i.e. number of samples divided by
+            the estimated correlation length, estimated as
+            :math:`N / (1 + N^{-1} \sum_i (N w_i - 1)^2)` where :math:`w_i` are
+            the sample weights while :math:`N` is the number of samples
             - H (float64): `information gained <https://arxiv.org/abs/2205.00009>`_
             - Herr (float64): (Gaussian) :math:`1\sigma` error on :math:`H`
-            - posterior (dict): summary information on the posterior marginal distributions for each parameter - a dictionary of lists each with as many items as the fit parameters, indexed as :math:`\theta_i` in the following:
+            - posterior (dict): summary information on the posterior marginal distributions for each parameter -
+            a dictionary of lists each with as many items as the fit parameters,
+            indexed as :math:`\theta_i` in the following:
                 - mean (list): expectation value of :math:`\theta_i`
                 - stdev (list): standard deviation of :math:`\theta_i`
                 - median (list): median of :math:`\theta_i`
                 - errlo (list): one-sigma lower quantile of the marginal for :math:`\theta_i`, i.e. 15.8655% quantile
                 - errup (list): one-sigma upper quantile of the marginal for :math:`\theta_i`, i.e. 84.1345% quantile
                 - information_gain_bits (list): information gain from the marginal prior on :math:`\theta_i` to the posterior
-            - weighted_samples (dict): weighted samples from the posterior, as computed during sampling, sorted by their log-likelihood value
-                - upoints (ndarray): sample locations in the unit cube :math:`[0, 1]^{d}`, where $d$ is the number of parameters - the shape is ``n_iter`` by :math:`d`
+            - weighted_samples (dict): weighted samples from the posterior, as computed during sampling,
+            sorted by their log-likelihood value
+                - upoints (ndarray): sample locations in the unit cube :math:`[0, 1]^{d}`,
+                where :math:`d` is the number of parameters - the shape is ``n_iter`` by :math:`d`
                 - points (ndarray): sample locations in the physical, user-provided space (same shape as ``upoints``)
                 - weights (ndarray): sample weights - shape ``n_iter``, they sum to 1
                 - logw (ndarray): logs of the sample weights (?)
                 - bootstrapped_weights (ndarray): bootstrapped estimate of the sample weights
                 - logl (ndarray): log-likelihood values at the sample points
-            - maximum_likelihood (dict): summary information on the maximum likelihood value :math:`\theta_{ML}` found by the posterior exploration
+            - maximum_likelihood (dict): summary information on the maximum likelihood value
+            :math:`\theta_{ML}` found by the posterior exploration
                 - logl (float64): value of the log-likelihood at this point: :math:`\log p(d | \theta_{ML})`
                 - point (list): coordinates of :math:`\theta_{ML}` in the physical space
                 - point_untransformed (list): coordinates of :math:`\theta_{ML}` in the unit cube :math:`[0, 1]^{d}`
             - paramnames (list): input parameter names
-            - insertion_order_MWW_test (dict): results for the Mann-Whitney U-test; for more information, see the :py:class:`ultranest.netiter.MultiCounter` class or `section 4.5.2 of Buchner 2023 <http://arxiv.org/abs/2101.09675>`_
+            - insertion_order_MWW_test (dict): results for the Mann-Whitney U-test;
+            for more information, see the :py:class:`ultranest.netiter.MultiCounter` class
+            or `section 4.5.2 of Buchner 2023 <http://arxiv.org/abs/2101.09675>`_
                 - independent_iterations (float): shortest insertion order test run length
                 - converged (bool): whether the run is converged according to the MWW test, at the given threshold
         """
