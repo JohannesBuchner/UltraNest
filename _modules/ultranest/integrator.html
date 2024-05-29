@@ -2504,62 +2504,69 @@
 <span class="sd">        results (dict): Results dictionary, with the following entries:</span>
 
 <span class="sd">            - samples (ndarray): re-weighted posterior samples: distributed according</span>
-<span class="sd">            to :math:`p(\theta | d)` - these points are not sorted, and can be assumed</span>
-<span class="sd">            to have been randomly shuffled.</span>
-<span class="sd">            See :py:func:`ultranest.utils.resample_equal` for more details.</span>
+<span class="sd">              to :math:`p(\theta | d)` - these points are not sorted, and can be assumed</span>
+<span class="sd">              to have been randomly shuffled.</span>
+<span class="sd">              See :py:func:`ultranest.utils.resample_equal` for more details.</span>
 <span class="sd">            - logz (float64): natural logarithm of the evidence</span>
-<span class="sd">            :math:`\log Z = \log \int p(d|\theta) p(\theta) \text{d}\theta`</span>
+<span class="sd">              :math:`\log Z = \log \int p(d|\theta) p(\theta) \text{d}\theta`</span>
 <span class="sd">            - logzerr (float64): global estimate of the :math:`1\sigma` error on</span>
-<span class="sd">            :math:`\log Z`</span>
-<span class="sd">            (`can be safely assumed to be Gaussian &lt;https://github.com/JohannesBuchner/UltraNest/issues/63&gt;`_);</span>
-<span class="sd">            obtained as the quadratic sum of ``logz_bs`` and ``logz_tail``.</span>
-<span class="sd">            Users are advised to use ``logz`` :math:`\pm` ``logzerr``</span>
-<span class="sd">            as the best estimate for the evidence and its error.</span>
+<span class="sd">              :math:`\log Z`</span>
+<span class="sd">              (`can be safely assumed to be Gaussian &lt;https://github.com/JohannesBuchner/UltraNest/issues/63&gt;`_);</span>
+<span class="sd">              obtained as the quadratic sum of ``logz_bs`` and ``logz_tail``.</span>
+<span class="sd">              Users are advised to use ``logz`` :math:`\pm` ``logzerr``</span>
+<span class="sd">              as the best estimate for the evidence and its error.</span>
 <span class="sd">            - niter (int): number of sampler iterations</span>
 <span class="sd">            - ncall (int): total number of likelihood evaluations (accepted and not)</span>
 <span class="sd">            - logz_bs (float64): estimate of :math:`\log Z` from bootstrapping -</span>
-<span class="sd">            for details, see the</span>
-<span class="sd">            `ultranest paper &lt;https://joss.theoj.org/papers/10.21105/joss.03001&gt;`_</span>
+<span class="sd">              for details, see the</span>
+<span class="sd">              `ultranest paper &lt;https://joss.theoj.org/papers/10.21105/joss.03001&gt;`_</span>
 <span class="sd">            - logzerr_bs (float64): estimate of the error on the  of :math:`\log Z`</span>
-<span class="sd">            from bootstrapping</span>
+<span class="sd">              from bootstrapping</span>
 <span class="sd">            - logz_single (float64): estimate of :math:`\log Z` from a single sampler</span>
 <span class="sd">            - logzerr_single (float64): estimate of the error :math:`\log Z` from a</span>
-<span class="sd">            single sampler, obtained as :math:`\sqrt{H / n_{\text{live}}}`</span>
+<span class="sd">              single sampler, obtained as :math:`\sqrt{H / n_{\text{live}}}`</span>
 <span class="sd">            - logzerr_tail (float64): contribution of the tail (i.e. the terminal</span>
-<span class="sd">            leaves of the tree) to the error on :math:`\log Z` (?)</span>
+<span class="sd">              leaves of the tree) to the error on :math:`\log Z` (?)</span>
 <span class="sd">            - ess (float64): effective sample size, i.e. number of samples divided by</span>
-<span class="sd">            the estimated correlation length, estimated as</span>
-<span class="sd">            :math:`N / (1 + N^{-1} \sum_i (N w_i - 1)^2)` where :math:`w_i` are</span>
-<span class="sd">            the sample weights while :math:`N` is the number of samples</span>
+<span class="sd">              the estimated correlation length, estimated as</span>
+<span class="sd">              :math:`N / (1 + N^{-1} \sum_i (N w_i - 1)^2)` where :math:`w_i` are</span>
+<span class="sd">              the sample weights while :math:`N` is the number of samples</span>
 <span class="sd">            - H (float64): `information gained &lt;https://arxiv.org/abs/2205.00009&gt;`_</span>
 <span class="sd">            - Herr (float64): (Gaussian) :math:`1\sigma` error on :math:`H`</span>
 <span class="sd">            - posterior (dict): summary information on the posterior marginal distributions for each parameter -</span>
-<span class="sd">            a dictionary of lists each with as many items as the fit parameters,</span>
-<span class="sd">            indexed as :math:`\theta_i` in the following:</span>
+<span class="sd">              a dictionary of lists each with as many items as the fit parameters,</span>
+<span class="sd">              indexed as :math:`\theta_i` in the following:</span>
+
 <span class="sd">                - mean (list): expectation value of :math:`\theta_i`</span>
 <span class="sd">                - stdev (list): standard deviation of :math:`\theta_i`</span>
 <span class="sd">                - median (list): median of :math:`\theta_i`</span>
 <span class="sd">                - errlo (list): one-sigma lower quantile of the marginal for :math:`\theta_i`, i.e. 15.8655% quantile</span>
 <span class="sd">                - errup (list): one-sigma upper quantile of the marginal for :math:`\theta_i`, i.e. 84.1345% quantile</span>
 <span class="sd">                - information_gain_bits (list): information gain from the marginal prior on :math:`\theta_i` to the posterior</span>
+
 <span class="sd">            - weighted_samples (dict): weighted samples from the posterior, as computed during sampling,</span>
-<span class="sd">            sorted by their log-likelihood value</span>
+<span class="sd">              sorted by their log-likelihood value</span>
+
 <span class="sd">                - upoints (ndarray): sample locations in the unit cube :math:`[0, 1]^{d}`,</span>
-<span class="sd">                where :math:`d` is the number of parameters - the shape is ``n_iter`` by :math:`d`</span>
+<span class="sd">                  where :math:`d` is the number of parameters - the shape is ``n_iter`` by :math:`d`</span>
 <span class="sd">                - points (ndarray): sample locations in the physical, user-provided space (same shape as ``upoints``)</span>
 <span class="sd">                - weights (ndarray): sample weights - shape ``n_iter``, they sum to 1</span>
 <span class="sd">                - logw (ndarray): logs of the sample weights (?)</span>
 <span class="sd">                - bootstrapped_weights (ndarray): bootstrapped estimate of the sample weights</span>
 <span class="sd">                - logl (ndarray): log-likelihood values at the sample points</span>
+
 <span class="sd">            - maximum_likelihood (dict): summary information on the maximum likelihood value</span>
-<span class="sd">            :math:`\theta_{ML}` found by the posterior exploration</span>
+<span class="sd">              :math:`\theta_{ML}` found by the posterior exploration</span>
+
 <span class="sd">                - logl (float64): value of the log-likelihood at this point: :math:`\log p(d | \theta_{ML})`</span>
 <span class="sd">                - point (list): coordinates of :math:`\theta_{ML}` in the physical space</span>
 <span class="sd">                - point_untransformed (list): coordinates of :math:`\theta_{ML}` in the unit cube :math:`[0, 1]^{d}`</span>
+
 <span class="sd">            - paramnames (list): input parameter names</span>
 <span class="sd">            - insertion_order_MWW_test (dict): results for the Mann-Whitney U-test;</span>
-<span class="sd">            for more information, see the :py:class:`ultranest.netiter.MultiCounter` class</span>
-<span class="sd">            or `section 4.5.2 of Buchner 2023 &lt;http://arxiv.org/abs/2101.09675&gt;`_</span>
+<span class="sd">              for more information, see the :py:class:`ultranest.netiter.MultiCounter` class</span>
+<span class="sd">              or `section 4.5.2 of Buchner 2023 &lt;http://arxiv.org/abs/2101.09675&gt;`_</span>
+
 <span class="sd">                - independent_iterations (float): shortest insertion order test run length</span>
 <span class="sd">                - converged (bool): whether the run is converged according to the MWW test, at the given threshold</span>
 <span class="sd">        &quot;&quot;&quot;</span>

@@ -1301,39 +1301,38 @@ of initial live points so that once the plateau is traversed,
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><p><strong>results (dict)</strong> –</p>
-<ul class="simple">
-<li><p>samples (ndarray): re-weighted posterior samples: distributed according</p></li>
-</ul>
-<p>to <span class="math notranslate nohighlight">\(p(\theta | d)\)</span> - these points are not sorted, and can be assumed
+<ul>
+<li><p>samples (ndarray): re-weighted posterior samples: distributed according
+to <span class="math notranslate nohighlight">\(p(\theta | d)\)</span> - these points are not sorted, and can be assumed
 to have been randomly shuffled.
-See <a class="reference internal" href="#ultranest.utils.resample_equal" title="ultranest.utils.resample_equal"><code class="xref py py-func docutils literal notranslate"><span class="pre">ultranest.utils.resample_equal()</span></code></a> for more details.
-- logz (float64): natural logarithm of the evidence
-<span class="math notranslate nohighlight">\(\log Z = \log \int p(d|\theta) p(\theta) \text{d}\theta\)</span>
-- logzerr (float64): global estimate of the <span class="math notranslate nohighlight">\(1\sigma\)</span> error on
+See <a class="reference internal" href="#ultranest.utils.resample_equal" title="ultranest.utils.resample_equal"><code class="xref py py-func docutils literal notranslate"><span class="pre">ultranest.utils.resample_equal()</span></code></a> for more details.</p></li>
+<li><p>logz (float64): natural logarithm of the evidence
+<span class="math notranslate nohighlight">\(\log Z = \log \int p(d|\theta) p(\theta) \text{d}\theta\)</span></p></li>
+<li><p>logzerr (float64): global estimate of the <span class="math notranslate nohighlight">\(1\sigma\)</span> error on
 <span class="math notranslate nohighlight">\(\log Z\)</span>
 (<a class="reference external" href="https://github.com/JohannesBuchner/UltraNest/issues/63">can be safely assumed to be Gaussian</a>);
 obtained as the quadratic sum of <code class="docutils literal notranslate"><span class="pre">logz_bs</span></code> and <code class="docutils literal notranslate"><span class="pre">logz_tail</span></code>.
 Users are advised to use <code class="docutils literal notranslate"><span class="pre">logz</span></code> <span class="math notranslate nohighlight">\(\pm\)</span> <code class="docutils literal notranslate"><span class="pre">logzerr</span></code>
-as the best estimate for the evidence and its error.
-- niter (int): number of sampler iterations
-- ncall (int): total number of likelihood evaluations (accepted and not)
-- logz_bs (float64): estimate of <span class="math notranslate nohighlight">\(\log Z\)</span> from bootstrapping -
+as the best estimate for the evidence and its error.</p></li>
+<li><p>niter (int): number of sampler iterations</p></li>
+<li><p>ncall (int): total number of likelihood evaluations (accepted and not)</p></li>
+<li><p>logz_bs (float64): estimate of <span class="math notranslate nohighlight">\(\log Z\)</span> from bootstrapping -
 for details, see the
-<a class="reference external" href="https://joss.theoj.org/papers/10.21105/joss.03001">ultranest paper</a>
-- logzerr_bs (float64): estimate of the error on the  of <span class="math notranslate nohighlight">\(\log Z\)</span>
-from bootstrapping
-- logz_single (float64): estimate of <span class="math notranslate nohighlight">\(\log Z\)</span> from a single sampler
-- logzerr_single (float64): estimate of the error <span class="math notranslate nohighlight">\(\log Z\)</span> from a
-single sampler, obtained as <span class="math notranslate nohighlight">\(\sqrt{H / n_{\text{live}}}\)</span>
-- logzerr_tail (float64): contribution of the tail (i.e. the terminal
-leaves of the tree) to the error on <span class="math notranslate nohighlight">\(\log Z\)</span> (?)
-- ess (float64): effective sample size, i.e. number of samples divided by
+<a class="reference external" href="https://joss.theoj.org/papers/10.21105/joss.03001">ultranest paper</a></p></li>
+<li><p>logzerr_bs (float64): estimate of the error on the  of <span class="math notranslate nohighlight">\(\log Z\)</span>
+from bootstrapping</p></li>
+<li><p>logz_single (float64): estimate of <span class="math notranslate nohighlight">\(\log Z\)</span> from a single sampler</p></li>
+<li><p>logzerr_single (float64): estimate of the error <span class="math notranslate nohighlight">\(\log Z\)</span> from a
+single sampler, obtained as <span class="math notranslate nohighlight">\(\sqrt{H / n_{\text{live}}}\)</span></p></li>
+<li><p>logzerr_tail (float64): contribution of the tail (i.e. the terminal
+leaves of the tree) to the error on <span class="math notranslate nohighlight">\(\log Z\)</span> (?)</p></li>
+<li><p>ess (float64): effective sample size, i.e. number of samples divided by
 the estimated correlation length, estimated as
 <span class="math notranslate nohighlight">\(N / (1 + N^{-1} \sum_i (N w_i - 1)^2)\)</span> where <span class="math notranslate nohighlight">\(w_i\)</span> are
-the sample weights while <span class="math notranslate nohighlight">\(N\)</span> is the number of samples
-- H (float64): <a class="reference external" href="https://arxiv.org/abs/2205.00009">information gained</a>
-- Herr (float64): (Gaussian) <span class="math notranslate nohighlight">\(1\sigma\)</span> error on <span class="math notranslate nohighlight">\(H\)</span>
-- posterior (dict): summary information on the posterior marginal distributions for each parameter -
+the sample weights while <span class="math notranslate nohighlight">\(N\)</span> is the number of samples</p></li>
+<li><p>H (float64): <a class="reference external" href="https://arxiv.org/abs/2205.00009">information gained</a></p></li>
+<li><p>Herr (float64): (Gaussian) <span class="math notranslate nohighlight">\(1\sigma\)</span> error on <span class="math notranslate nohighlight">\(H\)</span></p></li>
+<li><p>posterior (dict): summary information on the posterior marginal distributions for each parameter -
 a dictionary of lists each with as many items as the fit parameters,
 indexed as <span class="math notranslate nohighlight">\(\theta_i\)</span> in the following:</p>
 <blockquote>
@@ -1346,37 +1345,34 @@ indexed as <span class="math notranslate nohighlight">\(\theta_i\)</span> in the
 <li><p>information_gain_bits (list): information gain from the marginal prior on <span class="math notranslate nohighlight">\(\theta_i\)</span> to the posterior</p></li>
 </ul>
 </div></blockquote>
-<ul class="simple">
-<li><p>weighted_samples (dict): weighted samples from the posterior, as computed during sampling,</p></li>
+</li>
+<li><p>weighted_samples (dict): weighted samples from the posterior, as computed during sampling,
+sorted by their log-likelihood value</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>upoints (ndarray): sample locations in the unit cube <span class="math notranslate nohighlight">\([0, 1]^{d}\)</span>,
+where <span class="math notranslate nohighlight">\(d\)</span> is the number of parameters - the shape is <code class="docutils literal notranslate"><span class="pre">n_iter</span></code> by <span class="math notranslate nohighlight">\(d\)</span></p></li>
+<li><p>points (ndarray): sample locations in the physical, user-provided space (same shape as <code class="docutils literal notranslate"><span class="pre">upoints</span></code>)</p></li>
+<li><p>weights (ndarray): sample weights - shape <code class="docutils literal notranslate"><span class="pre">n_iter</span></code>, they sum to 1</p></li>
+<li><p>logw (ndarray): logs of the sample weights (?)</p></li>
+<li><p>bootstrapped_weights (ndarray): bootstrapped estimate of the sample weights</p></li>
+<li><p>logl (ndarray): log-likelihood values at the sample points</p></li>
 </ul>
-<dl>
-<dt>sorted by their log-likelihood value</dt><dd><ul class="simple">
-<li><p>upoints (ndarray): sample locations in the unit cube <span class="math notranslate nohighlight">\([0, 1]^{d}\)</span>,</p></li>
-</ul>
-<p>where <span class="math notranslate nohighlight">\(d\)</span> is the number of parameters - the shape is <code class="docutils literal notranslate"><span class="pre">n_iter</span></code> by <span class="math notranslate nohighlight">\(d\)</span>
-- points (ndarray): sample locations in the physical, user-provided space (same shape as <code class="docutils literal notranslate"><span class="pre">upoints</span></code>)
-- weights (ndarray): sample weights - shape <code class="docutils literal notranslate"><span class="pre">n_iter</span></code>, they sum to 1
-- logw (ndarray): logs of the sample weights (?)
-- bootstrapped_weights (ndarray): bootstrapped estimate of the sample weights
-- logl (ndarray): log-likelihood values at the sample points</p>
-</dd>
-</dl>
-<ul class="simple">
-<li><p>maximum_likelihood (dict): summary information on the maximum likelihood value</p></li>
-</ul>
-<dl class="simple">
-<dt><span class="math notranslate nohighlight">\(\theta_{ML}\)</span> found by the posterior exploration</dt><dd><ul class="simple">
+</div></blockquote>
+</li>
+<li><p>maximum_likelihood (dict): summary information on the maximum likelihood value
+<span class="math notranslate nohighlight">\(\theta_{ML}\)</span> found by the posterior exploration</p>
+<blockquote>
+<div><ul class="simple">
 <li><p>logl (float64): value of the log-likelihood at this point: <span class="math notranslate nohighlight">\(\log p(d | \theta_{ML})\)</span></p></li>
 <li><p>point (list): coordinates of <span class="math notranslate nohighlight">\(\theta_{ML}\)</span> in the physical space</p></li>
 <li><p>point_untransformed (list): coordinates of <span class="math notranslate nohighlight">\(\theta_{ML}\)</span> in the unit cube <span class="math notranslate nohighlight">\([0, 1]^{d}\)</span></p></li>
 </ul>
-</dd>
-</dl>
-<ul class="simple">
+</div></blockquote>
+</li>
 <li><p>paramnames (list): input parameter names</p></li>
-<li><p>insertion_order_MWW_test (dict): results for the Mann-Whitney U-test;</p></li>
-</ul>
-<p>for more information, see the <a class="reference internal" href="#ultranest.netiter.MultiCounter" title="ultranest.netiter.MultiCounter"><code class="xref py py-class docutils literal notranslate"><span class="pre">ultranest.netiter.MultiCounter</span></code></a> class
+<li><p>insertion_order_MWW_test (dict): results for the Mann-Whitney U-test;
+for more information, see the <a class="reference internal" href="#ultranest.netiter.MultiCounter" title="ultranest.netiter.MultiCounter"><code class="xref py py-class docutils literal notranslate"><span class="pre">ultranest.netiter.MultiCounter</span></code></a> class
 or <a class="reference external" href="http://arxiv.org/abs/2101.09675">section 4.5.2 of Buchner 2023</a></p>
 <blockquote>
 <div><ul class="simple">
@@ -1384,6 +1380,8 @@ or <a class="reference external" href="http://arxiv.org/abs/2101.09675">section 
 <li><p>converged (bool): whether the run is converged according to the MWW test, at the given threshold</p></li>
 </ul>
 </div></blockquote>
+</li>
+</ul>
 </p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
@@ -6090,10 +6088,7 @@ logl: loglikelihood values)</p></li>
 </section>
 <section id="module-ultranest">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ultranest" title="Link to this heading"></a></h2>
-<p>Performs nested sampling to calculate the Bayesian evidence and posterior samples</p>
-<p>Some ellipsoid code is adopted from the Nestle library by Kyle Barbary (<a class="reference external" href="https://github.com/kbarbary/nestle">https://github.com/kbarbary/nestle</a>)
-Some of the architecture and parallelisation is adopted from the nnest library by Adam Moss (<a class="reference external" href="https://github.com/adammoss/nnest">https://github.com/adammoss/nnest</a>)
-Some visualisations are adopted from the dynesty library by Josh Speagle (<a class="reference external" href="https://github.com/joshspeagle/dynesty/">https://github.com/joshspeagle/dynesty/</a>)</p>
+<p>UltraNets performs nested sampling to calculate the Bayesian evidence and posterior samples.</p>
 </section>
 </section>
 
