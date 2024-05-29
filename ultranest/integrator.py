@@ -2376,12 +2376,12 @@ class ReactiveNestedSampler:
             of initial live points so that once the plateau is traversed,
             *min_num_live_points* live points remain, but not more than
             *widen_before_initial_plateau_num_warn*.
-            
-            
+
+
         Returns
         ------
         results (dict): Results dictionary, with the following entries:
-                
+
             - samples (ndarray): re-weighted posterior samples: distributed according to :math:`p(\theta | d)` - these points are not sorted, and can be assumed to have been randomly shuffled. See :py:func:`ultranest.utils.resample_equal` for more details.
             - logz (float64): natural logarithm of the evidence :math:`\log Z = \log \int p(d|\theta) p(\theta) \text{d}\theta`
             - logzerr (float64): global estimate of the :math:`1\sigma` error on :math:`\log Z` (`can be safely assumed to be Gaussian <https://github.com/JohannesBuchner/UltraNest/issues/63>`_); obtained as the quadratic sum of ``logz_bs`` and ``logz_tail``. Users are advised to use ``logz`` :math:`\pm` ``logzerr`` as the best estimate for the evidence and its error.
@@ -2478,12 +2478,11 @@ class ReactiveNestedSampler:
 
         Yields
         ------
-        
+
         results (dict):
-        
             Results dictionary computed at the current iteration, with the same
-            keys as discussed in the :py:meth:`run` method. 
-        """
+            keys as discussed in the :py:meth:`run` method.
+"""
         # frac_remain=1  means 1:1 -> dlogz=log(0.5)
         # frac_remain=0.1 means 1:10 -> dlogz=log(0.1)
         # dlogz_min = log(1./(1 + frac_remain))
