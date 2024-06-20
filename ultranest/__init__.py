@@ -6,4 +6,4 @@ from .utils import vectorize
 
 __author__ = """Johannes Buchner"""
 __email__ = 'johannes.buchner.acad@gmx.com'
-__version__ = '4.3.1'
+__version__ = '4.3.2'
