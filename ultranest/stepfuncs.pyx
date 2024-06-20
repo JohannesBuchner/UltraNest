@@ -7,6 +7,7 @@ Efficient helper functions for vectorized step-samplers
 
 import numpy as np
 cimport numpy as np
+np.import_array()
 from numpy import nan as np_nan
 cimport cython
 from cython.parallel import prange

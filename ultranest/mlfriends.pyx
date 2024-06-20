@@ -16,6 +16,7 @@ Includes
 
 import numpy as np
 cimport numpy as np
+np.import_array()
 from numpy import pi
 cimport cython
 from cython.cimports.libc.math import sqrt
