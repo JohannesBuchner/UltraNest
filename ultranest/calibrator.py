@@ -15,7 +15,7 @@ def _substitute_log_dir(init_args, nsteps):
     """Append `nsteps` to `log_dir` argument, if set.
 
     Parameters
-    -----------
+    ----------
     init_args: dict
         arguments passed :py:class:`ReactiveNestedSampler`,
         may contain the key `'log_dir'`.

@@ -166,10 +166,6 @@ def resume_from_similar_file(
         new likelihood function
     transform: function
         new transform function
-    verbose: bool
-        show progress
-    ndraw: int
-        set to >1 if functions can take advantage of vectorized computations
     max_tau: float
         Allowed dissimilarity in the live point ordering, quantified as
         normalised Kendall tau distance.
@@ -178,9 +174,13 @@ def resume_from_similar_file(
         when the live point order differs.
         Near 1 are completely different live point orderings.
         Values in between permit mild disorder.
+    verbose: bool
+        show progress
+    ndraw: int
+        set to >1 if functions can take advantage of vectorized computations
 
     Returns
-    ----------
+    -------
     sequence: dict
         contains arrays storing for each iteration estimates of:
 
@@ -554,17 +554,24 @@ class NestedSampler:
 
         Parameters
         ----------
-        update_interval_iter:
+        update_interval_iter: None | int
             Update region after this many iterations.
-        update_interval_ncall:
+        update_interval_ncall: None | int
             Update region after update_interval_ncall likelihood calls.
-        log_interval:
+        log_interval: None | int
             Update stdout status line every log_interval iterations
-        dlogz:
+        dlogz: float
             Target evidence uncertainty.
-        max_iters:
+        max_iters: None | int
             maximum number of integration iterations.
 
+        Returns
+        -------
+        results: dict
+            dictionary with posterior *samples* and original *weighted_samples*,
+            number of likelihood calls *ncall*,
+            number of nested sampling iterations *niter*, evidence
+            estimate *logz* and uncertainty *logzerr*.
         """
         if update_interval_ncall is None:
             update_interval_ncall = max(1, round(self.num_live_points))
@@ -2190,6 +2197,14 @@ class ReactiveNestedSampler:
         ----------
         it: int
             current iteration
+        Llo: float
+            lower loglikelihood bound for the strategy
+        Lhi: float
+            upper loglikelihood bound for the strategy
+        minimal_widths_sequence: list
+            list of likelihood intervals with minimum number of live points
+        target_min_num_children: int
+            minimum number of live points currently targeted
         node: node
             The node to consider
         parallel_values: array of floats
@@ -2198,14 +2213,6 @@ class ReactiveNestedSampler:
             maximum number of likelihood function calls allowed
         max_iters: int
             maximum number of nested sampling iteration allowed
-        Llo: float
-            lower loglikelihood bound for the strategy
-        Lhi: float
-            upper loglikelihood bound for the strategy
-        minimal_widths_sequence: list
-            list of likelihood intervals with minimum number of live points
-        target_min_num_children:
-            minimum number of live points currently targeted
         live_points_healthy: bool
             indicates whether the live points have become
             linearly dependent (covariance not full rank)
@@ -2286,8 +2293,8 @@ class ReactiveNestedSampler:
             max_num_improvement_loops=-1,
             min_num_live_points=400,
             cluster_num_live_points=40,
-            insertion_test_window=10,
             insertion_test_zscore_threshold=4,
+            insertion_test_window=10,
             region_class=MLFriends,
             widen_before_initial_plateau_num_warn=10000,
             widen_before_initial_plateau_num_max=50000,
@@ -2379,7 +2386,7 @@ class ReactiveNestedSampler:
 
 
         Returns
-        ------
+        -------
         results (dict): Results dictionary, with the following entries:
 
             - samples (ndarray): re-weighted posterior samples: distributed according
@@ -3148,7 +3155,7 @@ def read_file(log_dir, x_dim, num_bootstraps=20, random=True, verbose=False, che
         whether to perform MWW insertion order test for assessing convergence
 
     Returns
-    ----------
+    -------
     sequence: dict
         contains arrays storing for each iteration estimates of:
 

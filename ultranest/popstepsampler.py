@@ -484,10 +484,10 @@ class PopulationSliceSampler(GenericPopulationSampler):
 
         Parameters
         ----------
-        region: MLFriends object
-            Region
         mask_starting: np.array(nwalkers, dtype=bool)
             which walkers to set up.
+        region: MLFriends object
+            Region
 
         """
         if self.log:
@@ -519,7 +519,13 @@ class PopulationSliceSampler(GenericPopulationSampler):
             loglikelihood function
         Lmin: float
             current log-likelihood threshold
+        region: MLFriends object
+            Region
 
+        Returns
+        -------
+        nc: int
+            Number of likelihood function calls
         """
         movable = self.generation < self.nsteps
         all_movable = movable.all()

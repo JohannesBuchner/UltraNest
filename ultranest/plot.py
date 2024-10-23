@@ -59,17 +59,21 @@ def cornerplot(
 
     Parameters
     ----------
+    results: dict
+        data dictionary
     min_weight: float
         cut off low-weight posterior points. Avoids meaningless
         stragglers when plot_datapoints is True.
     with_legend: bool
         whether to add a legend to show meaning of the lines.
-    color : str
-        ``matplotlib`` style color for all histograms.
+    logger: None | object
+        where to log
+    levels: list
+        list of credible interval levels
+    plot_datapoints : bool
+        Draw individual data points.
     plot_density : bool
         Draw the density colormap.
-    plot_contours : bool
-        Draw the contours.
     show_titles : bool
         Displays a title above each 1-D histogram showing the 0.5 quantile
         with the upper and lower errors supplied by the quantiles argument.
@@ -77,6 +81,8 @@ def cornerplot(
         If true, suppress warnings for small datasets.
     contour_kwargs : dict
         Any additional keyword arguments to pass to the `contour` method.
+    color : str
+        ``matplotlib`` style color for all histograms.
     quantiles: list
         fractional quantiles to show on the 1-D histograms as vertical dashed lines.
     **corner_kwargs: dict
@@ -240,16 +246,20 @@ class PredictionBand:
         plt.show()
 
     To plot onto a specific axis, use `band.line(..., ax=myaxis)`.
-
-    Parameters
-    ----------
-    x: array
-        The independent variable
-
     """
 
     def __init__(self, x, shadeargs={}, lineargs={}):
-        """Initialise with independent variable *x*."""
+        """Initialise.
+
+        Parameters
+        ----------
+        x: array
+            Independent variable.
+        shadeargs: dict
+            default arguments for shade function.
+        lineargs: dict
+            default arguments for line function.
+        """
         self.x = x
         self.ys = []
         self.shadeargs = shadeargs

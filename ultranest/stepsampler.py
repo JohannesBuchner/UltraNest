@@ -452,7 +452,7 @@ def select_random_livepoint(us, Ls, Lmin):
     """Select random live point as chain starting point.
 
     Parameters
-    -----------
+    ----------
     us: array
         positions of live points
     Ls: array
@@ -518,7 +518,7 @@ class IslandPopulationRandomLivepointSelector:
         """Select live point as chain starting point.
 
         Parameters
-        -----------
+        ----------
         us: array
             positions of live points
         Ls: array
@@ -1008,6 +1008,16 @@ class StepSampler:
         tregion: :py:class:`WrappingEllipsoid`
             optional ellipsoid in transformed space for rejecting proposals
 
+        Returns
+        -------
+        u: None | array
+            newly sampled untransformed point, or None if not successful yet
+        p: None | array
+            newly sampled transformed point, or None if not successful yet
+        L: None | float
+            log-likelihood value, or None if not successful yet
+        nc: int
+            number of likelihood function calls
         """
         # find most recent point in history conforming to current Lmin
         for j, (_uj, Lj) in enumerate(self.history):
@@ -1097,12 +1107,17 @@ class MHSampler(StepSampler):
         ----------
         ui: array
             current point
+        region: object
+            ignored
         ndraw: int
             number of points to draw.
-        region:
+        plot: bool
             ignored
-        plot:
-            ignored
+
+        Returns
+        -------
+        unew: array
+            proposed point
         """
         # propose in that direction
         direction = self.generate_direction(ui, region, scale=self.scale)

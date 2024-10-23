@@ -75,6 +75,11 @@ class FilePointStore:
     def pop(self, Lmin):
         """Request from the storage a point sampled from <= Lmin with L > Lmin.
 
+        Parameters
+        ----------
+        Lmin: float
+            loglikelihood threshold
+
         Returns
         -------
         index: int

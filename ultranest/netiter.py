@@ -265,7 +265,7 @@ def count_tree(roots):
         list of :py:class:`TreeNode` specifying the roots of the tree.
 
     Returns
-    --------
+    -------
     count: int
         total number of nodes
     maxwidth: int
@@ -301,7 +301,7 @@ def count_tree_between(roots, lo, hi):
         upper value threshold
 
     Returns
-    --------
+    -------
     nnodes: int
         total number of nodes in the value interval lo .. hi (inclusive).
     maxwidth: int
@@ -343,7 +343,7 @@ def find_nodes_before(root, value):
         selection threshold
 
     Returns
-    --------
+    -------
     list_of_parents: list of nodes
         parents
     list_of_nforks: list of floats
@@ -415,14 +415,14 @@ class PointPile:
         """Save point.
 
         Parameters
-        -----------
+        ----------
         newpointu: array
             point (in u-space)
         newpointp: array
             point (in p-space)
 
         Returns
-        ---------
+        -------
         index: int
             index of the new point in the pile
         """
@@ -448,7 +448,7 @@ class PointPile:
         """Store point in pile, and create a new tree node that points to it.
 
         Parameters
-        -----------
+        ----------
         value: float
             value to store in node (loglikelihood)
         u: array
@@ -457,7 +457,7 @@ class PointPile:
             point (in p-space)
 
         Returns
-        ---------
+        -------
         node: :py:class:`TreeNode`
             node
         """
@@ -868,11 +868,11 @@ def combine_results(saved_logl, saved_nodeids, pointpile, main_iterator, mpi_com
         Point pile.
     main_iterator: :py:class:`BreadthFirstIterator`
         iterator used
-    mpi_comm:
+    mpi_comm: None | object
         MPI communicator object, or None if MPI is not used.
 
     Returns
-    --------
+    -------
     results: dict
         All information of the run. Important keys:
         Number of nested sampling iterations (niter),
@@ -996,7 +996,7 @@ def logz_sequence(root, pointpile, nbootstraps=12, random=True, onNode=None, ver
         Whether to perform a rolling insertion order rank test
 
     Returns
-    --------
+    -------
     results: dict
         Run information, see :py:func:`combine_results`
     sequence: dict

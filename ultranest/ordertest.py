@@ -33,10 +33,10 @@ def infinite_U_zscore(sample, B):
 
     Parameters
     ----------
-    B: int
-        maximum rank allowed.
     sample: array of integers
         values between 0 and B (inclusive).
+    B: int
+        maximum rank allowed.
 
     Returns
     -------
@@ -72,10 +72,10 @@ class UniformOrderAccumulator():
 
         Parameters
         ----------
-        N: int
-            maximum rank allowed.
         order: int
             rank between 0 and N (inclusive).
+        N: int
+            maximum rank allowed.
         """
         if not 0 <= order <= N:
             raise ValueError("order %d out of %d invalid" % (order, N))

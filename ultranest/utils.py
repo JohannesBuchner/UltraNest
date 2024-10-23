@@ -221,7 +221,7 @@ def listify(*args):
 
     Parameters
     ----------
-    args: iterable
+    *args: iterable
         Lists to concatenate.
 
     Returns
@@ -468,6 +468,11 @@ def distributed_work_chunk_size(num_total_tasks, mpi_rank, mpi_size):
         process id
     mpi_size : int
         total number of processes
+
+    Returns
+    -------
+    chunk_size: int
+        number of tasks for process number `mpi_rank`
     """
     return (num_total_tasks + mpi_size - 1 - mpi_rank) // mpi_size
 
@@ -482,7 +487,7 @@ def submasks(mask, *masks):
     ----------
     mask : np.array(dtype=bool)
         selection of some array
-    masks : list of np.array(dtype=bool)
+    *masks : list of np.array(dtype=bool)
         each further mask is a subselection
 
     Returns

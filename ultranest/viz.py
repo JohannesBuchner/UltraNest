@@ -33,7 +33,7 @@ def round_parameterlimits(plo, phi, paramlimitguess=None):
     """Guess the current parameter range.
 
     Parameters
-    -----------
+    ----------
     plo: array of floats
         for each parameter, current minimum value
     phi: array of floats
@@ -49,7 +49,6 @@ def round_parameterlimits(plo, phi, paramlimitguess=None):
         for each parameter, rounded maximum value
     formats: array of float tuples
         for each parameter, string format for representing it.
-
     """
     with np.errstate(divide='ignore'):
         expos = log10(np.abs([plo, phi]))
