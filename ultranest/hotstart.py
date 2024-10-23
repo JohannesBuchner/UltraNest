@@ -11,7 +11,6 @@ Based on ideas from Petrosyan & Handley (2022, https://arxiv.org/abs/2212.01760)
 """
 
 import numpy as np
-import scipy.stats
 
 from .utils import resample_equal, vectorize
 
@@ -67,6 +66,7 @@ def get_auxiliary_problem(loglike, transform, ctr, invcov, enlargement_factor, d
         The first d return coordinates are identical to what ``transform`` would return.
         The final coordinate is the correction weight.
     """
+    import scipy.stats
     ndim, = ctr.shape
     assert invcov.shape == (ndim, ndim)
     assert df >= 1, ('Degrees of freedom must be above 1', df)
@@ -143,6 +143,7 @@ def get_extended_auxiliary_problem(loglike, transform, ctr, invcov, enlargement_
         The first d return coordinates are identical to what ``transform`` would return.
         The final coordinate is the correction weight.
     """
+    import scipy.stats
     ndim, = ctr.shape
     assert invcov.shape == (ndim, ndim)
     assert df >= 1, ('Degrees of freedom must be above 1', df)
@@ -224,6 +225,7 @@ def get_extended_auxiliary_independent_problem(loglike, transform, ctr, err, df=
         The first d return coordinates are identical to what ``transform`` would return.
         The final coordinate is the log of the correction weight.
     """
+    import scipy.stats
     ndim, = np.shape(ctr)
     assert np.shape(err) == (ndim,)
     assert df >= 1, ('Degrees of freedom must be above 1', df)
