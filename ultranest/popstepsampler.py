@@ -18,11 +18,9 @@ from ultranest.stepfuncs import (evolve, generate_cube_oriented_direction,
                                  generate_mixture_random_direction,
                                  generate_random_direction,
                                  generate_region_oriented_direction,
-                                 generate_region_random_direction, step_back,
-                                 update_vectorised_slice_sampler)
+                                 generate_region_random_direction, int_dtype,
+                                 step_back, update_vectorised_slice_sampler)
 from ultranest.utils import submasks
-
-int_dtype = np.int32
 
 
 def unitcube_line_intersection(ray_origin, ray_direction):

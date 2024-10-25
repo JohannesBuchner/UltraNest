@@ -22,8 +22,8 @@ cimport cython
 from cython.cimports.libc.math import sqrt
 
 
-ctypedef np.int32_t decl_int_t
-int_dtype = np.int32
+ctypedef np.int64_t decl_int_t
+int_dtype = np.int64
 
 
 @cython.boundscheck(False)
