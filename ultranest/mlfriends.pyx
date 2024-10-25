@@ -379,7 +379,6 @@ def update_clusters(
     Clustering is performed on a transformed coordinate space (`tpoints`).
     Returned values are based on upoints.
     """
-    print(clusterids)
     if clusterids is None:
         clusterids = np.zeros(len(tpoints), dtype=int_dtype)
     return _update_clusters(upoints, tpoints, maxradiussq, clusterids)
