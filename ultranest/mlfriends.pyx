@@ -850,7 +850,7 @@ class LocalAffineLayer(AffineLayer):
         return s
 
 
-def vol_prefactor(int n):
+cpdef vol_prefactor(int n):
     """Volume constant for an ``n``-dimensional sphere.
 
     for ``n`` even:  $$    (2pi)^(n    /2) / (2 * 4 * ... * n)$$
