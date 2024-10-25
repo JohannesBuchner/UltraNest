@@ -1,4 +1,4 @@
-"""MCMC-like step sampling on a trajectory
+"""MCMC-like step sampling on a trajectory.
 
 These features are experimental.
 """
@@ -243,7 +243,7 @@ class SamplingPathStepSampler(StepSampler):
         print("set gradient function to %s" % grad_function.__name__)
 
         def plot_gradient_wrapper(x, plot=False):
-            """wrapper that makes plots (when desired)"""
+            """Make plot while computing gradient (optionally)."""
             v = grad_function(x)
             if plot:
                 plt.plot(x[0], x[1], '+ ', color='k', ms=10)
