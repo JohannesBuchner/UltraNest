@@ -43,7 +43,7 @@ from .viz import get_default_viz_callback
 
 __all__ = ['ReactiveNestedSampler', 'NestedSampler', 'read_file', 'warmstart_from_similar_file']
 
-int_t = int
+int_t = np.int32
 
 
 def _get_cumsum_range(pi, dp):

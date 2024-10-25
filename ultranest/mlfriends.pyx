@@ -22,13 +22,17 @@ cimport cython
 from cython.cimports.libc.math import sqrt
 
 
+ctypedef np.int32_t decl_int_t
+int_dtype = np.int32
+
+
 @cython.boundscheck(False)
 @cython.wraparound(False)
 cdef count_nearby(
     np.ndarray[np.float_t, ndim=2] apts,
     np.ndarray[np.float_t, ndim=2] bpts,
     np.float_t radiussq,
-    np.ndarray[np.int_t, ndim=1] nnearby
+    np.ndarray[decl_int_t, ndim=1] nnearby
 ):
     """Count the number of points in ``apts`` within square radius ``radiussq`` for each point ``b`` in `bpts``.
 
@@ -140,7 +144,7 @@ def find_nearby(
     np.ndarray[np.float_t, ndim=2] apts,
     np.ndarray[np.float_t, ndim=2] bpts,
     np.float_t radiussq,
-    np.ndarray[np.int_t, ndim=1] nnearby
+    np.ndarray[decl_int_t, ndim=1] nnearby
 ):
     """Gets the index of a point in `a` within square radius `radiussq`, for each point `b` in `bpts`.
 
@@ -224,7 +228,7 @@ cdef float compute_maxradiussq(np.ndarray[np.float_t, ndim=2] apts, np.ndarray[n
 @cython.wraparound(False)
 def compute_mean_pair_distance(
     np.ndarray[np.float_t, ndim=2] pts,
-    np.ndarray[np.int_t, ndim=1] clusterids
+    np.ndarray[decl_int_t, ndim=1] clusterids
 ):
     """Compute the average distance between pairs of points.
     Pairs from different clusters are excluded in the computation.
@@ -272,12 +276,12 @@ cdef _update_clusters(
     np.ndarray[np.float_t, ndim=2] upoints,
     np.ndarray[np.float_t, ndim=2] tpoints,
     np.float_t maxradiussq,
-    np.ndarray[np.int_t, ndim=1] clusterids,
+    np.ndarray[decl_int_t, ndim=1] clusterids,
 ):
     """same signature as ``update_clusters()``, see there."""
     assert upoints.shape[0] == tpoints.shape[0], ('different number of points', upoints.shape[0], tpoints.shape[0])
     assert upoints.shape[1] == tpoints.shape[1], ('different dimensionality of points', upoints.shape[1], tpoints.shape[1])
-    clusteridxs = np.zeros(len(tpoints), dtype=int)
+    clusteridxs = np.zeros(len(tpoints), dtype=int_dtype)
     currentclusterid = 1
     i = 0
     # avoid issues when old clusterids are from a longer array
@@ -295,7 +299,7 @@ cdef _update_clusters(
             break
 
         nonmembers = tpoints[nonmembermask,:]
-        idnearby = np.empty(len(nonmembers), dtype=int)
+        idnearby = np.empty(len(nonmembers), dtype=int_dtype)
         members = tpoints[clusteridxs == currentclusterid,:]
         find_nearby(members, nonmembers, maxradiussq, idnearby)
         # print('merging %d into cluster %d of size %d' % (np.count_nonzero(nnearby), currentclusterid, len(members)))
@@ -375,8 +379,9 @@ def update_clusters(
     Clustering is performed on a transformed coordinate space (`tpoints`).
     Returned values are based on upoints.
     """
+    print(clusterids)
     if clusterids is None:
-        clusterids = np.zeros(len(tpoints), dtype=int)
+        clusterids = np.zeros(len(tpoints), dtype=int_dtype)
     return _update_clusters(upoints, tpoints, maxradiussq, clusterids)
 
 
@@ -409,7 +414,7 @@ def make_eigvals_positive(
         raise e
     mask = w < max(1.e-10, 1e-300**(1. / len(a)))
     if np.any(mask):
-        nzprod = np.product(w[~mask])  # product of nonzero eigenvalues
+        nzprod = np.prod(w[~mask])  # product of nonzero eigenvalues
         nzeros = mask.sum()  # number of zero eigenvalues
         w[mask] = (targetprod / nzprod) ** (1. / nzeros)  # adjust zero eigvals
         a = np.dot(np.dot(v, np.diag(w)), np.linalg.inv(v))  # re-form cov
@@ -568,7 +573,7 @@ class ScalingLayer(object):
         """Updates the cluster id assigned to each point."""
         if clusterids is None and self.clusterids is None and npoints is not None:
             # for the beginning, set cluster ids to one for all points
-            clusterids = np.ones(npoints, dtype=int)
+            clusterids = np.ones(npoints, dtype=int_dtype)
         if clusterids is not None:
             # if we have a value, update
             self.clusterids = clusterids
@@ -846,7 +851,7 @@ class LocalAffineLayer(AffineLayer):
         return s
 
 
-def vol_prefactor(np.int_t n):
+def vol_prefactor(int n):
     """Volume constant for an ``n``-dimensional sphere.
 
     for ``n`` even:  $$    (2pi)^(n    /2) / (2 * 4 * ... * n)$$
@@ -1080,7 +1085,7 @@ class MLFriends(object):
         v = self.unormed[idx,:] + v * self.maxradiussq**0.5
 
         # count how many are around
-        nnearby = np.empty(nsamples, dtype=int)
+        nnearby = np.empty(nsamples, dtype=int_dtype)
         count_nearby(self.unormed, v, self.maxradiussq, nnearby)
         vmask = np.random.uniform(high=nnearby) < 1
         w = self.transformLayer.untransform(v[vmask,:])
@@ -1102,7 +1107,7 @@ class MLFriends(object):
         wmask = self.inside_ellipsoid(u)
         # check if inside region in transformed space
         v = self.transformLayer.transform(u[wmask,:])
-        idnearby = np.empty(len(v), dtype=int)
+        idnearby = np.empty(len(v), dtype=int_dtype)
         find_nearby(self.unormed, v, self.maxradiussq, idnearby)
         vmask = idnearby >= 0
         return u[wmask,:][vmask,:]
@@ -1117,7 +1122,7 @@ class MLFriends(object):
         N, ndim = self.u.shape
         # draw from rectangle in transformed space
         v = np.random.uniform(self.bbox_lo - self.maxradiussq, self.bbox_hi + self.maxradiussq, size=(nsamples, ndim))
-        idnearby = np.empty(nsamples, dtype=int)
+        idnearby = np.empty(nsamples, dtype=int_dtype)
         find_nearby(self.unormed, v, self.maxradiussq, idnearby)
         vmask = idnearby >= 0
 
@@ -1149,7 +1154,7 @@ class MLFriends(object):
 
         wmask = np.logical_and(w > 0, w < 1).all(axis=1)
         v = self.transformLayer.transform(w[wmask,:])
-        idnearby = np.empty(len(v), dtype=int)
+        idnearby = np.empty(len(v), dtype=int_dtype)
         find_nearby(self.unormed, v, self.maxradiussq, idnearby)
         vmask = idnearby >= 0
 
@@ -1200,7 +1205,7 @@ class MLFriends(object):
         if mask.any():
             # additionally require points to be near neighbours
             bpts = self.transformLayer.transform(pts[mask,:])
-            idnearby = np.empty(len(bpts), dtype=int)
+            idnearby = np.empty(len(bpts), dtype=int_dtype)
             find_nearby(self.unormed, bpts, self.maxradiussq, idnearby)
             mask[mask] = idnearby >= 0
 

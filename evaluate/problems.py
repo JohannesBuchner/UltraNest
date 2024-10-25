@@ -57,7 +57,7 @@ def generate_asymgauss_problem(ndim):
             return np.nan
         
         # compute volume of a n-sphere
-        return nsphere_volume(radius, ndim) * np.product(asym_sigma / asym_sigma_max)
+        return nsphere_volume(radius, ndim) * np.prod(asym_sigma / asym_sigma_max)
     
     gradient_asymgauss = gradient_to_center
     

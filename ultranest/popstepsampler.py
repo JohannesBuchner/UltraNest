@@ -22,7 +22,7 @@ from ultranest.stepfuncs import (evolve, generate_cube_oriented_direction,
                                  update_vectorised_slice_sampler)
 from ultranest.utils import submasks
 
-int_t = int
+int_dtype = np.int32
 
 
 def unitcube_line_intersection(ray_origin, ray_direction):
@@ -432,7 +432,7 @@ class PopulationSliceSampler(GenericPopulationSampler):
         self.allL = np.zeros((self.popsize, self.nsteps + 1)) + np.nan
         self.currentt = np.zeros(self.popsize) + np.nan
         self.currentv = np.zeros((self.popsize, ndim)) + np.nan
-        self.generation = np.zeros(self.popsize, dtype=int_t) - 1
+        self.generation = np.zeros(self.popsize, dtype=int_dtype) - 1
         self.current_left = np.zeros(self.popsize)
         self.current_right = np.zeros(self.popsize)
         self.searching_left = np.zeros(self.popsize, dtype=bool)
@@ -936,9 +936,9 @@ class PopulationSimpleSliceSampler(GenericPopulationSampler):
                 # Slice bounds for each points
                 tleft, tright = self.slice_limit(tleft_unitcube,tright_unitcube)
                 # Index of the workers working concurrently
-                worker_running = np.arange(0, self.popsize, 1, dtype=int_t)
+                worker_running = np.arange(self.popsize, dtype=int_dtype)
                 # Status indicating if a points has already find its next position
-                status = np.zeros(self.popsize, dtype=int_t)  # one for success, zero for running
+                status = np.zeros(self.popsize, dtype=int_dtype)  # one for success, zero for running
 
                 # Loop until each points has found its next position or we reached 100 iterations
                 for _it in range(self.max_it):
@@ -955,6 +955,7 @@ class PopulationSimpleSliceSampler(GenericPopulationSampler):
                     nc += self.popsize
 
                     # Updating the pool of points based on the newly sampled points
+                    print(worker_running.dtype, status.dtype)
                     tleft, tright, worker_running, status, allu, allL, allp, n_discarded_it = update_vectorised_slice_sampler(
                         t, tleft, tright, proposed_L, proposed_u, proposed_p, worker_running, status, Lmin, self.shrink_factor,
                         allu, allL, allp, self.popsize)
