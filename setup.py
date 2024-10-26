@@ -33,7 +33,7 @@ with open('HISTORY.rst', encoding="utf-8") as history_file:
         history_file.read())
     
 
-requirements = ['numpy<2', 'cython', 'matplotlib', 'corner']
+requirements = ['numpy', 'cython', 'matplotlib', 'corner']
 
 setup_requirements = ['pytest-runner', ]
 
