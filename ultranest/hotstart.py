@@ -373,7 +373,6 @@ def get_aux_splines(upoints, uweights, delta_v):
         v_0 = u0 / slope_outside
         v_1 = 1 - (1-u1) / slope_outside
 
-        v_values = np.linspace(0, 1, num=10000)
         v_to_interp = np.concatenate(([0], v_0 + (v_1-v_0)*cdf_interp, [1]))
         u_to_interp = np.concatenate(([0], u_range, [1]))
 
