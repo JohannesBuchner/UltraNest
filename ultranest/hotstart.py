@@ -16,6 +16,7 @@ from .utils import resample_equal, vectorize
 
 from scipy.interpolate import PchipInterpolator
 
+
 def get_auxiliary_problem(loglike, transform, ctr, invcov, enlargement_factor, df=1):
     """Return a new loglike and transform based on an auxiliary distribution.
 
@@ -345,9 +346,9 @@ def compute_quantile_intervals_refined(steps, upoints, uweights, logsteps_max=20
 
 
 def get_aux_splines(upoints, uweights, delta_v):
-    """ Compute spline representations of the auxiliary transforms. 
+    """ Compute spline representations of the auxiliary transforms.
     """
-    
+
     splines = []
     derivatives = []
     for i in range(upoints.shape[1]):
@@ -357,19 +358,19 @@ def get_aux_splines(upoints, uweights, delta_v):
 
         u0 = np.min(these_upoints)
         u1 = np.max(these_upoints)
-        
+
         for _ in range(5):
             u_range = np.linspace(u0, u1, num=20)
             cdf_interp = np.interp(u_range, these_upoints[sort], cdf)
             pdf_interp = np.gradient(cdf_interp, u_range)
             slope_outside = (1-(u1 - u0)) / (1 - delta_v)
-            
+
             u0 = u_range[np.argmin(np.where(pdf_interp > slope_outside, u_range, 1))]
             u1 = u_range[np.argmax(np.where(pdf_interp > slope_outside, u_range, 0))]
 
             if np.all(pdf_interp >= slope_outside):
                 break
-        
+
         v_0 = u0 / slope_outside
         v_1 = 1 - (1-u1) / slope_outside
 
@@ -381,6 +382,7 @@ def get_aux_splines(upoints, uweights, delta_v):
         derivatives.append(interpolator.derivative())
 
     return splines, derivatives
+
 
 def get_auxiliary_contbox_parameterization(
     param_names, loglike, transform, upoints, uweights, vectorized=False,
@@ -452,14 +454,14 @@ def get_auxiliary_contbox_parameterization(
     assert np.all(mask), (
         'upoints must be between 0 and 1, have:', upoints[~mask,:])
     # steps = 10**-(1.0 * np.arange(1, 8, 2))
-    
+
     nsamples, ndim = upoints.shape
 
     aux_param_names = param_names + ['aux_logweight']
 
     delta_v = 0.5**(1/ndim)
     splines, derivatives = get_aux_splines(upoints, uweights, delta_v)
-    
+
     def aux_transform(u):
         ndim2, = u.shape
         assert ndim2 == ndim + 1
