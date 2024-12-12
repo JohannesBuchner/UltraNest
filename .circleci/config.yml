@@ -15,7 +15,7 @@ jobs:
       - checkout
       
       - run: sudo apt-get update -y
-      - run: sudo apt-get install -y python3-pip python3-mpi4py python3-h5py python3-numpy python3-scipy python3-matplotlib python3-pandas openmpi-common libopenmpi-dev liblapack-dev libopenblas-dev libhdf5-dev 
+      - run: sudo apt-get install -y python3-pip openmpi-common libopenmpi-dev liblapack-dev libopenblas-dev libhdf5-dev 
       
       - run: sudo ln -s /usr/lib/python3/dist-packages/numpy/core/include/numpy/ /usr/include/numpy
 
