@@ -23,7 +23,7 @@ jobs:
 
       - run: mkdir -p test-reports
 
-      - run: python3 -m pip install -e .
+      - run: sudo python3 -m pip install -e .
       - run: for i in examples/test*.py; do python3 $i --help; done
       
       - run: coverage3 run --parallel-mode setup.py test
