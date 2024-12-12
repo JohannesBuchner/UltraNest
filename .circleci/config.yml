@@ -6,7 +6,9 @@ jobs:
   build:
     
     docker:
-      - image: cimg/base:2021.04
+      - image: cimg/base:2024.12
+      #- image: cimg/base:2021.04
+      #- image: circleci/python:3.13.1
     
     steps: 
       
