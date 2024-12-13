@@ -2,6 +2,18 @@
 Release Notes
 ==============
 
+4.4.0 (2024-12-13)
+------------------
+* Compatible with numpy version 2 and above. Any remaining errors like "ValueError: numpy.dtype size changed, may indicate binary incompatibility. Expected 96 from C header, got 88 from PyObject" are due to ultranest and numpy being installed with different versions. Reinstall numpy and ultranest in that case.
+
+4.3.0 (2024-04-12)
+------------------
+* added :py:class:`ultranest.popstepsampler.PopulationSimpleSliceSampler`: Vectorized, fixed-batch size slice sampler. (`PR <https://github.com/JohannesBuchner/UltraNest/pull/118>`_ by Benjamin Beauchesne) 
+* validation of passed parameter names (`PR <https://github.com/JohannesBuchner/UltraNest/pull/133>`_ by svaverbe)
+* documentation improvements, including documenting results dictionary (`PR <https://github.com/JohannesBuchner/UltraNest/pull/138>`_ by Jacopo Tissino)
+* make scipy actually optional (`PR <https://github.com/JohannesBuchner/UltraNest/pull/141>`_ by Matthew Kirk)
+* linting
+
 4.2.0 (2024-02-15)
 ------------------
 
