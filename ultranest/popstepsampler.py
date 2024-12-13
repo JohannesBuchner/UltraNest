@@ -18,11 +18,9 @@ from ultranest.stepfuncs import (evolve, generate_cube_oriented_direction,
                                  generate_mixture_random_direction,
                                  generate_random_direction,
                                  generate_region_oriented_direction,
-                                 generate_region_random_direction, step_back,
-                                 update_vectorised_slice_sampler)
+                                 generate_region_random_direction, int_dtype,
+                                 step_back, update_vectorised_slice_sampler)
 from ultranest.utils import submasks
-
-int_t = int
 
 
 def unitcube_line_intersection(ray_origin, ray_direction):
@@ -432,7 +430,7 @@ class PopulationSliceSampler(GenericPopulationSampler):
         self.allL = np.zeros((self.popsize, self.nsteps + 1)) + np.nan
         self.currentt = np.zeros(self.popsize) + np.nan
         self.currentv = np.zeros((self.popsize, ndim)) + np.nan
-        self.generation = np.zeros(self.popsize, dtype=int_t) - 1
+        self.generation = np.zeros(self.popsize, dtype=int_dtype) - 1
         self.current_left = np.zeros(self.popsize)
         self.current_right = np.zeros(self.popsize)
         self.searching_left = np.zeros(self.popsize, dtype=bool)
@@ -936,9 +934,9 @@ class PopulationSimpleSliceSampler(GenericPopulationSampler):
                 # Slice bounds for each points
                 tleft, tright = self.slice_limit(tleft_unitcube,tright_unitcube)
                 # Index of the workers working concurrently
-                worker_running = np.arange(0, self.popsize, 1, dtype=int_t)
+                worker_running = np.arange(self.popsize, dtype=int_dtype)
                 # Status indicating if a points has already find its next position
-                status = np.zeros(self.popsize, dtype=int_t)  # one for success, zero for running
+                status = np.zeros(self.popsize, dtype=int_dtype)  # one for success, zero for running
 
                 # Loop until each points has found its next position or we reached 100 iterations
                 for _it in range(self.max_it):

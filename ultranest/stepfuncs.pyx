@@ -13,6 +13,10 @@ cimport cython
 from cython.parallel import prange
 
 
+ctypedef np.int64_t decl_int_t
+int_dtype = np.int64
+
+
 @cython.boundscheck(False)
 @cython.wraparound(False)
 cdef _within_unit_cube(
@@ -332,7 +336,7 @@ def step_back(Lmin, allL, generation, currentt, log=False):
 
 cdef _fill_directions(
     np.ndarray[np.float_t, ndim=2] v,
-    np.ndarray[np.int_t, ndim=1] indices,
+    np.ndarray[decl_int_t, ndim=1] indices,
     float scale
 ):
     cdef size_t nsamples = v.shape[0]
@@ -361,7 +365,7 @@ def generate_cube_oriented_direction(ui, region, scale=1):
     nsamples, ndim = ui.shape
     v = np.zeros((nsamples, ndim))
     # choose axis
-    j = np.random.randint(ndim, size=nsamples)
+    j = np.random.randint(ndim, size=nsamples, dtype=int_dtype)
     _fill_directions(v, j, scale)
     return v
 
@@ -388,7 +392,7 @@ def generate_cube_oriented_direction_scaled(ui, region, scale=1):
     v = np.zeros((nsamples, ndim))
     scales = region.u.std(axis=0)
     # choose axis
-    j = np.random.randint(ndim, size=nsamples)
+    j = np.random.randint(ndim, size=nsamples, dtype=int_dtype)
     _fill_directions(v, j, scale)
     v *= scales[j].reshape((-1, 1))
     return v
@@ -439,7 +443,7 @@ def generate_region_oriented_direction(ui, region, scale=1):
     """
     nsamples, ndim = ui.shape
     # choose axis in transformed space:
-    j = np.random.randint(ndim, size=nsamples)
+    j = np.random.randint(ndim, size=nsamples, dtype=int_dtype)
     v = region.transformLayer.axes[j] * scale
     return v
 
@@ -490,8 +494,8 @@ def generate_differential_direction(ui, region, scale=1):
     nsamples, ndim = ui.shape
     nlive, ndim = region.u.shape
     # choose pair
-    i = np.random.randint(nlive, size=nsamples)
-    i2 = np.random.randint(nlive - 1, size=nsamples)
+    i = np.random.randint(nlive, size=nsamples, dtype=int_dtype)
+    i2 = np.random.randint(nlive - 1, size=nsamples, dtype=int_dtype)
     i2[i2 >= i] += 1
 
     # compute difference vector
@@ -530,14 +534,22 @@ def generate_mixture_random_direction(ui, region, scale=1):
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cpdef tuple update_vectorised_slice_sampler(\
-                          np.ndarray[np.float_t, ndim=1] t, np.ndarray[np.float_t, ndim=1] tleft,\
-                          np.ndarray[np.float_t, ndim=1] tright, np.ndarray[np.float_t, ndim=1] proposed_L,\
-                          np.ndarray[np.float_t, ndim=2] proposed_u, np.ndarray[np.float_t, ndim=2] proposed_p,\
-                          np.ndarray[np.int_t, ndim=1] worker_running, np.ndarray[np.int_t, ndim=1] status,\
-                          np.float_t Likelihood_threshold,np.float_t shrink_factor, np.ndarray[np.float_t, ndim=2] allu,\
-                          np.ndarray[np.float_t, ndim=1] allL, np.ndarray[np.float_t, ndim=2] allp, int popsize):
-
+cpdef tuple update_vectorised_slice_sampler(
+    np.ndarray[np.float_t, ndim=1] t,
+    np.ndarray[np.float_t, ndim=1] tleft,
+    np.ndarray[np.float_t, ndim=1] tright,
+    np.ndarray[np.float_t, ndim=1] proposed_L,
+    np.ndarray[np.float_t, ndim=2] proposed_u,
+    np.ndarray[np.float_t, ndim=2] proposed_p,
+    np.ndarray[decl_int_t, ndim=1] worker_running,
+    np.ndarray[decl_int_t, ndim=1] status,
+    np.float_t Likelihood_threshold,
+    np.float_t shrink_factor,
+    np.ndarray[np.float_t, ndim=2] allu,
+    np.ndarray[np.float_t, ndim=1] allL,
+    np.ndarray[np.float_t, ndim=2] allp,
+    int popsize
+):
     """Update the slice sampler state of each walker in the populations.
 
     Parameters

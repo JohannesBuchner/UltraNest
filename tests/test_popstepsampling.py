@@ -8,6 +8,7 @@ from ultranest.popstepsampler import PopulationSliceSampler, PopulationRandomWal
 from ultranest.popstepsampler import generate_cube_oriented_direction, generate_random_direction, generate_cube_oriented_direction_scaled
 from ultranest.popstepsampler import generate_region_oriented_direction, generate_region_random_direction
 from ultranest.popstepsampler import slice_limit_to_unitcube,slice_limit_to_scale
+from ultranest.popstepsampler import int_dtype
 
 def make_region(ndim, us=None, nlive=400):
     if us is None:
@@ -175,9 +176,9 @@ def test_update_slice_sampler():
     The workers should be split among the 2 unfinished points at the end.
     """
     
-    worker_running = np.array([0,0,0,0,1,1,1,1,2,2,2,2])
+    worker_running = np.array([0,0,0,0,1,1,1,1,2,2,2,2], dtype=int_dtype)
     popsize = 12
-    status = np.zeros(12, dtype=int)
+    status = np.zeros(12, dtype=int_dtype)
     status[3:] = 1
     Lmin = 1.
     shrink = 1.0 
@@ -294,8 +295,8 @@ if __name__ == '__main__':
     #test_stepsampler_cubegausswalk()
     #test_stepsampler_randomSimSlice()
     #test_direction_proposals()
-    #test_slice_limit()
+    test_slice_limit()
     #test_update_slice_sampler()
-    Test_SimpleSliceSampler(4)
+    #Test_SimpleSliceSampler(4)
     
     

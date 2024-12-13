@@ -83,11 +83,13 @@ def test_clusteringcase_eggbox():
     points = np.loadtxt(os.path.join(here, "eggboxregion.txt"))
     transformLayer = ScalingLayer()
     transformLayer.optimize(points, points)
-    region = MLFriends(points, transformLayer)
-    maxr = region.compute_maxradiussq(nbootstraps=30)
-    assert 1e-10 < maxr < 6e-10
-    print('maxradius:', maxr)
-    nclusters, clusteridxs, overlapped_points = update_clusters(points, points, maxr)
+    for seed in range(10):
+        np.random.seed(seed)
+        region = MLFriends(points, transformLayer)
+        maxr = region.compute_maxradiussq(nbootstraps=30)
+        assert 1e-10 < maxr < 6e-10
+        print('maxradius:', maxr)
+        nclusters, clusteridxs, overlapped_points = update_clusters(points, points, maxr)
     # plt.title('nclusters: %d' % nclusters)
     # for i in np.unique(clusteridxs):
     #    x, y = points[clusteridxs == i].transpose()
