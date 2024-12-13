@@ -14,6 +14,10 @@ import numpy as np
 
 from .utils import resample_equal, vectorize
 
+from scipy.interpolate import PchipInterpolator, make_interp_spline
+from scipy.integrate import trapezoid
+from getdist import MCSamples
+
 
 def get_auxiliary_problem(loglike, transform, ctr, invcov, enlargement_factor, df=1):
     """Return a new loglike and transform based on an auxiliary distribution.
@@ -342,9 +346,77 @@ def compute_quantile_intervals_refined(steps, upoints, uweights, logsteps_max=20
 
     return ulos, uhis, uinterpspace
 
+def conservative_prior_guess(all_x, all_p, single_dim_fraction):
+    """ Given a function p:[0, 1] -> R+, 
+    represented by some samples (`all_p`) corresponding
+    to the points `all_x`, return another normalized function
+    which is the sum of p and a constant, weighed by `single_dim_fraction`
+    and `(1-single_dim_fraction)` respectively.
+    """
+    
+    integral = trapezoid(all_p, x=all_x)
+    
+    return all_p * single_dim_fraction + np.ones_like(all_p) * (1 - single_dim_fraction) * integral
+
+def get_aux_splines(upoints, uweights, volume_contribution=0.5, beta=1.):
+    """ Compute spline representations of the auxiliary transforms.
+    
+    upoints: shape (n_points, dim)
+    uweights: shape (n_points,)
+    volume_contribution: fraction of total prior mass which will 
+        be taken up by the "guess" distribution represented by upoints
+        (default: 0.5)
+    beta: temperature for the prior guess (default: 1)
+    
+    """
+
+    
+    n_points, dim = upoints.shape
+    assert uweights.shape == (n_points, )
+    single_dim_fraction = volume_contribution**(1/dim)
+    
+    mcsamples = MCSamples(
+        samples=upoints, 
+        weights=uweights, 
+        names=[str(i) for i in range(upoints.shape[1])], 
+        ranges={str(i):[0, 1] for i in range(upoints.shape[1])}
+    )
+    
+    densities, inverse_cumulatives = [], []
+    
+    for i in range(dim):
+        density_interior = mcsamples.get1DDensity(str(i))
+        
+        interior_x = density_interior.x
+        
+        all_x = np.sort(np.unique(np.concatenate((
+            np.linspace(0, 1, num=1024),
+            interior_x
+        ))))
+        
+        all_p = np.maximum(density_interior(all_x), 0)
+        
+        all_p_thresholded = conservative_prior_guess(all_x, all_p**beta, single_dim_fraction)
+        
+        interpolator = PchipInterpolator(all_x, all_p_thresholded)
+        cumulative = interpolator.antiderivative()
+        integral = cumulative(1) - cumulative(0)
+        cumulative_points = cumulative(all_x) / integral
+        
+        unique_cumulative, unique_idx = np.unique(cumulative_points, return_index=True)
+        
+        inverse_cumulative = make_interp_spline(unique_cumulative, all_x[unique_idx], k=1)
+        inverse_cumulatives.append(inverse_cumulative)
+
+        cumulative = make_interp_spline(all_x, cumulative_points, k=1)
+        densities.append(cumulative.derivative())
+
+    return densities, inverse_cumulatives
+
 
 def get_auxiliary_contbox_parameterization(
-    param_names, loglike, transform, upoints, uweights, vectorized=False,
+    param_names, loglike, transform, upoints, uweights=None, vectorized=False,
+    volume_contribution=0.5, beta=1.,
 ):
     """Return a new loglike and transform based on an auxiliary distribution.
 
@@ -356,16 +428,13 @@ def get_auxiliary_contbox_parameterization(
     This is achieved by deforming the prior space, and undoing that
     transformation by correction weights in the likelihood.
     A additional parameter, "aux_logweight", is added at the end,
-    which contains the correction weight. You can ignore it.
-
-    The auxiliary distribution used for transformation/weighting is
-    factorized. Each axis considers the ECDF of the auxiliary samples,
-    and segments it into quantile segments. Within each segment,
-    the parameter edges in u-space are linearly interpolated.
-    To see the interpolation quantiles for each axis, use::
-
-        steps = 10**-(1.0 * np.arange(1, 8, 2))
-        ulos, uhis, uinterpspace = compute_quantile_intervals_refined(steps, upoints, uweights)
+    which contains the correction weight.
+    If this parameter is negative for most of the sampling, 
+    it means that the samples are being taken from the "expanded" region, 
+    therefore the hotstart is working as expected.
+    If it is positive, the auxiliary prior guess was likely mis-specified;
+    the sampler may still give correct results, but it will take 
+    as long as a regular nested sampling run (or longer).
 
     Parameters
     ------------
@@ -381,6 +450,15 @@ def get_auxiliary_contbox_parameterization(
         Weights of samples (needs to sum of 1)
     vectorized: bool
         whether the loglike & transform functions are vectorized
+    volume_contribution: float
+        fraction of total prior mass which will 
+        be taken up by the "guess" distribution (default: 0.5), 
+        should be between 0 and 1
+    beta: float
+        inverse temperature for the prior guess (default: 1).
+        The guess will be rescaled as prior**beta: higher beta 
+        will make the prior guess more informative and peaked,
+        lower beta will make it flatter and more conservative.
 
     Returns
     ---------
@@ -412,12 +490,16 @@ def get_auxiliary_contbox_parameterization(
     mask = np.logical_and(upoints > 0, upoints < 1).all(axis=1)
     assert np.all(mask), (
         'upoints must be between 0 and 1, have:', upoints[~mask,:])
-    steps = 10**-(1.0 * np.arange(1, 8, 2))
+
     nsamples, ndim = upoints.shape
-    assert nsamples > 10
-    ulos, uhis, uinterpspace = compute_quantile_intervals_refined(steps, upoints, uweights)
+
+    if uweights is None:
+        uweights = np.ones(nsamples) / nsamples
+    assert uweights.shape == (nsamples,)
 
     aux_param_names = param_names + ['aux_logweight']
+
+    densities, inv_cumulatives = get_aux_splines(upoints, uweights, volume_contribution, beta)
 
     def aux_transform(u):
         ndim2, = u.shape
@@ -425,10 +507,8 @@ def get_auxiliary_contbox_parameterization(
         umod = np.empty(ndim)
         log_aux_volume_factors = 0
         for i in range(ndim):
-            ulo_here = np.interp(u[-1], uinterpspace, ulos[:,i])
-            uhi_here = np.interp(u[-1], uinterpspace, uhis[:,i])
-            umod[i] = ulo_here + (uhi_here - ulo_here) * u[i]
-            log_aux_volume_factors += np.log(uhi_here - ulo_here)
+            umod[i] = inv_cumulatives[i](u[i])
+            log_aux_volume_factors -= np.log(densities[i](umod[i]))
         return np.append(transform(umod), log_aux_volume_factors)
 
     def aux_transform_vectorized(u):
@@ -437,10 +517,8 @@ def get_auxiliary_contbox_parameterization(
         umod = np.empty((nsamples, ndim2 - 1))
         log_aux_volume_factors = np.zeros((nsamples, 1))
         for i in range(ndim):
-            ulo_here = np.interp(u[:,-1], uinterpspace, ulos[:,i])
-            uhi_here = np.interp(u[:,-1], uinterpspace, uhis[:,i])
-            umod[:,i] = ulo_here + (uhi_here - ulo_here) * u[:,i]
-            log_aux_volume_factors[:,0] += np.log(uhi_here - ulo_here)
+            umod[:, i] = inv_cumulatives[i](u[:,i])
+            log_aux_volume_factors[:,0] -= np.log(densities[i](umod[:, i]))
         return np.hstack((transform(umod), log_aux_volume_factors))
 
     def aux_loglikelihood(x):
