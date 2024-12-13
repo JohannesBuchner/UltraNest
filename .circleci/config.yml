@@ -15,7 +15,7 @@ jobs:
       - run: ls
       - run: grep -Eo ':[a-zA-Z]{1,15}:' *.html|grep -vE ':(Author|Id|Copyright|License|root):'|grep -v ':GmwWqzssMkkJ:' || true
       - run: |
-          if [ "$(LANG=C grep -Eo ':[a-zA-Z]{1,15}:' *.html|grep -vE ':(Author|Id|Copyright|License|root):'|grep -c -v ':GmwWqzssMkkJ:'|grep -v '<cite>:py')" -gt 0 ];
+          if [ "$(LANG=C grep -h -v '<cite>:py' *.html | grep -Eo ':[a-zA-Z]{1,15}:' | grep -vE ':(Author|Id|Copyright|License|root):' | grep -v ':GmwWqzssMkkJ:')" -gt 0 ];
           then 
             exit 1;
           else
