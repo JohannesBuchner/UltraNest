@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest.integrator &mdash; UltraNest 4.3.1 documentation</title>
+  <title>ultranest.integrator &mdash; UltraNest 4.4.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=0503a316"></script>
+        <script src="../../_static/documentation_options.js?v=2f20d6c1"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -39,7 +39,7 @@
               <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                4.3.1
+                4.4.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -145,7 +145,7 @@
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;ReactiveNestedSampler&#39;</span><span class="p">,</span> <span class="s1">&#39;NestedSampler&#39;</span><span class="p">,</span> <span class="s1">&#39;read_file&#39;</span><span class="p">,</span> <span class="s1">&#39;warmstart_from_similar_file&#39;</span><span class="p">]</span>
 
-<span class="n">int_t</span> <span class="o">=</span> <span class="nb">int</span>
+<span class="n">int_t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span>
 
 
 <span class="k">def</span> <span class="nf">_get_cumsum_range</span><span class="p">(</span><span class="n">pi</span><span class="p">,</span> <span class="n">dp</span><span class="p">):</span>
@@ -268,10 +268,6 @@
 <span class="sd">        new likelihood function</span>
 <span class="sd">    transform: function</span>
 <span class="sd">        new transform function</span>
-<span class="sd">    verbose: bool</span>
-<span class="sd">        show progress</span>
-<span class="sd">    ndraw: int</span>
-<span class="sd">        set to &gt;1 if functions can take advantage of vectorized computations</span>
 <span class="sd">    max_tau: float</span>
 <span class="sd">        Allowed dissimilarity in the live point ordering, quantified as</span>
 <span class="sd">        normalised Kendall tau distance.</span>
@@ -280,9 +276,13 @@
 <span class="sd">        when the live point order differs.</span>
 <span class="sd">        Near 1 are completely different live point orderings.</span>
 <span class="sd">        Values in between permit mild disorder.</span>
+<span class="sd">    verbose: bool</span>
+<span class="sd">        show progress</span>
+<span class="sd">    ndraw: int</span>
+<span class="sd">        set to &gt;1 if functions can take advantage of vectorized computations</span>
 
 <span class="sd">    Returns</span>
-<span class="sd">    ----------</span>
+<span class="sd">    -------</span>
 <span class="sd">    sequence: dict</span>
 <span class="sd">        contains arrays storing for each iteration estimates of:</span>
 
@@ -660,17 +660,24 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        update_interval_iter:</span>
+<span class="sd">        update_interval_iter: None | int</span>
 <span class="sd">            Update region after this many iterations.</span>
-<span class="sd">        update_interval_ncall:</span>
+<span class="sd">        update_interval_ncall: None | int</span>
 <span class="sd">            Update region after update_interval_ncall likelihood calls.</span>
-<span class="sd">        log_interval:</span>
+<span class="sd">        log_interval: None | int</span>
 <span class="sd">            Update stdout status line every log_interval iterations</span>
-<span class="sd">        dlogz:</span>
+<span class="sd">        dlogz: float</span>
 <span class="sd">            Target evidence uncertainty.</span>
-<span class="sd">        max_iters:</span>
+<span class="sd">        max_iters: None | int</span>
 <span class="sd">            maximum number of integration iterations.</span>
 
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        results: dict</span>
+<span class="sd">            dictionary with posterior *samples* and original *weighted_samples*,</span>
+<span class="sd">            number of likelihood calls *ncall*,</span>
+<span class="sd">            number of nested sampling iterations *niter*, evidence</span>
+<span class="sd">            estimate *logz* and uncertainty *logzerr*.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">update_interval_ncall</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">update_interval_ncall</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_live_points</span><span class="p">))</span>
@@ -2309,6 +2316,14 @@
 <span class="sd">        ----------</span>
 <span class="sd">        it: int</span>
 <span class="sd">            current iteration</span>
+<span class="sd">        Llo: float</span>
+<span class="sd">            lower loglikelihood bound for the strategy</span>
+<span class="sd">        Lhi: float</span>
+<span class="sd">            upper loglikelihood bound for the strategy</span>
+<span class="sd">        minimal_widths_sequence: list</span>
+<span class="sd">            list of likelihood intervals with minimum number of live points</span>
+<span class="sd">        target_min_num_children: int</span>
+<span class="sd">            minimum number of live points currently targeted</span>
 <span class="sd">        node: node</span>
 <span class="sd">            The node to consider</span>
 <span class="sd">        parallel_values: array of floats</span>
@@ -2317,14 +2332,6 @@
 <span class="sd">            maximum number of likelihood function calls allowed</span>
 <span class="sd">        max_iters: int</span>
 <span class="sd">            maximum number of nested sampling iteration allowed</span>
-<span class="sd">        Llo: float</span>
-<span class="sd">            lower loglikelihood bound for the strategy</span>
-<span class="sd">        Lhi: float</span>
-<span class="sd">            upper loglikelihood bound for the strategy</span>
-<span class="sd">        minimal_widths_sequence: list</span>
-<span class="sd">            list of likelihood intervals with minimum number of live points</span>
-<span class="sd">        target_min_num_children:</span>
-<span class="sd">            minimum number of live points currently targeted</span>
 <span class="sd">        live_points_healthy: bool</span>
 <span class="sd">            indicates whether the live points have become</span>
 <span class="sd">            linearly dependent (covariance not full rank)</span>
@@ -2407,8 +2414,8 @@
             <span class="n">max_num_improvement_loops</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
             <span class="n">min_num_live_points</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span>
             <span class="n">cluster_num_live_points</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span>
-            <span class="n">insertion_test_window</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
             <span class="n">insertion_test_zscore_threshold</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+            <span class="n">insertion_test_window</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
             <span class="n">region_class</span><span class="o">=</span><span class="n">MLFriends</span><span class="p">,</span>
             <span class="n">widen_before_initial_plateau_num_warn</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
             <span class="n">widen_before_initial_plateau_num_max</span><span class="o">=</span><span class="mi">50000</span><span class="p">,</span>
@@ -2500,7 +2507,7 @@
 
 
 <span class="sd">        Returns</span>
-<span class="sd">        ------</span>
+<span class="sd">        -------</span>
 <span class="sd">        results (dict): Results dictionary, with the following entries:</span>
 
 <span class="sd">            - samples (ndarray): re-weighted posterior samples: distributed according</span>
@@ -3294,7 +3301,7 @@
 <span class="sd">        whether to perform MWW insertion order test for assessing convergence</span>
 
 <span class="sd">    Returns</span>
-<span class="sd">    ----------</span>
+<span class="sd">    -------</span>
 <span class="sd">    sequence: dict</span>
 <span class="sd">        contains arrays storing for each iteration estimates of:</span>
 

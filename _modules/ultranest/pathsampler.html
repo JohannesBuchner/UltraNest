@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest.pathsampler &mdash; UltraNest 4.3.1 documentation</title>
+  <title>ultranest.pathsampler &mdash; UltraNest 4.4.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=0503a316"></script>
+        <script src="../../_static/documentation_options.js?v=2f20d6c1"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -39,7 +39,7 @@
               <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                4.3.1
+                4.4.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -100,7 +100,7 @@
            <div itemprop="articleBody">
              
   <h1>Source code for ultranest.pathsampler</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;MCMC-like step sampling on a trajectory</span>
+<span></span><span class="sd">&quot;&quot;&quot;MCMC-like step sampling on a trajectory.</span>
 
 <span class="sd">These features are experimental.</span>
 <span class="sd">&quot;&quot;&quot;</span>
@@ -373,7 +373,7 @@
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;set gradient function to </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">grad_function</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
 
         <span class="k">def</span> <span class="nf">plot_gradient_wrapper</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">            </span><span class="sd">&quot;&quot;&quot;wrapper that makes plots (when desired)&quot;&quot;&quot;</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Make plot while computing gradient (optionally).&quot;&quot;&quot;</span>
             <span class="n">v</span> <span class="o">=</span> <span class="n">grad_function</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
                 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;+ &#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>

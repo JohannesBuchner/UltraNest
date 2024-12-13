@@ -34,7 +34,7 @@ Experimental modules, no guarantees:
  * :py:mod:`ultranest.dychmc`: Constrained Hamiltanean Monte Carlo step sampling.
  * :py:mod:`ultranest.dyhmc`: Experimental constrained Hamiltanean Monte Carlo step sampling
  * :py:mod:`ultranest.flatnuts`: FLATNUTS is a implementation of No-U-turn sampler 
- * :py:mod:`ultranest.pathsampler`: MCMC-like step sampling on a trajectory
+ * :py:mod:`ultranest.pathsampler`: MCMC-like step sampling on a trajectory.
  * :py:mod:`ultranest.samplingpath`: Sparsely sampled, virtual sampling path.
 
 

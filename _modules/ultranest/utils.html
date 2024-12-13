@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest.utils &mdash; UltraNest 4.3.1 documentation</title>
+  <title>ultranest.utils &mdash; UltraNest 4.4.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=0503a316"></script>
+        <script src="../../_static/documentation_options.js?v=2f20d6c1"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -39,7 +39,7 @@
               <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                4.3.1
+                4.4.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -337,7 +337,7 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    args: iterable</span>
+<span class="sd">    *args: iterable</span>
 <span class="sd">        Lists to concatenate.</span>
 
 <span class="sd">    Returns</span>
@@ -602,6 +602,11 @@
 <span class="sd">        process id</span>
 <span class="sd">    mpi_size : int</span>
 <span class="sd">        total number of processes</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    chunk_size: int</span>
+<span class="sd">        number of tasks for process number `mpi_rank`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">num_total_tasks</span> <span class="o">+</span> <span class="n">mpi_size</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">mpi_rank</span><span class="p">)</span> <span class="o">//</span> <span class="n">mpi_size</span></div>
 
@@ -619,7 +624,7 @@
 <span class="sd">    ----------</span>
 <span class="sd">    mask : np.array(dtype=bool)</span>
 <span class="sd">        selection of some array</span>
-<span class="sd">    masks : list of np.array(dtype=bool)</span>
+<span class="sd">    *masks : list of np.array(dtype=bool)</span>
 <span class="sd">        each further mask is a subselection</span>
 
 <span class="sd">    Returns</span>

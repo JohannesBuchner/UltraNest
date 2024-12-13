@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest.stepsampler &mdash; UltraNest 4.3.1 documentation</title>
+  <title>ultranest.stepsampler &mdash; UltraNest 4.4.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=0503a316"></script>
+        <script src="../../_static/documentation_options.js?v=2f20d6c1"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -39,7 +39,7 @@
               <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                4.3.1
+                4.4.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -604,7 +604,7 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Select random live point as chain starting point.</span>
 
 <span class="sd">    Parameters</span>
-<span class="sd">    -----------</span>
+<span class="sd">    ----------</span>
 <span class="sd">    us: array</span>
 <span class="sd">        positions of live points</span>
 <span class="sd">    Ls: array</span>
@@ -673,7 +673,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Select live point as chain starting point.</span>
 
 <span class="sd">        Parameters</span>
-<span class="sd">        -----------</span>
+<span class="sd">        ----------</span>
 <span class="sd">        us: array</span>
 <span class="sd">            positions of live points</span>
 <span class="sd">        Ls: array</span>
@@ -1199,6 +1199,16 @@
 <span class="sd">        tregion: :py:class:`WrappingEllipsoid`</span>
 <span class="sd">            optional ellipsoid in transformed space for rejecting proposals</span>
 
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        u: None | array</span>
+<span class="sd">            newly sampled untransformed point, or None if not successful yet</span>
+<span class="sd">        p: None | array</span>
+<span class="sd">            newly sampled transformed point, or None if not successful yet</span>
+<span class="sd">        L: None | float</span>
+<span class="sd">            log-likelihood value, or None if not successful yet</span>
+<span class="sd">        nc: int</span>
+<span class="sd">            number of likelihood function calls</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># find most recent point in history conforming to current Lmin</span>
         <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="p">(</span><span class="n">_uj</span><span class="p">,</span> <span class="n">Lj</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history</span><span class="p">):</span>
@@ -1293,12 +1303,17 @@
 <span class="sd">        ----------</span>
 <span class="sd">        ui: array</span>
 <span class="sd">            current point</span>
+<span class="sd">        region: object</span>
+<span class="sd">            ignored</span>
 <span class="sd">        ndraw: int</span>
 <span class="sd">            number of points to draw.</span>
-<span class="sd">        region:</span>
+<span class="sd">        plot: bool</span>
 <span class="sd">            ignored</span>
-<span class="sd">        plot:</span>
-<span class="sd">            ignored</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        unew: array</span>
+<span class="sd">            proposed point</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># propose in that direction</span>
         <span class="n">direction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">)</span>
@@ -1738,9 +1753,10 @@
 <span class="sd">    Updates only some dimensions at a time, completely user-definable.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">generate_direction</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;generate_direction&#39;</span><span class="p">,</span> <span class="n">generate_region_random_direction</span><span class="p">)</span>
+    <span class="n">nsteps</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;nsteps&#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">step_matrix</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">SliceSampler</span><span class="p">(</span>
         <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
-        <span class="n">nsteps</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;nsteps&#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">step_matrix</span><span class="p">)),</span>
+        <span class="n">nsteps</span><span class="o">=</span><span class="n">nsteps</span><span class="p">,</span>
         <span class="n">generate_direction</span><span class="o">=</span><span class="n">SpeedVariableGenerator</span><span class="p">(</span>
             <span class="n">step_matrix</span><span class="o">=</span><span class="n">step_matrix</span><span class="p">,</span>
             <span class="n">generate_direction</span><span class="o">=</span><span class="n">generate_direction</span>

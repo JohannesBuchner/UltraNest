@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Release Notes &mdash; UltraNest 4.3.1 documentation</title>
+  <title>Release Notes &mdash; UltraNest 4.4.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
@@ -17,7 +17,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=0503a316"></script>
+        <script src="_static/documentation_options.js?v=2f20d6c1"></script>
         <script src="_static/doctools.js?v=9a2dae69"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -42,7 +42,7 @@
               <img src="_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                4.3.1
+                4.4.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -64,19 +64,21 @@
 <li class="toctree-l1"><a class="reference internal" href="issues.html">Frequently Asked Questions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Release Notes</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#id1">4.2.0 (2024-02-15)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id2">4.1.0 (2024-02-15)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id3">4.0.0 (2024-02-15)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id4">3.6.5 (2023-07-18)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id5">3.6.0 (2023-06-22)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id6">3.5.0 (2022-09-05)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id7">3.4.0 (2022-04-05)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id8">3.3.3 (2021-09-17)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id9">3.0.0 (2020-10-03)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id10">2.2.0 (2020-02-07)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id11">2.1.0 (2020-02-07)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id12">2.0.0 (2019-10-03)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#id13">1.0.0 (2014)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id1">4.4.0 (2024-12-13)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id2">4.3.0 (2024-04-12)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id6">4.2.0 (2024-02-15)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id7">4.1.0 (2024-02-15)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id8">4.0.0 (2024-02-15)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id9">3.6.5 (2023-07-18)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id10">3.6.0 (2023-06-22)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id11">3.5.0 (2022-09-05)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id12">3.4.0 (2022-04-05)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id13">3.3.3 (2021-09-17)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id14">3.0.0 (2020-10-03)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id15">2.2.0 (2020-02-07)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id16">2.1.0 (2020-02-07)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id17">2.0.0 (2019-10-03)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id18">1.0.0 (2014)</a></li>
 </ul>
 </li>
 </ul>
@@ -119,7 +121,23 @@
   <section id="release-notes">
 <h1>Release Notes<a class="headerlink" href="#release-notes" title="Link to this heading"></a></h1>
 <section id="id1">
-<h2>4.2.0 (2024-02-15)<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<h2>4.4.0 (2024-12-13)<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Compatible with numpy version 2 and above. Any remaining errors like “ValueError: numpy.dtype size changed, may indicate binary incompatibility. Expected 96 from C header, got 88 from PyObject” are due to ultranest and numpy being installed with different versions. Reinstall numpy and ultranest in that case.</p></li>
+</ul>
+</section>
+<section id="id2">
+<h2>4.3.0 (2024-04-12)<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>added <a class="reference internal" href="ultranest.html#ultranest.popstepsampler.PopulationSimpleSliceSampler" title="ultranest.popstepsampler.PopulationSimpleSliceSampler"><code class="xref py py-class docutils literal notranslate"><span class="pre">ultranest.popstepsampler.PopulationSimpleSliceSampler</span></code></a>: Vectorized, fixed-batch size slice sampler. (<a class="reference external" href="https://github.com/JohannesBuchner/UltraNest/pull/118">PR</a> by Benjamin Beauchesne)</p></li>
+<li><p>validation of passed parameter names (<a class="reference external" href="https://github.com/JohannesBuchner/UltraNest/pull/133">PR</a> by svaverbe)</p></li>
+<li><p>documentation improvements, including documenting results dictionary (<a class="reference external" href="https://github.com/JohannesBuchner/UltraNest/pull/138">PR</a> by Jacopo Tissino)</p></li>
+<li><p>make scipy actually optional (<a class="reference external" href="https://github.com/JohannesBuchner/UltraNest/pull/141">PR</a> by Matthew Kirk)</p></li>
+<li><p>linting</p></li>
+</ul>
+</section>
+<section id="id6">
+<h2>4.2.0 (2024-02-15)<a class="headerlink" href="#id6" title="Link to this heading"></a></h2>
 <ul class="simple">
 <li><p>new <a class="reference internal" href="ultranest.html#ultranest.mlfriends.LocalAffineLayer" title="ultranest.mlfriends.LocalAffineLayer"><code class="xref py py-class docutils literal notranslate"><span class="pre">ultranest.mlfriends.LocalAffineLayer</span></code></a> for metric learning, set as default (see <a class="reference external" href="https://github.com/JohannesBuchner/UltraNest/issues/124">issue 124</a>)</p></li>
 <li><p>add Highest Density Interval function (ultranest.plot.highest_density_interval_from_samples)</p></li>
@@ -127,37 +145,37 @@
 <li><p>bug fixes in popstepsampler</p></li>
 </ul>
 </section>
-<section id="id2">
-<h2>4.1.0 (2024-02-15)<a class="headerlink" href="#id2" title="Link to this heading"></a></h2>
+<section id="id7">
+<h2>4.1.0 (2024-02-15)<a class="headerlink" href="#id7" title="Link to this heading"></a></h2>
 <ul class="simple">
 <li><p>add number of steps calibrator <a class="reference internal" href="ultranest.html#ultranest.calibrator.ReactiveNestedCalibrator" title="ultranest.calibrator.ReactiveNestedCalibrator"><code class="xref py py-class docutils literal notranslate"><span class="pre">ultranest.calibrator.ReactiveNestedCalibrator</span></code></a></p></li>
 <li><p>add relative jump distance diagnostic for step samplers</p></li>
 <li><p>make population step samplers more consistent with other step samplers</p></li>
 </ul>
 </section>
-<section id="id3">
-<h2>4.0.0 (2024-02-15)<a class="headerlink" href="#id3" title="Link to this heading"></a></h2>
+<section id="id8">
+<h2>4.0.0 (2024-02-15)<a class="headerlink" href="#id8" title="Link to this heading"></a></h2>
 <ul class="simple">
 <li><p>new <a class="reference internal" href="ultranest.html#ultranest.mlfriends.MaxPrincipleGapAffineLayer" title="ultranest.mlfriends.MaxPrincipleGapAffineLayer"><code class="xref py py-class docutils literal notranslate"><span class="pre">ultranest.mlfriends.MaxPrincipleGapAffineLayer</span></code></a> for metric learning, set as default</p></li>
 </ul>
 </section>
-<section id="id4">
-<h2>3.6.5 (2023-07-18)<a class="headerlink" href="#id4" title="Link to this heading"></a></h2>
+<section id="id9">
+<h2>3.6.5 (2023-07-18)<a class="headerlink" href="#id9" title="Link to this heading"></a></h2>
 <ul class="simple">
 <li><p>documentation improvements</p></li>
 <li><p>logging with MPI fixes <a class="reference external" href="https://github.com/JohannesBuchner/UltraNest/issues/109">by adipol-ph</a> and <a class="reference external" href="https://github.com/JohannesBuchner/UltraNest/issues/110">by gregorydavidmartinez</a></p></li>
 <li><p>more flexible plotting <a class="reference external" href="https://github.com/JohannesBuchner/UltraNest/issues/108">by facero</a></p></li>
 </ul>
 </section>
-<section id="id5">
-<h2>3.6.0 (2023-06-22)<a class="headerlink" href="#id5" title="Link to this heading"></a></h2>
+<section id="id10">
+<h2>3.6.0 (2023-06-22)<a class="headerlink" href="#id10" title="Link to this heading"></a></h2>
 <ul class="simple">
 <li><p>add PopulationRandomWalkSampler: vectorized Gaussian random walks for GPU/JAX-powered likelihoods</p></li>
 <li><p>limit initial widening to escape plateau (issue #81)</p></li>
 </ul>
 </section>
-<section id="id6">
-<h2>3.5.0 (2022-09-05)<a class="headerlink" href="#id6" title="Link to this heading"></a></h2>
+<section id="id11">
+<h2>3.5.0 (2022-09-05)<a class="headerlink" href="#id11" title="Link to this heading"></a></h2>
 <ul class="simple">
 <li><p>add hot-resume: resume from a similar fit (with different data)</p></li>
 <li><p>fix post_summary.csv column order</p></li>
@@ -165,16 +183,16 @@
 <li><p>more efficient handling of categorical variables</p></li>
 </ul>
 </section>
-<section id="id7">
-<h2>3.4.0 (2022-04-05)<a class="headerlink" href="#id7" title="Link to this heading"></a></h2>
+<section id="id12">
+<h2>3.4.0 (2022-04-05)<a class="headerlink" href="#id12" title="Link to this heading"></a></h2>
 <ul class="simple">
 <li><p>add differential evolution proposal for slice sampling, recommend it</p></li>
 <li><p>fix revert of step sampler when run out of constraint, in MPI</p></li>
 <li><p>add SimpleRegion: axis-aligned ellipsoidal for very high-d.</p></li>
 </ul>
 </section>
-<section id="id8">
-<h2>3.3.3 (2021-09-17)<a class="headerlink" href="#id8" title="Link to this heading"></a></h2>
+<section id="id13">
+<h2>3.3.3 (2021-09-17)<a class="headerlink" href="#id13" title="Link to this heading"></a></h2>
 <ul class="simple">
 <li><p>pretty marginal posterior plot to stdout</p></li>
 <li><p>avoid non-terminations when logzerr cannot be reached</p></li>
@@ -185,8 +203,8 @@
 <li><p>modular step samplers</p></li>
 </ul>
 </section>
-<section id="id9">
-<h2>3.0.0 (2020-10-03)<a class="headerlink" href="#id9" title="Link to this heading"></a></h2>
+<section id="id14">
+<h2>3.0.0 (2020-10-03)<a class="headerlink" href="#id14" title="Link to this heading"></a></h2>
 <ul class="simple">
 <li><p>Accelerated Hit-and-Run Sampler added</p></li>
 <li><p>Support for other languages (C, C++, Julia, Fortran) added</p></li>
@@ -195,26 +213,26 @@
 <li><p>Rejection sampling with transformed ellipsoid added</p></li>
 </ul>
 </section>
-<section id="id10">
-<h2>2.2.0 (2020-02-07)<a class="headerlink" href="#id10" title="Link to this heading"></a></h2>
+<section id="id15">
+<h2>2.2.0 (2020-02-07)<a class="headerlink" href="#id15" title="Link to this heading"></a></h2>
 <ul class="simple">
 <li><p>allow reading UltraNest outputs without ReactiveNestedSampler instance</p></li>
 </ul>
 </section>
-<section id="id11">
-<h2>2.1.0 (2020-02-07)<a class="headerlink" href="#id11" title="Link to this heading"></a></h2>
+<section id="id16">
+<h2>2.1.0 (2020-02-07)<a class="headerlink" href="#id16" title="Link to this heading"></a></h2>
 <ul class="simple">
 <li><p>adaptive number of steps for slice and hit-and-run samplers.</p></li>
 </ul>
 </section>
-<section id="id12">
-<h2>2.0.0 (2019-10-03)<a class="headerlink" href="#id12" title="Link to this heading"></a></h2>
+<section id="id17">
+<h2>2.0.0 (2019-10-03)<a class="headerlink" href="#id17" title="Link to this heading"></a></h2>
 <ul class="simple">
 <li><p>First release.</p></li>
 </ul>
 </section>
-<section id="id13">
-<h2>1.0.0 (2014)<a class="headerlink" href="#id13" title="Link to this heading"></a></h2>
+<section id="id18">
+<h2>1.0.0 (2014)<a class="headerlink" href="#id18" title="Link to this heading"></a></h2>
 <ul class="simple">
 <li><p>A simpler version referenced in Buchner et al. (2014),
 combining RadFriends with an optional Metropolis-Hastings proposal.</p></li>

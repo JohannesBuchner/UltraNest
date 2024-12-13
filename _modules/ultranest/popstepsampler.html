@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest.popstepsampler &mdash; UltraNest 4.3.1 documentation</title>
+  <title>ultranest.popstepsampler &mdash; UltraNest 4.4.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=0503a316"></script>
+        <script src="../../_static/documentation_options.js?v=2f20d6c1"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -39,7 +39,7 @@
               <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                4.3.1
+                4.4.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -120,11 +120,9 @@
                                  <span class="n">generate_mixture_random_direction</span><span class="p">,</span>
                                  <span class="n">generate_random_direction</span><span class="p">,</span>
                                  <span class="n">generate_region_oriented_direction</span><span class="p">,</span>
-                                 <span class="n">generate_region_random_direction</span><span class="p">,</span> <span class="n">step_back</span><span class="p">,</span>
-                                 <span class="n">update_vectorised_slice_sampler</span><span class="p">)</span>
+                                 <span class="n">generate_region_random_direction</span><span class="p">,</span> <span class="n">int_dtype</span><span class="p">,</span>
+                                 <span class="n">step_back</span><span class="p">,</span> <span class="n">update_vectorised_slice_sampler</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">ultranest.utils</span> <span class="kn">import</span> <span class="n">submasks</span>
-
-<span class="n">int_t</span> <span class="o">=</span> <span class="nb">int</span>
 
 
 <span class="k">def</span> <span class="nf">unitcube_line_intersection</span><span class="p">(</span><span class="n">ray_origin</span><span class="p">,</span> <span class="n">ray_direction</span><span class="p">):</span>
@@ -545,7 +543,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">allL</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">popsize</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">currentt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">popsize</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">currentv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">popsize</span><span class="p">,</span> <span class="n">ndim</span><span class="p">))</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">generation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">popsize</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">int_t</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">generation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">popsize</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">int_dtype</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">current_left</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">popsize</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">current_right</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">popsize</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">searching_left</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">popsize</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
@@ -602,10 +600,10 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        region: MLFriends object</span>
-<span class="sd">            Region</span>
 <span class="sd">        mask_starting: np.array(nwalkers, dtype=bool)</span>
 <span class="sd">            which walkers to set up.</span>
+<span class="sd">        region: MLFriends object</span>
+<span class="sd">            Region</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">:</span>
@@ -640,7 +638,13 @@
 <span class="sd">            loglikelihood function</span>
 <span class="sd">        Lmin: float</span>
 <span class="sd">            current log-likelihood threshold</span>
+<span class="sd">        region: MLFriends object</span>
+<span class="sd">            Region</span>
 
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        nc: int</span>
+<span class="sd">            Number of likelihood function calls</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">movable</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generation</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span>
         <span class="n">all_movable</span> <span class="o">=</span> <span class="n">movable</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
@@ -1061,9 +1065,9 @@
                 <span class="c1"># Slice bounds for each points</span>
                 <span class="n">tleft</span><span class="p">,</span> <span class="n">tright</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">slice_limit</span><span class="p">(</span><span class="n">tleft_unitcube</span><span class="p">,</span><span class="n">tright_unitcube</span><span class="p">)</span>
                 <span class="c1"># Index of the workers working concurrently</span>
-                <span class="n">worker_running</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">popsize</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">int_t</span><span class="p">)</span>
+                <span class="n">worker_running</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">popsize</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">int_dtype</span><span class="p">)</span>
                 <span class="c1"># Status indicating if a points has already find its next position</span>
-                <span class="n">status</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">popsize</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">int_t</span><span class="p">)</span>  <span class="c1"># one for success, zero for running</span>
+                <span class="n">status</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">popsize</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">int_dtype</span><span class="p">)</span>  <span class="c1"># one for success, zero for running</span>
 
                 <span class="c1"># Loop until each points has found its next position or we reached 100 iterations</span>
                 <span class="k">for</span> <span class="n">_it</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_it</span><span class="p">):</span>

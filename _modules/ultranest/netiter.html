@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest.netiter &mdash; UltraNest 4.3.1 documentation</title>
+  <title>ultranest.netiter &mdash; UltraNest 4.4.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=0503a316"></script>
+        <script src="../../_static/documentation_options.js?v=2f20d6c1"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -39,7 +39,7 @@
               <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                4.3.1
+                4.4.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -393,7 +393,7 @@
 <span class="sd">        list of :py:class:`TreeNode` specifying the roots of the tree.</span>
 
 <span class="sd">    Returns</span>
-<span class="sd">    --------</span>
+<span class="sd">    -------</span>
 <span class="sd">    count: int</span>
 <span class="sd">        total number of nodes</span>
 <span class="sd">    maxwidth: int</span>
@@ -432,7 +432,7 @@
 <span class="sd">        upper value threshold</span>
 
 <span class="sd">    Returns</span>
-<span class="sd">    --------</span>
+<span class="sd">    -------</span>
 <span class="sd">    nnodes: int</span>
 <span class="sd">        total number of nodes in the value interval lo .. hi (inclusive).</span>
 <span class="sd">    maxwidth: int</span>
@@ -477,7 +477,7 @@
 <span class="sd">        selection threshold</span>
 
 <span class="sd">    Returns</span>
-<span class="sd">    --------</span>
+<span class="sd">    -------</span>
 <span class="sd">    list_of_parents: list of nodes</span>
 <span class="sd">        parents</span>
 <span class="sd">    list_of_nforks: list of floats</span>
@@ -554,14 +554,14 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Save point.</span>
 
 <span class="sd">        Parameters</span>
-<span class="sd">        -----------</span>
+<span class="sd">        ----------</span>
 <span class="sd">        newpointu: array</span>
 <span class="sd">            point (in u-space)</span>
 <span class="sd">        newpointp: array</span>
 <span class="sd">            point (in p-space)</span>
 
 <span class="sd">        Returns</span>
-<span class="sd">        ---------</span>
+<span class="sd">        -------</span>
 <span class="sd">        index: int</span>
 <span class="sd">            index of the new point in the pile</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -596,7 +596,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Store point in pile, and create a new tree node that points to it.</span>
 
 <span class="sd">        Parameters</span>
-<span class="sd">        -----------</span>
+<span class="sd">        ----------</span>
 <span class="sd">        value: float</span>
 <span class="sd">            value to store in node (loglikelihood)</span>
 <span class="sd">        u: array</span>
@@ -605,7 +605,7 @@
 <span class="sd">            point (in p-space)</span>
 
 <span class="sd">        Returns</span>
-<span class="sd">        ---------</span>
+<span class="sd">        -------</span>
 <span class="sd">        node: :py:class:`TreeNode`</span>
 <span class="sd">            node</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1038,11 +1038,11 @@
 <span class="sd">        Point pile.</span>
 <span class="sd">    main_iterator: :py:class:`BreadthFirstIterator`</span>
 <span class="sd">        iterator used</span>
-<span class="sd">    mpi_comm:</span>
+<span class="sd">    mpi_comm: None | object</span>
 <span class="sd">        MPI communicator object, or None if MPI is not used.</span>
 
 <span class="sd">    Returns</span>
-<span class="sd">    --------</span>
+<span class="sd">    -------</span>
 <span class="sd">    results: dict</span>
 <span class="sd">        All information of the run. Important keys:</span>
 <span class="sd">        Number of nested sampling iterations (niter),</span>
@@ -1169,7 +1169,7 @@
 <span class="sd">        Whether to perform a rolling insertion order rank test</span>
 
 <span class="sd">    Returns</span>
-<span class="sd">    --------</span>
+<span class="sd">    -------</span>
 <span class="sd">    results: dict</span>
 <span class="sd">        Run information, see :py:func:`combine_results`</span>
 <span class="sd">    sequence: dict</span>

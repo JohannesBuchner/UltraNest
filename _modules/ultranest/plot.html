@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest.plot &mdash; UltraNest 4.3.1 documentation</title>
+  <title>ultranest.plot &mdash; UltraNest 4.4.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=0503a316"></script>
+        <script src="../../_static/documentation_options.js?v=2f20d6c1"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -39,7 +39,7 @@
               <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                4.3.1
+                4.4.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -163,17 +163,21 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
+<span class="sd">    results: dict</span>
+<span class="sd">        data dictionary</span>
 <span class="sd">    min_weight: float</span>
 <span class="sd">        cut off low-weight posterior points. Avoids meaningless</span>
 <span class="sd">        stragglers when plot_datapoints is True.</span>
 <span class="sd">    with_legend: bool</span>
 <span class="sd">        whether to add a legend to show meaning of the lines.</span>
-<span class="sd">    color : str</span>
-<span class="sd">        ``matplotlib`` style color for all histograms.</span>
+<span class="sd">    logger: None | object</span>
+<span class="sd">        where to log</span>
+<span class="sd">    levels: list</span>
+<span class="sd">        list of credible interval levels</span>
+<span class="sd">    plot_datapoints : bool</span>
+<span class="sd">        Draw individual data points.</span>
 <span class="sd">    plot_density : bool</span>
 <span class="sd">        Draw the density colormap.</span>
-<span class="sd">    plot_contours : bool</span>
-<span class="sd">        Draw the contours.</span>
 <span class="sd">    show_titles : bool</span>
 <span class="sd">        Displays a title above each 1-D histogram showing the 0.5 quantile</span>
 <span class="sd">        with the upper and lower errors supplied by the quantiles argument.</span>
@@ -181,6 +185,8 @@
 <span class="sd">        If true, suppress warnings for small datasets.</span>
 <span class="sd">    contour_kwargs : dict</span>
 <span class="sd">        Any additional keyword arguments to pass to the `contour` method.</span>
+<span class="sd">    color : str</span>
+<span class="sd">        ``matplotlib`` style color for all histograms.</span>
 <span class="sd">    quantiles: list</span>
 <span class="sd">        fractional quantiles to show on the 1-D histograms as vertical dashed lines.</span>
 <span class="sd">    **corner_kwargs: dict</span>
@@ -347,16 +353,20 @@
 <span class="sd">        plt.show()</span>
 
 <span class="sd">    To plot onto a specific axis, use `band.line(..., ax=myaxis)`.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    x: array</span>
-<span class="sd">        The independent variable</span>
-
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">shadeargs</span><span class="o">=</span><span class="p">{},</span> <span class="n">lineargs</span><span class="o">=</span><span class="p">{}):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialise with independent variable *x*.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialise.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x: array</span>
+<span class="sd">            Independent variable.</span>
+<span class="sd">        shadeargs: dict</span>
+<span class="sd">            default arguments for shade function.</span>
+<span class="sd">        lineargs: dict</span>
+<span class="sd">            default arguments for line function.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ys</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">shadeargs</span> <span class="o">=</span> <span class="n">shadeargs</span>
