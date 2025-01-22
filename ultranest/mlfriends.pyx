@@ -598,7 +598,7 @@ class ScalingLayer(object):
         tpoints = self.transform(upoints)
         nclusters, clusteridxs, overlapped_uwpoints = update_clusters(uwpoints, tpoints, maxradiussq, self.clusterids)
         # clusteridxs = track_clusters(clusteridxs, self.clusterids)
-        s = ScalingLayer(nclusters=nclusters, wrapped_dims=self.wrapped_dims, clusterids=clusteridxs)
+        s = self.__class__(nclusters=nclusters, wrapped_dims=self.wrapped_dims, clusterids=clusteridxs)
         s.optimize(upoints, overlapped_uwpoints)
         return s
 
@@ -730,7 +730,7 @@ class AffineLayer(ScalingLayer):
         tpoints = self.transform(upoints)
         nclusters, clusteridxs, overlapped_uwpoints = update_clusters(uwpoints, tpoints, maxradiussq, self.clusterids)
         # clusteridxs = track_clusters(clusteridxs, self.clusterids)
-        s = AffineLayer(nclusters=nclusters, wrapped_dims=self.wrapped_dims, clusterids=clusteridxs)
+        s = self.__class__(nclusters=nclusters, wrapped_dims=self.wrapped_dims, clusterids=clusteridxs)
         s.optimize(upoints, overlapped_uwpoints, minvol=minvol)
         return s
 
@@ -844,7 +844,7 @@ class LocalAffineLayer(AffineLayer):
         uwpoints = self.wrap(upoints)
         tpoints = self.transform(upoints)
         nclusters, clusteridxs, overlapped_uwpoints = update_clusters(uwpoints, tpoints, maxradiussq, self.clusterids)
-        s = LocalAffineLayer(nclusters=nclusters, wrapped_dims=self.wrapped_dims, clusterids=clusteridxs)
+        s = self.__class__(nclusters=nclusters, wrapped_dims=self.wrapped_dims, clusterids=clusteridxs)
         local_overlapped_uwpoints = subtract_nearby(uwpoints, maxradiussq)
         s.optimize(upoints, local_overlapped_uwpoints, minvol=minvol)
         return s
@@ -1120,7 +1120,7 @@ class MLFriends(object):
         """
         N, ndim = self.u.shape
         # draw from rectangle in transformed space
-        v = np.random.uniform(self.bbox_lo - self.maxradiussq, self.bbox_hi + self.maxradiussq, size=(nsamples, ndim))
+        v = np.random.uniform(self.bbox_lo - self.maxradiussq**0.5, self.bbox_hi + self.maxradiussq**0.5, size=(nsamples, ndim))
         idnearby = np.empty(nsamples, dtype=int_dtype)
         find_nearby(self.unormed, v, self.maxradiussq, idnearby)
         vmask = idnearby >= 0
