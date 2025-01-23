@@ -80,17 +80,13 @@ class ReactiveNestedCalibrator():
 
         Parameters
         ----------
-
         param_names: list of str
             Names of the parameters.
             Length gives dimensionality of the sampling problem.
-
         loglike: function
             log-likelihood function.
-
         transform: function
             parameter transform from unit cube to physical parameters.
-
         kwargs: dict
             further arguments passed to ReactiveNestedSampler.
             if `log_dir` is set, then the suffix `-nsteps%d` is added for each
