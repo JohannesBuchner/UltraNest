@@ -14,6 +14,7 @@ for calculating the Bayesian evidence and posterior samples of arbitrary models.
 from __future__ import division, print_function
 
 import csv
+import itertools
 import json
 import operator
 import os
@@ -1893,7 +1894,7 @@ class ReactiveNestedSampler:
             while ib >= len(self.samples):
                 ib = 0
                 if use_stepsampler:
-                    u, v, logl, nc = self.stepsampler.__next__(
+                    u, v, logl, Lmin_sampled, nc = self.stepsampler.__next__(
                         self.region,
                         transform=self.transform, loglike=self.loglike,
                         Lmin=Lmin, us=active_u, Ls=active_values,
@@ -1926,16 +1927,22 @@ class ReactiveNestedSampler:
                     self.samplesv = np.concatenate(recv_samplesv, axis=0)
                     self.likes = np.concatenate(recv_likes, axis=0)
                     self.ncall += sum(recv_nc)
+                    if use_stepsampler:
+                        recv_Lmin_sampled = self.comm.gather(Lmin_sampled, root=0)
+                        self.Lmin_sampled = self.comm.bcast(recv_Lmin_sampled, root=0)
+                    else:
+                        self.Lmin_sampled = itertools.repeat(Lmin)
                 else:
                     self.samples = u
                     self.samplesv = v
                     self.likes = logl
                     self.ncall += nc
+                    self.Lmin_sampled = itertools.repeat(Lmin)
 
                 if self.log:
-                    for ui, vi, logli in zip(self.samples, self.samplesv, self.likes):
+                    for ui, vi, logli, Lmini in zip(self.samples, self.samplesv, self.likes, self.Lmin_sampled):
                         self.pointstore.add(
-                            _listify([Lmin, logli, quality], ui, vi),
+                            _listify([Lmini, logli, quality], ui, vi),
                             self.ncall)
 
             if self.likes[ib] > Lmin:

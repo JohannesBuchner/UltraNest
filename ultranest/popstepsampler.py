@@ -355,7 +355,7 @@ class PopulationRandomWalkSampler(GenericPopulationSampler):
             nc = 0
 
         u, p, L = self.prepared_samples.pop(0)
-        return u, p, L, nc
+        return u, p, L, Lmin, nc
 
 
 class PopulationSliceSampler(GenericPopulationSampler):
@@ -395,6 +395,7 @@ class PopulationSliceSampler(GenericPopulationSampler):
         self.scale_adapt_factor = scale_adapt_factor
         self.allu = []
         self.allL = []
+        self.allLmin = []
         self.currentt = []
         self.currentv = []
         self.currentp = []
@@ -428,6 +429,7 @@ class PopulationSliceSampler(GenericPopulationSampler):
         """Allocate arrays."""
         self.allu = np.zeros((self.popsize, self.nsteps + 1, ndim)) + np.nan
         self.allL = np.zeros((self.popsize, self.nsteps + 1)) + np.nan
+        self.allLmin = np.zeros((self.popsize, self.nsteps + 1)) + np.nan
         self.currentt = np.zeros(self.popsize) + np.nan
         self.currentv = np.zeros((self.popsize, ndim)) + np.nan
         self.generation = np.zeros(self.popsize, dtype=int_dtype) - 1
@@ -436,7 +438,7 @@ class PopulationSliceSampler(GenericPopulationSampler):
         self.searching_left = np.zeros(self.popsize, dtype=bool)
         self.searching_right = np.zeros(self.popsize, dtype=bool)
 
-    def setup_start(self, us, Ls, starting):
+    def setup_start(self, us, Ls, Lmin, starting):
         """Initialize walker starting points.
 
         For iteration zero, randomly selects a live point as starting point.
@@ -447,6 +449,8 @@ class PopulationSliceSampler(GenericPopulationSampler):
             live points
         Ls: np.array(nlive)
             loglikelihoods live points
+        Lmin: float
+            loglikelihood threshold
         starting: np.array(nwalkers, dtype=bool)
             which walkers to initialize.
 
@@ -466,6 +470,7 @@ class PopulationSliceSampler(GenericPopulationSampler):
 
         self.allu[starting,0] = us[i]
         self.allL[starting,0] = Ls[i]
+        self.allLmin[starting,:] = Lmin
         self.generation[starting] = 0
 
     @property
@@ -506,7 +511,7 @@ class PopulationSliceSampler(GenericPopulationSampler):
             print("setting currentp")
         self.currentp = np.zeros((self.popsize, nparams)) + np.nan
 
-    def advance(self, transform, loglike, Lmin, region):
+    def advance(self, transform, loglike, region):
         """Advance the walker population.
 
         Parameters
@@ -515,8 +520,6 @@ class PopulationSliceSampler(GenericPopulationSampler):
             prior transform function
         loglike: function
             loglikelihood function
-        Lmin: float
-            current log-likelihood threshold
         region: MLFriends object
             Region
 
@@ -533,6 +536,7 @@ class PopulationSliceSampler(GenericPopulationSampler):
             args = [
                 self.allu[i, self.generation],
                 self.allL[i, self.generation],
+                self.allLmin[i, self.generation],
                 # pass values directly
                 self.currentt,
                 self.currentv,
@@ -546,6 +550,7 @@ class PopulationSliceSampler(GenericPopulationSampler):
             args = [
                 self.allu[movable, self.generation[movable]],
                 self.allL[movable, self.generation[movable]],
+                self.allLmin[movable, self.generation[movable]],
                 # this makes copies
                 self.currentt[movable],
                 self.currentv[movable],
@@ -556,16 +561,18 @@ class PopulationSliceSampler(GenericPopulationSampler):
             ]
         if self.log:
             print("evolve will advance:", movable)
-
         uorig = args[0].copy()
         (
             (
                 currentt, currentv,
                 current_left, current_right, searching_left, searching_right
             ),
-            (success, unew, pnew, Lnew),
+            (success, unew, pnew, Lnew, Lminnew),
             nc
-        ) = evolve(transform, loglike, Lmin, *args)
+        ) = evolve(transform, loglike, *args)
+
+        if self.log:
+            print("evolve moved:", args[1], args[2], Lnew, Lminnew)
 
         if success.any():
             far_enough, (move_distance, reference_distance) = diagnose_move_distances(region, uorig[success,:], unew)
@@ -661,12 +668,14 @@ class PopulationSliceSampler(GenericPopulationSampler):
         if len(self.allu) == 0:
             self._setup(ndim)
 
-        step_back(Lmin, self.allL, self.generation, self.currentt)
+        # step_back(Lmin, self.allL, self.generation, self.currentt)
 
         starting = self.generation < 0
+        assert np.isfinite(Lmin), Lmin
         if starting.any():
-            self.setup_start(us[Ls > Lmin], Ls[Ls > Lmin], starting)
+            self.setup_start(us[Ls > Lmin], Ls[Ls > Lmin], Lmin, starting)
         assert (self.generation >= 0).all(), self.generation
+        assert np.isfinite(self.allLmin).all(), self.allLmin
 
         # find those where bracket is undefined:
         mask_starting = ~np.isfinite(self.currentt)
@@ -675,30 +684,35 @@ class PopulationSliceSampler(GenericPopulationSampler):
 
         if self.log:
             print(str(self), "(before)")
-        nc = self.advance(transform, loglike, Lmin, region)
+        nc = self.advance(transform, loglike, region)
         if self.log:
             print(str(self), "(after)")
+        assert np.isfinite(self.allLmin).all(), self.allLmin
 
         # harvest top individual if possible
         if self.generation[self.ringindex] == self.nsteps:
             if self.log:
                 print("have a candidate")
-            u, p, L = self.allu[self.ringindex, self.nsteps, :].copy(), self.currentp[self.ringindex, :].copy(), self.allL[self.ringindex, self.nsteps].copy()
+            u = self.allu[self.ringindex, self.nsteps, :].copy()
+            p = self.currentp[self.ringindex, :].copy()
+            L = self.allL[self.ringindex, self.nsteps].copy()
+            Lmin_start = self.allLmin[self.ringindex, self.nsteps].copy()
             assert np.isfinite(u).all(), u
             assert np.isfinite(p).all(), p
             self.generation[self.ringindex] = -1
             self.currentt[self.ringindex] = np.nan
             self.allu[self.ringindex,:,:] = np.nan
             self.allL[self.ringindex,:] = np.nan
+            self.allLmin[self.ringindex,:] = np.nan
 
             # adjust guess length
             newscale = (self.current_right[self.ringindex] - self.current_left[self.ringindex]) / 2
             self.scale = self.scale * 0.9 + 0.1 * newscale
 
             self.shift()
-            return u, p, L, nc
+            return u, p, L, Lmin_start, nc
         else:
-            return None, None, None, nc
+            return None, None, None, None, nc
 
 
 def slice_limit_to_unitcube(tleft, tright):
@@ -997,7 +1011,7 @@ class PopulationSimpleSliceSampler(GenericPopulationSampler):
             nc = 0
 
         u, p, L = self.prepared_samples.pop(0)
-        return u, p, L, nc
+        return u, p, L, Lmin, nc
 
 
 __all__ = [

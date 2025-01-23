@@ -224,16 +224,18 @@ def test_stepsampler(plot=False):
 
     stepsampler = CubeMHSampler(nsteps=len(paramnames))
     while True:
-        u1, p1, L1, nc = stepsampler.__next__(region, -1e100, region.u, Ls, transform, loglike)
+        u1, p1, L1, Lmin, nc = stepsampler.__next__(region, -1e100, region.u, Ls, transform, loglike)
         if u1 is not None:
             break
     assert L1 > -1e100
+    assert Lmin == -1e100
     print(u1, L1)
     while True:
-        u2, p2, L2, nc = stepsampler.__next__(region, -1e100, region.u, Ls, transform, loglike)
+        u2, p2, L2, Lmin, nc = stepsampler.__next__(region, -1e100, region.u, Ls, transform, loglike)
         if u2 is not None:
             break
     assert L2 > -1e100
+    assert Lmin == -1e100
     print(u2, L2)
     assert np.all(u1 != u2)
     assert np.all(L1 != L2)
@@ -253,7 +255,7 @@ def test_stepsampler_adapt_when_stuck(plot=False):
     for i in range(1000):
         if i > 100:
             assert False, i
-        unew, pnew, Lnew, nc = stepsampler.__next__(region, Lmin, us, Ls, transform, loglike, ndraw=10)
+        unew, pnew, Lnew, Lnew, nc = stepsampler.__next__(region, Lmin, us, Ls, transform, loglike, ndraw=10)
         if unew is not None:
             break
 
@@ -269,7 +271,7 @@ def test_stepsampler_adapt_when_stuck(plot=False):
         for i in range(1000):
             if i > 100:
                 assert False, i
-            unew, pnew, Lnew, nc = stepsampler.__next__(region, Lmin, us, Ls, transform, loglike, ndraw=10)
+            unew, pnew, Lnew, Lnew, nc = stepsampler.__next__(region, Lmin, us, Ls, transform, loglike, ndraw=10)
             if unew is not None:
                 break
 
@@ -301,7 +303,7 @@ def test_stepsampler_adapt(plot=True):
                 old_scale = stepsampler.scale
                 for i in range(5):
                     while True:
-                        unew, pnew, Lnew, nc = stepsampler.__next__(region, -1e100, region.u, Ls, transform, loglike)
+                        unew, pnew, Lnew, Lnew, nc = stepsampler.__next__(region, -1e100, region.u, Ls, transform, loglike)
                         if unew is not None:
                             break
                 new_scale = stepsampler.scale
