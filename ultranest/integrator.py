@@ -1837,7 +1837,7 @@ class ReactiveNestedSampler:
         self.ncall_region += ndraw
         return u[accepted,:], v[accepted,:], logl[accepted], nc, 0
 
-    def _create_point(self, Lmin, ndraw, active_u, active_values):
+    def _create_point(self, iteration, Lmin, ndraw, active_u, active_values):
         """Draw a new point above likelihood threshold `Lmin`.
 
         Parameters
@@ -1866,9 +1866,11 @@ class ReactiveNestedSampler:
 
         nit = 0
         while True:
+            # load current index
             ib = self.ib
             if ib >= len(self.samples) and self.use_point_stack:
-                # root checks the point store
+                # refill cache from point store
+                # only root accesses the point store
                 next_point = np.zeros((1, 3 + self.x_dim + self.num_params)) * np.nan
 
                 if self.log_to_pointstore:
@@ -1883,15 +1885,16 @@ class ReactiveNestedSampler:
                     self.use_point_stack = self.comm.bcast(self.use_point_stack, root=0)
                     next_point = self.comm.bcast(next_point, root=0)
 
-                # unpack
+                # unpack this point (there is only one)
                 self.likes = next_point[:,1]
                 self.samples = next_point[:,3:3 + self.x_dim]
                 self.samplesv = next_point[:,3 + self.x_dim:3 + self.x_dim + self.num_params]
-                # skip if we already know it is not useful
+                # if we already know it is not useful, advance index to enter the next if
                 ib = 0 if np.isfinite(self.likes[0]) else 1
 
             use_stepsampler = self.stepsampler is not None
             while ib >= len(self.samples):
+                # clear and reset cache, then refill by sampling
                 ib = 0
                 if use_stepsampler:
                     u, v, logl, Lmin_sampled, nc = self.stepsampler.__next__(
@@ -1915,6 +1918,7 @@ class ReactiveNestedSampler:
                     logl = logl.reshape((1,))
 
                 if self.use_mpi:
+                    # keep track of rank of received points, store them away in a temporary cache
                     recv_samples = self.comm.gather(u, root=0)
                     recv_samplesv = self.comm.gather(v, root=0)
                     recv_likes = self.comm.gather(logl, root=0)
@@ -1939,6 +1943,7 @@ class ReactiveNestedSampler:
                     self.ncall += nc
                     self.Lmin_sampled = itertools.repeat(Lmin)
 
+                # process the next point which has it % point_mpi_rank == 0
                 if self.log:
                     for ui, vi, logli, Lmini in zip(self.samples, self.samplesv, self.likes, self.Lmin_sampled):
                         self.pointstore.add(
@@ -2737,7 +2742,7 @@ class ReactiveNestedSampler:
                         break
 
                     # sample point
-                    u, p, L = self._create_point(Lmin=Lmin, ndraw=ndraw, active_u=active_u, active_values=active_values)
+                    u, p, L = self._create_point(iteration=it, Lmin=Lmin, ndraw=ndraw, active_u=active_u, active_values=active_values)
                     child = self.pointpile.make_node(L, u, p)
                     main_iterator.Lmax = max(main_iterator.Lmax, L)
                     if np.isfinite(insertion_test_zscore_threshold) and nlive > 1:
