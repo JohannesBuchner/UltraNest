@@ -2,9 +2,9 @@ from __future__ import print_function, division
 import os
 import numpy as np
 from ultranest.store import TextPointStore
-from ultranest.netiter import PointPile, TreeNode, count_tree, print_tree, dump_tree
+from ultranest.netiter import PointPile, RoundRobinPointQueue, SinglePointQueue, TreeNode, count_tree, print_tree, dump_tree
 from ultranest.netiter import SingleCounter, MultiCounter, BreadthFirstIterator
-
+from numpy.testing import assert_allclose
 
 
 def integrate_singleblock(num_live_points, pointstore, x_dim, num_params, dlogz=0.5):
@@ -374,7 +374,94 @@ def test_treedump():
 	dump_tree("test_tree.hdf5", roots=tree.children, pointpile=pp)
 	dump_tree("test_tree.hdf5", tree.children, pp)
 	os.remove("test_tree.hdf5")
-	
+
+def test_pointpile():
+	udim = 2
+	for pdim in 2, 3:
+		pp = PointPile(udim, pdim)
+		pp.add(np.arange(udim), np.arange(pdim))
+		pp.add(np.arange(udim) + 2, np.arange(pdim) + 2)
+		assert_allclose(pp.getu(0), np.arange(udim))
+		assert_allclose(pp.getp(0), np.arange(pdim))
+		assert_allclose(pp.getu(1), np.arange(udim) + 2)
+		assert_allclose(pp.getp(1), np.arange(pdim) + 2)
+		for i in range(10001):
+			pp.add(np.arange(udim) + i, np.arange(pdim) + i)
+		assert_allclose(pp.getp(10000 + 2), np.arange(pdim) + 10000)
+
+
+def test_singlepointqueue():
+	udim = 2
+	for pdim in 2, 3:
+		pp = SinglePointQueue(udim, pdim)
+		assert not pp.has(0)
+		pp.add(np.arange(udim), np.arange(pdim), 0, 0)
+		try:
+			pp.has(1)
+			assert False
+		except ValueError:
+			pass
+		assert pp.has(0)
+		try:
+			pp.add(np.arange(udim) + 1, np.arange(pdim) + 1, 1, 0)
+			assert False
+		except ValueError:
+			pass
+		u, p, L = pp.pop(0)
+		assert_allclose(u, np.arange(udim))
+		assert_allclose(p, np.arange(pdim))
+		assert_allclose(L, 0)
+		pp.add(np.arange(udim) + 42, np.arange(pdim) + 42, 42, 0)
+		u, p, L = pp.pop(0)
+		assert_allclose(u, np.arange(udim) + 42)
+		assert_allclose(p, np.arange(pdim) + 42)
+		assert_allclose(L, 42)
+
+def test_roundrobinpointqueue():
+	udim = 2
+	for pdim in 2, 3:
+		pp = RoundRobinPointQueue(udim, pdim)
+		assert not pp.has(0)
+		pp.add(np.arange(udim), np.arange(pdim), 0, 42)
+		assert not pp.has(0)
+		assert pp.has(42)
+		pp.add(np.arange(udim) + 1, np.arange(pdim) + 1, 1, 32)
+		pp.add(np.arange(udim) + 5, np.arange(pdim) + 5, 5, 52)
+		pp.add(np.arange(udim) + 2, np.arange(pdim) + 2, 2, 42)
+		try:
+			pp.pop(0)
+			assert False
+		except IndexError:
+			pass
+		u, p, L = pp.pop(42)
+		assert_allclose(u, np.arange(udim))
+		assert_allclose(p, np.arange(pdim))
+		assert_allclose(L, 0)
+		u, p, L = pp.pop(52)
+		assert_allclose(u, np.arange(udim) + 5)
+		assert_allclose(p, np.arange(pdim) + 5)
+		assert_allclose(L, 5)
+		u, p, L = pp.pop(32)
+		assert_allclose(u, np.arange(udim) + 1)
+		assert_allclose(p, np.arange(pdim) + 1)
+		assert_allclose(L, 1)
+		u, p, L = pp.pop(42)
+		assert_allclose(u, np.arange(udim) + 2)
+		assert_allclose(p, np.arange(pdim) + 2)
+		assert_allclose(L, 2)
+		assert not pp.has(32)
+		assert not pp.has(42)
+		assert not pp.has(52)
+		for i in range(10001):
+			pp.add(np.arange(udim) + i, np.arange(pdim) + i, i, i % 42)
+		for i in range(10001):
+			assert pp.has(i % 42)
+			u, p, L = pp.pop(i % 42)
+			assert_allclose(u, np.arange(udim) + i)
+			assert_allclose(p, np.arange(pdim) + i)
+			assert_allclose(L, i)
+		for i in range(42):
+			assert not pp.has(i)
 
 if __name__ == '__main__':
 	for nlive in [100, 400, 2000]:

@@ -28,7 +28,7 @@ import numpy as np
 from numpy import exp, log, log1p, logaddexp
 
 from .ordertest import UniformOrderAccumulator
-from .utils import resample_equal
+from .utils import resample_equal, submasks
 
 
 class TreeNode:
@@ -463,6 +463,194 @@ class PointPile:
         """
         index = self.add(u, p)
         return TreeNode(value=value, id=index)
+
+
+class RoundRobinPointQueue:
+    """A in-memory linearized storage of point coordinates and their likelihoods.
+
+    Allows storing points in an unordered way with an index,
+    then extracting them in order.
+    """
+
+    def __init__(self, udim, pdim, chunksize=1000):
+        """Set up point pile.
+
+        Parameters
+        -----------
+        udim: int
+            number of parameters, dimension of unit cube points
+        pdim: int
+            number of physical (and derived) parameters
+        chunksize: int
+            the point pile grows as needed, in these intervals.
+        """
+        self.chunksize = chunksize
+        self.us = np.zeros((self.chunksize, udim))
+        self.ps = np.zeros((self.chunksize, pdim))
+        self.Ls = np.zeros(self.chunksize)
+        self.ranks = np.zeros(self.chunksize, dtype=int)
+        self.filled = np.zeros(self.chunksize, dtype=bool)
+        self.udim = udim
+        self.pdim = pdim
+
+    def add(self, newpointu, newpointp, newpointL, newrank):
+        """Save point.
+
+        Parameters
+        ----------
+        newpointu: array
+            point (in u-space)
+        newpointp: array
+            point (in p-space)
+        newpointL: float
+            loglikelihood
+        newrank: int
+            rank of point
+        """
+        if self.filled.all():
+            # grow space
+            self.us = np.concatenate((self.us, np.zeros((self.chunksize, self.udim))))
+            self.ps = np.concatenate((self.ps, np.zeros((self.chunksize, self.pdim))))
+            self.Ls = np.concatenate((self.Ls, np.zeros(self.chunksize)))
+            self.ranks = np.concatenate(
+                (self.ranks, np.zeros(self.chunksize, dtype=int))
+            )
+            self.filled = np.concatenate(
+                (self.filled, np.zeros(self.chunksize, dtype=bool))
+            )
+        assert len(newpointu) == self.us.shape[1], (newpointu, self.us.shape)
+        assert len(newpointp) == self.ps.shape[1], (newpointp, self.ps.shape)
+        i = np.where(~self.filled)[0][0]
+        self.us[i, :] = newpointu
+        self.ps[i, :] = newpointp
+        self.Ls[i] = newpointL
+        self.ranks[i] = newrank
+        self.filled[i] = True
+
+    def pop(self, rank):
+        """Get next point of a given rank.
+
+        Parameters
+        ----------
+        rank: int
+            rank of point we want to fetch
+
+        Returns
+        -------
+        u: array
+            point (in u-space)
+        p: array
+            point (in p-space)
+        L: array
+            likelihood
+        """
+        i = submasks(self.filled, self.ranks[self.filled] == rank)[0]
+        self.filled[i] = False
+        return self.us[i, :], self.ps[i, :], self.Ls[i]
+
+    def has(self, rank):
+        """Check if there is a next point of a given rank.
+
+        Parameters
+        ----------
+        rank: int
+            rank of point we want to fetch
+
+        Returns
+        -------
+        bool
+            whether theree is an entry with that rank.
+        """
+        return (self.ranks[self.filled] == rank).any()
+
+
+class SinglePointQueue:
+    """A storage of one point coordinate and its likelihood."""
+
+    def __init__(self, udim, pdim, chunksize=1):
+        """Set up point pile.
+
+        Parameters
+        -----------
+        udim: int
+            number of parameters, dimension of unit cube points
+        pdim: int
+            number of physical (and derived) parameters
+        chunksize: int
+            has to be 1
+        """
+        if chunksize != 1:
+            raise ValueError("SinglePointQueue: chunksize can only be 1")
+        self.u = None
+        self.p = None
+        self.L = None
+
+    def add(self, newpointu, newpointp, newpointL, newrank):
+        """Save point.
+
+        Parameters
+        ----------
+        newpointu: array
+            point (in u-space)
+        newpointp: array
+            point (in p-space)
+        newpointL: float
+            loglikelihood
+        newrank: int
+            rank of point
+        """
+        if newrank != 0:
+            raise ValueError("SinglePointQueue: rank must be 0")
+        if self.u is None and self.p is None and self.L is None:
+            self.u = newpointu
+            self.p = newpointp
+            self.L = newpointL
+        else:
+            raise ValueError("SinglePointQueue: queue not empty")
+
+    def pop(self, rank):
+        """Get next point of a given rank.
+
+        Parameters
+        ----------
+        rank: int
+            rank of point we want to fetch
+
+        Returns
+        -------
+        u: array
+            point (in u-space)
+        p: array
+            point (in p-space)
+        L: array
+            likelihood
+        """
+        if rank != 0:
+            raise ValueError("SinglePointQueue: rank must be 0")
+        u = self.u
+        p = self.p
+        L = self.L
+        self.u = None
+        self.p = None
+        self.L = None
+        return u, p, L
+
+    def has(self, rank):
+        """Check if there is a next point of a given rank.
+
+        Parameters
+        ----------
+        rank: int
+            rank of point we want to fetch
+
+        Returns
+        -------
+        bool
+            whether theree is an entry with that rank.
+        """
+        if rank != 0:
+            raise ValueError("SinglePointQueue: rank must be 0")
+        return self.L is not None
 
 
 class SingleCounter:
