@@ -395,7 +395,7 @@ def test_singlepointqueue():
 	for pdim in 2, 3:
 		pp = SinglePointQueue(udim, pdim)
 		assert not pp.has(0)
-		pp.add(np.arange(udim), np.arange(pdim), 0, 0)
+		pp.add(np.arange(udim), np.arange(pdim), 0, 32, 0)
 		try:
 			pp.has(1)
 			assert False
@@ -403,63 +403,70 @@ def test_singlepointqueue():
 			pass
 		assert pp.has(0)
 		try:
-			pp.add(np.arange(udim) + 1, np.arange(pdim) + 1, 1, 0)
+			pp.add(np.arange(udim) + 1, np.arange(pdim) + 1, 1, 10, 0)
 			assert False
 		except ValueError:
 			pass
-		u, p, L = pp.pop(0)
+		u, p, L, q = pp.pop(0)
 		assert_allclose(u, np.arange(udim))
 		assert_allclose(p, np.arange(pdim))
 		assert_allclose(L, 0)
-		pp.add(np.arange(udim) + 42, np.arange(pdim) + 42, 42, 0)
-		u, p, L = pp.pop(0)
+		assert_allclose(q, 32)
+		pp.add(np.arange(udim) + 42, np.arange(pdim) + 42, 42, 32, 0)
+		u, p, L, q = pp.pop(0)
 		assert_allclose(u, np.arange(udim) + 42)
 		assert_allclose(p, np.arange(pdim) + 42)
 		assert_allclose(L, 42)
+		assert_allclose(q, 32)
 
 def test_roundrobinpointqueue():
 	udim = 2
 	for pdim in 2, 3:
 		pp = RoundRobinPointQueue(udim, pdim)
 		assert not pp.has(0)
-		pp.add(np.arange(udim), np.arange(pdim), 0, 42)
+		pp.add(np.arange(udim), np.arange(pdim), 0, 400, 42)
 		assert not pp.has(0)
 		assert pp.has(42)
-		pp.add(np.arange(udim) + 1, np.arange(pdim) + 1, 1, 32)
-		pp.add(np.arange(udim) + 5, np.arange(pdim) + 5, 5, 52)
-		pp.add(np.arange(udim) + 2, np.arange(pdim) + 2, 2, 42)
+		pp.add(np.arange(udim) + 1, np.arange(pdim) + 1, 1, 30, 32)
+		pp.add(np.arange(udim) + 5, np.arange(pdim) + 5, 5, 50, 52)
+		pp.add(np.arange(udim) + 2, np.arange(pdim) + 2, 2, 40, 42)
 		try:
 			pp.pop(0)
 			assert False
 		except IndexError:
 			pass
-		u, p, L = pp.pop(42)
+		u, p, L, q = pp.pop(42)
 		assert_allclose(u, np.arange(udim))
 		assert_allclose(p, np.arange(pdim))
 		assert_allclose(L, 0)
-		u, p, L = pp.pop(52)
+		assert_allclose(q, 400)
+		u, p, L, q = pp.pop(52)
 		assert_allclose(u, np.arange(udim) + 5)
 		assert_allclose(p, np.arange(pdim) + 5)
 		assert_allclose(L, 5)
-		u, p, L = pp.pop(32)
+		assert_allclose(q, 50)
+		u, p, L, q = pp.pop(32)
 		assert_allclose(u, np.arange(udim) + 1)
 		assert_allclose(p, np.arange(pdim) + 1)
 		assert_allclose(L, 1)
-		u, p, L = pp.pop(42)
+		assert_allclose(q, 30)
+		u, p, L, q = pp.pop(42)
 		assert_allclose(u, np.arange(udim) + 2)
 		assert_allclose(p, np.arange(pdim) + 2)
 		assert_allclose(L, 2)
+		assert_allclose(q, 40)
 		assert not pp.has(32)
 		assert not pp.has(42)
 		assert not pp.has(52)
 		for i in range(10001):
-			pp.add(np.arange(udim) + i, np.arange(pdim) + i, i, i % 42)
+			pp.add(np.arange(udim) + i, np.arange(pdim) + i, i, 60, i % 42)
 		for i in range(10001):
 			assert pp.has(i % 42)
-			u, p, L = pp.pop(i % 42)
+			u, p, L, q = pp.pop(i % 42)
 			assert_allclose(u, np.arange(udim) + i)
 			assert_allclose(p, np.arange(pdim) + i)
 			assert_allclose(L, i)
+			assert_allclose(q, 60)
 		for i in range(42):
 			assert not pp.has(i)
 

@@ -14,7 +14,6 @@ for calculating the Bayesian evidence and posterior samples of arbitrary models.
 from __future__ import division, print_function
 
 import csv
-import itertools
 import json
 import operator
 import os
@@ -30,9 +29,9 @@ from .mlfriends import (AffineLayer, LocalAffineLayer, MLFriends,
                         RobustEllipsoidRegion, ScalingLayer, WrappingEllipsoid,
                         find_nearby)
 from .netiter import (BreadthFirstIterator, MultiCounter, PointPile,
-                      SingleCounter, TreeNode, combine_results,
-                      count_tree_between, dump_tree, find_nodes_before,
-                      logz_sequence)
+                      RoundRobinPointQueue, SingleCounter, SinglePointQueue,
+                      TreeNode, combine_results, count_tree_between, dump_tree,
+                      find_nodes_before, logz_sequence)
 from .ordertest import UniformOrderAccumulator
 from .store import HDF5PointStore, NullPointStore, TextPointStore
 from .utils import (create_logger, distributed_work_chunk_size,
@@ -1200,6 +1199,7 @@ class ReactiveNestedSampler:
                 self.pointstore = storage_backend
         else:
             self.pointstore = NullPointStore(3 + self.x_dim + self.num_params)
+        self.pointqueue = RoundRobinPointQueue(self.x_dim, self.num_params)
         self.ncall = self.pointstore.ncalls
         self.ncall_region = 0
 
@@ -1842,6 +1842,8 @@ class ReactiveNestedSampler:
 
         Parameters
         -----------
+        iteration: int
+            nested sampling iteration, used for picking submitted points in order
         Lmin: float
             loglikelihood threshold to draw above
         ndraw: float
@@ -1867,8 +1869,7 @@ class ReactiveNestedSampler:
         nit = 0
         while True:
             # load current index
-            ib = self.ib
-            if ib >= len(self.samples) and self.use_point_stack:
+            if self.use_point_stack:
                 # refill cache from point store
                 # only root accesses the point store
                 next_point = np.zeros((1, 3 + self.x_dim + self.num_params)) * np.nan
@@ -1885,17 +1886,18 @@ class ReactiveNestedSampler:
                     self.use_point_stack = self.comm.bcast(self.use_point_stack, root=0)
                     next_point = self.comm.bcast(next_point, root=0)
 
-                # unpack this point (there is only one)
-                self.likes = next_point[:,1]
-                self.samples = next_point[:,3:3 + self.x_dim]
-                self.samplesv = next_point[:,3 + self.x_dim:3 + self.x_dim + self.num_params]
-                # if we already know it is not useful, advance index to enter the next if
-                ib = 0 if np.isfinite(self.likes[0]) else 1
+                # use it if we can:
+                if next_point[0,1] > Lmin:
+                    return (
+                        next_point[0,3:3 + self.x_dim],
+                        next_point[0,3 + self.x_dim:3 + self.x_dim + self.num_params],
+                        next_point[0,1],
+                    )
 
             use_stepsampler = self.stepsampler is not None
-            while ib >= len(self.samples):
+            rank_to_fetch = iteration % self.mpi_size
+            while not self.pointqueue.has(rank_to_fetch):
                 # clear and reset cache, then refill by sampling
-                ib = 0
                 if use_stepsampler:
                     u, v, logl, Lmin_sampled, nc = self.stepsampler.__next__(
                         self.region,
@@ -1916,6 +1918,7 @@ class ReactiveNestedSampler:
                     u = u.reshape((1, self.x_dim))
                     v = v.reshape((1, self.num_params))
                     logl = logl.reshape((1,))
+                rank_origin = self.mpi_rank + np.zeros(len(u), dtype=int)
 
                 if self.use_mpi:
                     # keep track of rank of received points, store them away in a temporary cache
@@ -1923,43 +1926,36 @@ class ReactiveNestedSampler:
                     recv_samplesv = self.comm.gather(v, root=0)
                     recv_likes = self.comm.gather(logl, root=0)
                     recv_nc = self.comm.gather(nc, root=0)
+                    recv_rank_origin = self.comm.gather(rank_origin, root=0)
                     recv_samples = self.comm.bcast(recv_samples, root=0)
                     recv_samplesv = self.comm.bcast(recv_samplesv, root=0)
                     recv_likes = self.comm.bcast(recv_likes, root=0)
                     recv_nc = self.comm.bcast(recv_nc, root=0)
-                    self.samples = np.concatenate(recv_samples, axis=0)
-                    self.samplesv = np.concatenate(recv_samplesv, axis=0)
-                    self.likes = np.concatenate(recv_likes, axis=0)
+                    recv_rank_origin = self.comm.bcast(recv_rank_origin, root=0)
+                    samples = np.concatenate(recv_samples, axis=0)
+                    samplesv = np.concatenate(recv_samplesv, axis=0)
+                    likes = np.concatenate(recv_likes, axis=0)
+                    rank_origins = np.concatenate(recv_rank_origin, axis=0)
                     self.ncall += sum(recv_nc)
-                    if use_stepsampler:
-                        recv_Lmin_sampled = self.comm.gather(Lmin_sampled, root=0)
-                        self.Lmin_sampled = self.comm.bcast(recv_Lmin_sampled, root=0)
-                    else:
-                        self.Lmin_sampled = itertools.repeat(Lmin)
                 else:
-                    self.samples = u
-                    self.samplesv = v
-                    self.likes = logl
+                    samples = u
+                    samplesv = v
+                    likes = logl
                     self.ncall += nc
-                    self.Lmin_sampled = itertools.repeat(Lmin)
+                    rank_origins = rank_origin
 
                 # process the next point which has it % point_mpi_rank == 0
-                if self.log:
-                    for ui, vi, logli, Lmini in zip(self.samples, self.samplesv, self.likes, self.Lmin_sampled):
-                        self.pointstore.add(
-                            _listify([Lmini, logli, quality], ui, vi),
-                            self.ncall)
+                for ui, vi, logli, rank_origin in zip(samples, samplesv, likes, rank_origins):
+                    self.pointqueue.add(ui, vi, logli, quality, rank_origin)
 
-            if self.likes[ib] > Lmin:
-                u = self.samples[ib, :]
-                assert np.logical_and(u > 0, u < 1).all(), (u)
-                p = self.samplesv[ib, :]
-                logl = self.likes[ib]
+            u, p, logl, quality = self.pointqueue.pop(rank_to_fetch)
+            if self.log:
+                self.pointstore.add(
+                    _listify([Lmin, logl, quality], u, p),
+                    self.ncall)
 
-                self.ib = ib + 1
+            if logl > Lmin:
                 return u, p, logl
-            else:
-                self.ib = ib + 1
 
     def _update_region(
         self, active_u, active_node_ids,

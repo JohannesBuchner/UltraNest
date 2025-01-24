@@ -489,11 +489,12 @@ class RoundRobinPointQueue:
         self.ps = np.zeros((self.chunksize, pdim))
         self.Ls = np.zeros(self.chunksize)
         self.ranks = np.zeros(self.chunksize, dtype=int)
+        self.quality = np.zeros(self.chunksize, dtype=int)
         self.filled = np.zeros(self.chunksize, dtype=bool)
         self.udim = udim
         self.pdim = pdim
 
-    def add(self, newpointu, newpointp, newpointL, newrank):
+    def add(self, newpointu, newpointp, newpointL, newquality, newrank):
         """Save point.
 
         Parameters
@@ -504,6 +505,8 @@ class RoundRobinPointQueue:
             point (in p-space)
         newpointL: float
             loglikelihood
+        newquality: float
+            quality
         newrank: int
             rank of point
         """
@@ -515,6 +518,9 @@ class RoundRobinPointQueue:
             self.ranks = np.concatenate(
                 (self.ranks, np.zeros(self.chunksize, dtype=int))
             )
+            self.quality = np.concatenate(
+                (self.quality, np.zeros(self.chunksize, dtype=int))
+            )
             self.filled = np.concatenate(
                 (self.filled, np.zeros(self.chunksize, dtype=bool))
             )
@@ -525,6 +531,7 @@ class RoundRobinPointQueue:
         self.ps[i, :] = newpointp
         self.Ls[i] = newpointL
         self.ranks[i] = newrank
+        self.quality[i] = newquality
         self.filled[i] = True
 
     def pop(self, rank):
@@ -546,7 +553,7 @@ class RoundRobinPointQueue:
         """
         i = submasks(self.filled, self.ranks[self.filled] == rank)[0]
         self.filled[i] = False
-        return self.us[i, :], self.ps[i, :], self.Ls[i]
+        return self.us[i, :], self.ps[i, :], self.Ls[i], self.quality[i]
 
     def has(self, rank):
         """Check if there is a next point of a given rank.
@@ -584,8 +591,9 @@ class SinglePointQueue:
         self.u = None
         self.p = None
         self.L = None
+        self.quality = None
 
-    def add(self, newpointu, newpointp, newpointL, newrank):
+    def add(self, newpointu, newpointp, newpointL, newquality, newrank):
         """Save point.
 
         Parameters
@@ -596,6 +604,8 @@ class SinglePointQueue:
             point (in p-space)
         newpointL: float
             loglikelihood
+        newquality: int
+            point quality
         newrank: int
             rank of point
         """
@@ -605,6 +615,7 @@ class SinglePointQueue:
             self.u = newpointu
             self.p = newpointp
             self.L = newpointL
+            self.quality = newquality
         else:
             raise ValueError("SinglePointQueue: queue not empty")
 
@@ -630,10 +641,12 @@ class SinglePointQueue:
         u = self.u
         p = self.p
         L = self.L
+        quality = self.quality
         self.u = None
         self.p = None
         self.L = None
-        return u, p, L
+        self.quality = None
+        return u, p, L, quality
 
     def has(self, rank):
         """Check if there is a next point of a given rank.
