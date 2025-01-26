@@ -245,7 +245,7 @@ def test_SimpleSliceSampler_SLOW(seed=4):
     # resetting the seed to check the slice axes
     np.random.seed(seed)
     for i in range(popsize):
-        u[i],_,L[i],_,_= stepsampler.__next__(region, Lmin, us.copy(), Ls.copy(), transform, loglike_vectorized, test=True)
+        u[i],_,L[i],_= stepsampler.__next__(region, Lmin, us.copy(), Ls.copy(), transform, loglike_vectorized, test=True)
 
     # Basic check
     assert (L>Lmin).all(), (L,Lmin) # Lmin check

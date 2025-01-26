@@ -1899,7 +1899,7 @@ class ReactiveNestedSampler:
             while not self.pointqueue.has(rank_to_fetch):
                 # clear and reset cache, then refill by sampling
                 if use_stepsampler:
-                    u, v, logl, Lmin_sampled, nc = self.stepsampler.__next__(
+                    u, v, logl, nc = self.stepsampler.__next__(
                         self.region,
                         transform=self.transform, loglike=self.loglike,
                         Lmin=Lmin, us=active_u, Ls=active_values,

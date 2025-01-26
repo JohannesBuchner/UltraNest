@@ -554,7 +554,7 @@ class StepSampler:
     def __init__(
         self, nsteps, generate_direction,
         scale=1.0, check_nsteps='move-distance', adaptive_nsteps=False, max_nsteps=1000,
-        region_filter=False, log=False, revert=True,
+        region_filter=False, log=False,
         starting_point_selector=select_random_livepoint,
     ):
         """Initialise sampler.
@@ -662,15 +662,8 @@ class StepSampler:
             always been the default behaviour,
             or an instance of :py:class:`IslandPopulationRandomLivepointSelector`.
 
-        revert: bool
-            if true, and Lmin increases, the step sampler reverts to the last valid state.
-            if false, the step sampler resumes, but may return a result that is not
-            usable.
-
         """
-        self.revert = revert
         self.history = []
-        self.Lmin = None
         self.nsteps = nsteps
         self.nrejects = 0
         self.scale = scale
@@ -707,11 +700,7 @@ class StepSampler:
         )
         self.starting_point_selector = starting_point_selector
         self.mean_pair_distance = np.nan
-        if self.revert:
-            self.region_filter = region_filter
-        else:
-            self.region_filter = False
-            raise ValueError("stepsampler cannot use region_filter=True with revert=False")
+        self.region_filter = region_filter
         if log:
             assert hasattr(log, 'write'), 'log argument should be a file, use log=open(filename, "w") or similar'
         self.log = log
@@ -975,7 +964,6 @@ class StepSampler:
         self.scale = self.next_scale
         self.history = []
         self.nrejects = 0
-        self.Lmin = None
 
     def new_chain(self, region=None):
         """Start a new path, reset statistics."""
@@ -1032,17 +1020,13 @@ class StepSampler:
             number of likelihood function calls
         """
         # find most recent point in history conforming to current Lmin
-        if self.revert:
-            for j, (_uj, Lj) in enumerate(self.history):
-                if not Lj > Lmin:
-                    self.history = self.history[:j]
-                    # print("wandered out of L constraint; reverting", ui[0])
-                    break
+        for j, (_uj, Lj) in enumerate(self.history):
+            if not Lj > Lmin:
+                self.history = self.history[:j]
+                # print("wandered out of L constraint; reverting", ui[0])
+                break
         if len(self.history) > 0:
             ui, Li = self.history[-1]
-            if not self.revert:
-                # stick with original Lmin
-                Lmin = self.Lmin
         else:
             # select starting point
             self.new_chain(region)
@@ -1057,7 +1041,6 @@ class StepSampler:
             # assert np.logical_and(ui > 0, ui < 1).all(), ui
             Li = Ls[i]
             self.history.append((ui.copy(), Li.copy()))
-            self.Lmin = Lmin
             del i
 
         while True:
@@ -1108,10 +1091,10 @@ class StepSampler:
             u, L = self.history[-1]
             p = transform(u.reshape((1, -1)))[0]
             self.finalize_chain(region=region, Lmin=Lmin, Ls=Ls)
-            return u, p, L, Lmin, nc
+            return u, p, L, nc
 
         # do not have a independent sample yet
-        return None, None, None, Lmin, nc
+        return None, None, None, nc
 
 
 class MHSampler(StepSampler):

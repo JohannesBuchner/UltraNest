@@ -99,7 +99,7 @@ def evolve_prepare(searching_left, searching_right):
 cpdef evolve_update(
     np.ndarray[np.uint8_t, ndim=1] acceptable, 
     np.ndarray[np.float_t, ndim=1] Lnew, 
-    np.ndarray[np.float_t, ndim=1] Lmin, 
+    np.float_t Lmin, 
     np.ndarray[np.uint8_t, ndim=1] search_right, 
     np.ndarray[np.uint8_t, ndim=1] bisecting, 
     np.float_t[:] currentt,
@@ -120,7 +120,7 @@ cpdef evolve_update(
         whether a likelihood evaluation was made. If false, rejected because out of contour.
     Lnew: np.array(acceptable.sum(), dtype=bool)
         likelihood value of proposed point
-    Lmin: np.array(acceptable.sum(), dtype=bool)
+    Lmin: float
         current log-likelihood threshold
     search_right: np.array(nwalkers, dtype=bool)
         whether stepping out in the positive direction
@@ -151,7 +151,7 @@ cpdef evolve_update(
     
     for k in range(popsize):
         if acceptable[k]:
-            if Lnew[j] > Lmin[j]:
+            if Lnew[j] > Lmin:
                 success[k] = 1
             j += 1
 
@@ -187,8 +187,8 @@ pnew_empty = np.empty((0,1))
 Lnew_empty = np.empty(0)
 
 def evolve(
-    transform, loglike, 
-    currentu, currentL, Lmin, currentt, currentv,
+    transform, loglike, Lmin, 
+    currentu, currentL, currentt, currentv,
     current_left, current_right, searching_left, searching_right
 ):
     """Evolve each slice sampling walker.
@@ -199,12 +199,12 @@ def evolve(
         prior transform function
     loglike: function
         loglikelihood function
+    Lmin: float
+        current log-likelihood threshold
     currentu: np.array((nwalkers, ndim))
         slice starting point (where currentt=0)
     currentL: np.array(nwalkers)
         current loglikelihood
-    Lmin: np.array(nwalkers)
-        current log-likelihood threshold
     currentt: np.array(nwalkers)
         proposed coordinate on the slice
     currentv: np.array((nwalkers, ndim))
@@ -261,12 +261,10 @@ def evolve(
     if acceptable.any():
         pnew = transform(unew[acceptable,:])
         Lnew = loglike(pnew)
-        Lminnew = Lmin[acceptable]
         nc += len(pnew)
     else:
         pnew = pnew_empty
         Lnew = Lnew_empty
-        Lminnew = Lnew_empty
 
     success = np.zeros_like(searching_left)
     evolve_update(
@@ -279,10 +277,8 @@ def evolve(
         (
         currentt, currentv,
         current_left, current_right, searching_left, searching_right), 
-        (
-            success, unew[success,:], pnew[success[acceptable],:],
-            Lnew[success[acceptable]], Lminnew[success[acceptable]]
-        ), nc
+        (success, unew[success,:], pnew[success[acceptable],:], Lnew[success[acceptable]]), 
+        nc
     )
 
 
