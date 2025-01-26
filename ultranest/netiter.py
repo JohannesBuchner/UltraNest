@@ -494,7 +494,7 @@ class RoundRobinPointQueue:
         self.udim = udim
         self.pdim = pdim
 
-    def add(self, newpointu, newpointp, newpointL, newquality, newrank):
+    def add_many(self, newpointu, newpointp, newpointL, newquality, newrank):
         """Save point.
 
         Parameters
@@ -510,7 +510,9 @@ class RoundRobinPointQueue:
         newrank: int
             rank of point
         """
-        if self.filled.all():
+        n_available = np.sum(~self.filled)
+        n_needed = len(newpointL)
+        if n_available < n_needed:
             # grow space
             self.us = np.concatenate((self.us, np.zeros((self.chunksize, self.udim))))
             self.ps = np.concatenate((self.ps, np.zeros((self.chunksize, self.pdim))))
@@ -524,15 +526,37 @@ class RoundRobinPointQueue:
             self.filled = np.concatenate(
                 (self.filled, np.zeros(self.chunksize, dtype=bool))
             )
-        assert len(newpointu) == self.us.shape[1], (newpointu, self.us.shape)
-        assert len(newpointp) == self.ps.shape[1], (newpointp, self.ps.shape)
-        i = np.where(~self.filled)[0][0]
+        assert newpointu.shape[1] == self.us.shape[1], (newpointu.shape, self.us.shape)
+        assert newpointp.shape[1] == self.ps.shape[1], (newpointp.shape, self.ps.shape)
+        i = np.where(~self.filled)[0][:n_needed]
+        print("inserting at:", i, self.us, self.Ls)
         self.us[i, :] = newpointu
         self.ps[i, :] = newpointp
         self.Ls[i] = newpointL
         self.ranks[i] = newrank
         self.quality[i] = newquality
         self.filled[i] = True
+
+    def add(self, newpointu, newpointp, newpointL, newquality, newrank):
+        """Save point.
+
+        Parameters
+        ----------
+        newpointu: array
+            point (in u-space)
+        newpointp: array
+            point (in p-space)
+        newpointL: float
+            loglikelihood
+        newquality: int
+            point quality
+        newrank: int
+            rank of point
+        """
+        self.add_many(
+            np.reshape(newpointu, (1, -1)), np.reshape(newpointp, (1, -1)),
+            np.reshape(newpointL, (1,)), np.reshape(newquality, (1,)),
+            np.reshape(newrank, (1,)))
 
     def pop(self, rank):
         """Get next point of a given rank.
@@ -584,16 +608,18 @@ class SinglePointQueue:
         pdim: int
             number of physical (and derived) parameters
         chunksize: int
-            has to be 1
+            value is ignored
         """
         if chunksize != 1:
             raise ValueError("SinglePointQueue: chunksize can only be 1")
+        self.i = 0
+        self.n = 0
         self.u = None
         self.p = None
         self.L = None
         self.quality = None
 
-    def add(self, newpointu, newpointp, newpointL, newquality, newrank):
+    def add_many(self, newpointu, newpointp, newpointL, newquality, newrank):
         """Save point.
 
         Parameters
@@ -611,13 +637,35 @@ class SinglePointQueue:
         """
         if newrank != 0:
             raise ValueError("SinglePointQueue: rank must be 0")
-        if self.u is None and self.p is None and self.L is None:
-            self.u = newpointu
-            self.p = newpointp
-            self.L = newpointL
-            self.quality = newquality
-        else:
-            raise ValueError("SinglePointQueue: queue not empty")
+        if self.i < self.n:
+            raise ValueError("SinglePointQueue: queue not empty yet")
+        self.u = newpointu
+        self.p = newpointp
+        self.L = newpointL
+        self.i = 0
+        self.n = len(self.L)
+        self.quality = newquality
+
+    def add(self, newpointu, newpointp, newpointL, newquality, newrank):
+        """Save point.
+
+        Parameters
+        ----------
+        newpointu: array
+            point (in u-space)
+        newpointp: array
+            point (in p-space)
+        newpointL: float
+            loglikelihood
+        newquality: int
+            point quality
+        newrank: int
+            rank of point
+        """
+        self.add_many(
+            np.reshape(newpointu, (1, -1)), np.reshape(newpointp, (1, -1)),
+            np.reshape(newpointL, (1,)), np.reshape(newquality, (1,)),
+            np.reshape(newrank, (1,)))
 
     def pop(self, rank):
         """Get next point of a given rank.
@@ -638,14 +686,13 @@ class SinglePointQueue:
         """
         if rank != 0:
             raise ValueError("SinglePointQueue: rank must be 0")
-        u = self.u
-        p = self.p
-        L = self.L
-        quality = self.quality
-        self.u = None
-        self.p = None
-        self.L = None
-        self.quality = None
+        if not self.i < self.n:
+            raise ValueError("SinglePointQueue: queue empty")
+        u = self.u[self.i,:]
+        p = self.p[self.i,:]
+        L = self.L[self.i]
+        quality = self.quality[self.i]
+        self.i += 1
         return u, p, L, quality
 
     def has(self, rank):
@@ -663,7 +710,7 @@ class SinglePointQueue:
         """
         if rank != 0:
             raise ValueError("SinglePointQueue: rank must be 0")
-        return self.L is not None
+        return self.i < self.n
 
 
 class SingleCounter:
