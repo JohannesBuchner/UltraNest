@@ -1199,7 +1199,10 @@ class ReactiveNestedSampler:
                 self.pointstore = storage_backend
         else:
             self.pointstore = NullPointStore(3 + self.x_dim + self.num_params)
-        self.pointqueue = RoundRobinPointQueue(self.x_dim, self.num_params)
+        if self.mpi_size > 1:
+            self.pointqueue = RoundRobinPointQueue(self.x_dim, self.num_params)
+        else:
+            self.pointqueue = SinglePointQueue(self.x_dim, self.num_params)
         self.ncall = self.pointstore.ncalls
         self.ncall_region = 0
 
@@ -1945,8 +1948,8 @@ class ReactiveNestedSampler:
                     rank_origins = rank_origin
 
                 # process the next point which has it % point_mpi_rank == 0
-                for ui, vi, logli, rank_origin in zip(samples, samplesv, likes, rank_origins):
-                    self.pointqueue.add(ui, vi, logli, quality, rank_origin)
+                if len(likes) > 0:
+                    self.pointqueue.add_many(samples, samplesv, likes, quality, rank_origins)
 
             u, p, logl, quality = self.pointqueue.pop(rank_to_fetch)
             if self.log:
