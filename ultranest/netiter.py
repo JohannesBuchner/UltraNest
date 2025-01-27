@@ -472,7 +472,7 @@ class RoundRobinPointQueue:
     then extracting them in order.
     """
 
-    def __init__(self, udim, pdim, chunksize=1000):
+    def __init__(self, udim, pdim, chunksize=100):
         """Set up point pile.
 
         Parameters
@@ -514,7 +514,6 @@ class RoundRobinPointQueue:
         n_needed = len(newpointL)
         if n_available < n_needed:
             # grow space
-            print("RoundRobinPointQueue: growing space", n_available, n_needed, self.us.shape)
             self.us = np.concatenate((self.us, np.zeros((self.chunksize, self.udim))))
             self.ps = np.concatenate((self.ps, np.zeros((self.chunksize, self.pdim))))
             self.Ls = np.concatenate((self.Ls, np.zeros(self.chunksize)))
@@ -530,7 +529,6 @@ class RoundRobinPointQueue:
         assert newpointu.shape[1] == self.us.shape[1], (newpointu.shape, self.us.shape)
         assert newpointp.shape[1] == self.ps.shape[1], (newpointp.shape, self.ps.shape)
         i = np.where(~self.filled)[0][:n_needed]
-        print("RoundRobinPointQueue: inserting at:", i)
         self.us[i, :] = newpointu
         self.ps[i, :] = newpointp
         self.Ls[i] = newpointL
