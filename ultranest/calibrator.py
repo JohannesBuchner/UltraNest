@@ -180,7 +180,6 @@ class ReactiveNestedCalibrator():
 
             nsteps *= 2
 
-    
     def run(self, **kwargs):
         """Run a sequence of ReactiveNestedSampler runs until convergence.
 
@@ -208,7 +207,6 @@ class ReactiveNestedCalibrator():
             pass
         return results
 
-
     def plot(self):
         """Visualise the convergence diagnostics.
 
@@ -219,7 +217,7 @@ class ReactiveNestedCalibrator():
         """
         if not self.sampler.log_to_disk:
             return ValueError("Plotting requires log_dir to be set during initialization")
- 
+
         self.sampler.stepsampler.plot(os.path.join(self.sampler.logs['plots'], 'stepsampler.pdf'))
 
         # plot U-test convergence run length (at 4 sigma) (or niter) vs nsteps
