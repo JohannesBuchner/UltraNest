@@ -202,7 +202,6 @@ class ReactiveNestedCalibrator():
         result: dict
             return value of :py:meth:`ReactiveNestedSampler.run` for the final run
         """
-
         for nsteps, results in self.run_iter(**kwargs):
             pass
         return results
@@ -215,9 +214,6 @@ class ReactiveNestedCalibrator():
         * nsteps-calibration-jumps.pdf: distribution of relative jump distance
         * nsteps-calibration.pdf: evolution of ln(Z) with nsteps
         """
-        if not self.sampler.log_to_disk:
-            return ValueError("Plotting requires log_dir to be set during initialization")
-
         self.sampler.stepsampler.plot(os.path.join(self.sampler.logs['plots'], 'stepsampler.pdf'))
 
         # plot U-test convergence run length (at 4 sigma) (or niter) vs nsteps
