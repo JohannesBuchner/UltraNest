@@ -95,7 +95,7 @@ class ReactiveNestedCalibrator():
         self.init_args = dict(param_names=param_names, loglike=loglike, transform=transform, **kwargs)
         self.stepsampler = None
 
-    def run(self, **kwargs):
+    def run_iter(self, **kwargs):
         """Run a sequence of ReactiveNestedSampler runs until convergence.
 
         The first run is made with the number of steps set to the number of parameters.
@@ -180,6 +180,35 @@ class ReactiveNestedCalibrator():
 
             nsteps *= 2
 
+    
+    def run(self, **kwargs):
+        """Run a sequence of ReactiveNestedSampler runs until convergence.
+
+        The first run is made with the number of steps set to the number of parameters.
+        Each subsequent run doubles the number of steps.
+        Runs are made until convergence is reached.
+        Then this function returns.
+
+        Convergence is defined as three consecutive runs which
+        1) are not ordered in their log(Z) results,
+        and 2) the consecutive log(Z) error bars must overlap.
+
+        Parameters
+        ----------
+        **kwargs: dict
+            All arguments are passed to :py:meth:`ReactiveNestedSampler.run`.
+
+        Returns
+        -------
+        result: dict
+            return value of :py:meth:`ReactiveNestedSampler.run` for the final run
+        """
+
+        for nsteps, results in self.run_iter(**kwargs):
+            print(f" {nsteps:d}", results)
+        return results
+
+
     def plot(self):
         """Visualise the convergence diagnostics.
 
@@ -188,6 +217,9 @@ class ReactiveNestedCalibrator():
         * nsteps-calibration-jumps.pdf: distribution of relative jump distance
         * nsteps-calibration.pdf: evolution of ln(Z) with nsteps
         """
+        if not self.sampler.log_to_disk:
+            raise ValueError("Plotting requires log_dir to be set during initialization")
+ 
         self.sampler.stepsampler.plot(os.path.join(self.sampler.logs['plots'], 'stepsampler.pdf'))
 
         # plot U-test convergence run length (at 4 sigma) (or niter) vs nsteps
