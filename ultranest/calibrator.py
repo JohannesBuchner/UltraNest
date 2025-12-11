@@ -205,7 +205,7 @@ class ReactiveNestedCalibrator():
         """
 
         for nsteps, results in self.run_iter(**kwargs):
-            print(f" {nsteps:d}", results)
+            pass
         return results
 
 
@@ -218,7 +218,7 @@ class ReactiveNestedCalibrator():
         * nsteps-calibration.pdf: evolution of ln(Z) with nsteps
         """
         if not self.sampler.log_to_disk:
-            raise ValueError("Plotting requires log_dir to be set during initialization")
+            return ValueError("Plotting requires log_dir to be set during initialization")
  
         self.sampler.stepsampler.plot(os.path.join(self.sampler.logs['plots'], 'stepsampler.pdf'))
 
