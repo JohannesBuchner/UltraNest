@@ -773,6 +773,55 @@ def test_run_warmstart_gauss_SLOW():
     assert ncalls[1] < ncalls[0] - 800, (ncalls)
     assert ncalls[2] < ncalls[0] - 800, (ncalls)
 
+def test_custom_comm_parameter():
+    """Test that custom MPI communicator parameter is accepted."""
+
+    class MockComm:
+        """Mock MPI communicator for testing."""
+        def Get_size(self):
+            return 1
+        def Get_rank(self):
+            return 0
+
+    mock_comm = MockComm()
+
+    def loglike(z):
+        return -0.5 * np.sum(z**2)
+
+    def transform(x):
+        return x * 10 - 5
+
+    # Test ReactiveNestedSampler with custom comm
+    sampler = ReactiveNestedSampler(['x'], loglike, transform, log_dir=None, comm=mock_comm)
+    assert sampler.comm is mock_comm
+    assert sampler.mpi_size == 1
+    assert sampler.mpi_rank == 0
+    assert not sampler.use_mpi  # size=1 means MPI is not used
+
+    # Test NestedSampler with custom comm
+    sampler2 = NestedSampler(['x'], loglike, transform, log_dir=None, num_live_points=50, comm=mock_comm)
+    assert sampler2.comm is mock_comm
+    assert sampler2.mpi_size == 1
+    assert sampler2.mpi_rank == 0
+    assert not sampler2.use_mpi
+
+
+def test_comm_none_default():
+    """Test that comm=None uses default MPI.COMM_WORLD behavior."""
+
+    def loglike(z):
+        return -0.5 * np.sum(z**2)
+
+    def transform(x):
+        return x * 10 - 5
+
+    # Test that comm=None works (default behavior)
+    sampler = ReactiveNestedSampler(['x'], loglike, transform, log_dir=None, comm=None)
+    # Should work without error; comm will be COMM_WORLD if MPI available, or attributes set to defaults
+    assert sampler.mpi_size >= 1
+    assert sampler.mpi_rank >= 0
+
+
 if __name__ == '__main__':
     #test_run_compat()
     #test_run_resume(dlogz=0.5)

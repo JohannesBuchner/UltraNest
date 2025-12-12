@@ -429,6 +429,7 @@ class NestedSampler:
                  num_live_points=1000,
                  vectorized=False,
                  wrapped_params=[],
+                 comm=None,
                  ):
         """Set up nested sampler.
 
@@ -459,6 +460,9 @@ class NestedSampler:
             of points.
         run_num: int
             unique run number. If None, will be automatically incremented.
+        comm: MPI communicator, optional
+            MPI communicator to use. If None (default), uses MPI.COMM_WORLD.
+            Pass a custom communicator when running as part of a larger MPI application.
 
         """
         self.paramnames = list(param_names)
@@ -511,8 +515,11 @@ class NestedSampler:
 
         self.use_mpi = False
         try:
-            from mpi4py import MPI
-            self.comm = MPI.COMM_WORLD
+            if comm is not None:
+                self.comm = comm
+            else:
+                from mpi4py import MPI
+                self.comm = MPI.COMM_WORLD
             self.mpi_size = self.comm.Get_size()
             self.mpi_rank = self.comm.Get_rank()
             if self.mpi_size > 1:
@@ -1051,6 +1058,7 @@ class ReactiveNestedSampler:
                  ndraw_max=65536,
                  storage_backend='hdf5',
                  warmstart_max_tau=-1,
+                 comm=None,
                  ):
         """Initialise nested sampler.
 
@@ -1128,6 +1136,9 @@ class ReactiveNestedSampler:
             Live points are reused as long as the live point order
             is below this normalised Kendall tau distance.
             Values from 0 (highly conservative) to 1 (extremely negligent).
+        comm: MPI communicator, optional
+            MPI communicator to use. If None (default), uses MPI.COMM_WORLD.
+            Pass a custom communicator when running as part of a larger MPI application.
         """
         self.paramnames = param_names
         x_dim = len(self.paramnames)
@@ -1147,8 +1158,11 @@ class ReactiveNestedSampler:
 
         self.use_mpi = False
         try:
-            from mpi4py import MPI
-            self.comm = MPI.COMM_WORLD
+            if comm is not None:
+                self.comm = comm
+            else:
+                from mpi4py import MPI
+                self.comm = MPI.COMM_WORLD
             self.mpi_size = self.comm.Get_size()
             self.mpi_rank = self.comm.Get_rank()
             if self.mpi_size > 1:
