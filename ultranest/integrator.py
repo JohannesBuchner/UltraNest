@@ -2482,7 +2482,7 @@ class ReactiveNestedSampler:
 
         return self.results
 
-    def run_iter(
+    def run_iter(  # noqa: DOC101,DOC103
             self,
             update_interval_volume_fraction=0.8,
             update_interval_ncall=None,
@@ -2512,7 +2512,7 @@ class ReactiveNestedSampler:
             for result in sampler.run_iter(...):
                 print('lnZ = %(logz).2f +- %(logzerr).2f' % result)
 
-        Parameters as described in run() method.
+        Parameters are described in the :py:func:`ReactiveNestedSampler.run` method.
 
         Yields
         ------
