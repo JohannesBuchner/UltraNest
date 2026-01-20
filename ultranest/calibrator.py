@@ -5,10 +5,27 @@ Calibration of step sampler
 """
 
 import os
+from collections import deque
 
 import numpy as np
 
 from ultranest.integrator import ReactiveNestedSampler
+
+
+def _last_item_from_iterator(iterator):
+    """Get last item from iterator.
+
+    Parameters
+    ----------
+    iterator: iterator
+        Iterator or list of elements
+
+    Returns
+    -------
+    element: object
+        last item yielded by iterator.
+    """
+    return deque(iterator, maxlen=1).pop()
 
 
 def _substitute_log_dir(init_args, nsteps):
@@ -202,9 +219,8 @@ class ReactiveNestedCalibrator():
         result: dict
             return value of :py:meth:`ReactiveNestedSampler.run` for the final run
         """
-        for nsteps, results in self.run_iter(**kwargs):
-            pass
-        return results
+        _nsteps, result = _last_item_from_iterator(self.run_iter(**kwargs))
+        return result
 
     def plot(self):
         """Visualise the convergence diagnostics.
