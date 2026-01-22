@@ -737,9 +737,9 @@ def slice_limit_to_scale(tleft, tright):
     tnew: tuple
         Positive and negative slice limits, `(tleft_new, tright_new) = tnew`
     """
-    u = 2.*np.random.uniform(size=tleft.shape)
-    tleft_new = np.fmax(tleft, -u)
-    tright_new = np.fmin(tright, 2.-u)
+    u = 2. * np.random.uniform(size=tleft.shape)
+    tleft_new = np.fmax(tleft, - u)
+    tright_new = np.fmin(tright, 2. - u)
 
     return tleft_new, tright_new
 
