@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest package &mdash; UltraNest 4.4.0 documentation</title>
+  <title>ultranest package &mdash; UltraNest 4.5.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
@@ -17,7 +17,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=2f20d6c1"></script>
+        <script src="_static/documentation_options.js?v=5ef59c98"></script>
         <script src="_static/doctools.js?v=9a2dae69"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -44,7 +44,7 @@
               <img src="_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                4.4.0
+                4.5.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -128,16 +128,18 @@ for details.</p>
 <section id="usage">
 <h3>Usage<a class="headerlink" href="#usage" title="Link to this heading"></a></h3>
 <p>Usage is designed to be a drop-in replacement for ReactiveNestedSampler.</p>
-<dl class="simple">
-<dt>If your code was::</dt><dd><p>sampler = ReactiveNestedSampler(my_param_names, my_loglike, my_transform)
-sampler.stepsampler = SliceSampler(nsteps=10, generate_direction=region_oriented_direction)
-sampler.run(min_num_livepoints=400)</p>
-</dd>
-<dt>You would change it to::</dt><dd><p>sampler = ReactiveNestedCalibrator(my_param_names, my_loglike, my_transform)
-sampler.stepsampler = SliceSampler(nsteps=10, generate_direction=region_oriented_direction)
-sampler.run(min_num_livepoints=400)</p>
-</dd>
-</dl>
+<p>If your code was:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sampler</span> <span class="o">=</span> <span class="n">ReactiveNestedSampler</span><span class="p">(</span><span class="n">my_param_names</span><span class="p">,</span> <span class="n">my_loglike</span><span class="p">,</span> <span class="n">my_transform</span><span class="p">)</span>
+<span class="n">sampler</span><span class="o">.</span><span class="n">stepsampler</span> <span class="o">=</span> <span class="n">SliceSampler</span><span class="p">(</span><span class="n">nsteps</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">generate_direction</span><span class="o">=</span><span class="n">region_oriented_direction</span><span class="p">)</span>
+<span class="n">sampler</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">min_num_livepoints</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You would change it to:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sampler</span> <span class="o">=</span> <span class="n">ReactiveNestedCalibrator</span><span class="p">(</span><span class="n">my_param_names</span><span class="p">,</span> <span class="n">my_loglike</span><span class="p">,</span> <span class="n">my_transform</span><span class="p">)</span>
+<span class="n">sampler</span><span class="o">.</span><span class="n">stepsampler</span> <span class="o">=</span> <span class="n">SliceSampler</span><span class="p">(</span><span class="n">nsteps</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">generate_direction</span><span class="o">=</span><span class="n">region_oriented_direction</span><span class="p">)</span>
+<span class="n">sampler</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">min_num_livepoints</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>The run() command will print the number of slice sampler steps
 that appear safe for the inference task.</p>
 <p>The initial value for nsteps (e.g. in <cite>SliceSampler(nsteps=…)</cite>)
@@ -164,25 +166,17 @@ Length gives dimensionality of the sampling problem.</p>
 <dd class="field-even"><p>function</p>
 </dd>
 <dt class="field-odd">param kwargs<span class="colon">:</span></dt>
-<dd class="field-odd"><p>further arguments passed to ReactiveNestedSampler</p>
+<dd class="field-odd"><p>further arguments passed to ReactiveNestedSampler.
+if <cite>log_dir</cite> is set, then the suffix <cite>-nsteps%d</cite> is added for each
+run, where %d is replaced with the number of steps (2, 4, 8 etc).</p>
 </dd>
 <dt class="field-even">type kwargs<span class="colon">:</span></dt>
 <dd class="field-even"><p>dict</p>
 </dd>
-<dt class="field-odd">param if <cite>log_dir</cite> is set<span class="colon">:</span></dt>
-<dd class="field-odd"><p></p></dd>
-<dt class="field-even">param then the suffix <cite>-nsteps%d</cite> is added for each<span class="colon">:</span></dt>
-<dd class="field-even"><p></p></dd>
-<dt class="field-odd">param run where %d is replaced with the number of steps (2<span class="colon">:</span></dt>
-<dd class="field-odd"><p></p></dd>
-<dt class="field-even">param 4<span class="colon">:</span></dt>
-<dd class="field-even"><p></p></dd>
-<dt class="field-odd">param 8 etc).<span class="colon">:</span></dt>
-<dd class="field-odd"><p></p></dd>
 </dl>
 <dl class="py method">
-<dt class="sig sig-object py" id="ultranest.calibrator.ReactiveNestedCalibrator.run">
-<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/calibrator.html#ReactiveNestedCalibrator.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.calibrator.ReactiveNestedCalibrator.run" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="ultranest.calibrator.ReactiveNestedCalibrator.run_iter">
+<span class="sig-name descname"><span class="pre">run_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/calibrator.html#ReactiveNestedCalibrator.run_iter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.calibrator.ReactiveNestedCalibrator.run_iter" title="Link to this definition"></a></dt>
 <dd><p>Run a sequence of ReactiveNestedSampler runs until convergence.</p>
 <p>The first run is made with the number of steps set to the number of parameters.
 Each subsequent run doubles the number of steps.
@@ -200,6 +194,30 @@ and 2) the consecutive log(Z) error bars must overlap.</p>
 <li><p><strong>nsteps</strong> (<em>int</em>) – number of steps for the current run</p></li>
 <li><p><strong>result</strong> (<em>dict</em>) – return value of <code class="xref py py-meth docutils literal notranslate"><span class="pre">ReactiveNestedSampler.run()</span></code> for the current run</p></li>
 </ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ultranest.calibrator.ReactiveNestedCalibrator.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/calibrator.html#ReactiveNestedCalibrator.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.calibrator.ReactiveNestedCalibrator.run" title="Link to this definition"></a></dt>
+<dd><p>Run a sequence of ReactiveNestedSampler runs until convergence.</p>
+<p>The first run is made with the number of steps set to the number of parameters.
+Each subsequent run doubles the number of steps.
+Runs are made until convergence is reached.
+Then this function returns.</p>
+<p>Convergence is defined as three consecutive runs which
+1) are not ordered in their log(Z) results,
+and 2) the consecutive log(Z) error bars must overlap.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>**kwargs</strong> (<em>dict</em>) – All arguments are passed to <code class="xref py py-meth docutils literal notranslate"><span class="pre">ReactiveNestedSampler.run()</span></code>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>result</strong> – return value of <code class="xref py py-meth docutils literal notranslate"><span class="pre">ReactiveNestedSampler.run()</span></code> for the final run</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1399,7 +1417,7 @@ or <a class="reference external" href="http://arxiv.org/abs/2101.09675">section 
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;lnZ = </span><span class="si">%(logz).2f</span><span class="s1"> +- </span><span class="si">%(logzerr).2f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">result</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Parameters as described in run() method.</p>
+<p>Parameters are described in the <a class="reference internal" href="#ultranest.integrator.ReactiveNestedSampler.run" title="ultranest.integrator.ReactiveNestedSampler.run"><code class="xref py py-func docutils literal notranslate"><span class="pre">ReactiveNestedSampler.run()</span></code></a> method.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Yields<span class="colon">:</span></dt>
 <dd class="field-odd"><p><em>results (dict)</em> – Results dictionary computed at the current iteration, with the same

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest.calibrator &mdash; UltraNest 4.4.0 documentation</title>
+  <title>ultranest.calibrator &mdash; UltraNest 4.5.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=2f20d6c1"></script>
+        <script src="../../_static/documentation_options.js?v=5ef59c98"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -39,7 +39,7 @@
               <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                4.4.0
+                4.5.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -107,10 +107,27 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">deque</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="kn">from</span> <span class="nn">ultranest.integrator</span> <span class="kn">import</span> <span class="n">ReactiveNestedSampler</span>
+
+
+<span class="k">def</span> <span class="nf">_last_item_from_iterator</span><span class="p">(</span><span class="n">iterator</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get last item from iterator.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    iterator: iterator</span>
+<span class="sd">        Iterator or list of elements</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    element: object</span>
+<span class="sd">        last item yielded by iterator.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">deque</span><span class="p">(</span><span class="n">iterator</span><span class="p">,</span> <span class="n">maxlen</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
 
 
 <span class="k">def</span> <span class="nf">_substitute_log_dir</span><span class="p">(</span><span class="n">init_args</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">):</span>
@@ -156,11 +173,13 @@
 <span class="sd">    Usage is designed to be a drop-in replacement for ReactiveNestedSampler.</span>
 
 <span class="sd">    If your code was::</span>
+
 <span class="sd">        sampler = ReactiveNestedSampler(my_param_names, my_loglike, my_transform)</span>
 <span class="sd">        sampler.stepsampler = SliceSampler(nsteps=10, generate_direction=region_oriented_direction)</span>
 <span class="sd">        sampler.run(min_num_livepoints=400)</span>
 
 <span class="sd">    You would change it to::</span>
+
 <span class="sd">        sampler = ReactiveNestedCalibrator(my_param_names, my_loglike, my_transform)</span>
 <span class="sd">        sampler.stepsampler = SliceSampler(nsteps=10, generate_direction=region_oriented_direction)</span>
 <span class="sd">        sampler.run(min_num_livepoints=400)</span>
@@ -181,7 +200,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialise nested sampler calibrator.</span>
 
 <span class="sd">        Parameters</span>
-<span class="sd">        -----------</span>
+<span class="sd">        ----------</span>
 <span class="sd">        param_names: list of str</span>
 <span class="sd">            Names of the parameters.</span>
 <span class="sd">            Length gives dimensionality of the sampling problem.</span>
@@ -190,17 +209,16 @@
 <span class="sd">        transform: function</span>
 <span class="sd">            parameter transform from unit cube to physical parameters.</span>
 <span class="sd">        kwargs: dict</span>
-<span class="sd">            further arguments passed to ReactiveNestedSampler</span>
-
-<span class="sd">        if `log_dir` is set, then the suffix `-nsteps%d` is added for each</span>
-<span class="sd">        run where %d is replaced with the number of steps (2, 4, 8 etc).</span>
+<span class="sd">            further arguments passed to ReactiveNestedSampler.</span>
+<span class="sd">            if `log_dir` is set, then the suffix `-nsteps%d` is added for each</span>
+<span class="sd">            run, where %d is replaced with the number of steps (2, 4, 8 etc).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">init_args</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">param_names</span><span class="o">=</span><span class="n">param_names</span><span class="p">,</span> <span class="n">loglike</span><span class="o">=</span><span class="n">loglike</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">transform</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stepsampler</span> <span class="o">=</span> <span class="kc">None</span>
 
-<div class="viewcode-block" id="ReactiveNestedCalibrator.run">
-<a class="viewcode-back" href="../../ultranest.html#ultranest.calibrator.ReactiveNestedCalibrator.run">[docs]</a>
-    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="ReactiveNestedCalibrator.run_iter">
+<a class="viewcode-back" href="../../ultranest.html#ultranest.calibrator.ReactiveNestedCalibrator.run_iter">[docs]</a>
+    <span class="k">def</span> <span class="nf">run_iter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Run a sequence of ReactiveNestedSampler runs until convergence.</span>
 
 <span class="sd">        The first run is made with the number of steps set to the number of parameters.</span>
@@ -213,12 +231,12 @@
 <span class="sd">        and 2) the consecutive log(Z) error bars must overlap.</span>
 
 <span class="sd">        Parameters</span>
-<span class="sd">        -----------</span>
+<span class="sd">        ----------</span>
 <span class="sd">        **kwargs: dict</span>
 <span class="sd">            All arguments are passed to :py:meth:`ReactiveNestedSampler.run`.</span>
 
 <span class="sd">        Yields</span>
-<span class="sd">        -------</span>
+<span class="sd">        ------</span>
 <span class="sd">        nsteps: int</span>
 <span class="sd">            number of steps for the current run</span>
 <span class="sd">        result: dict</span>
@@ -284,6 +302,34 @@
                     <span class="k">break</span>
 
             <span class="n">nsteps</span> <span class="o">*=</span> <span class="mi">2</span></div>
+
+
+<div class="viewcode-block" id="ReactiveNestedCalibrator.run">
+<a class="viewcode-back" href="../../ultranest.html#ultranest.calibrator.ReactiveNestedCalibrator.run">[docs]</a>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Run a sequence of ReactiveNestedSampler runs until convergence.</span>
+
+<span class="sd">        The first run is made with the number of steps set to the number of parameters.</span>
+<span class="sd">        Each subsequent run doubles the number of steps.</span>
+<span class="sd">        Runs are made until convergence is reached.</span>
+<span class="sd">        Then this function returns.</span>
+
+<span class="sd">        Convergence is defined as three consecutive runs which</span>
+<span class="sd">        1) are not ordered in their log(Z) results,</span>
+<span class="sd">        and 2) the consecutive log(Z) error bars must overlap.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        **kwargs: dict</span>
+<span class="sd">            All arguments are passed to :py:meth:`ReactiveNestedSampler.run`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        result: dict</span>
+<span class="sd">            return value of :py:meth:`ReactiveNestedSampler.run` for the final run</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_nsteps</span><span class="p">,</span> <span class="n">result</span> <span class="o">=</span> <span class="n">_last_item_from_iterator</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">run_iter</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">result</span></div>
 
 
 <div class="viewcode-block" id="ReactiveNestedCalibrator.plot">
