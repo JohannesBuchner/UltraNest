@@ -705,16 +705,17 @@ def slice_limit_to_unitcube(tleft, tright):
     """
     Return the slice limits as of the intersection between the slice and the unit cube boundaries.
 
-    parameters
+    Parameters
     ----------
-        tleft: float
-                Intersection of the unit cube with the slice in the negative direction
-        tright: float
-                Intersection of the unit cube with the slice in the positive direction
+    tleft: float
+        Intersection of the unit cube with the slice in the negative direction
+    tright: float
+        Intersection of the unit cube with the slice in the positive direction
+
     Returns
     -------
-        (tleft_new,tright_new): tuple
-                Positive and negative slice limits
+    tnew: tuple
+        Positive and negative slice limits, `(tleft_new, tright_new) = tnew`
     """
     tleft_new, tright_new = tleft.copy(), tright.copy()
 
@@ -724,16 +725,17 @@ def slice_limit_to_unitcube(tleft, tright):
 def slice_limit_to_scale(tleft, tright):
     """Return an interval of size 2 including t=0 with a random starting point or the intersection between slice and unit cube if that is shorter.
 
-    parameters
+    Parameters
     ----------
-        tleft: float
-                Intersection of the unit cube with the slice in the negative direction
-        tright: float
-                Intersection of the unit cube with the slice in the positive direction
+    tleft: float
+        Intersection of the unit cube with the slice in the negative direction
+    tright: float
+        Intersection of the unit cube with the slice in the positive direction
+
     Returns
     -------
-        (tleft_new,tright_new): tuple
-                Positive and negative slice limits
+    tnew: tuple
+        Positive and negative slice limits, `(tleft_new, tright_new) = tnew`
     """
     u = 2.*np.random.uniform(size=tleft.shape)
     tleft_new = np.fmax(tleft, -u)

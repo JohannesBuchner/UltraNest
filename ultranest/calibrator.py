@@ -5,10 +5,27 @@ Calibration of step sampler
 """
 
 import os
+from collections import deque
 
 import numpy as np
 
 from ultranest.integrator import ReactiveNestedSampler
+
+
+def _last_item_from_iterator(iterator):
+    """Get last item from iterator.
+
+    Parameters
+    ----------
+    iterator: iterator
+        Iterator or list of elements
+
+    Returns
+    -------
+    element: object
+        last item yielded by iterator.
+    """
+    return deque(iterator, maxlen=1).pop()
 
 
 def _substitute_log_dir(init_args, nsteps):
@@ -95,7 +112,7 @@ class ReactiveNestedCalibrator():
         self.init_args = dict(param_names=param_names, loglike=loglike, transform=transform, **kwargs)
         self.stepsampler = None
 
-    def run(self, **kwargs):
+    def run_iter(self, **kwargs):
         """Run a sequence of ReactiveNestedSampler runs until convergence.
 
         The first run is made with the number of steps set to the number of parameters.
@@ -179,6 +196,31 @@ class ReactiveNestedCalibrator():
                     break
 
             nsteps *= 2
+
+    def run(self, **kwargs):
+        """Run a sequence of ReactiveNestedSampler runs until convergence.
+
+        The first run is made with the number of steps set to the number of parameters.
+        Each subsequent run doubles the number of steps.
+        Runs are made until convergence is reached.
+        Then this function returns.
+
+        Convergence is defined as three consecutive runs which
+        1) are not ordered in their log(Z) results,
+        and 2) the consecutive log(Z) error bars must overlap.
+
+        Parameters
+        ----------
+        **kwargs: dict
+            All arguments are passed to :py:meth:`ReactiveNestedSampler.run`.
+
+        Returns
+        -------
+        result: dict
+            return value of :py:meth:`ReactiveNestedSampler.run` for the final run
+        """
+        _nsteps, result = _last_item_from_iterator(self.run_iter(**kwargs))
+        return result
 
     def plot(self):
         """Visualise the convergence diagnostics.

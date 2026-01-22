@@ -13,8 +13,10 @@ def wrap_single_fmt_test(vlo, vhi, fmt_expected):
     assert vlo < vhi
     plo, phi, fmts = round_parameterlimits(np.asarray([vlo]), np.asarray([vhi]), [(vlo, vhi)])
     assert fmts[0] == fmt_expected, (fmts, fmt_expected)
+    assert len(plo) == 1, (plo)
+    assert len(phi) == 1, (phi)
     fmt = fmts[0]
-    assert fmt % plo != fmt % phi, (fmt, plo, phi, fmt % plo, fmt % phi)
+    assert fmt % plo[0] != fmt % phi[0], (fmt, plo, phi, fmt % plo, fmt % phi)
 
 def test_rounding_pos():
     wrap_single_test(0.00003, 0.001, 0, 0.001)

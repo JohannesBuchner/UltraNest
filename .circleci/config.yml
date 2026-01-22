@@ -29,7 +29,9 @@ jobs:
             echo "backend: Agg" > matplotlibrc
 
       - run: python3 examples/testfeatures.py
-      - run: python3 examples/rundirichlet.py
+      - run: 
+            no_output_timeout: 20m
+            command: python3 examples/rundirichlet.py
       - run: coverage3 run --parallel-mode docs/simple.py
       - run: coverage3 run --parallel-mode docs/gauss.py --x_dim=1 --log_dir=tmp
       - run: coverage3 combine
