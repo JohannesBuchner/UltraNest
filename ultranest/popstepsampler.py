@@ -556,7 +556,6 @@ class PopulationSliceSampler(GenericPopulationSampler):
             ]
         if self.log:
             print("evolve will advance:", movable)
-
         uorig = args[0].copy()
         (
             (
@@ -683,7 +682,9 @@ class PopulationSliceSampler(GenericPopulationSampler):
         if self.generation[self.ringindex] == self.nsteps:
             if self.log:
                 print("have a candidate")
-            u, p, L = self.allu[self.ringindex, self.nsteps, :].copy(), self.currentp[self.ringindex, :].copy(), self.allL[self.ringindex, self.nsteps].copy()
+            u = self.allu[self.ringindex, self.nsteps, :].copy()
+            p = self.currentp[self.ringindex, :].copy()
+            L = self.allL[self.ringindex, self.nsteps].copy()
             assert np.isfinite(u).all(), u
             assert np.isfinite(p).all(), p
             self.generation[self.ringindex] = -1

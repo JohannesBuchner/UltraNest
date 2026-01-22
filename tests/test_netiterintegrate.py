@@ -2,9 +2,9 @@ from __future__ import print_function, division
 import os
 import numpy as np
 from ultranest.store import TextPointStore
-from ultranest.netiter import PointPile, TreeNode, count_tree, print_tree, dump_tree
+from ultranest.netiter import PointPile, RoundRobinPointQueue, SinglePointQueue, TreeNode, count_tree, print_tree, dump_tree
 from ultranest.netiter import SingleCounter, MultiCounter, BreadthFirstIterator
-
+from numpy.testing import assert_allclose
 
 
 def integrate_singleblock(num_live_points, pointstore, x_dim, num_params, dlogz=0.5):
@@ -374,7 +374,146 @@ def test_treedump():
 	dump_tree("test_tree.hdf5", roots=tree.children, pointpile=pp)
 	dump_tree("test_tree.hdf5", tree.children, pp)
 	os.remove("test_tree.hdf5")
-	
+
+def test_pointpile():
+	udim = 2
+	for pdim in 2, 3:
+		pp = PointPile(udim, pdim)
+		pp.add(np.arange(udim), np.arange(pdim))
+		pp.add(np.arange(udim) + 2, np.arange(pdim) + 2)
+		assert_allclose(pp.getu(0), np.arange(udim))
+		assert_allclose(pp.getp(0), np.arange(pdim))
+		assert_allclose(pp.getu(1), np.arange(udim) + 2)
+		assert_allclose(pp.getp(1), np.arange(pdim) + 2)
+		for i in range(10001):
+			pp.add(np.arange(udim) + i, np.arange(pdim) + i)
+		assert_allclose(pp.getp(10000 + 2), np.arange(pdim) + 10000)
+
+
+def add1(pq, u, p, L, quality, rank):
+	return pq.add_many(
+		np.reshape(u, (1, len(u))),
+		np.reshape(p, (1, len(p))),
+		np.reshape(L, 1),
+		quality,
+		np.reshape(rank, 1)
+	)
+
+
+@pytest.mark.parametrize("pdim", [2, 5])
+def test_singlepointqueue(pdim):
+	udim = 2
+	pp = SinglePointQueue(udim, pdim)
+	assert not pp.has(0)
+	add1(pp, np.arange(udim), np.arange(pdim), 0, 32, 0)
+	try:
+		pp.has(1)
+		assert False
+	except ValueError:
+		pass
+	assert pp.has(0)
+	try:
+		add1(pp, np.arange(udim) + 1, np.arange(pdim) + 1, 1, 10, 0)
+		assert False
+	except ValueError:
+		pass
+	u, p, L, q = pp.pop(0)
+	assert_allclose(u, np.arange(udim))
+	assert_allclose(p, np.arange(pdim))
+	assert_allclose(L, 0)
+	assert_allclose(q, 32)
+	add1(pp, np.arange(udim) + 42, np.arange(pdim) + 42, 42, 32, 0)
+	u, p, L, q = pp.pop(0)
+	assert_allclose(u, np.arange(udim) + 42)
+	assert_allclose(p, np.arange(pdim) + 42)
+	assert_allclose(L, 42)
+	assert_allclose(q, 32)
+
+@pytest.mark.parametrize("pdim", [2, 5])
+def test_roundrobinpointqueue(pdim):
+	udim = 2
+	pp = RoundRobinPointQueue(udim, pdim)
+	assert not pp.has(0)
+	add1(pp, np.arange(udim), np.arange(pdim), 0, 400, 42)
+	assert not pp.has(0)
+	assert pp.has(42)
+	add1(pp, np.arange(udim) + 1, np.arange(pdim) + 1, 1, 30, 32)
+	add1(pp, np.arange(udim) + 5, np.arange(pdim) + 5, 5, 50, 52)
+	add1(pp, np.arange(udim) + 2, np.arange(pdim) + 2, 2, 40, 42)
+	try:
+		pp.pop(0)
+		assert False
+	except IndexError:
+		pass
+	u, p, L, q = pp.pop(42)
+	assert_allclose(u, np.arange(udim))
+	assert_allclose(p, np.arange(pdim))
+	assert_allclose(L, 0)
+	assert_allclose(q, 400)
+	u, p, L, q = pp.pop(52)
+	assert_allclose(u, np.arange(udim) + 5)
+	assert_allclose(p, np.arange(pdim) + 5)
+	assert_allclose(L, 5)
+	assert_allclose(q, 50)
+	u, p, L, q = pp.pop(32)
+	assert_allclose(u, np.arange(udim) + 1)
+	assert_allclose(p, np.arange(pdim) + 1)
+	assert_allclose(L, 1)
+	assert_allclose(q, 30)
+	u, p, L, q = pp.pop(42)
+	assert_allclose(u, np.arange(udim) + 2)
+	assert_allclose(p, np.arange(pdim) + 2)
+	assert_allclose(L, 2)
+	assert_allclose(q, 40)
+	assert not pp.has(32)
+	assert not pp.has(42)
+	assert not pp.has(52)
+	for i in range(10001):
+		add1(pp, np.arange(udim) + i, np.arange(pdim) + i, i, 60, i % 42)
+	for i in range(10001):
+		assert pp.has(i % 42)
+		u, p, L, q = pp.pop(i % 42)
+		assert_allclose(u, np.arange(udim) + i)
+		assert_allclose(p, np.arange(pdim) + i)
+		assert_allclose(L, i)
+		assert_allclose(q, 60)
+	for i in range(42):
+		assert not pp.has(i)
+
+def add_points(pq, u, p, L, quality, rank, N=1):
+	us = np.zeros((N, len(u)), dtype=u.dtype)
+	ps = np.zeros((N, len(p)), dtype=p.dtype)
+	Ls = np.zeros(N, dtype=float)
+	#qualitys = np.zeros(N, dtype=int)
+	ranks = np.zeros(N, dtype=int)
+	for i in range(N):
+		us[i] = u + i
+		ps[i] = p + i
+		Ls[i] = L + i
+		#qualitys[i] = quality
+		ranks[i] = rank
+	print('add_points', us.shape, ps.shape, Ls.shape, ranks.shape)
+	pq.add_many(us, ps, Ls, quality, ranks)
+
+def test_pointqueues_multiple():
+	udim = np.random.randint(1, 12)
+	pdim = np.random.randint(1, 12)
+	pp1 = RoundRobinPointQueue(udim, pdim)
+	pp2 = SinglePointQueue(udim, pdim)
+	for i in range(2):
+		Nadd = np.random.randint(1, 10)
+		for pp in pp1, pp2:
+			assert not pp.has(0)
+			add_points(pp, np.arange(udim) + i*333, np.arange(pdim) + i*111, 0, 400, 0, Nadd)
+			for j in range(Nadd):
+				assert pp.has(0)
+				u, p, L, q = pp.pop(0)
+				assert_allclose(u, np.arange(udim) + i * 333 + j)
+				assert_allclose(p, np.arange(pdim) + i * 111 + j)
+				assert_allclose(L, j)
+				assert_allclose(q, 400)
+			assert not pp.has(0)
+
 
 if __name__ == '__main__':
 	for nlive in [100, 400, 2000]:
