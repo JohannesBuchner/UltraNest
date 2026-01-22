@@ -836,7 +836,7 @@ class PopulationSimpleSliceSampler(GenericPopulationSampler):
         self.shrink_factor = shrink_factor
         assert shrink_factor >= 1.0, "The shrink factor should be greater than 1.0 to be efficient"
 
-        self.scale = float(scale)/2. # The code work with 2*scale as the slice width
+        self.scale = float(scale)/2.  # The code work with 2*scale as the slice width
 
         self.adapt_slice_scale_target = adapt_slice_scale_target
 
