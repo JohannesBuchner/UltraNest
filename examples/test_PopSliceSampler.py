@@ -108,6 +108,14 @@ def main(args):
         import ultranest.popstepsampler as ultrapop
         direction=[ultrapop.generate_cube_oriented_direction,ultrapop.generate_mixture_random_direction,ultrapop.generate_differential_direction,ultrapop.generate_region_random_direction,ultrapop.generate_region_oriented_direction,ultrapop.generate_random_direction]
         sampler.stepsampler = ultrapop.PopulationSimpleSliceSampler(popsize=args.popsize,nsteps=args.nstep,generate_direction=direction[args.direction])
+    if args.Sampler=='SimSliceUnitCube':
+        import ultranest.popstepsampler as ultrapop
+        direction=[ultrapop.generate_cube_oriented_direction,ultrapop.generate_mixture_random_direction,ultrapop.generate_differential_direction,ultrapop.generate_region_random_direction,ultrapop.generate_region_oriented_direction,ultrapop.generate_random_direction]
+        sampler.stepsampler = ultrapop.PopulationSimpleSliceSampler(popsize=args.popsize,nsteps=args.nstep,generate_direction=direction[args.direction])
+    if args.Sampler=='SimSliceScale':
+        import ultranest.popstepsampler as ultrapop
+        direction=[ultrapop.generate_cube_oriented_direction,ultrapop.generate_mixture_random_direction,ultrapop.generate_differential_direction,ultrapop.generate_region_random_direction,ultrapop.generate_region_oriented_direction,ultrapop.generate_random_direction]
+        sampler.stepsampler = ultrapop.PopulationSimpleSliceSampler(popsize=args.popsize,nsteps=args.nstep,generate_direction=direction[args.direction],slice_limit=ultrapop.slice_limit_to_scale,scale=1.0,scale_adapt_factor=args.adapt_scale)
     if args.Sampler=='PopSlice':
         import ultranest.popstepsampler as ultrapop
         direction=[ultrapop.generate_cube_oriented_direction,ultrapop.generate_mixture_random_direction,ultrapop.generate_differential_direction,ultrapop.generate_region_random_direction,ultrapop.generate_region_oriented_direction,ultrapop.generate_random_direction]
@@ -137,8 +145,9 @@ if __name__ == '__main__':
     parser.add_argument('--problem', type=str,required=True,choices=['rosenbrock', 'multishell', 'gaussian', 'eggbox', 'funnel'])
     parser.add_argument('--sigma', type=float, default=1)
     parser.add_argument('--run_type', type=str, default='Normal', choices=['Normal', 'Calibration'])
-    parser.add_argument('--Sampler',type=str,required=True,choices=['SimSlice','PopSlice','Slice','PopGaussWalk'])
+    parser.add_argument('--Sampler',type=str,required=True,choices=['PopSlice','Slice','PopGaussWalk','SimSliceUnitCube','SimSliceScale'])
     parser.add_argument('--popsize', type=int)
     parser.add_argument('--nstep', type=int)
     parser.add_argument('--direction', type=int)
+    parser.add_argument('--adapt_scale', type=float, default=0.9)
     main(parser.parse_args())

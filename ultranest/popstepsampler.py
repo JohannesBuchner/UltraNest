@@ -723,7 +723,7 @@ def slice_limit_to_unitcube(tleft, tright):
 
 
 def slice_limit_to_scale(tleft, tright):
-    """Return -1..+1 or the intersection between slice and unit cube if that is shorter.
+    """Return an interval of size 2 including t=0 with a random starting point or the intersection between slice and unit cube if that is shorter.
 
     Parameters
     ----------
@@ -737,8 +737,9 @@ def slice_limit_to_scale(tleft, tright):
     tnew: tuple
         Positive and negative slice limits, `(tleft_new, tright_new) = tnew`
     """
-    tleft_new = np.fmax(tleft, -1. + np.zeros_like(tleft))
-    tright_new = np.fmin(tright, 1. + np.zeros_like(tright))
+    u = 2. * np.random.uniform(size=tleft.shape)
+    tleft_new = np.fmax(tleft, - u)
+    tright_new = np.fmin(tright, 2. - u)
 
     return tleft_new, tright_new
 
@@ -835,7 +836,7 @@ class PopulationSimpleSliceSampler(GenericPopulationSampler):
         self.shrink_factor = shrink_factor
         assert shrink_factor >= 1.0, "The shrink factor should be greater than 1.0 to be efficient"
 
-        self.scale = float(scale)
+        self.scale = float(scale) / 2.  # The code work with 2*scale as the slice width
 
         self.adapt_slice_scale_target = adapt_slice_scale_target
 

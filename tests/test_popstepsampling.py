@@ -141,11 +141,11 @@ def test_direction_proposals():
 def test_slice_limit():
 
     slice_limit_func = [slice_limit_to_unitcube, slice_limit_to_scale]
-    fake_tleft = [-0.5, -0.2, -1.5]
-    fake_tright = [0.2, 2.4, 0.2]
+    fake_tleft = np.array([-0.5, -0.2, -1.5])
+    fake_tright = np.array([0.2, 2.4, 0.2])
 
-    fake_tleft_scale = [-0.5, -0.2, -1.]
-    fake_tright_scale = [0.2, 1.0, 0.2]
+    fake_tleft_scale = np.array([-0.5, -0.2, -1.])
+    fake_tright_scale = np.array([0.2, 1.0, 0.2])
 
     true_tleft = [fake_tleft, fake_tleft_scale]
     true_tright = [fake_tright, fake_tright_scale]
