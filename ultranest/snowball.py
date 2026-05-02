@@ -66,7 +66,7 @@ def snowball(
     max_num_improvement_loops: int = 0,
     **kwargs: Any,
 ) -> Dict[str, List]:
-    """Run nested sampling with a snowballing schedule of live points.
+    """Run nested sampling with a snowballing schedule of live points for an arbitrary sampler.
 
     Repeatedly calls ``sampler.run`` with an increasing number of live
     points *K*, multiplying by *Kfactor* after each run until *Kmax* is
@@ -121,7 +121,7 @@ def snowball(
     lnZs: List[float] = []
     lnZerrs: List[float] = []
 
-    plot_dir = getattr(sampler, 'log_dir', None)
+    plot_dir = sampler.logs['plots'] if sampler.log_to_disk else None
 
     while K < Kmax:
         K_int = int(K)
@@ -143,3 +143,119 @@ def snowball(
         K = max(K * Kfactor, K + 1)
 
     return dict(K=K_values, logz=lnZs, logzerr=lnZerrs)
+
+
+class SnowballingNestedSampler:
+    """Runs nested sampling with a snowballing schedule of live points.
+
+    Calls :py:func:`snowball` on an internal
+    :py:class:`~ultranest.integrator.ReactiveNestedSampler`, repeatedly
+    running with an increasing number of live points *K* (multiplied by
+    *Kfactor* each time) from *Kmin* up to *Kmax*.
+
+    The sampler is always initialised with ``resume='resume'`` and a
+    :py:class:`~ultranest.stepsampler.SliceSampler` step sampler.
+    """
+
+    def __init__(
+        self,
+        param_names: List[str],
+        loglike: Callable,
+        transform: Optional[Callable] = None,
+        generate_direction: Callable = generate_mixture_random_direction,
+        nsteps: Optional[int] = None,
+        **kwargs: Any,
+    ) -> None:
+        """Initialise.
+
+        Parameters
+        ----------
+        param_names : list of str
+            Names of the parameters.
+        loglike : callable
+            Log-likelihood function.
+        transform : callable, optional
+            Prior transform from the unit cube to physical parameters.
+            If *None* (default), the unit cube is used directly.
+        generate_direction : callable, optional
+            Direction-generating function used by the
+            :py:class:`~ultranest.stepsampler.SliceSampler`.
+            Defaults to
+            :py:func:`~ultranest.stepsampler.generate_mixture_random_direction`.
+        nsteps : int, optional
+            Number of accepted steps for the slice sampler.
+            If *None* (default), it is set to the number of parameters.
+        **kwargs : dict
+            Additional keyword arguments forwarded to
+            :py:class:`~ultranest.integrator.ReactiveNestedSampler`.
+            The ``resume`` key is always overridden to ``'resume'``.
+        """
+        kwargs['resume'] = 'resume'
+
+        self.sampler = ReactiveNestedSampler(
+            param_names,
+            loglike,
+            transform=transform,
+            **kwargs,
+        )
+
+        _nsteps = nsteps if nsteps is not None else len(param_names)
+        self.sampler.stepsampler = SliceSampler(
+            nsteps=_nsteps,
+            generate_direction=generate_direction,
+        )
+
+        self.history: Optional[Dict[str, List]] = None
+
+    @property
+    def results(self) -> Optional[Dict]:
+        """Results of the most recent run, forwarded from the internal sampler."""
+        return self.sampler.results
+
+    def run(
+        self,
+        Kfactor: float = 1.5,
+        Kmin: int = 20,
+        Kmax: int = 10000,
+        frac_remain: float = 0.5,
+        max_num_improvement_loops: int = 0,
+        **kwargs: Any,
+    ) -> Dict[str, List]:
+        """Run the snowballing schedule.
+
+        All parameters are forwarded to :py:func:`snowball`.
+
+        Parameters
+        ----------
+        Kfactor : float, optional
+            Multiplicative growth factor for the number of live points.
+        Kmin : int, optional
+            Initial number of live points.
+        Kmax : int, optional
+            Maximum number of live points.
+        frac_remain : float, optional
+            Termination criterion passed to the underlying sampler.
+        max_num_improvement_loops : int, optional
+            Maximum improvement loops passed to the underlying sampler.
+        **kwargs : dict
+            Additional keyword arguments forwarded to ``sampler.run``.
+
+        Returns
+        -------
+        dict
+            Snowballing history with keys ``K``, ``logz``, ``logzerr``.
+        """
+        self.history = snowball(
+            self.sampler,
+            Kfactor=Kfactor,
+            Kmin=Kmin,
+            Kmax=Kmax,
+            frac_remain=frac_remain,
+            max_num_improvement_loops=max_num_improvement_loops,
+            **kwargs,
+        )
+        return self.history
+
+    def plot(self) -> None:
+        """Make corner, run and trace plots via the internal sampler."""
+        self.sampler.plot()
