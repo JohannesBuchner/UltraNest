@@ -115,7 +115,7 @@ def main(args):
     if args.Sampler=='SimSliceScale':
         import ultranest.popstepsampler as ultrapop
         direction=[ultrapop.generate_cube_oriented_direction,ultrapop.generate_mixture_random_direction,ultrapop.generate_differential_direction,ultrapop.generate_region_random_direction,ultrapop.generate_region_oriented_direction,ultrapop.generate_random_direction]
-        sampler.stepsampler = ultrapop.PopulationSimpleSliceSampler(popsize=args.popsize,nsteps=args.nstep,generate_direction=direction[args.direction],slice_limit=ultrapop.slice_limit_to_scale,scale=1.0,scale_adapt_factor=args.adapt_scale)
+        sampler.stepsampler = ultrapop.PopulationSimpleSliceSampler(popsize=args.popsize,nsteps=args.nstep,generate_direction=direction[args.direction],slice_limit=ultrapop.slice_limit_to_scale,scale=1.0,scale_adapt_factor=args.adapt_scale,adapt_slice_scale_target=1.0,norm_prop=4)
     if args.Sampler=='PopSlice':
         import ultranest.popstepsampler as ultrapop
         direction=[ultrapop.generate_cube_oriented_direction,ultrapop.generate_mixture_random_direction,ultrapop.generate_differential_direction,ultrapop.generate_region_random_direction,ultrapop.generate_region_oriented_direction,ultrapop.generate_random_direction]
@@ -149,5 +149,5 @@ if __name__ == '__main__':
     parser.add_argument('--popsize', type=int)
     parser.add_argument('--nstep', type=int)
     parser.add_argument('--direction', type=int)
-    parser.add_argument('--adapt_scale', type=float, default=0.9)
+    parser.add_argument('--adapt_scale', type=float, default=1.0)
     main(parser.parse_args())

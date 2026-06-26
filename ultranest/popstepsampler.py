@@ -19,7 +19,7 @@ from ultranest.stepfuncs import (evolve, generate_cube_oriented_direction,
                                  generate_random_direction,
                                  generate_region_oriented_direction,
                                  generate_region_random_direction, int_dtype,
-                                 step_back, update_vectorised_slice_sampler)
+                                 step_back, update_vectorised_slice_sampler,process_workers,update_limits_NS,QuantileDistribution)
 from ultranest.utils import submasks
 
 
@@ -777,9 +777,9 @@ class PopulationSimpleSliceSampler(GenericPopulationSampler):
 
     def __init__(
         self, popsize, nsteps, generate_direction,
-        scale_adapt_factor=1.0, adapt_slice_scale_target=2.0,
+        scale_adapt_factor=1.0, adapt_slice_scale_target=0.5,
         scale=1.0, scale_jitter_func=None, slice_limit=slice_limit_to_unitcube,
-        max_it=100, shrink_factor=1.0
+        max_it=100, shrink_factor=1.0, norm_prop=False
     ):
         """Initialise.
 
@@ -848,6 +848,7 @@ class PopulationSimpleSliceSampler(GenericPopulationSampler):
         self.popsize = popsize
 
         self.slice_limit = slice_limit
+        self.norm_prop = norm_prop
 
         self.logstat = []
         self.logstat_labels = ['accept_rate', 'efficiency', 'scale', 'far_enough', 'mean_rel_jump']
@@ -860,6 +861,63 @@ class PopulationSimpleSliceSampler(GenericPopulationSampler):
     def region_changed(self, Ls, region):
         """Act upon region changed. Currently unused."""
         pass
+
+    def stepping_out_NS(self,allu,v,loglike,transform,Lmin,tleft_unitcube,tright_unitcube):
+
+        max_n_left = np.round(np.abs(tleft_unitcube)).astype(int)
+        max_n_right = np.round(np.abs(tright_unitcube)).astype(int)
+        nc= 0
+        Left_limit =allu-v
+        Right_limit = allu+v
+        LogLeftLimit=loglike(transform(Left_limit))
+        LogRightLimit=loglike(transform(Right_limit))
+        nc+=2*self.popsize
+        tLeft_limit = np.ones(self.popsize)
+        tRight_limit = np.ones(self.popsize)
+        # Status indicating if a points has already find its Left limit
+        status_left=np.zeros(self.popsize,dtype=int)
+
+        status_left,Left_limit,tLeft_limit = update_limits_NS(self.popsize,status_left,np.arange(self.popsize),np.ones(self.popsize),LogLeftLimit,Lmin,max_n_left,Left_limit,Left_limit.copy(),tleft_unitcube,tLeft_limit)
+        # Status indicating if a points has already find its right limit
+        status_right=np.zeros(self.popsize,dtype=int)
+        # Checking for first point out of the slice on the left side
+        status_right,Right_limit,tRight_limit = update_limits_NS(self.popsize,status_right,np.arange(self.popsize),np.ones(self.popsize),LogRightLimit,Lmin,max_n_right,Right_limit,Right_limit.copy(),tright_unitcube,tRight_limit)
+
+        worker_running=np.zeros(self.popsize,dtype=int)
+        limit_worker=np.zeros((self.popsize,allu.shape[1]))
+        scale_worker=np.zeros(self.popsize)
+        while np.any(status_left==0):
+        
+           
+            worker_running,scale_worker,limit_worker = process_workers(self.popsize,self.popsize,status_left,worker_running,limit_worker,scale_worker,Left_limit,v,tLeft_limit,1.,-1.)
+
+            limit_worker=np.clip(limit_worker,0,1)
+            LogLimit=loglike(transform(limit_worker))
+
+            nc+=self.popsize
+            
+            status_left,Left_limit,tLeft_limit = update_limits_NS(self.popsize,status_left,worker_running,scale_worker,LogLimit,Lmin,max_n_left,Left_limit,limit_worker,tleft_unitcube,tLeft_limit)
+
+        while np.any(status_right==0):
+        
+           
+            worker_running,scale_worker,limit_worker = process_workers(self.popsize,self.popsize,status_right,worker_running,limit_worker,scale_worker,Right_limit,v,tRight_limit,1.,1.)
+            limit_worker=np.clip(limit_worker,0,1)
+
+            LogLimit=loglike(transform(limit_worker))
+            nc+=self.popsize
+            status_right,Right_limit,tRight_limit = update_limits_NS(self.popsize,status_right,worker_running,scale_worker,LogLimit,Lmin,max_n_right,Right_limit,limit_worker,tright_unitcube,tRight_limit)
+
+        end_scale=np.median(np.fmin(tLeft_limit,tRight_limit))
+        
+        #if end_scale>=self.adapt_slice_scale_target:
+        #    self.scale *= 1./self.scale_adapt_factor
+        #else:
+        #    self.scale *= self.scale_adapt_factor
+        
+
+
+        return -tLeft_limit,tRight_limit, nc
 
     def __next__(
         self, region, Lmin, us, Ls, transform, loglike, ndraw=10,
@@ -906,11 +964,15 @@ class PopulationSimpleSliceSampler(GenericPopulationSampler):
 
         """
         nlive, ndim = us.shape
-
+        from scipy.stats import truncnorm,norm,kurtosis,tukeylambda
+        from scipy.stats import t as studentt
+        from scipy.interpolate import interp1d
         # fill if empty:
         if len(self.prepared_samples) == 0:
+            
             # choose live points
             ilive = np.random.randint(0, nlive, size=self.popsize)
+            remaining = np.array([np.setdiff1d(np.arange(nlive), [ilive[i]]) for i in range(self.popsize)])
             allu = np.array(us[ilive,:]) if not test else np.array(us)
             allp = np.zeros((self.popsize, ndim)) * np.nan
             allL = np.array(Ls[ilive])
@@ -924,35 +986,136 @@ class PopulationSimpleSliceSampler(GenericPopulationSampler):
                 factor_scale = self.scale_jitter_func()
                 # Defining slice direction
                 v = self.generate_direction(allu, region, scale=1.0) * self.scale * factor_scale
-
+                if self.norm_prop==2 or self.norm_prop==4: v=v/np.linalg.norm(v,axis=1)[:,None]
                 # limite of the slice based on the unit cube boundaries
                 tleft_unitcube, tright_unitcube = unitcube_line_intersection(allu, v)
-
-                # Defining bound of the slice
-                # Bounds for each points and likelihood calls are identical initially
-
-                # Slice bounds for each likelihood call
-                tleft_worker, tright_worker = self.slice_limit(tleft_unitcube,tright_unitcube)
-
-                # Slice bounds for each points
-                tleft, tright = self.slice_limit(tleft_unitcube,tright_unitcube)
+                if self.norm_prop==1:
+                    #projected_center = np.dot(allu, v)
+                    projected_center = np.einsum('ij,ij->i', allu, v)
+                    #print("Projected center: ", projected_center.shape)
+                    #projected_live_points = np.dot(us, v)-projected_center
+                    projected_live_points = np.einsum('ij,kj->ik', v, us) - projected_center[:,None]
+                    sigma_max = np.max(projected_live_points,axis=1) - np.min(projected_live_points,axis=1)
+                    sigma_min = np.std(projected_live_points,axis=1)
+                    sigma=sigma_max.copy()
+                if self.norm_prop==2:
+                    #v=v/np.linalg.norm(v,axis=1)[:,None]
+                    #std_livepoints = np.std(us,axis=0)
+                    projected_center = np.einsum('ij,ij->i', allu, v)
+                    projected_live_points = np.einsum('ij,ikj->ik', v, us[remaining,:])
+                    
+                    #projected_live_points = np.clip(projected_live_points, (tleft_unitcube+projected_center)[:,None]+1e-5, (tright_unitcube+projected_center)[:,None]-1e-5)
+                    regularization_points = (tleft_unitcube[None,:] + (tright_unitcube-tleft_unitcube)[None,:]*np.random.rand(int(projected_live_points.shape[1]))[:,None]+projected_center[None,:]).swapaxes(0,1)
+                    #print(regularization_points.shape, projected_live_points.shape)
+                    quantiles_points=np.linspace(0,100,50)
+                    #print(np.hstack((projected_live_points, regularization_points)).shape)
+                    index_selected=np.random.choice(np.arange(projected_live_points.shape[1]), size=int(projected_live_points.shape[1]*0.5), replace=False)
+                    selected_project_points = projected_live_points[:,index_selected]
+                    #w = us[:, None, :] - allu[None, :, :]
+                    
+                    #dist_to_line = np.sqrt(np.sum((w - (projected_live_points.swapaxes(0,1)[:,:,None]-projected_center[None,:, None]) * v[None,:,:])**2, axis=2))
+                    #selected_project_points = projected_live_points.copy()
+                    #bad_points = (dist_to_line>np.std(dist_to_line,axis=0)*10.).swapaxes(0,1)
+                    #print(regularization_points.shape, projected_live_points.shape, selected_project_points.shape, bad_points.shape)
+                    #print("Selected projected points: ",dist_to_line.shape,bad_points.shape, np.mean(np.sum(bad_points,axis=1)),np.std(dist_to_line,axis=0),np.min(dist_to_line,axis=0))
+                    #selected_project_points[bad_points]=(tleft_unitcube[None,:] + (tright_unitcube-tleft_unitcube)[None,:]*np.random.rand(int(projected_live_points.shape[1]))[:,None]+projected_center[None,:]).swapaxes(0,1)[bad_points]
+                    
+                    
+                    quantiles = np.percentile(np.hstack((selected_project_points, regularization_points)), quantiles_points, axis=1)#np.percentile(np.hstack((selected_project_points, regularization_points)), quantiles_points, axis=1)#np.percentile( regularization_points, quantiles_points, axis=1)#np.percentile(np.hstack((projected_live_points, regularization_points)), quantiles_points, axis=1)
+                    
+                    dist = QuantileDistribution(quantiles, quantiles_points, self.popsize)
+                    
+                if self.norm_prop==4:
+                    
+                    projected_center = np.einsum('ij,ij->i', allu, v)
+                    
+                    projected_live_points = np.einsum('ij,ikj->ik', v, us[remaining,:])-projected_center[:,None]
+                    
+                    max_left = np.min(projected_live_points,axis=1)*3.
+                    max_right = np.max(projected_live_points,axis=1)*3.
+                    
+                    tleft_unitcube = np.maximum(max_left, tleft_unitcube)
+                    tright_unitcube = np.minimum(max_right, tright_unitcube)
+                    tleft=tleft_unitcube.copy()
+                    tright=tright_unitcube.copy()
+                    tleft_worker = tleft.copy()
+                    tright_worker = tright.copy()
                 # Index of the workers working concurrently
                 worker_running = np.arange(self.popsize, dtype=int_dtype)
+                # Defining bound of the slice
+                # Bounds for each points and likelihood calls are identical initially
+                
+                # Slice bounds for each likelihood call
+
+                if self.norm_prop==3:
+                    tleft,tright,nc_step = self.stepping_out_NS(allu,v,loglike,transform,Lmin,tleft_unitcube,tright_unitcube)
+                    tright_worker = tright.copy()
+                    tleft_worker = tleft.copy()
+                    nc+=nc_step
+                if self.norm_prop==1 or self.norm_prop==0:
+                    tleft_worker, tright_worker = self.slice_limit(tleft_unitcube,tright_unitcube)
+                
+                    # Slice bounds for each points
+                    tleft, tright = self.slice_limit(tleft_unitcube,tright_unitcube)
+                if self.norm_prop==2:
+                    tleft_unitcube+=projected_center
+                    tright_unitcube+=projected_center
+                    #tleft_unitcube = np.zeros_like(projected_center)
+                    #tright_unitcube = np.zeros_like(projected_center)+1.
+                    #print("tleft_unitcube: ", tleft_unitcube.shape)
+                    tleft_unitcube = dist.cdf(tleft_unitcube,worker_running)
+                    #print("tleft_unitcube: ", tleft_unitcube)
+                    #print("tleft_unitcube: ", tleft_unitcube.shape)
+                    tright_unitcube = dist.cdf(tright_unitcube, worker_running)
+                    #print("tright_unitcube: ", tright_unitcube)
+                    allu_proj = dist.cdf(projected_center,worker_running)
+                    logquantile = dist.logpdf(projected_center, worker_running)
+                    tleft, tright = tleft_unitcube-allu_proj, tright_unitcube-allu_proj
+                    tleft_worker, tright_worker = tleft[worker_running].copy(), tright[worker_running].copy()
+                    Likelihood_threshold = np.log(np.random.uniform(size=(self.popsize,))) - logquantile
+                expected_end_width=np.sqrt((tright-tleft)**2/12) # Expected width of uniform distribution on slice
+                
                 # Status indicating if a points has already find its next position
                 status = np.zeros(self.popsize, dtype=int_dtype)  # one for success, zero for running
-
+                
                 # Loop until each points has found its next position or we reached 100 iterations
                 for _it in range(self.max_it):
                     # Sampling points on the slices
-                    slice_position = np.random.uniform(size=(self.popsize,))
-                    t = tleft_worker + (tright_worker - tleft_worker) * slice_position
+                    if self.norm_prop==1:
+                        t = truncnorm.rvs((tleft_worker) / sigma[worker_running], (tright_worker) / sigma[worker_running], loc=0, scale=sigma[worker_running], size=(self.popsize,))
 
-                    points = allu[worker_running, :]
-                    v_worker = v[worker_running, :]
-                    proposed_u = points + t.reshape((-1,1)) * v_worker
+                        MH_acceptance =truncnorm.logpdf(-t , (tleft_worker) / sigma[worker_running], (tright_worker) / sigma[worker_running], loc=t, scale=sigma[worker_running]) - truncnorm.logpdf(0., (tleft_worker) / sigma[worker_running], (tright_worker) / sigma[worker_running], loc=0, scale=sigma[worker_running])
+                        accepted = MH_acceptance >= np.log(np.random.uniform(size=(self.popsize,)))
+                        #accepted = np.ones(self.popsize, dtype=bool)
 
-                    proposed_p = transform(proposed_u)
-                    proposed_L = loglike(proposed_p)
+                        points = allu[worker_running, :]
+                        v_worker = v[worker_running, :]
+                        proposed_u = points + t.reshape((-1,1)) * v_worker
+                        proposed_p = transform(proposed_u)
+                        proposed_L = loglike(proposed_p)
+                        proposed_L[~accepted] = -np.inf
+                    elif self.norm_prop==2:
+                        slice_position = np.random.uniform(size=(self.popsize,))
+                        t = tleft_worker + (tright_worker - tleft_worker) * slice_position
+                        t_real = t +allu_proj[worker_running]
+                        t_real = dist.ppf(t_real,worker_running)
+                        proposed_u = allu[worker_running] + (t_real - projected_center[worker_running]).reshape((-1,1)) * v[worker_running, :]
+                        proposed_p = transform(proposed_u)
+                        proposed_L = loglike(proposed_p)
+                        proposed_logquantile = dist.logpdf(t_real,worker_running)
+                        accepted = -proposed_logquantile >= Likelihood_threshold[worker_running]
+                        proposed_L[~accepted] = -np.inf
+                    else:
+                        slice_position = np.random.uniform(size=(self.popsize,))
+                        t = tleft_worker + (tright_worker - tleft_worker) * slice_position
+
+                        points = allu[worker_running, :]
+                        v_worker = v[worker_running, :]
+                        proposed_u = points + t.reshape((-1,1)) * v_worker
+                        proposed_p = transform(proposed_u)
+                        proposed_L = loglike(proposed_p)
+
+                    
                     nc += self.popsize
 
                     # Updating the pool of points based on the newly sampled points
@@ -964,12 +1127,15 @@ class PopulationSimpleSliceSampler(GenericPopulationSampler):
                     # Update of the limits of the slices
                     tleft_worker = tleft[worker_running]
                     tright_worker = tright[worker_running]
-
+                    if self.norm_prop==1:
+                        sigma[worker_running]=sigma[worker_running]/2.
+                        sigma[sigma<sigma_min]=sigma_min[sigma<sigma_min]
                     if not np.any(status == 0):
                         break
 
                 # Record of the final interval on theta for scale adaptation
-                interval_final += np.median(tright - tleft)
+                interval_final += np.mean(np.abs(t[status == 1])/expected_end_width[status == 1])
+#np.mean((tright - tleft) / expected_end_width)
 
             interval_final = interval_final / self.nsteps
             self.discarded += n_discarded
@@ -990,10 +1156,11 @@ class PopulationSimpleSliceSampler(GenericPopulationSampler):
             # Scale adaptation such that the final interval is
             # half the scale. There may be better things to do
             # here, but it seems to work.
-            if interval_final >= 1. / self.adapt_slice_scale_target:
+            if interval_final >= self.adapt_slice_scale_target and self.scale>1e-10 and self.scale<np.sqrt(ndim):
                 self.scale *= 1. / self.scale_adapt_factor
             else:
                 self.scale *= self.scale_adapt_factor
+            #print(interval_final, self.adapt_slice_scale_target, self.scale)
             # print("percentage of throws %.3f\n\n"%((self.throwed/self.ncalls)*100.))
 
         else:
@@ -1001,6 +1168,7 @@ class PopulationSimpleSliceSampler(GenericPopulationSampler):
 
         u, p, L = self.prepared_samples.pop(0)
         return u, p, L, nc
+
 
 
 __all__ = [
