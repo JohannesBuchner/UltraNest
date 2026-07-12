@@ -980,7 +980,9 @@ class PopulationSimpleSliceSampler(GenericPopulationSampler):
             n_discarded = 0
 
             interval_final = 0.
-
+            if self.norm_prop==5:
+                n_good_call=0
+                n_bad_call = 0
             for _k in range(self.nsteps):
                 # Defining scale jitter
                 factor_scale = self.scale_jitter_func()
@@ -1040,13 +1042,23 @@ class PopulationSimpleSliceSampler(GenericPopulationSampler):
                     tright=tright_unitcube.copy()
                     tleft_worker = tleft.copy()
                     tright_worker = tright.copy()
+                if self.norm_prop==5:
+                    from scipy.stats import norm
+                    projected_center = np.einsum('ij,ij->i', allu, v)
+                    allu_proj = np.zeros_like(projected_center)+0.5
+                    tright = norm.cdf(tright_unitcube, loc=0.0, scale=self.scale)-allu_proj
+                    tleft = norm.cdf(tleft_unitcube, loc=0.0, scale=self.scale)-allu_proj
+                    #print("tleft, tright: ", tleft, tright) 
+                    
                 # Index of the workers working concurrently
                 worker_running = np.arange(self.popsize, dtype=int_dtype)
                 # Defining bound of the slice
                 # Bounds for each points and likelihood calls are identical initially
                 
                 # Slice bounds for each likelihood call
-
+                if self.norm_prop==5:
+                    tleft_worker = tleft.copy()
+                    tright_worker = tright.copy()
                 if self.norm_prop==3:
                     tleft,tright,nc_step = self.stepping_out_NS(allu,v,loglike,transform,Lmin,tleft_unitcube,tright_unitcube)
                     tright_worker = tright.copy()
@@ -1105,6 +1117,17 @@ class PopulationSimpleSliceSampler(GenericPopulationSampler):
                         proposed_logquantile = dist.logpdf(t_real,worker_running)
                         accepted = -proposed_logquantile >= Likelihood_threshold[worker_running]
                         proposed_L[~accepted] = -np.inf
+                    elif self.norm_prop==5:
+                        slice_position = np.random.uniform(size=(self.popsize,))
+                        t = tleft_worker + (tright_worker - tleft_worker) * slice_position
+                        t_real = t+allu_proj[worker_running] 
+                        t_real = norm.ppf(t_real,loc=0., scale=self.scale)
+                        proposed_u = allu[worker_running] + (t_real).reshape((-1,1)) * v[worker_running, :]
+                        proposed_p = transform(proposed_u)
+                        proposed_L = loglike(proposed_p)
+                        n_good_call += np.sum(proposed_L > Lmin)
+                        n_bad_call += np.sum(proposed_L <= Lmin)
+                        
                     else:
                         slice_position = np.random.uniform(size=(self.popsize,))
                         t = tleft_worker + (tright_worker - tleft_worker) * slice_position
@@ -1152,14 +1175,22 @@ class PopulationSimpleSliceSampler(GenericPopulationSampler):
                 np.mean(far_enough) if len(far_enough) > 0 else 0,
                 np.exp(np.mean(np.log(move_distance / reference_distance + 1e-10))) if len(far_enough) > 0 else 0
             ])
-
-            # Scale adaptation such that the final interval is
-            # half the scale. There may be better things to do
-            # here, but it seems to work.
-            if interval_final >= self.adapt_slice_scale_target and self.scale>1e-10 and self.scale<np.sqrt(ndim):
-                self.scale *= 1. / self.scale_adapt_factor
+            if self.norm_prop!=5:
+                # Scale adaptation such that the final interval is
+                # half the scale. There may be better things to do
+                # here, but it seems to work.
+                if interval_final >= self.adapt_slice_scale_target and self.scale>1e-10 and self.scale<np.sqrt(ndim):
+                    self.scale *= 1. / self.scale_adapt_factor
+                else:
+                    self.scale *= self.scale_adapt_factor
             else:
-                self.scale *= self.scale_adapt_factor
+                # Assume the same thing as RW
+                #print("scale",self.scale, "n_good_call", n_good_call/(n_good_call+n_bad_call), "n_bad_call", n_bad_call)
+                if n_good_call/(n_good_call+n_bad_call)>0.234:
+                    self.scale *= 1. / self.scale_adapt_factor
+                else:
+                    self.scale *= self.scale_adapt_factor
+                self.scale=np.clip(self.scale, 1e-20,20)
             #print(interval_final, self.adapt_slice_scale_target, self.scale)
             # print("percentage of throws %.3f\n\n"%((self.throwed/self.ncalls)*100.))
 
