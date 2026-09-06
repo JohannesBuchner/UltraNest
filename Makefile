@@ -66,14 +66,14 @@ lint: ${SOURCES} ## check style
 	pycodestyle ${SOURCES}
 	pydocstyle ${SOURCES}
 
-test: ## run tests quickly with the default Python
+test: build ## run tests quickly with the default Python
 	PYTHONPATH=. pytest
 
 test-all: ## run tests on every Python version with tox
 	tox
 
 build:
-	$(PYTHON) setup.py build_ext --inplace
+	$(PYTHON) -m build
 
 coverage: ## check code coverage quickly with the default Python
 	PYTHONPATH=. coverage run --source ultranest -m pytest
