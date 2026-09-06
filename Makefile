@@ -67,7 +67,7 @@ lint: ${SOURCES} ## check style
 	pydocstyle ${SOURCES}
 
 test: build ## run tests quickly with the default Python
-	PYTHONPATH=. pytest
+	PYTHONPATH=. $(PYTHON) -m pytest
 
 test-all: ## run tests on every Python version with tox
 	tox
