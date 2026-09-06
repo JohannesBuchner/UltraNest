@@ -73,7 +73,7 @@ test-all: ## run tests on every Python version with tox
 	tox
 
 build:
-	$(PYTHON) -m build --no-isolation --skip-dependency-check
+	$(PYTHON) setup.py build_ext --inplace
 
 coverage: ## check code coverage quickly with the default Python
 	PYTHONPATH=. coverage run --source ultranest -m pytest
