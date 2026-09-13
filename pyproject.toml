@@ -25,3 +25,8 @@ addopts = "--junitxml=test-reports/junit.xml  --html=tests/reports/index.html"
 
 [tool.pydocstyle]
 add-ignore = "D107"
+
+[project.urls]
+Homepage = "https://github.com/JohannesBuchner/UltraNest"
+Source = "https://github.com/JohannesBuchner/UltraNest"
+Documentation = "https://johannesbuchner.github.io/UltraNest/"
