@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest.dyhmc &mdash; UltraNest 4.5.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+  <title>ultranest.dyhmc &mdash; UltraNest 4.5.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
   
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=5ef59c98"></script>
+        <script src="../../_static/documentation_options.js?v=cd7592eb"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -39,7 +39,7 @@
               <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                4.5.0
+                4.5.2
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -106,15 +106,15 @@
 <span class="sd">A helper surface is created using the live points.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">scipy.special</span>
-<span class="kn">import</span> <span class="nn">scipy.stats</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipy.special</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipy.stats</span>
 
 
 <div class="viewcode-block" id="stop_criterion">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.dyhmc.stop_criterion">[docs]</a>
-<span class="k">def</span> <span class="nf">stop_criterion</span><span class="p">(</span><span class="n">thetaminus</span><span class="p">,</span> <span class="n">thetaplus</span><span class="p">,</span> <span class="n">rminus</span><span class="p">,</span> <span class="n">rplus</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">stop_criterion</span><span class="p">(</span><span class="n">thetaminus</span><span class="p">,</span> <span class="n">thetaplus</span><span class="p">,</span> <span class="n">rminus</span><span class="p">,</span> <span class="n">rplus</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Compute the stop condition in the main loop</span>
 <span class="sd">    dot(dtheta, rminus) &gt;= 0 &amp; dot(dtheta, rplus &gt;= 0)</span>
 
@@ -141,7 +141,7 @@
 
 <div class="viewcode-block" id="leapfrog">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.dyhmc.leapfrog">[docs]</a>
-<span class="k">def</span> <span class="nf">leapfrog</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">grad</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">invmassmatrix</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">leapfrog</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">grad</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">invmassmatrix</span><span class="p">,</span> <span class="n">f</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Leap frog step from theta with momentum r and stepsize epsilon.</span>
 <span class="sd">    The local gradient grad is updated with function f&quot;&quot;&quot;</span>
     <span class="c1"># make half step in r</span>
@@ -158,7 +158,7 @@
 
 <div class="viewcode-block" id="build_tree">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.dyhmc.build_tree">[docs]</a>
-<span class="k">def</span> <span class="nf">build_tree</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">grad</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">invmassmatrix</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">joint0</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">build_tree</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">grad</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">invmassmatrix</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">joint0</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;The main recursion.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="c1"># Base case: Take a single leapfrog step in the direction v.</span>
@@ -237,7 +237,7 @@
 
 <div class="viewcode-block" id="tree_sample">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.dyhmc.tree_sample">[docs]</a>
-<span class="k">def</span> <span class="nf">tree_sample</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">logp</span><span class="p">,</span> <span class="n">r0</span><span class="p">,</span> <span class="n">grad</span><span class="p">,</span> <span class="n">extra</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">invmassmatrix</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">joint</span><span class="p">,</span> <span class="n">maxheight</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">tree_sample</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">logp</span><span class="p">,</span> <span class="n">r0</span><span class="p">,</span> <span class="n">grad</span><span class="p">,</span> <span class="n">extra</span><span class="p">,</span> <span class="n">epsilon</span><span class="p">,</span> <span class="n">invmassmatrix</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">joint</span><span class="p">,</span> <span class="n">maxheight</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Build NUTS-like tree of sampling path from theta towards p with stepsize epsilon.&quot;&quot;&quot;</span>
     <span class="c1"># initialize the tree</span>
     <span class="n">thetaminus</span> <span class="o">=</span> <span class="n">theta</span>
@@ -300,7 +300,7 @@
 
 <div class="viewcode-block" id="find_beta_params_static">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.dyhmc.find_beta_params_static">[docs]</a>
-<span class="k">def</span> <span class="nf">find_beta_params_static</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">u10</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">find_beta_params_static</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">u10</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Define auxiliary distribution following naive intuition.</span>
 <span class="sd">    Make 50% quantile to be at u=0.1, and very flat at high u. &quot;&quot;&quot;</span>
     <span class="k">del</span> <span class="n">d</span>
@@ -316,14 +316,14 @@
 
 <div class="viewcode-block" id="find_beta_params_dynamic">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.dyhmc.find_beta_params_dynamic">[docs]</a>
-<span class="k">def</span> <span class="nf">find_beta_params_dynamic</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">u10</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">find_beta_params_dynamic</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">u10</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Define auxiliary distribution taking into account</span>
 <span class="sd">    kinetic energy of a d-dimensional HMC.</span>
 <span class="sd">    Make exp(-d/2) quantile to be at u=0.1, and 95% quantile at u=0.5. &quot;&quot;&quot;</span>
 
     <span class="n">u50</span> <span class="o">=</span> <span class="p">(</span><span class="n">u10</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.</span>
 
-    <span class="k">def</span> <span class="nf">minfunc</span><span class="p">(</span><span class="n">params</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">minfunc</span><span class="p">(</span><span class="n">params</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; minimization function &quot;&quot;&quot;</span>
         <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span> <span class="o">=</span> <span class="n">params</span>
         <span class="n">q10</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">special</span><span class="o">.</span><span class="n">betainc</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">u10</span><span class="p">)</span>
@@ -340,7 +340,7 @@
 
 <div class="viewcode-block" id="generate_momentum_normal">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.dyhmc.generate_momentum_normal">[docs]</a>
-<span class="k">def</span> <span class="nf">generate_momentum_normal</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">massmatrix</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_momentum_normal</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">massmatrix</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; draw direction vector according to mass matrix &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">multivariate_normal</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">d</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">massmatrix</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">d</span><span class="p">)))</span></div>
 
@@ -348,7 +348,7 @@
 
 <div class="viewcode-block" id="generate_momentum">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.dyhmc.generate_momentum">[docs]</a>
-<span class="k">def</span> <span class="nf">generate_momentum</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">massmatrix</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_momentum</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">massmatrix</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; draw momentum from a circle, with amplitude following the beta distribution &quot;&quot;&quot;</span>
     <span class="n">momentum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">multivariate_normal</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">d</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">massmatrix</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">d</span><span class="p">)))</span>
     <span class="c1"># generate normalisation from beta distribution</span>
@@ -373,7 +373,7 @@
 
 <div class="viewcode-block" id="generate_momentum_circle">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.dyhmc.generate_momentum_circle">[docs]</a>
-<span class="k">def</span> <span class="nf">generate_momentum_circle</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">massmatrix</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_momentum_circle</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">massmatrix</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; draw from a circle, with a little noise in amplitude &quot;&quot;&quot;</span>
     <span class="n">momentum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">multivariate_normal</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">d</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">massmatrix</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">d</span><span class="p">)))</span>
     <span class="n">momentum</span> <span class="o">*=</span> <span class="mi">10</span><span class="o">**</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">momentum</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">**</span><span class="mf">0.5</span>
@@ -383,7 +383,7 @@
 
 <div class="viewcode-block" id="generate_momentum_flattened">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.dyhmc.generate_momentum_flattened">[docs]</a>
-<span class="k">def</span> <span class="nf">generate_momentum_flattened</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">massmatrix</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_momentum_flattened</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">massmatrix</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; like normal distribution, but make momenta distributed like a single gaussian.</span>
 <span class="sd">    **this is the one being used** &quot;&quot;&quot;</span>
     <span class="n">momentum</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">multivariate_normal</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">d</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">massmatrix</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">d</span><span class="p">)))</span>
@@ -396,7 +396,7 @@
 
 <div class="viewcode-block" id="FlattenedProblem">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.dyhmc.FlattenedProblem">[docs]</a>
-<span class="k">class</span> <span class="nc">FlattenedProblem</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">FlattenedProblem</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Creates a suitable auxiliary distribution from samples of likelihood values</span>
 
@@ -411,7 +411,7 @@
 <span class="sd">    .__call__(x) returns logL, grad on the auxiliary distribution.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">Ls</span><span class="p">,</span> <span class="n">function</span><span class="p">,</span> <span class="n">layer</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">Ls</span><span class="p">,</span> <span class="n">function</span><span class="p">,</span> <span class="n">layer</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Lmin</span> <span class="o">=</span> <span class="n">Ls</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">L90</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">Ls</span><span class="p">,</span> <span class="mi">90</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">L10</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">Ls</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
@@ -447,7 +447,7 @@
 
 <div class="viewcode-block" id="FlattenedProblem.modify_Lgrad">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.dyhmc.FlattenedProblem.modify_Lgrad">[docs]</a>
-    <span class="k">def</span> <span class="nf">modify_Lgrad</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">grad</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">modify_Lgrad</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">L</span><span class="p">,</span> <span class="n">grad</span><span class="p">):</span>
         <span class="n">u</span> <span class="o">=</span> <span class="p">(</span><span class="n">L</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">Lmin</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">L90</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">Lmin</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">u</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">logp</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span>
@@ -473,7 +473,7 @@
         <span class="k">return</span> <span class="n">logp</span><span class="p">,</span> <span class="n">tgrad</span></div>
 
 
-    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">u</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">u</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
             <span class="c1"># outside unit cube, invalid.</span>
             <span class="c1"># print(&quot;outside&quot;, u)</span>
@@ -485,7 +485,7 @@
 
 <div class="viewcode-block" id="FlattenedProblem.generate_momentum">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.dyhmc.FlattenedProblem.generate_momentum">[docs]</a>
-    <span class="k">def</span> <span class="nf">generate_momentum</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate_momentum</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">generate_momentum_flattened</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">d</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">massmatrix</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">generate_momentum_normal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">d</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">massmatrix</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">generate_momentum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">d</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">massmatrix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="p">)</span></div>
@@ -495,7 +495,7 @@
 
 <div class="viewcode-block" id="DynamicHMCSampler">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.dyhmc.DynamicHMCSampler">[docs]</a>
-<span class="k">class</span> <span class="nc">DynamicHMCSampler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">DynamicHMCSampler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Dynamic Hamiltonian/Hybrid Monte Carlo technique</span>
 
 <span class="sd">    Typically, HMC operates on the posterior. It has the benefit</span>
@@ -557,7 +557,7 @@
 <span class="sd">    rebuilt if the acceptance rate is below(above).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ndim</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">,</span> <span class="n">transform_loglike_gradient</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="mf">0.90</span><span class="p">,</span> <span class="n">nudge</span><span class="o">=</span><span class="mf">1.04</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ndim</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">,</span> <span class="n">transform_loglike_gradient</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="mf">0.90</span><span class="p">,</span> <span class="n">nudge</span><span class="o">=</span><span class="mf">1.04</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialise sampler.</span>
 
 <span class="sd">        Parameters</span>
@@ -584,13 +584,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">logstat_labels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;acceptance_rate&#39;</span><span class="p">,</span> <span class="s1">&#39;acceptance_rate_bias&#39;</span><span class="p">,</span> <span class="s1">&#39;stepsize&#39;</span><span class="p">,</span> <span class="s1">&#39;treeheight&#39;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logstat_trajectory</span> <span class="o">=</span> <span class="p">[]</span>
 
-    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get string representation.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s1">&#39;(nsteps=</span><span class="si">%d</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span>
 
 <div class="viewcode-block" id="DynamicHMCSampler.plot">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.dyhmc.DynamicHMCSampler.plot">[docs]</a>
-    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot sampler statistics.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span>
@@ -613,7 +613,7 @@
         <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
 
-    <span class="k">def</span> <span class="fm">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">,</span> <span class="n">us</span><span class="p">,</span> <span class="n">Ls</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">tregion</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">Lmin</span><span class="p">,</span> <span class="n">us</span><span class="p">,</span> <span class="n">Ls</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">loglike</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">tregion</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a new point.</span>
 
 <span class="sd">        Parameters</span>
@@ -682,7 +682,7 @@
 
 <div class="viewcode-block" id="DynamicHMCSampler.move">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.dyhmc.DynamicHMCSampler.move">[docs]</a>
-    <span class="k">def</span> <span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ui</span><span class="p">,</span> <span class="n">pi</span><span class="p">,</span> <span class="n">Li</span><span class="p">,</span> <span class="n">gradi</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">Lflat</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gradflat</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ui</span><span class="p">,</span> <span class="n">pi</span><span class="p">,</span> <span class="n">Li</span><span class="p">,</span> <span class="n">gradi</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">Lflat</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gradflat</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Move from position ui, Li, gradi with a HMC trajectory.</span>
 
 <span class="sd">        Return</span>
@@ -740,7 +740,7 @@
 
 <div class="viewcode-block" id="DynamicHMCSampler.create_problem">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.dyhmc.DynamicHMCSampler.create_problem">[docs]</a>
-    <span class="k">def</span> <span class="nf">create_problem</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Ls</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_problem</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Ls</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; Set up auxiliary distribution.</span>
 
 <span class="sd">        Parameters</span>
@@ -759,7 +759,7 @@
 
 <div class="viewcode-block" id="DynamicHMCSampler.adjust_stepsize">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.dyhmc.DynamicHMCSampler.adjust_stepsize">[docs]</a>
-    <span class="k">def</span> <span class="nf">adjust_stepsize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">adjust_stepsize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">logstat_trajectory</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span>
 
@@ -792,7 +792,7 @@
 
 <div class="viewcode-block" id="DynamicHMCSampler.region_changed">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.dyhmc.DynamicHMCSampler.region_changed">[docs]</a>
-    <span class="k">def</span> <span class="nf">region_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Ls</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">region_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Ls</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">adjust_stepsize</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">create_problem</span><span class="p">(</span><span class="n">Ls</span><span class="p">,</span> <span class="n">region</span><span class="p">)</span></div>
 </div>

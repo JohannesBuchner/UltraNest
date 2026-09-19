@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Index &mdash; UltraNest 4.5.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+  <title>Index &mdash; UltraNest 4.5.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
   
@@ -16,7 +16,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=5ef59c98"></script>
+        <script src="_static/documentation_options.js?v=cd7592eb"></script>
         <script src="_static/doctools.js?v=9a2dae69"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -39,7 +39,7 @@
               <img src="_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                4.5.0
+                4.5.2
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -685,6 +685,8 @@
 </li>
         <li><a href="ultranest.html#module-ultranest.samplingpath">ultranest.samplingpath</a>
 </li>
+        <li><a href="ultranest.html#module-ultranest.snowball">ultranest.snowball</a>
+</li>
         <li><a href="ultranest.html#module-ultranest.solvecompat">ultranest.solvecompat</a>
 </li>
         <li><a href="ultranest.html#module-ultranest.stepfuncs">ultranest.stepfuncs</a>
@@ -800,6 +802,8 @@
         <li><a href="ultranest.html#ultranest.pathsampler.OtherSamplerProxy.plot">(ultranest.pathsampler.OtherSamplerProxy method)</a>
 </li>
         <li><a href="ultranest.html#ultranest.samplingpath.SamplingPath.plot">(ultranest.samplingpath.SamplingPath method)</a>
+</li>
+        <li><a href="ultranest.html#ultranest.snowball.SnowballingNestedSampler.plot">(ultranest.snowball.SnowballingNestedSampler method)</a>
 </li>
         <li><a href="ultranest.html#ultranest.stepsampler.StepSampler.plot">(ultranest.stepsampler.StepSampler method)</a>
 </li>
@@ -924,6 +928,8 @@
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ultranest.html#ultranest.snowball.SnowballingNestedSampler.results">results (ultranest.snowball.SnowballingNestedSampler property)</a>
+</li>
       <li><a href="ultranest.html#ultranest.hotstart.reuse_samples">reuse_samples() (in module ultranest.hotstart)</a>
 </li>
       <li><a href="ultranest.html#ultranest.flatnuts.ClockedSimpleStepSampler.reverse">reverse() (ultranest.flatnuts.ClockedSimpleStepSampler method)</a>
@@ -938,6 +944,8 @@
         <li><a href="ultranest.html#ultranest.integrator.NestedSampler.run">(ultranest.integrator.NestedSampler method)</a>
 </li>
         <li><a href="ultranest.html#ultranest.integrator.ReactiveNestedSampler.run">(ultranest.integrator.ReactiveNestedSampler method)</a>
+</li>
+        <li><a href="ultranest.html#ultranest.snowball.SnowballingNestedSampler.run">(ultranest.snowball.SnowballingNestedSampler method)</a>
 </li>
       </ul></li>
       <li><a href="ultranest.html#ultranest.calibrator.ReactiveNestedCalibrator.run_iter">run_iter() (ultranest.calibrator.ReactiveNestedCalibrator method)</a>
@@ -1010,10 +1018,10 @@
 </li>
       <li><a href="ultranest.html#ultranest.plot.PredictionBand.set_shadeargs">set_shadeargs() (ultranest.plot.PredictionBand method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ultranest.html#ultranest.mlfriends.MLFriends.set_transformLayer">set_transformLayer() (ultranest.mlfriends.MLFriends method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ultranest.html#ultranest.popstepsampler.PopulationSliceSampler.setup_brackets">setup_brackets() (ultranest.popstepsampler.PopulationSliceSampler method)</a>
 </li>
       <li><a href="ultranest.html#ultranest.popstepsampler.PopulationSliceSampler.setup_start">setup_start() (ultranest.popstepsampler.PopulationSliceSampler method)</a>
@@ -1029,6 +1037,10 @@
       <li><a href="ultranest.html#ultranest.flatnuts.SingleJumper">SingleJumper (class in ultranest.flatnuts)</a>
 </li>
       <li><a href="ultranest.html#ultranest.stepsampler.SliceSampler">SliceSampler (class in ultranest.stepsampler)</a>
+</li>
+      <li><a href="ultranest.html#ultranest.snowball.snowball">snowball() (in module ultranest.snowball)</a>
+</li>
+      <li><a href="ultranest.html#ultranest.snowball.SnowballingNestedSampler">SnowballingNestedSampler (class in ultranest.snowball)</a>
 </li>
       <li><a href="ultranest.html#ultranest.stepsampler.SpeedVariableGenerator">SpeedVariableGenerator (class in ultranest.stepsampler)</a>
 </li>
@@ -1194,6 +1206,13 @@
 
       <ul>
         <li><a href="ultranest.html#module-ultranest.samplingpath">module</a>
+</li>
+      </ul></li>
+      <li>
+    ultranest.snowball
+
+      <ul>
+        <li><a href="ultranest.html#module-ultranest.snowball">module</a>
 </li>
       </ul></li>
       <li>

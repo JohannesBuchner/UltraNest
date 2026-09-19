@@ -4,8 +4,8 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest package &mdash; UltraNest 4.5.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+  <title>ultranest package &mdash; UltraNest 4.5.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
 
   
@@ -17,7 +17,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=5ef59c98"></script>
+        <script src="_static/documentation_options.js?v=cd7592eb"></script>
         <script src="_static/doctools.js?v=9a2dae69"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -44,7 +44,7 @@
               <img src="_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                4.5.0
+                4.5.2
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -1462,7 +1462,7 @@ keys as discussed in the <a class="reference internal" href="#ultranest.integrat
 <p>Writes corner plot to plots/ directory if log directory was
 specified, otherwise show interactively.</p>
 <p>This does essentially:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ultranest.plot</span> <span class="kn">import</span> <span class="n">cornerplot</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ultranest.plot</span><span class="w"> </span><span class="kn">import</span> <span class="n">cornerplot</span>
 <span class="n">cornerplot</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -1475,7 +1475,7 @@ specified, otherwise show interactively.</p>
 <p>Write parameter trace diagnostic plots to plots/ directory
 if log directory specified, otherwise show interactively.</p>
 <p>This does essentially:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ultranest.plot</span> <span class="kn">import</span> <span class="n">traceplot</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ultranest.plot</span><span class="w"> </span><span class="kn">import</span> <span class="n">traceplot</span>
 <span class="n">traceplot</span><span class="p">(</span><span class="n">results</span><span class="o">=</span><span class="n">results</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">paramnames</span> <span class="o">+</span> <span class="n">derivedparamnames</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -1488,7 +1488,7 @@ if log directory specified, otherwise show interactively.</p>
 <p>Write run diagnostic plots to plots/ directory
 if log directory specified, otherwise show interactively.</p>
 <p>This does essentially:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ultranest.plot</span> <span class="kn">import</span> <span class="n">runplot</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ultranest.plot</span><span class="w"> </span><span class="kn">import</span> <span class="n">runplot</span>
 <span class="n">runplot</span><span class="p">(</span><span class="n">results</span><span class="o">=</span><span class="n">results</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -4174,15 +4174,132 @@ will be very stochastic.</p></li>
 </dd></dl>
 
 </section>
+<section id="module-ultranest.snowball">
+<span id="ultranest-snowball-module"></span><h2>ultranest.snowball module<a class="headerlink" href="#module-ultranest.snowball" title="Link to this heading"></a></h2>
+<section id="snowballing-nested-sampling">
+<h3>Snowballing Nested Sampling<a class="headerlink" href="#snowballing-nested-sampling" title="Link to this heading"></a></h3>
+</section>
+<dl class="py function">
+<dt class="sig sig-object py" id="ultranest.snowball.snowball">
+<span class="sig-prename descclassname"><span class="pre">ultranest.snowball.</span></span><span class="sig-name descname"><span class="pre">snowball</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sampler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ultranest.integrator.ReactiveNestedSampler" title="ultranest.integrator.ReactiveNestedSampler"><span class="pre">ReactiveNestedSampler</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">Kfactor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Kmin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Kmax</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frac_remain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_num_improvement_loops</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/ultranest/snowball.html#snowball"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.snowball.snowball" title="Link to this definition"></a></dt>
+<dd><p>Run nested sampling with a snowballing schedule of live points for an arbitrary sampler.</p>
+<p>Repeatedly calls <code class="docutils literal notranslate"><span class="pre">sampler.run</span></code> with an increasing number of live
+points <em>K</em>, multiplying by <em>Kfactor</em> after each run until <em>Kmax</em> is
+reached or exceeded.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sampler</strong> (<a class="reference internal" href="#ultranest.integrator.ReactiveNestedSampler" title="ultranest.integrator.ReactiveNestedSampler"><em>ReactiveNestedSampler</em></a>) – An initialised UltraNest sampler instance.</p></li>
+<li><p><strong>Kfactor</strong> (<em>float</em><em>, </em><em>optional</em>) – Multiplicative growth factor applied to K after each run.
+Must be greater than 1. Default is 1.5.</p></li>
+<li><p><strong>Kmin</strong> (<em>int</em><em>, </em><em>optional</em>) – Initial number of live points. Default is 20.</p></li>
+<li><p><strong>Kmax</strong> (<em>int</em><em>, </em><em>optional</em>) – Maximum number of live points. The loop stops when K reaches
+or exceeds this value. Default is 10000.</p></li>
+<li><p><strong>frac_remain</strong> (<em>float</em><em>, </em><em>optional</em>) – Passed to <code class="docutils literal notranslate"><span class="pre">sampler.run</span></code> as the <code class="docutils literal notranslate"><span class="pre">frac_remain</span></code> argument.
+Default is 0.5.</p></li>
+<li><p><strong>max_num_improvement_loops</strong> (<em>int</em><em>, </em><em>optional</em>) – Passed to <code class="docutils literal notranslate"><span class="pre">sampler.run</span></code> as the <code class="docutils literal notranslate"><span class="pre">max_num_improvement_loops</span></code>
+argument. Default is 0.</p></li>
+<li><p><strong>**kwargs</strong> (<em>dict</em>) – Additional keyword arguments forwarded to <code class="docutils literal notranslate"><span class="pre">sampler.run</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>A dictionary with the following keys:</p>
+<dl class="simple">
+<dt>K<span class="classifier">list of int</span></dt><dd><p>Number of live points used in each run.</p>
+</dd>
+<dt>logz<span class="classifier">list of float</span></dt><dd><p>Log-evidence estimate from each run.</p>
+</dd>
+<dt>logzerr<span class="classifier">list of float</span></dt><dd><p>Log-evidence uncertainty from each run.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ultranest.snowball.SnowballingNestedSampler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ultranest.snowball.</span></span><span class="sig-name descname"><span class="pre">SnowballingNestedSampler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">param_names:</span> <span class="pre">~typing.List[str],</span> <span class="pre">loglike:</span> <span class="pre">~typing.Callable,</span> <span class="pre">transform:</span> <span class="pre">~typing.Callable</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">generate_direction:</span> <span class="pre">~typing.Callable</span> <span class="pre">=</span> <span class="pre">&lt;function</span> <span class="pre">generate_mixture_random_direction&gt;,</span> <span class="pre">nsteps:</span> <span class="pre">int</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">**kwargs:</span> <span class="pre">~typing.Any</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/snowball.html#SnowballingNestedSampler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.snowball.SnowballingNestedSampler" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Runs nested sampling with a snowballing schedule of live points.</p>
+<p>Calls <a class="reference internal" href="#ultranest.snowball.snowball" title="ultranest.snowball.snowball"><code class="xref py py-func docutils literal notranslate"><span class="pre">snowball()</span></code></a> on an internal
+<a class="reference internal" href="#ultranest.integrator.ReactiveNestedSampler" title="ultranest.integrator.ReactiveNestedSampler"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReactiveNestedSampler</span></code></a>, repeatedly
+running with an increasing number of live points <em>K</em> (multiplied by
+<em>Kfactor</em> each time) from <em>Kmin</em> up to <em>Kmax</em>.</p>
+<p>The sampler is always initialised with <code class="docutils literal notranslate"><span class="pre">resume='resume'</span></code> and a
+<a class="reference internal" href="#ultranest.stepsampler.SliceSampler" title="ultranest.stepsampler.SliceSampler"><code class="xref py py-class docutils literal notranslate"><span class="pre">SliceSampler</span></code></a> step sampler.</p>
+<p>Initialise.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>param_names</strong> (<em>list</em><em> of </em><em>str</em>) – Names of the parameters.</p></li>
+<li><p><strong>loglike</strong> (<em>callable</em>) – Log-likelihood function.</p></li>
+<li><p><strong>transform</strong> (<em>callable</em><em>, </em><em>optional</em>) – Prior transform from the unit cube to physical parameters.
+If <em>None</em> (default), the unit cube is used directly.</p></li>
+<li><p><strong>generate_direction</strong> (<em>callable</em><em>, </em><em>optional</em>) – Direction-generating function used by the
+<a class="reference internal" href="#ultranest.stepsampler.SliceSampler" title="ultranest.stepsampler.SliceSampler"><code class="xref py py-class docutils literal notranslate"><span class="pre">SliceSampler</span></code></a>.
+Defaults to
+<a class="reference internal" href="#ultranest.stepsampler.generate_mixture_random_direction" title="ultranest.stepsampler.generate_mixture_random_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_mixture_random_direction()</span></code></a>.</p></li>
+<li><p><strong>nsteps</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of accepted steps for the slice sampler.
+If <em>None</em> (default), it is set to the number of parameters.</p></li>
+<li><p><strong>**kwargs</strong> (<em>dict</em>) – Additional keyword arguments forwarded to
+<a class="reference internal" href="#ultranest.integrator.ReactiveNestedSampler" title="ultranest.integrator.ReactiveNestedSampler"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReactiveNestedSampler</span></code></a>.
+The <code class="docutils literal notranslate"><span class="pre">resume</span></code> key is always overridden to <code class="docutils literal notranslate"><span class="pre">'resume'</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="ultranest.snowball.SnowballingNestedSampler.results">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">results</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ultranest.snowball.SnowballingNestedSampler.results" title="Link to this definition"></a></dt>
+<dd><p>Results of the most recent run, forwarded from the internal sampler.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ultranest.snowball.SnowballingNestedSampler.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Kfactor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Kmin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Kmax</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frac_remain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_num_improvement_loops</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/ultranest/snowball.html#SnowballingNestedSampler.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.snowball.SnowballingNestedSampler.run" title="Link to this definition"></a></dt>
+<dd><p>Run the snowballing schedule.</p>
+<p>All parameters are forwarded to <a class="reference internal" href="#ultranest.snowball.snowball" title="ultranest.snowball.snowball"><code class="xref py py-func docutils literal notranslate"><span class="pre">snowball()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Kfactor</strong> (<em>float</em><em>, </em><em>optional</em>) – Multiplicative growth factor for the number of live points.</p></li>
+<li><p><strong>Kmin</strong> (<em>int</em><em>, </em><em>optional</em>) – Initial number of live points.</p></li>
+<li><p><strong>Kmax</strong> (<em>int</em><em>, </em><em>optional</em>) – Maximum number of live points.</p></li>
+<li><p><strong>frac_remain</strong> (<em>float</em><em>, </em><em>optional</em>) – Termination criterion passed to the underlying sampler.</p></li>
+<li><p><strong>max_num_improvement_loops</strong> (<em>int</em><em>, </em><em>optional</em>) – Maximum improvement loops passed to the underlying sampler.</p></li>
+<li><p><strong>**kwargs</strong> (<em>dict</em>) – Additional keyword arguments forwarded to <code class="docutils literal notranslate"><span class="pre">sampler.run</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Snowballing history with keys <code class="docutils literal notranslate"><span class="pre">K</span></code>, <code class="docutils literal notranslate"><span class="pre">logz</span></code>, <code class="docutils literal notranslate"><span class="pre">logzerr</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ultranest.snowball.SnowballingNestedSampler.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/ultranest/snowball.html#SnowballingNestedSampler.plot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.snowball.SnowballingNestedSampler.plot" title="Link to this definition"></a></dt>
+<dd><p>Make corner, run and trace plots via the internal sampler.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
 <section id="module-ultranest.solvecompat">
 <span id="ultranest-solvecompat-module"></span><h2>ultranest.solvecompat module<a class="headerlink" href="#module-ultranest.solvecompat" title="Link to this heading"></a></h2>
 <p>Drop-in replacement for pymultinest.solve.</p>
 <p>Example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ultranest.solvecompat</span> <span class="kn">import</span> <span class="n">pymultinest_solve_compat</span> <span class="k">as</span> <span class="n">solve</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ultranest.solvecompat</span><span class="w"> </span><span class="kn">import</span> <span class="n">pymultinest_solve_compat</span> <span class="k">as</span> <span class="n">solve</span>
 
 <span class="c1"># is a drop-in replacement for</span>
 
-<span class="kn">from</span> <span class="nn">pymultinest.solve</span> <span class="kn">import</span> <span class="n">solve</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pymultinest.solve</span><span class="w"> </span><span class="kn">import</span> <span class="n">solve</span>
 </pre></div>
 </div>
 <dl class="py function">

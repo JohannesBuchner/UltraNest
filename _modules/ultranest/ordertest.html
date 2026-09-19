@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest.ordertest &mdash; UltraNest 4.5.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+  <title>ultranest.ordertest &mdash; UltraNest 4.5.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
   
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=5ef59c98"></script>
+        <script src="../../_static/documentation_options.js?v=cd7592eb"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -39,7 +39,7 @@
               <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                4.5.0
+                4.5.2
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -124,14 +124,14 @@
 
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span><span class="p">,</span> <span class="n">print_function</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">division</span><span class="p">,</span> <span class="n">print_function</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;infinite_U_zscore&#39;</span><span class="p">,</span> <span class="s1">&#39;UniformOrderAccumulator&#39;</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="infinite_U_zscore">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.ordertest.infinite_U_zscore">[docs]</a>
-<span class="k">def</span> <span class="nf">infinite_U_zscore</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="n">B</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">infinite_U_zscore</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="n">B</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compute Mann-Whitney-Wilcoxon U test for a *sample* of integers to be uniformly distributed between 0 and *B*.</span>
 
@@ -153,7 +153,7 @@
 
 <div class="viewcode-block" id="UniformOrderAccumulator">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.ordertest.UniformOrderAccumulator">[docs]</a>
-<span class="k">class</span> <span class="nc">UniformOrderAccumulator</span><span class="p">():</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">UniformOrderAccumulator</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;U test accumulator.</span>
 
 <span class="sd">    Stores rank orders (1 to N), for comparison with a uniform order.</span>
@@ -163,14 +163,14 @@
 <span class="sd">    distribution.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initiate empty accumulator.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">N</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">U</span> <span class="o">=</span> <span class="mf">0.0</span>
 
 <div class="viewcode-block" id="UniformOrderAccumulator.reset">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.ordertest.UniformOrderAccumulator.reset">[docs]</a>
-    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set all counts to zero.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">N</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">U</span> <span class="o">=</span> <span class="mf">0.0</span></div>
@@ -178,7 +178,7 @@
 
 <div class="viewcode-block" id="UniformOrderAccumulator.add">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.ordertest.UniformOrderAccumulator.add">[docs]</a>
-    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">N</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">,</span> <span class="n">N</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Accumulate rank *order* (0 to N).</span>
 
@@ -196,7 +196,7 @@
 
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">zscore</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">zscore</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;z-score of the null hypothesis (uniform distribution) probability.&quot;&quot;&quot;</span>
         <span class="n">N</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span>
         <span class="k">if</span> <span class="n">N</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -205,7 +205,7 @@
         <span class="n">sigma_U_corr</span> <span class="o">=</span> <span class="p">(</span><span class="n">N</span> <span class="o">/</span> <span class="mf">12.0</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span>
         <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">U</span> <span class="o">-</span> <span class="n">m_U</span><span class="p">)</span> <span class="o">/</span> <span class="n">sigma_U_corr</span>
 
-    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return number of samples accumulated so far.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">N</span></div>
 

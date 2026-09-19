@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest.calibrator &mdash; UltraNest 4.5.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+  <title>ultranest.calibrator &mdash; UltraNest 4.5.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
   
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=5ef59c98"></script>
+        <script src="../../_static/documentation_options.js?v=cd7592eb"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -39,7 +39,7 @@
               <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                4.5.0
+                4.5.2
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -106,15 +106,15 @@
 <span class="sd">---------------------------</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">deque</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">deque</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
-<span class="kn">from</span> <span class="nn">ultranest.integrator</span> <span class="kn">import</span> <span class="n">ReactiveNestedSampler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ultranest.integrator</span><span class="w"> </span><span class="kn">import</span> <span class="n">ReactiveNestedSampler</span>
 
 
-<span class="k">def</span> <span class="nf">_last_item_from_iterator</span><span class="p">(</span><span class="n">iterator</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_last_item_from_iterator</span><span class="p">(</span><span class="n">iterator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Get last item from iterator.</span>
 
 <span class="sd">    Parameters</span>
@@ -130,7 +130,7 @@
     <span class="k">return</span> <span class="n">deque</span><span class="p">(</span><span class="n">iterator</span><span class="p">,</span> <span class="n">maxlen</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
 
 
-<span class="k">def</span> <span class="nf">_substitute_log_dir</span><span class="p">(</span><span class="n">init_args</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_substitute_log_dir</span><span class="p">(</span><span class="n">init_args</span><span class="p">,</span> <span class="n">nsteps</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Append `nsteps` to `log_dir` argument, if set.</span>
 
 <span class="sd">    Parameters</span>
@@ -156,7 +156,7 @@
 
 <div class="viewcode-block" id="ReactiveNestedCalibrator">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.calibrator.ReactiveNestedCalibrator">[docs]</a>
-<span class="k">class</span> <span class="nc">ReactiveNestedCalibrator</span><span class="p">():</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ReactiveNestedCalibrator</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calibrator for the number of steps in step samplers.</span>
 
 <span class="sd">    The number of steps in a step sampler needs to be chosen.</span>
@@ -191,7 +191,7 @@
 <span class="sd">    is overwritten by this class.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">param_names</span><span class="p">,</span>
                  <span class="n">loglike</span><span class="p">,</span>
                  <span class="n">transform</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -218,7 +218,7 @@
 
 <div class="viewcode-block" id="ReactiveNestedCalibrator.run_iter">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.calibrator.ReactiveNestedCalibrator.run_iter">[docs]</a>
-    <span class="k">def</span> <span class="nf">run_iter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run_iter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Run a sequence of ReactiveNestedSampler runs until convergence.</span>
 
 <span class="sd">        The first run is made with the number of steps set to the number of parameters.</span>
@@ -306,7 +306,7 @@
 
 <div class="viewcode-block" id="ReactiveNestedCalibrator.run">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.calibrator.ReactiveNestedCalibrator.run">[docs]</a>
-    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Run a sequence of ReactiveNestedSampler runs until convergence.</span>
 
 <span class="sd">        The first run is made with the number of steps set to the number of parameters.</span>
@@ -334,7 +334,7 @@
 
 <div class="viewcode-block" id="ReactiveNestedCalibrator.plot">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.calibrator.ReactiveNestedCalibrator.plot">[docs]</a>
-    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Visualise the convergence diagnostics.</span>
 
 <span class="sd">        Stores into `&lt;log_dir&gt;/plots/` folder:</span>
@@ -348,7 +348,7 @@
         <span class="c1"># plot step &gt; reference fraction vs nsteps</span>
         <span class="n">calibration_results</span> <span class="o">=</span> <span class="p">[]</span>
 
-        <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="s2">&quot;jump-distance&quot;</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;jump distance diagnostic:&quot;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">nsteps</span><span class="p">,</span> <span class="n">relsteps</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nsteps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">relsteps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">):</span>

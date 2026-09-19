@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest.plot &mdash; UltraNest 4.5.0 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+  <title>ultranest.plot &mdash; UltraNest 4.5.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
 
   
@@ -16,7 +16,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=5ef59c98"></script>
+        <script src="../../_static/documentation_options.js?v=cd7592eb"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -39,7 +39,7 @@
               <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                4.5.0
+                4.5.2
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -107,23 +107,23 @@
 
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span><span class="p">,</span> <span class="n">print_function</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">division</span><span class="p">,</span> <span class="n">print_function</span>
 
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">types</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">types</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">pl</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">numpy</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">scipy.stats</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pl</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">scipy.stats</span>
 <span class="c1"># from matplotlib.colors import LinearSegmentedColormap, colorConverter</span>
-<span class="kn">from</span> <span class="nn">matplotlib.ticker</span> <span class="kn">import</span> <span class="n">MaxNLocator</span><span class="p">,</span> <span class="n">NullLocator</span><span class="p">,</span> <span class="n">ScalarFormatter</span>
-<span class="kn">from</span> <span class="nn">six.moves</span> <span class="kn">import</span> <span class="nb">range</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.ticker</span><span class="w"> </span><span class="kn">import</span> <span class="n">MaxNLocator</span><span class="p">,</span> <span class="n">NullLocator</span><span class="p">,</span> <span class="n">ScalarFormatter</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">six.moves</span><span class="w"> </span><span class="kn">import</span> <span class="nb">range</span>
 
-<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">quantile</span> <span class="k">as</span> <span class="n">_quantile</span>
-<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">resample_equal</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">quantile</span> <span class="k">as</span> <span class="n">_quantile</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">resample_equal</span>
 
 <span class="k">try</span><span class="p">:</span>
     <span class="n">str_type</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">StringTypes</span>
@@ -134,14 +134,14 @@
     <span class="n">float_type</span> <span class="o">=</span> <span class="nb">float</span>
     <span class="n">int_type</span> <span class="o">=</span> <span class="nb">int</span>
 
-<span class="kn">import</span> <span class="nn">corner</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">corner</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;runplot&quot;</span><span class="p">,</span> <span class="s2">&quot;cornerplot&quot;</span><span class="p">,</span> <span class="s2">&quot;traceplot&quot;</span><span class="p">,</span> <span class="s2">&quot;PredictionBand&quot;</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="cornerplot">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.plot.cornerplot">[docs]</a>
-<span class="k">def</span> <span class="nf">cornerplot</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">cornerplot</span><span class="p">(</span>
     <span class="n">results</span><span class="p">,</span> <span class="n">min_weight</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">with_legend</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">levels</span><span class="o">=</span><span class="p">[</span><span class="mf">0.9973</span><span class="p">,</span> <span class="mf">0.9545</span><span class="p">,</span> <span class="mf">0.6827</span><span class="p">,</span> <span class="mf">0.3934</span><span class="p">],</span>
     <span class="n">plot_datapoints</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">plot_density</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">show_titles</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">quiet</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -251,7 +251,7 @@
 
 
 
-<span class="k">def</span> <span class="nf">highest_density_interval_from_samples</span><span class="p">(</span><span class="n">xsamples</span><span class="p">,</span> <span class="n">xlo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xhi</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">probability_level</span><span class="o">=</span><span class="mf">0.68</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">highest_density_interval_from_samples</span><span class="p">(</span><span class="n">xsamples</span><span class="p">,</span> <span class="n">xlo</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xhi</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">probability_level</span><span class="o">=</span><span class="mf">0.68</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compute the highest density interval (HDI) from posterior samples.</span>
 
@@ -292,8 +292,8 @@
 <span class="sd">    &gt;&gt;&gt; print(&#39;x = %.1f + %.2f - %.2f&#39; % hdi)</span>
 <span class="sd">    x = 0.0 + 1.02 - 0.96</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="kn">import</span> <span class="nn">getdist.chains</span>
-    <span class="kn">from</span> <span class="nn">getdist.mcsamples</span> <span class="kn">import</span> <span class="n">MCSamples</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">getdist.chains</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">getdist.mcsamples</span><span class="w"> </span><span class="kn">import</span> <span class="n">MCSamples</span>
     <span class="n">getdist</span><span class="o">.</span><span class="n">chains</span><span class="o">.</span><span class="n">print_load_details</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">samples</span> <span class="o">=</span> <span class="n">MCSamples</span><span class="p">(</span>
         <span class="n">samples</span><span class="o">=</span><span class="n">xsamples</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">],</span> <span class="n">ranges</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:[</span><span class="n">xlo</span><span class="p">,</span><span class="n">xhi</span><span class="p">]},</span>
@@ -328,7 +328,7 @@
 
 <div class="viewcode-block" id="PredictionBand">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.plot.PredictionBand">[docs]</a>
-<span class="k">class</span> <span class="nc">PredictionBand</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PredictionBand</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Plot bands of model predictions as calculated from a chain.</span>
 
 <span class="sd">    call add(y) to add predictions from each chain point</span>
@@ -355,7 +355,7 @@
 <span class="sd">    To plot onto a specific axis, use `band.line(..., ax=myaxis)`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">shadeargs</span><span class="o">=</span><span class="p">{},</span> <span class="n">lineargs</span><span class="o">=</span><span class="p">{}):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">shadeargs</span><span class="o">=</span><span class="p">{},</span> <span class="n">lineargs</span><span class="o">=</span><span class="p">{}):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialise.</span>
 
 <span class="sd">        Parameters</span>
@@ -374,28 +374,28 @@
 
 <div class="viewcode-block" id="PredictionBand.add">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.plot.PredictionBand.add">[docs]</a>
-    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a possible prediction *y*.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ys</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="PredictionBand.set_shadeargs">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.plot.PredictionBand.set_shadeargs">[docs]</a>
-    <span class="k">def</span> <span class="nf">set_shadeargs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_shadeargs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set matplotlib style for shading.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">shadeargs</span> <span class="o">=</span> <span class="n">kwargs</span></div>
 
 
 <div class="viewcode-block" id="PredictionBand.set_lineargs">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.plot.PredictionBand.set_lineargs">[docs]</a>
-    <span class="k">def</span> <span class="nf">set_lineargs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_lineargs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set matplotlib style for line.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lineargs</span> <span class="o">=</span> <span class="n">kwargs</span></div>
 
 
 <div class="viewcode-block" id="PredictionBand.get_line">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.plot.PredictionBand.get_line">[docs]</a>
-    <span class="k">def</span> <span class="nf">get_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Over prediction space x, get quantile *q*. Default is median.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">q</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;quantile q must be between 0 and 1, not </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">q</span><span class="p">)</span>
@@ -405,7 +405,7 @@
 
 <div class="viewcode-block" id="PredictionBand.shade">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.plot.PredictionBand.shade">[docs]</a>
-    <span class="k">def</span> <span class="nf">shade</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="mf">0.341</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">shade</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="mf">0.341</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot a shaded region between 0.5-q and 0.5+q, by default 1 sigma.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">q</span> <span class="o">&lt;=</span> <span class="mf">0.5</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;quantile distance from the median, q, must be between 0 and 0.5, not </span><span class="si">%s</span><span class="s2">. For a 99</span><span class="si">%%</span><span class="s2"> quantile range, use q=0.48.&quot;</span> <span class="o">%</span> <span class="n">q</span><span class="p">)</span>
@@ -420,7 +420,7 @@
 
 <div class="viewcode-block" id="PredictionBand.line">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.plot.PredictionBand.line">[docs]</a>
-    <span class="k">def</span> <span class="nf">line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot the median curve.&quot;&quot;&quot;</span>
         <span class="n">lineargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lineargs</span><span class="p">)</span>
         <span class="n">lineargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
@@ -438,7 +438,7 @@
 <span class="c1"># https://github.com/joshspeagle/dynesty/blob/master/LICENSE</span>
 <div class="viewcode-block" id="runplot">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.plot.runplot">[docs]</a>
-<span class="k">def</span> <span class="nf">runplot</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">span</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">logplot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">kde</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nkde</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">runplot</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">span</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">logplot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">kde</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nkde</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
             <span class="n">color</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="n">plot_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">label_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lnz_error</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="n">lnz_truth</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">truth_color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">truth_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="n">max_x_ticks</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">max_y_ticks</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">use_math_text</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -567,7 +567,7 @@
     <span class="k">if</span> <span class="n">kde</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="c1"># from scipy.ndimage import gaussian_filter as norm_kde</span>
-            <span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">gaussian_kde</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="kn">import</span> <span class="n">gaussian_kde</span>
 
             <span class="c1"># Derive kernel density estimate.</span>
             <span class="n">wt_kde</span> <span class="o">=</span> <span class="n">gaussian_kde</span><span class="p">(</span><span class="n">resample_equal</span><span class="p">(</span><span class="o">-</span><span class="n">logvol</span><span class="p">,</span> <span class="n">weights</span><span class="p">))</span>  <span class="c1"># KDE</span>
@@ -706,7 +706,7 @@
 
 <div class="viewcode-block" id="traceplot">
 <a class="viewcode-back" href="../../ultranest.html#ultranest.plot.traceplot">[docs]</a>
-<span class="k">def</span> <span class="nf">traceplot</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">span</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">quantiles</span><span class="o">=</span><span class="p">[</span><span class="mf">0.025</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.975</span><span class="p">],</span> <span class="n">smooth</span><span class="o">=</span><span class="mf">0.02</span><span class="p">,</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">traceplot</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">span</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">quantiles</span><span class="o">=</span><span class="p">[</span><span class="mf">0.025</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.975</span><span class="p">],</span> <span class="n">smooth</span><span class="o">=</span><span class="mf">0.02</span><span class="p">,</span>
               <span class="n">post_color</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="n">post_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">kde</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">nkde</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
               <span class="n">trace_cmap</span><span class="o">=</span><span class="s1">&#39;plasma&#39;</span><span class="p">,</span> <span class="n">trace_color</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">trace_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
               <span class="n">connect</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">connect_highlight</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">connect_color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span>
@@ -862,8 +862,8 @@
     <span class="n">kde</span> <span class="o">=</span> <span class="n">kde</span> <span class="ow">and</span> <span class="p">(</span><span class="n">weights</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">logvol</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">10</span>
     <span class="k">if</span> <span class="n">kde</span><span class="p">:</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="kn">from</span> <span class="nn">scipy.ndimage</span> <span class="kn">import</span> <span class="n">gaussian_filter</span> <span class="k">as</span> <span class="n">norm_kde</span>
-            <span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">gaussian_kde</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.ndimage</span><span class="w"> </span><span class="kn">import</span> <span class="n">gaussian_filter</span> <span class="k">as</span> <span class="n">norm_kde</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="kn">import</span> <span class="n">gaussian_kde</span>
 
             <span class="c1"># Derive kernel density estimate.</span>
             <span class="n">wt_kde</span> <span class="o">=</span> <span class="n">gaussian_kde</span><span class="p">(</span><span class="n">resample_equal</span><span class="p">(</span><span class="o">-</span><span class="n">logvol</span><span class="p">,</span> <span class="n">weights</span><span class="p">))</span>  <span class="c1"># KDE</span>
