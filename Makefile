@@ -1,4 +1,4 @@
-.PHONY: clean clean-test clean-pyc clean-build docs servedocs help install release release-test dist 
+.PHONY: clean clean-test clean-pyc clean-build build docs servedocs help install release release-test dist 
 .DEFAULT_GOAL := help
 
 define BROWSER_PYSCRIPT
@@ -66,8 +66,8 @@ lint: ${SOURCES} ## check style
 	pycodestyle ${SOURCES}
 	pydocstyle ${SOURCES}
 
-test: ## run tests quickly with the default Python
-	PYTHONPATH=. pytest
+test: build ## run tests quickly with the default Python
+	PYTHONPATH=. $(PYTHON) -m pytest
 
 test-all: ## run tests on every Python version with tox
 	tox
@@ -109,9 +109,8 @@ release: release-test dist ## package and upload a release
 	twine upload --verbose dist/*.tar.gz
 
 dist: clean ## builds source and wheel package
-	$(PYTHON) setup.py sdist
-	$(PYTHON) setup.py bdist_wheel
+	$(PYTHON) -m build
 	ls -l dist
 
 install: clean ## install the package to the active Python's site-packages
-	$(PYTHON) setup.py install --user
+	$(PYTHON) -m pip install . 
