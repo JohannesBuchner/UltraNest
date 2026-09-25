@@ -11,6 +11,8 @@ np.import_array()
 from numpy import nan as np_nan
 cimport cython
 from cython.parallel import prange
+from libc.math cimport log, fmax
+
 
 
 ctypedef np.int64_t decl_int_t
@@ -628,3 +630,439 @@ cpdef tuple update_vectorised_slice_sampler(
                 j += 1
 
     return (tleft, tright, worker_running, status, allu, allL, allp,discarded)
+
+
+ctypedef np.float64_t float_t
+#ctypedef np.int32_t decl_int_t
+
+# Define the integer dtype used elsewhere in the code
+#int_dtype = np.int32
+
+
+cdef class LinearInterpolator:
+    """Fast Cython linear interpolator replacing scipy.interpolate.interp1d"""
+    
+    cdef float_t[:] x_data
+    cdef float_t[:] y_data
+    cdef double fill_left
+    cdef double fill_right
+    cdef int n_points
+    
+    def __init__(self, np.ndarray x, np.ndarray y, double fill_left=0.0, double fill_right=1.0):
+        """
+        Initialize linear interpolator.
+        
+        Parameters:
+        -----------
+        x : ndarray, shape (n,)
+            X coordinates (must be sorted)
+        y : ndarray, shape (n,)
+            Y coordinates
+        fill_left : float
+            Value to return for x < x[0]
+        fill_right : float
+            Value to return for x > x[-1]
+        """
+        # Convert to contiguous float64 arrays and store as memoryviews
+        x_arr = np.ascontiguousarray(x, dtype=np.float64)
+        y_arr = np.ascontiguousarray(y, dtype=np.float64)
+        
+        self.x_data = x_arr
+        self.y_data = y_arr
+        self.fill_left = fill_left
+        self.fill_right = fill_right
+        self.n_points = len(x)
+    
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    @cython.cdivision(True)
+    cdef double evaluate(self, double x_val) noexcept:
+        """
+        Fast linear interpolation for a single point.
+        This is a cdef function, so it's called without Python overhead.
+        """
+        cdef:
+            float_t[:] x_data = self.x_data
+            float_t[:] y_data = self.y_data
+            int idx, n = self.n_points
+            double x0, x1, y0, y1, t
+        
+        # Check boundaries
+        if x_val < x_data[0]:
+            return self.fill_left
+        if x_val > x_data[n - 1]:
+            return self.fill_right
+        
+        # Binary search for the interval
+        idx = self._binary_search(x_val)
+        
+        # Linear interpolation
+        x0 = <double>x_data[idx]
+        x1 = <double>x_data[idx + 1]
+        y0 = <double>y_data[idx]
+        y1 = <double>y_data[idx + 1]
+        
+        t = (x_val - x0) / (x1 - x0)
+        return y0 + t * (y1 - y0)
+    
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    cdef int _binary_search(self, double x_val) noexcept:
+        """Binary search to find the interval containing x_val"""
+        cdef:
+            float_t[:] x_data = self.x_data
+            int left = 0, right = self.n_points - 1, mid
+        
+        while left < right:
+            mid = (left + right) >> 1
+            if x_data[mid] < x_val:
+                left = mid + 1
+            else:
+                right = mid
+        
+        return left - 1
+    
+    def __call__(self, double x_val):
+        """Allow interpolator to be called like a function"""
+        return self.evaluate(x_val)
+
+
+cdef class QuantileDistribution:
+    """Cython-optimized quantile-based distribution functions using memoryviews."""
+    
+    cdef int popsize
+    cdef float_t[:, ::1] quantiles  # C-contiguous memoryview
+    cdef float_t[::1] quantiles_points
+    cdef list cdf_fns
+    cdef list ppf_fns
+    cdef float_t[:, ::1] pdf_slopes  # C-contiguous memoryview
+    
+    def __init__(self, np.ndarray quantiles, np.ndarray quantiles_points, int popsize):
+        """
+        Initialize the distribution.
+        
+        Parameters:
+        -----------
+        quantiles : ndarray of shape (n_quantiles, popsize)
+            Quantile values for each worker
+        quantiles_points : ndarray of shape (n_quantiles,)
+            Percentile points (0-100)
+        popsize : int
+            Number of workers
+        """
+        # Convert to C-contiguous float64 arrays
+        quantiles_arr = np.ascontiguousarray(quantiles, dtype=np.float64)
+        quantiles_points_arr = np.ascontiguousarray(quantiles_points, dtype=np.float64)
+        
+        # Store as memoryviews
+        self.quantiles = quantiles_arr
+        self.quantiles_points = quantiles_points_arr
+        self.popsize = popsize
+        
+        # Pre-compute interpolation functions
+        self._build_cdf_ppf_functions()
+        self._build_pdf_slopes()
+    
+    cdef _build_cdf_ppf_functions(self):
+        """Build CDF and PPF linear interpolation functions."""
+        self.cdf_fns = []
+        self.ppf_fns = []
+        
+        cdef:
+            int w
+            LinearInterpolator cdf_fn, ppf_fn
+            np.ndarray quantiles_norm_py
+        
+        # Convert memoryview to numpy array for mathematical operations
+        quantiles_points_py = np.asarray(self.quantiles_points)
+        quantiles_norm_py = np.ascontiguousarray(
+            quantiles_points_py / 100.0, dtype=np.float64
+        )
+        
+        for w in range(self.popsize):
+            # Extract column as a numpy array (necessary for LinearInterpolator)
+            quantiles_col = np.asarray(self.quantiles[:, w])
+            
+            # CDF: maps quantile values -> probabilities
+            cdf_fn = LinearInterpolator(
+                quantiles_col,
+                quantiles_norm_py,
+                fill_left=0.0,
+                fill_right=1.0
+            )
+            self.cdf_fns.append(cdf_fn)
+            
+            # PPF (inverse CDF): maps probabilities -> quantile values
+            ppf_fn = LinearInterpolator(
+                quantiles_norm_py,
+                quantiles_col,
+                fill_left=<double>self.quantiles[0, w],
+                fill_right=<double>self.quantiles[-1, w]
+            )
+            self.ppf_fns.append(ppf_fn)
+    
+    cdef _build_pdf_slopes(self):
+        """Pre-compute PDF slopes for efficient log-pdf calculation."""
+        cdef:
+            np.ndarray quantiles_py = np.asarray(self.quantiles)
+            np.ndarray quantiles_points_py = np.asarray(self.quantiles_points)
+            np.ndarray dq_arr
+            np.ndarray dq_vals_arr
+            np.ndarray slopes_arr
+
+        """
+        # Perform numpy operations on numpy arrays
+        dq_arr = np.diff(quantiles_points_py / 100.0)
+        dq_vals_arr = np.diff(quantiles_py, axis=0)
+        
+        # Avoid division by zero
+        dq_vals_arr = np.maximum(dq_vals_arr, 1e-12)
+        
+        # Compute slopes: dq / dq_vals
+        slopes_arr = dq_arr[:, None] / dq_vals_arr
+        
+        # Store as C-contiguous array (will be automatically converted to memoryview)
+        self.pdf_slopes = np.ascontiguousarray(slopes_arr, dtype=np.float64)
+        """
+        p = quantiles_points_py / 100.0
+
+        mass = np.diff(p)
+        width = np.diff(quantiles_py, axis=0)
+        width = np.maximum(width, 1e-12)  # Avoid division by zero
+
+        norm = mass.sum(axis=0)
+        
+        slopes_arr = mass[:, None] / width
+
+        slopes_arr /= norm
+        self.pdf_slopes = np.ascontiguousarray(slopes_arr, dtype=np.float64)
+    
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    def cdf(self, np.ndarray x_points, np.ndarray worker):
+        """
+        Evaluate CDF at given points for each worker.
+        
+        Parameters:
+        -----------
+        x_points : ndarray of shape (n,)
+            Points at which to evaluate CDF
+        worker : ndarray of shape (n,), dtype int
+            Worker indices
+        
+        Returns:
+        --------
+        cdf_values : ndarray of shape (n,)
+            CDF values
+        """
+        x_points = np.ascontiguousarray(x_points, dtype=np.float64)
+        worker = np.ascontiguousarray(worker, dtype=int_dtype)
+        
+        cdef:
+            float_t[::1] x_view = x_points
+            decl_int_t[::1] worker_view = worker
+            int n = len(x_points)
+            np.ndarray[float_t, ndim=1] out = np.empty(n, dtype=np.float64)
+            int i, w
+            LinearInterpolator cdf_fn
+        
+        for i in range(n):
+            w = <int>worker_view[i]
+            cdf_fn = self.cdf_fns[w]
+            out[i] = <float_t>cdf_fn.evaluate(<double>x_view[i])
+        
+        return out
+    
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    def ppf(self, np.ndarray q_points, np.ndarray worker):
+        """
+        Evaluate PPF (inverse CDF) at given points for each worker.
+        
+        Parameters:
+        -----------
+        q_points : ndarray of shape (n,)
+            Quantile points (probabilities)
+        worker : ndarray of shape (n,), dtype int
+            Worker indices
+        
+        Returns:
+        --------
+        ppf_values : ndarray of shape (n,)
+            PPF values
+        """
+        q_points = np.ascontiguousarray(q_points, dtype=np.float64)
+        worker = np.ascontiguousarray(worker, dtype=int_dtype)
+        
+        cdef:
+            float_t[::1] q_view = q_points
+            decl_int_t[::1] worker_view = worker
+            int n = len(q_points)
+            np.ndarray[float_t, ndim=1] out = np.empty(n, dtype=np.float64)
+            int i, w
+            LinearInterpolator ppf_fn
+        
+        for i in range(n):
+            w = <int>worker_view[i]
+            ppf_fn = self.ppf_fns[w]
+            out[i] = <float_t>ppf_fn.evaluate(<double>q_view[i])
+        
+        return out
+    
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    @cython.cdivision(True)
+    def logpdf(self, np.ndarray x, np.ndarray worker):
+        """
+        Evaluate log-PDF at given points for each worker.
+
+        Matches scipy.stats.rv_histogram:
+          - constant density within each quantile interval
+          - logpdf = -inf outside the support
+        """
+        x = np.ascontiguousarray(x, dtype=np.float64)
+        worker = np.ascontiguousarray(worker, dtype=int_dtype)
+
+        cdef:
+            float_t[::1] x_view = x
+            decl_int_t[::1] worker_view = worker
+            float_t[:, ::1] quantiles = self.quantiles
+            float_t[:, ::1] pdf_slopes = self.pdf_slopes
+            int W = x.shape[0]
+            int n_quantiles = quantiles.shape[0]
+            np.ndarray[float_t, ndim=1] out = np.empty(W, dtype=np.float64)
+
+            int i, w, idx
+            double xi, slope
+
+        for i in range(W):
+            w = <int>worker_view[i]
+            xi = <double>x_view[i]
+
+            # largest j such that quantiles[j,w] <= xi
+            idx = self._search_interval_cdef(
+                quantiles,
+                w,
+                xi,
+                n_quantiles
+            )
+
+            # Outside support -> pdf = 0 -> logpdf = -inf
+            if idx < 0 or idx >= n_quantiles - 1:
+                out[i] = -np.inf
+                continue
+
+            slope = <double>pdf_slopes[idx, w]
+
+            if slope <= 0.0:
+                out[i] = -np.inf
+            else:
+                out[i] = log(slope)
+
+        return out
+    
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    cdef int _search_interval_cdef(
+            self,
+            float_t[:, ::1] quantiles,
+            int w,
+            double xval,
+            int n_quantiles) noexcept:
+        """
+        Binary search to find the interval containing xval for worker w.
+        Operates directly on memoryviews for maximum speed.
+        """
+        cdef:
+            int left = 0, right = n_quantiles, mid
+        
+        while left < right:
+            mid = (left + right) >> 1
+            if quantiles[mid, w] <= xval:
+                left = mid + 1
+            else:
+                right = mid
+        
+        return left - 1
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.cdivision(True)
+def process_workers(
+    decl_int_t popsize,
+    decl_int_t npoints,
+    np.ndarray[decl_int_t, ndim=1] status,
+    np.ndarray[decl_int_t, ndim=1] worker_running,
+    np.ndarray[np.float_t, ndim=2] limit_worker,
+    np.ndarray[np.float_t, ndim=1] scale_worker,
+    np.ndarray[np.float_t, ndim=2] limit,
+    np.ndarray[np.float_t, ndim=2] v,
+    np.ndarray[np.float_t, ndim=1] end_scale,
+    np.float_t scale,
+    np.float_t sign):
+    """Cython function to process workers for stepping (C-level loops)"""
+    cdef int j = 0
+    cdef int k
+    cdef int n_scale=1
+    
+    # Assign workers
+
+    while j<popsize and (status==0).any():
+        for k in range(npoints):
+            if status[k]==0 and j<popsize:
+                worker_running[j] = k
+                for dim in range(limit_worker.shape[1]):
+                    limit_worker[j, dim] = limit[k, dim] +sign * n_scale * scale * v[k, dim]
+                scale_worker[j] = n_scale+end_scale[k]
+                j += 1
+        n_scale += 1
+        
+    return (worker_running, scale_worker, limit_worker)
+
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.cdivision(True)
+def update_limits_NS(
+    decl_int_t popsize,
+    np.ndarray[decl_int_t, ndim=1] status,
+    np.ndarray[decl_int_t, ndim=1] worker_running,
+    np.ndarray[np.float_t, ndim=1] scale_worker,
+    np.ndarray[np.float_t, ndim=1] LogLimit,
+    np.float_t Lmin,
+    np.ndarray[decl_int_t, ndim=1] max_n,
+    np.ndarray[np.float_t, ndim=2] limit,
+    np.ndarray[np.float_t, ndim=2] limit_worker,
+    np.ndarray[np.float_t, ndim=1] t_unitcube,
+    np.ndarray[np.float_t, ndim=1] end_scale
+):
+    """Cython function to update limits (C-level loops)"""
+    cdef int l, worker_idx
+    cdef int dims = limit.shape[1]
+    
+    for l in range(popsize):
+        worker_idx = worker_running[l]
+        # Check if scale exceeds maximum
+        if scale_worker[l] > max_n[worker_idx] and status[worker_idx] == 0:
+            status[worker_idx] = 1
+            #for dim in range(dims):
+            #    limit[worker_idx, dim] = t_unitcube[worker_idx]
+            end_scale[worker_idx] = np.abs(t_unitcube[worker_idx])
+        # Check likelihood threshold
+        if LogLimit[l] > Lmin  and status[worker_idx] == 0:
+            for dim in range(dims):
+                limit[worker_idx, dim] = limit_worker[l, dim]
+            #end_scale[worker_idx] = scale_worker[l]
+            end_scale[worker_idx] += 1 # should be in order
+        if LogLimit[l] < Lmin and status[worker_idx] == 0:
+            status[worker_idx] = 1
+            if max_n[worker_idx] >end_scale[worker_idx] + 1:
+                end_scale[worker_idx] += 1
+            else:
+                end_scale[worker_idx] = np.abs(t_unitcube[worker_idx])
+
+            #end_scale[worker_idx] += scale_worker[l]
+    return (status, limit, end_scale)
+
+
+
