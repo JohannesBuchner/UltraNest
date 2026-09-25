@@ -1,8 +1,8 @@
 """Utilities for sampling and wrapping functions."""
 
+import joblib
 import numpy as np
 import torch
-import joblib
 
 
 def sample_prior_u(rng, n_params):
@@ -116,7 +116,7 @@ def make_cached_generate(memory, prior_transform, generate_mean_and_noise):
             mean_props_list.append(props)
 
         return {
-            'u_samples':  u_samples,
+            'u_samples': u_samples,
             'mean_props': mean_props_list,
         }
     return generate_noiseless_batch
@@ -165,6 +165,7 @@ def inject_noise_batch(batch_dict, rng, inject_noise):
         raw_data[i] = noisy
 
     return u_samples, raw_data
+
 
 def random_derangement(n, device=None):
     """

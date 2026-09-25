@@ -1,16 +1,18 @@
-"""Neural Posterior Estimation (NPE) training"""
+"""Neural Posterior Estimation (NPE) training."""
 
+import os
+
+import joblib
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import os
-import joblib
 import torchinfo
 
-from .utils import inject_noise_batch
+from .logistic import nll_kuma_logistic_product, sample_kuma_logistic_product
 from .norm import ZScoreNorm
-from .logistic import sample_kuma_logistic_product, nll_kuma_logistic_product
+from .utils import inject_noise_batch
+
 
 def _arch_suffix(depth, width, activation_cls):
     """
@@ -39,10 +41,10 @@ def _arch_suffix(depth, width, activation_cls):
 
 
 class CascadeNet(nn.Module):
-    """
-    Cascade MLP architecture where each hidden layer forwards half of its
-    output neurons directly to the final layer (skip connection) and the
-    other half to the next hidden layer.
+    """Cascade MLP architecture.
+
+    Each hidden layer forwards half of its output neurons directly to the
+    final layer (skip connection) and the other half to the next hidden layer.
 
     Concretely, layer i produces ``hidden_widths[i]`` neurons. We split them
     evenly: the first half (``skip_size = hidden_widths[i] // 2``) accumulates
@@ -63,12 +65,13 @@ class CascadeNet(nn.Module):
     """
 
     def __init__(self, input_dim, output_dim, hidden_widths, activation_cls):
+        """Initialise."""
         super().__init__()
         self.hidden_layers = nn.ModuleList()
         self.activations = nn.ModuleList()
 
         in_dim = input_dim
-        for i, hw in enumerate(hidden_widths):
+        for hw in hidden_widths:
             self.hidden_layers.append(nn.Linear(in_dim, hw))
             self.activations.append(activation_cls())
             pass_size = hw - hw // 2
@@ -177,11 +180,8 @@ def _build_layers(input_dim, output_dim, depth, width, activation_cls, shape='re
     return layers
 
 
-
 class NPENetwork(nn.Module):
-    """
-    NPE network that outputs a product of Kumaraswamy-Logistic chained
-    distributions living on the unit cube [0, 1].
+    """Network that outputs a product of Kumaraswamy-Logistic chained distributions living on the unit cube [0, 1]^d.
 
     For each parameter dimension the network predicts 4 values:
       - loc       (via sigmoid, in (0,1))
@@ -206,8 +206,11 @@ class NPENetwork(nn.Module):
         ``'cascade'``.
     """
 
-    def __init__(self, n_data, n_params, depth, width,
-                 activation_name, layer_shape: str):
+    def __init__(
+        self, n_data, n_params, depth, width,
+        activation_name, layer_shape: str
+    ):
+        """Initialise."""
         super().__init__()
         activation_cls = getattr(nn, activation_name)
         self.n_params = n_params
@@ -261,15 +264,15 @@ class NPENetwork(nn.Module):
         out = self.backbone(x_norm)          # (batch, 4 * n_params)
 
         n = self.n_params
-        loc_raw   = out[:, 0*n : 1*n]
-        log_scale = out[:, 1*n : 2*n]
-        log_a     = out[:, 2*n : 3*n]
-        log_b     = out[:, 3*n : 4*n]
+        loc_raw = out[:, 0 * n:1 * n]
+        log_scale = out[:, 1 * n:2 * n]
+        log_a = out[:, 2 * n:3 * n]
+        log_b = out[:, 3 * n:4 * n]
 
-        loc   = self.loc_activation(loc_raw)
+        loc = self.loc_activation(loc_raw)
         scale = torch.exp(log_scale.clamp(-8, 4))
-        a     = torch.exp(log_a.clamp(-4, 4))
-        b     = torch.exp(log_b.clamp(-4, 4))
+        a = torch.exp(log_a.clamp(-4, 4))
+        b = torch.exp(log_b.clamp(-4, 4))
 
         return loc, scale, a, b
 
@@ -310,15 +313,15 @@ def sample_posterior(
 
     with torch.no_grad():
         loc, scale, a, b = model(x_obs_t)
-        loc   = loc.squeeze(0)
+        loc = loc.squeeze(0)
         scale = scale.squeeze(0)
-        a     = a.squeeze(0)
-        b     = b.squeeze(0)
+        a = a.squeeze(0)
+        b = b.squeeze(0)
 
-    loc_np   = loc.numpy()
+    loc_np = loc.numpy()
     scale_np = scale.numpy()
-    a_np     = a.numpy()
-    b_np     = b.numpy()
+    a_np = a.numpy()
+    b_np = b.numpy()
 
     print("\nPredicted posterior (Kumaraswamy-Logistic product, unit-cube space):")
     for d in range(n_params):
@@ -363,9 +366,7 @@ def train_npe(
     layer_shape='cascade',
     fresh_example_fraction=0.5,
 ):
-    """
-    Train a Neural Posterior Estimator (NPE) with a product-of-Kumaraswamy-
-    Logistic output.
+    """Train a Neural Posterior Estimator (NPE) with a product-of-Kumaraswamy-Logistic output.
 
     Parameters
     ----------
@@ -408,6 +409,8 @@ def train_npe(
         Number of hidden layers. Default is ``6``.
     val_size : int, optional
         Number of samples in the fixed validation set. Default is ``1024``.
+    norm_size : int, optional
+        Number of samples for determining the input normalisation validation set. Default is ``2000``.
     layer_shape : str, optional
         Architecture shape: ``'rectangular'`` (default), ``'triangular'``, or
         ``'cascade'``.
@@ -444,13 +447,13 @@ def train_npe(
     if not (0.0 < fresh_example_fraction <= 1.0):
         raise ValueError(f"fresh_example_fraction must be in (0, 1], got {fresh_example_fraction}")
 
-    total_npe_batches   = max(1, max_model_evals // fresh_sim_batch_size)
-    npe_epochs          = max(1, total_npe_batches // npe_batches_epoch)
+    total_npe_batches = max(1, max_model_evals // fresh_sim_batch_size)
+    npe_epochs = max(1, total_npe_batches // npe_batches_epoch)
 
-    norm_batches_needed = max(1, (norm_size   + fresh_sim_batch_size - 1) // fresh_sim_batch_size)
-    val_batches_needed  = max(1, (val_size    + fresh_sim_batch_size - 1) // fresh_sim_batch_size)
-    prefix_batches      = norm_batches_needed + val_batches_needed
-    total_batches       = prefix_batches + total_npe_batches
+    norm_batches_needed = max(1, (norm_size + fresh_sim_batch_size - 1) // fresh_sim_batch_size)
+    val_batches_needed = max(1, (val_size + fresh_sim_batch_size - 1) // fresh_sim_batch_size)
+    prefix_batches = norm_batches_needed + val_batches_needed
+    total_batches = prefix_batches + total_npe_batches
 
     # Derive replay_example_count from fresh_example_fraction:
     # fresh_example_fraction = n_fresh / (n_fresh + replay_example_count)
@@ -458,11 +461,11 @@ def train_npe(
     n_fresh = fresh_sim_batch_size
     replay_example_count = int(round(n_fresh * (1.0 - fresh_example_fraction) / fresh_example_fraction))
 
-    print(f"fresh_example_fraction={fresh_example_fraction:.3f}  =>  "
+    print(f"fresh_example_fraction={fresh_example_fraction:.3f} =>  "
           f"n_fresh={n_fresh}, replay_example_count={replay_example_count} per sub-batch")
 
     print(f"Starting parallel simulation generator ({total_batches} batches total, "
-          f"{num_processes} workers) …")
+          f"{num_processes} workers) ...")
 
     parallel_gen = joblib.Parallel(
         n_jobs=num_processes,
@@ -479,7 +482,7 @@ def train_npe(
 
     # Probe n_data from the very first batch.
     probe_batch = next(parallel_gen)
-    probe_rng   = np.random.default_rng(base_seed ^ 0xDEAD)
+    probe_rng = np.random.default_rng(base_seed ^ 0xDEAD)
     _, probe_raw = inject_noise_batch(probe_batch, probe_rng, inject_noise)
     n_data = probe_raw.shape[1]
     print(f"Detected n_data={n_data} from probe simulation.")
@@ -515,9 +518,9 @@ def train_npe(
 
     torchinfo.summary(model)
     print("Training NPE (product of Kumaraswamy-Logistic distributions) "
-          "with on-the-fly batch generation …")
+          "with on-the-fly batch generation ...")
 
-    print("Computing normalisation statistics …")
+    print("Computing normalisation statistics ...")
     norm_rng = np.random.default_rng(base_seed ^ 0xC0FFEE)
     norm_raw_parts = []
     for nb in norm_batches_collected:
@@ -530,52 +533,52 @@ def train_npe(
     # ------------------------------------------------------------------ #
     # Build fixed validation set.                                          #
     # ------------------------------------------------------------------ #
-    print(f"Generating fixed NPE validation set (val_size={val_size}) …")
+    print(f"Generating fixed NPE validation set (val_size={val_size}) ...")
     val_rng = np.random.default_rng(base_seed ^ 0xBEEF)
-    val_u_parts   = []
+    val_u_parts = []
     val_raw_parts = []
     for _ in range(val_batches_needed):
         vb = next(parallel_gen)
         vu, vr = inject_noise_batch(vb, val_rng, inject_noise)
         val_u_parts.append(vu)
         val_raw_parts.append(vr)
-    val_u_np   = np.concatenate(val_u_parts,   axis=0)[:val_size]
+    val_u_np = np.concatenate(val_u_parts, axis=0)[:val_size]
     val_raw_np = np.concatenate(val_raw_parts, axis=0)[:val_size]
-    val_uv_unit = torch.tensor(val_u_np,   dtype=torch.float32)
-    val_xv_raw  = torch.tensor(val_raw_np, dtype=torch.float32)
+    val_uv_unit = torch.tensor(val_u_np, dtype=torch.float32)
+    val_xv_raw = torch.tensor(val_raw_np, dtype=torch.float32)
 
     # ------------------------------------------------------------------ #
     # Training loop                                                        #
     # ------------------------------------------------------------------ #
-    print(f"Training NPE with on-the-fly batch generation …")
+    print("Training NPE with on-the-fly batch generation ...")
 
     optimizer = optim.Adam(model.parameters(), lr=npe_lr)
     scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=npe_epochs)
 
-    best_val_loss  = np.inf
-    best_state     = None
+    best_val_loss = np.inf
+    best_state = None
     patience_count = 0
 
     noiseless_history = []
 
-    rng_reuse              = np.random.default_rng(base_seed ^ 0x1234)
-    batch_counter          = 0
-    fresh_simulator_evals  = 0
+    rng_reuse = np.random.default_rng(base_seed ^ 0x1234)
+    batch_counter = 0
+    fresh_simulator_evals = 0
 
     model.train()
 
     for epoch in range(1, npe_epochs + 1):
         epoch_loss = 0.0
-        epoch_n    = 0
+        epoch_n = 0
 
         # each epoch has multiple sub-batches
-        for b in range(npe_batches_epoch):
+        for _ in range(npe_batches_epoch):
             # we load a fresh dataset batch from the simulator
             fresh_batch = next(parallel_gen)
-            batch_counter          += 1
-            fresh_simulator_evals  += fresh_sim_batch_size
+            batch_counter += 1
+            fresh_simulator_evals += fresh_sim_batch_size
 
-            combined_u     = [fresh_batch['u_samples']]
+            combined_u = [fresh_batch['u_samples']]
             combined_props = [fresh_batch['mean_props']]
 
             # Determine how many historical samples to reuse based on
@@ -585,7 +588,7 @@ def train_npe(
             #                        / fresh_example_fraction
             n_reuse = 0
             if len(noiseless_history) > 0 and replay_example_count > 0:
-                all_u     = np.concatenate(
+                all_u = np.concatenate(
                     [h['u_samples'] for h in noiseless_history], axis=0
                 )
                 all_props = [p for h in noiseless_history for p in h['mean_props']]
@@ -600,8 +603,8 @@ def train_npe(
                 combined_props.append([all_props[i] for i in idx])
 
             effective_train_batch_size = n_fresh + n_reuse
-            u_batch_np                 = np.concatenate(combined_u, axis=0)
-            x_batch_np                 = None
+            u_batch_np = np.concatenate(combined_u, axis=0)
+            x_batch_np = None
 
             noise_seed = (base_seed ^ (batch_counter * 131071)) % (2**31)
             rng_inject = np.random.default_rng(noise_seed)
@@ -620,7 +623,7 @@ def train_npe(
 
             noiseless_history.append(fresh_batch)
 
-            x_batch      = torch.tensor(x_batch_np, dtype=torch.float32)
+            x_batch = torch.tensor(x_batch_np, dtype=torch.float32)
             u_batch_unit = torch.tensor(u_batch_np, dtype=torch.float32)
 
             optimizer.zero_grad()
@@ -630,7 +633,7 @@ def train_npe(
             optimizer.step()
 
             epoch_loss += loss.item() * len(x_batch)
-            epoch_n    += len(x_batch)
+            epoch_n += len(x_batch)
 
         avg_loss = epoch_loss / epoch_n
 

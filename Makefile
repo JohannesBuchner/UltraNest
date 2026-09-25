@@ -59,7 +59,7 @@ clean-doc:
 	rm -rf docs/build
 	nbstripout docs/*.ipynb
 
-SOURCES := $(shell ls ultranest/*.py | grep -Ev '^ultranest/(flatnuts|dychmc|dyhmc|pathsampler).py' | grep -v .pyx.py)
+SOURCES := $(shell ls ultranest/*.py ultranest/simbase/minisbi/*.py | grep -Ev '^ultranest/(flatnuts|dychmc|dyhmc|pathsampler).py' | grep -v .pyx.py)
 
 lint: ${SOURCES} ## check style
 	flake8 ${SOURCES}

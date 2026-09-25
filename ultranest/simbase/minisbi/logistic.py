@@ -91,9 +91,7 @@ def kuma_log_prob(u, a, b):
     """
     u = u.clamp(1e-7, 1.0 - 1e-7)
     ua = u.pow(a)
-    log_p = (torch.log(a) + torch.log(b)
-             + (a - 1.0) * torch.log(u)
-             + (b - 1.0) * torch.log((1.0 - ua).clamp(min=1e-30)))
+    log_p = (torch.log(a) + torch.log(b) + (a - 1.0) * torch.log(u) + (b - 1.0) * torch.log((1.0 - ua).clamp(min=1e-30)))
     return log_p
 
 
@@ -245,9 +243,7 @@ def _logistic_log_normaliser(loc, scale):
 # ---------------------------------------------------------------------------
 
 def nll_kuma_logistic_product(u, loc, scale, a, b):
-    """
-    Negative log-likelihood under a product of Kumaraswamy-Logistic chained
-    distributions on (0, 1).
+    """Negative log-likelihood of Kumaraswamy-Logistic unit distribution.
 
     The generative model per dimension is:
       v ~ TruncatedLogistic(loc, scale)  on (0, 1)
@@ -290,9 +286,7 @@ def nll_kuma_logistic_product(u, loc, scale, a, b):
     # Kuma density: p_K(v) = a*b*v^{a-1}*(1-v^a)^{b-1}
     v_c = v.clamp(1e-7, 1.0 - 1e-7)
     va = v_c.pow(a)
-    log_kuma_at_v = (torch.log(a) + torch.log(b)
-                     + (a - 1.0) * torch.log(v_c)
-                     + (b - 1.0) * torch.log((1.0 - va).clamp(min=1e-30)))
+    log_kuma_at_v = (torch.log(a) + torch.log(b) + (a - 1.0) * torch.log(v_c) + (b - 1.0) * torch.log((1.0 - va).clamp(min=1e-30)))
     log_abs_dv_du = -log_kuma_at_v                  # (batch, n_params)
 
     # log p_U(u) per dimension
@@ -304,9 +298,7 @@ def nll_kuma_logistic_product(u, loc, scale, a, b):
 
 
 def sample_kuma_logistic_product(loc, scale, a, b, n_samples, rng):
-    """
-    Sample from a product of per-dimension Kumaraswamy-Logistic chained
-    distributions on (0, 1) using analytic inverse CDF.
+    """Sample from unit Kumaraswamy-Logistic distribution.
 
     The inverse CDF of U = Kuma_CDF(V) where V ~ TruncLogistic is:
       1. Draw uniform w in (0, 1).
@@ -404,9 +396,9 @@ def kuma_logistic_cdf(x_val, loc, scale, a, b):
 
 
 def kuma_logistic_cdf_vec(u_vec, loc, scale, a, b):
-    """
-    CDF of the Kumaraswamy-Logistic chained distribution, evaluated
-    element-wise over a vector of points.
+    """Cumulative distribution function of the Kumaraswamy-Logistic distribution.
+
+    The CDF is evaluated element-wise over a vector of points.
 
     Parameters
     ----------
@@ -444,9 +436,7 @@ def kuma_logistic_cdf_vec(u_vec, loc, scale, a, b):
 
 
 def kuma_logistic_icdf_vec(t_vec, loc, scale, a, b):
-    """
-    Inverse CDF (quantile function) of the Kumaraswamy-Logistic chained
-    distribution, evaluated element-wise.
+    """Inverse CDF (quantile function) of the Kumaraswamy-Logistic distribution.
 
     Parameters
     ----------
@@ -487,9 +477,7 @@ def kuma_logistic_icdf_vec(t_vec, loc, scale, a, b):
 
 
 def kuma_logistic_logpdf_vec(u_vec, loc, scale, a, b):
-    """
-    Log-density of a single point under the product of Kumaraswamy-Logistic
-    chained distributions, summed over dimensions.
+    """Log-density of the Kumaraswamy-Logistic distribution, summed over dimensions.
 
     This equals the log Jacobian log|du/dt| needed to correct the
     nested-sampling likelihood when the prior is this distribution.
@@ -530,9 +518,7 @@ def kuma_logistic_logpdf_vec(u_vec, loc, scale, a, b):
     # log|dv/du| = -log(Kuma density at v)
     #   log p_Kuma(v; a, b) = log(a)+log(b)+(a-1)log(v)+(b-1)log(1-v^a)
     va = v ** a
-    log_kuma_at_v = (np.log(a) + np.log(b)
-                     + (a - 1.0) * np.log(v)
-                     + (b - 1.0) * np.log(np.clip(1.0 - va, 1e-30, None)))
+    log_kuma_at_v = (np.log(a) + np.log(b) + (a - 1.0) * np.log(v) + (b - 1.0) * np.log(np.clip(1.0 - va, 1e-30, None)))
     log_abs_dv_du = -log_kuma_at_v
 
     log_p_per_dim = log_pL_v - log_Z + log_abs_dv_du   # shape (d,)

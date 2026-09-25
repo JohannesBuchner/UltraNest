@@ -1,11 +1,11 @@
 """Validation / diagnostic utilities."""
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 import torch
 from tqdm import tqdm
 
-from .utils import inject_noise_batch
 from .logistic import kuma_logistic_cdf
+from .utils import inject_noise_batch
 
 
 def rank_histogram(
@@ -54,6 +54,8 @@ def rank_histogram(
     param_names : list of str or None, optional
         Names for each parameter. If None, defaults to
         ['param_0', 'param_1', ...].
+    prior_transform: optional
+        not used
     n_bins : int, optional
         Number of histogram bins. Default is 20.
 
@@ -84,10 +86,10 @@ def rank_histogram(
         x_t = torch.tensor(test_raw, dtype=torch.float32)
         loc_t, scale_t, a_t, b_t = model(x_t)
 
-    loc_np   = loc_t.numpy()    # (n_test, n_params)
+    loc_np = loc_t.numpy()    # (n_test, n_params)
     scale_np = scale_t.numpy()  # (n_test, n_params)
-    a_np     = a_t.numpy()      # (n_test, n_params)
-    b_np     = b_t.numpy()      # (n_test, n_params)
+    a_np = a_t.numpy()      # (n_test, n_params)
+    b_np = b_t.numpy()      # (n_test, n_params)
 
     # Compute rank analytically via Kumaraswamy-Logistic CDF
     ranks = np.zeros((n_test, n_params), dtype=np.int32)
@@ -158,6 +160,8 @@ def parameter_coverage_test(
     credible_levels : list of float or None, optional
     seed : int, optional
     param_names : list of str or None, optional
+    prior_transform: optional
+        not used
 
     Returns
     -------
@@ -187,10 +191,10 @@ def parameter_coverage_test(
         x_t = torch.tensor(test_raw, dtype=torch.float32)
         loc_t, scale_t, a_t, b_t = model(x_t)
 
-    loc_np   = loc_t.numpy()    # (n_test, n_params)
+    loc_np = loc_t.numpy()    # (n_test, n_params)
     scale_np = scale_t.numpy()  # (n_test, n_params)
-    a_np     = a_t.numpy()      # (n_test, n_params)
-    b_np     = b_t.numpy()      # (n_test, n_params)
+    a_np = a_t.numpy()      # (n_test, n_params)
+    b_np = b_t.numpy()      # (n_test, n_params)
 
     # cdf_vals[i, p] = P(X <= true_u[i, p]) under the Kuma-Logistic posterior
     cdf_vals = np.empty((n_test, n_params), dtype=np.float64)
@@ -296,7 +300,7 @@ def posterior_predictive_check(
         x_coords = np.linspace(-5, 5, n_data)
 
     n_post = len(posterior_samples_theta)
-    n_mean_curves        = min(n_mean_curves,        n_post)
+    n_mean_curves = min(n_mean_curves, n_post)
     n_realisation_curves = min(n_realisation_curves, n_post)
 
     idx_mean = rng.choice(n_post, size=n_mean_curves, replace=False)

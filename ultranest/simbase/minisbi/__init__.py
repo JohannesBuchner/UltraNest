@@ -1,1 +1,1 @@
-"""Simulation-based inference (SBI) tools"""
+"""Simulation-based inference (SBI) tools."""

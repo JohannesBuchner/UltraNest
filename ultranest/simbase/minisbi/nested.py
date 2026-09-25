@@ -1,13 +1,14 @@
-"""Helpers for using nested sampling on top of an auxiliary distribution"""
+"""Helpers for using nested sampling on top of an auxiliary distribution."""
 
 import numpy as np
 import torch
-from .logistic import kuma_logistic_cdf_vec, kuma_logistic_logpdf_vec, kuma_logistic_icdf_vec
+
+from .logistic import (kuma_logistic_cdf_vec, kuma_logistic_icdf_vec,
+                       kuma_logistic_logpdf_vec)
+
 
 def get_distribution_parameters(model, observed_data):
-    """
-    Query a neural network model to obtain Kumaraswamy-logistic distribution
-    parameters for the given observed data.
+    """Query neural network model for Kumaraswamy-logistic distribution parameters.
 
     Parameters
     ----------
@@ -32,16 +33,15 @@ def get_distribution_parameters(model, observed_data):
 
     # Store as numpy arrays, shape (n_params,)
     return dict(
-        loc   = loc.squeeze(0).numpy().tolist(),
-        scale = scale.squeeze(0).numpy().tolist(),
-        a     = a.squeeze(0).numpy().tolist(),
-        b     = b.squeeze(0).numpy().tolist()
+        loc=loc.squeeze(0).numpy().tolist(),
+        scale=scale.squeeze(0).numpy().tolist(),
+        a=a.squeeze(0).numpy().tolist(),
+        b=b.squeeze(0).numpy().tolist()
     )
 
+
 class KLPTransform:
-    """
-    A coordinate transform based on a Kumaraswamy-logistic posterior (KLP)
-    approximation from a neural posterior estimator (NPE).
+    """Coordinate transform for a Kumaraswamy-logistic distribution (KLP).
 
     Provides mappings between nested-sampler unit-cube coordinates ``t`` and
     prior unit-cube coordinates ``u``, along with the associated log Jacobian
@@ -62,17 +62,16 @@ class KLPTransform:
         Second shape parameters of the Kumaraswamy distribution,
         shape ``(n_params,)``.
     """
-    
+
     def __init__(self, loc, scale, a, b):
+        """Initialise."""
         self.loc = np.array(loc)
         self.scale = np.array(scale)
         self.a = np.array(a)
         self.b = np.array(b)
-    
+
     def transform(self, t):
-        """
-        Map nested-sampler unit-cube coordinates ``t`` to prior unit-cube
-        coordinates ``u`` via the analytic inverse CDF of the NPE posterior.
+        """Map unit-cube coordinates ``t`` to prior unit-cube coordinates ``u`` via inverse CDF.
 
         Parameters
         ----------
@@ -91,9 +90,10 @@ class KLPTransform:
         return u.astype(np.float32)
 
     def log_jacobian(self, t):
-        """
-        Log Jacobian of the transform ``t -> u``, equal to the log-density
-        of the NPE posterior at ``u = transform(t)``.
+        """Compute log-Jacobian.
+
+        This is for the transform ``t -> u``, equal to the log-density
+        of the KLP distribution at ``u = transform(t)``.
 
         Add this value to the true log-likelihood when passing to the
         nested sampler so that the sampler correctly targets the posterior.
@@ -112,9 +112,7 @@ class KLPTransform:
         return kuma_logistic_logpdf_vec(u, self.loc, self.scale, self.a, self.b)
 
     def cdf(self, u):
-        """
-        Evaluate the analytic CDF of the NPE posterior at a unit-cube point
-        ``u`` (i.e. compute the ``t`` that maps to ``u``).
+        """Evaluate the CDF.
 
         Parameters
         ----------
@@ -130,9 +128,7 @@ class KLPTransform:
         return kuma_logistic_cdf_vec(u, self.loc, self.scale, self.a, self.b)
 
     def logpdf(self, u):
-        """
-        Evaluate the log-density of the NPE posterior at a unit-cube point
-        ``u``.
+        """Evaluate log-density.
 
         This is used by importance sampling to compute the log proposal
         density ``log q(u | x_obs)`` for each sample drawn from the NPE

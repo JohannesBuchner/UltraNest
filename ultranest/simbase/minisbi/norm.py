@@ -1,4 +1,4 @@
-"""Input data standardization layers"""
+"""Input data standardization layers."""
 
 import numpy as np
 import torch
@@ -94,4 +94,3 @@ class ZScoreNorm(nn.Module):
         if not self.fitted:
             return x
         return (x - self.mean_t) / self.std_t
-
