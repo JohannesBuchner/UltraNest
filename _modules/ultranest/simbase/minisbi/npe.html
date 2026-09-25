@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ultranest.simbase.minisbi.npe &mdash; UltraNest 4.6.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../../../../_static/icon.ico"/>
+    <link rel="canonical" href="https://johannesbuchner.github.io/UltraNest/_modules/ultranest/simbase/minisbi/npe.html" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../../_static/documentation_options.js?v=cc8a4273"></script>
+        <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            UltraNest
+              <img src="../../../../_static/logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                4.6.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../readme.html">UltraNest</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../method.html">Method</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../using-ultranest.html">Basic usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../priors.html">Specifying priors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../performance.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../API.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../issues.html">Frequently Asked Questions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../history.html">Release Notes</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../example-sine-line.html">Time series fitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../example-sine-modelcomparison.html">Model comparison</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../example-sine-highd.html">Higher-dimensional fitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../example-intrinsic-distribution.html">Tutorial: intrinsic distribution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../example-line.html">Tutorial: fitting a line</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../example-outliers.html">Tutorial: distribution with outliers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../example-sine-bayesian-workflow.html">Bayesian workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../example-warmstart.html">Warm starting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../debugging.html">Debugging techniques</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../example-simulation-based-inference.html">Simulation-based inference (SBI) acceleration</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">UltraNest</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">ultranest.simbase.minisbi.npe</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ultranest.simbase.minisbi.npe</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Neural Posterior Estimation (NPE) training.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">joblib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.optim</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">optim</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torchinfo</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.logistic</span><span class="w"> </span><span class="kn">import</span> <span class="n">nll_kuma_logistic_product</span><span class="p">,</span> <span class="n">sample_kuma_logistic_product</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.norm</span><span class="w"> </span><span class="kn">import</span> <span class="n">ZScoreNorm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">inject_noise_batch</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_arch_suffix</span><span class="p">(</span><span class="n">depth</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">activation_cls</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Build a string suffix that encodes the architecture hyper-parameters.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    depth : int</span>
+<span class="sd">        Number of hidden layers.</span>
+<span class="sd">    width : int</span>
+<span class="sd">        Width of each hidden layer.</span>
+<span class="sd">    activation_cls : str or type</span>
+<span class="sd">        Activation class or its name.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        A ``&#39;_&#39;``-separated string such as ``&#39;128_128_ReLU&#39;``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">activation_cls</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">act</span> <span class="o">=</span> <span class="n">activation_cls</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">act</span> <span class="o">=</span> <span class="n">activation_cls</span><span class="o">.</span><span class="vm">__name__</span>
+    <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">width</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">depth</span> <span class="o">+</span> <span class="p">[</span><span class="n">act</span><span class="p">]</span>
+    <span class="k">return</span> <span class="s2">&quot;_&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="CascadeNet">
+<a class="viewcode-back" href="../../../../ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.npe.CascadeNet">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CascadeNet</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Cascade MLP architecture.</span>
+
+<span class="sd">    Each hidden layer forwards half of its output neurons directly to the</span>
+<span class="sd">    final layer (skip connection) and the other half to the next hidden layer.</span>
+
+<span class="sd">    Concretely, layer i produces ``hidden_widths[i]`` neurons. We split them</span>
+<span class="sd">    evenly: the first half (``skip_size = hidden_widths[i] // 2``) accumulates</span>
+<span class="sd">    in a &quot;cascade buffer&quot; that is concatenated to the input of the final</span>
+<span class="sd">    linear layer; the second half (``pass_size``) is forwarded to the next</span>
+<span class="sd">    hidden layer.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    input_dim : int</span>
+<span class="sd">        Dimensionality of the network input.</span>
+<span class="sd">    output_dim : int</span>
+<span class="sd">        Dimensionality of the network output.</span>
+<span class="sd">    hidden_widths : list of int</span>
+<span class="sd">        Number of neurons in each hidden layer.</span>
+<span class="sd">    activation_cls : type</span>
+<span class="sd">        Activation class (e.g. ``nn.ReLU``); instantiated per layer.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_dim</span><span class="p">,</span> <span class="n">output_dim</span><span class="p">,</span> <span class="n">hidden_widths</span><span class="p">,</span> <span class="n">activation_cls</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialise.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hidden_layers</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">activations</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">()</span>
+
+        <span class="n">in_dim</span> <span class="o">=</span> <span class="n">input_dim</span>
+        <span class="k">for</span> <span class="n">hw</span> <span class="ow">in</span> <span class="n">hidden_widths</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hidden_layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">in_dim</span><span class="p">,</span> <span class="n">hw</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">activations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">activation_cls</span><span class="p">())</span>
+            <span class="n">pass_size</span> <span class="o">=</span> <span class="n">hw</span> <span class="o">-</span> <span class="n">hw</span> <span class="o">//</span> <span class="mi">2</span>
+            <span class="n">in_dim</span> <span class="o">=</span> <span class="n">pass_size</span>
+
+        <span class="n">skip_total</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">hw</span> <span class="o">//</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">hw</span> <span class="ow">in</span> <span class="n">hidden_widths</span><span class="p">)</span>
+        <span class="n">final_in</span> <span class="o">=</span> <span class="p">(</span><span class="n">hidden_widths</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">hidden_widths</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">skip_total</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">final_layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">final_in</span><span class="p">,</span> <span class="n">output_dim</span><span class="p">)</span>
+
+<div class="viewcode-block" id="CascadeNet.forward">
+<a class="viewcode-back" href="../../../../ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.npe.CascadeNet.forward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Forward pass through the cascade network.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : torch.Tensor</span>
+<span class="sd">            Input tensor of shape ``(..., input_dim)``.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        torch.Tensor</span>
+<span class="sd">            Output tensor of shape ``(..., output_dim)``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">skip_accumulator</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">current</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="k">for</span> <span class="n">linear</span><span class="p">,</span> <span class="n">act</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hidden_layers</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">activations</span><span class="p">):</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="n">act</span><span class="p">(</span><span class="n">linear</span><span class="p">(</span><span class="n">current</span><span class="p">))</span>
+            <span class="n">skip_size</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">//</span> <span class="mi">2</span>
+            <span class="n">skip</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="n">skip_size</span><span class="p">]</span>
+            <span class="n">passed</span> <span class="o">=</span> <span class="n">out</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">skip_size</span><span class="p">:]</span>
+            <span class="n">skip_accumulator</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">skip</span><span class="p">)</span>
+            <span class="n">current</span> <span class="o">=</span> <span class="n">passed</span>
+
+        <span class="n">final_input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">current</span><span class="p">]</span> <span class="o">+</span> <span class="n">skip_accumulator</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">final_layer</span><span class="p">(</span><span class="n">final_input</span><span class="p">)</span></div>
+</div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_build_layers</span><span class="p">(</span><span class="n">input_dim</span><span class="p">,</span> <span class="n">output_dim</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">activation_cls</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="s1">&#39;rectangular&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Build a list of ``nn.Module`` layers for an MLP.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    input_dim : int</span>
+<span class="sd">        Dimensionality of the network input.</span>
+<span class="sd">    output_dim : int</span>
+<span class="sd">        Dimensionality of the network output.</span>
+<span class="sd">    depth : int</span>
+<span class="sd">        Number of hidden layers.</span>
+<span class="sd">    width : int</span>
+<span class="sd">        Base width; exact meaning depends on ``shape``.</span>
+<span class="sd">    activation_cls : type</span>
+<span class="sd">        Activation class (already resolved), e.g. ``nn.ReLU``.</span>
+<span class="sd">    shape : str, optional</span>
+<span class="sd">        One of ``&#39;rectangular&#39;``, ``&#39;triangular&#39;``, or ``&#39;cascade&#39;``.</span>
+<span class="sd">        Default is ``&#39;rectangular&#39;``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list of nn.Module</span>
+<span class="sd">        Ordered list of layers ready to be passed to ``nn.Sequential``,</span>
+<span class="sd">        or a single-element list containing a :class:`CascadeNet` when</span>
+<span class="sd">        ``shape=&#39;cascade&#39;``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">shape</span> <span class="o">==</span> <span class="s1">&#39;rectangular&#39;</span><span class="p">:</span>
+        <span class="n">hidden_widths</span> <span class="o">=</span> <span class="p">[</span><span class="n">width</span><span class="p">]</span> <span class="o">*</span> <span class="n">depth</span>
+
+    <span class="k">elif</span> <span class="n">shape</span> <span class="o">==</span> <span class="s1">&#39;triangular&#39;</span><span class="p">:</span>
+        <span class="c1"># Linearly decrease from width down to output_dim across depth layers.</span>
+        <span class="k">if</span> <span class="n">depth</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">hidden_widths</span> <span class="o">=</span> <span class="p">[</span><span class="n">width</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">hidden_widths</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="nb">max</span><span class="p">(</span><span class="n">output_dim</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">width</span> <span class="o">-</span> <span class="p">(</span><span class="n">width</span> <span class="o">-</span> <span class="n">output_dim</span><span class="p">)</span> <span class="o">*</span> <span class="n">i</span> <span class="o">/</span> <span class="p">(</span><span class="n">depth</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))))</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">depth</span><span class="p">)</span>
+            <span class="p">]</span>
+
+    <span class="k">elif</span> <span class="n">shape</span> <span class="o">==</span> <span class="s1">&#39;cascade&#39;</span><span class="p">:</span>
+        <span class="c1"># Each layer is half as wide as the previous one.</span>
+        <span class="c1"># The first layer has `width` neurons; each subsequent layer has half.</span>
+        <span class="n">hidden_widths</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">width</span>
+        <span class="c1"># no use to go very deep if we do not have neurons left</span>
+        <span class="n">min_width</span> <span class="o">=</span> <span class="mi">4</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">depth</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">w</span> <span class="o">&gt;=</span> <span class="n">min_width</span> <span class="o">*</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="n">hidden_widths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">w</span><span class="p">))</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">w</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown layer shape &#39;</span><span class="si">{</span><span class="n">shape</span><span class="si">}</span><span class="s2">&#39;. &quot;</span>
+                         <span class="s2">&quot;Choose &#39;rectangular&#39;, &#39;triangular&#39;, or &#39;cascade&#39;.&quot;</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;hidden layer widths:&quot;</span><span class="p">,</span> <span class="n">hidden_widths</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">shape</span> <span class="o">==</span> <span class="s1">&#39;cascade&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">CascadeNet</span><span class="p">(</span><span class="n">input_dim</span><span class="p">,</span> <span class="n">output_dim</span><span class="p">,</span> <span class="n">hidden_widths</span><span class="p">,</span> <span class="n">activation_cls</span><span class="p">)]</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">layers</span> <span class="o">=</span> <span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">input_dim</span><span class="p">,</span> <span class="n">hidden_widths</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">activation_cls</span><span class="p">()]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">depth</span><span class="p">):</span>
+            <span class="n">layers</span> <span class="o">+=</span> <span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">hidden_widths</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span> <span class="n">hidden_widths</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="n">activation_cls</span><span class="p">()]</span>
+        <span class="n">layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">hidden_widths</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">output_dim</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">layers</span>
+
+
+<div class="viewcode-block" id="NPENetwork">
+<a class="viewcode-back" href="../../../../ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.npe.NPENetwork">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">NPENetwork</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Network that outputs a product of Kumaraswamy-Logistic chained distributions living on the unit cube [0, 1]^d.</span>
+
+<span class="sd">    For each parameter dimension the network predicts 4 values:</span>
+<span class="sd">      - loc       (via sigmoid, in (0,1))</span>
+<span class="sd">      - log_scale (unconstrained; exponentiated -&gt; scale &gt; 0)</span>
+<span class="sd">      - log_a     (unconstrained; exponentiated -&gt; a &gt; 0, Kumaraswamy shape)</span>
+<span class="sd">      - log_b     (unconstrained; exponentiated -&gt; b &gt; 0, Kumaraswamy shape)</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n_data : int</span>
+<span class="sd">        Raw input dimension.</span>
+<span class="sd">    n_params : int</span>
+<span class="sd">        Number of model parameters.</span>
+<span class="sd">    depth : int</span>
+<span class="sd">        Number of hidden layers.</span>
+<span class="sd">    width : int</span>
+<span class="sd">        Width of each hidden layer.</span>
+<span class="sd">    activation_name : str</span>
+<span class="sd">        Activation name (e.g. ``&#39;ReLU&#39;``).</span>
+<span class="sd">    layer_shape : str</span>
+<span class="sd">        Architecture shape: ``&#39;rectangular&#39;``, ``&#39;triangular&#39;``, or</span>
+<span class="sd">        ``&#39;cascade&#39;``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">n_data</span><span class="p">,</span> <span class="n">n_params</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span>
+        <span class="n">activation_name</span><span class="p">,</span> <span class="n">layer_shape</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialise.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="n">activation_cls</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">nn</span><span class="p">,</span> <span class="n">activation_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_params</span> <span class="o">=</span> <span class="n">n_params</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="n">ZScoreNorm</span><span class="p">(</span><span class="n">n_data</span><span class="p">)</span>
+
+        <span class="c1"># 4 outputs per parameter: loc_raw, log_scale, log_a, log_b</span>
+        <span class="n">backbone_layers</span> <span class="o">=</span> <span class="n">_build_layers</span><span class="p">(</span>
+            <span class="n">input_dim</span><span class="o">=</span><span class="n">n_data</span><span class="p">,</span>
+            <span class="n">output_dim</span><span class="o">=</span><span class="mi">4</span> <span class="o">*</span> <span class="n">n_params</span><span class="p">,</span>
+            <span class="n">depth</span><span class="o">=</span><span class="n">depth</span><span class="p">,</span>
+            <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">,</span>
+            <span class="n">activation_cls</span><span class="o">=</span><span class="n">activation_cls</span><span class="p">,</span>
+            <span class="n">shape</span><span class="o">=</span><span class="n">layer_shape</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">backbone</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="n">backbone_layers</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">loc_activation</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sigmoid</span><span class="p">()</span>
+
+<div class="viewcode-block" id="NPENetwork.fit_norm">
+<a class="viewcode-back" href="../../../../ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.npe.NPENetwork.fit_norm">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit_norm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_np</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fit the moment-matching normalisation layer on a representative sample.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x_np : numpy.ndarray</span>
+<span class="sd">            Array of shape ``(n_samples, n_data)`` used to compute</span>
+<span class="sd">            the normalisation statistics.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x_np</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="NPENetwork.forward">
+<a class="viewcode-back" href="../../../../ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.npe.NPENetwork.forward">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_raw</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Map raw data to per-parameter distribution parameters.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x_raw : torch.Tensor  (batch, n_data)</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        loc   : torch.Tensor  (batch, n_params)  in (0,1)</span>
+<span class="sd">        scale : torch.Tensor  (batch, n_params)  &gt; 0</span>
+<span class="sd">        a     : torch.Tensor  (batch, n_params)  &gt; 0</span>
+<span class="sd">        b     : torch.Tensor  (batch, n_params)  &gt; 0</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x_norm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x_raw</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">backbone</span><span class="p">(</span><span class="n">x_norm</span><span class="p">)</span>          <span class="c1"># (batch, 4 * n_params)</span>
+
+        <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_params</span>
+        <span class="n">loc_raw</span> <span class="o">=</span> <span class="n">out</span><span class="p">[:,</span> <span class="mi">0</span> <span class="o">*</span> <span class="n">n</span><span class="p">:</span><span class="mi">1</span> <span class="o">*</span> <span class="n">n</span><span class="p">]</span>
+        <span class="n">log_scale</span> <span class="o">=</span> <span class="n">out</span><span class="p">[:,</span> <span class="mi">1</span> <span class="o">*</span> <span class="n">n</span><span class="p">:</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n</span><span class="p">]</span>
+        <span class="n">log_a</span> <span class="o">=</span> <span class="n">out</span><span class="p">[:,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">n</span><span class="p">:</span><span class="mi">3</span> <span class="o">*</span> <span class="n">n</span><span class="p">]</span>
+        <span class="n">log_b</span> <span class="o">=</span> <span class="n">out</span><span class="p">[:,</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">n</span><span class="p">:</span><span class="mi">4</span> <span class="o">*</span> <span class="n">n</span><span class="p">]</span>
+
+        <span class="n">loc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loc_activation</span><span class="p">(</span><span class="n">loc_raw</span><span class="p">)</span>
+        <span class="n">scale</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">log_scale</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="o">-</span><span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">log_a</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">log_b</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="sample_posterior">
+<a class="viewcode-back" href="../../../../ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.npe.sample_posterior">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">sample_posterior</span><span class="p">(</span>
+    <span class="n">model</span><span class="p">,</span>
+    <span class="n">observed_data</span><span class="p">,</span>
+    <span class="n">prior_transform</span><span class="p">,</span>
+    <span class="n">n_params</span><span class="p">,</span>
+    <span class="n">n_posterior_samples</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Draw posterior samples for a single observed dataset.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : NPENetwork</span>
+<span class="sd">        Trained NPE model.</span>
+<span class="sd">    observed_data : numpy.ndarray</span>
+<span class="sd">        1-D array of observed data values, shape ``(n_data,)``.</span>
+<span class="sd">    prior_transform : callable</span>
+<span class="sd">        Function ``(u) -&gt; theta`` mapping unit-cube samples to the</span>
+<span class="sd">        physical parameter space.</span>
+<span class="sd">    n_params : int</span>
+<span class="sd">        Number of model parameters.</span>
+<span class="sd">    n_posterior_samples : int</span>
+<span class="sd">        Number of posterior samples to return.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    posterior_samples_u : numpy.ndarray</span>
+<span class="sd">        Samples in unit-cube space, shape ``(n_posterior_samples, n_params)``.</span>
+<span class="sd">    posterior_samples_theta : numpy.ndarray</span>
+<span class="sd">        Samples in physical parameter space, shape</span>
+<span class="sd">        ``(n_posterior_samples, n_params)``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">x_obs_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">observed_data</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+        <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">x_obs_t</span><span class="p">)</span>
+        <span class="n">loc</span> <span class="o">=</span> <span class="n">loc</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">scale</span> <span class="o">=</span> <span class="n">scale</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">loc_np</span> <span class="o">=</span> <span class="n">loc</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+    <span class="n">scale_np</span> <span class="o">=</span> <span class="n">scale</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+    <span class="n">a_np</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+    <span class="n">b_np</span> <span class="o">=</span> <span class="n">b</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Predicted posterior (Kumaraswamy-Logistic product, unit-cube space):&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_params</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Param </span><span class="si">{</span><span class="n">d</span><span class="si">}</span><span class="s2">: loc=</span><span class="si">{</span><span class="n">loc_np</span><span class="p">[</span><span class="n">d</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">  scale=</span><span class="si">{</span><span class="n">scale_np</span><span class="p">[</span><span class="n">d</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span>
+              <span class="sa">f</span><span class="s2">&quot;  a=</span><span class="si">{</span><span class="n">a_np</span><span class="p">[</span><span class="n">d</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">  b=</span><span class="si">{</span><span class="n">b_np</span><span class="p">[</span><span class="n">d</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">posterior_samples_u</span> <span class="o">=</span> <span class="n">sample_kuma_logistic_product</span><span class="p">(</span>
+        <span class="n">loc_np</span><span class="p">,</span> <span class="n">scale_np</span><span class="p">,</span> <span class="n">a_np</span><span class="p">,</span> <span class="n">b_np</span><span class="p">,</span> <span class="n">n_posterior_samples</span><span class="p">,</span> <span class="n">rng</span>
+    <span class="p">)</span>
+
+    <span class="n">posterior_samples_theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+        <span class="n">prior_transform</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="n">posterior_samples_u</span>
+    <span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">posterior_samples_u</span><span class="p">,</span> <span class="n">posterior_samples_theta</span></div>
+
+
+
+<span class="c1"># ---------------------------------------------------------------------------</span>
+<span class="c1"># Training</span>
+<span class="c1"># ---------------------------------------------------------------------------</span>
+
+<div class="viewcode-block" id="train_npe">
+<a class="viewcode-back" href="../../../../ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.npe.train_npe">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">train_npe</span><span class="p">(</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">folder</span><span class="p">,</span>
+    <span class="n">generate_noiseless_batch</span><span class="p">,</span>
+    <span class="n">inject_noise</span><span class="p">,</span>
+    <span class="n">n_params</span><span class="p">,</span>
+    <span class="n">fresh_sim_batch_size</span><span class="p">,</span>
+    <span class="n">npe_lr</span><span class="p">,</span>
+    <span class="n">base_seed</span><span class="p">,</span>
+    <span class="n">max_model_evals</span><span class="p">,</span>
+    <span class="n">num_processes</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">patience</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+    <span class="n">patience_min_delta</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span>
+    <span class="n">npe_batches_epoch</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+    <span class="n">npe_width</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
+    <span class="n">npe_activation_cls</span><span class="o">=</span><span class="s1">&#39;ReLU&#39;</span><span class="p">,</span>
+    <span class="n">npe_depth</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
+    <span class="n">val_size</span><span class="o">=</span><span class="mi">1024</span><span class="p">,</span>
+    <span class="n">norm_size</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span>
+    <span class="n">layer_shape</span><span class="o">=</span><span class="s1">&#39;cascade&#39;</span><span class="p">,</span>
+    <span class="n">fresh_example_fraction</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Train a Neural Posterior Estimator (NPE) with a product-of-Kumaraswamy-Logistic output.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    folder : str</span>
+<span class="sd">        Directory in which to save or load the trained model.</span>
+<span class="sd">    generate_noiseless_batch : callable</span>
+<span class="sd">        Simulation function with signature</span>
+<span class="sd">        ``(batch_idx, n_sim, seed, n_params) -&gt; dict``.</span>
+<span class="sd">    inject_noise : callable</span>
+<span class="sd">        Function ``(props, rng) -&gt; noisy_vector``.</span>
+<span class="sd">    n_params : int</span>
+<span class="sd">        Number of model parameters.</span>
+<span class="sd">    fresh_sim_batch_size : int</span>
+<span class="sd">        Number of fresh simulator draws requested per sub-batch. This is the</span>
+<span class="sd">        number of new simulations run each time the simulator is called; it is</span>
+<span class="sd">        *not* the number of examples seen by the neural network in one gradient</span>
+<span class="sd">        step (see ``effective_train_batch_size``).</span>
+<span class="sd">    npe_lr : float</span>
+<span class="sd">        Learning rate for the Adam optimiser.</span>
+<span class="sd">    base_seed : int</span>
+<span class="sd">        Base random seed used throughout training.</span>
+<span class="sd">    max_model_evals : int</span>
+<span class="sd">        Maximum total number of simulator evaluations to generate across all</span>
+<span class="sd">        training batches.</span>
+<span class="sd">    num_processes : int, optional</span>
+<span class="sd">        Number of parallel worker processes. Default is ``1``.</span>
+<span class="sd">    patience : int, optional</span>
+<span class="sd">        Number of epochs without improvement before early stopping.</span>
+<span class="sd">        Default is ``30``.</span>
+<span class="sd">    patience_min_delta : float, optional</span>
+<span class="sd">        Minimum validation-loss improvement to reset the patience counter.</span>
+<span class="sd">        Default is ``1e-4``.</span>
+<span class="sd">    npe_batches_epoch : int, optional</span>
+<span class="sd">        Number of simulation batches drawn per epoch. Default is ``8``.</span>
+<span class="sd">    npe_width : int, optional</span>
+<span class="sd">        Width of each hidden layer. Default is ``1024``.</span>
+<span class="sd">    npe_activation_cls : str</span>
+<span class="sd">        Activation function name. Default is ``&#39;ReLU&#39;``.</span>
+<span class="sd">    npe_depth : int, optional</span>
+<span class="sd">        Number of hidden layers. Default is ``6``.</span>
+<span class="sd">    val_size : int, optional</span>
+<span class="sd">        Number of samples in the fixed validation set. Default is ``1024``.</span>
+<span class="sd">    norm_size : int, optional</span>
+<span class="sd">        Number of samples for determining the input normalisation validation set. Default is ``2000``.</span>
+<span class="sd">    layer_shape : str, optional</span>
+<span class="sd">        Architecture shape: ``&#39;rectangular&#39;`` (default), ``&#39;triangular&#39;``, or</span>
+<span class="sd">        ``&#39;cascade&#39;``.</span>
+<span class="sd">    fresh_example_fraction : float, optional</span>
+<span class="sd">        Fraction of each training mini-batch that consists of freshly</span>
+<span class="sd">        simulated examples. The remainder</span>
+<span class="sd">        (``1 - fresh_example_fraction``) is filled by replaying examples</span>
+<span class="sd">        from the history buffer, so the effective batch size seen by the</span>
+<span class="sd">        network (``effective_train_batch_size``) is larger than</span>
+<span class="sd">        ``fresh_sim_batch_size``.  Must be in ``(0, 1]``.  When set to</span>
+<span class="sd">        ``1.0`` no replay is used and</span>
+<span class="sd">        ``effective_train_batch_size == fresh_sim_batch_size``.</span>
+<span class="sd">        Default is ``0.5``.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The relationship between the key batch-size quantities is::</span>
+
+<span class="sd">        replay_example_count    = fresh_sim_batch_size</span>
+<span class="sd">                                  * (1 - fresh_example_fraction)</span>
+<span class="sd">                                  / fresh_example_fraction</span>
+<span class="sd">        effective_train_batch_size = fresh_sim_batch_size</span>
+<span class="sd">                                     + replay_example_count</span>
+
+<span class="sd">    ``fresh_simulator_evals`` counts the cumulative number of simulator</span>
+<span class="sd">    calls made so far (i.e. the total number of freshly generated</span>
+<span class="sd">    parameter–data pairs, excluding replayed examples).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    model : NPENetwork</span>
+<span class="sd">        Trained NPE model in eval mode.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mf">0.0</span> <span class="o">&lt;</span> <span class="n">fresh_example_fraction</span> <span class="o">&lt;=</span> <span class="mf">1.0</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;fresh_example_fraction must be in (0, 1], got </span><span class="si">{</span><span class="n">fresh_example_fraction</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">total_npe_batches</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_model_evals</span> <span class="o">//</span> <span class="n">fresh_sim_batch_size</span><span class="p">)</span>
+    <span class="n">npe_epochs</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">total_npe_batches</span> <span class="o">//</span> <span class="n">npe_batches_epoch</span><span class="p">)</span>
+
+    <span class="n">norm_batches_needed</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">norm_size</span> <span class="o">+</span> <span class="n">fresh_sim_batch_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="n">fresh_sim_batch_size</span><span class="p">)</span>
+    <span class="n">val_batches_needed</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">val_size</span> <span class="o">+</span> <span class="n">fresh_sim_batch_size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="n">fresh_sim_batch_size</span><span class="p">)</span>
+    <span class="n">prefix_batches</span> <span class="o">=</span> <span class="n">norm_batches_needed</span> <span class="o">+</span> <span class="n">val_batches_needed</span>
+    <span class="n">total_batches</span> <span class="o">=</span> <span class="n">prefix_batches</span> <span class="o">+</span> <span class="n">total_npe_batches</span>
+
+    <span class="c1"># Derive replay_example_count from fresh_example_fraction:</span>
+    <span class="c1"># fresh_example_fraction = n_fresh / (n_fresh + replay_example_count)</span>
+    <span class="c1"># =&gt; replay_example_count = n_fresh * (1 - fresh_example_fraction) / fresh_example_fraction</span>
+    <span class="n">n_fresh</span> <span class="o">=</span> <span class="n">fresh_sim_batch_size</span>
+    <span class="n">replay_example_count</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">n_fresh</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">fresh_example_fraction</span><span class="p">)</span> <span class="o">/</span> <span class="n">fresh_example_fraction</span><span class="p">))</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;fresh_example_fraction=</span><span class="si">{</span><span class="n">fresh_example_fraction</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> =&gt;  &quot;</span>
+          <span class="sa">f</span><span class="s2">&quot;n_fresh=</span><span class="si">{</span><span class="n">n_fresh</span><span class="si">}</span><span class="s2">, replay_example_count=</span><span class="si">{</span><span class="n">replay_example_count</span><span class="si">}</span><span class="s2"> per sub-batch&quot;</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Starting parallel simulation generator (</span><span class="si">{</span><span class="n">total_batches</span><span class="si">}</span><span class="s2"> batches total, &quot;</span>
+          <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">num_processes</span><span class="si">}</span><span class="s2"> workers) ...&quot;</span><span class="p">)</span>
+
+    <span class="n">parallel_gen</span> <span class="o">=</span> <span class="n">joblib</span><span class="o">.</span><span class="n">Parallel</span><span class="p">(</span>
+        <span class="n">n_jobs</span><span class="o">=</span><span class="n">num_processes</span><span class="p">,</span>
+        <span class="n">return_as</span><span class="o">=</span><span class="s1">&#39;generator&#39;</span><span class="p">,</span>
+    <span class="p">)(</span>
+        <span class="n">joblib</span><span class="o">.</span><span class="n">delayed</span><span class="p">(</span><span class="n">generate_noiseless_batch</span><span class="p">)(</span>
+            <span class="n">batch_idx</span><span class="o">=</span><span class="n">b</span><span class="p">,</span>
+            <span class="n">n_sim</span><span class="o">=</span><span class="n">fresh_sim_batch_size</span><span class="p">,</span>
+            <span class="n">seed</span><span class="o">=</span><span class="n">base_seed</span><span class="p">,</span>
+            <span class="n">n_params</span><span class="o">=</span><span class="n">n_params</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">total_batches</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Probe n_data from the very first batch.</span>
+    <span class="n">probe_batch</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">parallel_gen</span><span class="p">)</span>
+    <span class="n">probe_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">base_seed</span> <span class="o">^</span> <span class="mh">0xDEAD</span><span class="p">)</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">probe_raw</span> <span class="o">=</span> <span class="n">inject_noise_batch</span><span class="p">(</span><span class="n">probe_batch</span><span class="p">,</span> <span class="n">probe_rng</span><span class="p">,</span> <span class="n">inject_noise</span><span class="p">)</span>
+    <span class="n">n_data</span> <span class="o">=</span> <span class="n">probe_raw</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Detected n_data=</span><span class="si">{</span><span class="n">n_data</span><span class="si">}</span><span class="s2"> from probe simulation.&quot;</span><span class="p">)</span>
+
+    <span class="n">norm_batches_collected</span> <span class="o">=</span> <span class="p">[</span><span class="n">probe_batch</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">norm_batches_needed</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">norm_batches_collected</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">next</span><span class="p">(</span><span class="n">parallel_gen</span><span class="p">))</span>
+
+    <span class="c1"># ------------------------------------------------------------------ #</span>
+    <span class="c1"># Build model and optionally load from disk.                           #</span>
+    <span class="c1"># ------------------------------------------------------------------ #</span>
+    <span class="n">npe_suffix</span> <span class="o">=</span> <span class="n">_arch_suffix</span><span class="p">(</span><span class="n">npe_depth</span><span class="p">,</span> <span class="n">npe_width</span><span class="p">,</span> <span class="n">npe_activation_cls</span><span class="p">)</span>
+    <span class="n">model_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+        <span class="n">folder</span><span class="p">,</span>
+        <span class="sa">f</span><span class="s2">&quot;minisbi_npe_</span><span class="si">{</span><span class="n">n_data</span><span class="si">}</span><span class="s2">d_</span><span class="si">{</span><span class="n">npe_suffix</span><span class="si">}</span><span class="s2">_KLP_</span><span class="si">{</span><span class="n">layer_shape</span><span class="si">}</span><span class="s2">.pt&quot;</span>
+    <span class="p">)</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">NPENetwork</span><span class="p">(</span>
+        <span class="n">n_data</span><span class="o">=</span><span class="n">n_data</span><span class="p">,</span>
+        <span class="n">n_params</span><span class="o">=</span><span class="n">n_params</span><span class="p">,</span>
+        <span class="n">depth</span><span class="o">=</span><span class="n">npe_depth</span><span class="p">,</span>
+        <span class="n">width</span><span class="o">=</span><span class="n">npe_width</span><span class="p">,</span>
+        <span class="n">activation_name</span><span class="o">=</span><span class="n">npe_activation_cls</span><span class="p">,</span>
+        <span class="n">layer_shape</span><span class="o">=</span><span class="n">layer_shape</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">model_path</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading trained NPE model from </span><span class="si">{</span><span class="n">model_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">ckpt</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">model_path</span><span class="p">,</span> <span class="n">weights_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">ckpt</span><span class="p">[</span><span class="s2">&quot;state_dict&quot;</span><span class="p">])</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">model</span>
+
+    <span class="n">torchinfo</span><span class="o">.</span><span class="n">summary</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Training NPE (product of Kumaraswamy-Logistic distributions) &quot;</span>
+          <span class="s2">&quot;with on-the-fly batch generation ...&quot;</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Computing normalisation statistics ...&quot;</span><span class="p">)</span>
+    <span class="n">norm_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">base_seed</span> <span class="o">^</span> <span class="mh">0xC0FFEE</span><span class="p">)</span>
+    <span class="n">norm_raw_parts</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">nb</span> <span class="ow">in</span> <span class="n">norm_batches_collected</span><span class="p">:</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">raw_part</span> <span class="o">=</span> <span class="n">inject_noise_batch</span><span class="p">(</span><span class="n">nb</span><span class="p">,</span> <span class="n">norm_rng</span><span class="p">,</span> <span class="n">inject_noise</span><span class="p">)</span>
+        <span class="n">norm_raw_parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">raw_part</span><span class="p">)</span>
+    <span class="n">norm_raw</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">norm_raw_parts</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[:</span><span class="n">norm_size</span><span class="p">]</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">fit_norm</span><span class="p">(</span><span class="n">norm_raw</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Input normalisation fitted.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># ------------------------------------------------------------------ #</span>
+    <span class="c1"># Build fixed validation set.                                          #</span>
+    <span class="c1"># ------------------------------------------------------------------ #</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Generating fixed NPE validation set (val_size=</span><span class="si">{</span><span class="n">val_size</span><span class="si">}</span><span class="s2">) ...&quot;</span><span class="p">)</span>
+    <span class="n">val_rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">base_seed</span> <span class="o">^</span> <span class="mh">0xBEEF</span><span class="p">)</span>
+    <span class="n">val_u_parts</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">val_raw_parts</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">val_batches_needed</span><span class="p">):</span>
+        <span class="n">vb</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">parallel_gen</span><span class="p">)</span>
+        <span class="n">vu</span><span class="p">,</span> <span class="n">vr</span> <span class="o">=</span> <span class="n">inject_noise_batch</span><span class="p">(</span><span class="n">vb</span><span class="p">,</span> <span class="n">val_rng</span><span class="p">,</span> <span class="n">inject_noise</span><span class="p">)</span>
+        <span class="n">val_u_parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vu</span><span class="p">)</span>
+        <span class="n">val_raw_parts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vr</span><span class="p">)</span>
+    <span class="n">val_u_np</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">val_u_parts</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[:</span><span class="n">val_size</span><span class="p">]</span>
+    <span class="n">val_raw_np</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">val_raw_parts</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)[:</span><span class="n">val_size</span><span class="p">]</span>
+    <span class="n">val_uv_unit</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">val_u_np</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">val_xv_raw</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">val_raw_np</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+    <span class="c1"># ------------------------------------------------------------------ #</span>
+    <span class="c1"># Training loop                                                        #</span>
+    <span class="c1"># ------------------------------------------------------------------ #</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Training NPE with on-the-fly batch generation ...&quot;</span><span class="p">)</span>
+
+    <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="n">npe_lr</span><span class="p">)</span>
+    <span class="n">scheduler</span> <span class="o">=</span> <span class="n">optim</span><span class="o">.</span><span class="n">lr_scheduler</span><span class="o">.</span><span class="n">CosineAnnealingLR</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">T_max</span><span class="o">=</span><span class="n">npe_epochs</span><span class="p">)</span>
+
+    <span class="n">best_val_loss</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
+    <span class="n">best_state</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">patience_count</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="n">noiseless_history</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">rng_reuse</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">base_seed</span> <span class="o">^</span> <span class="mh">0x1234</span><span class="p">)</span>
+    <span class="n">batch_counter</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">fresh_simulator_evals</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">npe_epochs</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">epoch_loss</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">epoch_n</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1"># each epoch has multiple sub-batches</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">npe_batches_epoch</span><span class="p">):</span>
+            <span class="c1"># we load a fresh dataset batch from the simulator</span>
+            <span class="n">fresh_batch</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">parallel_gen</span><span class="p">)</span>
+            <span class="n">batch_counter</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">fresh_simulator_evals</span> <span class="o">+=</span> <span class="n">fresh_sim_batch_size</span>
+
+            <span class="n">combined_u</span> <span class="o">=</span> <span class="p">[</span><span class="n">fresh_batch</span><span class="p">[</span><span class="s1">&#39;u_samples&#39;</span><span class="p">]]</span>
+            <span class="n">combined_props</span> <span class="o">=</span> <span class="p">[</span><span class="n">fresh_batch</span><span class="p">[</span><span class="s1">&#39;mean_props&#39;</span><span class="p">]]</span>
+
+            <span class="c1"># Determine how many historical samples to reuse based on</span>
+            <span class="c1"># fresh_example_fraction:</span>
+            <span class="c1"># replay_example_count = n_fresh</span>
+            <span class="c1">#                        * (1 - fresh_example_fraction)</span>
+            <span class="c1">#                        / fresh_example_fraction</span>
+            <span class="n">n_reuse</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">noiseless_history</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">replay_example_count</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">all_u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+                    <span class="p">[</span><span class="n">h</span><span class="p">[</span><span class="s1">&#39;u_samples&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">noiseless_history</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span>
+                <span class="p">)</span>
+                <span class="n">all_props</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">noiseless_history</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">h</span><span class="p">[</span><span class="s1">&#39;mean_props&#39;</span><span class="p">]]</span>
+                <span class="n">history_total</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_props</span><span class="p">)</span>
+
+                <span class="n">n_reuse</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">replay_example_count</span><span class="p">,</span> <span class="n">history_total</span><span class="p">)</span>
+                <span class="n">idx</span> <span class="o">=</span> <span class="n">rng_reuse</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
+                    <span class="n">history_total</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">n_reuse</span><span class="p">,</span>
+                    <span class="n">replace</span><span class="o">=</span><span class="p">(</span><span class="n">n_reuse</span> <span class="o">&gt;</span> <span class="n">history_total</span><span class="p">)</span>
+                <span class="p">)</span>
+                <span class="n">combined_u</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">all_u</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+                <span class="n">combined_props</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">all_props</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">idx</span><span class="p">])</span>
+
+            <span class="n">effective_train_batch_size</span> <span class="o">=</span> <span class="n">n_fresh</span> <span class="o">+</span> <span class="n">n_reuse</span>
+            <span class="n">u_batch_np</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">combined_u</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">x_batch_np</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="n">noise_seed</span> <span class="o">=</span> <span class="p">(</span><span class="n">base_seed</span> <span class="o">^</span> <span class="p">(</span><span class="n">batch_counter</span> <span class="o">*</span> <span class="mi">131071</span><span class="p">))</span> <span class="o">%</span> <span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="mi">31</span><span class="p">)</span>
+            <span class="n">rng_inject</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">noise_seed</span><span class="p">)</span>
+
+            <span class="n">flat_props</span> <span class="o">=</span> <span class="n">combined_props</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span>
+                <span class="n">combined_props</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">combined_props</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="p">[]</span>
+            <span class="p">)</span>
+            <span class="c1"># inject fresh simulation noise (this is assumed to be cheap)</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">props</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">flat_props</span><span class="p">):</span>
+                <span class="n">noisy</span> <span class="o">=</span> <span class="n">inject_noise</span><span class="p">(</span><span class="n">props</span><span class="p">,</span> <span class="n">rng_inject</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">x_batch_np</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">x_batch_np</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span>
+                        <span class="p">(</span><span class="n">effective_train_batch_size</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">noisy</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span>
+                    <span class="p">)</span>
+                <span class="n">x_batch_np</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">noisy</span>
+
+            <span class="n">noiseless_history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fresh_batch</span><span class="p">)</span>
+
+            <span class="n">x_batch</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">x_batch_np</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+            <span class="n">u_batch_unit</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">u_batch_np</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+            <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+            <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b_param</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">x_batch</span><span class="p">)</span>
+            <span class="n">loss</span> <span class="o">=</span> <span class="n">nll_kuma_logistic_product</span><span class="p">(</span><span class="n">u_batch_unit</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b_param</span><span class="p">)</span>
+            <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+            <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+
+            <span class="n">epoch_loss</span> <span class="o">+=</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_batch</span><span class="p">)</span>
+            <span class="n">epoch_n</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x_batch</span><span class="p">)</span>
+
+        <span class="n">avg_loss</span> <span class="o">=</span> <span class="n">epoch_loss</span> <span class="o">/</span> <span class="n">epoch_n</span>
+
+        <span class="c1"># Validation</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+            <span class="n">vloc</span><span class="p">,</span> <span class="n">vscale</span><span class="p">,</span> <span class="n">va</span><span class="p">,</span> <span class="n">vb</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">val_xv_raw</span><span class="p">)</span>
+            <span class="n">vloss</span> <span class="o">=</span> <span class="n">nll_kuma_logistic_product</span><span class="p">(</span>
+                <span class="n">val_uv_unit</span><span class="p">,</span> <span class="n">vloc</span><span class="p">,</span> <span class="n">vscale</span><span class="p">,</span> <span class="n">va</span><span class="p">,</span> <span class="n">vb</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+
+        <span class="n">improved</span> <span class="o">=</span> <span class="n">vloss</span> <span class="o">&lt;</span> <span class="n">best_val_loss</span> <span class="o">-</span> <span class="n">patience_min_delta</span>
+        <span class="k">if</span> <span class="n">improved</span><span class="p">:</span>
+            <span class="n">best_val_loss</span> <span class="o">=</span> <span class="n">vloss</span>
+            <span class="n">best_state</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="p">}</span>
+            <span class="n">patience_count</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">marker</span> <span class="o">=</span> <span class="s2">&quot;*&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">patience_count</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">marker</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">patience_count</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">patience</span><span class="si">}</span><span class="s2">]&quot;</span>
+
+        <span class="n">scheduler</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Epoch </span><span class="si">{</span><span class="n">epoch</span><span class="si">:</span><span class="s2">3d</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">npe_epochs</span><span class="si">}</span><span class="s2">  train_loss=</span><span class="si">{</span><span class="n">avg_loss</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span>
+              <span class="sa">f</span><span class="s2">&quot;  val_loss=</span><span class="si">{</span><span class="n">vloss</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span>
+              <span class="sa">f</span><span class="s2">&quot;  fresh_simulator_evals=</span><span class="si">{</span><span class="n">fresh_simulator_evals</span><span class="si">}</span><span class="s2">&quot;</span>
+              <span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">marker</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">patience_count</span> <span class="o">&gt;=</span> <span class="n">patience</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Early stopping at epoch </span><span class="si">{</span><span class="n">epoch</span><span class="si">}</span><span class="s2"> (patience=</span><span class="si">{</span><span class="n">patience</span><span class="si">}</span><span class="s2">,&quot;</span>
+                  <span class="sa">f</span><span class="s2">&quot; fresh_simulator_evals=</span><span class="si">{</span><span class="n">fresh_simulator_evals</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+            <span class="k">break</span>
+
+    <span class="k">if</span> <span class="n">best_state</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">best_state</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Restored best model (val_loss=</span><span class="si">{</span><span class="n">best_val_loss</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+
+    <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span>
+        <span class="p">{</span><span class="s2">&quot;state_dict&quot;</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()},</span>
+        <span class="n">model_path</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Model saved to </span><span class="si">{</span><span class="n">model_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">model</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2014-2024, Johannes Buchner.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

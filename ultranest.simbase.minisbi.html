@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ultranest.simbase.minisbi package &mdash; UltraNest 4.6.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="_static/icon.ico"/>
+    <link rel="canonical" href="https://johannesbuchner.github.io/UltraNest/ultranest.simbase.minisbi.html" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=cc8a4273"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="minisbi package" href="minisbi.html" />
+    <link rel="prev" title="ultranest.simbase package" href="ultranest.simbase.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            UltraNest
+              <img src="_static/logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                4.6.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="readme.html">UltraNest</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="method.html">Method</a></li>
+<li class="toctree-l1"><a class="reference internal" href="using-ultranest.html">Basic usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="priors.html">Specifying priors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="performance.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="API.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="issues.html">Frequently Asked Questions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="history.html">Release Notes</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="example-sine-line.html">Time series fitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-sine-modelcomparison.html">Model comparison</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-sine-highd.html">Higher-dimensional fitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-intrinsic-distribution.html">Tutorial: intrinsic distribution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-line.html">Tutorial: fitting a line</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-outliers.html">Tutorial: distribution with outliers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-sine-bayesian-workflow.html">Bayesian workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-warmstart.html">Warm starting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="debugging.html">Debugging techniques</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-simulation-based-inference.html">Simulation-based inference (SBI) acceleration</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">UltraNest</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="API.html">API</a></li>
+          <li class="breadcrumb-item"><a href="ultranest.html">ultranest package</a></li>
+          <li class="breadcrumb-item"><a href="ultranest.simbase.html">ultranest.simbase package</a></li>
+      <li class="breadcrumb-item active">ultranest.simbase.minisbi package</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="ultranest-simbase-minisbi-package">
+<h1>ultranest.simbase.minisbi package<a class="headerlink" href="#ultranest-simbase-minisbi-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-ultranest.simbase.minisbi.logistic">
+<span id="ultranest-simbase-minisbi-logistic-module"></span><h2>ultranest.simbase.minisbi.logistic module<a class="headerlink" href="#module-ultranest.simbase.minisbi.logistic" title="Link to this heading"></a></h2>
+<p>Kumaraswamy-Logistic chained distribution defined on a unit hypercube.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="ultranest.simbase.minisbi.logistic.sigmoid">
+<span class="sig-prename descclassname"><span class="pre">ultranest.simbase.minisbi.logistic.</span></span><span class="sig-name descname"><span class="pre">sigmoid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/simbase/minisbi/logistic.html#sigmoid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.simbase.minisbi.logistic.sigmoid" title="Link to this definition"></a></dt>
+<dd><p>Numerically stable sigmoid function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>numpy.ndarray</em><em> or </em><em>float</em>)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Sigmoid of x, clipped to avoid overflow.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray or float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ultranest.simbase.minisbi.logistic.logit">
+<span class="sig-prename descclassname"><span class="pre">ultranest.simbase.minisbi.logistic.</span></span><span class="sig-name descname"><span class="pre">logit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/simbase/minisbi/logistic.html#logit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.simbase.minisbi.logistic.logit" title="Link to this definition"></a></dt>
+<dd><p>Logit (inverse sigmoid) function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>p</strong> (<em>numpy.ndarray</em><em> or </em><em>float</em>) – Probability value(s) in (0, 1).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Log-odds of p.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray or float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ultranest.simbase.minisbi.logistic.kuma_log_prob">
+<span class="sig-prename descclassname"><span class="pre">ultranest.simbase.minisbi.logistic.</span></span><span class="sig-name descname"><span class="pre">kuma_log_prob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/simbase/minisbi/logistic.html#kuma_log_prob"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.simbase.minisbi.logistic.kuma_log_prob" title="Link to this definition"></a></dt>
+<dd><p>Log-density of Kumaraswamy(a, b) at u in (0, 1).</p>
+<p>log p(u) = log(a) + log(b) + (a-1)*log(u) + (b-1)*log(1 - u^a)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>u</strong> (<em>torch.Tensor</em>) – Values in (0, 1).</p></li>
+<li><p><strong>a</strong> (<em>torch.Tensor</em>) – Shape parameter, &gt; 0.</p></li>
+<li><p><strong>b</strong> (<em>torch.Tensor</em>) – Shape parameter, &gt; 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Log-density at u.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ultranest.simbase.minisbi.logistic.kuma_icdf">
+<span class="sig-prename descclassname"><span class="pre">ultranest.simbase.minisbi.logistic.</span></span><span class="sig-name descname"><span class="pre">kuma_icdf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/simbase/minisbi/logistic.html#kuma_icdf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.simbase.minisbi.logistic.kuma_icdf" title="Link to this definition"></a></dt>
+<dd><p>Inverse CDF (quantile function) of Kumaraswamy(a, b).</p>
+<dl class="simple">
+<dt>Maps u in (0, 1) to v in (0, 1) via:</dt><dd><p>v = (1 - (1 - u)^{1/b})^{1/a}</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>u</strong> (<em>torch.Tensor</em>) – Values in (0, 1).</p></li>
+<li><p><strong>a</strong> (<em>torch.Tensor</em>) – Shape parameter, &gt; 0.</p></li>
+<li><p><strong>b</strong> (<em>torch.Tensor</em>) – Shape parameter, &gt; 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Quantile values in (0, 1).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ultranest.simbase.minisbi.logistic.kuma_icdf_np">
+<span class="sig-prename descclassname"><span class="pre">ultranest.simbase.minisbi.logistic.</span></span><span class="sig-name descname"><span class="pre">kuma_icdf_np</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/simbase/minisbi/logistic.html#kuma_icdf_np"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.simbase.minisbi.logistic.kuma_icdf_np" title="Link to this definition"></a></dt>
+<dd><p>Inverse CDF (quantile function) of Kumaraswamy(a, b) — NumPy version.</p>
+<dl class="simple">
+<dt>Maps u in (0, 1) to v in (0, 1) via:</dt><dd><p>v = (1 - (1 - u)^{1/b})^{1/a}</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>u</strong> (<em>numpy.ndarray</em>) – Values in (0, 1).</p></li>
+<li><p><strong>a</strong> (<em>numpy.ndarray</em>) – Shape parameter, &gt; 0.</p></li>
+<li><p><strong>b</strong> (<em>numpy.ndarray</em>) – Shape parameter, &gt; 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Quantile values in (0, 1).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ultranest.simbase.minisbi.logistic.logistic_log_cdf">
+<span class="sig-prename descclassname"><span class="pre">ultranest.simbase.minisbi.logistic.</span></span><span class="sig-name descname"><span class="pre">logistic_log_cdf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/simbase/minisbi/logistic.html#logistic_log_cdf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.simbase.minisbi.logistic.logistic_log_cdf" title="Link to this definition"></a></dt>
+<dd><p>Log CDF of Logistic(loc, scale).</p>
+<p>Computes log sigmoid((x - loc) / scale).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>torch.Tensor</em>)</p></li>
+<li><p><strong>loc</strong> (<em>torch.Tensor</em>)</p></li>
+<li><p><strong>scale</strong> (<em>torch.Tensor</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Log CDF evaluated at x.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ultranest.simbase.minisbi.logistic.nll_kuma_logistic_product">
+<span class="sig-prename descclassname"><span class="pre">ultranest.simbase.minisbi.logistic.</span></span><span class="sig-name descname"><span class="pre">nll_kuma_logistic_product</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/simbase/minisbi/logistic.html#nll_kuma_logistic_product"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.simbase.minisbi.logistic.nll_kuma_logistic_product" title="Link to this definition"></a></dt>
+<dd><p>Negative log-likelihood of Kumaraswamy-Logistic unit distribution.</p>
+<dl class="simple">
+<dt>The generative model per dimension is:</dt><dd><p>v ~ TruncatedLogistic(loc, scale)  on (0, 1)
+u = Kuma_CDF(v; a, b)  = 1 - (1 - v^a)^b</p>
+</dd>
+<dt>The density of u is obtained by the change of variables v = Kuma_ICDF(u):</dt><dd><p>log p_U(u) = log p_L(v; loc, scale) - log Z(loc, scale) + log|dv/du|</p>
+</dd>
+</dl>
+<p>where log|dv/du| = -log p_Kuma(v; a, b) (the Kumaraswamy log-density
+evaluated at v gives the magnitude of the Jacobian of the inverse map).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>u</strong> (<em>torch.Tensor</em>) – Shape (batch, n_params), values in (0, 1).</p></li>
+<li><p><strong>loc</strong> (<em>torch.Tensor</em>) – Shape (batch, n_params).</p></li>
+<li><p><strong>scale</strong> (<em>torch.Tensor</em>) – Shape (batch, n_params), &gt; 0.</p></li>
+<li><p><strong>a</strong> (<em>torch.Tensor</em>) – Shape (batch, n_params), &gt; 0. Kumaraswamy shape parameter.</p></li>
+<li><p><strong>b</strong> (<em>torch.Tensor</em>) – Shape (batch, n_params), &gt; 0. Kumaraswamy shape parameter.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Scalar mean NLL.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ultranest.simbase.minisbi.logistic.sample_kuma_logistic_product">
+<span class="sig-prename descclassname"><span class="pre">ultranest.simbase.minisbi.logistic.</span></span><span class="sig-name descname"><span class="pre">sample_kuma_logistic_product</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_samples</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/simbase/minisbi/logistic.html#sample_kuma_logistic_product"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.simbase.minisbi.logistic.sample_kuma_logistic_product" title="Link to this definition"></a></dt>
+<dd><p>Sample from unit Kumaraswamy-Logistic distribution.</p>
+<dl class="simple">
+<dt>The inverse CDF of U = Kuma_CDF(V) where V ~ TruncLogistic is:</dt><dd><ol class="arabic simple">
+<li><p>Draw uniform w in (0, 1).</p></li>
+<li><p>v = TruncLogistic_ICDF(w; loc, scale) via standard inversion.</p></li>
+<li><p>u = Kuma_CDF(v; a, b) = 1 - (1 - v^a)^b.</p></li>
+</ol>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>loc</strong> (<em>numpy.ndarray</em>) – Shape (n_params,).</p></li>
+<li><p><strong>scale</strong> (<em>numpy.ndarray</em>) – Shape (n_params,).</p></li>
+<li><p><strong>a</strong> (<em>numpy.ndarray</em>) – Shape (n_params,), Kumaraswamy shape parameter, &gt; 0.</p></li>
+<li><p><strong>b</strong> (<em>numpy.ndarray</em>) – Shape (n_params,), Kumaraswamy shape parameter, &gt; 0.</p></li>
+<li><p><strong>n_samples</strong> (<em>int</em>) – Number of samples to draw.</p></li>
+<li><p><strong>rng</strong> (<em>numpy.random.Generator</em>) – Random number generator.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Shape (n_samples, n_params), values in (0, 1).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ultranest.simbase.minisbi.logistic.kuma_logistic_cdf">
+<span class="sig-prename descclassname"><span class="pre">ultranest.simbase.minisbi.logistic.</span></span><span class="sig-name descname"><span class="pre">kuma_logistic_cdf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/simbase/minisbi/logistic.html#kuma_logistic_cdf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.simbase.minisbi.logistic.kuma_logistic_cdf" title="Link to this definition"></a></dt>
+<dd><p>CDF of the Kumaraswamy-Logistic chained distribution at a scalar point.</p>
+<dl class="simple">
+<dt>The generative model is:</dt><dd><p>v ~ TruncatedLogistic(loc, scale) on (0, 1)
+u = 1 - (1 - v^a)^b</p>
+</dd>
+</dl>
+<p>The CDF of u at x is P(u &lt;= x) = P(v &lt;= Kuma_ICDF(x; a, b)) under the
+truncated logistic.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x_val</strong> (<em>float</em>) – Point in [0, 1].</p></li>
+<li><p><strong>loc</strong> (<em>float</em>)</p></li>
+<li><p><strong>scale</strong> (<em>float</em>) – Must be &gt; 0.</p></li>
+<li><p><strong>a</strong> (<em>float</em>) – Kumaraswamy shape parameter, &gt; 0.</p></li>
+<li><p><strong>b</strong> (<em>float</em>) – Kumaraswamy shape parameter, &gt; 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>CDF value in [0, 1].</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ultranest.simbase.minisbi.logistic.kuma_logistic_cdf_vec">
+<span class="sig-prename descclassname"><span class="pre">ultranest.simbase.minisbi.logistic.</span></span><span class="sig-name descname"><span class="pre">kuma_logistic_cdf_vec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u_vec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/simbase/minisbi/logistic.html#kuma_logistic_cdf_vec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.simbase.minisbi.logistic.kuma_logistic_cdf_vec" title="Link to this definition"></a></dt>
+<dd><p>Cumulative distribution function of the Kumaraswamy-Logistic distribution.</p>
+<p>The CDF is evaluated element-wise over a vector of points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>u_vec</strong> (<em>numpy.ndarray</em>) – Shape (d,), points at which to evaluate the CDF, each in (0, 1).</p></li>
+<li><p><strong>loc</strong> (<em>numpy.ndarray</em>) – Shape (d,).</p></li>
+<li><p><strong>scale</strong> (<em>numpy.ndarray</em>) – Shape (d,), must be positive.</p></li>
+<li><p><strong>a</strong> (<em>numpy.ndarray</em>) – Shape (d,), Kumaraswamy shape parameter, must be positive.</p></li>
+<li><p><strong>b</strong> (<em>numpy.ndarray</em>) – Shape (d,), Kumaraswamy shape parameter, must be positive.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Shape (d,), CDF values in [0, 1].</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ultranest.simbase.minisbi.logistic.kuma_logistic_icdf_vec">
+<span class="sig-prename descclassname"><span class="pre">ultranest.simbase.minisbi.logistic.</span></span><span class="sig-name descname"><span class="pre">kuma_logistic_icdf_vec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t_vec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/simbase/minisbi/logistic.html#kuma_logistic_icdf_vec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.simbase.minisbi.logistic.kuma_logistic_icdf_vec" title="Link to this definition"></a></dt>
+<dd><p>Inverse CDF (quantile function) of the Kumaraswamy-Logistic distribution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t_vec</strong> (<em>numpy.ndarray</em>) – Shape (d,), quantile levels in (0, 1).</p></li>
+<li><p><strong>loc</strong> (<em>numpy.ndarray</em>) – Shape (d,).</p></li>
+<li><p><strong>scale</strong> (<em>numpy.ndarray</em>) – Shape (d,), must be positive.</p></li>
+<li><p><strong>a</strong> (<em>numpy.ndarray</em>) – Shape (d,), Kumaraswamy shape parameter, must be positive.</p></li>
+<li><p><strong>b</strong> (<em>numpy.ndarray</em>) – Shape (d,), Kumaraswamy shape parameter, must be positive.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Shape (d,), quantile values in (0, 1).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ultranest.simbase.minisbi.logistic.kuma_logistic_logpdf_vec">
+<span class="sig-prename descclassname"><span class="pre">ultranest.simbase.minisbi.logistic.</span></span><span class="sig-name descname"><span class="pre">kuma_logistic_logpdf_vec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u_vec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/simbase/minisbi/logistic.html#kuma_logistic_logpdf_vec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.simbase.minisbi.logistic.kuma_logistic_logpdf_vec" title="Link to this definition"></a></dt>
+<dd><p>Log-density of the Kumaraswamy-Logistic distribution, summed over dimensions.</p>
+<p>This equals the log Jacobian log|du/dt| needed to correct the
+nested-sampling likelihood when the prior is this distribution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>u_vec</strong> (<em>numpy.ndarray</em>) – Shape (d,), values in (0, 1).</p></li>
+<li><p><strong>loc</strong> (<em>numpy.ndarray</em>) – Shape (d,).</p></li>
+<li><p><strong>scale</strong> (<em>numpy.ndarray</em>) – Shape (d,).</p></li>
+<li><p><strong>a</strong> (<em>numpy.ndarray</em>) – Shape (d,), Kumaraswamy shape parameter.</p></li>
+<li><p><strong>b</strong> (<em>numpy.ndarray</em>) – Shape (d,), Kumaraswamy shape parameter.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Sum of per-dimension log-densities.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-ultranest.simbase.minisbi.nested">
+<span id="ultranest-simbase-minisbi-nested-module"></span><h2>ultranest.simbase.minisbi.nested module<a class="headerlink" href="#module-ultranest.simbase.minisbi.nested" title="Link to this heading"></a></h2>
+<p>Helpers for using nested sampling on top of an auxiliary distribution.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="ultranest.simbase.minisbi.nested.get_distribution_parameters">
+<span class="sig-prename descclassname"><span class="pre">ultranest.simbase.minisbi.nested.</span></span><span class="sig-name descname"><span class="pre">get_distribution_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">observed_data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/simbase/minisbi/nested.html#get_distribution_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.simbase.minisbi.nested.get_distribution_parameters" title="Link to this definition"></a></dt>
+<dd><p>Query neural network model for Kumaraswamy-logistic distribution parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>torch.nn.Module</em>) – A trained neural posterior estimator that returns the tuple
+<code class="docutils literal notranslate"><span class="pre">(loc,</span> <span class="pre">scale,</span> <span class="pre">a,</span> <span class="pre">b)</span></code> when called with an input tensor.</p></li>
+<li><p><strong>observed_data</strong> (<em>array_like</em>) – The observed data to condition on. Will be converted to a
+<code class="docutils literal notranslate"><span class="pre">torch.float32</span></code> tensor and given a batch dimension of 1.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary with keys <code class="docutils literal notranslate"><span class="pre">'loc'</span></code>, <code class="docutils literal notranslate"><span class="pre">'scale'</span></code>, <code class="docutils literal notranslate"><span class="pre">'a'</span></code>, and <code class="docutils literal notranslate"><span class="pre">'b'</span></code>,
+each mapping to a Python list of floats representing the corresponding
+distribution parameter for each dimension.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ultranest.simbase.minisbi.nested.KLPTransform">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ultranest.simbase.minisbi.nested.</span></span><span class="sig-name descname"><span class="pre">KLPTransform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/simbase/minisbi/nested.html#KLPTransform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.simbase.minisbi.nested.KLPTransform" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Coordinate transform for a Kumaraswamy-logistic distribution (KLP).</p>
+<p>Provides mappings between nested-sampler unit-cube coordinates <code class="docutils literal notranslate"><span class="pre">t</span></code> and
+prior unit-cube coordinates <code class="docutils literal notranslate"><span class="pre">u</span></code>, along with the associated log Jacobian
+and CDF evaluation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>loc</strong> (<em>array_like</em>) – Location parameters of the Kumaraswamy-logistic distribution,
+shape <code class="docutils literal notranslate"><span class="pre">(n_params,)</span></code>.</p></li>
+<li><p><strong>scale</strong> (<em>array_like</em>) – Scale parameters of the Kumaraswamy-logistic distribution,
+shape <code class="docutils literal notranslate"><span class="pre">(n_params,)</span></code>.</p></li>
+<li><p><strong>a</strong> (<em>array_like</em>) – First shape parameters of the Kumaraswamy distribution,
+shape <code class="docutils literal notranslate"><span class="pre">(n_params,)</span></code>.</p></li>
+<li><p><strong>b</strong> (<em>array_like</em>) – Second shape parameters of the Kumaraswamy distribution,
+shape <code class="docutils literal notranslate"><span class="pre">(n_params,)</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Initialise.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ultranest.simbase.minisbi.nested.KLPTransform.transform">
+<span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/simbase/minisbi/nested.html#KLPTransform.transform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.simbase.minisbi.nested.KLPTransform.transform" title="Link to this definition"></a></dt>
+<dd><p>Map unit-cube coordinates <code class="docutils literal notranslate"><span class="pre">t</span></code> to prior unit-cube coordinates <code class="docutils literal notranslate"><span class="pre">u</span></code> via inverse CDF.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>t</strong> (<em>np.ndarray</em>) – Uniformly distributed sample from the nested sampler,
+shape <code class="docutils literal notranslate"><span class="pre">(n_params,)</span></code>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>u</strong> – Corresponding unit-cube coordinates of shape <code class="docutils literal notranslate"><span class="pre">(n_params,)</span></code>
+and dtype <code class="docutils literal notranslate"><span class="pre">float32</span></code>; pass to <code class="docutils literal notranslate"><span class="pre">prior_transform</span></code> to get
+physical parameters.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ultranest.simbase.minisbi.nested.KLPTransform.log_jacobian">
+<span class="sig-name descname"><span class="pre">log_jacobian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/simbase/minisbi/nested.html#KLPTransform.log_jacobian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.simbase.minisbi.nested.KLPTransform.log_jacobian" title="Link to this definition"></a></dt>
+<dd><p>Compute log-Jacobian.</p>
+<p>This is for the transform <code class="docutils literal notranslate"><span class="pre">t</span> <span class="pre">-&gt;</span> <span class="pre">u</span></code>, equal to the log-density
+of the KLP distribution at <code class="docutils literal notranslate"><span class="pre">u</span> <span class="pre">=</span> <span class="pre">transform(t)</span></code>.</p>
+<p>Add this value to the true log-likelihood when passing to the
+nested sampler so that the sampler correctly targets the posterior.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>t</strong> (<em>np.ndarray</em>) – Nested-sampler unit-cube coordinates, shape <code class="docutils literal notranslate"><span class="pre">(n_params,)</span></code>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>log_q</strong> – <code class="docutils literal notranslate"><span class="pre">log</span> <span class="pre">q(u(t)</span> <span class="pre">|</span> <span class="pre">x_obs)</span></code> – always finite.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ultranest.simbase.minisbi.nested.KLPTransform.cdf">
+<span class="sig-name descname"><span class="pre">cdf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/simbase/minisbi/nested.html#KLPTransform.cdf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.simbase.minisbi.nested.KLPTransform.cdf" title="Link to this definition"></a></dt>
+<dd><p>Evaluate the CDF.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>u</strong> (<em>np.ndarray</em>) – Prior unit-cube coordinates, shape <code class="docutils literal notranslate"><span class="pre">(n_params,)</span></code>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>t</strong> – Nested-sampler unit-cube coordinates corresponding to <code class="docutils literal notranslate"><span class="pre">u</span></code>,
+shape <code class="docutils literal notranslate"><span class="pre">(n_params,)</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ultranest.simbase.minisbi.nested.KLPTransform.logpdf">
+<span class="sig-name descname"><span class="pre">logpdf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/simbase/minisbi/nested.html#KLPTransform.logpdf"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.simbase.minisbi.nested.KLPTransform.logpdf" title="Link to this definition"></a></dt>
+<dd><p>Evaluate log-density.</p>
+<p>This is used by importance sampling to compute the log proposal
+density <code class="docutils literal notranslate"><span class="pre">log</span> <span class="pre">q(u</span> <span class="pre">|</span> <span class="pre">x_obs)</span></code> for each sample drawn from the NPE
+approximate posterior.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>u</strong> (<em>np.ndarray</em>) – Prior unit-cube coordinates, shape <code class="docutils literal notranslate"><span class="pre">(n_params,)</span></code>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>log_q</strong> – Sum of log-densities across all dimensions,
+<code class="docutils literal notranslate"><span class="pre">sum_i</span> <span class="pre">log</span> <span class="pre">q(u_i</span> <span class="pre">|</span> <span class="pre">x_obs)</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-ultranest.simbase.minisbi.norm">
+<span id="ultranest-simbase-minisbi-norm-module"></span><h2>ultranest.simbase.minisbi.norm module<a class="headerlink" href="#module-ultranest.simbase.minisbi.norm" title="Link to this heading"></a></h2>
+<p>Input data standardization layers.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="ultranest.simbase.minisbi.norm.ZScoreNorm">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ultranest.simbase.minisbi.norm.</span></span><span class="sig-name descname"><span class="pre">ZScoreNorm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_features</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-08</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/simbase/minisbi/norm.html#ZScoreNorm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.simbase.minisbi.norm.ZScoreNorm" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Per-feature z-score normalisation layer.</p>
+<p>For each feature, computes the sample mean and standard deviation from
+a calibration set.  At forward time the raw input is whitened
+feature-wise: z = (x - mean) / std.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_features</strong> (<em>int</em>) – Dimensionality of the input.</p></li>
+<li><p><strong>eps</strong> (<em>float</em>) – Small constant added to the standard deviation for numerical
+stability.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Initialise the layer and register per-feature statistic buffers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_features</strong> (<em>int</em>) – Dimensionality of the input.</p></li>
+<li><p><strong>eps</strong> (<em>float</em>) – Small constant added to the standard deviation for numerical
+stability.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="ultranest.simbase.minisbi.norm.ZScoreNorm.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_np</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/ultranest/simbase/minisbi/norm.html#ZScoreNorm.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.simbase.minisbi.norm.ZScoreNorm.fit" title="Link to this definition"></a></dt>
+<dd><p>Compute per-feature mean and std from a numpy array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x_np</strong> (<em>np.ndarray</em>) – Array of shape (N, n_features) used to compute the statistics.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ultranest.simbase.minisbi.norm.ZScoreNorm.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tensor</span></span></span><a class="reference internal" href="_modules/ultranest/simbase/minisbi/norm.html#ZScoreNorm.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.simbase.minisbi.norm.ZScoreNorm.forward" title="Link to this definition"></a></dt>
+<dd><p>Apply per-feature z-score normalisation to the input tensor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – Input tensor of shape (…, n_features).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tensor of the same shape as <code class="docutils literal notranslate"><span class="pre">x</span></code>, z-score normalised per
+feature.  If the layer has not been fitted, <code class="docutils literal notranslate"><span class="pre">x</span></code> is returned
+unchanged.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-ultranest.simbase.minisbi.npe">
+<span id="ultranest-simbase-minisbi-npe-module"></span><h2>ultranest.simbase.minisbi.npe module<a class="headerlink" href="#module-ultranest.simbase.minisbi.npe" title="Link to this heading"></a></h2>
+<p>Neural Posterior Estimation (NPE) training.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="ultranest.simbase.minisbi.npe.CascadeNet">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ultranest.simbase.minisbi.npe.</span></span><span class="sig-name descname"><span class="pre">CascadeNet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_widths</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activation_cls</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/simbase/minisbi/npe.html#CascadeNet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.simbase.minisbi.npe.CascadeNet" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Cascade MLP architecture.</p>
+<p>Each hidden layer forwards half of its output neurons directly to the
+final layer (skip connection) and the other half to the next hidden layer.</p>
+<p>Concretely, layer i produces <code class="docutils literal notranslate"><span class="pre">hidden_widths[i]</span></code> neurons. We split them
+evenly: the first half (<code class="docutils literal notranslate"><span class="pre">skip_size</span> <span class="pre">=</span> <span class="pre">hidden_widths[i]</span> <span class="pre">//</span> <span class="pre">2</span></code>) accumulates
+in a “cascade buffer” that is concatenated to the input of the final
+linear layer; the second half (<code class="docutils literal notranslate"><span class="pre">pass_size</span></code>) is forwarded to the next
+hidden layer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_dim</strong> (<em>int</em>) – Dimensionality of the network input.</p></li>
+<li><p><strong>output_dim</strong> (<em>int</em>) – Dimensionality of the network output.</p></li>
+<li><p><strong>hidden_widths</strong> (<em>list</em><em> of </em><em>int</em>) – Number of neurons in each hidden layer.</p></li>
+<li><p><strong>activation_cls</strong> (<em>type</em>) – Activation class (e.g. <code class="docutils literal notranslate"><span class="pre">nn.ReLU</span></code>); instantiated per layer.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Initialise.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ultranest.simbase.minisbi.npe.CascadeNet.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/simbase/minisbi/npe.html#CascadeNet.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.simbase.minisbi.npe.CascadeNet.forward" title="Link to this definition"></a></dt>
+<dd><p>Forward pass through the cascade network.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>torch.Tensor</em>) – Input tensor of shape <code class="docutils literal notranslate"><span class="pre">(...,</span> <span class="pre">input_dim)</span></code>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Output tensor of shape <code class="docutils literal notranslate"><span class="pre">(...,</span> <span class="pre">output_dim)</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ultranest.simbase.minisbi.npe.NPENetwork">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ultranest.simbase.minisbi.npe.</span></span><span class="sig-name descname"><span class="pre">NPENetwork</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depth</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activation_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layer_shape</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/simbase/minisbi/npe.html#NPENetwork"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.simbase.minisbi.npe.NPENetwork" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Network that outputs a product of Kumaraswamy-Logistic chained distributions living on the unit cube [0, 1]^d.</p>
+<dl class="simple">
+<dt>For each parameter dimension the network predicts 4 values:</dt><dd><ul class="simple">
+<li><p>loc       (via sigmoid, in (0,1))</p></li>
+<li><p>log_scale (unconstrained; exponentiated -&gt; scale &gt; 0)</p></li>
+<li><p>log_a     (unconstrained; exponentiated -&gt; a &gt; 0, Kumaraswamy shape)</p></li>
+<li><p>log_b     (unconstrained; exponentiated -&gt; b &gt; 0, Kumaraswamy shape)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_data</strong> (<em>int</em>) – Raw input dimension.</p></li>
+<li><p><strong>n_params</strong> (<em>int</em>) – Number of model parameters.</p></li>
+<li><p><strong>depth</strong> (<em>int</em>) – Number of hidden layers.</p></li>
+<li><p><strong>width</strong> (<em>int</em>) – Width of each hidden layer.</p></li>
+<li><p><strong>activation_name</strong> (<em>str</em>) – Activation name (e.g. <code class="docutils literal notranslate"><span class="pre">'ReLU'</span></code>).</p></li>
+<li><p><strong>layer_shape</strong> (<em>str</em>) – Architecture shape: <code class="docutils literal notranslate"><span class="pre">'rectangular'</span></code>, <code class="docutils literal notranslate"><span class="pre">'triangular'</span></code>, or
+<code class="docutils literal notranslate"><span class="pre">'cascade'</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Initialise.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ultranest.simbase.minisbi.npe.NPENetwork.fit_norm">
+<span class="sig-name descname"><span class="pre">fit_norm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_np</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/ultranest/simbase/minisbi/npe.html#NPENetwork.fit_norm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.simbase.minisbi.npe.NPENetwork.fit_norm" title="Link to this definition"></a></dt>
+<dd><p>Fit the moment-matching normalisation layer on a representative sample.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x_np</strong> (<em>numpy.ndarray</em>) – Array of shape <code class="docutils literal notranslate"><span class="pre">(n_samples,</span> <span class="pre">n_data)</span></code> used to compute
+the normalisation statistics.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ultranest.simbase.minisbi.npe.NPENetwork.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_raw</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/simbase/minisbi/npe.html#NPENetwork.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.simbase.minisbi.npe.NPENetwork.forward" title="Link to this definition"></a></dt>
+<dd><p>Map raw data to per-parameter distribution parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x_raw</strong> (<em>torch.Tensor</em><em>  (</em><em>batch</em><em>, </em><em>n_data</em><em>)</em>)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>loc</strong> (<em>torch.Tensor  (batch, n_params)  in (0,1)</em>)</p></li>
+<li><p><strong>scale</strong> (<em>torch.Tensor  (batch, n_params)  &gt; 0</em>)</p></li>
+<li><p><strong>a</strong> (<em>torch.Tensor  (batch, n_params)  &gt; 0</em>)</p></li>
+<li><p><strong>b</strong> (<em>torch.Tensor  (batch, n_params)  &gt; 0</em>)</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ultranest.simbase.minisbi.npe.sample_posterior">
+<span class="sig-prename descclassname"><span class="pre">ultranest.simbase.minisbi.npe.</span></span><span class="sig-name descname"><span class="pre">sample_posterior</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">observed_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prior_transform</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_posterior_samples</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/simbase/minisbi/npe.html#sample_posterior"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.simbase.minisbi.npe.sample_posterior" title="Link to this definition"></a></dt>
+<dd><p>Draw posterior samples for a single observed dataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<a class="reference internal" href="#ultranest.simbase.minisbi.npe.NPENetwork" title="ultranest.simbase.minisbi.npe.NPENetwork"><em>NPENetwork</em></a>) – Trained NPE model.</p></li>
+<li><p><strong>observed_data</strong> (<em>numpy.ndarray</em>) – 1-D array of observed data values, shape <code class="docutils literal notranslate"><span class="pre">(n_data,)</span></code>.</p></li>
+<li><p><strong>prior_transform</strong> (<em>callable</em>) – Function <code class="docutils literal notranslate"><span class="pre">(u)</span> <span class="pre">-&gt;</span> <span class="pre">theta</span></code> mapping unit-cube samples to the
+physical parameter space.</p></li>
+<li><p><strong>n_params</strong> (<em>int</em>) – Number of model parameters.</p></li>
+<li><p><strong>n_posterior_samples</strong> (<em>int</em>) – Number of posterior samples to return.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>posterior_samples_u</strong> (<em>numpy.ndarray</em>) – Samples in unit-cube space, shape <code class="docutils literal notranslate"><span class="pre">(n_posterior_samples,</span> <span class="pre">n_params)</span></code>.</p></li>
+<li><p><strong>posterior_samples_theta</strong> (<em>numpy.ndarray</em>) – Samples in physical parameter space, shape
+<code class="docutils literal notranslate"><span class="pre">(n_posterior_samples,</span> <span class="pre">n_params)</span></code>.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ultranest.simbase.minisbi.npe.train_npe">
+<span class="sig-prename descclassname"><span class="pre">ultranest.simbase.minisbi.npe.</span></span><span class="sig-name descname"><span class="pre">train_npe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generate_noiseless_batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inject_noise</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fresh_sim_batch_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npe_lr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_seed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_model_evals</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_processes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patience</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">patience_min_delta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npe_batches_epoch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npe_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npe_activation_cls</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ReLU'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npe_depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">norm_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layer_shape</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cascade'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fresh_example_fraction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/simbase/minisbi/npe.html#train_npe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.simbase.minisbi.npe.train_npe" title="Link to this definition"></a></dt>
+<dd><p>Train a Neural Posterior Estimator (NPE) with a product-of-Kumaraswamy-Logistic output.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>folder</strong> (<em>str</em>) – Directory in which to save or load the trained model.</p></li>
+<li><p><strong>generate_noiseless_batch</strong> (<em>callable</em>) – Simulation function with signature
+<code class="docutils literal notranslate"><span class="pre">(batch_idx,</span> <span class="pre">n_sim,</span> <span class="pre">seed,</span> <span class="pre">n_params)</span> <span class="pre">-&gt;</span> <span class="pre">dict</span></code>.</p></li>
+<li><p><strong>inject_noise</strong> (<em>callable</em>) – Function <code class="docutils literal notranslate"><span class="pre">(props,</span> <span class="pre">rng)</span> <span class="pre">-&gt;</span> <span class="pre">noisy_vector</span></code>.</p></li>
+<li><p><strong>n_params</strong> (<em>int</em>) – Number of model parameters.</p></li>
+<li><p><strong>fresh_sim_batch_size</strong> (<em>int</em>) – Number of fresh simulator draws requested per sub-batch. This is the
+number of new simulations run each time the simulator is called; it is
+<em>not</em> the number of examples seen by the neural network in one gradient
+step (see <code class="docutils literal notranslate"><span class="pre">effective_train_batch_size</span></code>).</p></li>
+<li><p><strong>npe_lr</strong> (<em>float</em>) – Learning rate for the Adam optimiser.</p></li>
+<li><p><strong>base_seed</strong> (<em>int</em>) – Base random seed used throughout training.</p></li>
+<li><p><strong>max_model_evals</strong> (<em>int</em>) – Maximum total number of simulator evaluations to generate across all
+training batches.</p></li>
+<li><p><strong>num_processes</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of parallel worker processes. Default is <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p></li>
+<li><p><strong>patience</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of epochs without improvement before early stopping.
+Default is <code class="docutils literal notranslate"><span class="pre">30</span></code>.</p></li>
+<li><p><strong>patience_min_delta</strong> (<em>float</em><em>, </em><em>optional</em>) – Minimum validation-loss improvement to reset the patience counter.
+Default is <code class="docutils literal notranslate"><span class="pre">1e-4</span></code>.</p></li>
+<li><p><strong>npe_batches_epoch</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of simulation batches drawn per epoch. Default is <code class="docutils literal notranslate"><span class="pre">8</span></code>.</p></li>
+<li><p><strong>npe_width</strong> (<em>int</em><em>, </em><em>optional</em>) – Width of each hidden layer. Default is <code class="docutils literal notranslate"><span class="pre">1024</span></code>.</p></li>
+<li><p><strong>npe_activation_cls</strong> (<em>str</em>) – Activation function name. Default is <code class="docutils literal notranslate"><span class="pre">'ReLU'</span></code>.</p></li>
+<li><p><strong>npe_depth</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of hidden layers. Default is <code class="docutils literal notranslate"><span class="pre">6</span></code>.</p></li>
+<li><p><strong>val_size</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of samples in the fixed validation set. Default is <code class="docutils literal notranslate"><span class="pre">1024</span></code>.</p></li>
+<li><p><strong>norm_size</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of samples for determining the input normalisation validation set. Default is <code class="docutils literal notranslate"><span class="pre">2000</span></code>.</p></li>
+<li><p><strong>layer_shape</strong> (<em>str</em><em>, </em><em>optional</em>) – Architecture shape: <code class="docutils literal notranslate"><span class="pre">'rectangular'</span></code> (default), <code class="docutils literal notranslate"><span class="pre">'triangular'</span></code>, or
+<code class="docutils literal notranslate"><span class="pre">'cascade'</span></code>.</p></li>
+<li><p><strong>fresh_example_fraction</strong> (<em>float</em><em>, </em><em>optional</em>) – Fraction of each training mini-batch that consists of freshly
+simulated examples. The remainder
+(<code class="docutils literal notranslate"><span class="pre">1</span> <span class="pre">-</span> <span class="pre">fresh_example_fraction</span></code>) is filled by replaying examples
+from the history buffer, so the effective batch size seen by the
+network (<code class="docutils literal notranslate"><span class="pre">effective_train_batch_size</span></code>) is larger than
+<code class="docutils literal notranslate"><span class="pre">fresh_sim_batch_size</span></code>.  Must be in <code class="docutils literal notranslate"><span class="pre">(0,</span> <span class="pre">1]</span></code>.  When set to
+<code class="docutils literal notranslate"><span class="pre">1.0</span></code> no replay is used and
+<code class="docutils literal notranslate"><span class="pre">effective_train_batch_size</span> <span class="pre">==</span> <span class="pre">fresh_sim_batch_size</span></code>.
+Default is <code class="docutils literal notranslate"><span class="pre">0.5</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The relationship between the key batch-size quantities is:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">replay_example_count</span>    <span class="o">=</span> <span class="n">fresh_sim_batch_size</span>
+                          <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">fresh_example_fraction</span><span class="p">)</span>
+                          <span class="o">/</span> <span class="n">fresh_example_fraction</span>
+<span class="n">effective_train_batch_size</span> <span class="o">=</span> <span class="n">fresh_sim_batch_size</span>
+                             <span class="o">+</span> <span class="n">replay_example_count</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">fresh_simulator_evals</span></code> counts the cumulative number of simulator
+calls made so far (i.e. the total number of freshly generated
+parameter–data pairs, excluding replayed examples).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>model</strong> – Trained NPE model in eval mode.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#ultranest.simbase.minisbi.npe.NPENetwork" title="ultranest.simbase.minisbi.npe.NPENetwork">NPENetwork</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-ultranest.simbase.minisbi.plot">
+<span id="ultranest-simbase-minisbi-plot-module"></span><h2>ultranest.simbase.minisbi.plot module<a class="headerlink" href="#module-ultranest.simbase.minisbi.plot" title="Link to this heading"></a></h2>
+<p>Validation / diagnostic utilities.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="ultranest.simbase.minisbi.plot.rank_histogram">
+<span class="sig-prename descclassname"><span class="pre">ultranest.simbase.minisbi.plot.</span></span><span class="sig-name descname"><span class="pre">rank_histogram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generate_noiseless_batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inject_noise</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_test</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_posterior_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">98765</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prior_transform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_bins</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/simbase/minisbi/plot.html#rank_histogram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.simbase.minisbi.plot.rank_histogram" title="Link to this definition"></a></dt>
+<dd><p>Rank-histogram (Tallagrand / PIT) test.</p>
+<p>For each of <em>n_test</em> test simulations, the rank of the true parameter
+value is computed analytically from the Kumaraswamy-Logistic CDF, then
+converted to a discrete rank in [0, n_posterior_samples].  A
+well-calibrated posterior yields a flat histogram.</p>
+<p>Results are saved to &lt;folder&gt;/rank_histograms.pdf.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<a class="reference internal" href="#ultranest.simbase.minisbi.npe.NPENetwork" title="ultranest.simbase.minisbi.npe.NPENetwork"><em>NPENetwork</em></a>) – The trained neural posterior estimation network.</p></li>
+<li><p><strong>generate_noiseless_batch</strong> (<em>callable</em>) – Cached generator that produces noiseless simulation batches.</p></li>
+<li><p><strong>inject_noise</strong> (<em>callable</em>) – Noise injector applied to each noiseless simulation.</p></li>
+<li><p><strong>n_params</strong> (<em>int</em>) – Number of model parameters.</p></li>
+<li><p><strong>folder</strong> (<em>str</em>) – Output directory in which to save the rank histogram PDF.</p></li>
+<li><p><strong>n_test</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of test simulations. Default is 500.</p></li>
+<li><p><strong>n_posterior_samples</strong> (<em>int</em><em>, </em><em>optional</em>) – Posterior draws per simulation, used to discretise the CDF rank.
+Default is 200.</p></li>
+<li><p><strong>seed</strong> (<em>int</em><em>, </em><em>optional</em>) – RNG seed. Default is 98765.</p></li>
+<li><p><strong>param_names</strong> (<em>list</em><em> of </em><em>str</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – Names for each parameter. If None, defaults to
+[‘param_0’, ‘param_1’, …].</p></li>
+<li><p><strong>prior_transform</strong> (<em>optional</em>) – not used</p></li>
+<li><p><strong>n_bins</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of histogram bins. Default is 20.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ranks</strong> – Rank of the true value in [0, n_posterior_samples].
+Shape: (n_test, n_params).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ultranest.simbase.minisbi.plot.parameter_coverage_test">
+<span class="sig-prename descclassname"><span class="pre">ultranest.simbase.minisbi.plot.</span></span><span class="sig-name descname"><span class="pre">parameter_coverage_test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generate_noiseless_batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inject_noise</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_test</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">credible_levels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">11223</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prior_transform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/simbase/minisbi/plot.html#parameter_coverage_test"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.simbase.minisbi.plot.parameter_coverage_test" title="Link to this definition"></a></dt>
+<dd><p>Expected-coverage (parameter coverage) test.</p>
+<p>For each test simulation, the rank of the true parameter under the
+approximate posterior is computed analytically from the
+Kumaraswamy-Logistic CDF.  The rank (a value in [0, 1]) is then compared
+against the nominal credible levels to determine coverage.</p>
+<p>Results are saved to &lt;folder&gt;/coverage_test.pdf.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<a class="reference internal" href="#ultranest.simbase.minisbi.npe.NPENetwork" title="ultranest.simbase.minisbi.npe.NPENetwork"><em>NPENetwork</em></a>)</p></li>
+<li><p><strong>generate_noiseless_batch</strong> (<em>callable</em>)</p></li>
+<li><p><strong>inject_noise</strong> (<em>callable</em>)</p></li>
+<li><p><strong>n_params</strong> (<em>int</em>)</p></li>
+<li><p><strong>folder</strong> (<em>str</em>)</p></li>
+<li><p><strong>n_test</strong> (<em>int</em><em>, </em><em>optional</em>)</p></li>
+<li><p><strong>credible_levels</strong> (<em>list</em><em> of </em><em>float</em><em> or </em><em>None</em><em>, </em><em>optional</em>)</p></li>
+<li><p><strong>seed</strong> (<em>int</em><em>, </em><em>optional</em>)</p></li>
+<li><p><strong>param_names</strong> (<em>list</em><em> of </em><em>str</em><em> or </em><em>None</em><em>, </em><em>optional</em>)</p></li>
+<li><p><strong>prior_transform</strong> (<em>optional</em>) – not used</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>coverage</strong> – Empirical coverage fraction at each credible level.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray, shape (len(credible_levels), n_params)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ultranest.simbase.minisbi.plot.posterior_predictive_check">
+<span class="sig-prename descclassname"><span class="pre">ultranest.simbase.minisbi.plot.</span></span><span class="sig-name descname"><span class="pre">posterior_predictive_check</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">posterior_samples_theta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">observed_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generate_mean_and_noise</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inject_noise</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_mean_curves</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_realisation_curves</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">77777</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_coords</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/simbase/minisbi/plot.html#posterior_predictive_check"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.simbase.minisbi.plot.posterior_predictive_check" title="Link to this definition"></a></dt>
+<dd><p>Posterior predictive check.</p>
+<dl class="simple">
+<dt>Draws parameter samples from the posterior and generates:</dt><dd><ul class="simple">
+<li><p>posterior mean curves  (noiseless signal for each sample)</p></li>
+<li><p>posterior data realisations  (noisy draws)</p></li>
+</ul>
+</dd>
+</dl>
+<p>then plots them together with the true observed data and saves the result
+to &lt;folder&gt;/posterior.pdf.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>posterior_samples_theta</strong> (<em>np.ndarray</em>) – Physical parameter samples from the posterior.
+Shape: (n_posterior, n_params).</p></li>
+<li><p><strong>observed_data</strong> (<em>np.ndarray</em>) – The actual observed dataset. Shape: (n_data,).</p></li>
+<li><p><strong>generate_mean_and_noise</strong> (<em>callable</em>) – Same function used during simulation; generates noiseless signal
+properties given a parameter vector.</p></li>
+<li><p><strong>inject_noise</strong> (<em>callable</em>) – Noise injector that takes simulation properties and an RNG instance
+and returns a noisy realisation.</p></li>
+<li><p><strong>folder</strong> (<em>str</em>) – Output directory in which to save the posterior predictive PDF.</p></li>
+<li><p><strong>n_mean_curves</strong> (<em>int</em><em>, </em><em>optional</em>) – How many posterior mean curves to overlay. Default is 200.</p></li>
+<li><p><strong>n_realisation_curves</strong> (<em>int</em><em>, </em><em>optional</em>) – How many noisy realisations to overlay. Default is 50.</p></li>
+<li><p><strong>seed</strong> (<em>int</em><em>, </em><em>optional</em>) – RNG seed for noise injection. Default is 77777.</p></li>
+<li><p><strong>x_coords</strong> (<em>np.ndarray</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – x-axis coordinates for the data. If None, defaults to
+np.linspace(-5, 5, n_data).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Saves the figure to &lt;folder&gt;/posterior.pdf and prints the path.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-ultranest.simbase.minisbi.utils">
+<span id="ultranest-simbase-minisbi-utils-module"></span><h2>ultranest.simbase.minisbi.utils module<a class="headerlink" href="#module-ultranest.simbase.minisbi.utils" title="Link to this heading"></a></h2>
+<p>Utilities for sampling and wrapping functions.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="ultranest.simbase.minisbi.utils.sample_prior_u">
+<span class="sig-prename descclassname"><span class="pre">ultranest.simbase.minisbi.utils.</span></span><span class="sig-name descname"><span class="pre">sample_prior_u</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rng</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_params</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/simbase/minisbi/utils.html#sample_prior_u"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.simbase.minisbi.utils.sample_prior_u" title="Link to this definition"></a></dt>
+<dd><p>Sample a single draw from a uniform prior over the unit hypercube.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rng</strong> (<em>numpy.random.Generator</em>) – Random number generator used to draw samples.</p></li>
+<li><p><strong>n_params</strong> (<em>int</em>) – Number of parameters (dimensionality of the hypercube).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>1-D array of shape <code class="docutils literal notranslate"><span class="pre">(n_params,)</span></code> with dtype <code class="docutils literal notranslate"><span class="pre">float32</span></code>,
+containing values sampled uniformly from <code class="docutils literal notranslate"><span class="pre">[0.0,</span> <span class="pre">1.0)</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ultranest.simbase.minisbi.utils.make_memory">
+<span class="sig-prename descclassname"><span class="pre">ultranest.simbase.minisbi.utils.</span></span><span class="sig-name descname"><span class="pre">make_memory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">folder</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/simbase/minisbi/utils.html#make_memory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.simbase.minisbi.utils.make_memory" title="Link to this definition"></a></dt>
+<dd><p>Create a joblib <code class="docutils literal notranslate"><span class="pre">Memory</span></code> object for caching results to disk.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>folder</strong> (<em>str</em><em> or </em><em>os.PathLike</em>) – Path to the directory where cached results will be stored.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">Memory</span></code> instance configured to use <code class="docutils literal notranslate"><span class="pre">folder</span></code> as its cache
+location, with verbosity set to 0.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>joblib.Memory</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ultranest.simbase.minisbi.utils.make_cached_generate">
+<span class="sig-prename descclassname"><span class="pre">ultranest.simbase.minisbi.utils.</span></span><span class="sig-name descname"><span class="pre">make_cached_generate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">memory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prior_transform</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generate_mean_and_noise</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/simbase/minisbi/utils.html#make_cached_generate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.simbase.minisbi.utils.make_cached_generate" title="Link to this definition"></a></dt>
+<dd><p>Create a cached function that generates noiseless simulation batches.</p>
+<p>The returned function is decorated with <code class="docutils literal notranslate"><span class="pre">memory.cache</span></code> so that repeated
+calls with identical arguments are served from disk rather than recomputed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>memory</strong> (<em>joblib.Memory</em>) – Joblib memory object used to cache the inner function.</p></li>
+<li><p><strong>prior_transform</strong> (<em>callable</em>) – Function that maps a unit-hypercube sample <code class="docutils literal notranslate"><span class="pre">u</span></code> (1-D array of shape
+<code class="docutils literal notranslate"><span class="pre">(n_params,)</span></code>) to a parameter vector <code class="docutils literal notranslate"><span class="pre">theta</span></code> in the model space.</p></li>
+<li><p><strong>generate_mean_and_noise</strong> (<em>callable</em>) – Function with signature <code class="docutils literal notranslate"><span class="pre">(idx,</span> <span class="pre">seed,</span> <span class="pre">theta)</span></code> that returns the
+noiseless (mean) summary properties for a single simulation.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>A cached function <code class="docutils literal notranslate"><span class="pre">generate_noiseless_batch(batch_idx,</span> <span class="pre">n_sim,</span> <span class="pre">seed,</span>
+<span class="pre">n_params)</span></code> that returns a dict with keys:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">'u_samples'</span></code></dt><dd><p>2-D <code class="docutils literal notranslate"><span class="pre">float32</span></code> array of shape <code class="docutils literal notranslate"><span class="pre">(n_sim,</span> <span class="pre">n_params)</span></code> containing
+unit-hypercube draws.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">'mean_props'</span></code></dt><dd><p>List of length <code class="docutils literal notranslate"><span class="pre">n_sim</span></code> containing the noiseless summary
+properties for each simulation.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>callable</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ultranest.simbase.minisbi.utils.inject_noise_batch">
+<span class="sig-prename descclassname"><span class="pre">ultranest.simbase.minisbi.utils.</span></span><span class="sig-name descname"><span class="pre">inject_noise_batch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inject_noise</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/simbase/minisbi/utils.html#inject_noise_batch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.simbase.minisbi.utils.inject_noise_batch" title="Link to this definition"></a></dt>
+<dd><p>Inject noise into a pre-generated batch of noiseless simulations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch_dict</strong> (<em>dict</em>) – <p>Dictionary returned by <code class="docutils literal notranslate"><span class="pre">generate_noiseless_batch</span></code>, containing:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">'u_samples'</span></code></dt><dd><p>2-D <code class="docutils literal notranslate"><span class="pre">float32</span></code> array of shape <code class="docutils literal notranslate"><span class="pre">(n_sim,</span> <span class="pre">n_params)</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">'mean_props'</span></code></dt><dd><p>List of length <code class="docutils literal notranslate"><span class="pre">n_sim</span></code> with noiseless summary properties.</p>
+</dd>
+</dl>
+</p></li>
+<li><p><strong>rng</strong> (<em>numpy.random.Generator</em>) – Random number generator used by <code class="docutils literal notranslate"><span class="pre">inject_noise</span></code> to draw noise
+realisations.</p></li>
+<li><p><strong>inject_noise</strong> (<em>callable</em>) – Function with signature <code class="docutils literal notranslate"><span class="pre">(props,</span> <span class="pre">rng)</span></code> that takes noiseless
+summary properties and returns a 1-D array of noisy data values.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>u_samples</strong> (<em>numpy.ndarray</em>) – 2-D <code class="docutils literal notranslate"><span class="pre">float32</span></code> array of shape <code class="docutils literal notranslate"><span class="pre">(n_sim,</span> <span class="pre">n_params)</span></code> containing the
+unit-hypercube parameter draws.</p></li>
+<li><p><strong>raw_data</strong> (<em>numpy.ndarray</em>) – 2-D <code class="docutils literal notranslate"><span class="pre">float32</span></code> array of shape <code class="docutils literal notranslate"><span class="pre">(n_sim,</span> <span class="pre">n_data)</span></code> containing the
+noisy simulation outputs, where <code class="docutils literal notranslate"><span class="pre">n_data</span></code> is the length of the
+array returned by <code class="docutils literal notranslate"><span class="pre">inject_noise</span></code>.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ultranest.simbase.minisbi.utils.random_derangement">
+<span class="sig-prename descclassname"><span class="pre">ultranest.simbase.minisbi.utils.</span></span><span class="sig-name descname"><span class="pre">random_derangement</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/simbase/minisbi/utils.html#random_derangement"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.simbase.minisbi.utils.random_derangement" title="Link to this definition"></a></dt>
+<dd><p>Generate a uniformly random derangement (permutation without fixed points).</p>
+<p>The function resamples until a valid derangement is found.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n</strong> (<em>int</em>) – Number of elements to permute.</p></li>
+<li><p><strong>device</strong> (<em>torch.device</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – Device on which to create the permutation tensor.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>1-D integer tensor of length <code class="docutils literal notranslate"><span class="pre">n</span></code> with no element equal to its index.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-ultranest.simbase.minisbi">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ultranest.simbase.minisbi" title="Link to this heading"></a></h2>
+<p>Simulation-based inference (SBI) tools.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="ultranest.simbase.html" class="btn btn-neutral float-left" title="ultranest.simbase package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="minisbi.html" class="btn btn-neutral float-right" title="minisbi package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2014-2024, Johannes Buchner.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

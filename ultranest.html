@@ -27,7 +27,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Frequently Asked Questions" href="issues.html" />
+    <link rel="next" title="ultranest.simbase package" href="ultranest.simbase.html" />
     <link rel="prev" title="API" href="API.html" /> 
 </head>
 
@@ -78,7 +78,7 @@
 <li class="toctree-l1"><a class="reference internal" href="example-sine-bayesian-workflow.html">Bayesian workflow</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example-warmstart.html">Warm starting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="debugging.html">Debugging techniques</a></li>
-<li class="toctree-l1"><a class="reference internal" href="example-simulation-based-inference.html">Tutorial: accelerating ultranest with simulation-based inference (SBI)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-simulation-based-inference.html">Simulation-based inference (SBI) acceleration</a></li>
 </ul>
 
         </div>
@@ -107,6 +107,31 @@
              
   <section id="ultranest-package">
 <h1>ultranest package<a class="headerlink" href="#ultranest-package" title="Link to this heading"></a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="ultranest.simbase.html">ultranest.simbase package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ultranest.simbase.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ultranest.simbase.minisbi.html">ultranest.simbase.minisbi package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="ultranest.simbase.minisbi.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ultranest.simbase.minisbi.html#module-ultranest.simbase.minisbi.logistic">ultranest.simbase.minisbi.logistic module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ultranest.simbase.minisbi.html#module-ultranest.simbase.minisbi.nested">ultranest.simbase.minisbi.nested module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ultranest.simbase.minisbi.html#module-ultranest.simbase.minisbi.norm">ultranest.simbase.minisbi.norm module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ultranest.simbase.minisbi.html#module-ultranest.simbase.minisbi.npe">ultranest.simbase.minisbi.npe module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ultranest.simbase.minisbi.html#module-ultranest.simbase.minisbi.plot">ultranest.simbase.minisbi.plot module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ultranest.simbase.minisbi.html#module-ultranest.simbase.minisbi.utils">ultranest.simbase.minisbi.utils module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="ultranest.simbase.minisbi.html#module-ultranest.simbase.minisbi">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ultranest.simbase.html#module-ultranest.simbase">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
 </section>
@@ -1217,7 +1242,7 @@ for calculating the Bayesian evidence and posterior samples of arbitrary models.
 </section>
 <dl class="py class">
 <dt class="sig sig-object py" id="ultranest.integrator.ReactiveNestedSampler">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ultranest.integrator.</span></span><span class="sig-name descname"><span class="pre">ReactiveNestedSampler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param_names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loglike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">derived_param_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wrapped_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resume</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'subfolder'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_test_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">draw_multiple</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_bootstraps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vectorized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndraw_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">128</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndraw_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">65536</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">storage_backend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'hdf5'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warmstart_max_tau</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/integrator.html#ReactiveNestedSampler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.integrator.ReactiveNestedSampler" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ultranest.integrator.</span></span><span class="sig-name descname"><span class="pre">ReactiveNestedSampler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param_names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loglike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">derived_param_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wrapped_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resume</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'subfolder'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_test_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">draw_multiple</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_bootstraps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vectorized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndraw_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">128</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndraw_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">65536</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">storage_backend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'hdf5'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warmstart_max_tau</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/integrator.html#ReactiveNestedSampler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.integrator.ReactiveNestedSampler" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Nested sampler with reactive exploration strategy.</p>
 <p>Storage &amp; resume capable, optionally MPI parallelised.</p>
@@ -1265,6 +1290,8 @@ bootstrap rounds.</p></li>
 Live points are reused as long as the live point order
 is below this normalised Kendall tau distance.
 Values from 0 (highly conservative) to 1 (extremely negligent).</p></li>
+<li><p><strong>comm</strong> (<em>MPI communicator</em><em>, </em><em>optional</em>) – MPI communicator to use. If None (default), uses MPI.COMM_WORLD.
+Pass a custom communicator when running as part of a larger MPI application.</p></li>
 </ul>
 </dd>
 </dl>
@@ -1499,7 +1526,7 @@ if log directory specified, otherwise show interactively.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="ultranest.integrator.NestedSampler">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ultranest.integrator.</span></span><span class="sig-name descname"><span class="pre">NestedSampler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param_names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loglike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">derived_param_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resume</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'subfolder'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'logs/test'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_live_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vectorized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wrapped_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/integrator.html#NestedSampler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.integrator.NestedSampler" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ultranest.integrator.</span></span><span class="sig-name descname"><span class="pre">NestedSampler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param_names</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loglike</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">derived_param_names</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resume</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'subfolder'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'logs/test'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_live_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vectorized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wrapped_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/integrator.html#NestedSampler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.integrator.NestedSampler" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Simple Nested sampler for reference.</p>
 <p>Set up nested sampler.</p>
@@ -1521,6 +1548,8 @@ if ‘resume’ or True, continue previous run if available.</p></li>
 <li><p><strong>vectorized</strong> (<em>bool</em>) – If true, loglike and transform function can receive arrays
 of points.</p></li>
 <li><p><strong>run_num</strong> (<em>int</em>) – unique run number. If None, will be automatically incremented.</p></li>
+<li><p><strong>comm</strong> (<em>MPI communicator</em><em>, </em><em>optional</em>) – MPI communicator to use. If None (default), uses MPI.COMM_WORLD.
+Pass a custom communicator when running as part of a larger MPI application.</p></li>
 </ul>
 </dd>
 </dl>
@@ -6271,7 +6300,7 @@ logl: loglikelihood values)</p></li>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="API.html" class="btn btn-neutral float-left" title="API" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="issues.html" class="btn btn-neutral float-right" title="Frequently Asked Questions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="ultranest.simbase.html" class="btn btn-neutral float-right" title="ultranest.simbase package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

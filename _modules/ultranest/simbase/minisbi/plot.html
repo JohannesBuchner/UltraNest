@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ultranest.simbase.minisbi.plot &mdash; UltraNest 4.6.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../../../../_static/icon.ico"/>
+    <link rel="canonical" href="https://johannesbuchner.github.io/UltraNest/_modules/ultranest/simbase/minisbi/plot.html" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../../_static/documentation_options.js?v=cc8a4273"></script>
+        <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            UltraNest
+              <img src="../../../../_static/logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                4.6.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../readme.html">UltraNest</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../method.html">Method</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../using-ultranest.html">Basic usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../priors.html">Specifying priors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../performance.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../API.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../issues.html">Frequently Asked Questions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../history.html">Release Notes</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../example-sine-line.html">Time series fitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../example-sine-modelcomparison.html">Model comparison</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../example-sine-highd.html">Higher-dimensional fitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../example-intrinsic-distribution.html">Tutorial: intrinsic distribution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../example-line.html">Tutorial: fitting a line</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../example-outliers.html">Tutorial: distribution with outliers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../example-sine-bayesian-workflow.html">Bayesian workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../example-warmstart.html">Warm starting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../debugging.html">Debugging techniques</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../example-simulation-based-inference.html">Simulation-based inference (SBI) acceleration</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">UltraNest</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">ultranest.simbase.minisbi.plot</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ultranest.simbase.minisbi.plot</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Validation / diagnostic utilities.&quot;&quot;&quot;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.logistic</span><span class="w"> </span><span class="kn">import</span> <span class="n">kuma_logistic_cdf</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">inject_noise_batch</span>
+
+
+<div class="viewcode-block" id="rank_histogram">
+<a class="viewcode-back" href="../../../../ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.plot.rank_histogram">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">rank_histogram</span><span class="p">(</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">model</span><span class="p">,</span>
+    <span class="n">generate_noiseless_batch</span><span class="p">,</span>
+    <span class="n">inject_noise</span><span class="p">,</span>
+    <span class="n">n_params</span><span class="p">,</span>
+    <span class="n">folder</span><span class="p">,</span>
+    <span class="n">n_test</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+    <span class="n">n_posterior_samples</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
+    <span class="n">seed</span><span class="o">=</span><span class="mi">98765</span><span class="p">,</span>
+    <span class="n">param_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">prior_transform</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">n_bins</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Rank-histogram (Tallagrand / PIT) test.</span>
+
+<span class="sd">    For each of *n_test* test simulations, the rank of the true parameter</span>
+<span class="sd">    value is computed analytically from the Kumaraswamy-Logistic CDF, then</span>
+<span class="sd">    converted to a discrete rank in [0, n_posterior_samples].  A</span>
+<span class="sd">    well-calibrated posterior yields a flat histogram.</span>
+
+<span class="sd">    Results are saved to &lt;folder&gt;/rank_histograms.pdf.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : NPENetwork</span>
+<span class="sd">        The trained neural posterior estimation network.</span>
+<span class="sd">    generate_noiseless_batch : callable</span>
+<span class="sd">        Cached generator that produces noiseless simulation batches.</span>
+<span class="sd">    inject_noise : callable</span>
+<span class="sd">        Noise injector applied to each noiseless simulation.</span>
+<span class="sd">    n_params : int</span>
+<span class="sd">        Number of model parameters.</span>
+<span class="sd">    folder : str</span>
+<span class="sd">        Output directory in which to save the rank histogram PDF.</span>
+<span class="sd">    n_test : int, optional</span>
+<span class="sd">        Number of test simulations. Default is 500.</span>
+<span class="sd">    n_posterior_samples : int, optional</span>
+<span class="sd">        Posterior draws per simulation, used to discretise the CDF rank.</span>
+<span class="sd">        Default is 200.</span>
+<span class="sd">    seed : int, optional</span>
+<span class="sd">        RNG seed. Default is 98765.</span>
+<span class="sd">    param_names : list of str or None, optional</span>
+<span class="sd">        Names for each parameter. If None, defaults to</span>
+<span class="sd">        [&#39;param_0&#39;, &#39;param_1&#39;, ...].</span>
+<span class="sd">    prior_transform: optional</span>
+<span class="sd">        not used</span>
+<span class="sd">    n_bins : int, optional</span>
+<span class="sd">        Number of histogram bins. Default is 20.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    ranks : np.ndarray</span>
+<span class="sd">        Rank of the true value in [0, n_posterior_samples].</span>
+<span class="sd">        Shape: (n_test, n_params).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">param_names</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">param_names</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;param_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_params</span><span class="p">)]</span>
+
+    <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+
+    <span class="c1"># generate test set</span>
+    <span class="n">test_batch</span> <span class="o">=</span> <span class="n">generate_noiseless_batch</span><span class="p">(</span>
+        <span class="n">batch_idx</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">n_sim</span><span class="o">=</span><span class="n">n_test</span><span class="p">,</span>
+        <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+        <span class="n">n_params</span><span class="o">=</span><span class="n">n_params</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">test_raw</span> <span class="o">=</span> <span class="n">inject_noise_batch</span><span class="p">(</span><span class="n">test_batch</span><span class="p">,</span> <span class="n">rng</span><span class="p">,</span> <span class="n">inject_noise</span><span class="p">)</span>
+    <span class="n">test_u</span> <span class="o">=</span> <span class="n">test_batch</span><span class="p">[</span><span class="s1">&#39;u_samples&#39;</span><span class="p">]</span>          <span class="c1"># shape (n_test, n_params), in [0,1]</span>
+
+    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+
+    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+        <span class="n">x_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">test_raw</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">loc_t</span><span class="p">,</span> <span class="n">scale_t</span><span class="p">,</span> <span class="n">a_t</span><span class="p">,</span> <span class="n">b_t</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">x_t</span><span class="p">)</span>
+
+    <span class="n">loc_np</span> <span class="o">=</span> <span class="n">loc_t</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>    <span class="c1"># (n_test, n_params)</span>
+    <span class="n">scale_np</span> <span class="o">=</span> <span class="n">scale_t</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>  <span class="c1"># (n_test, n_params)</span>
+    <span class="n">a_np</span> <span class="o">=</span> <span class="n">a_t</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>      <span class="c1"># (n_test, n_params)</span>
+    <span class="n">b_np</span> <span class="o">=</span> <span class="n">b_t</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>      <span class="c1"># (n_test, n_params)</span>
+
+    <span class="c1"># Compute rank analytically via Kumaraswamy-Logistic CDF</span>
+    <span class="n">ranks</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_test</span><span class="p">,</span> <span class="n">n_params</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n_test</span><span class="p">),</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Rank histogram&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;sim&quot;</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_params</span><span class="p">):</span>
+            <span class="n">cdf_val</span> <span class="o">=</span> <span class="n">kuma_logistic_cdf</span><span class="p">(</span>
+                <span class="n">test_u</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">p</span><span class="p">],</span>
+                <span class="n">loc_np</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">p</span><span class="p">],</span>
+                <span class="n">scale_np</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">p</span><span class="p">],</span>
+                <span class="n">a_np</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">p</span><span class="p">],</span>
+                <span class="n">b_np</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">p</span><span class="p">],</span>
+            <span class="p">)</span>
+            <span class="n">ranks</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">cdf_val</span> <span class="o">*</span> <span class="n">n_posterior_samples</span><span class="p">))</span>
+
+    <span class="c1"># plot</span>
+    <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">n_params</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+    <span class="n">n_rows</span> <span class="o">=</span> <span class="p">(</span><span class="n">n_params</span> <span class="o">+</span> <span class="n">n_cols</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="n">n_cols</span>
+    <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">n_rows</span><span class="p">,</span> <span class="n">n_cols</span><span class="p">,</span>
+                             <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">n_cols</span><span class="p">,</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">n_rows</span><span class="p">),</span>
+                             <span class="n">squeeze</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_params</span><span class="p">):</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="n">p</span> <span class="o">//</span> <span class="n">n_cols</span><span class="p">][</span><span class="n">p</span> <span class="o">%</span> <span class="n">n_cols</span><span class="p">]</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">ranks</span><span class="p">[:,</span> <span class="n">p</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span><span class="n">n_bins</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_posterior_samples</span><span class="p">),</span>
+                <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">density</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">histtype</span><span class="o">=</span><span class="s1">&#39;step&#39;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">n_posterior_samples</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span>
+                   <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">param_names</span><span class="p">[</span><span class="n">p</span><span class="p">])</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;rank&quot;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;density&quot;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_params</span><span class="p">,</span> <span class="n">n_rows</span> <span class="o">*</span> <span class="n">n_cols</span><span class="p">):</span>
+        <span class="n">axes</span><span class="p">[</span><span class="n">p</span> <span class="o">//</span> <span class="n">n_cols</span><span class="p">][</span><span class="n">p</span> <span class="o">%</span> <span class="n">n_cols</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ranks</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span></div>
+
+
+
+<div class="viewcode-block" id="parameter_coverage_test">
+<a class="viewcode-back" href="../../../../ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.plot.parameter_coverage_test">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">parameter_coverage_test</span><span class="p">(</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">model</span><span class="p">,</span>
+    <span class="n">generate_noiseless_batch</span><span class="p">,</span>
+    <span class="n">inject_noise</span><span class="p">,</span>
+    <span class="n">n_params</span><span class="p">,</span>
+    <span class="n">folder</span><span class="p">,</span>
+    <span class="n">n_test</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+    <span class="n">credible_levels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">seed</span><span class="o">=</span><span class="mi">11223</span><span class="p">,</span>
+    <span class="n">param_names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">prior_transform</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Expected-coverage (parameter coverage) test.</span>
+
+<span class="sd">    For each test simulation, the rank of the true parameter under the</span>
+<span class="sd">    approximate posterior is computed analytically from the</span>
+<span class="sd">    Kumaraswamy-Logistic CDF.  The rank (a value in [0, 1]) is then compared</span>
+<span class="sd">    against the nominal credible levels to determine coverage.</span>
+
+<span class="sd">    Results are saved to &lt;folder&gt;/coverage_test.pdf.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : NPENetwork</span>
+<span class="sd">    generate_noiseless_batch : callable</span>
+<span class="sd">    inject_noise : callable</span>
+<span class="sd">    n_params : int</span>
+<span class="sd">    folder : str</span>
+<span class="sd">    n_test : int, optional</span>
+<span class="sd">    credible_levels : list of float or None, optional</span>
+<span class="sd">    seed : int, optional</span>
+<span class="sd">    param_names : list of str or None, optional</span>
+<span class="sd">    prior_transform: optional</span>
+<span class="sd">        not used</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    coverage : np.ndarray, shape (len(credible_levels), n_params)</span>
+<span class="sd">        Empirical coverage fraction at each credible level.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">credible_levels</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">credible_levels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.99</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">param_names</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">param_names</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;param_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_params</span><span class="p">)]</span>
+
+    <span class="n">levels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">credible_levels</span><span class="p">)</span>
+    <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+
+    <span class="n">test_batch</span> <span class="o">=</span> <span class="n">generate_noiseless_batch</span><span class="p">(</span>
+        <span class="n">batch_idx</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">n_sim</span><span class="o">=</span><span class="n">n_test</span><span class="p">,</span>
+        <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+        <span class="n">n_params</span><span class="o">=</span><span class="n">n_params</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">test_raw</span> <span class="o">=</span> <span class="n">inject_noise_batch</span><span class="p">(</span><span class="n">test_batch</span><span class="p">,</span> <span class="n">rng</span><span class="p">,</span> <span class="n">inject_noise</span><span class="p">)</span>
+    <span class="n">test_u</span> <span class="o">=</span> <span class="n">test_batch</span><span class="p">[</span><span class="s1">&#39;u_samples&#39;</span><span class="p">]</span>          <span class="c1"># (n_test, n_params) in [0,1]</span>
+
+    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+
+    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+        <span class="n">x_t</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">test_raw</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">loc_t</span><span class="p">,</span> <span class="n">scale_t</span><span class="p">,</span> <span class="n">a_t</span><span class="p">,</span> <span class="n">b_t</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">x_t</span><span class="p">)</span>
+
+    <span class="n">loc_np</span> <span class="o">=</span> <span class="n">loc_t</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>    <span class="c1"># (n_test, n_params)</span>
+    <span class="n">scale_np</span> <span class="o">=</span> <span class="n">scale_t</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>  <span class="c1"># (n_test, n_params)</span>
+    <span class="n">a_np</span> <span class="o">=</span> <span class="n">a_t</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>      <span class="c1"># (n_test, n_params)</span>
+    <span class="n">b_np</span> <span class="o">=</span> <span class="n">b_t</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>      <span class="c1"># (n_test, n_params)</span>
+
+    <span class="c1"># cdf_vals[i, p] = P(X &lt;= true_u[i, p]) under the Kuma-Logistic posterior</span>
+    <span class="n">cdf_vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">n_test</span><span class="p">,</span> <span class="n">n_params</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">n_test</span><span class="p">),</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Coverage test&quot;</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;sim&quot;</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_params</span><span class="p">):</span>
+            <span class="n">cdf_vals</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">kuma_logistic_cdf</span><span class="p">(</span>
+                <span class="n">test_u</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">p</span><span class="p">],</span>
+                <span class="n">loc_np</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">p</span><span class="p">],</span>
+                <span class="n">scale_np</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">p</span><span class="p">],</span>
+                <span class="n">a_np</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">p</span><span class="p">],</span>
+                <span class="n">b_np</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">p</span><span class="p">],</span>
+            <span class="p">)</span>
+
+    <span class="c1"># coverage[l, p] = fraction of test cases where the true parameter falls</span>
+    <span class="c1"># inside the symmetric credible interval at level levels[l].</span>
+    <span class="n">coverage</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">levels</span><span class="p">),</span> <span class="n">n_params</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">li</span><span class="p">,</span> <span class="n">level</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">levels</span><span class="p">):</span>
+        <span class="n">lo_cdf</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">level</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
+        <span class="n">hi_cdf</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">level</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
+        <span class="n">inside</span> <span class="o">=</span> <span class="p">(</span><span class="n">cdf_vals</span> <span class="o">&gt;=</span> <span class="n">lo_cdf</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">cdf_vals</span> <span class="o">&lt;=</span> <span class="n">hi_cdf</span><span class="p">)</span>  <span class="c1"># (n_test, n_params)</span>
+        <span class="n">coverage</span><span class="p">[</span><span class="n">li</span><span class="p">]</span> <span class="o">=</span> <span class="n">inside</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># plot</span>
+    <span class="n">n_cols</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">n_params</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+    <span class="n">n_rows</span> <span class="o">=</span> <span class="p">(</span><span class="n">n_params</span> <span class="o">+</span> <span class="n">n_cols</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="n">n_cols</span>
+    <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">n_rows</span><span class="p">,</span> <span class="n">n_cols</span><span class="p">,</span>
+                             <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">n_cols</span><span class="p">,</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">n_rows</span><span class="p">),</span>
+                             <span class="n">squeeze</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_params</span><span class="p">):</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="n">p</span> <span class="o">//</span> <span class="n">n_cols</span><span class="p">][</span><span class="n">p</span> <span class="o">%</span> <span class="n">n_cols</span><span class="p">]</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">levels</span><span class="p">,</span> <span class="n">coverage</span><span class="p">[:,</span> <span class="n">p</span><span class="p">],</span> <span class="s1">&#39;o-&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;steelblue&#39;</span><span class="p">,</span>
+                <span class="n">markersize</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;empirical&#39;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;r--&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;ideal&#39;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">param_names</span><span class="p">[</span><span class="n">p</span><span class="p">])</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;nominal coverage&quot;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;empirical coverage&quot;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_params</span><span class="p">,</span> <span class="n">n_rows</span> <span class="o">*</span> <span class="n">n_cols</span><span class="p">):</span>
+        <span class="n">axes</span><span class="p">[</span><span class="n">p</span> <span class="o">//</span> <span class="n">n_cols</span><span class="p">][</span><span class="n">p</span> <span class="o">%</span> <span class="n">n_cols</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s2">&quot;Parameter coverage test (diagonal = well-calibrated)&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">coverage</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span></div>
+
+
+
+<div class="viewcode-block" id="posterior_predictive_check">
+<a class="viewcode-back" href="../../../../ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.plot.posterior_predictive_check">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">posterior_predictive_check</span><span class="p">(</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">posterior_samples_theta</span><span class="p">,</span>
+    <span class="n">observed_data</span><span class="p">,</span>
+    <span class="n">generate_mean_and_noise</span><span class="p">,</span>
+    <span class="n">inject_noise</span><span class="p">,</span>
+    <span class="n">folder</span><span class="p">,</span>
+    <span class="n">n_mean_curves</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
+    <span class="n">n_realisation_curves</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+    <span class="n">seed</span><span class="o">=</span><span class="mi">77777</span><span class="p">,</span>
+    <span class="n">x_coords</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Posterior predictive check.</span>
+
+<span class="sd">    Draws parameter samples from the posterior and generates:</span>
+<span class="sd">      * posterior mean curves  (noiseless signal for each sample)</span>
+<span class="sd">      * posterior data realisations  (noisy draws)</span>
+<span class="sd">    then plots them together with the true observed data and saves the result</span>
+<span class="sd">    to &lt;folder&gt;/posterior.pdf.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    posterior_samples_theta : np.ndarray</span>
+<span class="sd">        Physical parameter samples from the posterior.</span>
+<span class="sd">        Shape: (n_posterior, n_params).</span>
+<span class="sd">    observed_data : np.ndarray</span>
+<span class="sd">        The actual observed dataset. Shape: (n_data,).</span>
+<span class="sd">    generate_mean_and_noise : callable</span>
+<span class="sd">        Same function used during simulation; generates noiseless signal</span>
+<span class="sd">        properties given a parameter vector.</span>
+<span class="sd">    inject_noise : callable</span>
+<span class="sd">        Noise injector that takes simulation properties and an RNG instance</span>
+<span class="sd">        and returns a noisy realisation.</span>
+<span class="sd">    folder : str</span>
+<span class="sd">        Output directory in which to save the posterior predictive PDF.</span>
+<span class="sd">    n_mean_curves : int, optional</span>
+<span class="sd">        How many posterior mean curves to overlay. Default is 200.</span>
+<span class="sd">    n_realisation_curves : int, optional</span>
+<span class="sd">        How many noisy realisations to overlay. Default is 50.</span>
+<span class="sd">    seed : int, optional</span>
+<span class="sd">        RNG seed for noise injection. Default is 77777.</span>
+<span class="sd">    x_coords : np.ndarray or None, optional</span>
+<span class="sd">        x-axis coordinates for the data. If None, defaults to</span>
+<span class="sd">        np.linspace(-5, 5, n_data).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    None</span>
+<span class="sd">        Saves the figure to &lt;folder&gt;/posterior.pdf and prints the path.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+    <span class="n">n_data</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">observed_data</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">x_coords</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">x_coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">n_data</span><span class="p">)</span>
+
+    <span class="n">n_post</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">posterior_samples_theta</span><span class="p">)</span>
+    <span class="n">n_mean_curves</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">n_mean_curves</span><span class="p">,</span> <span class="n">n_post</span><span class="p">)</span>
+    <span class="n">n_realisation_curves</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">n_realisation_curves</span><span class="p">,</span> <span class="n">n_post</span><span class="p">)</span>
+
+    <span class="n">idx_mean</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">n_post</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">n_mean_curves</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">idx_real</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">n_post</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">n_realisation_curves</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="c1"># --- collect posterior mean curves ---</span>
+    <span class="n">mean_curves</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">idx_mean</span><span class="p">):</span>
+        <span class="n">props</span> <span class="o">=</span> <span class="n">generate_mean_and_noise</span><span class="p">(</span><span class="n">idx</span><span class="o">=</span><span class="mi">10000</span> <span class="o">+</span> <span class="n">k</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="n">posterior_samples_theta</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">if</span> <span class="s1">&#39;mean&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">props</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="k">if</span> <span class="n">mean_curves</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mean_curves</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">n_mean_curves</span><span class="p">,</span> <span class="n">n_data</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+        <span class="n">mean_curves</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">props</span><span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">]</span>
+
+    <span class="c1"># --- collect posterior noisy realisations ---</span>
+    <span class="n">realisation_curves</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">n_realisation_curves</span><span class="p">,</span> <span class="n">n_data</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">idx_real</span><span class="p">):</span>
+        <span class="n">props</span> <span class="o">=</span> <span class="n">generate_mean_and_noise</span><span class="p">(</span><span class="n">idx</span><span class="o">=</span><span class="mi">20000</span> <span class="o">+</span> <span class="n">k</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="n">posterior_samples_theta</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">realisation_curves</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">inject_noise</span><span class="p">(</span><span class="n">props</span><span class="p">,</span> <span class="n">rng</span><span class="p">)</span>
+
+    <span class="c1"># --- plot ---</span>
+    <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># top panel: mean curves</span>
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">mean_curves</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_mean_curves</span><span class="p">):</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_coords</span><span class="p">,</span> <span class="n">mean_curves</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;steelblue&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span>
+                    <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_coords</span><span class="p">,</span> <span class="n">mean_curves</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;navy&#39;</span><span class="p">,</span>
+                <span class="n">linewidth</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;posterior mean (avg)&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x_coords</span><span class="p">,</span> <span class="n">observed_data</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+               <span class="n">label</span><span class="o">=</span><span class="s1">&#39;observed data&#39;</span><span class="p">,</span> <span class="n">linewidths</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;signal&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
+
+    <span class="c1"># bottom panel: noisy realisations</span>
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_realisation_curves</span><span class="p">):</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_coords</span><span class="p">,</span> <span class="n">realisation_curves</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;darkorange&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.20</span><span class="p">,</span>
+                <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x_coords</span><span class="p">,</span> <span class="n">realisation_curves</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;saddlebrown&#39;</span><span class="p">,</span>
+            <span class="n">linewidth</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;posterior realisation (avg)&#39;</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">x_coords</span><span class="p">,</span> <span class="n">observed_data</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">zorder</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+               <span class="n">label</span><span class="o">=</span><span class="s1">&#39;observed data&#39;</span><span class="p">,</span> <span class="n">linewidths</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;signal + noise&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Posterior data realisations  (n=</span><span class="si">{</span><span class="n">n_realisation_curves</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">9</span><span class="p">)</span>
+
+    <span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s2">&quot;Posterior predictive check&quot;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">13</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">realisation_curves</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2014-2024, Johannes Buchner.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

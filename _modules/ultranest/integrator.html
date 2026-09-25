@@ -73,7 +73,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../example-sine-bayesian-workflow.html">Bayesian workflow</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../example-warmstart.html">Warm starting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../debugging.html">Debugging techniques</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../example-simulation-based-inference.html">Tutorial: accelerating ultranest with simulation-based inference (SBI)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example-simulation-based-inference.html">Simulation-based inference (SBI) acceleration</a></li>
 </ul>
 
         </div>
@@ -534,6 +534,7 @@
                  <span class="n">num_live_points</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
                  <span class="n">vectorized</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                  <span class="n">wrapped_params</span><span class="o">=</span><span class="p">[],</span>
+                 <span class="n">comm</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set up nested sampler.</span>
 
@@ -564,6 +565,9 @@
 <span class="sd">            of points.</span>
 <span class="sd">        run_num: int</span>
 <span class="sd">            unique run number. If None, will be automatically incremented.</span>
+<span class="sd">        comm: MPI communicator, optional</span>
+<span class="sd">            MPI communicator to use. If None (default), uses MPI.COMM_WORLD.</span>
+<span class="sd">            Pass a custom communicator when running as part of a larger MPI application.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">paramnames</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">param_names</span><span class="p">)</span>
@@ -616,8 +620,11 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">use_mpi</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">mpi4py</span><span class="w"> </span><span class="kn">import</span> <span class="n">MPI</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">comm</span> <span class="o">=</span> <span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span>
+            <span class="k">if</span> <span class="n">comm</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">comm</span> <span class="o">=</span> <span class="n">comm</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="kn">from</span><span class="w"> </span><span class="nn">mpi4py</span><span class="w"> </span><span class="kn">import</span> <span class="n">MPI</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">comm</span> <span class="o">=</span> <span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">mpi_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">Get_size</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">mpi_rank</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">Get_rank</span><span class="p">()</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mpi_size</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
@@ -1171,6 +1178,7 @@
                  <span class="n">ndraw_max</span><span class="o">=</span><span class="mi">65536</span><span class="p">,</span>
                  <span class="n">storage_backend</span><span class="o">=</span><span class="s1">&#39;hdf5&#39;</span><span class="p">,</span>
                  <span class="n">warmstart_max_tau</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">comm</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialise nested sampler.</span>
 
@@ -1248,6 +1256,9 @@
 <span class="sd">            Live points are reused as long as the live point order</span>
 <span class="sd">            is below this normalised Kendall tau distance.</span>
 <span class="sd">            Values from 0 (highly conservative) to 1 (extremely negligent).</span>
+<span class="sd">        comm: MPI communicator, optional</span>
+<span class="sd">            MPI communicator to use. If None (default), uses MPI.COMM_WORLD.</span>
+<span class="sd">            Pass a custom communicator when running as part of a larger MPI application.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">paramnames</span> <span class="o">=</span> <span class="n">param_names</span>
         <span class="n">x_dim</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">paramnames</span><span class="p">)</span>
@@ -1267,8 +1278,11 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">use_mpi</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">mpi4py</span><span class="w"> </span><span class="kn">import</span> <span class="n">MPI</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">comm</span> <span class="o">=</span> <span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span>
+            <span class="k">if</span> <span class="n">comm</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">comm</span> <span class="o">=</span> <span class="n">comm</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="kn">from</span><span class="w"> </span><span class="nn">mpi4py</span><span class="w"> </span><span class="kn">import</span> <span class="n">MPI</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">comm</span> <span class="o">=</span> <span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">mpi_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">Get_size</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">mpi_rank</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="o">.</span><span class="n">Get_rank</span><span class="p">()</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mpi_size</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ultranest.simbase.minisbi.utils &mdash; UltraNest 4.6.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
+
+  
+    <link rel="shortcut icon" href="../../../../_static/icon.ico"/>
+    <link rel="canonical" href="https://johannesbuchner.github.io/UltraNest/_modules/ultranest/simbase/minisbi/utils.html" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../../_static/documentation_options.js?v=cc8a4273"></script>
+        <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            UltraNest
+              <img src="../../../../_static/logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                4.6.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../readme.html">UltraNest</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../method.html">Method</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../using-ultranest.html">Basic usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../priors.html">Specifying priors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../performance.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../API.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../issues.html">Frequently Asked Questions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../history.html">Release Notes</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../example-sine-line.html">Time series fitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../example-sine-modelcomparison.html">Model comparison</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../example-sine-highd.html">Higher-dimensional fitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../example-intrinsic-distribution.html">Tutorial: intrinsic distribution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../example-line.html">Tutorial: fitting a line</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../example-outliers.html">Tutorial: distribution with outliers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../example-sine-bayesian-workflow.html">Bayesian workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../example-warmstart.html">Warm starting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../debugging.html">Debugging techniques</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../example-simulation-based-inference.html">Simulation-based inference (SBI) acceleration</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">UltraNest</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">ultranest.simbase.minisbi.utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ultranest.simbase.minisbi.utils</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Utilities for sampling and wrapping functions.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">joblib</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+
+
+<div class="viewcode-block" id="sample_prior_u">
+<a class="viewcode-back" href="../../../../ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.utils.sample_prior_u">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">sample_prior_u</span><span class="p">(</span><span class="n">rng</span><span class="p">,</span> <span class="n">n_params</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Sample a single draw from a uniform prior over the unit hypercube.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    rng : numpy.random.Generator</span>
+<span class="sd">        Random number generator used to draw samples.</span>
+<span class="sd">    n_params : int</span>
+<span class="sd">        Number of parameters (dimensionality of the hypercube).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.ndarray</span>
+<span class="sd">        1-D array of shape ``(n_params,)`` with dtype ``float32``,</span>
+<span class="sd">        containing values sampled uniformly from ``[0.0, 1.0)``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">n_params</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="make_memory">
+<a class="viewcode-back" href="../../../../ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.utils.make_memory">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">make_memory</span><span class="p">(</span><span class="n">folder</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a joblib ``Memory`` object for caching results to disk.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    folder : str or os.PathLike</span>
+<span class="sd">        Path to the directory where cached results will be stored.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    joblib.Memory</span>
+<span class="sd">        A ``Memory`` instance configured to use ``folder`` as its cache</span>
+<span class="sd">        location, with verbosity set to 0.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">joblib</span><span class="o">.</span><span class="n">Memory</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="make_cached_generate">
+<a class="viewcode-back" href="../../../../ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.utils.make_cached_generate">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">make_cached_generate</span><span class="p">(</span><span class="n">memory</span><span class="p">,</span> <span class="n">prior_transform</span><span class="p">,</span> <span class="n">generate_mean_and_noise</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a cached function that generates noiseless simulation batches.</span>
+
+<span class="sd">    The returned function is decorated with ``memory.cache`` so that repeated</span>
+<span class="sd">    calls with identical arguments are served from disk rather than recomputed.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    memory : joblib.Memory</span>
+<span class="sd">        Joblib memory object used to cache the inner function.</span>
+<span class="sd">    prior_transform : callable</span>
+<span class="sd">        Function that maps a unit-hypercube sample ``u`` (1-D array of shape</span>
+<span class="sd">        ``(n_params,)``) to a parameter vector ``theta`` in the model space.</span>
+<span class="sd">    generate_mean_and_noise : callable</span>
+<span class="sd">        Function with signature ``(idx, seed, theta)`` that returns the</span>
+<span class="sd">        noiseless (mean) summary properties for a single simulation.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    callable</span>
+<span class="sd">        A cached function ``generate_noiseless_batch(batch_idx, n_sim, seed,</span>
+<span class="sd">        n_params)`` that returns a dict with keys:</span>
+
+<span class="sd">        ``&#39;u_samples&#39;``</span>
+<span class="sd">            2-D ``float32`` array of shape ``(n_sim, n_params)`` containing</span>
+<span class="sd">            unit-hypercube draws.</span>
+<span class="sd">        ``&#39;mean_props&#39;``</span>
+<span class="sd">            List of length ``n_sim`` containing the noiseless summary</span>
+<span class="sd">            properties for each simulation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nd">@memory</span><span class="o">.</span><span class="n">cache</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate_noiseless_batch</span><span class="p">(</span><span class="n">batch_idx</span><span class="p">,</span> <span class="n">n_sim</span><span class="p">,</span> <span class="n">seed</span><span class="p">,</span> <span class="n">n_params</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate a batch of noiseless simulations and cache the result.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        batch_idx : int</span>
+<span class="sd">            Index of the current batch, used to offset the random seed so</span>
+<span class="sd">            that different batches produce independent draws.</span>
+<span class="sd">        n_sim : int</span>
+<span class="sd">            Number of simulations to generate in this batch.</span>
+<span class="sd">        seed : int</span>
+<span class="sd">            Base random seed; combined with ``batch_idx`` to seed the RNG.</span>
+<span class="sd">        n_params : int</span>
+<span class="sd">            Dimensionality of the parameter space (length of each ``u``</span>
+<span class="sd">            sample).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">            Dictionary with keys:</span>
+
+<span class="sd">            ``&#39;u_samples&#39;``</span>
+<span class="sd">                2-D ``float32`` array of shape ``(n_sim, n_params)``.</span>
+<span class="sd">            ``&#39;mean_props&#39;``</span>
+<span class="sd">                List of length ``n_sim`` with noiseless summary properties.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span> <span class="o">+</span> <span class="n">batch_idx</span><span class="p">)</span>
+        <span class="n">u_samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">sample_prior_u</span><span class="p">(</span><span class="n">rng</span><span class="p">,</span> <span class="n">n_params</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_sim</span><span class="p">)])</span>
+
+        <span class="n">mean_props_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_sim</span><span class="p">):</span>
+            <span class="n">theta</span> <span class="o">=</span> <span class="n">prior_transform</span><span class="p">(</span><span class="n">u_samples</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">props</span> <span class="o">=</span> <span class="n">generate_mean_and_noise</span><span class="p">(</span>
+                <span class="n">idx</span><span class="o">=</span><span class="n">batch_idx</span> <span class="o">*</span> <span class="n">n_sim</span> <span class="o">+</span> <span class="n">i</span><span class="p">,</span>
+                <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+                <span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">mean_props_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">props</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;u_samples&#39;</span><span class="p">:</span> <span class="n">u_samples</span><span class="p">,</span>
+            <span class="s1">&#39;mean_props&#39;</span><span class="p">:</span> <span class="n">mean_props_list</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="k">return</span> <span class="n">generate_noiseless_batch</span></div>
+
+
+
+<div class="viewcode-block" id="inject_noise_batch">
+<a class="viewcode-back" href="../../../../ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.utils.inject_noise_batch">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">inject_noise_batch</span><span class="p">(</span><span class="n">batch_dict</span><span class="p">,</span> <span class="n">rng</span><span class="p">,</span> <span class="n">inject_noise</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Inject noise into a pre-generated batch of noiseless simulations.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    batch_dict : dict</span>
+<span class="sd">        Dictionary returned by ``generate_noiseless_batch``, containing:</span>
+
+<span class="sd">        ``&#39;u_samples&#39;``</span>
+<span class="sd">            2-D ``float32`` array of shape ``(n_sim, n_params)``.</span>
+<span class="sd">        ``&#39;mean_props&#39;``</span>
+<span class="sd">            List of length ``n_sim`` with noiseless summary properties.</span>
+<span class="sd">    rng : numpy.random.Generator</span>
+<span class="sd">        Random number generator used by ``inject_noise`` to draw noise</span>
+<span class="sd">        realisations.</span>
+<span class="sd">    inject_noise : callable</span>
+<span class="sd">        Function with signature ``(props, rng)`` that takes noiseless</span>
+<span class="sd">        summary properties and returns a 1-D array of noisy data values.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    u_samples : numpy.ndarray</span>
+<span class="sd">        2-D ``float32`` array of shape ``(n_sim, n_params)`` containing the</span>
+<span class="sd">        unit-hypercube parameter draws.</span>
+<span class="sd">    raw_data : numpy.ndarray</span>
+<span class="sd">        2-D ``float32`` array of shape ``(n_sim, n_data)`` containing the</span>
+<span class="sd">        noisy simulation outputs, where ``n_data`` is the length of the</span>
+<span class="sd">        array returned by ``inject_noise``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">u_samples</span> <span class="o">=</span> <span class="n">batch_dict</span><span class="p">[</span><span class="s1">&#39;u_samples&#39;</span><span class="p">]</span>
+    <span class="n">mean_props_list</span> <span class="o">=</span> <span class="n">batch_dict</span><span class="p">[</span><span class="s1">&#39;mean_props&#39;</span><span class="p">]</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">mean_props_list</span><span class="p">)</span>
+
+    <span class="n">raw_data</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">props</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">mean_props_list</span><span class="p">):</span>
+        <span class="n">noisy</span> <span class="o">=</span> <span class="n">inject_noise</span><span class="p">(</span><span class="n">props</span><span class="p">,</span> <span class="n">rng</span><span class="p">)</span>
+        <span class="n">n_data</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">noisy</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">raw_data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">raw_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">n_data</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">raw_data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">noisy</span>
+
+    <span class="k">return</span> <span class="n">u_samples</span><span class="p">,</span> <span class="n">raw_data</span></div>
+
+
+
+<div class="viewcode-block" id="random_derangement">
+<a class="viewcode-back" href="../../../../ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.utils.random_derangement">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">random_derangement</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate a uniformly random derangement (permutation without fixed points).</span>
+
+<span class="sd">    The function resamples until a valid derangement is found.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n : int</span>
+<span class="sd">        Number of elements to permute.</span>
+<span class="sd">    device : torch.device or None, optional</span>
+<span class="sd">        Device on which to create the permutation tensor.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    torch.Tensor</span>
+<span class="sd">        1-D integer tensor of length ``n`` with no element equal to its index.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">perm</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randperm</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">torch</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">perm</span> <span class="o">==</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="n">perm</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2014-2024, Johannes Buchner.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

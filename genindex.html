@@ -73,7 +73,7 @@
 <li class="toctree-l1"><a class="reference internal" href="example-sine-bayesian-workflow.html">Bayesian workflow</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example-warmstart.html">Warm starting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="debugging.html">Debugging techniques</a></li>
-<li class="toctree-l1"><a class="reference internal" href="example-simulation-based-inference.html">Tutorial: accelerating ultranest with simulation-based inference (SBI)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-simulation-based-inference.html">Simulation-based inference (SBI) acceleration</a></li>
 </ul>
 
         </div>
@@ -112,6 +112,7 @@
  | <a href="#G"><strong>G</strong></a>
  | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
+ | <a href="#K"><strong>K</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
  | <a href="#N"><strong>N</strong></a>
@@ -238,6 +239,10 @@
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.npe.CascadeNet">CascadeNet (class in ultranest.simbase.minisbi.npe)</a>
+</li>
+      <li><a href="ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.nested.KLPTransform.cdf">cdf() (ultranest.simbase.minisbi.nested.KLPTransform method)</a>
+</li>
       <li><a href="ultranest.html#ultranest.flatnuts.DirectJumper.check_gaps">check_gaps() (ultranest.flatnuts.DirectJumper method)</a>
 
       <ul>
@@ -280,10 +285,10 @@
       </ul></li>
       <li><a href="ultranest.html#ultranest.hotstart.compute_quantile_intervals">compute_quantile_intervals() (in module ultranest.hotstart)</a>
 </li>
-      <li><a href="ultranest.html#ultranest.hotstart.compute_quantile_intervals_refined">compute_quantile_intervals_refined() (in module ultranest.hotstart)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ultranest.html#ultranest.hotstart.compute_quantile_intervals_refined">compute_quantile_intervals_refined() (in module ultranest.hotstart)</a>
+</li>
       <li><a href="ultranest.html#ultranest.flatnuts.ClockedBisectSampler.continue_sampling">continue_sampling() (ultranest.flatnuts.ClockedBisectSampler method)</a>
 
       <ul>
@@ -412,13 +417,17 @@
 </li>
       <li><a href="ultranest.html#ultranest.dyhmc.find_beta_params_dynamic">find_beta_params_dynamic() (in module ultranest.dyhmc)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ultranest.html#ultranest.dyhmc.find_beta_params_static">find_beta_params_static() (in module ultranest.dyhmc)</a>
 </li>
       <li><a href="ultranest.html#ultranest.mlfriends.find_nearby">find_nearby() (in module ultranest.mlfriends)</a>
 </li>
       <li><a href="ultranest.html#ultranest.netiter.find_nodes_before">find_nodes_before() (in module ultranest.netiter)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.norm.ZScoreNorm.fit">fit() (ultranest.simbase.minisbi.norm.ZScoreNorm method)</a>
+</li>
+      <li><a href="ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.npe.NPENetwork.fit_norm">fit_norm() (ultranest.simbase.minisbi.npe.NPENetwork method)</a>
 </li>
       <li><a href="ultranest.html#ultranest.dyhmc.FlattenedProblem">FlattenedProblem (class in ultranest.dyhmc)</a>
 </li>
@@ -426,6 +435,14 @@
 
       <ul>
         <li><a href="ultranest.html#ultranest.store.NullPointStore.flush">(ultranest.store.NullPointStore method)</a>
+</li>
+      </ul></li>
+      <li><a href="ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.norm.ZScoreNorm.forward">forward() (ultranest.simbase.minisbi.norm.ZScoreNorm method)</a>
+
+      <ul>
+        <li><a href="ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.npe.CascadeNet.forward">(ultranest.simbase.minisbi.npe.CascadeNet method)</a>
+</li>
+        <li><a href="ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.npe.NPENetwork.forward">(ultranest.simbase.minisbi.npe.NPENetwork method)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -490,8 +507,6 @@
         <li><a href="ultranest.html#ultranest.stepsampler.generate_random_direction">(in module ultranest.stepsampler)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ultranest.html#ultranest.popstepsampler.generate_region_oriented_direction">generate_region_oriented_direction() (in module ultranest.popstepsampler)</a>
 
       <ul>
@@ -500,6 +515,8 @@
         <li><a href="ultranest.html#ultranest.stepsampler.generate_region_oriented_direction">(in module ultranest.stepsampler)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ultranest.html#ultranest.popstepsampler.generate_region_random_direction">generate_region_random_direction() (in module ultranest.popstepsampler)</a>
 
       <ul>
@@ -517,6 +534,8 @@
       <li><a href="ultranest.html#ultranest.hotstart.get_auxiliary_problem">get_auxiliary_problem() (in module ultranest.hotstart)</a>
 </li>
       <li><a href="ultranest.html#ultranest.viz.get_default_viz_callback">get_default_viz_callback() (in module ultranest.viz)</a>
+</li>
+      <li><a href="ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.nested.get_distribution_parameters">get_distribution_parameters() (in module ultranest.simbase.minisbi.nested)</a>
 </li>
       <li><a href="ultranest.html#ultranest.hotstart.get_extended_auxiliary_independent_problem">get_extended_auxiliary_independent_problem() (in module ultranest.hotstart)</a>
 </li>
@@ -558,6 +577,8 @@
 </li>
       <li><a href="ultranest.html#ultranest.viz.LivePointsWidget.initialize">initialize() (ultranest.viz.LivePointsWidget method)</a>
 </li>
+      <li><a href="ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.utils.inject_noise_batch">inject_noise_batch() (in module ultranest.simbase.minisbi.utils)</a>
+</li>
       <li><a href="ultranest.html#ultranest.netiter.MultiCounter.insertion_order_converged">insertion_order_converged (ultranest.netiter.MultiCounter property)</a>
 </li>
       <li><a href="ultranest.html#ultranest.netiter.MultiCounter.insertion_order_runlength">insertion_order_runlength (ultranest.netiter.MultiCounter property)</a>
@@ -572,10 +593,10 @@
       </ul></li>
       <li><a href="ultranest.html#ultranest.mlfriends.MLFriends.inside_ellipsoid">inside_ellipsoid() (ultranest.mlfriends.MLFriends method)</a>
 </li>
-      <li><a href="ultranest.html#ultranest.stepsampler.inside_region">inside_region() (in module ultranest.stepsampler)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ultranest.html#ultranest.stepsampler.inside_region">inside_region() (in module ultranest.stepsampler)</a>
+</li>
       <li><a href="ultranest.html#ultranest.samplingpath.interpolate">interpolate() (in module ultranest.samplingpath)</a>
 
       <ul>
@@ -599,6 +620,30 @@
   </ul></td>
 </tr></table>
 
+<h2 id="K">K</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.nested.KLPTransform">KLPTransform (class in ultranest.simbase.minisbi.nested)</a>
+</li>
+      <li><a href="ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.logistic.kuma_icdf">kuma_icdf() (in module ultranest.simbase.minisbi.logistic)</a>
+</li>
+      <li><a href="ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.logistic.kuma_icdf_np">kuma_icdf_np() (in module ultranest.simbase.minisbi.logistic)</a>
+</li>
+      <li><a href="ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.logistic.kuma_log_prob">kuma_log_prob() (in module ultranest.simbase.minisbi.logistic)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.logistic.kuma_logistic_cdf">kuma_logistic_cdf() (in module ultranest.simbase.minisbi.logistic)</a>
+</li>
+      <li><a href="ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.logistic.kuma_logistic_cdf_vec">kuma_logistic_cdf_vec() (in module ultranest.simbase.minisbi.logistic)</a>
+</li>
+      <li><a href="ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.logistic.kuma_logistic_icdf_vec">kuma_logistic_icdf_vec() (in module ultranest.simbase.minisbi.logistic)</a>
+</li>
+      <li><a href="ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.logistic.kuma_logistic_logpdf_vec">kuma_logistic_logpdf_vec() (in module ultranest.simbase.minisbi.logistic)</a>
+</li>
+  </ul></td>
+</tr></table>
+
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -612,9 +657,17 @@
 </li>
       <li><a href="ultranest.html#ultranest.viz.LivePointsWidget">LivePointsWidget (class in ultranest.viz)</a>
 </li>
+      <li><a href="ultranest.html#ultranest.mlfriends.LocalAffineLayer">LocalAffineLayer (class in ultranest.mlfriends)</a>
+</li>
+      <li><a href="ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.nested.KLPTransform.log_jacobian">log_jacobian() (ultranest.simbase.minisbi.nested.KLPTransform method)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="ultranest.html#ultranest.mlfriends.LocalAffineLayer">LocalAffineLayer (class in ultranest.mlfriends)</a>
+      <li><a href="ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.logistic.logistic_log_cdf">logistic_log_cdf() (in module ultranest.simbase.minisbi.logistic)</a>
+</li>
+      <li><a href="ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.logistic.logit">logit() (in module ultranest.simbase.minisbi.logistic)</a>
+</li>
+      <li><a href="ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.nested.KLPTransform.logpdf">logpdf() (ultranest.simbase.minisbi.nested.KLPTransform method)</a>
 </li>
       <li><a href="ultranest.html#ultranest.netiter.MultiCounter.logZ_bs">logZ_bs (ultranest.netiter.MultiCounter property)</a>
 </li>
@@ -630,6 +683,8 @@
 <h2 id="M">M</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.utils.make_cached_generate">make_cached_generate() (in module ultranest.simbase.minisbi.utils)</a>
+</li>
       <li><a href="ultranest.html#ultranest.mlfriends.make_eigvals_positive">make_eigvals_positive() (in module ultranest.mlfriends)</a>
 </li>
       <li><a href="ultranest.html#ultranest.flatnuts.DirectJumper.make_jump">make_jump() (ultranest.flatnuts.DirectJumper method)</a>
@@ -640,6 +695,8 @@
         <li><a href="ultranest.html#ultranest.flatnuts.SingleJumper.make_jump">(ultranest.flatnuts.SingleJumper method)</a>
 </li>
       </ul></li>
+      <li><a href="ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.utils.make_memory">make_memory() (in module ultranest.simbase.minisbi.utils)</a>
+</li>
       <li><a href="ultranest.html#ultranest.netiter.PointPile.make_node">make_node() (ultranest.netiter.PointPile method)</a>
 </li>
       <li><a href="ultranest.html#ultranest.utils.make_run_dir">make_run_dir() (in module ultranest.utils)</a>
@@ -685,6 +742,22 @@
         <li><a href="ultranest.html#module-ultranest.popstepsampler">ultranest.popstepsampler</a>
 </li>
         <li><a href="ultranest.html#module-ultranest.samplingpath">ultranest.samplingpath</a>
+</li>
+        <li><a href="ultranest.simbase.html#module-ultranest.simbase">ultranest.simbase</a>
+</li>
+        <li><a href="ultranest.simbase.minisbi.html#module-ultranest.simbase.minisbi">ultranest.simbase.minisbi</a>
+</li>
+        <li><a href="ultranest.simbase.minisbi.html#module-ultranest.simbase.minisbi.logistic">ultranest.simbase.minisbi.logistic</a>
+</li>
+        <li><a href="ultranest.simbase.minisbi.html#module-ultranest.simbase.minisbi.nested">ultranest.simbase.minisbi.nested</a>
+</li>
+        <li><a href="ultranest.simbase.minisbi.html#module-ultranest.simbase.minisbi.norm">ultranest.simbase.minisbi.norm</a>
+</li>
+        <li><a href="ultranest.simbase.minisbi.html#module-ultranest.simbase.minisbi.npe">ultranest.simbase.minisbi.npe</a>
+</li>
+        <li><a href="ultranest.simbase.minisbi.html#module-ultranest.simbase.minisbi.plot">ultranest.simbase.minisbi.plot</a>
+</li>
+        <li><a href="ultranest.simbase.minisbi.html#module-ultranest.simbase.minisbi.utils">ultranest.simbase.minisbi.utils</a>
 </li>
         <li><a href="ultranest.html#module-ultranest.snowball">ultranest.snowball</a>
 </li>
@@ -753,7 +826,11 @@
 </li>
       <li><a href="ultranest.html#ultranest.viz.nicelogger">nicelogger() (in module ultranest.viz)</a>
 </li>
+      <li><a href="ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.logistic.nll_kuma_logistic_product">nll_kuma_logistic_product() (in module ultranest.simbase.minisbi.logistic)</a>
+</li>
       <li><a href="ultranest.html#ultranest.utils.normalised_kendall_tau_distance">normalised_kendall_tau_distance() (in module ultranest.utils)</a>
+</li>
+      <li><a href="ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.npe.NPENetwork">NPENetwork (class in ultranest.simbase.minisbi.npe)</a>
 </li>
       <li><a href="ultranest.html#ultranest.store.NullPointStore">NullPointStore (class in ultranest.store)</a>
 </li>
@@ -783,6 +860,8 @@
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.plot.parameter_coverage_test">parameter_coverage_test() (in module ultranest.simbase.minisbi.plot)</a>
+</li>
       <li><a href="ultranest.html#ultranest.netiter.MultiCounter.passing_node">passing_node() (ultranest.netiter.MultiCounter method)</a>
 
       <ul>
@@ -833,6 +912,8 @@
 </li>
       <li><a href="ultranest.html#ultranest.popstepsampler.PopulationSliceSampler">PopulationSliceSampler (class in ultranest.popstepsampler)</a>
 </li>
+      <li><a href="ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.plot.posterior_predictive_check">posterior_predictive_check() (in module ultranest.simbase.minisbi.plot)</a>
+</li>
       <li><a href="ultranest.html#ultranest.plot.PredictionBand">PredictionBand (class in ultranest.plot)</a>
 </li>
       <li><a href="ultranest.html#ultranest.flatnuts.DirectJumper.prepare_jump">prepare_jump() (ultranest.flatnuts.DirectJumper method)</a>
@@ -869,6 +950,10 @@
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.utils.random_derangement">random_derangement() (in module ultranest.simbase.minisbi.utils)</a>
+</li>
+      <li><a href="ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.plot.rank_histogram">rank_histogram() (in module ultranest.simbase.minisbi.plot)</a>
+</li>
       <li><a href="ultranest.html#ultranest.calibrator.ReactiveNestedCalibrator">ReactiveNestedCalibrator (class in ultranest.calibrator)</a>
 </li>
       <li><a href="ultranest.html#ultranest.integrator.ReactiveNestedSampler">ReactiveNestedSampler (class in ultranest.integrator)</a>
@@ -991,6 +1076,12 @@
         <li><a href="ultranest.html#ultranest.mlfriends.RobustEllipsoidRegion.sample_from_wrapping_ellipsoid">(ultranest.mlfriends.RobustEllipsoidRegion method)</a>
 </li>
       </ul></li>
+      <li><a href="ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.logistic.sample_kuma_logistic_product">sample_kuma_logistic_product() (in module ultranest.simbase.minisbi.logistic)</a>
+</li>
+      <li><a href="ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.npe.sample_posterior">sample_posterior() (in module ultranest.simbase.minisbi.npe)</a>
+</li>
+      <li><a href="ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.utils.sample_prior_u">sample_prior_u() (in module ultranest.simbase.minisbi.utils)</a>
+</li>
       <li><a href="ultranest.html#ultranest.samplingpath.SamplingPath">SamplingPath (class in ultranest.samplingpath)</a>
 </li>
       <li><a href="ultranest.html#ultranest.pathsampler.SamplingPathSliceSampler">SamplingPathSliceSampler (class in ultranest.pathsampler)</a>
@@ -1019,10 +1110,10 @@
 </li>
       <li><a href="ultranest.html#ultranest.plot.PredictionBand.set_shadeargs">set_shadeargs() (ultranest.plot.PredictionBand method)</a>
 </li>
-      <li><a href="ultranest.html#ultranest.mlfriends.MLFriends.set_transformLayer">set_transformLayer() (ultranest.mlfriends.MLFriends method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ultranest.html#ultranest.mlfriends.MLFriends.set_transformLayer">set_transformLayer() (ultranest.mlfriends.MLFriends method)</a>
+</li>
       <li><a href="ultranest.html#ultranest.popstepsampler.PopulationSliceSampler.setup_brackets">setup_brackets() (ultranest.popstepsampler.PopulationSliceSampler method)</a>
 </li>
       <li><a href="ultranest.html#ultranest.popstepsampler.PopulationSliceSampler.setup_start">setup_start() (ultranest.popstepsampler.PopulationSliceSampler method)</a>
@@ -1030,6 +1121,8 @@
       <li><a href="ultranest.html#ultranest.plot.PredictionBand.shade">shade() (ultranest.plot.PredictionBand method)</a>
 </li>
       <li><a href="ultranest.html#ultranest.popstepsampler.PopulationSliceSampler.shift">shift() (ultranest.popstepsampler.PopulationSliceSampler method)</a>
+</li>
+      <li><a href="ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.logistic.sigmoid">sigmoid() (in module ultranest.simbase.minisbi.logistic)</a>
 </li>
       <li><a href="ultranest.html#ultranest.mlfriends.SimpleRegion">SimpleRegion (class in ultranest.mlfriends)</a>
 </li>
@@ -1087,10 +1180,14 @@
 </li>
       <li><a href="ultranest.html#ultranest.plot.traceplot">traceplot() (in module ultranest.plot)</a>
 </li>
+      <li><a href="ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.npe.train_npe">train_npe() (in module ultranest.simbase.minisbi.npe)</a>
+</li>
       <li><a href="ultranest.html#ultranest.mlfriends.AffineLayer.transform">transform() (ultranest.mlfriends.AffineLayer method)</a>
 
       <ul>
         <li><a href="ultranest.html#ultranest.mlfriends.ScalingLayer.transform">(ultranest.mlfriends.ScalingLayer method)</a>
+</li>
+        <li><a href="ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.nested.KLPTransform.transform">(ultranest.simbase.minisbi.nested.KLPTransform method)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -1193,8 +1290,6 @@
         <li><a href="ultranest.html#module-ultranest.plot">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     ultranest.popstepsampler
 
@@ -1207,6 +1302,64 @@
 
       <ul>
         <li><a href="ultranest.html#module-ultranest.samplingpath">module</a>
+</li>
+      </ul></li>
+      <li>
+    ultranest.simbase
+
+      <ul>
+        <li><a href="ultranest.simbase.html#module-ultranest.simbase">module</a>
+</li>
+      </ul></li>
+      <li>
+    ultranest.simbase.minisbi
+
+      <ul>
+        <li><a href="ultranest.simbase.minisbi.html#module-ultranest.simbase.minisbi">module</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    ultranest.simbase.minisbi.logistic
+
+      <ul>
+        <li><a href="ultranest.simbase.minisbi.html#module-ultranest.simbase.minisbi.logistic">module</a>
+</li>
+      </ul></li>
+      <li>
+    ultranest.simbase.minisbi.nested
+
+      <ul>
+        <li><a href="ultranest.simbase.minisbi.html#module-ultranest.simbase.minisbi.nested">module</a>
+</li>
+      </ul></li>
+      <li>
+    ultranest.simbase.minisbi.norm
+
+      <ul>
+        <li><a href="ultranest.simbase.minisbi.html#module-ultranest.simbase.minisbi.norm">module</a>
+</li>
+      </ul></li>
+      <li>
+    ultranest.simbase.minisbi.npe
+
+      <ul>
+        <li><a href="ultranest.simbase.minisbi.html#module-ultranest.simbase.minisbi.npe">module</a>
+</li>
+      </ul></li>
+      <li>
+    ultranest.simbase.minisbi.plot
+
+      <ul>
+        <li><a href="ultranest.simbase.minisbi.html#module-ultranest.simbase.minisbi.plot">module</a>
+</li>
+      </ul></li>
+      <li>
+    ultranest.simbase.minisbi.utils
+
+      <ul>
+        <li><a href="ultranest.simbase.minisbi.html#module-ultranest.simbase.minisbi.utils">module</a>
 </li>
       </ul></li>
       <li>
@@ -1315,6 +1468,10 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ultranest.html#ultranest.ordertest.UniformOrderAccumulator.zscore">zscore (ultranest.ordertest.UniformOrderAccumulator property)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ultranest.simbase.minisbi.html#ultranest.simbase.minisbi.norm.ZScoreNorm">ZScoreNorm (class in ultranest.simbase.minisbi.norm)</a>
 </li>
   </ul></td>
 </tr></table>
