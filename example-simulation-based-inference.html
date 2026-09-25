@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tutorial: accelerating ultranest with simulation-based inference (SBI) &mdash; UltraNest 4.6.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/nbsphinx-code-cells.css" />
+
+  
+    <link rel="shortcut icon" href="_static/icon.ico"/>
+    <link rel="canonical" href="https://johannesbuchner.github.io/UltraNest/example-simulation-based-inference.html" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=cc8a4273"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@jupyter-widgets/html-manager@^1.0.1/dist/embed-amd.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Debugging techniques" href="debugging.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            UltraNest
+              <img src="_static/logo.svg" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                4.6.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="readme.html">UltraNest</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="method.html">Method</a></li>
+<li class="toctree-l1"><a class="reference internal" href="using-ultranest.html">Basic usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="priors.html">Specifying priors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="performance.html">Features</a></li>
+<li class="toctree-l1"><a class="reference internal" href="API.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="issues.html">Frequently Asked Questions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="history.html">Release Notes</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="example-sine-line.html">Time series fitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-sine-modelcomparison.html">Model comparison</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-sine-highd.html">Higher-dimensional fitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-intrinsic-distribution.html">Tutorial: intrinsic distribution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-line.html">Tutorial: fitting a line</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-outliers.html">Tutorial: distribution with outliers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-sine-bayesian-workflow.html">Bayesian workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example-warmstart.html">Warm starting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="debugging.html">Debugging techniques</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Tutorial: accelerating ultranest with simulation-based inference (SBI)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#Defining-the-model">Defining the model</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Gaussian-measurement-noise">Gaussian measurement noise</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Prior-distribution">Prior distribution</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#Generate-noisy-data">Generate noisy data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#The-observed-data-we-will-fit">The observed data we will fit</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Generate-mock-data---Prior-predictive-checks">Generate mock data - Prior predictive checks</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#Data-likelihood">Data likelihood</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Simulation-based-inference">Simulation-based inference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Training-the-model">Training the model</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#SBI-NPE-posterior-distribution">SBI-NPE posterior distribution</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Getting-the-NPE-distribution-parameters">Getting the NPE distribution parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Checking-the-SBI-model:-rank-histogram">Checking the SBI model: rank histogram</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Checking-the-SBI-model:-coverage-test">Checking the SBI model: coverage test</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ultranest-sbi:-SBI-accelerated-nested-sampling">ultranest-sbi: SBI-accelerated nested sampling</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Setting-up-the-accelerated-inference">Setting up the accelerated inference</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#Setting-up-the-accelerated-sampler">Setting up the accelerated sampler</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#Run-the-accelerated-ultranest-sbi-sampler">Run the accelerated ultranest-sbi sampler</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Posterior-distribution:">Posterior distribution:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#Combined-posterior-distribution">Combined posterior distribution</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#Takeaways">Takeaways</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">UltraNest</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content style-external-links">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Tutorial: accelerating ultranest with simulation-based inference (SBI)</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Tutorial:-accelerating-ultranest-with-simulation-based-inference-(SBI)">
+<h1>Tutorial: accelerating ultranest with simulation-based inference (SBI)<a class="headerlink" href="#Tutorial:-accelerating-ultranest-with-simulation-based-inference-(SBI)" title="Link to this heading"></a></h1>
+<p>In this tutorial you will learn:</p>
+<ul class="simple">
+<li><p>How to specify a mock data generator in addition to the likelihood</p></li>
+<li><p>How to train a simulation-based inference model to predict a posterior distribution (neural posterior estimation)</p></li>
+<li><p>How to verify that the simulation-based inference trained well</p></li>
+<li><p>How to use SBI-NPE to accelerate the UltraNest nested sampling run</p></li>
+</ul>
+<p>In this example, we fit a Voigt line in a spectrum.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">corner</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">ultranest</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">ultranest.simbase.minisbi</span>
+
+<span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">123</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<section id="Defining-the-model">
+<h2>Defining the model<a class="headerlink" href="#Defining-the-model" title="Link to this heading"></a></h2>
+<section id="Gaussian-measurement-noise">
+<h3>Gaussian measurement noise<a class="headerlink" href="#Gaussian-measurement-noise" title="Link to this heading"></a></h3>
+<p>First, we need our physical model function of the intrinsic spectrum, and also predict the noise level. We assume a Voigt line shape and constant noise.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">noise_std</span> <span class="o">=</span> <span class="mf">0.1</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">N_DATA</span> <span class="o">=</span> <span class="mi">1000</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">geomspace</span><span class="p">(</span><span class="mf">0.55</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">,</span> <span class="n">N_DATA</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">parameter_names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;amplitude&quot;</span><span class="p">,</span> <span class="s2">&quot;center_x&quot;</span><span class="p">,</span> <span class="s2">&quot;width&quot;</span><span class="p">,</span> <span class="s2">&quot;background&quot;</span><span class="p">,</span> <span class="s2">&quot;slope&quot;</span><span class="p">]</span>
+<span class="n">N_PARAMS</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">parameter_names</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Define the model spectrum function, given model parameters</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">scipy.special</span><span class="w"> </span><span class="kn">import</span> <span class="n">voigt_profile</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sigma_instrumental</span> <span class="o">=</span> <span class="mf">0.001</span> <span class="c1"># nominal resolution of the spectrograph</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[41]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">generate_mean_and_noise</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="n">amplitude</span><span class="p">,</span> <span class="n">center_x</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">background</span><span class="p">,</span> <span class="n">slope</span> <span class="o">=</span> <span class="n">theta</span>
+    <span class="n">signal</span> <span class="o">=</span> <span class="n">amplitude</span> <span class="o">*</span> <span class="n">voigt_profile</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">center_x</span><span class="p">,</span> <span class="n">sigma_instrumental</span><span class="p">,</span> <span class="n">width</span><span class="p">)</span> <span class="o">+</span> <span class="n">background</span> <span class="o">+</span> <span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="n">center_x</span><span class="p">)</span> <span class="o">**</span> <span class="n">slope</span>
+
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s1">&#39;mean&#39;</span><span class="p">:</span>      <span class="n">signal</span><span class="p">,</span>
+        <span class="s1">&#39;noise_std&#39;</span><span class="p">:</span> <span class="n">signal</span> <span class="o">*</span> <span class="mi">0</span> <span class="o">+</span> <span class="n">noise_std</span><span class="p">,</span>  <span class="c1"># same noise for each data point</span>
+    <span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+The history saving thread hit an unexpected error (OperationalError(&#39;attempt to write a readonly database&#39;)).History will not be written to the database.
+</pre></div></div>
+</div>
+<p>The received idx and seed are not used here. They are integers, in case randomness in the physics model is needed.</p>
+<p>Our true parameters for this example:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">theta_true</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0042</span><span class="p">,</span> <span class="mf">0.656279</span><span class="p">,</span> <span class="mf">0.001</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span>
+    <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span>
+    <span class="n">y</span><span class="o">=</span><span class="n">generate_mean_and_noise</span><span class="p">(</span><span class="n">theta_true</span><span class="p">)[</span><span class="s1">&#39;mean&#39;</span><span class="p">],</span>
+    <span class="n">capsize</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span>
+    <span class="n">x</span><span class="p">,</span>
+    <span class="n">generate_mean_and_noise</span><span class="p">(</span><span class="n">theta_true</span><span class="p">)[</span><span class="s1">&#39;mean&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">generate_mean_and_noise</span><span class="p">(</span><span class="n">theta_true</span><span class="p">)[</span><span class="s1">&#39;noise_std&#39;</span><span class="p">],</span>
+    <span class="n">generate_mean_and_noise</span><span class="p">(</span><span class="n">theta_true</span><span class="p">)[</span><span class="s1">&#39;mean&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">generate_mean_and_noise</span><span class="p">(</span><span class="n">theta_true</span><span class="p">)[</span><span class="s1">&#39;noise_std&#39;</span><span class="p">],</span>
+    <span class="n">alpha</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/example-simulation-based-inference_15_0.png" src="_images/example-simulation-based-inference_15_0.png" />
+</div>
+</div>
+<p>A beautiful spectrum of a line, on top of a slightly sloped continuum.</p>
+</section>
+<section id="Prior-distribution">
+<h3>Prior distribution<a class="headerlink" href="#Prior-distribution" title="Link to this heading"></a></h3>
+<p>Define our prior distribution as usual, based on unit cube transforms.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">prior_transform</span><span class="p">(</span><span class="n">u</span><span class="p">):</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">u</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="c1"># amplitude (index 0): log-uniform [1e-2, 1e2]</span>
+    <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="mi">4</span> <span class="o">+</span> <span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mi">4</span><span class="p">)</span>
+    <span class="c1"># center_x (index 1): uniform [0.65, 0.66]</span>
+    <span class="n">result</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.65</span> <span class="o">+</span> <span class="n">u</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="mf">0.01</span>
+    <span class="c1"># width (index 2): uniform [1e-4, 0.01]</span>
+    <span class="n">result</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="mi">4</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">u</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="c1"># background level (index 3): uniform [-1, 1]</span>
+    <span class="n">result</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">u</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+    <span class="c1"># slope (index 4): uniform [-2, +2]</span>
+    <span class="n">result</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">u</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">result</span>
+<br/></pre></div>
+</div>
+</div>
+</section>
+</section>
+<section id="Generate-noisy-data">
+<h2>Generate noisy data<a class="headerlink" href="#Generate-noisy-data" title="Link to this heading"></a></h2>
+<section id="The-observed-data-we-will-fit">
+<h3>The observed data we will fit<a class="headerlink" href="#The-observed-data-we-will-fit" title="Link to this heading"></a></h3>
+<p>Going from the model above to data is trivial, with a Gaussian random number generator:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">inject_noise</span><span class="p">(</span><span class="n">mean_props</span><span class="p">,</span> <span class="n">rng</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">mean_props</span><span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">],</span> <span class="n">mean_props</span><span class="p">[</span><span class="s1">&#39;noise_std&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">obs_spectrum</span> <span class="o">=</span> <span class="n">inject_noise</span><span class="p">(</span><span class="n">generate_mean_and_noise</span><span class="p">(</span><span class="n">theta_true</span><span class="p">),</span> <span class="n">rng</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">obs_spectrum</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/example-simulation-based-inference_24_0.png" src="_images/example-simulation-based-inference_24_0.png" />
+</div>
+</div>
+</section>
+<section id="Generate-mock-data---Prior-predictive-checks">
+<h3>Generate mock data - Prior predictive checks<a class="headerlink" href="#Generate-mock-data---Prior-predictive-checks" title="Link to this heading"></a></h3>
+<p>Here are some example data sets when we sampled from the prior. These show the diversity of data we consider reasonable a priori:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">N_PARAMS</span><span class="p">)</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="n">prior_transform</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">inject_noise</span><span class="p">(</span><span class="n">generate_mean_and_noise</span><span class="p">(</span><span class="n">params</span><span class="p">),</span> <span class="n">rng</span><span class="p">))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="mf">1e-2</span><span class="p">,</span> <span class="mi">40</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/example-simulation-based-inference_27_0.png" src="_images/example-simulation-based-inference_27_0.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="Data-likelihood">
+<h2>Data likelihood<a class="headerlink" href="#Data-likelihood" title="Link to this heading"></a></h2>
+<p>We adopt a corresponding Gaussian likelihood function, that we will use at the end with ultranest to improve upon the SBI approach.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">loglikelihood</span><span class="p">(</span><span class="n">mean_props</span><span class="p">,</span> <span class="n">noisy_data</span><span class="p">):</span>
+    <span class="c1"># the usual Gaussian likelihood function, comparing data to the model, under noise</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+        <span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+        <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">mean_props</span><span class="p">[</span><span class="s1">&#39;noise_std&#39;</span><span class="p">])</span>
+        <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">((</span><span class="n">noisy_data</span> <span class="o">-</span> <span class="n">mean_props</span><span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">])</span> <span class="o">/</span> <span class="n">mean_props</span><span class="p">[</span><span class="s1">&#39;noise_std&#39;</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Simulation-based-inference">
+<h2>Simulation-based inference<a class="headerlink" href="#Simulation-based-inference" title="Link to this heading"></a></h2>
+<p>The simulation-based inference trains a neural network to predict a simple factorized posterior distribution on the unit hypercube.</p>
+<p>The training pipeline is highly efficient, reusing generated model with different noise.</p>
+<p>Sampled datasets will be cached internally to a folder.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">folder</span> <span class="o">=</span> <span class="s1">&#39;mygaussline&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># optional: clear cache whenever you change the prior or model function</span>
+<span class="o">!</span>rm<span class="w"> </span>-rf<span class="w"> </span>mygaussline/
+</pre></div>
+</div>
+</div>
+<p>This happens efficiently in batches (using joblib.Memory). Some helper functions that call our functions in a loop:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ultranest.simbase.minisbi.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_memory</span><span class="p">,</span> <span class="n">make_cached_generate</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">memory</span> <span class="o">=</span> <span class="n">make_memory</span><span class="p">(</span><span class="n">folder</span><span class="p">)</span>
+<span class="n">generate_noiseless_batch</span> <span class="o">=</span> <span class="n">make_cached_generate</span><span class="p">(</span>
+    <span class="n">memory</span><span class="p">,</span> <span class="n">prior_transform</span><span class="p">,</span> <span class="n">generate_mean_and_noise</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<section id="Training-the-model">
+<h3>Training the model<a class="headerlink" href="#Training-the-model" title="Link to this heading"></a></h3>
+<p>Next train a simple neural network to predict a posterior distribution.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ultranest.simbase.minisbi.npe</span><span class="w"> </span><span class="kn">import</span> <span class="n">train_npe</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">train_npe</span><span class="p">(</span>
+    <span class="c1"># our folder</span>
+    <span class="n">folder</span><span class="o">=</span><span class="n">folder</span><span class="p">,</span>
+    <span class="c1"># our (costly) model function</span>
+    <span class="n">generate_noiseless_batch</span><span class="o">=</span><span class="n">generate_noiseless_batch</span><span class="p">,</span>
+    <span class="c1"># our cheap noisy generator:</span>
+    <span class="n">inject_noise</span><span class="o">=</span><span class="n">inject_noise</span><span class="p">,</span>
+    <span class="c1"># our model parameters</span>
+    <span class="n">n_params</span><span class="o">=</span><span class="n">N_PARAMS</span><span class="p">,</span>
+
+    <span class="c1"># Parameters related to training strategy:</span>
+
+    <span class="c1"># seed for randomness</span>
+    <span class="n">base_seed</span><span class="o">=</span><span class="mi">12345</span><span class="p">,</span>
+    <span class="c1"># how long to train: Choose how long you want to wait - the higher the better.</span>
+    <span class="n">max_model_evals</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span>
+    <span class="c1"># optional: if &gt; 1, evaluate models in parallel (with joblib.Parallel)</span>
+    <span class="n">num_processes</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="c1"># the full history of noise-free models generated with generate_mean_and_noise is kept.</span>
+    <span class="c1"># they are reused and additional datasets are generated with fresh noise</span>
+    <span class="c1"># fresh_example_fraction sets the balance between freshly generated models and reuse of previously generated models</span>
+    <span class="c1"># if the model is cheap, can be 1.0.</span>
+    <span class="c1"># Probably should not be much lower than 0.001. -- if the loss becomes extremely small (-300), the network memorized all samples.</span>
+    <span class="n">fresh_example_fraction</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+    <span class="c1"># choose how many new samples are generated in each epoch</span>
+    <span class="c1"># this sets the number of model evaluations per epoch</span>
+    <span class="c1"># Note: This sets the batch size seen by the network in each evaluation, by batch_size=fresh_sim_batch_size / fresh_example_fraction - you probably want batch_size of O(1000)</span>
+    <span class="n">fresh_sim_batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+    <span class="c1"># neural network training is somewhat stochastic and may not give an improvement in each epoch</span>
+    <span class="c1"># set the patience to how many epochs to wait for a significant improvement</span>
+    <span class="c1"># in any case, the best neural network is kept.</span>
+    <span class="n">patience</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="c1"># what loss improvement is designated a substantial improvement</span>
+    <span class="n">patience_min_delta</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+
+    <span class="c1"># parameters for the neural network architecture and learning</span>
+
+    <span class="c1"># learning rate - need to chose this depending on the batch size.</span>
+    <span class="c1"># Increase if loss is changing slowly, decrease if the loss becomes erratic.</span>
+    <span class="c1"># Try 1e-3, 1e-4, etc.</span>
+    <span class="n">npe_lr</span><span class="o">=</span><span class="mf">3e-4</span><span class="p">,</span>
+    <span class="c1"># maximum width of the layers, 1024 is a decent default, but worth trying other values</span>
+    <span class="n">npe_width</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span>
+    <span class="c1"># maximum number of layers. &#39;cascade&#39; is not very sensitive to this parameter.</span>
+    <span class="n">npe_depth</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span>
+    <span class="c1"># shape:</span>
+    <span class="c1"># - &#39;rectangular&#39; - a classic MLP where each of the npe_depth layer has npe_width neurons</span>
+    <span class="c1"># - &#39;triangular&#39; - a funnel-shaped MLP, with each next layer decreasing linearly in width</span>
+    <span class="c1"># - &#39;cascade&#39; - subsequent layers are half the width, half the neurons are forwarded to the next layer, the other half skip to the final layer.</span>
+    <span class="c1"># &#39;cascade&#39; is recommended, because it avoids having to play much with npe_width and npe_depth - it contains both a wide and a deep network.</span>
+    <span class="c1"># the neural network layers can be of equal layer width</span>
+    <span class="n">layer_shape</span><span class="o">=</span><span class="s1">&#39;cascade&#39;</span><span class="p">,</span>
+    <span class="c1"># activation function</span>
+    <span class="n">npe_activation_cls</span><span class="o">=</span><span class="s1">&#39;ReLU&#39;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+fresh_example_fraction=0.010  =&gt;  n_fresh=32, replay_example_count=3168 per sub-batch
+Starting parallel simulation generator (3220 batches total, 1 workers) …
+Detected n_data=1000 from probe simulation.
+hidden layer widths: [512, 256, 128, 64, 32, 16]
+Training NPE (product of Kumaraswamy-Logistic distributions) with on-the-fly batch generation …
+Computing normalisation statistics …
+[ZScoreNorm] fitted 1000 features from 2000 samples.
+  mean : min=1.023231  max=10.345800
+  std  : min=0.592311   max=27.783062
+Input normalisation fitted.
+Generating fixed NPE validation set (val_size=1024) …
+Training NPE with on-the-fly batch generation …
+  Epoch   1/390  train_loss=-1.1824  val_loss=-1.5215  fresh_simulator_evals=256  *
+  Epoch   2/390  train_loss=-2.1619  val_loss=-2.2636  fresh_simulator_evals=512  *
+  Epoch   3/390  train_loss=-2.7500  val_loss=-2.5668  fresh_simulator_evals=768  *
+  Epoch   4/390  train_loss=-2.9596  val_loss=-2.7459  fresh_simulator_evals=1024  *
+  Epoch   5/390  train_loss=-3.1445  val_loss=-3.0155  fresh_simulator_evals=1280  *
+  Epoch   6/390  train_loss=-3.3398  val_loss=-3.1661  fresh_simulator_evals=1536  *
+  Epoch   7/390  train_loss=-3.3814  val_loss=-3.3001  fresh_simulator_evals=1792  *
+  Epoch   8/390  train_loss=-3.5650  val_loss=-3.4544  fresh_simulator_evals=2048  *
+  Epoch   9/390  train_loss=-3.7571  val_loss=-3.6822  fresh_simulator_evals=2304  *
+  Epoch  10/390  train_loss=-3.9480  val_loss=-3.8550  fresh_simulator_evals=2560  *
+  Epoch  11/390  train_loss=-4.0946  val_loss=-4.0678  fresh_simulator_evals=2816  *
+  Epoch  12/390  train_loss=-4.4430  val_loss=-4.4662  fresh_simulator_evals=3072  *
+  Epoch  13/390  train_loss=-4.7013  val_loss=-4.4537  fresh_simulator_evals=3328  [1/10]
+  Epoch  14/390  train_loss=-4.4052  val_loss=-4.3293  fresh_simulator_evals=3584  [2/10]
+  Epoch  15/390  train_loss=-4.7639  val_loss=-4.5164  fresh_simulator_evals=3840  *
+  Epoch  16/390  train_loss=-4.9731  val_loss=-5.0957  fresh_simulator_evals=4096  *
+  Epoch  17/390  train_loss=-5.2496  val_loss=-5.1886  fresh_simulator_evals=4352  *
+  Epoch  18/390  train_loss=-5.3717  val_loss=-5.0348  fresh_simulator_evals=4608  [1/10]
+  Epoch  19/390  train_loss=-5.3180  val_loss=-5.5241  fresh_simulator_evals=4864  *
+  Epoch  20/390  train_loss=-5.6100  val_loss=-5.4879  fresh_simulator_evals=5120  [1/10]
+  Epoch  21/390  train_loss=-5.7231  val_loss=-5.8019  fresh_simulator_evals=5376  *
+  Epoch  22/390  train_loss=-5.8253  val_loss=-5.4744  fresh_simulator_evals=5632  [1/10]
+  Epoch  23/390  train_loss=-5.7035  val_loss=-5.7576  fresh_simulator_evals=5888  [2/10]
+  Epoch  24/390  train_loss=-5.8906  val_loss=-5.8598  fresh_simulator_evals=6144  *
+  Epoch  25/390  train_loss=-6.0099  val_loss=-5.9380  fresh_simulator_evals=6400  *
+  Epoch  26/390  train_loss=-6.2056  val_loss=-6.1041  fresh_simulator_evals=6656  *
+  Epoch  27/390  train_loss=-6.2511  val_loss=-6.2401  fresh_simulator_evals=6912  *
+  Epoch  28/390  train_loss=-6.4188  val_loss=-6.4645  fresh_simulator_evals=7168  *
+  Epoch  29/390  train_loss=-6.4619  val_loss=-6.5352  fresh_simulator_evals=7424  *
+  Epoch  30/390  train_loss=-6.6333  val_loss=-6.6363  fresh_simulator_evals=7680  *
+  Epoch  31/390  train_loss=-6.2840  val_loss=-6.4590  fresh_simulator_evals=7936  [1/10]
+  Epoch  32/390  train_loss=-6.3664  val_loss=-5.3450  fresh_simulator_evals=8192  [2/10]
+  Epoch  33/390  train_loss=-6.2875  val_loss=-6.2491  fresh_simulator_evals=8448  [3/10]
+  Epoch  34/390  train_loss=-6.5201  val_loss=-6.6803  fresh_simulator_evals=8704  *
+  Epoch  35/390  train_loss=-6.8162  val_loss=-6.8269  fresh_simulator_evals=8960  *
+  Epoch  36/390  train_loss=-6.9782  val_loss=-6.6361  fresh_simulator_evals=9216  [1/10]
+  Epoch  37/390  train_loss=-6.8937  val_loss=-7.0251  fresh_simulator_evals=9472  *
+  Epoch  38/390  train_loss=-7.0086  val_loss=-6.8340  fresh_simulator_evals=9728  [1/10]
+  Epoch  39/390  train_loss=-7.0177  val_loss=-7.0898  fresh_simulator_evals=9984  *
+  Epoch  40/390  train_loss=-7.2390  val_loss=-6.6979  fresh_simulator_evals=10240  [1/10]
+  Epoch  41/390  train_loss=-6.9965  val_loss=-7.0602  fresh_simulator_evals=10496  [2/10]
+  Epoch  42/390  train_loss=-7.1822  val_loss=-7.3056  fresh_simulator_evals=10752  *
+  Epoch  43/390  train_loss=-7.3218  val_loss=-7.2027  fresh_simulator_evals=11008  [1/10]
+  Epoch  44/390  train_loss=-7.2912  val_loss=-7.3787  fresh_simulator_evals=11264  *
+  Epoch  45/390  train_loss=-7.5102  val_loss=-7.4440  fresh_simulator_evals=11520  *
+  Epoch  46/390  train_loss=-7.5430  val_loss=-7.5467  fresh_simulator_evals=11776  *
+  Epoch  47/390  train_loss=-7.5387  val_loss=-7.4913  fresh_simulator_evals=12032  [1/10]
+  Epoch  48/390  train_loss=-7.5705  val_loss=-6.9858  fresh_simulator_evals=12288  [2/10]
+  Epoch  49/390  train_loss=-7.5856  val_loss=-7.7069  fresh_simulator_evals=12544  *
+  Epoch  50/390  train_loss=-7.5510  val_loss=-7.5185  fresh_simulator_evals=12800  [1/10]
+  Epoch  51/390  train_loss=-7.7290  val_loss=-7.7755  fresh_simulator_evals=13056  *
+  Epoch  52/390  train_loss=-7.8358  val_loss=-7.4229  fresh_simulator_evals=13312  [1/10]
+  Epoch  53/390  train_loss=-7.8508  val_loss=-7.9762  fresh_simulator_evals=13568  *
+  Epoch  54/390  train_loss=-7.9421  val_loss=-8.0076  fresh_simulator_evals=13824  *
+  Epoch  55/390  train_loss=-8.0458  val_loss=-7.9717  fresh_simulator_evals=14080  [1/10]
+  Epoch  56/390  train_loss=-8.0886  val_loss=-7.9996  fresh_simulator_evals=14336  [2/10]
+  Epoch  57/390  train_loss=-7.9854  val_loss=-8.1305  fresh_simulator_evals=14592  *
+  Epoch  58/390  train_loss=-8.0267  val_loss=-8.0634  fresh_simulator_evals=14848  [1/10]
+  Epoch  59/390  train_loss=-8.1223  val_loss=-8.1795  fresh_simulator_evals=15104  *
+  Epoch  60/390  train_loss=-8.1029  val_loss=-8.1498  fresh_simulator_evals=15360  [1/10]
+  Epoch  61/390  train_loss=-8.2757  val_loss=-8.0809  fresh_simulator_evals=15616  [2/10]
+  Epoch  62/390  train_loss=-8.3324  val_loss=-8.3455  fresh_simulator_evals=15872  *
+  Epoch  63/390  train_loss=-8.4289  val_loss=-8.3988  fresh_simulator_evals=16128  *
+  Epoch  64/390  train_loss=-8.4218  val_loss=-8.2137  fresh_simulator_evals=16384  [1/10]
+  Epoch  65/390  train_loss=-8.4220  val_loss=-8.3466  fresh_simulator_evals=16640  [2/10]
+  Epoch  66/390  train_loss=-8.3541  val_loss=-7.9892  fresh_simulator_evals=16896  [3/10]
+  Epoch  67/390  train_loss=-8.4097  val_loss=-8.5070  fresh_simulator_evals=17152  *
+  Epoch  68/390  train_loss=-8.4102  val_loss=-8.3823  fresh_simulator_evals=17408  [1/10]
+  Epoch  69/390  train_loss=-8.4946  val_loss=-8.5039  fresh_simulator_evals=17664  [2/10]
+  Epoch  70/390  train_loss=-8.4990  val_loss=-8.3605  fresh_simulator_evals=17920  [3/10]
+  Epoch  71/390  train_loss=-8.5852  val_loss=-8.5295  fresh_simulator_evals=18176  *
+  Epoch  72/390  train_loss=-8.6014  val_loss=-8.6350  fresh_simulator_evals=18432  *
+  Epoch  73/390  train_loss=-8.6407  val_loss=-8.7068  fresh_simulator_evals=18688  *
+  Epoch  74/390  train_loss=-8.8813  val_loss=-8.7546  fresh_simulator_evals=18944  *
+  Epoch  75/390  train_loss=-8.7245  val_loss=-8.9182  fresh_simulator_evals=19200  *
+  Epoch  76/390  train_loss=-8.7031  val_loss=-8.7492  fresh_simulator_evals=19456  [1/10]
+  Epoch  77/390  train_loss=-8.7990  val_loss=-8.6333  fresh_simulator_evals=19712  [2/10]
+  Epoch  78/390  train_loss=-8.6591  val_loss=-8.7141  fresh_simulator_evals=19968  [3/10]
+  Epoch  79/390  train_loss=-8.8455  val_loss=-8.6000  fresh_simulator_evals=20224  [4/10]
+  Epoch  80/390  train_loss=-8.7797  val_loss=-8.8498  fresh_simulator_evals=20480  [5/10]
+  Epoch  81/390  train_loss=-8.9755  val_loss=-8.6884  fresh_simulator_evals=20736  [6/10]
+  Epoch  82/390  train_loss=-8.8504  val_loss=-9.0702  fresh_simulator_evals=20992  *
+  Epoch  83/390  train_loss=-8.8859  val_loss=-8.8619  fresh_simulator_evals=21248  [1/10]
+  Epoch  84/390  train_loss=-9.0215  val_loss=-9.0182  fresh_simulator_evals=21504  [2/10]
+  Epoch  85/390  train_loss=-9.1999  val_loss=-9.0823  fresh_simulator_evals=21760  *
+  Epoch  86/390  train_loss=-9.0956  val_loss=-9.0106  fresh_simulator_evals=22016  [1/10]
+  Epoch  87/390  train_loss=-9.0748  val_loss=-9.0975  fresh_simulator_evals=22272  *
+  Epoch  88/390  train_loss=-9.2796  val_loss=-9.1154  fresh_simulator_evals=22528  *
+  Epoch  89/390  train_loss=-9.2436  val_loss=-9.3586  fresh_simulator_evals=22784  *
+  Epoch  90/390  train_loss=-9.0654  val_loss=-8.8461  fresh_simulator_evals=23040  [1/10]
+  Epoch  91/390  train_loss=-9.1024  val_loss=-9.2741  fresh_simulator_evals=23296  [2/10]
+  Epoch  92/390  train_loss=-9.0949  val_loss=-8.7865  fresh_simulator_evals=23552  [3/10]
+  Epoch  93/390  train_loss=-9.0222  val_loss=-9.1895  fresh_simulator_evals=23808  [4/10]
+  Epoch  94/390  train_loss=-9.3750  val_loss=-9.4074  fresh_simulator_evals=24064  *
+  Epoch  95/390  train_loss=-9.3168  val_loss=-9.2018  fresh_simulator_evals=24320  [1/10]
+  Epoch  96/390  train_loss=-9.3180  val_loss=-9.3602  fresh_simulator_evals=24576  [2/10]
+  Epoch  97/390  train_loss=-9.2771  val_loss=-9.4691  fresh_simulator_evals=24832  *
+  Epoch  98/390  train_loss=-9.3937  val_loss=-9.3630  fresh_simulator_evals=25088  [1/10]
+  Epoch  99/390  train_loss=-9.3719  val_loss=-9.2279  fresh_simulator_evals=25344  [2/10]
+  Epoch 100/390  train_loss=-9.5691  val_loss=-9.5218  fresh_simulator_evals=25600  *
+  Epoch 101/390  train_loss=-9.3715  val_loss=-8.8785  fresh_simulator_evals=25856  [1/10]
+  Epoch 102/390  train_loss=-9.0237  val_loss=-9.2981  fresh_simulator_evals=26112  [2/10]
+  Epoch 103/390  train_loss=-9.3969  val_loss=-9.4978  fresh_simulator_evals=26368  [3/10]
+  Epoch 104/390  train_loss=-9.4477  val_loss=-9.3574  fresh_simulator_evals=26624  [4/10]
+  Epoch 105/390  train_loss=-9.3613  val_loss=-9.2077  fresh_simulator_evals=26880  [5/10]
+  Epoch 106/390  train_loss=-9.3687  val_loss=-9.4166  fresh_simulator_evals=27136  [6/10]
+  Epoch 107/390  train_loss=-9.4852  val_loss=-9.5029  fresh_simulator_evals=27392  [7/10]
+  Epoch 108/390  train_loss=-9.5522  val_loss=-9.6878  fresh_simulator_evals=27648  *
+  Epoch 109/390  train_loss=-9.5165  val_loss=-9.5614  fresh_simulator_evals=27904  [1/10]
+  Epoch 110/390  train_loss=-9.6966  val_loss=-9.8584  fresh_simulator_evals=28160  *
+  Epoch 111/390  train_loss=-9.7912  val_loss=-9.9229  fresh_simulator_evals=28416  *
+  Epoch 112/390  train_loss=-9.9440  val_loss=-10.0001  fresh_simulator_evals=28672  *
+  Epoch 113/390  train_loss=-10.0365  val_loss=-9.6519  fresh_simulator_evals=28928  [1/10]
+  Epoch 114/390  train_loss=-9.6198  val_loss=-9.7274  fresh_simulator_evals=29184  [2/10]
+  Epoch 115/390  train_loss=-9.7233  val_loss=-9.4136  fresh_simulator_evals=29440  [3/10]
+  Epoch 116/390  train_loss=-9.5456  val_loss=-9.7460  fresh_simulator_evals=29696  [4/10]
+  Epoch 117/390  train_loss=-9.7430  val_loss=-10.0080  fresh_simulator_evals=29952  [5/10]
+  Epoch 118/390  train_loss=-9.8239  val_loss=-9.9752  fresh_simulator_evals=30208  [6/10]
+  Epoch 119/390  train_loss=-9.9655  val_loss=-9.8601  fresh_simulator_evals=30464  [7/10]
+  Epoch 120/390  train_loss=-9.8946  val_loss=-9.6582  fresh_simulator_evals=30720  [8/10]
+  Epoch 121/390  train_loss=-9.8784  val_loss=-9.7794  fresh_simulator_evals=30976  [9/10]
+  Epoch 122/390  train_loss=-9.9555  val_loss=-10.0423  fresh_simulator_evals=31232  *
+  Epoch 123/390  train_loss=-10.0998  val_loss=-10.2438  fresh_simulator_evals=31488  *
+  Epoch 124/390  train_loss=-9.9479  val_loss=-9.9550  fresh_simulator_evals=31744  [1/10]
+  Epoch 125/390  train_loss=-9.9019  val_loss=-9.7953  fresh_simulator_evals=32000  [2/10]
+  Epoch 126/390  train_loss=-9.8589  val_loss=-9.6023  fresh_simulator_evals=32256  [3/10]
+  Epoch 127/390  train_loss=-9.8262  val_loss=-9.9474  fresh_simulator_evals=32512  [4/10]
+  Epoch 128/390  train_loss=-9.9531  val_loss=-10.1601  fresh_simulator_evals=32768  [5/10]
+  Epoch 129/390  train_loss=-10.1444  val_loss=-10.2197  fresh_simulator_evals=33024  [6/10]
+  Epoch 130/390  train_loss=-10.0982  val_loss=-9.7880  fresh_simulator_evals=33280  [7/10]
+  Epoch 131/390  train_loss=-9.9798  val_loss=-10.0928  fresh_simulator_evals=33536  [8/10]
+  Epoch 132/390  train_loss=-10.0650  val_loss=-10.1281  fresh_simulator_evals=33792  [9/10]
+  Epoch 133/390  train_loss=-10.0780  val_loss=-10.0381  fresh_simulator_evals=34048  [10/10]
+Early stopping at epoch 133 (patience=10, fresh_simulator_evals=34048)
+Restored best model (val_loss=-10.2438)
+Model saved to mygaussline/minisbi_npe_1000d_512_512_512_512_512_512_ReLU_KLP_cascade.pt
+</pre></div></div>
+</div>
+<p>The meaning of the training output is as follows:</p>
+<p>The <strong>loss</strong> is the log-density of the predicted posterior distribution at the true parameter values.</p>
+<p>The <strong>training loss</strong> is what the optimizer sees. Ideally, this should not stall.</p>
+<p>The <strong>validation loss</strong> is the posterior density of independent samples generated at the beginning and kept separate. These mock data and their true parameters are not seen by the training and kept fixed. The validation loss should keep improving (decreasing).</p>
+<p>The <strong>fresh_simulator_evals</strong> gives the number of model calls performed so far.</p>
+<p>The last column gives a star when the model is improving, and otherwise counting up until <em>patience</em> epochs give no improvements.</p>
+<p>At the end, the best model is kept.</p>
+</section>
+</section>
+<section id="SBI-NPE-posterior-distribution">
+<h2>SBI-NPE posterior distribution<a class="headerlink" href="#SBI-NPE-posterior-distribution" title="Link to this heading"></a></h2>
+<p>The neural posterior may loose a lot of information, may be biased, etc. We will check this below.</p>
+<p>But let’s apply the neural model to our data and see what we get:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ultranest.simbase.minisbi.npe</span><span class="w"> </span><span class="kn">import</span> <span class="n">sample_posterior</span>
+
+<span class="n">posterior_samples_u</span><span class="p">,</span> <span class="n">posterior_samples_theta</span> <span class="o">=</span> <span class="n">sample_posterior</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+    <span class="n">observed_data</span><span class="o">=</span><span class="n">obs_spectrum</span><span class="p">,</span>
+    <span class="n">prior_transform</span><span class="o">=</span><span class="n">prior_transform</span><span class="p">,</span>
+    <span class="n">n_params</span><span class="o">=</span><span class="n">N_PARAMS</span><span class="p">,</span>
+    <span class="n">n_posterior_samples</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+Predicted posterior (Kumaraswamy-Logistic product, unit-cube space):
+  Param 0: loc=0.9677  scale=0.2043  a=1.0741  b=0.2385
+  Param 1: loc=0.2767  scale=0.0919  a=1.3752  b=3.7631
+  Param 2: loc=0.1950  scale=0.0941  a=1.5721  b=5.2342
+  Param 3: loc=0.5873  scale=0.0044  a=0.2282  b=0.4277
+  Param 4: loc=0.3659  scale=0.0136  a=0.4344  b=0.2741
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/home/user/Downloads/mininest/ultranest/simbase/minisbi/logistic.py:37: RuntimeWarning: overflow encountered in exp
+  return 1.0 / (1.0 + np.exp(-np.clip(x, -500.0, 500.0)))
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Posterior summary:&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">parameter_names</span><span class="p">):</span>
+    <span class="n">samp</span> <span class="o">=</span> <span class="n">posterior_samples_theta</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">name</span><span class="si">:</span><span class="s2">12s</span><span class="si">}</span><span class="s2">: mean=</span><span class="si">{</span><span class="n">samp</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">  std=</span><span class="si">{</span><span class="n">samp</span><span class="o">.</span><span class="n">std</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span>
+          <span class="sa">f</span><span class="s2">&quot;  true=</span><span class="si">{</span><span class="n">theta_true</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Posterior summary:
+  amplitude   : mean=0.006  std=0.018  true=0.004
+  center_x    : mean=0.655  std=0.002  true=0.656
+  width       : mean=0.001  std=0.002  true=0.001
+  background  : mean=0.209  std=0.008  true=0.200
+  slope       : mean=-1.009  std=0.044  true=-1.000
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">corner</span><span class="o">.</span><span class="n">corner</span><span class="p">(</span>
+    <span class="n">posterior_samples_theta</span><span class="p">,</span>
+    <span class="n">labels</span><span class="o">=</span><span class="n">parameter_names</span><span class="p">,</span>
+    <span class="n">truths</span><span class="o">=</span><span class="n">theta_true</span><span class="p">,</span>
+    <span class="n">truth_color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span>
+    <span class="n">show_titles</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">quantiles</span><span class="o">=</span><span class="p">[</span><span class="mf">0.16</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.84</span><span class="p">],</span>
+    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;steelblue&quot;</span><span class="p">,</span>
+    <span class="n">plot_datapoints</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">fill_contours</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">smooth</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+<span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/example-simulation-based-inference_48_0.png" src="_images/example-simulation-based-inference_48_0.png" />
+</div>
+</div>
+<section id="Getting-the-NPE-distribution-parameters">
+<h3>Getting the NPE distribution parameters<a class="headerlink" href="#Getting-the-NPE-distribution-parameters" title="Link to this heading"></a></h3>
+<p>The above is a Kumaraswamy-Logistic chained distribution defined on the unit hypercube. It can be summarized with a few distribution parameters for each model parameters.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[24]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ultranest.simbase.minisbi.nested</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_distribution_parameters</span><span class="p">,</span> <span class="n">KLPTransform</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">distribution_parameters</span> <span class="o">=</span> <span class="n">get_distribution_parameters</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">obs_spectrum</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">distribution_parameters</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[26]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;loc&#39;: [0.9677473306655884,
+  0.27672627568244934,
+  0.19500614702701569,
+  0.5872949957847595,
+  0.3659431040287018],
+ &#39;scale&#39;: [0.2043338119983673,
+  0.09192689508199692,
+  0.09408794343471527,
+  0.004435378592461348,
+  0.013627054169774055],
+ &#39;a&#39;: [1.0740731954574585,
+  1.3751872777938843,
+  1.5721242427825928,
+  0.22820907831192017,
+  0.43438252806663513],
+ &#39;b&#39;: [0.2384941726922989,
+  3.7631149291992188,
+  5.234200954437256,
+  0.42766571044921875,
+  0.2740660607814789]}
+</pre></div></div>
+</div>
+<p>It might be useful to store for reuse:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[27]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">folder</span> <span class="o">+</span> <span class="s1">&#39;/distribution.json&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">distribution_parameters</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</section>
+<section id="Checking-the-SBI-model:-rank-histogram">
+<h3>Checking the SBI model: rank histogram<a class="headerlink" href="#Checking-the-SBI-model:-rank-histogram" title="Link to this heading"></a></h3>
+<p>First, we check that the model gives reliable posteriors, with a rank histogram.</p>
+<p>We generate from the prior, and sample posterior samples. Ideally, the rank of the prior samples and the rank of the posterior samples are on a line (see <a class="reference external" href="https://arxiv.org/abs/1804.06788">Simulation-based calibration paper</a>).</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ultranest.simbase.minisbi.plot</span><span class="w"> </span><span class="kn">import</span> <span class="n">rank_histogram</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ranks</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">rank_histogram</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+    <span class="n">generate_noiseless_batch</span><span class="o">=</span><span class="n">generate_noiseless_batch</span><span class="p">,</span>
+    <span class="n">inject_noise</span><span class="o">=</span><span class="n">inject_noise</span><span class="p">,</span>
+    <span class="n">prior_transform</span><span class="o">=</span><span class="n">prior_transform</span><span class="p">,</span>
+    <span class="n">n_params</span><span class="o">=</span><span class="n">N_PARAMS</span><span class="p">,</span>
+    <span class="n">folder</span><span class="o">=</span><span class="n">folder</span><span class="p">,</span>
+    <span class="n">n_test</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span>
+    <span class="n">seed</span><span class="o">=</span><span class="mi">98765</span><span class="p">,</span>
+    <span class="n">param_names</span><span class="o">=</span><span class="n">parameter_names</span><span class="p">,</span>
+    <span class="n">n_bins</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">fig</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Rank histogram:   0%|                                                                          | 0/5000 [00:00&lt;?, ?sim/s]/home/user/Downloads/mininest/ultranest/simbase/minisbi/logistic.py:37: RuntimeWarning: overflow encountered in exp
+  return 1.0 / (1.0 + np.exp(-np.clip(x, -500.0, 500.0)))
+Rank histogram: 100%|█████████████████████████████████████████████████████████████| 5000/5000 [00:00&lt;00:00, 8801.27sim/s]
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/example-simulation-based-inference_58_1.png" src="_images/example-simulation-based-inference_58_1.png" />
+</div>
+</div>
+<p>These histograms should be flat.</p>
+<p>If they a U-shaped, the posterior is over-confident. If they are inverse U-shaped, the posterior is under-confident.</p>
+<p>You might be able to improve this by choosing a larger neural network.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Per-parameter rank statistics:&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">parameter_names</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    </span><span class="si">{</span><span class="n">name</span><span class="si">:</span><span class="s2">12s</span><span class="si">}</span><span class="s2">: mean=</span><span class="si">{</span><span class="n">ranks</span><span class="p">[:,</span><span class="w"> </span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">  &quot;</span>
+          <span class="sa">f</span><span class="s2">&quot;std=</span><span class="si">{</span><span class="n">ranks</span><span class="p">[:,</span><span class="w"> </span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">std</span><span class="p">()</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">  expected_mean=100.0&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+  Per-parameter rank statistics:
+    amplitude   : mean=91.4  std=52.6  expected_mean=100.0
+    center_x    : mean=105.9  std=59.8  expected_mean=100.0
+    width       : mean=92.2  std=59.1  expected_mean=100.0
+    background  : mean=117.0  std=53.5  expected_mean=100.0
+    slope       : mean=95.6  std=57.3  expected_mean=100.0
+</pre></div></div>
+</div>
+</section>
+<section id="Checking-the-SBI-model:-coverage-test">
+<h3>Checking the SBI model: coverage test<a class="headerlink" href="#Checking-the-SBI-model:-coverage-test" title="Link to this heading"></a></h3>
+<p>Next, we check whether the x% credible intervals contain the true value in x% of cases:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[31]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ultranest.simbase.minisbi.plot</span><span class="w"> </span><span class="kn">import</span> <span class="n">parameter_coverage_test</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">coverage</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">parameter_coverage_test</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+    <span class="n">generate_noiseless_batch</span><span class="o">=</span><span class="n">generate_noiseless_batch</span><span class="p">,</span>
+    <span class="n">inject_noise</span><span class="o">=</span><span class="n">inject_noise</span><span class="p">,</span>
+    <span class="n">prior_transform</span><span class="o">=</span><span class="n">prior_transform</span><span class="p">,</span>
+    <span class="n">n_params</span><span class="o">=</span><span class="n">N_PARAMS</span><span class="p">,</span>
+    <span class="n">folder</span><span class="o">=</span><span class="n">folder</span><span class="p">,</span>
+    <span class="n">n_test</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+    <span class="n">credible_levels</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.99</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+    <span class="n">seed</span><span class="o">=</span><span class="mi">11223</span><span class="p">,</span>
+    <span class="n">param_names</span><span class="o">=</span><span class="n">parameter_names</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">fig</span><span class="p">;</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+Coverage test: 100%|████████████████████████████████████████████████████████████████| 500/500 [00:00&lt;00:00, 9391.93sim/s]
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/example-simulation-based-inference_64_1.png" src="_images/example-simulation-based-inference_64_1.png" />
+</div>
+</div>
+<p>These should follow the diagonal (red dashed).</p>
+<p>Most of them look good. The amplitude parameter is slightly off, but not too wild.</p>
+<p>If not, the posterior for that parameter is not well-calibrated (too narrow or too wide error bars). You might be able to improve this by choosing a larger neural network.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  Empirical coverage at nominal 90</span><span class="si">% le</span><span class="s2">vel:&quot;</span><span class="p">)</span>
+<span class="n">levels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.99</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+<span class="n">idx_90</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">levels</span> <span class="o">-</span> <span class="mf">0.90</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">parameter_names</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;    </span><span class="si">{</span><span class="n">name</span><span class="si">:</span><span class="s2">12s</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">coverage</span><span class="p">[</span><span class="n">idx_90</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">]</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">  (nominal=0.900)&quot;</span><span class="p">)</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+  Empirical coverage at nominal 90% level:
+    amplitude   : 0.898  (nominal=0.900)
+    center_x    : 0.876  (nominal=0.900)
+    width       : 0.860  (nominal=0.900)
+    background  : 0.896  (nominal=0.900)
+    slope       : 0.888  (nominal=0.900)
+</pre></div></div>
+</div>
+</section>
+<section id="ultranest-sbi:-SBI-accelerated-nested-sampling">
+<h3>ultranest-sbi: SBI-accelerated nested sampling<a class="headerlink" href="#ultranest-sbi:-SBI-accelerated-nested-sampling" title="Link to this heading"></a></h3>
+</section>
+<section id="Setting-up-the-accelerated-inference">
+<h3>Setting up the accelerated inference<a class="headerlink" href="#Setting-up-the-accelerated-inference" title="Link to this heading"></a></h3>
+<p>Here we run nested sampling using the NPE posterior as a reparameterisation.</p>
+<p>This allows nested sampling to start at a shrunk-down prior. To ensure identical inference as if we had started with the full prior, we need to correct the likelihood function by a penalty.</p>
+<ul class="simple">
+<li><p>The nested sampler samples t ~ Uniform(0,1)^d.</p></li>
+<li><p>The prior transform maps: t -&gt; u -&gt; theta</p></li>
+<li><p>The log-likelihood includes a correction: loglike(theta) - log q(u | x_obs)</p></li>
+</ul>
+<p>The correction ensures that the evidence integral and posterior samples are correct with respect to the original flat prior over u (and thus the physical prior over theta).</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[34]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># a helper object defining the distribution, its transform and log-posterior</span>
+<span class="n">klp_transform</span> <span class="o">=</span> <span class="n">KLPTransform</span><span class="p">(</span><span class="o">**</span><span class="n">distribution_parameters</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[35]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">_State</span><span class="p">:</span>
+    <span class="n">last_t</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">state</span> <span class="o">=</span> <span class="n">_State</span><span class="p">()</span>
+
+<span class="c1"># warp the prior by the NPE distribution</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">warped_prior_transform</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+    <span class="c1"># keep the last state for likelihood</span>
+    <span class="n">state</span><span class="o">.</span><span class="n">last_t</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="c1"># [0,1]^d -&gt; [0,1]^d with the SBI posterior warp</span>
+    <span class="n">u</span>     <span class="o">=</span> <span class="n">klp_transform</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">t</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+    <span class="c1"># [0,1]^d -&gt; physical parameters</span>
+    <span class="n">theta</span> <span class="o">=</span> <span class="n">prior_transform</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">theta</span>
+
+<span class="c1"># correct the likelihood for the warp</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">corrected_log_likelihood</span><span class="p">(</span><span class="n">theta</span><span class="p">):</span>
+    <span class="n">mp</span>   <span class="o">=</span> <span class="n">generate_mean_and_noise</span><span class="p">(</span><span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="c1"># compute our model likelihood</span>
+    <span class="n">logL</span> <span class="o">=</span> <span class="n">loglikelihood</span><span class="p">(</span><span class="n">mp</span><span class="p">,</span> <span class="n">obs_spectrum</span><span class="p">)</span>
+    <span class="c1"># compute neural posterior density</span>
+    <span class="n">log_jac</span> <span class="o">=</span> <span class="n">klp_transform</span><span class="o">.</span><span class="n">log_jacobian</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">last_t</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">logL</span> <span class="o">+</span> <span class="n">log_jac</span>
+<br/></pre></div>
+</div>
+</div>
+</section>
+</section>
+<section id="Setting-up-the-accelerated-sampler">
+<h2>Setting up the accelerated sampler<a class="headerlink" href="#Setting-up-the-accelerated-sampler" title="Link to this heading"></a></h2>
+<p>Build our accelerated ultranest-sbi sampler:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[36]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sampler</span> <span class="o">=</span> <span class="n">ultranest</span><span class="o">.</span><span class="n">ReactiveNestedSampler</span><span class="p">(</span>
+    <span class="n">parameter_names</span><span class="p">,</span>
+    <span class="n">corrected_log_likelihood</span><span class="p">,</span>
+    <span class="n">warped_prior_transform</span><span class="p">,</span>
+    <span class="n">log_dir</span><span class="o">=</span><span class="n">folder</span><span class="p">,</span>
+    <span class="n">resume</span><span class="o">=</span><span class="s1">&#39;overwrite&#39;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Torch modified the logging to show all messages, let’s suppress that</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[37]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;ultranest&#39;</span><span class="p">)</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">)</span>
+<span class="c1">#logging.basicConfig(level=logging.INFO, stream=sys.stderr)</span>
+</pre></div>
+</div>
+</div>
+<section id="Run-the-accelerated-ultranest-sbi-sampler">
+<h3>Run the accelerated ultranest-sbi sampler<a class="headerlink" href="#Run-the-accelerated-ultranest-sbi-sampler" title="Link to this heading"></a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[38]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">results</span> <span class="o">=</span> <span class="n">sampler</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">frac_remain</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">max_num_improvement_loops</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<script type="application/vnd.jupyter.widget-view+json">{"model_id": "f1aef25f23b54c3eaee1966b67b087ab", "version_major": 2, "version_minor": 0}</script></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Z=876.1(49.51%) | Like=887.41..889.19 [887.4075..887.4086]*| it/evals=4800/13265 eff=37.3105% N=400  00
+</pre></div></div>
+</div>
+</section>
+<section id="Posterior-distribution:">
+<h3>Posterior distribution:<a class="headerlink" href="#Posterior-distribution:" title="Link to this heading"></a></h3>
+<p>Looking at the posterior distribution of the ultranest-sbi sampler, it is much narrower than the SBI one:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[39]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">corner</span><span class="o">.</span><span class="n">corner</span><span class="p">(</span>
+    <span class="n">results</span><span class="p">[</span><span class="s1">&#39;samples&#39;</span><span class="p">],</span>
+    <span class="n">labels</span><span class="o">=</span><span class="n">parameter_names</span><span class="p">,</span>
+    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;darkorange&quot;</span><span class="p">,</span>
+    <span class="n">plot_datapoints</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">fill_contours</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">smooth</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">contour_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;linestyles&quot;</span><span class="p">:</span> <span class="s2">&quot;dashed&quot;</span><span class="p">},</span>
+<span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/example-simulation-based-inference_81_0.png" src="_images/example-simulation-based-inference_81_0.png" />
+</div>
+</div>
+</section>
+<section id="Combined-posterior-distribution">
+<h3>Combined posterior distribution<a class="headerlink" href="#Combined-posterior-distribution" title="Link to this heading"></a></h3>
+<p>Comparing them on the same plot, the SBI posterior is extremely wide, while ultranest manages to zoom in and get the full information.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[40]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">figure</span> <span class="o">=</span> <span class="n">corner</span><span class="o">.</span><span class="n">corner</span><span class="p">(</span>
+    <span class="n">posterior_samples_theta</span><span class="p">,</span>
+    <span class="n">labels</span><span class="o">=</span><span class="n">parameter_names</span><span class="p">,</span>
+    <span class="n">truths</span><span class="o">=</span><span class="n">theta_true</span><span class="p">,</span>
+    <span class="n">truth_color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span>
+    <span class="n">show_titles</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">quantiles</span><span class="o">=</span><span class="p">[</span><span class="mf">0.16</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.84</span><span class="p">],</span>
+    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;steelblue&quot;</span><span class="p">,</span>
+    <span class="n">plot_datapoints</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">fill_contours</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">smooth</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="c1"># overplot nested sampling posterior on the same figure</span>
+<span class="n">corner</span><span class="o">.</span><span class="n">corner</span><span class="p">(</span>
+    <span class="n">results</span><span class="p">[</span><span class="s1">&#39;samples&#39;</span><span class="p">],</span>
+    <span class="n">labels</span><span class="o">=</span><span class="n">parameter_names</span><span class="p">,</span>
+    <span class="n">fig</span><span class="o">=</span><span class="n">figure</span><span class="p">,</span>
+    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;darkorange&quot;</span><span class="p">,</span>
+    <span class="n">plot_datapoints</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">fill_contours</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">smooth</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">contour_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;linestyles&quot;</span><span class="p">:</span> <span class="s2">&quot;dashed&quot;</span><span class="p">},</span>
+<span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/example-simulation-based-inference_84_0.png" src="_images/example-simulation-based-inference_84_0.png" />
+</div>
+</div>
+<p>Notice that the ultranest-sbi posterior (orange) is much narrower than the SBI posterior (blue), because SBI lost a lot of information. Nevertheless, the blue distribution provides a useful starting point for nested sampling.</p>
+</section>
+</section>
+<section id="Takeaways">
+<h2>Takeaways<a class="headerlink" href="#Takeaways" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>In addition to the usual model and its likelihood, we defined a data simulator that can generate data.</p></li>
+<li><p>We have learned to train a simulation-based inference (SBI) neural posterior estimator (NPE) model for obtaining a fast posterior distribution.</p></li>
+<li><p>We checked that SBI posterior is amortized to behave well across the entire prior.</p></li>
+<li><p>We used the SBI posterior on our data to get a starting point for a posterior distribution. This distribution has lost some information.</p></li>
+<li><p>We used ultranest on top of the SBI posterior to get the posterior samples from the true posterior.</p></li>
+<li><p>This ultranest-sbi approach effectively “skips” many initial nested sampling iterations, zooming into a data-driven guess for the posterior location. Because the SBI posterior is virtually always too wide, nested sampling is then fast to integrate to the actual posterior bulk.</p></li>
+</ul>
+<p><strong>Limitations</strong>: The posterior distribution used by the neural network is factorized and not optimal for challenging distributions. With a different, more sophisticated sbi package, better neural posteriors could be learned, but that would mean more complexity as well.</p>
+<p>When using this in publications, please refer to it as <strong>ultranest-sbi</strong>, to distinguish it from ultranest.</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://arxiv.org/abs/1804.06788">https://arxiv.org/abs/1804.06788</a>, “Validating Bayesian Inference Algorithms with Simulation-Based Calibration”, Talts e al., 2018</p></li>
+<li><p><a class="reference external" href="https://doi.org/10.1073/pnas.1912789117">https://doi.org/10.1073/pnas.1912789117</a> “The frontier of simulation-based inference”, Cranmer, Brehmer, Louppe, 2020</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="debugging.html" class="btn btn-neutral float-left" title="Debugging techniques" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2014-2024, Johannes Buchner.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
