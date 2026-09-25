@@ -1,3 +1,5 @@
+"""Helpers for using nested sampling on top of an auxiliary distribution"""
+
 import numpy as np
 import torch
 from .logistic import kuma_logistic_cdf_vec, kuma_logistic_logpdf_vec, kuma_logistic_icdf_vec

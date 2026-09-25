@@ -1,3 +1,5 @@
+"""Kumaraswamy-Logistic chained distribution defined on a unit hypercube."""
+
 import numpy as np
 import torch
 
