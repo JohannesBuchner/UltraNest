@@ -1023,7 +1023,7 @@ class PopulationSimpleSliceSampler(GenericPopulationSampler):
                     #selected_project_points[bad_points]=(tleft_unitcube[None,:] + (tright_unitcube-tleft_unitcube)[None,:]*np.random.rand(int(projected_live_points.shape[1]))[:,None]+projected_center[None,:]).swapaxes(0,1)[bad_points]
                     
                     
-                    quantiles = np.percentile(np.hstack((selected_project_points, regularization_points)), quantiles_points, axis=1)#np.percentile(np.hstack((selected_project_points, regularization_points)), quantiles_points, axis=1)#np.percentile( regularization_points, quantiles_points, axis=1)#np.percentile(np.hstack((projected_live_points, regularization_points)), quantiles_points, axis=1)
+                    quantiles = np.percentile(np.hstack((selected_project_points, regularization_points)), quantiles_points, axis=1,method="median_unbiased")#np.percentile(np.hstack((selected_project_points, regularization_points)), quantiles_points, axis=1)#np.percentile( regularization_points, quantiles_points, axis=1)#np.percentile(np.hstack((projected_live_points, regularization_points)), quantiles_points, axis=1)
                     
                     dist = QuantileDistribution(quantiles, quantiles_points, self.popsize)
                     
@@ -1033,9 +1033,11 @@ class PopulationSimpleSliceSampler(GenericPopulationSampler):
                     
                     projected_live_points = np.einsum('ij,ikj->ik', v, us[remaining,:])-projected_center[:,None]
                     
-                    max_left = np.min(projected_live_points,axis=1)*3.
-                    max_right = np.max(projected_live_points,axis=1)*3.
-                    
+                    #max_left = np.min(projected_live_points,axis=1)*3.
+                    #max_right = np.max(projected_live_points,axis=1)*3.
+                    max_= np.max(np.abs(projected_live_points),axis=1)*3.
+                    max_left = -max_
+                    max_right = max_
                     tleft_unitcube = np.maximum(max_left, tleft_unitcube)
                     tright_unitcube = np.minimum(max_right, tright_unitcube)
                     tleft=tleft_unitcube.copy()
