@@ -59,7 +59,7 @@ clean-doc:
 	rm -rf docs/build
 	nbstripout docs/*.ipynb
 
-SOURCES := $(shell ls ultranest/*.py | grep -Ev '^ultranest/(flatnuts|dychmc|dyhmc|pathsampler).py' | grep -v .pyx.py)
+SOURCES := $(shell ls ultranest/*.py ultranest/simbase/minisbi/*.py | grep -Ev '^ultranest/(flatnuts|dychmc|dyhmc|pathsampler).py' | grep -v .pyx.py)
 
 lint: ${SOURCES} ## check style
 	flake8 ${SOURCES}
@@ -83,11 +83,13 @@ coverage: ## check code coverage quickly with the default Python
 
 docs: ## generate Sphinx HTML documentation, including API docs
 	rm -f docs/ultranest.rst
+	rm -f docs/minisbi.rst
 	rm -f docs/modules.rst
 	rm -f docs/API.rst
 	python3 setup.py build_ext --inplace
 	#nbstripout docs/*.ipynb
 	sphinx-apidoc -H API -o docs/ ultranest
+	sphinx-apidoc -H API -o docs/ ultranest/simbase/minisbi
 	cd docs; python3 modoverview.py
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html O=-jauto

@@ -7,7 +7,7 @@ The main interface is :py:class:`ultranest.integrator.ReactiveNestedSampler`,
 also available as `ultranest.ReactiveNestedSampler`.
 
 
-Modules commonly used directly:
+Modules commonly used directly
 --------------------------------------------------------------------------------
 
  * :py:mod:`ultranest.integrator`: Nested sampling integrators
@@ -15,10 +15,11 @@ Modules commonly used directly:
  * :py:mod:`ultranest.stepsampler`: MCMC-like step sampling
  * :py:mod:`ultranest.popstepsampler`: Vectorized step samplers
  * :py:mod:`ultranest.calibrator`: Calibration of step sampler
+ * :py:mod:`ultranest.simbase.minisbi`: Simulation-based inference
  * :py:mod:`ultranest.solvecompat`: Drop-in replacement for pymultinest.solve.
  * :py:mod:`ultranest.hotstart`: Warm start
 
-Internally used modules:
+Internally used modules
 --------------------------------------------------------------------------------
 
  * :py:mod:`ultranest.mlfriends`: Region construction methods
@@ -28,7 +29,7 @@ Internally used modules:
  * :py:mod:`ultranest.store`: Storage for nested sampling points
  * :py:mod:`ultranest.viz`: Live point visualisations
 
-Experimental modules, no guarantees:
+Experimental modules, no guarantees
 --------------------------------------------------------------------------------
 
  * :py:mod:`ultranest.dychmc`: Constrained Hamiltanean Monte Carlo step sampling.

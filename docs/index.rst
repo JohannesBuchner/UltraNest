@@ -29,6 +29,7 @@ Welcome to UltraNest's documentation!
    example-sine-bayesian-workflow.ipynb
    example-warmstart.ipynb
    debugging.ipynb
+   example-simulation-based-inference.ipynb
 
 .. include:: ../README.rst
 
