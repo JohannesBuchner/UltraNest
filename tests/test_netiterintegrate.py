@@ -341,6 +341,45 @@ def test_singleblock(nlive):
 	pointstore.close()
 	assert np.isclose(result3['logz'], result['logz'])
 
+def test_first_node_is_leaf():
+	# the lowest root has no children, so the counters start with a
+	# contracting step (see issue #157)
+	def make_tree():
+		pp = PointPile(1, 1)
+		roots = [pp.make_node(L, np.array([L]), np.array([L])) for L in [1.0, 2.0, 3.0]]
+		roots[1].children.append(pp.make_node(4.0, np.array([4.0]), np.array([4.0])))
+		return roots
+
+	single = SingleCounter()
+	explorer = BreadthFirstIterator(make_tree())
+	while True:
+		next_node = explorer.next_node()
+		if next_node is None:
+			break
+		rootid, node, (_, _, active_values, _) = next_node
+		single.passing_node(node, active_values)
+		explorer.expand_children_of(rootid, node)
+
+	multi = MultiCounter(nroots=3, nbootstraps=3)
+	explorer = BreadthFirstIterator(make_tree())
+	while True:
+		next_node = explorer.next_node()
+		if next_node is None:
+			break
+		rootid, node, (_, active_rootids, active_values, _) = next_node
+		multi.passing_node(rootid, node, active_rootids, active_values)
+		explorer.expand_children_of(rootid, node)
+
+	# volume widths: 1/3 (leaf, 3 live), then 2/3 (1 - e^-1/2) (2 live),
+	# then the remaining two leaves
+	widths = np.array([1. / 3, 2. / 3 * (1 - np.exp(-0.5)), 2. / 3 * np.exp(-0.5) / 2, 2. / 3 * np.exp(-0.5) / 2])
+	logz = np.log(np.sum(widths * np.exp([1.0, 2.0, 3.0, 4.0])))
+	assert np.isclose(single.logZ, logz)
+	assert np.isclose(multi.logZ, logz)
+	assert np.isfinite(single.H)
+	assert np.isclose(multi.all_H[0], single.H)
+
+
 def test_visualisation():
 	print("testing tree visualisation...")
 	pp = PointPile(1, 1)

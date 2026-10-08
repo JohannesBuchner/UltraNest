@@ -556,7 +556,11 @@ class SingleCounter:
             wi = logwidth + Li
 
             self.logweights.append(logwidth)
-            self.logZ = logaddexp(self.logZ, wi)
+            if math.isinf(self.logZ):
+                self.logZ = wi
+                self.H = Li - self.logZ
+            else:
+                self.logZ = logaddexp(self.logZ, wi)
 
             # print("L=%.1f N=%d V=%.2e logw=%.2e logZ=%.1f" % (Li, nlive, self.logVolremaining, wi, self.logZ))
 
@@ -833,6 +837,9 @@ class MultiCounter:
             self.logweights.append(logwidth)
             self.istail.append(True)
             self.all_logZ[active] = logaddexp(self.all_logZ[active], wi[active])
+            # if this is the first node of a counter, initialise its information
+            first_setting = active & np.isnan(self.all_H)
+            self.all_H[first_setting] = -logwidth[first_setting]
             self.logZ = self.all_logZ[0]
 
             # print("L=%.1f N=%d V=%.2e logw=%.2e logZ=%.1f" % (Li, nlive, self.logVolremaining, wi, self.logZ))
