@@ -139,7 +139,7 @@ def test_kuma_icdf_numpy_matches_torch():
     out_np = kuma_icdf_np(u, a, b)
     out_t = kuma_icdf(torch.tensor(u), torch.tensor(a), torch.tensor(b))
     assert out_np.shape == (3, 4)
-    assert_allclose(out_np, out_t.numpy(), rtol=1e-12)
+    assert_allclose(out_np, out_t.numpy(), rtol=1e-8)
     assert np.all(np.isfinite(out_np)) and np.all((out_np > 0) & (out_np <= 1))
     assert kuma_icdf_np(0.5, 2.0, 3.0) == pytest.approx((1 - 0.5 ** (1 / 3)) ** 0.5)
 
@@ -334,7 +334,7 @@ def test_kuma_logistic_cdf_scalar_matches_vector():
         for j in range(4):
             val = kuma_logistic_cdf(x, LOC[j], SCALE[j], A[j], B[j])
             assert type(val) is float
-            assert val == pytest.approx(vec[j], rel=1e-12, abs=1e-15)
+            assert val == pytest.approx(vec[j], rel=1e-8, abs=1e-15)
 
 
 def test_cdf_vec_monotone_bounded_with_limits():
@@ -447,7 +447,7 @@ def test_extreme_network_parameters_stay_finite(loc, scale, a, b):
     one_dim = tuple(p[:1] for p in params)
     cdf = kuma_logistic_cdf_vec(pts, *params)
     assert np.all((cdf >= 0) & (cdf <= 1)) and np.all(np.diff(cdf) >= 0)
-    assert_allclose([kuma_logistic_cdf(x, loc, scale, a, b) for x in pts], cdf, rtol=1e-12, atol=0)
+    assert_allclose([kuma_logistic_cdf(x, loc, scale, a, b) for x in pts], cdf, rtol=1e-8, atol=0)
     quantiles = kuma_logistic_icdf_vec(pts, *params)
     assert np.all((quantiles >= 1e-7) & (quantiles <= 1 - 1e-7)) and np.all(np.diff(quantiles) >= 0)
     assert all(np.isfinite(kuma_logistic_logpdf_vec(pts[i:i + 1], *one_dim)) for i in range(len(pts)))

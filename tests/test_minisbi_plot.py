@@ -342,7 +342,7 @@ def test_coverage_figure_shows_coverage_curve(tmp_path):
         assert_allclose(ideal.get_xdata(), [0, 1])
         assert_allclose(ideal.get_ydata(), [0, 1])
         assert ax.get_xlim() == (0, 1) and ax.get_ylim() == (0, 1)
-    assert "coverage" in fig.get_suptitle()
+    assert any("coverage" in text.get_text() for text in fig.texts)
 
 
 def test_diagnostics_with_npe_network(tmp_path):
