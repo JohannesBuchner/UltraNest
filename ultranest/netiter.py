@@ -556,11 +556,10 @@ class SingleCounter:
             wi = logwidth + Li
 
             self.logweights.append(logwidth)
-            if math.isinf(self.logZ):
-                self.logZ = wi
+            self.logZ = logaddexp(self.logZ, wi)
+            if self.H is None:
+                # the first node is a leaf: initialise H as for the first node above
                 self.H = Li - self.logZ
-            else:
-                self.logZ = logaddexp(self.logZ, wi)
 
             # print("L=%.1f N=%d V=%.2e logw=%.2e logZ=%.1f" % (Li, nlive, self.logVolremaining, wi, self.logZ))
 
