@@ -74,6 +74,11 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/JohannesBuchner/ultranest',
+    project_urls={
+        'Homepage': 'https://github.com/JohannesBuchner/UltraNest',
+        'Source': 'https://github.com/JohannesBuchner/UltraNest',
+        'Documentation': 'https://johannesbuchner.github.io/UltraNest/',
+    },
     version='4.6.0',
     zip_safe=False,
     cmdclass={'build_ext': build_ext},

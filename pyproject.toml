@@ -9,8 +9,3 @@ requires = [
 [tool.pytest.ini_options]
 collect_ignore = "['setup.py']"
 addopts = "--junitxml=test-reports/junit.xml  --html=tests/reports/index.html"
-
-[project.urls]
-Homepage = "https://github.com/JohannesBuchner/UltraNest"
-Source = "https://github.com/JohannesBuchner/UltraNest"
-Documentation = "https://johannesbuchner.github.io/UltraNest/"
