@@ -17,7 +17,7 @@ jobs:
       - run: sudo apt-get update -y
       - run: sudo apt-get install -y python3-pip openmpi-common libopenmpi-dev liblapack-dev libopenblas-dev libhdf5-dev 
       
-      - run: python3 -m pip install --user -r pip-requirements.txt pytest-html coveralls pyyaml mpi4py pydocstyle pycodestyle flake8
+      - run: python3 -m pip install --user -r pip-requirements.txt pytest-html coveralls pyyaml mpi4py pydocstyle pycodestyle flake8 torch torchinfo joblib
 
       - run: mkdir -p test-reports
 
