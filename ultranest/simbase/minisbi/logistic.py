@@ -479,8 +479,10 @@ def kuma_logistic_icdf_vec(t_vec, loc, scale, a, b):
 def kuma_logistic_logpdf_vec(u_vec, loc, scale, a, b):
     """Log-density of the Kumaraswamy-Logistic distribution, summed over dimensions.
 
-    This equals the log Jacobian log|du/dt| needed to correct the
-    nested-sampling likelihood when the prior is this distribution.
+    This equals the log Jacobian of the transform ``u -> t``,
+    ``log|dt/du| = log q(u)``. Subtract it from the nested-sampling
+    log-likelihood (and add the log prior density of ``u``) when the
+    sampler is warped by this distribution.
 
     Parameters
     ----------

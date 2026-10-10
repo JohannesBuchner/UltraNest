@@ -95,8 +95,12 @@ class KLPTransform:
         This is for the transform ``t -> u``, equal to the log-density
         of the KLP distribution at ``u = transform(t)``.
 
-        Add this value to the true log-likelihood when passing to the
-        nested sampler so that the sampler correctly targets the posterior.
+        Subtract this value from the true log-likelihood when passing to
+        the nested sampler so that the sampler correctly targets the
+        posterior under the original prior: the warp makes the sampler
+        propose from the KLP distribution q(u), so the likelihood has to
+        be reweighted by ``log prior(u) - log q(u)``. For a uniform prior
+        on the unit cube this is just ``-log_jacobian(t)``.
 
         Parameters
         ----------
