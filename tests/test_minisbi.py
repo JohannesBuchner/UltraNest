@@ -5,6 +5,12 @@ matplotlib.use('Agg')
 import numpy as np
 import pytest
 import scipy.stats
+
+# torch and torchinfo are optional dependencies (used by the NPE helpers);
+# skip this module instead of erroring when they are not installed
+pytest.importorskip("torch")
+pytest.importorskip("torchinfo")
+
 import torch
 import torch.nn as nn
 from numpy.testing import assert_allclose
