@@ -24,7 +24,7 @@ jobs:
       - run: python3 -m pip install --user .
       - run: for i in examples/test*.py; do python3 $i --help; done
       
-      - run: coverage3 run --parallel-mode setup.py test
+      - run: coverage3 run --parallel-mode -m pytest
       - run: |
             echo "backend: Agg" > matplotlibrc
 
