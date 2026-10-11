@@ -7,5 +7,4 @@ requires = [
 ]
 
 [tool.pytest.ini_options]
-collect_ignore = "['setup.py']"
 addopts = "--junitxml=test-reports/junit.xml  --html=tests/reports/index.html"
