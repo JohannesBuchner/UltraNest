@@ -17,14 +17,15 @@ jobs:
       - run: sudo apt-get update -y
       - run: sudo apt-get install -y python3-pip openmpi-common libopenmpi-dev liblapack-dev libopenblas-dev libhdf5-dev 
       
-      - run: python3 -m pip install --user -r pip-requirements.txt pytest-html coveralls pyyaml mpi4py pydocstyle pycodestyle flake8 torch torchinfo joblib
+      - run: python3 -m pip install --user -r pip-requirements.txt pytest-html coveralls pyyaml mpi4py pydocstyle pycodestyle flake8 torch torchinfo joblib tqdm
 
       - run: mkdir -p test-reports
 
       - run: python3 -m pip install --user .
       - run: for i in examples/test*.py; do python3 $i --help; done
       
-      - run: coverage3 run --parallel-mode setup.py test
+      - run: python3 setup.py build_ext --inplace
+      - run: coverage3 run --parallel-mode -m pytest
       - run: |
             echo "backend: Agg" > matplotlibrc
 

@@ -35,10 +35,6 @@ with open('HISTORY.rst', encoding="utf-8") as history_file:
 
 requirements = ['numpy', 'cython', 'matplotlib', 'corner']
 
-setup_requirements = ['pytest-runner', ]
-
-test_requirements = ['pytest>=3', ]
-
 setup(
     author="Johannes Buchner",
     author_email='johannes.buchner.acad@gmx.com',
@@ -47,7 +43,6 @@ setup(
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Science/Research',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Natural Language :: English',
         "Programming Language :: Python :: 2",
         'Programming Language :: Python :: 2.7',
@@ -64,22 +59,19 @@ setup(
         Extension('ultranest.stepfuncs', ["ultranest/stepfuncs.pyx"], 
             **ext_args),
     ]),
-    license="GNU General Public License v3",
+    license="GPL-3.0-only",
     long_description=readme + '\n\n' + history,
     include_package_data=True,
     keywords='ultranest',
     name='ultranest',
     packages=['ultranest'],
-    setup_requires=setup_requirements,
-    test_suite='tests',
-    tests_require=test_requirements,
     url='https://github.com/JohannesBuchner/ultranest',
     project_urls={
         'Homepage': 'https://github.com/JohannesBuchner/UltraNest',
         'Source': 'https://github.com/JohannesBuchner/UltraNest',
         'Documentation': 'https://johannesbuchner.github.io/UltraNest/',
     },
-    version='4.6.0',
+    version='4.6.2',
     zip_safe=False,
     cmdclass={'build_ext': build_ext},
 )
