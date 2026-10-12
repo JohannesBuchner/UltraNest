@@ -51,6 +51,12 @@ def test_tau():
     i, j = np.meshgrid(np.arange(len(a)), np.arange(len(b)))
     assert normalised_kendall_tau_distance(a, b, i, j) == 0.4
     assert normalised_kendall_tau_distance(a, a, i, j) == 0
+    # 7 of the 10 pairs are discordant (b is not its own inverse permutation)
+    a = np.array([0, 3, 1, 4, 2])
+    b = np.array([4, 3, 1, 0, 2])
+    assert normalised_kendall_tau_distance(a, b) == 0.7
+    # same order with values instead of ranks
+    assert normalised_kendall_tau_distance(a * 1.5 - 3, np.exp(b)) == 0.7
     
     try:
         normalised_kendall_tau_distance(np.arange(5), np.arange(10))
