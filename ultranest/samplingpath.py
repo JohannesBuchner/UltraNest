@@ -323,7 +323,7 @@ def interpolate(i, points, fwd_possible, rwd_possible, contourpath=None):
     That point may not have been evaluated yet.
 
     Parameters
-    -----------
+    ----------
     i: int
         position on track to return.
     points: list of tuples (index, coordinate, direction, loglike)
@@ -335,6 +335,16 @@ def interpolate(i, points, fwd_possible, rwd_possible, contourpath=None):
     contourpath: ContourPath
         Use region to reflect. Not used at the moment.
 
+    Returns
+    -------
+    xl: array
+        coordinate of position i
+    vj: array
+        direction vector of position i
+    Lj: float
+        likelihood at position i, or None if not evaluated
+    advancing_possible: bool
+        whether advancing in that direction (forward or backward) is possible
     """
     points_before = [(j, xj, vj, Lj) for j, xj, vj, Lj in points if j <= i]
     points_after = [(j, xj, vj, Lj) for j, xj, vj, Lj in points if j >= i]
@@ -442,12 +452,12 @@ class SamplingPath:
         """Advance beyond the current path, extrapolate from the end point.
 
         Parameters
-        -----------
+        ----------
         i: int
             index on path.
 
-        returns
-        --------
+        Returns
+        -------
         coords: vector
             coordinates of the new point.
 
@@ -493,12 +503,12 @@ class ContourSamplingPath:
         """Advance beyond the current path, extrapolate from the end point.
 
         Parameters
-        -----------
+        ----------
         i: int
             index on path.
 
-        returns
-        --------
+        Returns
+        -------
         coords: vector
             coordinates of the new point.
 
