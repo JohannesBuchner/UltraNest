@@ -71,7 +71,7 @@ setup(
         'Source': 'https://github.com/JohannesBuchner/UltraNest',
         'Documentation': 'https://johannesbuchner.github.io/UltraNest/',
     },
-    version='4.6.2',
+    version='4.6.3',
     zip_safe=False,
     cmdclass={'build_ext': build_ext},
 )
