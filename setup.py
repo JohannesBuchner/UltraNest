@@ -64,7 +64,7 @@ setup(
     include_package_data=True,
     keywords='ultranest',
     name='ultranest',
-    packages=['ultranest'],
+    packages=['ultranest', 'ultranest.simbase', 'ultranest.simbase.minisbi'],
     url='https://github.com/JohannesBuchner/ultranest',
     project_urls={
         'Homepage': 'https://github.com/JohannesBuchner/UltraNest',
