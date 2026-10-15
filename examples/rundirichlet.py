@@ -55,13 +55,23 @@ def run():
 		ultranest.stepsampler.RegionSequentialSliceSampler(40, region_filter=True, adaptive_nsteps='move-distance'),
 		ultranest.stepsampler.SpeedVariableRegionSliceSampler(
 			step_matrix=[[1], [1,2,3], Ellipsis, np.ones(len(param_names), dtype=bool)], nsteps=40, region_filter=False),
+		ultranest.stepsampler.SliceSampler(
+			40, generate_direction=ultranest.stepsampler.generate_mixture_random_direction),
 	]
 	for stepsampler in stepsamplers:
 		print(stepsampler)
 		sampler = ultranest.ReactiveNestedSampler(
 			param_names, likelihood, transform_dirichlet)
 		sampler.stepsampler = stepsampler
-		sampler.run(frac_remain=0.5, viz_callback=viz_callback)
+		if getattr(stepsampler, 'generate_direction', None) is ultranest.stepsampler.generate_mixture_random_direction:
+			# the de-mix proposal runs unconstrained
+			limits = {}
+		elif np.random.randint(2) == 0:
+			limits = dict(max_iters=10)
+		else:
+			limits = dict(max_ncalls=1000)
+		print('run limits:', limits if limits else 'none')
+		sampler.run(frac_remain=0.5, viz_callback=viz_callback, **limits)
 		sampler.print_results()
 
 if __name__ == '__main__':
