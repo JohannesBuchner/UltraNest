@@ -64,14 +64,14 @@ setup(
     include_package_data=True,
     keywords='ultranest',
     name='ultranest',
-    packages=['ultranest'],
+    packages=['ultranest', 'ultranest.simbase', 'ultranest.simbase.minisbi'],
     url='https://github.com/JohannesBuchner/ultranest',
     project_urls={
         'Homepage': 'https://github.com/JohannesBuchner/UltraNest',
         'Source': 'https://github.com/JohannesBuchner/UltraNest',
         'Documentation': 'https://johannesbuchner.github.io/UltraNest/',
     },
-    version='4.6.2',
+    version='4.6.3',
     zip_safe=False,
     cmdclass={'build_ext': build_ext},
 )
