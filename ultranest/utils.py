@@ -357,10 +357,10 @@ def normalised_kendall_tau_distance(values1, values2, i=None, j=None):
 
     Parameters
     ----------
-    values1: array of ints
-        ranks
-    values2: array of ints
-        other ranks (same length as values1)
+    values1: array
+        values (or ranks) of each item
+    values2: array
+        other values (or ranks) of the same items (same length as values1)
     i: array of ints
         2d indices selecting values1
     j: array of ints
@@ -375,8 +375,8 @@ def normalised_kendall_tau_distance(values1, values2, i=None, j=None):
     assert len(values2) == N, "Both lists have to be of equal length"
     if i is None or j is None:
         i, j = np.meshgrid(np.arange(N), np.arange(N))
-    a = np.argsort(values1)
-    b = np.argsort(values2)
+    a = np.asarray(values1)
+    b = np.asarray(values2)
     ndisordered = np.logical_or(np.logical_and(a[i] < a[j], b[i] > b[j]), np.logical_and(a[i] > a[j], b[i] < b[j])).sum()
     return ndisordered / (N * (N - 1))
 
