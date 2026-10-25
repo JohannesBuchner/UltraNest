@@ -1257,9 +1257,11 @@ class QuadraticTriangularSliceSampler(SliceSampler):
 
     Each slice sampling iteration draws three live points (excluding the
     current point). Their quadratic curve through the space defines a
-    triangular map: with the leading coordinate k (largest spread among the
-    three points), every other coordinate d is shifted by the quadratic
-    centerline q_d through the three points in the (k, d) projection:
+    triangular map: with the leading coordinate k (chosen uniformly at
+    random - a large spread does not imply that a coordinate is a good
+    predictor of the others), every other coordinate d is shifted by the
+    quadratic centerline q_d through the three points in the (k, d)
+    projection:
 
         y_k = x_k,   y_d = x_d - q_d(x_k)
 
@@ -1267,11 +1269,12 @@ class QuadraticTriangularSliceSampler(SliceSampler):
     dimensions; here the curve is the unique quadratic *graph over the
     leading coordinate*: each q_d is the unique one-dimensional quadratic
     through the three projected points (s_j, p_j_d) with s_j = p_j,k
-    (three constraints, three coefficients). The map is a single shear -
+    (three constraints, three coefficients). The polynomial is defined
+    relative to the mean live point coordinates (centered abscissa and
+    ordinate) for numerical stability. The map is a single shear -
     all shifts depend only on the leading coordinate - so the order of the
-    other dimensions does not matter, and the leading coordinate is chosen
-    deterministically (largest spread) as an exchangeable function of the
-    unordered triple.
+    other dimensions does not matter, and the leading coordinate is drawn
+    exchangeably (uniformly at random).
 
     The Jacobian of this map is unit-triangular with determinant 1 (the map
     is a shear along the curve), and it straightens the curve onto the k-th
@@ -1313,14 +1316,19 @@ class QuadraticTriangularSliceSampler(SliceSampler):
                 k, others = 0, []
             else:
                 p = us[perm]
-                # leading coordinate: largest spread among the three points
-                k = int(np.argmax(p.max(axis=0) - p.min(axis=0)))
+                # leading coordinate: chosen uniformly at random - a large
+                # spread does not imply that a coordinate is a good predictor
+                # of the others
+                k = int(np.random.randint(ndim))
                 others = [d for d in range(ndim) if d != k]
-                svals = p[:, k]
+                # polynomial defined relative to the mean live point
+                # coordinates (centered abscissa and ordinate) for stability
+                mu = us.mean(axis=0)
+                svals = p[:, k] - mu[k]
                 # quadratic centerlines through (s_j, p_j_d), exact fit
                 V = np.array([np.ones(3), svals, svals ** 2]).T
                 try:
-                    coefs = np.linalg.solve(V, p[:, others])  # 3 x (ndim-1)
+                    coefs = np.linalg.solve(V, p[:, others] - mu[others])
                 except np.linalg.LinAlgError:
                     coefs = None
                 if coefs is None or np.abs(svals - svals.mean()).max() == 0:
@@ -1334,7 +1342,7 @@ class QuadraticTriangularSliceSampler(SliceSampler):
                     w[k] = svals.max() - svals.min()
                 else:
                     w = np.random.normal(size=ndim)
-            v = (w, k, others, coefs)
+            v = (w, k, others, coefs, mu)
             left = -self.scale
             right = self.scale
             self.found_left = False
@@ -1344,7 +1352,7 @@ class QuadraticTriangularSliceSampler(SliceSampler):
         else:
             v, left, right, u = self.interval
 
-        w, k, others, coefs = v
+        w, k, others, coefs, mu = v
 
         if plot:
             plt.plot([(ui + w * left)[0], (ui + w * right)[0]],
@@ -1353,7 +1361,7 @@ class QuadraticTriangularSliceSampler(SliceSampler):
 
         # shrink direction if outside
         if not self.found_left:
-            xj = self._candidate(ui, w, k, others, coefs, left)
+            xj = self._candidate(ui, w, k, others, coefs, mu, left)
 
             if not self.region_filter or inside_region(region, xj.reshape((1, -1)), ui):
                 return xj.reshape((1, -1))
@@ -1361,7 +1369,7 @@ class QuadraticTriangularSliceSampler(SliceSampler):
                 self.found_left = True
 
         if not self.found_right:
-            xj = self._candidate(ui, w, k, others, coefs, right)
+            xj = self._candidate(ui, w, k, others, coefs, mu, right)
 
             if not self.region_filter or inside_region(region, xj.reshape((1, -1)), ui):
                 return xj.reshape((1, -1))
@@ -1376,7 +1384,7 @@ class QuadraticTriangularSliceSampler(SliceSampler):
 
         while True:
             u = np.random.uniform(left, right)
-            xj = self._candidate(ui, w, k, others, coefs, u)
+            xj = self._candidate(ui, w, k, others, coefs, mu, u)
 
             if not self.region_filter or inside_region(region, xj.reshape((1, -1)), ui):
                 self.interval = (v, left, right, u)
@@ -1388,16 +1396,17 @@ class QuadraticTriangularSliceSampler(SliceSampler):
                     right = u
                 self.interval = (v, left, right, u)
 
-    def _candidate(self, ui, w, k, others, coefs, t):
+    def _candidate(self, ui, w, k, others, coefs, mu, t):
         """Candidate point in u-space: line in the transformed space with
-        center shifts from the quadratic centerlines."""
+        center shifts from the quadratic centerlines (defined relative to
+        the mean live point coordinates mu)."""
         xj = ui + w * t
         if coefs is not None:
-            sk = ui[k] + w[k] * t
-            shift = self._centerline(sk, coefs)
-            shift0 = self._centerline(ui[k], coefs)
+            sk = ui[k] + w[k] * t - mu[k]
+            s0 = ui[k] - mu[k]
+            shift = self._centerline(sk, coefs) - self._centerline(s0, coefs)
             for pos, d in enumerate(others):
-                xj[d] += shift[pos] - shift0[pos]
+                xj[d] += shift[pos]
         return xj
 
 
