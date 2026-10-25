@@ -1251,6 +1251,156 @@ class SliceSampler(StepSampler):
                 self.interval = (v, left, right, u)
 
 
+class QuadraticTriangularSliceSampler(SliceSampler):
+    """Slice sampler along volume-preserving triangular maps defined by
+    three random live points.
+
+    Each slice sampling iteration draws three live points (excluding the
+    current point). Their quadratic curve through the space defines a
+    triangular map: with the leading coordinate k (largest spread among the
+    three points), every other coordinate d is shifted by the quadratic
+    centerline q_d through the three points in the (k, d) projection:
+
+        y_k = x_k,   y_d = x_d - q_d(x_k)
+
+    A space curve through three points would not be unique in d >= 3
+    dimensions; here the curve is the unique quadratic *graph over the
+    leading coordinate*: each q_d is the unique one-dimensional quadratic
+    through the three projected points (s_j, p_j_d) with s_j = p_j,k
+    (three constraints, three coefficients). The map is a single shear -
+    all shifts depend only on the leading coordinate - so the order of the
+    other dimensions does not matter, and the leading coordinate is chosen
+    deterministically (largest spread) as an exchangeable function of the
+    unordered triple.
+
+    The Jacobian of this map is unit-triangular with determinant 1 (the map
+    is a shear along the curve), and it straightens the curve onto the k-th
+    axis. A slice sampling step is performed in the transformed space as a
+    straight line (sampled with the standard uniform slice measure) and
+    mapped back to u-space, where the path is a line with center shifts:
+
+        x_k(t) = x_k(0) + t w_k
+        x_d(t) = x_d(0) + t w_d + q_d(x_k(t)) - q_d(x_k(0))
+
+    so the likelihood can be evaluated directly in u-space without storing
+    the transform. Because the map is volume-preserving and sampled
+    independently of the current point (the three points are exchangeable
+    and define the map uniquely), the mixture over maps preserves the
+    target distribution exactly (detailed balance).
+
+    The slice direction is a mixture: half of the intervals move along the
+    straightened curve direction (following the ridge), half use a random
+    Gaussian direction in the transformed space.
+    """
+
+    def _centerline(self, s, coefs):
+        """Evaluate the quadratic centerlines q_d(s) from the coefficients."""
+        feats = np.array([1.0, s, s * s])
+        return coefs.T @ feats
+
+    def move(self, ui, region, ndraw=1, plot=False):
+        if self.interval is None:
+            us = region.u
+            nlive, ndim = us.shape
+            i0 = np.argmin(((us - ui) ** 2).sum(axis=1))
+            # three distinct live points, excluding the current point
+            perm = np.random.permutation(nlive)
+            perm = perm[perm != i0][:3]
+            coefs = None
+            if len(perm) < 3:
+                # not enough live points; fall back to a plain line slice
+                w = self.generate_direction(ui, region)
+                k, others = 0, []
+            else:
+                p = us[perm]
+                # leading coordinate: largest spread among the three points
+                k = int(np.argmax(p.max(axis=0) - p.min(axis=0)))
+                others = [d for d in range(ndim) if d != k]
+                svals = p[:, k]
+                # quadratic centerlines through (s_j, p_j_d), exact fit
+                V = np.array([np.ones(3), svals, svals ** 2]).T
+                try:
+                    coefs = np.linalg.solve(V, p[:, others])  # 3 x (ndim-1)
+                except np.linalg.LinAlgError:
+                    coefs = None
+                if coefs is None or np.abs(svals - svals.mean()).max() == 0:
+                    # degenerate (duplicate projections): plain line slice
+                    w = self.generate_direction(ui, region)
+                    k, others = 0, []
+                    coefs = None
+                elif np.random.uniform() < 0.5:
+                    # move along the straightened curve direction
+                    w = np.zeros(ndim)
+                    w[k] = svals.max() - svals.min()
+                else:
+                    w = np.random.normal(size=ndim)
+            v = (w, k, others, coefs)
+            left = -self.scale
+            right = self.scale
+            self.found_left = False
+            self.found_right = False
+            u = 0
+            self.interval = (v, left, right, u)
+        else:
+            v, left, right, u = self.interval
+
+        w, k, others, coefs = v
+
+        if plot:
+            plt.plot([(ui + w * left)[0], (ui + w * right)[0]],
+                     [(ui + w * left)[1], (ui + w * right)[1]],
+                     ':o', color='k', lw=2, alpha=0.3)
+
+        # shrink direction if outside
+        if not self.found_left:
+            xj = self._candidate(ui, w, k, others, coefs, left)
+
+            if not self.region_filter or inside_region(region, xj.reshape((1, -1)), ui):
+                return xj.reshape((1, -1))
+            else:
+                self.found_left = True
+
+        if not self.found_right:
+            xj = self._candidate(ui, w, k, others, coefs, right)
+
+            if not self.region_filter or inside_region(region, xj.reshape((1, -1)), ui):
+                return xj.reshape((1, -1))
+            else:
+                self.found_right = True
+
+                # adjust scale to final slice length
+                if -left > self.next_scale or right > self.next_scale:
+                    self.next_scale *= 1.1
+                else:
+                    self.next_scale /= 1.1
+
+        while True:
+            u = np.random.uniform(left, right)
+            xj = self._candidate(ui, w, k, others, coefs, u)
+
+            if not self.region_filter or inside_region(region, xj.reshape((1, -1)), ui):
+                self.interval = (v, left, right, u)
+                return xj.reshape((1, -1))
+            else:
+                if u < 0:
+                    left = u
+                else:
+                    right = u
+                self.interval = (v, left, right, u)
+
+    def _candidate(self, ui, w, k, others, coefs, t):
+        """Candidate point in u-space: line in the transformed space with
+        center shifts from the quadratic centerlines."""
+        xj = ui + w * t
+        if coefs is not None:
+            sk = ui[k] + w[k] * t
+            shift = self._centerline(sk, coefs)
+            shift0 = self._centerline(ui[k], coefs)
+            for pos, d in enumerate(others):
+                xj[d] += shift[pos] - shift0[pos]
+        return xj
+
+
 def CubeSliceSampler(*args, **kwargs):
     """Slice sampler, randomly picking region axes."""
     return SliceSampler(*args, **kwargs, generate_direction=SequentialDirectionGenerator())
