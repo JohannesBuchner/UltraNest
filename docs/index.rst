@@ -10,6 +10,7 @@ Welcome to UltraNest's documentation!
    method
    using-ultranest.ipynb
    priors.ipynb
+   perfect_nested_sampling.ipynb
    performance
    API
    issues
