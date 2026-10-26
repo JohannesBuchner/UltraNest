@@ -1252,8 +1252,9 @@ class SliceSampler(StepSampler):
 
 
 class QuadraticTriangularSliceSampler(SliceSampler):
-    """Slice sampler along volume-preserving triangular maps defined by
-    three random live points.
+    """Slice sampler along volume-preserving triangular maps.
+
+    The maps are defined by three random live points.
 
     Each slice sampling iteration draws three live points (excluding the
     current point). Their quadratic curve through the space defines a
@@ -1302,6 +1303,7 @@ class QuadraticTriangularSliceSampler(SliceSampler):
         return coefs.T @ feats
 
     def move(self, ui, region, ndraw=1, plot=False):
+        """Advance the slice sampling move. see :py:meth:`SliceSampler.move`."""
         if self.interval is None:
             us = region.u
             nlive, ndim = us.shape
@@ -1397,9 +1399,11 @@ class QuadraticTriangularSliceSampler(SliceSampler):
                 self.interval = (v, left, right, u)
 
     def _candidate(self, ui, w, k, others, coefs, mu, t):
-        """Candidate point in u-space: line in the transformed space with
-        center shifts from the quadratic centerlines (defined relative to
-        the mean live point coordinates mu)."""
+        """Candidate point in u-space at slice parameter t.
+
+        Line in the transformed space with center shifts from the quadratic
+        centerlines (defined relative to the mean live point coordinates mu).
+        """
         xj = ui + w * t
         if coefs is not None:
             sk = ui[k] + w[k] * t - mu[k]
