@@ -5,7 +5,7 @@ import tempfile
 
 from ultranest.mlfriends import ScalingLayer, AffineLayer, MLFriends
 from ultranest import ReactiveNestedSampler
-from ultranest.stepsampler import RegionMHSampler, CubeMHSampler, SliceSampler, CubeSliceSampler, RegionSliceSampler, SpeedVariableRegionSliceSampler, RegionBallSliceSampler, SpeedVariableGenerator
+from ultranest.stepsampler import RegionMHSampler, CubeMHSampler, SliceSampler, CubeSliceSampler, RegionSliceSampler, SpeedVariableRegionSliceSampler, RegionBallSliceSampler, SpeedVariableGenerator, QuadraticTriangularSliceSampler
 from ultranest.stepsampler import ellipsoid_bracket, crop_bracket_at_unit_cube, _inside_region
 from ultranest.stepsampler import generate_random_direction, generate_cube_oriented_direction
 from ultranest.stepsampler import SequentialDirectionGenerator, OrthogonalDirectionGenerator, SequentialRegionDirectionGenerator
@@ -161,6 +161,70 @@ def test_stepsampler_regionslice(plot=False):
 
     print("Diagnostic print:")
     sampler.stepsampler.print_diagnostic()
+
+def test_stepsampler_quadratictriangular(plot=False):
+    np.random.seed(5)
+    sampler = ReactiveNestedSampler(paramnames, loglike, transform=transform)
+    sampler.stepsampler = QuadraticTriangularSliceSampler(
+        nsteps=2 + len(paramnames),
+        generate_direction=generate_mixture_random_direction)
+    r = sampler.run(log_interval=50, min_num_live_points=400)
+    sampler.print_results()
+    a = (np.abs(r['samples'] - 0.7) < 0.1).all(axis=1)
+    b = (np.abs(r['samples'] - 0.3) < 0.1).all(axis=1)
+    assert a.sum() > 1
+    assert b.sum() > 1
+
+def test_stepsampler_triangular_map():
+    """The triangular map is a shear passing through the current point at
+    t=0, and its centerlines reproduce the three defining points."""
+    np.random.seed(1)
+    us = np.random.uniform(0.2, 0.8, size=(20, 3))
+    mu = us.mean(axis=0)
+    perm = np.array([2, 7, 11])
+    p = us[perm]
+    k = 1
+    others = [d for d in range(3) if d != k]
+    svals = p[:, k] - mu[k]
+    V = np.array([np.ones(3), svals, svals**2]).T
+    coefs = np.linalg.solve(V, p[:, others] - mu[others])
+    s = QuadraticTriangularSliceSampler(
+        nsteps=1, generate_direction=generate_mixture_random_direction)
+    s.new_chain()
+    ui = np.random.uniform(0.2, 0.8, size=3)
+    w = np.random.normal(size=3)
+
+    # the path passes through the current point at t=0
+    cand = s._candidate(ui, w, k, others, coefs, mu, 0.0)
+    assert np.allclose(cand, ui)
+
+    # the centerlines reproduce the three defining points
+    for j in range(3):
+        q = s._centerline(svals[j], coefs) + mu[others]
+        assert np.allclose(q, p[j, others])
+
+    # the map is volume-preserving: the Jacobian determinant of the shear
+    # x -> candidate (fixed t, direction along the leading coordinate) is 1
+    t = 0.3
+    w = np.zeros(3)
+    w[k] = 1.0
+    def shear(xv):
+        return s._candidate(xv, w, k, others, coefs, mu, t)
+    eps = 1e-6
+    J = np.zeros((3, 3))
+    for d in range(3):
+        xp = ui.copy()
+        xp[d] += eps
+        xm = ui.copy()
+        xm[d] -= eps
+        J[:, d] = (shear(xp) - shear(xm)) / (2 * eps)
+    assert np.allclose(np.linalg.det(J), 1.0), np.linalg.det(J)
+
+    # a pure transverse step is a straight line in the other coordinates
+    w_tr = np.eye(3)[others[0]]
+    cand_t = s._candidate(ui, w_tr, k, others, coefs, mu, t)
+    assert np.allclose(cand_t, ui + w_tr * t)
+
 
 def test_SpeedVariableGenerator():
     np.random.seed(4)
