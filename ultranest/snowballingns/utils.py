@@ -415,3 +415,13 @@ def plot_rjd_distributions(rotation_records, nsegments, outdir, title,
     with open(os.path.join(outdir, 'rjd_distributions.txt'), 'w') as f:
         f.write('\n'.join(lines) + '\n')
     return filename
+
+
+def plot_rotations_panel(rotation_records, results, nsegments, outdir, title,
+                         gm_history=None, nlive_per_rotation=None):
+    """Alias of :py:func:`plot_panels`: the rotation-convergence
+    diagnostics (lnL-vs-lnX trajectories, walk lengths, U test, RJD,
+    lnX drift, Gompertz fits, lnZ per rotation)."""
+    return plot_panels(rotation_records, results, nsegments, outdir, title,
+                       gm_history=gm_history,
+                       nlive_per_rotation=nlive_per_rotation)

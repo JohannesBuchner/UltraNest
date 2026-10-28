@@ -628,3 +628,62 @@ cpdef tuple update_vectorised_slice_sampler(
                 j += 1
 
     return (tleft, tright, worker_running, status, allu, allL, allp,discarded)
+
+
+def generate_quadratic_slice_direction(ui, region, scale=1):
+    """Direction proposal of the quadratic slice sampler: a mixture of
+    the chord of the quadratic centerline through three random live
+    points (following the ridge, as in the volume-preserving triangular
+    map of the quadratic slice sampler) and a random Gaussian direction.
+
+    Falls back to the mixture differential-evolution direction when there
+    are too few live points or the quadratic fit is degenerate.
+
+    Parameters
+    ----------
+    ui: np.array(d)
+        point the walk starts from
+    region: MLFriends object
+        region around the live points (its live points are used for the
+        quadratic fit)
+    scale: float
+        scale factor of the direction
+
+    Returns
+    -------
+    w: np.array(d)
+        direction of the slice
+    """
+    us = region.u
+    nlive, ndim = us.shape
+    if nlive < 5:
+        return generate_mixture_random_direction(ui, region, scale=scale)
+    ui2 = np.asarray(ui).reshape((1, -1))
+    i0 = int(np.argmin(((us - ui2) ** 2).sum(axis=1)))
+    perm = np.random.permutation(nlive)
+    perm = perm[perm != i0][:3]
+    if len(perm) < 3:
+        return generate_mixture_random_direction(ui, region, scale=scale)
+    p = us[perm]
+    k = int(np.random.randint(ndim))
+    others = [d2 for d2 in range(ndim) if d2 != k]
+    mu = us.mean(axis=0)
+    svals = p[:, k] - mu[k]
+    V = np.array([np.ones(3), svals, svals ** 2]).T
+    try:
+        coefs = np.linalg.solve(V, p[:, others] - mu[others])
+    except np.linalg.LinAlgError:
+        return generate_mixture_random_direction(ui, region, scale=scale)
+    if np.abs(svals - svals.mean()).max() == 0:
+        return generate_mixture_random_direction(ui, region, scale=scale)
+    if np.random.uniform() < 0.5:
+        # chord of the quadratic centerline q_d over the leading
+        # coordinate range: follows the ridge
+        ds = svals.max() - svals.min()
+        w = np.zeros(ndim)
+        w[k] = ds
+        # q_d(s_max) - q_d(s_min) = (c1_d + c2_d * (s_max + s_min)) * ds
+        w[others] = (coefs[1, :] + coefs[2, :] * (svals.max()
+                                                  + svals.min())) * ds
+        return w * scale
+    return np.random.normal(size=ndim) * scale

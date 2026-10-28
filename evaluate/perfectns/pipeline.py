@@ -3,8 +3,8 @@ Pipeline for testing nested sampling integrators on the perfectns
 validation problems
 ====================================================================
 
-Runs a (problem, dimension) x (integrator, proposal) matrix and writes
-the output plots and results into folders laid out as::
+Runs ONE (problem, dimension) x (integrator, proposal) combination and
+writes the output plots and results into::
 
     <outdir>/<problemname>-<dim>/<integrator>-<proposal>/
 
@@ -19,17 +19,18 @@ COMBOS; currently available:
   MLFriends region machinery,
 * ``ultranest-de-mix``: ReactiveNestedSampler with a slice sampler using
   the mixture differential-evolution direction,
-* ``snowballingns-mix``: the snowballing nested sampler with its
-  built-in mixture proposal. Step-sampler based combinations (e.g.
-  ``snowballingns-quadratic-slice``) plug in here once
-  ultranest/snowballingns/stepsamplers.pyx exists.
+* ``snowballingns-quadratic-slice``: the SnowballingNestedSampler with
+  the quadratic slice direction proposal (the default),
+* ``snowballingns-mix``: the SnowballingNestedSampler with the mixture
+  differential-evolution direction proposal.
+
+The Makefile in this folder drives combinations through this script;
+each combination's final output file is ``results.json``.
 
 Usage::
 
     python evaluate/perfectns/pipeline.py --problem banana --dim 2 \
-        --combos all
-    python evaluate/perfectns/pipeline.py --problems gauss,banana \
-        --dims 2,10 --combos ultranest-mlfriends,snowballingns-mix
+        --combo snowballingns-quadratic-slice
 """
 import argparse
 import json
@@ -39,7 +40,8 @@ import time
 
 import numpy as np
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
+    os.path.abspath(__file__)))))  # the repository root
 
 from ultranest.perfectns import (
     BananaGaussianLRPS, BoxGaussianLRPS, HyperPyramidLRPS,
@@ -64,7 +66,7 @@ def make_problem(name, dim):
 def run_ultranest(problem, outdir, nlive=400, frac_remain=0.5, seed=1,
                   nsteps=4, proposal='mlfriends', **kw):
     """Run ReactiveNestedSampler with the given region/proposal; writes
-    the ultranest plots and a results summary into outdir."""
+    the corner plot and a results summary into outdir."""
     from ultranest import ReactiveNestedSampler
     sampler = ReactiveNestedSampler(problem.paramnames, problem.loglike,
                                     transform=problem.transform,
@@ -100,11 +102,14 @@ def run_ultranest(problem, outdir, nlive=400, frac_remain=0.5, seed=1,
 
 def run_snowballingns(problem, outdir, K=400, P=20, nsteps=1,
                       frac_remain=0.5, max_rotations=8, seed=1,
+                      stepsampler='quadratic-slice',
                       vol_ndraw=2000000, vol_nkeep=50001, **kw):
-    """Run the snowballing nested sampler with its built-in mixture
+    """Run the SnowballingNestedSampler with the given direction
     proposal; writes the panel plots and a results summary into
     outdir."""
-    from ultranest.snowballingns.integrator import run_snowballing
+    from ultranest.snowballingns.integrator import SnowballingNestedSampler
+    from ultranest.stepfuncs import (generate_mixture_random_direction,
+                                     generate_quadratic_slice_direction)
     transform, loglike = problem.transform, problem.loglike
     d = len(problem.paramnames)
     if isinstance(problem, (BananaGaussianLRPS, NonIsotropicGaussianLRPS,
@@ -116,15 +121,23 @@ def run_snowballingns(problem, outdir, K=400, P=20, nsteps=1,
             vol_func = problem.make_volume_function()
         except Exception:
             vol_func = None
-    result = run_snowballing(transform, loglike, d, K=K, P=P, nsteps=nsteps,
-                             frac_remain=frac_remain,
-                             max_rotations=max_rotations, seed=seed,
-                             outdir=outdir, vol_func=vol_func)
-    return dict(integrator='snowballingns', proposal='mix',
+    direction = {
+        'quadratic-slice': generate_quadratic_slice_direction,
+        'mix': generate_mixture_random_direction,
+    }[stepsampler]
+    sampler = SnowballingNestedSampler(
+        problem.paramnames, loglike, transform=transform, vectorized=True,
+        num_live_points_base=K, num_steps=nsteps, stepsampler=direction,
+        log_dir=outdir)
+    result = sampler.run(frac_remain=frac_remain, max_rotations=max_rotations,
+                         seed=seed)
+    sampler.plot_rotations()
+    return dict(integrator='snowballingns', proposal=stepsampler,
                 logz=float(result['logz']),
                 logzerr=float(result['logzerr']),
-                nrot=len(result['results']),
-                nrounds=int(result['nrounds']),
+                nrot=sampler.nrotations,
+                nrounds=int(result['nrounds']) if 'nrounds' in result
+                else int(result['ncall']),
                 nlive=result['nlive'], wall_time=result['wall_time'])
 
 
@@ -133,56 +146,23 @@ COMBOS = {
         runner=run_ultranest, kwargs=dict(proposal='mlfriends')),
     'ultranest-de-mix': dict(
         runner=run_ultranest, kwargs=dict(proposal='de-mix')),
+    'snowballingns-quadratic-slice': dict(
+        runner=run_snowballingns, kwargs=dict(
+            stepsampler='quadratic-slice')),
     'snowballingns-mix': dict(
-        runner=run_snowballingns, kwargs=dict()),
+        runner=run_snowballingns, kwargs=dict(stepsampler='mix')),
 }
-
-
-def run_combo(name, problem, problemname, dim, outdir, args):
-    """Run one integrator-proposal combination and write its summary."""
-    combo_dir = os.path.join(outdir, '%s-%dd' % (problemname, dim), name)
-    os.makedirs(combo_dir, exist_ok=True)
-    spec = COMBOS[name]
-    kwargs = dict(spec['kwargs'])
-    kwargs.update(nlive=args.nlive, K=args.K, P=args.P, nsteps=args.nsteps,
-                  frac_remain=args.frac_remain, seed=args.seed,
-                  max_rotations=args.max_rotations)
-    print('=== %s-%d / %s ===' % (problemname, dim, name), flush=True)
-    t0 = time.time()
-    summary = spec['runner'](problem, combo_dir, **kwargs)
-    summary['wall_time'] = time.time() - t0
-    try:
-        summary['analytic_logz'] = float(problem.analytic_lnZ())
-    except Exception:
-        summary['analytic_logz'] = None
-    summary['args'] = dict(nlive=args.nlive, K=args.K, P=args.P,
-                           nsteps=args.nsteps,
-                           frac_remain=args.frac_remain, seed=args.seed,
-                           max_rotations=args.max_rotations)
-    with open(os.path.join(combo_dir, 'results.json'), 'w') as f:
-        json.dump(summary, f, indent=1)
-    with open(os.path.join(combo_dir, 'results.txt'), 'w') as f:
-        f.write('%s-%dd / %s\n' % (problemname, dim, name))
-        for key, value in summary.items():
-            if key != 'args':
-                f.write('%-12s %s\n' % (key, value))
-    print('    lnZ = %s +- %s (%s), %.1fs -> %s'
-          % (summary['logz'], summary['logzerr'],
-             ('analytic %s' % summary['analytic_logz']
-              if summary['analytic_logz'] is not None else 'no analytic'),
-             summary['wall_time'], combo_dir), flush=True)
-    return summary
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--problems', default='banana,gauss',
-                        help='comma-separated problem names')
-    parser.add_argument('--dims', default='2,10',
-                        help='comma-separated dimensionalities')
-    parser.add_argument('--combos', default='all',
-                        help="comma-separated integrator-proposal "
-                             "combinations, or 'all'")
+    parser.add_argument('--problem', default='banana',
+                        help='problem name')
+    parser.add_argument('--dim', type=int, default=2,
+                        help='dimensionality')
+    parser.add_argument('--combo', default='snowballingns-quadratic-slice',
+                        help='integrator-proposal combination (one of: %s)'
+                             % ', '.join(sorted(COMBOS.keys())))
     parser.add_argument('--outdir', default=os.path.join(
         os.path.dirname(os.path.abspath(__file__)), 'output'))
     parser.add_argument('--nlive', type=int, default=400)
@@ -195,24 +175,43 @@ def main():
     parser.add_argument('--vol-ndraw', type=int, default=2000000)
     parser.add_argument('--vol-nkeep', type=int, default=50001)
     args = parser.parse_args()
+    if args.combo not in COMBOS:
+        raise ValueError("unknown combo=%s, available: %s"
+                         % (args.combo, sorted(COMBOS.keys())))
 
-    problems = args.problems.split(',')
-    dims = [int(d) for d in args.dims.split(',')]
-    if args.combos.strip() == 'all':
-        combos = sorted(COMBOS.keys())
-    else:
-        combos = [c.strip() for c in args.combos.split(',')]
-        for c in combos:
-            if c not in COMBOS:
-                raise ValueError("unknown combo=%s, available: %s"
-                                 % (c, sorted(COMBOS.keys())))
-
-    for problemname in problems:
-        for dim in dims:
-            problem = make_problem(problemname, dim)
-            for name in combos:
-                run_combo(name, problem, problemname, dim, args.outdir,
-                          args)
+    problem = make_problem(args.problem, args.dim)
+    combo_dir = os.path.join(args.outdir, '%s-%dd' % (args.problem, args.dim),
+                             args.combo)
+    os.makedirs(combo_dir, exist_ok=True)
+    spec = COMBOS[args.combo]
+    kwargs = dict(spec['kwargs'])
+    kwargs.update(nlive=args.nlive, K=args.K, P=args.P, nsteps=args.nsteps,
+                  frac_remain=args.frac_remain, seed=args.seed,
+                  max_rotations=args.max_rotations)
+    print('=== %s-%d / %s ===' % (args.problem, args.dim, args.combo),
+          flush=True)
+    t0 = time.time()
+    summary = spec['runner'](problem, combo_dir, **kwargs)
+    summary['wall_time'] = time.time() - t0
+    try:
+        summary['analytic_logz'] = float(problem.analytic_lnZ())
+    except Exception:
+        summary['analytic_logz'] = None
+    summary['args'] = dict(nlive=args.nlive, K=args.K, P=args.P,
+                           nsteps=args.nsteps, frac_remain=args.frac_remain,
+                           seed=args.seed, max_rotations=args.max_rotations)
+    with open(os.path.join(combo_dir, 'results.json'), 'w') as f:
+        json.dump(summary, f, indent=1)
+    with open(os.path.join(combo_dir, 'results.txt'), 'w') as f:
+        f.write('%s-%dd / %s\n' % (args.problem, args.dim, args.combo))
+        for key, value in summary.items():
+            if key != 'args':
+                f.write('%-12s %s\n' % (key, value))
+    print('    lnZ = %s +- %s (%s), %.1fs -> %s'
+          % (summary['logz'], summary['logzerr'],
+             ('analytic %s' % summary['analytic_logz']
+              if summary['analytic_logz'] is not None else 'no analytic'),
+             summary['wall_time'], combo_dir), flush=True)
 
 
 if __name__ == '__main__':

@@ -5,13 +5,13 @@ Tests nested sampling integrators on the validation problems from
 
 ## Layout
 
-Each (problem, dimension) x (integrator, proposal) combination writes
-its plots and results into
+The pipeline runs ONE (problem, dimension) x (integrator, proposal)
+combination and writes its plots and results into
 
     output/<problemname>-<dim>/<integrator>-<proposal>/
 
 for example `output/funnel-10d/ultranest-mlfriends/` or
-`output/banana-10d/snowballingns-mix/`.
+`output/banana-2d/snowballingns-quadratic-slice/`.
 
 ## Registered integrator-proposal combinations
 
@@ -19,25 +19,32 @@ for example `output/funnel-10d/ultranest-mlfriends/` or
   MLFriends region machinery
 - `ultranest-de-mix` — ReactiveNestedSampler with a slice sampler using
   the mixture differential-evolution direction
-- `snowballingns-mix` — the snowballing nested sampler
-  (`ultranest/snowballingns`) with its built-in mixture proposal
-
-Step-sampler based combinations (e.g. `snowballingns-quadratic-slice`)
-plug into the `COMBOS` registry once
-`ultranest/snowballingns/stepsamplers.pyx` exists.
+- `snowballingns-quadratic-slice` — the SnowballingNestedSampler with
+  the quadratic slice direction proposal (the default)
+- `snowballingns-mix` — the SnowballingNestedSampler with the mixture
+  differential-evolution direction proposal
 
 ## Usage
 
 ```sh
-python evaluate/perfectns/pipeline.py --problem banana --dim 2 --combos all
-python evaluate/perfectns/pipeline.py --problems gauss,banana --dims 2,10 \
-    --combos ultranest-mlfriends,snowballingns-mix
-python evaluate/perfectns/pipeline.py --problems funnel --dims 10 \
-    --combos snowballingns-mix --max-rotations 5
+python evaluate/perfectns/pipeline.py --problem banana --dim 2 \
+    --combo snowballingns-quadratic-slice
+```
+
+or through the Makefile, which drives combinations as make targets (the
+final output file of each combination is `results.json`):
+
+```sh
+make                                        # the default matrix
+make output/banana-10d/snowballingns-quadratic-slice/results.json
+make PROBLEMS=funnel DIMS=10 COMBOS="snowballingns-quadratic-slice"
+make K=100 MAX_ROTATIONS=3 output/banana-2d/snowballingns-mix/results.json
+make clean
 ```
 
 Each combination folder contains `results.json` / `results.txt` (lnZ,
 error, iteration and evaluation counts, wall time, analytic reference
 where available) and the plots: `snowballingns_panels.png` +
-`rjd_distributions.png` for snowballingns runs; `ultranest_cornerplot.png`
-for ultranest runs.
+`rjd_distributions.png` for snowballingns runs (also
+`sampler.plot_rotations()`, `plot_corner()`, `plot_trace()`);
+`ultranest_cornerplot.png` for ultranest runs.
