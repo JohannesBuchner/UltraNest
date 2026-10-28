@@ -103,6 +103,7 @@ def run_ultranest(problem, outdir, nlive=400, frac_remain=0.5, seed=1,
 def run_snowballingns(problem, outdir, K=400, P=20, nsteps=1,
                       frac_remain=0.5, max_rotations=8, seed=1,
                       stepsampler='quadratic-slice',
+                      integrator='multicounter',
                       vol_ndraw=2000000, vol_nkeep=50001, **kw):
     """Run the SnowballingNestedSampler with the given direction
     proposal; writes the panel plots and a results summary into
@@ -128,11 +129,12 @@ def run_snowballingns(problem, outdir, K=400, P=20, nsteps=1,
     sampler = SnowballingNestedSampler(
         problem.paramnames, loglike, transform=transform, vectorized=True,
         num_live_points_base=K, num_steps=nsteps, stepsampler=direction,
-        log_dir=outdir)
+        integrator=integrator, log_dir=outdir)
     result = sampler.run(frac_remain=frac_remain, max_rotations=max_rotations,
                          seed=seed)
     sampler.plot_rotations()
-    return dict(integrator='snowballingns', proposal=stepsampler,
+    return dict(integrator='snowballingns-' + integrator,
+                proposal=stepsampler, seed=seed,
                 logz=float(result['logz']),
                 logzerr=float(result['logzerr']),
                 nrot=sampler.nrotations,
@@ -146,12 +148,56 @@ COMBOS = {
         runner=run_ultranest, kwargs=dict(proposal='mlfriends')),
     'ultranest-de-mix': dict(
         runner=run_ultranest, kwargs=dict(proposal='de-mix')),
-    'snowballingns-quadratic-slice': dict(
-        runner=run_snowballingns, kwargs=dict(
-            stepsampler='quadratic-slice')),
-    'snowballingns-mix': dict(
-        runner=run_snowballingns, kwargs=dict(stepsampler='mix')),
 }
+# the snowballingns combinations, one per seed, for both integrators
+# (the graph-based MultiCounter and the custom 1/K-strip integrator) and
+# both direction proposals
+for _seed in (1, 2, 3, 4):
+    for _proposal in ('quadratic-slice', 'mix'):
+        for _integrator, _iname in (('multicounter', ''),
+                                    ('custom', '-custom')):
+            COMBOS['snowballingns%s-%s-seed%d'
+                   % (_iname, _proposal, _seed)] = dict(
+                runner=run_snowballingns,
+                kwargs=dict(stepsampler=_proposal, integrator=_integrator,
+                            seed=_seed))
+
+
+def run_combo(name, problem, problemname, dim, outdir, args):
+    """Run one integrator-proposal combination and write its summary."""
+    combo_dir = os.path.join(outdir, '%s-%dd' % (problemname, dim), name)
+    os.makedirs(combo_dir, exist_ok=True)
+    spec = COMBOS[name]
+    kwargs = dict(spec['kwargs'])
+    # the seed comes from the combo name (e.g. snowballingns-mix-seed3)
+    seed = int(name.split('-seed')[1]) if '-seed' in name else args.seed
+    kwargs.update(nlive=args.nlive, K=args.K, P=args.P, nsteps=args.nsteps,
+                  frac_remain=args.frac_remain, seed=seed,
+                  max_rotations=args.max_rotations)
+    print('=== %s-%d / %s ===' % (problemname, dim, name), flush=True)
+    t0 = time.time()
+    summary = spec['runner'](problem, combo_dir, **kwargs)
+    summary['wall_time'] = time.time() - t0
+    try:
+        summary['analytic_logz'] = float(problem.analytic_lnZ())
+    except Exception:
+        summary['analytic_logz'] = None
+    summary['args'] = dict(nlive=args.nlive, K=args.K, P=args.P,
+                           nsteps=args.nsteps, frac_remain=args.frac_remain,
+                           seed=seed, max_rotations=args.max_rotations)
+    with open(os.path.join(combo_dir, 'results.json'), 'w') as f:
+        json.dump(summary, f, indent=1)
+    with open(os.path.join(combo_dir, 'results.txt'), 'w') as f:
+        f.write('%s-%dd / %s\n' % (problemname, dim, name))
+        for key, value in summary.items():
+            if key != 'args':
+                f.write('%-12s %s\n' % (key, value))
+    print('    lnZ = %s +- %s (%s), %.1fs -> %s'
+          % (summary['logz'], summary['logzerr'],
+             ('analytic %s' % summary['analytic_logz']
+              if summary['analytic_logz'] is not None else 'no analytic'),
+             summary['wall_time'], combo_dir), flush=True)
+    return summary
 
 
 def main():
@@ -180,38 +226,7 @@ def main():
                          % (args.combo, sorted(COMBOS.keys())))
 
     problem = make_problem(args.problem, args.dim)
-    combo_dir = os.path.join(args.outdir, '%s-%dd' % (args.problem, args.dim),
-                             args.combo)
-    os.makedirs(combo_dir, exist_ok=True)
-    spec = COMBOS[args.combo]
-    kwargs = dict(spec['kwargs'])
-    kwargs.update(nlive=args.nlive, K=args.K, P=args.P, nsteps=args.nsteps,
-                  frac_remain=args.frac_remain, seed=args.seed,
-                  max_rotations=args.max_rotations)
-    print('=== %s-%d / %s ===' % (args.problem, args.dim, args.combo),
-          flush=True)
-    t0 = time.time()
-    summary = spec['runner'](problem, combo_dir, **kwargs)
-    summary['wall_time'] = time.time() - t0
-    try:
-        summary['analytic_logz'] = float(problem.analytic_lnZ())
-    except Exception:
-        summary['analytic_logz'] = None
-    summary['args'] = dict(nlive=args.nlive, K=args.K, P=args.P,
-                           nsteps=args.nsteps, frac_remain=args.frac_remain,
-                           seed=args.seed, max_rotations=args.max_rotations)
-    with open(os.path.join(combo_dir, 'results.json'), 'w') as f:
-        json.dump(summary, f, indent=1)
-    with open(os.path.join(combo_dir, 'results.txt'), 'w') as f:
-        f.write('%s-%dd / %s\n' % (args.problem, args.dim, args.combo))
-        for key, value in summary.items():
-            if key != 'args':
-                f.write('%-12s %s\n' % (key, value))
-    print('    lnZ = %s +- %s (%s), %.1fs -> %s'
-          % (summary['logz'], summary['logzerr'],
-             ('analytic %s' % summary['analytic_logz']
-              if summary['analytic_logz'] is not None else 'no analytic'),
-             summary['wall_time'], combo_dir), flush=True)
+    run_combo(args.combo, problem, args.problem, args.dim, args.outdir, args)
 
 
 if __name__ == '__main__':

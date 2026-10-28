@@ -48,6 +48,7 @@ cdef inline double _uniform():
     return rand() / (2147483647.0 + 1.0)
 
 cdef int BUF_CHUNK = 256       # release buffer growth
+cdef int BUR_CHUNK = 1024      # burial sequence growth
 cdef int WRITE_CHUNK = 512     # HDF5 write batching
 
 
@@ -148,6 +149,8 @@ class MemoryPointStore:
 cdef class SnowballState:
     cdef public int K, P, d, nsteps
     cdef public long ndead
+    cdef public bint integrate
+    cdef public double logZ, logVrem, h, Lmax
     cdef public np.ndarray _headu, _headL, _headorig, _fill
     cdef np.ndarray _wu, _wl, _wphase, _wv, _wprop
     cdef np.ndarray _wleft, _wright, _wuoff, _wscale, _wnext
@@ -160,13 +163,22 @@ cdef class SnowballState:
     cdef public object store
     cdef np.ndarray _write_buf
     cdef int _write_n, _write_alloc
+    # custom integrator (integrate=True): earlier rotations' dead points
+    # (re-buried when the front passes them again), sorted by threshold
+    cdef np.ndarray _old_lmin, _old_rows, _old_threads
+    cdef long _old_ptr
+    # custom integrator: this rotation's released cells (threshold order)
+    cdef np.ndarray _burial_rows, _buried_lmin, _burial_threads
+    cdef long _bur_n, _bur_alloc
+    cdef double _invK, _logwidth_step
 
     def __init__(self, int K, int P, int d, int nsteps=1, int seed=0,
-                 storepath=None, mode='w'):
+                 storepath=None, mode='w', integrate=False):
         self.K = K
         self.P = P
         self.d = d
         self.nsteps = nsteps
+        self.integrate = integrate
         srand(seed)
         self._headu = np.zeros((K, d))
         self._headL = np.full(K, -1e300)
@@ -211,6 +223,22 @@ cdef class SnowballState:
         self._write_n = 0
         self._write_buf = np.zeros((WRITE_CHUNK, self.store.ncols))
         self.ndead = 0
+        # custom integrator bookkeeping (only used with integrate=True)
+        self._old_lmin = np.zeros(0)
+        self._old_rows = np.zeros(0, dtype=np.int64)
+        self._old_threads = np.zeros(0, dtype=np.int64)
+        self._old_ptr = 0
+        self._bur_alloc = BUR_CHUNK
+        self._bur_n = 0
+        self._burial_rows = np.zeros(BUR_CHUNK, dtype=np.int64)
+        self._buried_lmin = np.zeros(BUR_CHUNK)
+        self._burial_threads = np.zeros(BUR_CHUNK, dtype=np.int64)
+        self.logZ = -1e300
+        self.logVrem = 0.0
+        self.h = 0.0
+        self.Lmax = -1e300
+        self._invK = 1.0 / K
+        self._logwidth_step = log1p(-exp(-self._invK))
 
     def set_heads(self, u, L):
         """Initialise the thread ends from prior draws (origin -inf)."""
@@ -222,7 +250,11 @@ cdef class SnowballState:
 
     def widen(self, u_add, L_add):
         """Append threads (fresh prior draws as ends) for the next
-        snowball rotation."""
+        snowball rotation.  With ``integrate=True``, the released cells
+        of this rotation (plus any earlier ones the front did not pass
+        again) become the earlier-rotation set that the next rotation
+        re-buries at the new width, and the integrator accumulation is
+        reset."""
         cdef int K_old = self.K
         cdef int K_add = len(u_add)
         self._headu = np.vstack(
@@ -234,6 +266,26 @@ cdef class SnowballState:
         self._fill = np.concatenate(
             [self._fill, np.zeros(K_add, dtype=np.int64)])
         self.K = K_old + K_add
+        if self.integrate:
+            new_lmin = np.concatenate([self._old_lmin[self._old_ptr:],
+                                       self._buried_lmin[:self._bur_n]])
+            new_rows = np.concatenate([self._old_rows[self._old_ptr:],
+                                       self._burial_rows[:self._bur_n]])
+            new_threads = np.concatenate([self._old_threads[self._old_ptr:],
+                                          self._burial_threads[:self._bur_n]])
+            order = np.argsort(new_lmin, kind='stable')
+            self._old_lmin = np.ascontiguousarray(new_lmin[order])
+            self._old_rows = np.ascontiguousarray(new_rows[order],
+                                                  dtype=np.int64)
+            self._old_threads = np.ascontiguousarray(new_threads[order],
+                                                     dtype=np.int64)
+            self._old_ptr = 0
+            self._bur_n = 0
+            self.logZ = -1e300
+            self.logVrem = 0.0
+            self.h = 0.0
+            self._invK = 1.0 / self.K
+            self._logwidth_step = log1p(-exp(-self._invK))
 
     def get_heads(self):
         return self._headu, self._headL
@@ -359,9 +411,22 @@ cdef class SnowballState:
         cdef int d = self.d
         cdef int p, q
         cdef double u
+        if self.stepsampler is not None and self.region is not None:
+            # vectorized direction proposal: one batch call for the fresh
+            # walkers
+            fresh_idx = [p for p in range(P)
+                         if phase[p] >= 0 and fresh[p]]
+            if fresh_idx:
+                us = np.asarray([self._wu[p, :] for p in fresh_idx])
+                ws = np.asarray(self.stepsampler(us, self.region, 1.0))
+                for j, p in enumerate(fresh_idx):
+                    for q in range(d):
+                        self._wv[p, q] = ws[j, q]
         for p in range(P):
             if phase[p] >= 0 and fresh[p]:
-                self._generate_direction(p)
+                if not (self.stepsampler is not None
+                        and self.region is not None):
+                    self._generate_direction(p)
                 wleft[p] = -scale[p]
                 wright[p] = scale[p]
                 wuoff[p] = 0.0
@@ -382,6 +447,15 @@ cdef class SnowballState:
                 for q in range(d):
                     wprop[p, q] = wu[p, q]
         return self._wprop
+
+    cdef void _grow_burial(self):
+        cdef long add = BUR_CHUNK
+        self._burial_rows = np.concatenate(
+            [self._burial_rows, np.zeros(add, dtype=np.int64)])
+        self._buried_lmin = np.concatenate([self._buried_lmin, np.zeros(add)])
+        self._burial_threads = np.concatenate(
+            [self._burial_threads, np.zeros(add, dtype=np.int64)])
+        self._bur_alloc += add
 
     cdef void _grow_buffer(self):
         cdef int add = BUF_CHUNK
@@ -527,6 +601,11 @@ cdef class SnowballState:
         (threads, values, rows): for each released dead point, its thread
         index, its threshold (the node value for the tree) and its store
         row (the node id; the walk end's u is at that row).
+
+        With ``integrate=True``, the released dead points -- and the
+        earlier rotations' dead points the front passes again -- are also
+        integrated with 1/K strips (the custom integrator: logZ, logVrem,
+        h) and recorded for :py:meth:`get_records`.
         """
         self._flush_store()
         cdef f64[::1] headL = self._headL
@@ -536,53 +615,150 @@ cdef class SnowballState:
         for i in range(1, K):
             if headL[i] < front:
                 front = headL[i]
-        if self._buf_n == 0:
-            return (np.zeros(0, dtype=np.int64), np.zeros(0),
-                    np.zeros(0, dtype=np.int64))
         ready = np.nonzero(
             np.asarray(self._buf_lmin[:self._buf_n]) < front)[0]
-        if ready.shape[0] == 0:
+        cdef long n_buf = ready.shape[0]
+        cdef long n_old = 0
+        cdef long old_left = self._old_ptr
+        cdef long nold = self._old_lmin.shape[0]
+        if self.integrate and old_left < nold:
+            n_old = <long>np.searchsorted(
+                np.asarray(self._old_lmin[old_left:]), front, side='left')
+        if n_buf == 0 and n_old == 0:
             return (np.zeros(0, dtype=np.int64), np.zeros(0),
                     np.zeros(0, dtype=np.int64))
-        # threshold order
-        ready = ready[np.argsort(
-            np.asarray(self._buf_lmin)[ready], kind='stable')]
-        n = ready.shape[0]
         cdef int d = self.d
-        # write to the store in a batch
-        batch = np.zeros((n, self.store.ncols))
-        for i in range(n):
-            b = ready[i]
-            batch[i, 0] = self._buf_lmin[b]
-            batch[i, 1] = self._buf_L[b]
-            batch[i, 2] = self._buf_oL[b]
-            batch[i, 3] = self._buf_jump[b]
-            batch[i, 4] = <double>self._buf_order[b]
-            batch[i, 5] = <double>self._buf_thread[b]
-            batch[i, 6] = <double>self._buf_row[b]
-            for q in range(d):
-                batch[i, 7 + q] = self._buf_u[b, q]
-                batch[i, 7 + d + q] = self._buf_ou[b, q]
-        first_row = self.store.add_rows(batch)
-        rows = np.arange(first_row, first_row + n, dtype=np.int64)
-        threads = np.asarray(self._buf_thread)[ready].astype(np.int64)
-        values = np.asarray(self._buf_lmin)[ready].astype(np.float64)
-        # drop the released buffer cells
-        keep = np.ones(self._buf_n, dtype=bool)
-        keep[ready] = False
-        surv = np.nonzero(keep)[0]
-        n_keep = surv.shape[0]
-        self._buf_lmin[:n_keep] = self._buf_lmin[surv]
-        self._buf_L[:n_keep] = self._buf_L[surv]
-        self._buf_oL[:n_keep] = self._buf_oL[surv]
-        self._buf_jump[:n_keep] = self._buf_jump[surv]
-        self._buf_order[:n_keep] = self._buf_order[surv]
-        self._buf_thread[:n_keep] = self._buf_thread[surv]
-        self._buf_row[:n_keep] = self._buf_row[surv]
-        self._buf_u[:n_keep] = self._buf_u[surv]
-        self._buf_ou[:n_keep] = self._buf_ou[surv]
-        self._buf_n = n_keep
-        return (threads, values, rows)
+        # merged threshold order: the earlier rotations' cells (indices
+        # into _old_lmin) first, then the buffer cells
+        if self.integrate:
+            all_lmin = np.concatenate([
+                np.asarray(self._old_lmin[old_left:old_left + n_old]),
+                np.asarray(self._buf_lmin)[ready]])
+            all_src = np.concatenate([
+                np.zeros(n_old, dtype=np.int64),
+                np.ones(n_buf, dtype=np.int64)])
+            all_idx = np.concatenate([
+                np.arange(old_left, old_left + n_old, dtype=np.int64),
+                ready.astype(np.int64)])
+        else:
+            all_lmin = np.asarray(self._buf_lmin)[ready]
+            all_src = np.ones(n_buf, dtype=np.int64)
+            all_idx = ready.astype(np.int64)
+        ordv = np.argsort(all_lmin, kind='stable').astype(np.int64)
+        cdef i64[::1] ordm = ordv
+        cdef i64[::1] srcm = np.ascontiguousarray(all_src)
+        cdef i64[::1] idxm = np.ascontiguousarray(all_idx)
+        cdef f64[::1] lmm = np.ascontiguousarray(all_lmin)
+        cdef long total = all_lmin.shape[0]
+        cdef long s, o, b, store_row
+        cdef double L, logwidth, logwt, mm, logZ_new
+        cdef double logZ = self.logZ
+        cdef double logVrem = self.logVrem
+        cdef double hh = self.h
+        cdef double step = self._logwidth_step
+        cdef double invK = self._invK
+        out_threads = np.zeros(total, dtype=np.int64)
+        out_values = np.zeros(total, dtype=np.float64)
+        out_rows = np.zeros(total, dtype=np.int64)
+        keep = None
+        if n_buf > 0:
+            keep = np.ones(self._buf_n, dtype=bool)
+            keep[ready] = False
+        for s in range(total):
+            o = ordm[s]
+            L = lmm[o]
+            if srcm[o] == 0:
+                # an earlier rotation's dead point, re-released at the
+                # current width: its store row and thread are known
+                b = idxm[o]
+                out_threads[s] = self._old_threads[b]
+                out_values[s] = L
+                out_rows[s] = self._old_rows[b]
+                self._old_ptr += 1
+            else:
+                b = idxm[o]
+                store_row = self.store.nrows + self._write_n
+                self._write_buf[self._write_n, 0] = self._buf_lmin[b]
+                self._write_buf[self._write_n, 1] = self._buf_L[b]
+                self._write_buf[self._write_n, 2] = self._buf_oL[b]
+                self._write_buf[self._write_n, 3] = self._buf_jump[b]
+                self._write_buf[self._write_n, 4] = <double>self._buf_order[b]
+                self._write_buf[self._write_n, 5] = <double>self._buf_thread[b]
+                self._write_buf[self._write_n, 6] = <double>self._buf_row[b]
+                for i in range(d):
+                    self._write_buf[self._write_n, 7 + i] = self._buf_u[b, i]
+                    self._write_buf[self._write_n, 7 + d + i] = self._buf_ou[b, i]
+                self._write_n += 1
+                out_threads[s] = self._buf_thread[b]
+                out_values[s] = L
+                out_rows[s] = store_row
+            if self.integrate:
+                # custom integrator: 1/K strip in threshold order
+                logwidth = logVrem + step
+                logwt = logwidth + L
+                if logwt > logZ:
+                    mm = logwt
+                else:
+                    mm = logZ
+                logZ_new = mm + log(exp(logZ - mm) + exp(logwt - mm))
+                hh = exp(logwt - logZ_new) * L \
+                    + exp(logZ - logZ_new) * (hh + logZ) - logZ_new
+                logZ = logZ_new
+                logVrem -= invK
+                if self._bur_n >= self._bur_alloc:
+                    self._grow_burial()
+                self._burial_rows[self._bur_n] = out_rows[s]
+                self._buried_lmin[self._bur_n] = L
+                self._burial_threads[self._bur_n] = out_threads[s]
+                self._bur_n += 1
+        self.logZ = logZ
+        self.logVrem = logVrem
+        self.h = hh
+        if n_buf > 0:
+            surv = np.nonzero(keep)[0]
+            n_keep = surv.shape[0]
+            self._buf_lmin[:n_keep] = self._buf_lmin[surv]
+            self._buf_L[:n_keep] = self._buf_L[surv]
+            self._buf_oL[:n_keep] = self._buf_oL[surv]
+            self._buf_jump[:n_keep] = self._buf_jump[surv]
+            self._buf_order[:n_keep] = self._buf_order[surv]
+            self._buf_thread[:n_keep] = self._buf_thread[surv]
+            self._buf_row[:n_keep] = self._buf_row[surv]
+            self._buf_u[:n_keep] = self._buf_u[surv]
+            self._buf_ou[:n_keep] = self._buf_ou[surv]
+            self._buf_n = n_keep
+        # the released rows are read back by the caller immediately
+        self._flush_store()
+        return (out_threads, out_values, out_rows)
+
+    def check(self, double frac_remain):
+        """frac_remain termination criterion on the custom integrator's
+        incrementally maintained values (only meaningful with
+        ``integrate=True``)."""
+        self.Lmax = float(np.max(self._headL))
+        return bool((self.Lmax + self.logVrem) - self.logZ
+                    < log(frac_remain))
+
+    def get_records(self):
+        """The custom integrator's released dead points of the latest
+        rotation, in threshold order: threshold, replacement likelihood
+        and point, walk origin (point, likelihood), raw jump, creation
+        order and bookkeeping position x = -lnX (only meaningful with
+        ``integrate=True``)."""
+        self._flush_store()
+        cdef long n = self._bur_n
+        cdef int d = self.d
+        if n == 0:
+            return (np.zeros(0), np.zeros(0), np.zeros((0, d)),
+                    np.zeros((0, d)), np.zeros(0), np.zeros(0),
+                    np.zeros(0, dtype=np.int64), np.zeros(0))
+        x = (np.arange(n, dtype=float) + 1.0) * self._invK
+        lmin = np.array(self._buried_lmin[:n])
+        data = self.store.read(self._burial_rows[:n])
+        return (lmin, np.array(data[:, 1]), np.array(data[:, 7:7 + d]),
+                np.array(data[:, 7 + d:7 + 2 * d]), np.array(data[:, 2]),
+                np.array(data[:, 3]), np.array(data[:, 4], dtype=np.int64),
+                x)
 
     def flush(self):
         """Flush the store to disk."""

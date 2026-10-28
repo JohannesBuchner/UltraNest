@@ -17,7 +17,14 @@
 PROBLEMS ?= banana gauss
 DIMS ?= 2 10
 COMBOS ?= ultranest-mlfriends ultranest-de-mix \
-          snowballingns-quadratic-slice snowballingns-mix
+          snowballingns-quadratic-slice-seed1 snowballingns-quadratic-slice-seed2 \
+          snowballingns-quadratic-slice-seed3 snowballingns-quadratic-slice-seed4 \
+          snowballingns-mix-seed1 snowballingns-mix-seed2 \
+          snowballingns-mix-seed3 snowballingns-mix-seed4 \
+          snowballingns-custom-quadratic-slice-seed1 snowballingns-custom-quadratic-slice-seed2 \
+          snowballingns-custom-quadratic-slice-seed3 snowballingns-custom-quadratic-slice-seed4 \
+          snowballingns-custom-mix-seed1 snowballingns-custom-mix-seed2 \
+          snowballingns-custom-mix-seed3 snowballingns-custom-mix-seed4
 
 NLIVE ?= 400
 K ?= 400

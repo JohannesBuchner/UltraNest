@@ -292,7 +292,11 @@ class SnowballingNestedSampler:
     def __init__(self, paramnames, loglike, transform=None, vectorized=True,
                  num_live_points_base=400, num_steps=1,
                  region_class=RobustEllipsoidRegion, stepsampler=None,
-                 num_bootstraps=10, log_dir=None, draw_multiple=False):
+                 num_bootstraps=10, log_dir=None, draw_multiple=False,
+                 integrator='multicounter'):
+        if integrator not in ('multicounter', 'custom'):
+            raise ValueError("integrator must be 'multicounter' or 'custom'")
+        self.integrator = integrator
         if log_dir is None:
             raise ValueError("log_dir must be provided (the HDF5 point "
                              "store, rotation records and plots are "
@@ -368,7 +372,8 @@ class SnowballingNestedSampler:
         u, p, logl = self._prior_draw(self.K, seed)
         self.state = SnowballState(self.K, P=min(20, self.K), d=self.x_dim,
                                    nsteps=self.num_steps, seed=seed + 1,
-                                   storepath=self.store_path)
+                                   storepath=self.store_path,
+                                   integrate=(self.integrator == 'custom'))
         self.state.set_heads(u, logl)
         self.root = TreeNode(value=-np.inf, id=-1)
         self.thread_nodes = []
@@ -405,6 +410,11 @@ class SnowballingNestedSampler:
             self._setup(seed=1)
         self.nrotations += 1
         self.nlive_per_rotation.append(self.K)
+        if self.integrator == 'custom':
+            return self._run_iter_custom(
+                frac_remain=frac_remain,
+                update_interval_volume_fraction=update_interval_volume_fraction,
+                show_status=show_status, viz_callback=viz_callback)
         d = self.x_dim
         main_iterator = MultiCounter(
             nroots=self.K, nbootstraps=self.num_bootstraps,
@@ -486,6 +496,97 @@ class SnowballingNestedSampler:
                        ncall=self.ncall)
         self.rotation_summaries.append(summary)
         return summary
+
+    def _run_iter_custom(self, frac_remain=0.5,
+                         update_interval_volume_fraction=0.2,
+                         show_status=True, viz_callback=None):
+        """One snowball rotation with the custom integrator: the state
+        machine integrates the released dead points with 1/K strips; the
+        termination is frac_remain on its incrementally maintained
+        values. Returns the rotation summary dict."""
+        ncall_at_start = self.ncall
+        next_update_volume = -self.state.logVrem \
+            + update_interval_volume_fraction
+        last_status_ncall = self.ncall
+        Lmax = float(np.max(self.state.get_heads()[1]))
+        while True:
+            # region update, based on where the integrator is
+            if -self.state.logVrem > next_update_volume:
+                self._update_region()
+                next_update_volume = -self.state.logVrem \
+                    + update_interval_volume_fraction
+            self.state.start_round()
+            while self.state.any_active():
+                prop = self.state.propose()
+                pnew = self.transform(prop)
+                Lnew = np.asarray(self.loglike(pnew),
+                                  dtype=float).reshape(-1)
+                self.state.receive(Lnew)
+                self.ncall += self.state.P
+            self.state.release()
+            _, headL = self.state.get_heads()
+            Lmax = max(Lmax, float(np.max(headL)))
+            if show_status and (self.ncall - last_status_ncall
+                                >= self.K):
+                last_status_ncall = self.ncall
+                logzremain = self.state.Lmax + self.state.logVrem
+                remfrac = 1.0 / (1.0 + np.exp(self.state.logZ - logzremain))
+                sys.stdout.write(
+                    'Z=%.1f(%.2f%%) | Like=%.2f..%.2f | '
+                    'it/evals=%d/%d N=%d \r'
+                    % (self.state.logZ, 100 * (1 - remfrac),
+                       float(np.min(headL)), Lmax,
+                       int(round(-self.state.logVrem * self.K)),
+                       self.ncall, self.K))
+                sys.stdout.flush()
+                if viz_callback is not None:
+                    viz_callback(dict(
+                        it=int(round(-self.state.logVrem * self.K)),
+                        ncall=self.ncall, logz=self.state.logZ,
+                        logz_remain=self.state.Lmax + self.state.logVrem,
+                        logvol=-self.state.logVrem,
+                        paramnames=self.paramnames))
+            if self.state.check(frac_remain):
+                break
+        self._assemble_results_custom()
+        lmin = self.state.get_records()[0]
+        summary = dict(rotation=self.nrotations, K=self.K,
+                       logz=self.results['logz'],
+                       logzerr=self.results['logzerr'],
+                       nburied=len(lmin), ncall=self.ncall)
+        self.rotation_summaries.append(summary)
+        return summary
+
+    def _assemble_results_custom(self):
+        """Build the results dict from the custom integrator: the
+        released dead points weighted by their 1/K strips plus the
+        thread ends weighted by the remaining volume."""
+        lmin, recL, recU, ou, oL, jump, order, x = self.state.get_records()
+        n = len(lmin)
+        u_heads, headL = self.state.get_heads()
+        logz = float(logaddexp(self.state.logZ, self.state.logVrem
+                               + logaddexp.reduce(headL)
+                               - np.log(self.K)))
+        logzerr = float(np.sqrt(max(self.state.h, 0.0) / self.K))
+        weighted_u = np.vstack([recU, np.asarray(u_heads, dtype=float)])
+        weights = np.concatenate([
+            np.full(n, 1.0 / self.K),
+            np.full(self.K, np.exp(self.state.logVrem) / self.K)])
+        weights /= weights.sum()
+        samples = resample_equal(weighted_u, weights)
+        mean = (weighted_u * weights[:, None]).sum(axis=0)
+        stdev = np.sqrt((weighted_u ** 2 * weights[:, None]).sum(axis=0)
+                        - mean ** 2)
+        self.results = dict(
+            logz=logz, logzerr=logzerr,
+            logz_bs=float('nan'), logzerr_bs=logzerr,
+            H=float('nan'), samples=samples,
+            weighted_samples=dict(points=weighted_u, weights=weights,
+                                  logweights=np.log(weights)),
+            weights=weights, logweights=np.log(weights), logvol=x,
+            paramnames=self.paramnames, niter=n, ncall=self.ncall,
+            posterior=dict(mean=mean, stdev=stdev),
+            rotation_summaries=list(self.rotation_summaries))
 
     def _feed_nodes(self, threads, values, rows, walkend_L, parallel_values):
         """Extend the tree with the released dead points and feed them to
@@ -576,7 +677,8 @@ class SnowballingNestedSampler:
                 self.state = SnowballState(
                     self.K, P=min(20, self.K), d=self.x_dim,
                     nsteps=self.num_steps, seed=seed + 1,
-                    storepath=self.store_path, mode='a')
+                    storepath=self.store_path, mode='a',
+                    integrate=(self.integrator == 'custom'))
                 self.state.set_heads(heads_u, heads_L)
                 # rebuild the tree from the stored points
                 self.root = TreeNode(value=-np.inf, id=-1)
@@ -679,16 +781,20 @@ class SnowballingNestedSampler:
         """Write the rotation's per-cell records, the thread ends and the
         Gompertz per-segment geomeans to the rotation records file."""
         u_heads, headL = self.state.get_heads()
-        rows = [r for r, x, t in self._store_rows]
-        data = self.state.store.read(rows) if rows else \
-            np.zeros((0, self.state.store.ncols))
         d = self.x_dim
-        lmin = np.asarray(data[:, 0], dtype=float)
-        recL = np.asarray(data[:, 1], dtype=float)
-        ou = np.asarray(data[:, 7 + d:7 + 2 * d], dtype=float)
-        jump = np.asarray(data[:, 3], dtype=float)
-        order = np.asarray(data[:, 4], dtype=np.int64)
-        x = np.asarray([x for r, x, t in self._store_rows], dtype=float)
+        if self.integrator == 'custom':
+            lmin, recL, recU, ou, oL, jump, order, x = \
+                self.state.get_records()
+        else:
+            rows = [r for r, x, t in self._store_rows]
+            data = self.state.store.read(rows) if rows else \
+                np.zeros((0, self.state.store.ncols))
+            lmin = np.asarray(data[:, 0], dtype=float)
+            recL = np.asarray(data[:, 1], dtype=float)
+            ou = np.asarray(data[:, 7 + d:7 + 2 * d], dtype=float)
+            jump = np.asarray(data[:, 3], dtype=float)
+            order = np.asarray(data[:, 4], dtype=np.int64)
+            x = np.asarray([x for r, x, t in self._store_rows], dtype=float)
         if 'bin_edges' not in self.__dict__ or self.bin_edges is None:
             self.bin_edges = lmin_bin_edges(lmin, 20) if len(lmin) else None
         seg = (np.searchsorted(self.bin_edges, lmin)
