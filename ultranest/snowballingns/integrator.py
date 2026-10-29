@@ -388,6 +388,7 @@ class SnowballingNestedSampler:
             self.root.children.append(node)
             self.thread_nodes.append(node)
             self.chain_nodes.append((node, t))
+        # a node enters the re-walk set when it becomes a dead point
         self.previous_nodes = []
         self._rotation_new_nodes = []
         self._prev_ptr = 0
