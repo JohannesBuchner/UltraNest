@@ -337,6 +337,10 @@ class SnowballingNestedSampler:
         self.main_iterator = None
         self.rotation_summaries = []
         self.nlive_per_rotation = []
+        self.previous_nodes = []      # (node, rootid) of the earlier
+                                      # rotations' dead points
+        self._rotation_new_nodes = [] # (node, rootid) born this rotation
+        self._prev_ptr = 0
         self._store_rows = []    # (row, x, rootid) of the latest rotation
         self._logweights = []    # latest rotation's strip weights
         self._logvols = []       # latest rotation's bookkeeping positions
@@ -384,6 +388,9 @@ class SnowballingNestedSampler:
             self.root.children.append(node)
             self.thread_nodes.append(node)
             self.chain_nodes.append((node, t))
+        self.previous_nodes = []
+        self._rotation_new_nodes = []
+        self._prev_ptr = 0
         region = self._make_region(u)
         self.state.set_region(region)
         self.state.stepsampler = self.stepsampler
@@ -400,12 +407,12 @@ class SnowballingNestedSampler:
                  update_interval_volume_fraction=0.2, show_status=True,
                  viz_callback=None, min_vol_reduction=1.0,
                  min_num_iterations=None):
-        """Run one snowball rotation: a new tree is built from scratch
-        with a new MultiCounter, and gradually filled as the integrator
-        walks through the new rectangle (each released dead point extends
-        its thread's branch and is fed to the MultiCounter in threshold
-        order once every live point sits above it). No previous rotations'
-        dead points are re-passed, so no rescaling is needed.
+        """Run one snowball rotation: a new MultiCounter is created and
+        gradually filled as the integrator walks through the entire new
+        width, including the new and the earlier columns: the earlier
+        rotations' dead points are inserted into the integration at their
+        threshold positions, merged with the newly released dead points
+        in threshold order, once every live point sits above them.
 
         The termination is the ReactiveNestedSampler-style criterion with
         the global L_max (the highest likelihood ever seen, kept across
@@ -431,17 +438,13 @@ class SnowballingNestedSampler:
             nroots=self.K, nbootstraps=self.num_bootstraps,
             random=False, check_insertion_order=True)
         self.main_iterator = main_iterator
-        # re-materialize: the MultiCounter is reset and the whole tree
-        # (all earlier rotations' dead points) re-passed at the current
-        # width, so the volume assignment matches the thresholds' span
-        leaves = set(id(n) for n in self.thread_nodes)
-        to_pass = sorted((node, rootid) for node, rootid in self.chain_nodes
-                         if id(node) not in leaves)
-        u_heads, headL = self.state.get_heads()
-        rootids = np.arange(self.K)
-        for node, rootid in to_pass:
-            main_iterator.passing_node(rootid, node, rootids,
-                                       np.asarray(headL, dtype=float))
+        # the earlier rotations' dead points are inserted gradually, at
+        # their threshold positions, merged with the newly released dead
+        # points
+        self.previous_nodes.extend(self._rotation_new_nodes)
+        self.previous_nodes.sort(key=lambda c: c[0].value)
+        self._rotation_new_nodes = []
+        self._prev_ptr = 0
         self._store_rows = []
         self._logweights = []
         self._logvols = []
@@ -466,19 +469,55 @@ class SnowballingNestedSampler:
                                   dtype=float).reshape(-1)
                 self.state.receive(Lnew)
                 self.ncall += self.state.P
-            # release the buried dead points and feed the integrator
+            # release the buried dead points and feed the integrator:
+            # the earlier rotations' dead points below the front and the
+            # newly released ones, merged in threshold order
             _, headL = self.state.get_heads()
+            front = float(np.min(headL))
             threads, values, rows = self.state.release()
+            headL = np.asarray(headL, dtype=float)
+            rootids = np.arange(self.K)
+            old_cands = []
+            while self._prev_ptr < len(self.previous_nodes) \
+                    and self.previous_nodes[self._prev_ptr][0].value < front:
+                old_cands.append(self.previous_nodes[self._prev_ptr])
+                self._prev_ptr += 1
             if len(threads):
-                # the walk ends' likelihoods come from the store
                 data = self.state.store.read(rows)
                 walkend_L = np.asarray(data[:, 1], dtype=float)
-                new_nodes = self._feed_nodes(threads, values, rows,
-                                             walkend_L, np.asarray(headL))
-                for child, t, row, x, logw in new_nodes:
-                    self._store_rows.append((row, x, t))
-                    self._logweights.append(logw)
-                    self._logvols.append(x)
+            else:
+                walkend_L = np.zeros(0)
+            new_cands = sorted(zip(threads, values, rows, walkend_L),
+                               key=lambda c: c[1])
+            merged = []
+            a = b = 0
+            while a < len(old_cands) and b < len(new_cands):
+                if old_cands[a][0].value < new_cands[b][1]:
+                    merged.append(('old', old_cands[a])); a += 1
+                else:
+                    merged.append(('new', new_cands[b])); b += 1
+            merged += [('old', c) for c in old_cands[a:]] \
+                    + [('new', c) for c in new_cands[b:]]
+            for kind, c in merged:
+                if kind == 'old':
+                    node, rootid = c
+                    main_iterator.passing_node(rootid, node, rootids, headL)
+                    row, t = node.id, rootid
+                else:
+                    t, value, row, walkend = c
+                    dead_node = self.thread_nodes[t]
+                    child = TreeNode(value=float(walkend), id=int(row))
+                    dead_node.children.append(child)
+                    self.thread_nodes[t] = child
+                    self.chain_nodes.append((child, int(t)))
+                    self._rotation_new_nodes.append((child, int(t)))
+                    main_iterator.passing_node(int(t), dead_node, rootids,
+                                               headL)
+                x = -main_iterator.logVolremaining
+                self._store_rows.append((row, x, t))
+                self._logweights.append(
+                    float(main_iterator.logweights[-1][0]))
+                self._logvols.append(x)
             # the global L_max: the highest likelihood ever seen
             self.Lmax_global = max(self.Lmax_global, float(np.max(headL)))
             nburied = len(self._store_rows) - nburied_at_start
@@ -526,16 +565,11 @@ class SnowballingNestedSampler:
         next_update_volume = -self.state.logVrem \
             + update_interval_volume_fraction
         last_status_ncall = self.ncall
-        # a new tree from scratch: the current thread ends as root children
-        self.root = TreeNode(value=-np.inf, id=-1)
-        self.thread_nodes = []
-        self.chain_nodes = []
-        u_heads, headL = self.state.get_heads()
-        for t in range(self.K):
-            node = TreeNode(value=float(headL[t]), id=-1)
-            self.root.children.append(node)
-            self.thread_nodes.append(node)
-            self.chain_nodes.append((node, t))
+        # the earlier rotations' dead points inserted gradually
+        self.previous_nodes.extend(self._rotation_new_nodes)
+        self.previous_nodes.sort(key=lambda c: c[0].value)
+        self._rotation_new_nodes = []
+        self._prev_ptr = 0
         while True:
             # region update, based on where the integrator is
             if -self.state.logVrem > next_update_volume:
