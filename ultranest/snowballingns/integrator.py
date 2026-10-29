@@ -330,6 +330,7 @@ class SnowballingNestedSampler:
         self.K = num_live_points_base
         self.ncall = 0
         self.nrotations = 0
+        self.Lmax_global = -np.inf
         self.results = None
         self.bin_edges = None
         self.state = None
@@ -397,19 +398,29 @@ class SnowballingNestedSampler:
 
     def run_iter(self, frac_remain=0.5, update_interval_ncall=None,
                  update_interval_volume_fraction=0.2, show_status=True,
-                 viz_callback=None):
-        """Run one snowball rotation: batch advances until the remainder
-        fraction of the evidence drops below ``frac_remain``.
+                 viz_callback=None, min_vol_reduction=1.0,
+                 min_num_iterations=None):
+        """Run one snowball rotation: a new tree is built from scratch
+        with a new MultiCounter, and gradually filled as the integrator
+        walks through the new rectangle (each released dead point extends
+        its thread's branch and is fed to the MultiCounter in threshold
+        order once every live point sits above it). No previous rotations'
+        dead points are re-passed, so no rescaling is needed.
 
-        The MultiCounter is reset and the whole tree re-passed at the
-        current width (the integral is re-materialized each rotation).
-        The region is rebuilt from the thread ends irregularly, based on
-        where the integrator is. Returns the rotation summary dict.
+        The termination is the ReactiveNestedSampler-style criterion with
+        the global L_max (the highest likelihood ever seen, kept across
+        rotations): L_max times the remaining volume, concentrated in the
+        highest-likelihood live point, drops below frac_remain of the
+        evidence. The region is rebuilt from the thread ends irregularly,
+        based on where the integrator is. Returns the rotation summary
+        dict.
         """
         if self.state is None:
             self._setup(seed=1)
         self.nrotations += 1
         self.nlive_per_rotation.append(self.K)
+        if min_num_iterations is None:
+            min_num_iterations = self.K
         if self.integrator == 'custom':
             return self._run_iter_custom(
                 frac_remain=frac_remain,
@@ -420,7 +431,9 @@ class SnowballingNestedSampler:
             nroots=self.K, nbootstraps=self.num_bootstraps,
             random=False, check_insertion_order=True)
         self.main_iterator = main_iterator
-        # re-materialize: re-pass the whole tree at the current width
+        # re-materialize: the MultiCounter is reset and the whole tree
+        # (all earlier rotations' dead points) re-passed at the current
+        # width, so the volume assignment matches the thresholds' span
         leaves = set(id(n) for n in self.thread_nodes)
         to_pass = sorted((node, rootid) for node, rootid in self.chain_nodes
                          if id(node) not in leaves)
@@ -432,11 +445,11 @@ class SnowballingNestedSampler:
         self._store_rows = []
         self._logweights = []
         self._logvols = []
-        ncall_at_start = self.ncall
         next_update_interval_volume = main_iterator.logVolremaining \
             + update_interval_volume_fraction
         last_status_ncall = self.ncall
-        Lmax = float(np.max(headL))
+        vol_at_start = main_iterator.logVolremaining
+        nburied_at_start = len(self._store_rows)
 
         while True:
             # region update, based on where the integrator is
@@ -466,7 +479,10 @@ class SnowballingNestedSampler:
                     self._store_rows.append((row, x, t))
                     self._logweights.append(logw)
                     self._logvols.append(x)
-            Lmax = max(Lmax, float(np.max(headL)))
+            # the global L_max: the highest likelihood ever seen
+            self.Lmax_global = max(self.Lmax_global, float(np.max(headL)))
+            nburied = len(self._store_rows) - nburied_at_start
+            vol_reduced = vol_at_start - main_iterator.logVolremaining
             if show_status and (self.ncall - last_status_ncall
                                 >= (update_interval_ncall or self.K)):
                 last_status_ncall = self.ncall
@@ -475,7 +491,7 @@ class SnowballingNestedSampler:
                     'it/evals=%d/%d N=%d \r'
                     % (main_iterator.logZ,
                        100 * (1 - main_iterator.remainder_fraction),
-                       float(np.min(headL)), Lmax,
+                       float(np.min(headL)), self.Lmax_global,
                        len(main_iterator.logweights), self.ncall, self.K))
                 sys.stdout.flush()
                 if viz_callback is not None:
@@ -485,7 +501,10 @@ class SnowballingNestedSampler:
                         logz_remain=main_iterator.logZremain,
                         logvol=main_iterator.logVolremaining,
                         paramnames=self.paramnames))
-            if main_iterator.remainder_fraction < frac_remain:
+            logzremain = self.Lmax_global + main_iterator.logVolremaining
+            if (logzremain - main_iterator.logZ < log(frac_remain)
+                    and vol_reduced >= min_vol_reduction
+                    and nburied >= min_num_iterations):
                 break
         # assemble the results for this rotation
         self._assemble_results(main_iterator)
@@ -504,11 +523,19 @@ class SnowballingNestedSampler:
         machine integrates the released dead points with 1/K strips; the
         termination is frac_remain on its incrementally maintained
         values. Returns the rotation summary dict."""
-        ncall_at_start = self.ncall
         next_update_volume = -self.state.logVrem \
             + update_interval_volume_fraction
         last_status_ncall = self.ncall
-        Lmax = float(np.max(self.state.get_heads()[1]))
+        # a new tree from scratch: the current thread ends as root children
+        self.root = TreeNode(value=-np.inf, id=-1)
+        self.thread_nodes = []
+        self.chain_nodes = []
+        u_heads, headL = self.state.get_heads()
+        for t in range(self.K):
+            node = TreeNode(value=float(headL[t]), id=-1)
+            self.root.children.append(node)
+            self.thread_nodes.append(node)
+            self.chain_nodes.append((node, t))
         while True:
             # region update, based on where the integrator is
             if -self.state.logVrem > next_update_volume:
@@ -525,17 +552,18 @@ class SnowballingNestedSampler:
                 self.ncall += self.state.P
             self.state.release()
             _, headL = self.state.get_heads()
-            Lmax = max(Lmax, float(np.max(headL)))
+            # the global L_max: the highest likelihood ever seen
+            self.Lmax_global = max(self.Lmax_global, float(np.max(headL)))
             if show_status and (self.ncall - last_status_ncall
                                 >= self.K):
                 last_status_ncall = self.ncall
-                logzremain = self.state.Lmax + self.state.logVrem
+                logzremain = self.Lmax_global + self.state.logVrem
                 remfrac = 1.0 / (1.0 + np.exp(self.state.logZ - logzremain))
                 sys.stdout.write(
                     'Z=%.1f(%.2f%%) | Like=%.2f..%.2f | '
                     'it/evals=%d/%d N=%d \r'
                     % (self.state.logZ, 100 * (1 - remfrac),
-                       float(np.min(headL)), Lmax,
+                       float(np.min(headL)), self.Lmax_global,
                        int(round(-self.state.logVrem * self.K)),
                        self.ncall, self.K))
                 sys.stdout.flush()
@@ -546,7 +574,8 @@ class SnowballingNestedSampler:
                         logz_remain=self.state.Lmax + self.state.logVrem,
                         logvol=-self.state.logVrem,
                         paramnames=self.paramnames))
-            if self.state.check(frac_remain):
+            logzremain = self.Lmax_global + self.state.logVrem
+            if logzremain - self.state.logZ < log(frac_remain):
                 break
         self._assemble_results_custom()
         lmin = self.state.get_records()[0]
