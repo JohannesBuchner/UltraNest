@@ -274,11 +274,15 @@ class SnowballingNestedSampler:
         ``generate_mixture_random_direction``). Sets ``self.stepsampler``;
         can be changed later by the user. Default: the quadratic slice
         direction.
-    num_bootstraps: int
-        number of bootstrap rounds of the MultiCounter
     log_dir: str
         output folder for the HDF5 point store, rotation records and
         plots (required)
+
+    The lnZ error is estimated by K-folding instead of bootstrapping:
+    alongside the integrator over all sequences, K fold integrators run,
+    the ith integrating the sequences with j % K == i (one sequence
+    each) as a 1-live-point run; the error of the fold mean is combined
+    with the nominal sqrt(H/K) in quadrature.
 
     Usage::
 
@@ -293,7 +297,7 @@ class SnowballingNestedSampler:
     def __init__(self, paramnames, loglike, transform=None, vectorized=True,
                  num_live_points_base=400, num_steps=1,
                  region_class=RobustEllipsoidRegion, stepsampler=None,
-                 num_bootstraps=10, log_dir=None, draw_multiple=False,
+                 log_dir=None, draw_multiple=False,
                  integrator='multicounter'):
         if integrator not in ('multicounter', 'custom'):
             raise ValueError("integrator must be 'multicounter' or 'custom'")
@@ -317,8 +321,9 @@ class SnowballingNestedSampler:
         self.num_live_points_base = num_live_points_base
         self.num_steps = num_steps
         self.region_class = region_class
-        self.num_bootstraps = num_bootstraps
         self.draw_multiple = draw_multiple
+        self.folds = []              # per-sequence fold integrators
+        self.logzerr_folding = np.nan
         if stepsampler is None:
             from ultranest.stepfuncs import generate_quadratic_slice_direction
             stepsampler = generate_quadratic_slice_direction
@@ -417,6 +422,12 @@ class SnowballingNestedSampler:
         threshold positions, merged with the newly released dead points
         in threshold order, once every live point sits above them.
 
+        Alongside the main integrator, K fold integrators (one per
+        sequence) integrate their single sequence as a 1-live-point run;
+        the lnZ error comes from the variance of the fold lnZ values (the
+        error of their mean) combined with the nominal sqrt(H/K) in
+        quadrature.
+
         The termination is the ReactiveNestedSampler-style criterion with
         the global L_max (the highest likelihood ever seen, kept across
         rotations): it does not terminate until the live point remainder
@@ -438,9 +449,17 @@ class SnowballingNestedSampler:
                 show_status=show_status, viz_callback=viz_callback)
         d = self.x_dim
         main_iterator = MultiCounter(
-            nroots=self.K, nbootstraps=self.num_bootstraps,
-            random=False, check_insertion_order=True)
+            nroots=self.K, nbootstraps=0, random=False,
+            check_insertion_order=True)
         self.main_iterator = main_iterator
+        # K-folding error estimator: K fold integrators, the ith
+        # integrating the sequences with j % K == i (one sequence each)
+        # as a 1-live-point run
+        folds = [MultiCounter(nroots=1, nbootstraps=0, random=False)
+                 for _ in range(self.K)]
+        self.folds = folds
+        fold_rootids = np.arange(1)
+        self.logzerr_folding = np.nan
         # the earlier rotations' dead points are inserted gradually, at
         # their threshold positions, merged with the newly released dead
         # points
@@ -505,6 +524,7 @@ class SnowballingNestedSampler:
                 if kind == 'old':
                     node, rootid = c
                     main_iterator.passing_node(rootid, node, rootids, headL)
+                    folds[rootid].passing_node(0, node, fold_rootids, headL)
                     # the store row of this death is the child created
                     # when the node died
                     row, t = node.children[-1].id, rootid
@@ -519,6 +539,8 @@ class SnowballingNestedSampler:
                     self._rotation_new_nodes.append((dead_node, int(t)))
                     main_iterator.passing_node(int(t), dead_node, rootids,
                                                headL)
+                    folds[t].passing_node(0, dead_node, fold_rootids,
+                                          headL)
                 x = -main_iterator.logVolremaining
                 self._store_rows.append((row, x, t))
                 self._logweights.append(
@@ -546,8 +568,27 @@ class SnowballingNestedSampler:
                         logz_remain=main_iterator.logZremain,
                         logvol=main_iterator.logVolremaining,
                         paramnames=self.paramnames))
+            # the K-folding lnZ error: the variance of the per-sequence
+            # fold integrators' lnZ (the error of their mean), combined
+            # with the nominal sqrt(H/K) in quadrature
+            logz_folds = np.array([f.logZ for f in folds])
+            finite = np.isfinite(logz_folds)
+            nfolds = int(finite.sum())
+            if nfolds >= 2:
+                logzerr_folds = float(np.sqrt(np.var(logz_folds[finite])
+                                              / nfolds))
+            else:
+                logzerr_folds = 0.0
+            H = main_iterator.all_H[0]
+            nominal = float(np.sqrt(H / self.K)) \
+                if np.isfinite(H) and H > 0 else 0.0
+            self.logzerr_folding = float(np.sqrt(logzerr_folds ** 2
+                                                 + nominal ** 2))
+            self._logz_bs = float(np.mean(logz_folds[finite])) \
+                if finite.any() else float('nan')
+            self._logzerr_folds = logzerr_folds
             logzremain = self.Lmax_global + main_iterator.logVolremaining
-            logzerr = main_iterator.logZerr_bs
+            logzerr = self.logzerr_folding
             if (0 < logzerr < np.inf
                     and logzremain - main_iterator.logZ
                     < log(frac_remain * logzerr)
@@ -709,9 +750,9 @@ class SnowballingNestedSampler:
         self.results = dict(
             logz=float(logaddexp(main_iterator.logZ,
                                  main_iterator.logZremain)),
-            logzerr=float(main_iterator.logZerr_bs),
-            logz_bs=float(main_iterator.logZ_bs),
-            logzerr_bs=float(main_iterator.logZerr_bs),
+            logzerr=float(self.logzerr_folding),
+            logz_bs=float(self._logz_bs),
+            logzerr_bs=float(self._logzerr_folds),
             H=float(main_iterator.all_H[0]),
             samples=samples,
             weighted_samples=dict(points=weighted_u, weights=weights,

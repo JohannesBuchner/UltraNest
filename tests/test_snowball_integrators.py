@@ -91,3 +91,33 @@ def test_custom_multicounter_agreement():
     assert len(main.logweights) == len(released)
     assert abs(main.logZ - logz) < 1e-8
     assert abs(main.logVolremaining - logvrem) < 1e-8
+
+
+def test_kfolding_fold_mean_tracks_main():
+    """The K fold integrators (one per sequence, 1-live-point runs)
+    estimate the same integral as the main integrator."""
+    state, L_init, released = run_trajectory()
+    K = state.K
+    main = MultiCounter(nroots=K, nbootstraps=0, random=False)
+    folds = [MultiCounter(nroots=1, nbootstraps=0, random=False)
+             for _ in range(K)]
+    rootids = np.arange(K)
+    fold_rootids = np.arange(1)
+    thread_nodes = [TreeNode(value=float(l), id=-1) for l in L_init]
+    _, headL = state.get_heads()
+    headL = np.asarray(headL, dtype=float)
+    for j, threshold, walkend in released:
+        dead_node = thread_nodes[j]
+        child = TreeNode(value=float(walkend), id=-1)
+        dead_node.children.append(child)
+        thread_nodes[j] = child
+        main.passing_node(j, dead_node, rootids, headL)
+        folds[j].passing_node(0, dead_node, fold_rootids, headL)
+    logz_folds = np.array([f.logZ for f in folds])
+    finite = np.isfinite(logz_folds)
+    # most sequences contributed at least one dead point
+    assert finite.sum() > K / 2
+    err_folds = float(np.sqrt(np.var(logz_folds[finite]) / finite.sum()))
+    assert err_folds > 0
+    # the fold mean estimates the same integral as the main integrator
+    assert abs(logz_folds[finite].mean() - main.logZ) < 5 * err_folds + 0.2
