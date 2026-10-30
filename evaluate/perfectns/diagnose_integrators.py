@@ -56,12 +56,17 @@ for seed in range(1, nseeds + 1):
     sampler.thread_nodes = thread_nodes
 
     for rotation in range(1, 5):
+        # mirror run_iter: the dead points of the earlier rotations
+        # (registered at their deaths) enter the re-walk set
+        sampler.previous_nodes.extend(sampler._rotation_new_nodes)
+        sampler.previous_nodes.sort(key=lambda c: c[0].value)
+        sampler._rotation_new_nodes = []
+        sampler._prev_ptr = 0
         main_iterator = MultiCounter(nroots=sampler.K, nbootstraps=10,
                                      random=False,
                                      check_insertion_order=False)
         single_iterator = SingleCounter(random=False)
         sampler.main_iterator = main_iterator
-        sampler._prev_ptr = 0
         cust_logZ = -np.inf; cust_logVrem = 0.0
         newonly_logZ = -np.inf; newonly_logVrem = 0.0
         step = float(np.log1p(-np.exp(-1.0 / sampler.K)))
@@ -114,7 +119,8 @@ for seed in range(1, nseeds + 1):
                     dead_node.children.append(child)
                     thread_nodes[t] = child
                     sampler.chain_nodes.append((child, int(t)))
-                    sampler._rotation_new_nodes.append((child, int(t)))
+                    # the dead point enters the re-walk set at its death
+                    sampler._rotation_new_nodes.append((dead_node, int(t)))
                 # MultiCounter
                 main_iterator.passing_node(int(t), dead_node, rootids,
                                            headL_f)

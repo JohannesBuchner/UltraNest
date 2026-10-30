@@ -339,7 +339,8 @@ class SnowballingNestedSampler:
         self.nlive_per_rotation = []
         self.previous_nodes = []      # (node, rootid) of the earlier
                                       # rotations' dead points
-        self._rotation_new_nodes = [] # (node, rootid) born this rotation
+        self._rotation_new_nodes = [] # (node, rootid) that died this
+                                      # rotation
         self._prev_ptr = 0
         self._store_rows = []    # (row, x, rootid) of the latest rotation
         self._logweights = []    # latest rotation's strip weights
@@ -450,7 +451,7 @@ class SnowballingNestedSampler:
         self._logweights = []
         self._logvols = []
         next_update_interval_volume = main_iterator.logVolremaining \
-            + update_interval_volume_fraction
+            - update_interval_volume_fraction
         last_status_ncall = self.ncall
         vol_at_start = main_iterator.logVolremaining
         nburied_at_start = len(self._store_rows)
@@ -459,8 +460,8 @@ class SnowballingNestedSampler:
             # region update, based on where the integrator is
             if main_iterator.logVolremaining < next_update_interval_volume:
                 region = self._update_region()
-                self.next_update_interval_volume = \
-                    main_iterator.logVolremaining + \
+                next_update_interval_volume = \
+                    main_iterator.logVolremaining - \
                     update_interval_volume_fraction
             self.state.start_round()
             while self.state.any_active():
@@ -503,7 +504,9 @@ class SnowballingNestedSampler:
                 if kind == 'old':
                     node, rootid = c
                     main_iterator.passing_node(rootid, node, rootids, headL)
-                    row, t = node.id, rootid
+                    # the store row of this death is the child created
+                    # when the node died
+                    row, t = node.children[-1].id, rootid
                 else:
                     t, value, row, walkend = c
                     dead_node = self.thread_nodes[t]
@@ -511,7 +514,8 @@ class SnowballingNestedSampler:
                     dead_node.children.append(child)
                     self.thread_nodes[t] = child
                     self.chain_nodes.append((child, int(t)))
-                    self._rotation_new_nodes.append((child, int(t)))
+                    # the dead point enters the re-walk set at its death
+                    self._rotation_new_nodes.append((dead_node, int(t)))
                     main_iterator.passing_node(int(t), dead_node, rootids,
                                                headL)
                 x = -main_iterator.logVolremaining
@@ -748,6 +752,11 @@ class SnowballingNestedSampler:
                 self.root = TreeNode(value=-np.inf, id=-1)
                 self.thread_nodes = []
                 self.chain_nodes = []
+                # the re-walk set: every stored dead point's node (all
+                # thread nodes except the current thread ends)
+                self.previous_nodes = []
+                self._rotation_new_nodes = []
+                self._prev_ptr = 0
                 data = self.state.store.read_all()
                 d = self.x_dim
                 for t in range(self.K):
@@ -762,13 +771,19 @@ class SnowballingNestedSampler:
                         self.root.children.append(head_node)
                         self.chain_nodes.append((head_node, t))
                         prev = head_node
+                        dead_nodes = [head_node]
                         for r in rows_t:
                             node = TreeNode(value=float(data[r, 1]),
                                             id=int(r))
                             prev.children.append(node)
                             self.chain_nodes.append((node, t))
+                            dead_nodes.append(node)
                             prev = node
                         self.thread_nodes.append(prev)
+                        # all stored cells except the last are dead
+                        # points whose nodes enter the re-walk set
+                        self.previous_nodes.extend(
+                            (n, t) for n in dead_nodes[:-1])
                     else:
                         # a thread without dead points: its head is the
                         # stored end
@@ -776,6 +791,7 @@ class SnowballingNestedSampler:
                         self.root.children.append(node)
                         self.thread_nodes.append(node)
                         self.chain_nodes.append((node, t))
+                self.previous_nodes.sort(key=lambda c: c[0].value)
                 region = self._make_region(heads_u)
                 self.state.set_region(region)
                 self.state.stepsampler = self.stepsampler
