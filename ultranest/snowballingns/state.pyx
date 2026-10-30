@@ -734,10 +734,13 @@ cdef class SnowballState:
     def check(self, double frac_remain):
         """frac_remain termination criterion on the custom integrator's
         incrementally maintained values (only meaningful with
-        ``integrate=True``)."""
+        ``integrate=True``): does not fire until the live point remainder
+        integral drops below frac_remain times the total lnZ error."""
         self.Lmax = float(np.max(self._headL))
-        return bool((self.Lmax + self.logVrem) - self.logZ
-                    < log(frac_remain))
+        logzerr = sqrt(max(self.h, 0.0) / self.K)
+        return bool(logzerr > 0
+                    and (self.Lmax + self.logVrem) - self.logZ
+                    < log(frac_remain * logzerr))
 
     def get_records(self):
         """The custom integrator's released dead points of the latest

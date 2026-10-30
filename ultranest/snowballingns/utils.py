@@ -57,7 +57,8 @@ class RotationRecordStore:
             rotation_records.append(records)
             results.append(dict(logz=float(g.attrs['logz']),
                                 logzerr=float(g.attrs['logzerr']),
-                                total=int(g.attrs['total'])))
+                                total=int(g.attrs['total']),
+                                K=int(g.attrs.get('K', 0))))
         return rotation_records, results
 
     def close(self):
@@ -221,8 +222,8 @@ def segment_stats(records, nsegments, nlive):
 
 def plot_panels(rotation_records, results, nsegments, outdir, title,
                 analytic=np.nan, gm_history=None, nlive_per_rotation=None):
-    """Panel figure: lnL-vs-lnX trajectories, the walk length (nsteps)
-    vs -lnX, the per-segment U test, the per-segment mean RJD (one line
+    """Panel figure: lnL-vs-lnX trajectories, the live points (nlive) per
+    rotation, the per-segment U test, the per-segment mean RJD (one line
     per rotation), the lnX drift, the current Gompertz fits per segment
     (dataset+curve in one color per segment), and lnZ per rotation
     iteration. Writes <outdir>/snowballingns_panels.png."""
@@ -238,8 +239,6 @@ def plot_panels(rotation_records, results, nsegments, outdir, title,
         Ls = np.asarray([r['Lmin'] for r in records])
         axes[0].plot(xs, Ls, '-', color=c, lw=0.8,
                      label='rotation %d' % (j + 1))
-        ns = np.asarray([r['nsteps'] for r in records], dtype=float)
-        axes[1].scatter(xs, ns, s=2, color=c, alpha=0.5, linewidths=0)
         nl = 400 if nlive_per_rotation is None else int(nlive_per_rotation[j])
         segs = segment_stats(records, nsegments, nl)
         xc = [s['x'] for s in segs]
@@ -256,12 +255,22 @@ def plot_panels(rotation_records, results, nsegments, outdir, title,
     axes[0].set_title(title, fontsize=11)
     axes[0].legend(fontsize=8, loc='lower right', framealpha=0.9)
 
+    if nlive_per_rotation is None:
+        nlive_per_rotation = [r.get('K', np.nan) for r in results]
+    nlive_per_rotation = np.asarray(nlive_per_rotation, dtype=float)
+    its = np.arange(1, len(nlive_per_rotation) + 1)
+    axes[1].step(its, nlive_per_rotation, where='post', color='k', lw=1)
+    axes[1].plot(its, nlive_per_rotation, 'o', color='k', ms=4)
     axes[1].set_yscale('log', base=2)
-    axes[1].set_yticks([1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024])
-    axes[1].set_yticklabels([1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024])
-    axes[1].set_ylabel('nsteps (walk length)')
-    axes[1].set_title('walk length vs -lnX (one color per rotation)',
-                      fontsize=11)
+    ticks = sorted(set(nlive_per_rotation[
+        np.isfinite(nlive_per_rotation)].tolist()))
+    if ticks:
+        axes[1].set_yticks(ticks)
+        axes[1].set_yticklabels(['%g' % t for t in ticks], fontsize=8)
+    axes[1].set_ylabel('nlive (K)')
+    axes[1].set_title('live points per rotation', fontsize=11)
+    axes[1].set_xlabel('rotation iteration')
+    axes[1].set_xlim(0.5, max(len(nlive_per_rotation), 1) + 0.5)
 
     axes[2].axhline(0.0, color='k', lw=0.8, ls=':')
     axes[2].set_ylabel('insertion order U test z-score')
@@ -277,7 +286,7 @@ def plot_panels(rotation_records, results, nsegments, outdir, title,
     axes[4].set_title('lnX drift (>0: actual volume lags bookkeeping, '
                       'lnZ biased)', fontsize=11)
     axes[4].set_xlabel('-ln(X) (bookkeeping)')
-    for ax in axes[:5]:
+    for ax in [axes[0]] + list(axes[2:5]):
         ax.set_xlim(0, xmax)
 
     if gm_history is not None:
@@ -420,8 +429,8 @@ def plot_rjd_distributions(rotation_records, nsegments, outdir, title,
 def plot_rotations_panel(rotation_records, results, nsegments, outdir, title,
                          gm_history=None, nlive_per_rotation=None):
     """Alias of :py:func:`plot_panels`: the rotation-convergence
-    diagnostics (lnL-vs-lnX trajectories, walk lengths, U test, RJD,
-    lnX drift, Gompertz fits, lnZ per rotation)."""
+    diagnostics (lnL-vs-lnX trajectories, live points per rotation,
+    U test, RJD, lnX drift, Gompertz fits, lnZ per rotation)."""
     return plot_panels(rotation_records, results, nsegments, outdir, title,
                        gm_history=gm_history,
                        nlive_per_rotation=nlive_per_rotation)

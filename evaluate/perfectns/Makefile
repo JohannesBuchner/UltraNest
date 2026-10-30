@@ -3,19 +3,19 @@
 # Each (problem, dimension) x (integrator, proposal) combination writes
 # its plots and results into
 #
-#     output/<problemname>-<dim>/<integrator>-<proposal>/
+#     output/<problemname>-<dim>/<integrator>-<proposal>-K<K>/
 #
 # and its final output file is results.json in that folder.
 #
 # Usage:
 #     make                          # build the default matrix
-#     make output/banana-10d/snowballingns-quadratic-slice/results.json
-#     make PROBLEMS=funnel DIMS=10 COMBOS="snowballingns-quadratic-slice"
-#     make K=100 MAX_ROTATIONS=3 output/banana-2d/snowballingns-mix/results.json
+#     make output/banana-8d/snowballingns-quadratic-slice-seed1-K400/results.json
+#     make PROBLEMS=funnel DIMS=8 COMBOS="snowballingns-quadratic-slice-seed1"
+#     make K=100 MAX_ROTATIONS=3 output/banana-2d/snowballingns-mix-seed1-K100/results.json
 #     make clean
 
-PROBLEMS ?= banana gauss
-DIMS ?= 2 10
+PROBLEMS ?= banana gauss box funnel hyperpyramid
+DIMS ?= 2 8
 COMBOS ?= ultranest-mlfriends ultranest-de-mix \
           snowballingns-quadratic-slice-seed1 snowballingns-quadratic-slice-seed2 \
           snowballingns-quadratic-slice-seed3 snowballingns-quadratic-slice-seed4 \
@@ -37,7 +37,7 @@ SEED ?= 1
 PYTHON ?= python
 PIPELINE := pipeline.py
 
-COMBINATIONS := $(foreach p,$(PROBLEMS),$(foreach d,$(DIMS),$(foreach c,$(COMBOS),$(p)-$(d)d/$(c))))
+COMBINATIONS := $(foreach p,$(PROBLEMS),$(foreach d,$(DIMS),$(foreach c,$(COMBOS),$(p)-$(d)d/$(c)-K$(K))))
 TARGETS := $(addprefix output/,$(addsuffix /results.json,$(COMBINATIONS)))
 
 .PHONY: all clean
@@ -47,7 +47,7 @@ all: $(TARGETS)
 # one rule per combination: running the pipeline produces the results
 # file and, alongside it, the plots
 define COMBO_RULE
-output/$(1)-$(2)d/$(3)/results.json: $(PIPELINE)
+output/$(1)-$(2)d/$(3)-K$(K)/results.json: $(PIPELINE)
 	$(PYTHON) $(PIPELINE) --problem $(1) --dim $(2) --combo $(3) --outdir output \
 		--nlive $(NLIVE) --K $(K) --P $(P) --nsteps $(NSTEPS) \
 		--frac-remain $(FRAC_REMAIN) --max-rotations $(MAX_ROTATIONS) \

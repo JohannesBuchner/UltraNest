@@ -6,10 +6,11 @@ validation problems
 Runs ONE (problem, dimension) x (integrator, proposal) combination and
 writes the output plots and results into::
 
-    <outdir>/<problemname>-<dim>/<integrator>-<proposal>/
+    <outdir>/<problemname>-<dim>/<integrator>-<proposal>-K<K>/
 
-for example funnel-10d/ultranest-mlfriends/ or gauss-2d/ultranest-de-mix/
-or banana-10d/snowballingns-quadratic-slice/.
+for example funnel-8d/ultranest-mlfriends-K400/ or
+gauss-2d/ultranest-de-mix-K400/ or
+banana-8d/snowballingns-quadratic-slice-seed1-K400/.
 
 The problems come from ultranest.perfectns (gauss, box, funnel, banana,
 hyperpyramid). The integrator-proposal combinations are registered in
@@ -165,7 +166,8 @@ for _seed in (1, 2, 3, 4):
 
 def run_combo(name, problem, problemname, dim, outdir, args):
     """Run one integrator-proposal combination and write its summary."""
-    combo_dir = os.path.join(outdir, '%s-%dd' % (problemname, dim), name)
+    combo_dir = os.path.join(outdir, '%s-%dd' % (problemname, dim),
+                             '%s-K%d' % (name, args.K))
     os.makedirs(combo_dir, exist_ok=True)
     spec = COMBOS[name]
     kwargs = dict(spec['kwargs'])

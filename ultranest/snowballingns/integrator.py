@@ -238,9 +238,10 @@ class SnowballingNestedSampler:
     in threshold order once every live point sits above them (the
     burial gate), which integrates the tree breadth-first.
 
-    Each snowball rotation runs batch advances until the remainder
-    fraction of the evidence drops below ``frac_remain``, then widens K
-    (doubling the threads with fresh prior draws) for the next rotation.
+    Each snowball rotation runs batch advances until the live point
+    remainder integral drops below ``frac_remain`` times the total lnZ
+    error, then widens K (doubling the threads with fresh prior draws)
+    for the next rotation.
     The integral is re-materialized each rotation: the MultiCounter is
     reset and the whole tree re-passed at the new width. Completed dead
     points are written once to a growing HDF5 store; the per-rotation
@@ -418,11 +419,11 @@ class SnowballingNestedSampler:
 
         The termination is the ReactiveNestedSampler-style criterion with
         the global L_max (the highest likelihood ever seen, kept across
-        rotations): L_max times the remaining volume, concentrated in the
-        highest-likelihood live point, drops below frac_remain of the
-        evidence. The region is rebuilt from the thread ends irregularly,
-        based on where the integrator is. Returns the rotation summary
-        dict.
+        rotations): it does not terminate until the live point remainder
+        integral L_max times the remaining volume drops below frac_remain
+        times the total lnZ error. The region is rebuilt from the thread
+        ends irregularly, based on where the integrator is. Returns the
+        rotation summary dict.
         """
         if self.state is None:
             self._setup(seed=1)
@@ -546,7 +547,10 @@ class SnowballingNestedSampler:
                         logvol=main_iterator.logVolremaining,
                         paramnames=self.paramnames))
             logzremain = self.Lmax_global + main_iterator.logVolremaining
-            if (logzremain - main_iterator.logZ < log(frac_remain)
+            logzerr = main_iterator.logZerr_bs
+            if (0 < logzerr < np.inf
+                    and logzremain - main_iterator.logZ
+                    < log(frac_remain * logzerr)
                     and vol_reduced >= min_vol_reduction
                     and nburied >= min_num_iterations):
                 break
@@ -565,8 +569,9 @@ class SnowballingNestedSampler:
                          show_status=True, viz_callback=None):
         """One snowball rotation with the custom integrator: the state
         machine integrates the released dead points with 1/K strips; the
-        termination is frac_remain on its incrementally maintained
-        values. Returns the rotation summary dict."""
+        termination does not fire until the live point remainder integral
+        drops below frac_remain times the total lnZ error. Returns the
+        rotation summary dict."""
         next_update_volume = -self.state.logVrem \
             + update_interval_volume_fraction
         last_status_ncall = self.ncall
@@ -614,7 +619,10 @@ class SnowballingNestedSampler:
                         logvol=-self.state.logVrem,
                         paramnames=self.paramnames))
             logzremain = self.Lmax_global + self.state.logVrem
-            if logzremain - self.state.logZ < log(frac_remain):
+            logzerr = (max(self.state.h, 0.0) / self.K) ** 0.5
+            if (logzerr > 0
+                    and logzremain - self.state.logZ
+                    < log(frac_remain * logzerr)):
                 break
         self._assemble_results_custom()
         lmin = self.state.get_records()[0]
@@ -955,7 +963,7 @@ class SnowballingNestedSampler:
             segs = np.asarray([r['segment'] for r in records])
             rjds = np.asarray([r['rjd'] for r in records])
             gm_history.append(segment_geomeans(rjds, segs, nsegments))
-        nlive = [len(r) for r in rotation_records]
+        nlive = [r['K'] for r in results]
         title = 'snowballingns, dim=%d, K=%d->%d' % (
             self.x_dim, self.num_live_points_base,
             nlive[-1] if nlive else self.K)
