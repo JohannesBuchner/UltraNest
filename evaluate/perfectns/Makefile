@@ -34,7 +34,9 @@ FRAC_REMAIN ?= 0.5
 MAX_ROTATIONS ?= 8
 SEED ?= 1
 
-PYTHON ?= python
+# the in-place built cython extensions match this interpreter; the
+# default `python` (the ml env) cannot import them
+PYTHON ?= /home/user/miniforge3/envs/UltraNest-fix/bin/python
 PIPELINE := pipeline.py
 
 COMBINATIONS := $(foreach p,$(PROBLEMS),$(foreach d,$(DIMS),$(foreach c,$(COMBOS),$(p)-$(d)d/$(c)-K$(K))))
