@@ -64,7 +64,7 @@ def make_problem(name, dim):
     raise ValueError("unknown problem=%s" % name)
 
 
-def run_ultranest(problem, outdir, nlive=400, frac_remain=0.5, seed=1,
+def run_ultranest(problem, outdir, K=400, frac_remain=0.5, seed=1,
                   nsteps=4, proposal='mlfriends', **kw):
     """Run ReactiveNestedSampler with the given region/proposal; writes
     the corner plot and a results summary into outdir."""
@@ -79,7 +79,7 @@ def run_ultranest(problem, outdir, nlive=400, frac_remain=0.5, seed=1,
             nsteps=nsteps,
             generate_direction=generate_mixture_random_direction)
     t0 = time.time()
-    result = sampler.run(min_num_live_points=nlive,
+    result = sampler.run(min_num_live_points=K,
                          frac_remain=frac_remain)
     dt = time.time() - t0
     summary = dict(integrator='ultranest', proposal=proposal,
@@ -87,7 +87,7 @@ def run_ultranest(problem, outdir, nlive=400, frac_remain=0.5, seed=1,
                    logzerr=float(result['logzerr']),
                    niter=int(result['niter']),
                    ncall=int(result['ncall']),
-                   nlive=nlive, wall_time=dt)
+                   nlive=K, wall_time=dt)
     try:
         # runplot/traceplot need the stored-results format (with logvol);
         # the corner plot works with the run() result directly
@@ -173,7 +173,7 @@ def run_combo(name, problem, problemname, dim, outdir, args):
     kwargs = dict(spec['kwargs'])
     # the seed comes from the combo name (e.g. snowballingns-mix-seed3)
     seed = int(name.split('-seed')[1]) if '-seed' in name else args.seed
-    kwargs.update(nlive=args.nlive, K=args.K, P=args.P, nsteps=args.nsteps,
+    kwargs.update(K=args.K, P=args.P, nsteps=args.nsteps,
                   frac_remain=args.frac_remain, seed=seed,
                   max_rotations=args.max_rotations)
     print('=== %s-%d / %s ===' % (problemname, dim, name), flush=True)
@@ -184,7 +184,7 @@ def run_combo(name, problem, problemname, dim, outdir, args):
         summary['analytic_logz'] = float(problem.analytic_lnZ())
     except Exception:
         summary['analytic_logz'] = None
-    summary['args'] = dict(nlive=args.nlive, K=args.K, P=args.P,
+    summary['args'] = dict(K=args.K, P=args.P,
                            nsteps=args.nsteps, frac_remain=args.frac_remain,
                            seed=seed, max_rotations=args.max_rotations)
     with open(os.path.join(combo_dir, 'results.json'), 'w') as f:
@@ -213,7 +213,6 @@ def main():
                              % ', '.join(sorted(COMBOS.keys())))
     parser.add_argument('--outdir', default=os.path.join(
         os.path.dirname(os.path.abspath(__file__)), 'output'))
-    parser.add_argument('--nlive', type=int, default=400)
     parser.add_argument('--K', type=int, default=400)
     parser.add_argument('--P', type=int, default=20)
     parser.add_argument('--nsteps', type=int, default=1)

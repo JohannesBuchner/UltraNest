@@ -26,7 +26,6 @@ COMBOS ?= ultranest-mlfriends ultranest-de-mix \
           snowballingns-custom-mix-seed1 snowballingns-custom-mix-seed2 \
           snowballingns-custom-mix-seed3 snowballingns-custom-mix-seed4
 
-NLIVE ?= 400
 K ?= 400
 P ?= 20
 NSTEPS ?= 1
@@ -51,7 +50,7 @@ all: $(TARGETS)
 define COMBO_RULE
 output/$(1)-$(2)d/$(3)-K$(K)/results.json: $(PIPELINE)
 	$(PYTHON) $(PIPELINE) --problem $(1) --dim $(2) --combo $(3) --outdir output \
-		--nlive $(NLIVE) --K $(K) --P $(P) --nsteps $(NSTEPS) \
+		--K $(K) --P $(P) --nsteps $(NSTEPS) \
 		--frac-remain $(FRAC_REMAIN) --max-rotations $(MAX_ROTATIONS) \
 		--seed $(SEED)
 endef
