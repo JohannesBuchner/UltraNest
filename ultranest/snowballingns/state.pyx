@@ -569,11 +569,8 @@ cdef class SnowballState:
                 for q in range(d):
                     self._buf_u[b, q] = histu[p, histn[p] - 1, q]
                     self._buf_ou[b, q] = srcu[p, q]
-                order = 0
-                for k2 in range(self.K):
-                    if headL[k2] < histL[p, histn[p] - 1]:
-                        order = order + 1
-                self._buf_order[b] = order
+                self._buf_order[b] = <double>np.count_nonzero(
+                    self._headL < histL[p, histn[p] - 1])
                 self._buf_thread[b] = tgt[p]
                 self._buf_row[b] = fill[tgt[p]]
                 self._buf_n = b + 1
@@ -652,6 +649,17 @@ cdef class SnowballState:
         cdef long total = all_lmin.shape[0]
         cdef long s, o, b, store_row
         cdef double L, logwidth, logwt, mm, logZ_new
+        # typed views for the per-cell write-buffer fill
+        cdef f64[:, ::1] wv = self._write_buf
+        cdef f64[::1] blmin = self._buf_lmin
+        cdef f64[::1] bl = self._buf_L
+        cdef f64[::1] bol = self._buf_oL
+        cdef f64[::1] bjump = self._buf_jump
+        cdef i64[::1] border = self._buf_order
+        cdef i64[::1] bthread = self._buf_thread
+        cdef i64[::1] brow = self._buf_row
+        cdef f64[:, ::1] bu = self._buf_u
+        cdef f64[:, ::1] bou = self._buf_ou
         cdef double logZ = self.logZ
         cdef double logVrem = self.logVrem
         cdef double hh = self.h
@@ -677,17 +685,23 @@ cdef class SnowballState:
                 self._old_ptr += 1
             else:
                 b = idxm[o]
+                if self._write_n >= self._write_alloc:
+                    # write buffer full (one release call can bury more
+                    # than WRITE_CHUNK cells at large P): flush to the
+                    # store; the row bookkeeping (store.nrows + _write_n)
+                    # stays correct across the flush
+                    self._flush_store()
                 store_row = self.store.nrows + self._write_n
-                self._write_buf[self._write_n, 0] = self._buf_lmin[b]
-                self._write_buf[self._write_n, 1] = self._buf_L[b]
-                self._write_buf[self._write_n, 2] = self._buf_oL[b]
-                self._write_buf[self._write_n, 3] = self._buf_jump[b]
-                self._write_buf[self._write_n, 4] = <double>self._buf_order[b]
-                self._write_buf[self._write_n, 5] = <double>self._buf_thread[b]
-                self._write_buf[self._write_n, 6] = <double>self._buf_row[b]
+                wv[self._write_n, 0] = blmin[b]
+                wv[self._write_n, 1] = bl[b]
+                wv[self._write_n, 2] = bol[b]
+                wv[self._write_n, 3] = bjump[b]
+                wv[self._write_n, 4] = <double>border[b]
+                wv[self._write_n, 5] = <double>bthread[b]
+                wv[self._write_n, 6] = <double>brow[b]
                 for i in range(d):
-                    self._write_buf[self._write_n, 7 + i] = self._buf_u[b, i]
-                    self._write_buf[self._write_n, 7 + d + i] = self._buf_ou[b, i]
+                    wv[self._write_n, 7 + i] = bu[b, i]
+                    wv[self._write_n, 7 + d + i] = bou[b, i]
                 self._write_n += 1
                 out_threads[s] = self._buf_thread[b]
                 out_values[s] = L

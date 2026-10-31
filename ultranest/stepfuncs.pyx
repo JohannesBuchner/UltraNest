@@ -644,7 +644,7 @@ def generate_quadratic_slice_direction(ui, region, scale=1):
     ----------
     ui: np.array((npoints, ndim), dtype=float)
         starting points of the walks
-    region: MLFriends object
+    region: MLFriends region object
         region around the live points (its live points are used for the
         quadratic fit)
     scale: float
@@ -664,38 +664,68 @@ def generate_quadratic_slice_direction(ui, region, scale=1):
     out = np.zeros((nsamples, ndim))
     if nlive < 5:
         return generate_mixture_random_direction(ui, region, scale=scale)
-    for j in range(nsamples):
-        i0 = int(np.argmin(((us - ui[j].reshape((1, -1))) ** 2).sum(axis=1)))
-        perm = np.random.permutation(nlive)
-        perm = perm[perm != i0][:3]
-        if len(perm) < 3:
-            out[j] = generate_mixture_random_direction(
-                ui[j], region, scale=scale)
-            continue
-        p = us[perm]
-        k = int(np.random.randint(ndim))
-        others = [d2 for d2 in range(ndim) if d2 != k]
-        mu = us.mean(axis=0)
-        svals = p[:, k] - mu[k]
-        V = np.array([np.ones(3), svals, svals ** 2]).T
-        try:
-            coefs = np.linalg.solve(V, p[:, others] - mu[others])
-        except np.linalg.LinAlgError:
-            out[j] = generate_mixture_random_direction(
-                ui[j], region, scale=scale)
-            continue
-        if np.abs(svals - svals.mean()).max() == 0:
-            out[j] = generate_mixture_random_direction(
-                ui[j], region, scale=scale)
-            continue
-        if np.random.uniform() < 0.5:
-            # chord of the quadratic centerline q_d over the leading
-            # coordinate range: follows the ridge
-            ds = svals.max() - svals.min()
-            out[j, k] = ds
-            # q_d(s_max) - q_d(s_min) = (c1_d + c2_d * (s_max + s_min)) * ds
-            out[j, others] = (coefs[1, :] + coefs[2, :]
-                              * (svals.max() + svals.min())) * ds
-        else:
-            out[j] = np.random.normal(size=ndim)
+    # region centre (the same for every walker)
+    mu = us.mean(axis=0)
+    # nearest region point for each walker (excluded from the fit
+    # picks), from the expanded squared distance, chunked over walkers
+    us_sq = (us * us).sum(axis=1)
+    i0 = np.empty(nsamples, dtype=np.intp)
+    chunk = max(1, 2000000 // nlive)
+    for lo in range(0, nsamples, chunk):
+        hi = min(nsamples, lo + chunk)
+        d2 = us_sq - 2.0 * (ui[lo:hi] @ us.T) \
+            + (ui[lo:hi] * ui[lo:hi]).sum(axis=1)[:, None]
+        i0[lo:hi] = np.argmin(d2, axis=1)
+    # three distinct random fit points per walker, none equal to i0
+    # (rejection redraw; the kept entries stay uniform among the valid
+    # indices, as with the random permutation used before)
+    picks = np.random.randint(0, nlive, size=(nsamples, 3))
+    for _ in range(100):
+        # duplicates (both entries of an equal pair are redrawn), plus
+        # picks equal to the excluded nearest point
+        eq01 = picks[:, 0] == picks[:, 1]
+        eq02 = picks[:, 0] == picks[:, 2]
+        eq12 = picks[:, 1] == picks[:, 2]
+        bad = (picks == i0[:, None]) | eq01[:, None] | eq02[:, None] \
+            | eq12[:, None]
+        if not bad.any():
+            break
+        picks[bad] = np.random.randint(0, nlive, size=int(bad.sum()))
+    p = us[picks]                      # (nsamples, 3, ndim)
+    k = np.random.randint(0, ndim, size=nsamples)
+    rows = np.arange(nsamples)
+    svals = p[rows, :, k] - mu[k][:, None]   # (nsamples, 3)
+    # batched quadratic fit through the three points: per walker
+    # V = [[1, s, s^2]] (singular iff two s values coincide)
+    V = np.stack([np.ones((nsamples, 3)), svals, svals ** 2], axis=2)
+    det = (svals[:, 1] - svals[:, 0]) * (svals[:, 2] - svals[:, 0]) \
+        * (svals[:, 2] - svals[:, 1])
+    ok = det != 0
+    coefs = np.zeros((nsamples, 3, ndim))
+    if ok.any():
+        coefs[ok] = np.linalg.solve(V[ok], p[ok] - mu)
+    # walker-specific column indices excluding the leading coordinate k
+    cols = np.arange(ndim - 1)[None, :] \
+        + (np.arange(ndim - 1)[None, :] >= k[:, None])
+    use_chord = ok & (np.random.uniform(size=nsamples) < 0.5)
+    ds = svals.max(axis=1) - svals.min(axis=1)
+    ssum = svals.max(axis=1) + svals.min(axis=1)
+    # chord values at the non-leading columns, excluding the walker's
+    # leading coordinate k
+    c1 = np.take_along_axis(coefs[:, 1, :], cols, axis=1)
+    c2 = np.take_along_axis(coefs[:, 2, :], cols, axis=1)
+    others_val = (c1 + c2 * ssum[:, None]) * ds[:, None]
+    sel = np.nonzero(use_chord)[0]
+    out[sel, k[sel]] = ds[sel]
+    out[sel[:, None], cols[sel]] = others_val[sel]
+    # the remaining walkers: random Gaussian direction, or the
+    # differential-evolution mixture for the degenerate fits
+    use_gauss = ok & ~use_chord
+    sel = np.nonzero(use_gauss)[0]
+    if len(sel):
+        out[sel] = np.random.normal(size=(len(sel), ndim))
+    sel = np.nonzero(~ok)[0]
+    if len(sel):
+        out[sel] = generate_mixture_random_direction(
+            ui[sel], region, scale=1.0)
     return out * scale

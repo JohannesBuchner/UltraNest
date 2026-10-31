@@ -265,7 +265,10 @@ class SnowballingNestedSampler:
         number of threads advanced per batch advance; default: half the
         initial number of live points, capped at 100 (larger P
         vectorizes the proposals better; benchmarked 2.9x faster than
-        P=20 on banana-2d with K=400)
+        P=20 on banana-2d with K=400). At K=10000 the measured optimum
+        is P~250-500, ~20% faster than P=100 on gauss-50d/banana-20d
+        (below the 30% adoption threshold; sweep in
+        evaluate/perfectns/benchmarks/)
     region_class: class
         region class built and updated from the live points
         (default: RobustEllipsoidRegion without bootstrapping; the
@@ -389,6 +392,9 @@ class SnowballingNestedSampler:
     def _setup(self, seed):
         """Draw the prior thread heads, build the tree and the state
         machine."""
+        # the prior draws and the vectorized direction proposals use the
+        # global numpy generator; seed it so runs are reproducible
+        np.random.seed(seed)
         self.K = self.num_live_points_base
         u, p, logl = self._prior_draw(self.K, seed)
         self.state = SnowballState(self.K, P=min(self.P, self.K), d=self.x_dim,
@@ -423,13 +429,16 @@ class SnowballingNestedSampler:
     def run_iter(self, frac_remain=0.5, update_interval_ncall=None,
                  update_interval_volume_fraction=0.2, show_status=True,
                  viz_callback=None, min_vol_reduction=1.0,
-                 min_num_iterations=None):
+                 min_num_iterations=None, max_batches=None, max_dead=None):
         """Run one snowball rotation: a new MultiCounter is created and
         gradually filled as the integrator walks through the entire new
         width, including the new and the earlier columns: the earlier
         rotations' dead points are inserted into the integration at their
         threshold positions, merged with the newly released dead points
         in threshold order, once every live point sits above them.
+
+        max_batches, max_dead: optional benchmark caps on the custom
+        integrator path (batch advances / released dead points).
 
         Alongside the main integrator, K fold integrators (one per
         sequence) integrate their single sequence as a 1-live-point run;
@@ -455,7 +464,8 @@ class SnowballingNestedSampler:
             return self._run_iter_custom(
                 frac_remain=frac_remain,
                 update_interval_volume_fraction=update_interval_volume_fraction,
-                show_status=show_status, viz_callback=viz_callback)
+                show_status=show_status, viz_callback=viz_callback,
+                max_batches=max_batches, max_dead=max_dead)
         d = self.x_dim
         main_iterator = MultiCounter(
             nroots=self.K, nbootstraps=0, random=False,
@@ -616,15 +626,23 @@ class SnowballingNestedSampler:
 
     def _run_iter_custom(self, frac_remain=0.5,
                          update_interval_volume_fraction=0.2,
-                         show_status=True, viz_callback=None):
+                         show_status=True, viz_callback=None,
+                         max_batches=None, max_dead=None):
         """One snowball rotation with the custom integrator: the state
         machine integrates the released dead points with 1/K strips; the
         termination does not fire until the live point remainder integral
         drops below frac_remain times the total lnZ error. Returns the
-        rotation summary dict."""
+        rotation summary dict.
+
+        max_batches, max_dead: optional benchmarks caps -- stop after
+        that many batch advances / released dead points, whichever comes
+        first (the rotation is cut short before its termination
+        criterion fires)."""
         next_update_volume = -self.state.logVrem \
             + update_interval_volume_fraction
         last_status_ncall = self.ncall
+        nbatches = 0
+        ndeaths = 0
         # the earlier rotations' dead points inserted gradually
         self.previous_nodes.extend(self._rotation_new_nodes)
         self.previous_nodes.sort(key=lambda c: c[0].value)
@@ -644,7 +662,10 @@ class SnowballingNestedSampler:
                                   dtype=float).reshape(-1)
                 self.state.receive(Lnew)
                 self.ncall += self.state.P
-            self.state.release()
+            released = self.state.release()
+            nbatches += 1
+            ndeaths += len(released[0])
+            del released
             _, headL = self.state.get_heads()
             # the global L_max: the highest likelihood ever seen
             self.Lmax_global = max(self.Lmax_global, float(np.max(headL)))
@@ -673,6 +694,10 @@ class SnowballingNestedSampler:
             if (logzerr > 0
                     and logzremain - self.state.logZ
                     < log(frac_remain * logzerr)):
+                break
+            if max_batches is not None and nbatches >= max_batches:
+                break
+            if max_dead is not None and ndeaths >= max_dead:
                 break
         self._assemble_results_custom()
         lmin = self.state.get_records()[0]
@@ -776,7 +801,7 @@ class SnowballingNestedSampler:
 
     def run(self, frac_remain=0.5, max_rotations=8, seed=1,
             update_interval_ncall=None, show_status=True, viz_callback=None,
-            resume=True):
+            resume=True, max_batches=None, max_dead=None):
         """Run snowball rotations with widening until max_rotations or
         the Gompertz looping criterion.
 
@@ -784,6 +809,10 @@ class SnowballingNestedSampler:
         the thread ends and the tree are rebuilt from the stored heads
         and the point store, and the run continues with the next
         rotation.
+
+        max_batches, max_dead: optional benchmark caps applied per
+        rotation (batch advances / released dead points), cutting each
+        rotation short before its termination criterion fires.
         """
         import h5py
         self._t_start = time.time()
@@ -860,11 +889,30 @@ class SnowballingNestedSampler:
                       % (nrot, self.K), flush=True)
         if not resumed:
             self._setup(seed)
+        if resumed and start_rotation > max_rotations:
+            # all rotations already stored: report the last stored
+            # rotation instead of running an empty loop
+            import h5py
+            with h5py.File(self.records_path, 'r') as f:
+                last = f[keys[-1]]
+                attrs = dict(last.attrs)
+            self.results = dict(
+                logz=float(attrs['logz']),
+                logzerr=float(attrs['logzerr']),
+                logz_bs=float('nan'),
+                logzerr_bs=float(attrs['logzerr']),
+                H=float('nan'), samples=None, weighted_samples=None,
+                weights=None, logweights=None, logvol=None,
+                paramnames=self.paramnames,
+                niter=int(attrs['total']), ncall=self.ncall,
+                posterior=None,
+                rotation_summaries=list(self.rotation_summaries))
         for rotation in range(start_rotation, max_rotations + 1):
             summary = self.run_iter(
                 frac_remain=frac_remain,
                 update_interval_ncall=update_interval_ncall,
-                show_status=show_status, viz_callback=viz_callback)
+                show_status=show_status, viz_callback=viz_callback,
+                max_batches=max_batches, max_dead=max_dead)
             self._store_rotation_records(summary)
             print('rotation %d: K=%d, %d buried cells, lnZ = %.4f +- %.4f'
                   % (rotation, self.K, summary['nburied'],

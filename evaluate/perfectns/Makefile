@@ -57,3 +57,17 @@ $(foreach p,$(PROBLEMS),$(foreach d,$(DIMS),$(foreach c,$(COMBOS),$(eval $(call 
 
 clean:
 	rm -rf output
+
+# speed benchmark of the sampling hot path (gauss-50d and banana-20d,
+# K=10000, first rotation capped at 10000 batch advances / 30000 dead
+# points); results into benchmarks/benchmark_speed-*.json
+.PHONY: benchmark
+benchmark:
+	$(PYTHON) benchmark_speed.py --problem gauss --dim 50 \
+		--P 100 --legacy-direction --outdir benchmarks
+	$(PYTHON) benchmark_speed.py --problem gauss --dim 50 \
+		--P 100 --outdir benchmarks
+	$(PYTHON) benchmark_speed.py --problem banana --dim 20 \
+		--P 100 --legacy-direction --outdir benchmarks
+	$(PYTHON) benchmark_speed.py --problem banana --dim 20 \
+		--P 100 --outdir benchmarks
