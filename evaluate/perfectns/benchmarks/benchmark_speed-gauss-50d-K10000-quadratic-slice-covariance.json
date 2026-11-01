@@ -1,0 +1,59 @@
+{
+ "problem": "gauss",
+ "dim": 50,
+ "K": 10000,
+ "proposal": "quadratic-slice",
+ "region": "covariance",
+ "max_batches": 10000,
+ "max_dead": 30000,
+ "runs": [
+  {
+   "P": 100,
+   "K": 10000,
+   "seed": 1,
+   "wall_time": 5.134638071060181,
+   "nburied": 30000,
+   "ncall": 348500,
+   "proposal": "quadratic-slice",
+   "region": "covariance",
+   "logz": -1673.6469898995754,
+   "logzerr": 0.029064816880980587,
+   "evals_per_s": 67872.3592932896
+  },
+  {
+   "P": 100,
+   "K": 10000,
+   "seed": 2,
+   "wall_time": 4.9302897453308105,
+   "nburied": 30081,
+   "ncall": 346100,
+   "proposal": "quadratic-slice",
+   "region": "covariance",
+   "logz": -972.3318403435542,
+   "logzerr": 0.02887647881113447,
+   "evals_per_s": 70198.71404672942
+  },
+  {
+   "P": 100,
+   "K": 10000,
+   "seed": 3,
+   "wall_time": 4.730471134185791,
+   "nburied": 30000,
+   "ncall": 352000,
+   "proposal": "quadratic-slice",
+   "region": "covariance",
+   "logz": -1063.2067665087657,
+   "logzerr": 0.028443819947158912,
+   "evals_per_s": 74411.1928844031
+  }
+ ],
+ "summary": [
+  {
+   "P": 100,
+   "wall_time_median": 4.9302897453308105,
+   "nburied": 30000,
+   "evals_per_s": 70198.71404672942,
+   "speedup_vs_first": 1.0
+  }
+ ]
+}

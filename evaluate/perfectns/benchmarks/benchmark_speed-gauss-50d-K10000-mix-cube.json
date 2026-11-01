@@ -1,0 +1,59 @@
+{
+ "problem": "gauss",
+ "dim": 50,
+ "K": 10000,
+ "proposal": "mix",
+ "region": "cube",
+ "max_batches": 10000,
+ "max_dead": 30000,
+ "runs": [
+  {
+   "P": 100,
+   "K": 10000,
+   "seed": 1,
+   "wall_time": 2.805445909500122,
+   "nburied": 30000,
+   "ncall": 403400,
+   "proposal": "mix",
+   "region": "cube",
+   "logz": -1661.8752064127395,
+   "logzerr": 0.02861837287663706,
+   "evals_per_s": 143791.7582491827
+  },
+  {
+   "P": 100,
+   "K": 10000,
+   "seed": 2,
+   "wall_time": 2.744621753692627,
+   "nburied": 30000,
+   "ncall": 408200,
+   "proposal": "mix",
+   "region": "cube",
+   "logz": -1095.9380395384906,
+   "logzerr": 0.0282701096880731,
+   "evals_per_s": 148727.23334310303
+  },
+  {
+   "P": 100,
+   "K": 10000,
+   "seed": 3,
+   "wall_time": 2.6954493522644043,
+   "nburied": 30000,
+   "ncall": 397400,
+   "proposal": "mix",
+   "region": "cube",
+   "logz": -1147.150448421579,
+   "logzerr": 0.028334694881414265,
+   "evals_per_s": 147433.67359737275
+  }
+ ],
+ "summary": [
+  {
+   "P": 100,
+   "wall_time_median": 2.744621753692627,
+   "nburied": 30000,
+   "evals_per_s": 147433.67359737275,
+   "speedup_vs_first": 1.0
+  }
+ ]
+}

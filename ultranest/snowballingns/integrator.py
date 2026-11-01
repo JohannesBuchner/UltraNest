@@ -17,16 +17,15 @@ import time
 import numpy as np
 from numpy import exp, log, logaddexp
 
-from ultranest.mlfriends import (LocalAffineLayer, RobustEllipsoidRegion,
-                                 ScalingLayer)
+from ultranest.mlfriends import LocalAffineLayer, ScalingLayer
 from ultranest.netiter import MultiCounter
 from ultranest.utils import resample_equal
 
 from .state import SnowballState
-from .utils import (RotationRecordStore, binned_rjd, gompertz_decision,
-                    lmin_bin_edges, make_region, plot_panels,
-                    plot_rjd_distributions, plot_rotations_panel,
-                    segment_geomeans, subsample)
+from .utils import (CubeRegion, CovarianceRegion, RotationRecordStore,
+                    binned_rjd, gompertz_decision, lmin_bin_edges,
+                    make_region, plot_panels, plot_rjd_distributions,
+                    plot_rotations_panel, segment_geomeans, subsample)
 from ultranest.netiter import TreeNode
 
 
@@ -270,11 +269,15 @@ class SnowballingNestedSampler:
         (below the 30% adoption threshold; sweep in
         evaluate/perfectns/benchmarks/)
     region_class: class
-        region class built and updated from the live points
-        (default: RobustEllipsoidRegion without bootstrapping; the
-        ellipsoid axes are only used by some proposals as a stiff axis
-        guess, so it is updated imperfectly and irregularly, based on
-        where the integrator is, to save compute time)
+        region class built from the live points (default:
+        :py:class:`CovarianceRegion`, which only determines the
+        covariance of the live points -- no MLFriends, no
+        bootstrapping). For step samplers that do not use the region
+        axes, :py:class:`CubeRegion` (a no-op returning the unit cube
+        axes) is allowed. RobustEllipsoidRegion (MLFriends machinery)
+        can be passed for the ellipsoid axes as a stiff axis guess;
+        they are updated imperfectly and irregularly, based on where
+        the integrator is, to save compute time
     stepsampler: function
         vectorized direction proposal ``direction(u, region, scale=1)
         -> w`` from ultranest.stepfuncs (e.g.
@@ -304,7 +307,7 @@ class SnowballingNestedSampler:
 
     def __init__(self, paramnames, loglike, transform=None, vectorized=True,
                  num_live_points_base=400, num_steps=1, P=None,
-                 region_class=RobustEllipsoidRegion, stepsampler=None,
+                 region_class=CovarianceRegion, stepsampler=None,
                  log_dir=None, draw_multiple=False,
                  integrator='multicounter'):
         if integrator not in ('multicounter', 'custom'):
@@ -382,6 +385,10 @@ class SnowballingNestedSampler:
 
         The ellipsoid axes are only used by some proposals as a stiff
         axis guess, so this is updated imperfectly and irregularly."""
+        if self.region_class in (CubeRegion, CovarianceRegion):
+            # the very simple region classes determine the axes
+            # themselves from the live points
+            return self.region_class(us)
         d = self.x_dim
         layer = LocalAffineLayer() if d > 1 else ScalingLayer()
         layer.optimize(us, us)

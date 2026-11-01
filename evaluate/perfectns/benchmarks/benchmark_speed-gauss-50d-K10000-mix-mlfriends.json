@@ -1,0 +1,59 @@
+{
+ "problem": "gauss",
+ "dim": 50,
+ "K": 10000,
+ "proposal": "mix",
+ "region": "mlfriends",
+ "max_batches": 10000,
+ "max_dead": 30000,
+ "runs": [
+  {
+   "P": 100,
+   "K": 10000,
+   "seed": 1,
+   "wall_time": 2.893235206604004,
+   "nburied": 30043,
+   "ncall": 340000,
+   "proposal": "mix",
+   "region": "mlfriends",
+   "logz": -1122.178859175351,
+   "logzerr": 0.02890509822008161,
+   "evals_per_s": 117515.50624848167
+  },
+  {
+   "P": 100,
+   "K": 10000,
+   "seed": 2,
+   "wall_time": 3.3592543601989746,
+   "nburied": 30100,
+   "ncall": 331500,
+   "proposal": "mix",
+   "region": "mlfriends",
+   "logz": -1288.896381428218,
+   "logzerr": 0.02880631889676777,
+   "evals_per_s": 98682.61359653773
+  },
+  {
+   "P": 100,
+   "K": 10000,
+   "seed": 3,
+   "wall_time": 3.406506299972534,
+   "nburied": 30050,
+   "ncall": 337300,
+   "proposal": "mix",
+   "region": "mlfriends",
+   "logz": -1259.5704828478465,
+   "logzerr": 0.028286362214843454,
+   "evals_per_s": 99016.40281796032
+  }
+ ],
+ "summary": [
+  {
+   "P": 100,
+   "wall_time_median": 3.3592543601989746,
+   "nburied": 30050,
+   "evals_per_s": 99016.40281796032,
+   "speedup_vs_first": 1.0
+  }
+ ]
+}

@@ -19,6 +19,7 @@ Usage::
     python benchmark_speed.py --problem gauss --dim 50 \
         --P 100 250 500 1000 2000
     python benchmark_speed.py --problem banana --dim 20 --P 100 \
+        --proposal mix --region covariance \
         --profile --profile-out /tmp/prof.out
 """
 import argparse
@@ -50,9 +51,15 @@ def make_problem(name, dim):
 
 
 def run_once(problem, K, P, seed, max_batches, max_dead, profile=None,
-             tmpdir=None, legacy_direction=False):
+             tmpdir=None, legacy_direction=False, proposal='quadratic-slice',
+             region='mlfriends'):
     """One capped first-rotation run; returns the timing summary."""
     from ultranest.snowballingns.integrator import SnowballingNestedSampler
+    from ultranest.snowballingns.utils import CubeRegion, CovarianceRegion
+    from ultranest.mlfriends import RobustEllipsoidRegion
+    region_class = {'mlfriends': RobustEllipsoidRegion,
+                    'covariance': CovarianceRegion,
+                    'cube': CubeRegion}[region]
     if legacy_direction:
         # the per-walker-loop direction generator as it was before the
         # vectorization (for the baseline)
@@ -104,10 +111,15 @@ def run_once(problem, K, P, seed, max_batches, max_dead, profile=None,
                     out[j] = np.random.normal(size=ndim)
             return out * scale
         stepfuncs.generate_quadratic_slice_direction = legacy_quadratic
+    if proposal == 'mix':
+        from ultranest.stepfuncs import generate_mixture_random_direction
+        stepsampler = generate_mixture_random_direction
+    else:
+        stepsampler = None  # default: quadratic slice direction
     sampler = SnowballingNestedSampler(
         problem.paramnames, problem.loglike, transform=problem.transform,
         vectorized=True, num_live_points_base=K, P=P, num_steps=1,
-        stepsampler=None,  # default: quadratic slice direction
+        stepsampler=stepsampler, region_class=region_class,
         integrator='custom', log_dir=tmpdir)
     t0 = time.time()
     if profile is None:
@@ -127,6 +139,7 @@ def run_once(problem, K, P, seed, max_batches, max_dead, profile=None,
                if sampler.rotation_summaries else 0)
     return dict(P=P, K=K, seed=seed, wall_time=wall_time,
                 nburied=nburied, ncall=sampler.ncall,
+                proposal=proposal, region=region,
                 logz=sampler.results['logz'],
                 logzerr=sampler.results['logzerr'],
                 evals_per_s=sampler.ncall / wall_time
@@ -154,6 +167,13 @@ def main():
     parser.add_argument('--legacy-direction', action='store_true',
                         help='use the per-walker-loop quadratic slice '
                              'direction (the pre-vectorization baseline)')
+    parser.add_argument('--proposal', default='quadratic-slice',
+                        choices=('quadratic-slice', 'mix'),
+                        help='direction proposal (default: quadratic-slice)')
+    parser.add_argument('--region', default='mlfriends',
+                        choices=('mlfriends', 'covariance', 'cube'),
+                        help='region class (default: mlfriends, the '
+                             'pre-simple-region reference)')
     parser.add_argument('--outdir', type=str, default=os.path.join(
         os.path.dirname(os.path.abspath(__file__)), 'benchmarks'))
     args = parser.parse_args()
@@ -171,7 +191,8 @@ def main():
                                         and seed == args.seeds[0]
                                         else None),
                                tmpdir=tmpdir,
-                               legacy_direction=args.legacy_direction)
+                               legacy_direction=args.legacy_direction,
+                               proposal=args.proposal, region=args.region)
             finally:
                 shutil.rmtree(tmpdir, ignore_errors=True)
             rows.append(row)
@@ -182,9 +203,10 @@ def main():
                      row['logzerr']), flush=True)
     # summarize: median wall time per P
     print()
-    print('%s-%dd, K=%d, caps: %d batches / %d dead points'
-          % (args.problem, args.dim, args.K, args.max_batches,
-             args.max_dead))
+    print('%s-%dd, K=%d, %s proposal on the %s region, '
+          'caps: %d batches / %d dead points'
+          % (args.problem, args.dim, args.K, args.proposal, args.region,
+             args.max_batches, args.max_dead))
     print('%-8s %-10s %-10s %-12s' % ('P', 'wall/s', 'dead', 'evals/s'))
     summary = []
     for P in args.P:
@@ -199,10 +221,12 @@ def main():
     for s in summary:
         s['speedup_vs_first'] = base / s['wall_time_median']
     out = dict(problem=args.problem, dim=args.dim, K=args.K,
+               proposal=args.proposal, region=args.region,
                max_batches=args.max_batches, max_dead=args.max_dead,
                runs=rows, summary=summary)
-    fn = os.path.join(args.outdir, 'benchmark_speed-%s-%dd-K%d%s.json'
-                      % (args.problem, args.dim, args.K,
+    fn = os.path.join(args.outdir, 'benchmark_speed-%s-%dd-K%d-%s-%s%s.json'
+                      % (args.problem, args.dim, args.K, args.proposal,
+                         args.region,
                          '-legacy' if args.legacy_direction else ''))
     with open(fn, 'w') as f:
         json.dump(out, f, indent=1)

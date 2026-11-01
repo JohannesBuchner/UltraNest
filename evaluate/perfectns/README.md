@@ -58,7 +58,9 @@ capped at `--max-batches` batch advances and `--max-dead` released dead
 points (whichever comes first) so every configuration performs the same
 integration work. `--legacy-direction` runs the per-walker-loop
 quadratic slice direction (the pre-vectorization implementation) for
-the baseline. Results go into `benchmarks/benchmark_speed-*.json`.
+the baseline. `--proposal quadratic-slice|mix` and
+`--region mlfriends|covariance|cube` select the direction proposal and
+region class. Results go into `benchmarks/benchmark_speed-*.json`.
 
 ```sh
 make benchmark    # or:

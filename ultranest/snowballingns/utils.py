@@ -71,6 +71,53 @@ def subsample(u, maxpts=4000):
     return u
 
 
+class _FixedAxesLayer:
+    """Minimal transform layer with fixed axes. The rows are basis
+    vectors in u-space, as in ultranest.mlfriends.AffineLayer (whose
+    axes are the principal axes of the sample covariance, scaled by the
+    square-root eigenvalues)."""
+
+    def __init__(self, axes):
+        self.axes = axes
+
+
+class CubeRegion:
+    """No-op region for step samplers that do not use the region axes
+    (e.g. the quadratic slice direction): it keeps the live points and
+    returns the unit cube axes."""
+
+    def __init__(self, us):
+        self.u = np.ascontiguousarray(us, dtype=float)
+        self.transformLayer = _FixedAxesLayer(np.eye(self.u.shape[1]))
+
+    def compute_enlargement(self, nbootstraps=0, minvol=1e-30):
+        pass
+
+
+class CovarianceRegion:
+    """Very simple region: the axes are the principal axes of the live
+    points' covariance, scaled by the square-root eigenvalues (no
+    MLFriends, no bootstrapping)."""
+
+    def __init__(self, us):
+        self.u = np.ascontiguousarray(us, dtype=float)
+        d = self.u.shape[1]
+        if len(self.u) < 2 or d == 1:
+            std = np.maximum(self.u.std(axis=0), 1e-300)
+            axes = np.diag(std)
+        else:
+            cov = np.cov(self.u, rowvar=False)
+            eigval, eigvec = np.linalg.eigh(cov)
+            # numerical stability, as in mlfriends.AffineLayer
+            eigvalmin = max(eigval.max() * 1e-40, 1e-300)
+            eigval[eigval < eigvalmin] = eigvalmin
+            axes = (eigvec * eigval ** 0.5).T
+        self.transformLayer = _FixedAxesLayer(axes)
+
+    def compute_enlargement(self, nbootstraps=0, minvol=1e-30):
+        pass
+
+
 def make_region(us, d):
     """MLFriends region around the live points, enlarged."""
     from ultranest.mlfriends import MLFriends, LocalAffineLayer, ScalingLayer
