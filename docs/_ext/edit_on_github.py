@@ -39,6 +39,18 @@ def html_page_context(app, pagename, templatename, context, doctree):
     context['show_on_github_url'] = show_url
     context['edit_on_github_url'] = edit_url
 
+    # make the sphinx_rtd_theme render the "Edit on GitHub" banner in the
+    # breadcrumbs bar (see breadcrumbs.html of the theme)
+    github_user, _, github_repo = app.config.edit_on_github_project.partition('/')
+    context['display_github'] = True
+    context['github_user'] = github_user
+    context['github_repo'] = github_repo
+    context['github_version'] = app.config.edit_on_github_branch
+    conf_py_path = app.config.edit_on_github_src_path
+    if conf_py_path and not conf_py_path.startswith('/'):
+        conf_py_path = '/' + conf_py_path
+    context['conf_py_path'] = conf_py_path
+
 
 def setup(app):
     app.add_config_value('edit_on_github_project', '', True)
