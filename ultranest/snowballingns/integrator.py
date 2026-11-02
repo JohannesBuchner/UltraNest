@@ -28,10 +28,6 @@ from .utils import (CubeRegion, CovarianceRegion, RotationRecordStore,
                     plot_rotations_panel, segment_geomeans, subsample)
 from ultranest.netiter import TreeNode
 
-# the region proposal pool is padded with the most recent dead points
-# to at least this many points (proposal diversity at small K)
-MIN_REGION_POINTS = 400
-
 
 def run_rotation(state, transform, loglike, frac_remain, region):
     """Run batch advances until the burial-gate frac_remain criterion
@@ -275,18 +271,24 @@ class SnowballingNestedSampler:
         cap of 100, which is optimal at K=400; sweeps in
         evaluate/perfectns/benchmarks/)
     region_class: class
-        region class built from the region proposal pool (default:
+        region class built from the live points (default:
         :py:class:`CovarianceRegion`, which only determines the
-        covariance of the pool -- no MLFriends, no bootstrapping). For
-        step samplers that do not use the region axes,
-        :py:class:`CubeRegion` (a no-op returning the unit cube axes)
-        is allowed. RobustEllipsoidRegion (MLFriends machinery) can be
-        passed for the ellipsoid axes as a stiff axis guess; they are
-        updated imperfectly and irregularly, based on where the
-        integrator is, to save compute time. The proposal pool is the
-        live points when K >= 400, padded with the most recent dead
-        points from the store to at least 400 points otherwise
-        (proposal diversity at small K)
+        covariance of the live points -- no MLFriends, no
+        bootstrapping). For step samplers that do not use the region
+        axes, :py:class:`CubeRegion` (a no-op returning the unit cube
+        axes) is allowed. RobustEllipsoidRegion (MLFriends machinery)
+        can be passed for the ellipsoid axes as a stiff axis guess;
+        they are updated imperfectly and irregularly, based on where
+        the integrator is, to save compute time. After construction,
+        the region's point pool (``region.u``) is replaced with the
+        live points padded with the most recent dead points to at
+        least ``min_point_pool`` points: the pool feeds the direction
+        sampling only (proposal diversity at small K), the region
+        geometry is from the live points alone
+    min_point_pool: int
+        minimum size of the direction-sampling point pool (the live
+        points, padded with the most recent dead points when
+        K < min_point_pool); default 400
     stepsampler: function
         vectorized direction proposal ``direction(u, region, scale=1)
         -> w`` from ultranest.stepfuncs (e.g.
@@ -317,7 +319,7 @@ class SnowballingNestedSampler:
     def __init__(self, paramnames, loglike, transform=None, vectorized=True,
                  num_live_points_base=400, num_steps=1, P=None,
                  region_class=CovarianceRegion, stepsampler=None,
-                 log_dir=None, draw_multiple=False,
+                 log_dir=None, draw_multiple=False, min_point_pool=400,
                  integrator='multicounter'):
         if integrator not in ('multicounter', 'custom'):
             raise ValueError("integrator must be 'multicounter' or 'custom'")
@@ -346,6 +348,9 @@ class SnowballingNestedSampler:
                   if P is None else P)
         self.region_class = region_class
         self.draw_multiple = draw_multiple
+        # the direction-sampling point pool (live points, padded with
+        # the most recent dead points) is at least this large
+        self.min_point_pool = max(int(min_point_pool), 1)
         self.folds = []              # per-sequence fold integrators
         self.logzerr_folding = np.nan
         if stepsampler is None:
@@ -435,14 +440,15 @@ class SnowballingNestedSampler:
         self.state.stepsampler = self.stepsampler
         return region
 
-    def _region_points(self):
-        """The region proposal pool: the live points, padded with the
-        most recent dead points from the store to at least
-        MIN_REGION_POINTS points (proposal diversity at small K)."""
-        u_heads, _ = self.state.get_heads()
-        if self.K >= MIN_REGION_POINTS:
+    def _region_points(self, u_heads):
+        """The direction-sampling point pool: the live points, padded
+        with the most recent dead points from the store to at least
+        min_point_pool points (proposal diversity at small K). The pool
+        is only used for the direction sampling; the region geometry is
+        computed from the live points alone."""
+        if self.K >= self.min_point_pool:
             return u_heads
-        ndead_need = MIN_REGION_POINTS - self.K
+        ndead_need = self.min_point_pool - self.K
         nrows = self.state.store.nrows
         if nrows <= 0:
             return u_heads
@@ -453,10 +459,14 @@ class SnowballingNestedSampler:
         return np.vstack([u_dead, np.asarray(u_heads, dtype=float)])
 
     def _update_region(self):
-        """Rebuild the region from the live points, padded with the most
-        recent dead points to at least MIN_REGION_POINTS points (no
-        bootstrapping)."""
-        region = self._make_region(self._region_points())
+        """Rebuild the region from the live points (no bootstrapping),
+        then replace its point pool with the live points padded with the
+        most recent dead points to at least min_point_pool points: the
+        pool feeds the direction sampling only, the region geometry is
+        from the live points alone."""
+        u_heads, _ = self.state.get_heads()
+        region = self._make_region(u_heads)
+        region.u = self._region_points(u_heads)
         self.state.set_region(region)
         return region
 
