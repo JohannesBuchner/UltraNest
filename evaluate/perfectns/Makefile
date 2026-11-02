@@ -26,7 +26,7 @@ COMBOS ?= ultranest-mlfriends ultranest-de-mix \
           snowballingns-custom-mix-seed1 snowballingns-custom-mix-seed2 \
           snowballingns-custom-mix-seed3 snowballingns-custom-mix-seed4
 
-K ?= 400
+K ?= 50
 NSTEPS ?= 1
 FRAC_REMAIN ?= 0.5
 MAX_ROTATIONS ?= 8

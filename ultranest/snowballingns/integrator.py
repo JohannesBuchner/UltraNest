@@ -257,7 +257,9 @@ class SnowballingNestedSampler:
     vectorized: bool
         whether loglike and transform accept arrays of points
     num_live_points_base: int
-        initial number of threads (doubled by widening each rotation)
+        initial number of threads, doubled by widening each rotation;
+        default 50 (the proposal pool is padded with recent dead points
+        to min_point_pool for diversity at small K)
     num_steps: int
         number of step-sampler steps per walk
     P: int
@@ -317,7 +319,7 @@ class SnowballingNestedSampler:
     """
 
     def __init__(self, paramnames, loglike, transform=None, vectorized=True,
-                 num_live_points_base=400, num_steps=1, P=None,
+                 num_live_points_base=50, num_steps=1, P=None,
                  region_class=CovarianceRegion, stepsampler=None,
                  log_dir=None, draw_multiple=False, min_point_pool=400,
                  integrator='multicounter'):
@@ -367,6 +369,7 @@ class SnowballingNestedSampler:
         self.nrotations = 0
         self.Lmax_global = -np.inf
         self.results = None
+        self.converged = None  # set by run(): did the criterion fire?
         self.bin_edges = None
         self.state = None
         self.main_iterator = None
@@ -845,7 +848,8 @@ class SnowballingNestedSampler:
 
     def run(self, frac_remain=0.5, max_rotations=8, seed=1,
             update_interval_ncall=None, show_status=True, viz_callback=None,
-            resume=True, max_batches=None, max_dead=None):
+            resume=True, max_batches=None, max_dead=None,
+            max_ncall=None, max_time=None):
         """Run snowball rotations with widening until max_rotations or
         the Gompertz looping criterion.
 
@@ -857,6 +861,16 @@ class SnowballingNestedSampler:
         max_batches, max_dead: optional benchmark caps applied per
         rotation (batch advances / released dead points), cutting each
         rotation short before its termination criterion fires.
+
+        max_ncall, max_time: optional termination budgets -- at the next
+        rotation boundary, stop once that many model evaluations have
+        been made or that much wall time has passed, even if the
+        convergence criterion has not fired yet.
+
+        Whether the convergence criterion was fulfilled is printed and
+        stored as results['converged']: True if the Gompertz criterion
+        fired, False if the run stopped at max_rotations or a budget
+        first, None for stored results without a recorded status.
         """
         import h5py
         self._t_start = time.time()
@@ -951,6 +965,9 @@ class SnowballingNestedSampler:
                 niter=int(attrs['total']), ncall=self.ncall,
                 posterior=None,
                 rotation_summaries=list(self.rotation_summaries))
+            self.converged = None  # unknown for stored results
+        else:
+            self.converged = False
         for rotation in range(start_rotation, max_rotations + 1):
             summary = self.run_iter(
                 frac_remain=frac_remain,
@@ -963,9 +980,19 @@ class SnowballingNestedSampler:
                      summary['logz'], summary['logzerr']), flush=True)
             if rotation >= 3:
                 if not self._gompertz_continue():
+                    self.converged = True
                     print('Gompertz criterion: no likelihood bin '
                           'predicted to improve; done.', flush=True)
                     break
+            if max_ncall is not None and self.ncall >= max_ncall:
+                print('max_ncall=%d reached before convergence '
+                      '(ncall=%d); stopping.' % (max_ncall, self.ncall),
+                      flush=True)
+                break
+            if max_time is not None and time.time() - self._t_start >= max_time:
+                print('max_time=%gs reached before convergence; '
+                      'stopping.' % max_time, flush=True)
+                break
             # widen: double K with fresh prior draws for the next
             # snowball rotation
             K_old = self.K
@@ -978,6 +1005,9 @@ class SnowballingNestedSampler:
             self.K = 2 * K_old
             self._store_heads(u_add, L_add, K_old)
         self.state.close()
+        self.results['converged'] = self.converged
+        print('convergence criterion fulfilled: %s' % self.converged,
+              flush=True)
         self._write_summary()
         return self.results
 
@@ -1064,7 +1094,9 @@ class SnowballingNestedSampler:
                 logz=self.results['logz'], logzerr=self.results['logzerr'],
                 logz_bs=self.results['logz_bs'],
                 logzerr_bs=self.results['logzerr_bs'],
+                converged=self.results.get('converged'),
                 nrotations=self.nrotations, ncall=self.ncall,
+                wall_time=self.results['wall_time'],
                 rotation_summaries=[
                     dict(rotation=s['rotation'], K=s['K'],
                          logz=s['logz'], logzerr=s['logzerr'],

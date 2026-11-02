@@ -213,7 +213,7 @@ def main():
                              % ', '.join(sorted(COMBOS.keys())))
     parser.add_argument('--outdir', default=os.path.join(
         os.path.dirname(os.path.abspath(__file__)), 'output'))
-    parser.add_argument('--K', type=int, default=400)
+    parser.add_argument('--K', type=int, default=50)
     parser.add_argument('--P', type=int, default=None,
                         help='threads advanced per batch advance '
                              '(default: half the live points, max 100)')
