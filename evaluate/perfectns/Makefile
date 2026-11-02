@@ -29,7 +29,7 @@ COMBOS ?= ultranest-mlfriends ultranest-de-mix \
 K ?= 50
 NSTEPS ?= 1
 FRAC_REMAIN ?= 0.5
-MAX_ROTATIONS ?= 8
+MAX_ROTATIONS ?= 20
 SEED ?= 1
 
 # the in-place built cython extensions match this interpreter; the

@@ -314,7 +314,7 @@ class SnowballingNestedSampler:
             paramnames, loglike, transform=transform, vectorized=True,
             log_dir='chains/my-run')
         sampler.stepsampler = generate_quadratic_slice_direction
-        result = sampler.run(frac_remain=0.5, max_rotations=8)
+        result = sampler.run(frac_remain=0.5, max_rotations=20)
         sampler.plot_rotations()
     """
 
@@ -846,12 +846,13 @@ class SnowballingNestedSampler:
             posterior=dict(mean=mean, stdev=stdev),
             rotation_summaries=list(self.rotation_summaries))
 
-    def run(self, frac_remain=0.5, max_rotations=8, seed=1,
+    def run(self, frac_remain=0.5, max_rotations=20, seed=1,
             update_interval_ncall=None, show_status=True, viz_callback=None,
             resume=True, max_batches=None, max_dead=None,
-            max_ncall=None, max_time=None):
-        """Run snowball rotations with widening until max_rotations or
-        the Gompertz looping criterion.
+            max_ncall=None, max_time=None, max_live_points_steps=100000,
+            gompertz_factor=0.5):
+        """Run snowball rotations with widening until max_rotations, the
+        max_live_points_steps limit, or the Gompertz looping criterion.
 
         Resumes from finished rotations stored in log_dir when present:
         the thread ends and the tree are rebuilt from the stored heads
@@ -866,6 +867,17 @@ class SnowballingNestedSampler:
         rotation boundary, stop once that many model evaluations have
         been made or that much wall time has passed, even if the
         convergence criterion has not fired yet.
+
+        max_live_points_steps: at the next rotation boundary, stop once
+        the number of live points times nsteps reaches this limit (the
+        widening doubles K each rotation; the overshoot is bounded by
+        one rotation). Default 100000.
+
+        gompertz_factor: threshold of the Gompertz looping criterion --
+        keep widening only if the improvement the Gompertz fit predicts
+        for the next rotation exceeds gompertz_factor times the change
+        predicted by the linear trend slope of the per-segment geomean
+        RJD values. Larger values keep looping longer. Default 0.5.
 
         Whether the convergence criterion was fulfilled is printed and
         stored as results['converged']: True if the Gompertz criterion
@@ -979,7 +991,7 @@ class SnowballingNestedSampler:
                   % (rotation, self.K, summary['nburied'],
                      summary['logz'], summary['logzerr']), flush=True)
             if rotation >= 3:
-                if not self._gompertz_continue():
+                if not self._gompertz_continue(factor=gompertz_factor):
                     self.converged = True
                     print('Gompertz criterion: no likelihood bin '
                           'predicted to improve; done.', flush=True)
@@ -992,6 +1004,13 @@ class SnowballingNestedSampler:
             if max_time is not None and time.time() - self._t_start >= max_time:
                 print('max_time=%gs reached before convergence; '
                       'stopping.' % max_time, flush=True)
+                break
+            if max_live_points_steps is not None \
+                    and self.K * self.num_steps >= max_live_points_steps:
+                print('max_live_points_steps=%d reached before convergence '
+                      '(K=%d, nsteps=%d); stopping.'
+                      % (max_live_points_steps, self.K, self.num_steps),
+                      flush=True)
                 break
             # widen: double K with fresh prior draws for the next
             # snowball rotation
@@ -1019,9 +1038,11 @@ class SnowballingNestedSampler:
             self.thread_nodes.append(node)
             self.chain_nodes.append((node, self.K + t))
 
-    def _gompertz_continue(self):
+    def _gompertz_continue(self, factor=0.5):
         """Gompertz looping criterion on the per-segment geomean RJD
-        sequences across rotations."""
+        sequences across rotations: keep looping only if a segment's
+        predicted next improvement exceeds factor times its linear
+        trend slope."""
         if len(self.rotation_summaries) < 3:
             return True
         nsegments = 20
@@ -1033,7 +1054,8 @@ class SnowballingNestedSampler:
             gm_history.append(gm)
         for b in range(nsegments):
             gms = np.asarray([h[b] for h in gm_history], dtype=float)
-            if np.all(np.isfinite(gms)) and gompertz_decision(gms):
+            if np.all(np.isfinite(gms)) and gompertz_decision(gms,
+                                                              factor=factor):
                 return True
         return False
 

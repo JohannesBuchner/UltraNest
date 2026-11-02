@@ -219,7 +219,7 @@ def main():
                              '(default: half the live points, max 100)')
     parser.add_argument('--nsteps', type=int, default=1)
     parser.add_argument('--frac-remain', type=float, default=0.5)
-    parser.add_argument('--max-rotations', type=int, default=8)
+    parser.add_argument('--max-rotations', type=int, default=20)
     parser.add_argument('--seed', type=int, default=1)
     parser.add_argument('--vol-ndraw', type=int, default=2000000)
     parser.add_argument('--vol-nkeep', type=int, default=50001)
