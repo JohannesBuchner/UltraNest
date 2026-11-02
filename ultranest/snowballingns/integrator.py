@@ -291,6 +291,16 @@ class SnowballingNestedSampler:
         minimum size of the direction-sampling point pool (the live
         points, padded with the most recent dead points when
         K < min_point_pool); default 400
+    num_segments: int
+        number of equal-count likelihood-threshold bins for the RJD
+        diagnostics and the Gompertz looping criterion; default 20
+    rjd_region_distance: bool
+        whether the RJD reference distance is the region's own distance
+        attribute -- reused from region building when the region is
+        MLFriends-family (sqrt(maxradiussq)), falling back to the mean
+        pair distance of the live points computed at region build for
+        other region classes -- instead of the per-bin pair distances
+        of the origin points; default False
     stepsampler: function
         vectorized direction proposal ``direction(u, region, scale=1)
         -> w`` from ultranest.stepfuncs (e.g.
@@ -322,6 +332,7 @@ class SnowballingNestedSampler:
                  num_live_points_base=50, num_steps=1, P=None,
                  region_class=CovarianceRegion, stepsampler=None,
                  log_dir=None, draw_multiple=False, min_point_pool=400,
+                 num_segments=20, rjd_region_distance=False,
                  integrator='multicounter'):
         if integrator not in ('multicounter', 'custom'):
             raise ValueError("integrator must be 'multicounter' or 'custom'")
@@ -353,6 +364,15 @@ class SnowballingNestedSampler:
         # the direction-sampling point pool (live points, padded with
         # the most recent dead points) is at least this large
         self.min_point_pool = max(int(min_point_pool), 1)
+        # RJD diagnostics: number of equal-count likelihood-threshold
+        # bins, and whether the reference distance is the region's own
+        # distance attribute (reused from region building when it is
+        # MLFriends-family, falling back to the mean pair distance of
+        # the live points computed at region build) instead of the
+        # per-bin pair distances of the origin points
+        self.num_segments = max(int(num_segments), 1)
+        self.rjd_region_distance = bool(rjd_region_distance)
+        self._rjd_ref_distance = None
         self.folds = []              # per-sequence fold integrators
         self.logzerr_folding = np.nan
         if stepsampler is None:
@@ -439,6 +459,7 @@ class SnowballingNestedSampler:
         self._rotation_new_nodes = []
         self._prev_ptr = 0
         region = self._make_region(u)
+        self._rjd_ref_distance = self._rjd_reference_distance(region, u)
         self.state.set_region(region)
         self.state.stepsampler = self.stepsampler
         return region
@@ -461,6 +482,23 @@ class SnowballingNestedSampler:
         u_dead = np.asarray(data[:, 7:7 + d], dtype=float)
         return np.vstack([u_dead, np.asarray(u_heads, dtype=float)])
 
+    def _rjd_reference_distance(self, region, u_heads):
+        """The reference distance for the RJD diagnostics: the region's
+        own distance attribute when it has one (sqrt(maxradiussq) for
+        MLFriends-family regions, reused from region building), otherwise
+        the mean pair distance of the live points computed here."""
+        maxradiussq = getattr(region, 'maxradiussq', None)
+        if maxradiussq is not None and maxradiussq > 0:
+            from math import sqrt
+            return float(sqrt(maxradiussq))
+        from scipy.spatial.distance import pdist
+        pts = np.asarray(u_heads, dtype=float)
+        if len(pts) > 800:
+            pts = pts[np.random.randint(0, len(pts), size=800)]
+        if len(pts) < 2:
+            return None
+        return float(pdist(pts).mean())
+
     def _update_region(self):
         """Rebuild the region from the live points (no bootstrapping),
         then replace its point pool with the live points padded with the
@@ -470,6 +508,7 @@ class SnowballingNestedSampler:
         u_heads, _ = self.state.get_heads()
         region = self._make_region(u_heads)
         region.u = self._region_points(u_heads)
+        self._rjd_ref_distance = self._rjd_reference_distance(region, u_heads)
         self.state.set_region(region)
         return region
 
@@ -1045,7 +1084,7 @@ class SnowballingNestedSampler:
         trend slope."""
         if len(self.rotation_summaries) < 3:
             return True
-        nsegments = 20
+        nsegments = self.num_segments
         gm_history = []
         for summary in self.rotation_summaries:
             gm = summary.get('segment_geomeans')
@@ -1078,12 +1117,16 @@ class SnowballingNestedSampler:
             order = np.asarray(data[:, 4], dtype=np.int64)
             x = np.asarray([x for r, x, t in self._store_rows], dtype=float)
         if 'bin_edges' not in self.__dict__ or self.bin_edges is None:
-            self.bin_edges = lmin_bin_edges(lmin, 20) if len(lmin) else None
+            self.bin_edges = (lmin_bin_edges(lmin, self.num_segments)
+                              if len(lmin) else None)
         seg = (np.searchsorted(self.bin_edges, lmin)
                if self.bin_edges is not None else np.zeros(len(lmin),
                                                            dtype=int))
-        rjd = binned_rjd(lmin, ou, jump, seg, 20)
-        gm = segment_geomeans(rjd, seg, 20)
+        rjd = binned_rjd(
+            lmin, ou, jump, seg, self.num_segments,
+            ref_distance=(self._rjd_ref_distance
+                          if self.rjd_region_distance else None))
+        gm = segment_geomeans(rjd, seg, self.num_segments)
         summary['segment_geomeans'] = gm
         recstore = RotationRecordStore(self.records_path, mode='a')
         recstore.add_rotation(self.nrotations - 1,

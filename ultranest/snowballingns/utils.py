@@ -141,15 +141,22 @@ def lmin_bin_edges(lmin_ref, nsegments):
     return np.quantile(lmin_ref, np.linspace(0, 1, nsegments + 1))[1:-1]
 
 
-def binned_rjd(lmin, ou, jump, seg, nsegments, maxpts=800):
+def binned_rjd(lmin, ou, jump, seg, nsegments, maxpts=800, ref_distance=None):
     """RJD = raw jump / mean pair distance of the origin points in the
-    same likelihood-threshold bin (the local live-point spacing)."""
+    same likelihood-threshold bin (the local live-point spacing).
+
+    When a region reference distance is given (e.g. the region's own
+    distance attribute, reused from region building), it normalizes all
+    jumps instead and the per-bin pair distances are skipped."""
     from scipy.spatial.distance import pdist
     rjd = np.full(len(jump), np.nan)
     for b in range(nsegments):
         m = seg == b
         n = int(m.sum())
         if n < 5:
+            continue
+        if ref_distance is not None and ref_distance > 0:
+            rjd[m] = jump[m] / ref_distance
             continue
         pts = ou[m]
         if n > maxpts:
