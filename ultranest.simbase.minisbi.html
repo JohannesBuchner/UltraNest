@@ -4,9 +4,10 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest.simbase.minisbi package &mdash; UltraNest 4.6.0 documentation</title>
+  <title>ultranest.simbase.minisbi package &mdash; UltraNest 4.6.3 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/binder.css?v=8d52f20e" />
 
   
     <link rel="shortcut icon" href="_static/icon.ico"/>
@@ -17,7 +18,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=cc8a4273"></script>
+        <script src="_static/documentation_options.js?v=fb72c819"></script>
         <script src="_static/doctools.js?v=9a2dae69"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -42,7 +43,7 @@
               <img src="_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                4.6.0
+                4.6.3
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -98,6 +99,7 @@
           <li class="breadcrumb-item"><a href="ultranest.simbase.html">ultranest.simbase package</a></li>
       <li class="breadcrumb-item active">ultranest.simbase.minisbi package</li>
       <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/JohannesBuchner/UltraNest/blob/master/docs/ultranest.simbase.minisbi.rst" class="fa fa-github"> Edit on GitHub</a>
       </li>
   </ul>
   <hr/>
@@ -386,8 +388,10 @@ truncated logistic.</p>
 <dt class="sig sig-object py" id="ultranest.simbase.minisbi.logistic.kuma_logistic_logpdf_vec">
 <span class="sig-prename descclassname"><span class="pre">ultranest.simbase.minisbi.logistic.</span></span><span class="sig-name descname"><span class="pre">kuma_logistic_logpdf_vec</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u_vec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/simbase/minisbi/logistic.html#kuma_logistic_logpdf_vec"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.simbase.minisbi.logistic.kuma_logistic_logpdf_vec" title="Link to this definition"></a></dt>
 <dd><p>Log-density of the Kumaraswamy-Logistic distribution, summed over dimensions.</p>
-<p>This equals the log Jacobian log|du/dt| needed to correct the
-nested-sampling likelihood when the prior is this distribution.</p>
+<p>This equals the log Jacobian of the transform <code class="docutils literal notranslate"><span class="pre">u</span> <span class="pre">-&gt;</span> <span class="pre">t</span></code>,
+<code class="docutils literal notranslate"><span class="pre">log|dt/du|</span> <span class="pre">=</span> <span class="pre">log</span> <span class="pre">q(u)</span></code>. Subtract it from the nested-sampling
+log-likelihood (and add the log prior density of <code class="docutils literal notranslate"><span class="pre">u</span></code>) when the
+sampler is warped by this distribution.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -484,8 +488,12 @@ physical parameters.</p>
 <dd><p>Compute log-Jacobian.</p>
 <p>This is for the transform <code class="docutils literal notranslate"><span class="pre">t</span> <span class="pre">-&gt;</span> <span class="pre">u</span></code>, equal to the log-density
 of the KLP distribution at <code class="docutils literal notranslate"><span class="pre">u</span> <span class="pre">=</span> <span class="pre">transform(t)</span></code>.</p>
-<p>Add this value to the true log-likelihood when passing to the
-nested sampler so that the sampler correctly targets the posterior.</p>
+<p>Subtract this value from the true log-likelihood when passing to
+the nested sampler so that the sampler correctly targets the
+posterior under the original prior: the warp makes the sampler
+propose from the KLP distribution q(u), so the likelihood has to
+be reweighted by <code class="docutils literal notranslate"><span class="pre">log</span> <span class="pre">prior(u)</span> <span class="pre">-</span> <span class="pre">log</span> <span class="pre">q(u)</span></code>. For a uniform prior
+on the unit cube this is just <code class="docutils literal notranslate"><span class="pre">-log_jacobian(t)</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>t</strong> (<em>np.ndarray</em>) – Nested-sampler unit-cube coordinates, shape <code class="docutils literal notranslate"><span class="pre">(n_params,)</span></code>.</p>

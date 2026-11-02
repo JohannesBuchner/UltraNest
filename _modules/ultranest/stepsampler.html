@@ -3,9 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest.stepsampler &mdash; UltraNest 4.6.0 documentation</title>
+  <title>ultranest.stepsampler &mdash; UltraNest 4.6.3 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/binder.css?v=8d52f20e" />
 
   
     <link rel="shortcut icon" href="../../_static/icon.ico"/>
@@ -16,7 +17,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=cc8a4273"></script>
+        <script src="../../_static/documentation_options.js?v=fb72c819"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -39,7 +40,7 @@
               <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                4.6.0
+                4.6.3
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -1468,6 +1469,175 @@
                     <span class="n">right</span> <span class="o">=</span> <span class="n">u</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span></div>
 </div>
+
+
+
+<div class="viewcode-block" id="QuadraticTriangularSliceSampler">
+<a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.QuadraticTriangularSliceSampler">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">QuadraticTriangularSliceSampler</span><span class="p">(</span><span class="n">SliceSampler</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Slice sampler along volume-preserving triangular maps.</span>
+
+<span class="sd">    The maps are defined by three random live points.</span>
+
+<span class="sd">    Each slice sampling iteration draws three live points (excluding the</span>
+<span class="sd">    current point). Their quadratic curve through the space defines a</span>
+<span class="sd">    triangular map: with the leading coordinate k (chosen uniformly at</span>
+<span class="sd">    random - a large spread does not imply that a coordinate is a good</span>
+<span class="sd">    predictor of the others), every other coordinate d is shifted by the</span>
+<span class="sd">    quadratic centerline q_d through the three points in the (k, d)</span>
+<span class="sd">    projection:</span>
+
+<span class="sd">        y_k = x_k,   y_d = x_d - q_d(x_k)</span>
+
+<span class="sd">    A space curve through three points would not be unique in d &gt;= 3</span>
+<span class="sd">    dimensions; here the curve is the unique quadratic *graph over the</span>
+<span class="sd">    leading coordinate*: each q_d is the unique one-dimensional quadratic</span>
+<span class="sd">    through the three projected points (s_j, p_j_d) with s_j = p_j,k</span>
+<span class="sd">    (three constraints, three coefficients). The polynomial is defined</span>
+<span class="sd">    relative to the mean live point coordinates (centered abscissa and</span>
+<span class="sd">    ordinate) for numerical stability. The map is a single shear -</span>
+<span class="sd">    all shifts depend only on the leading coordinate - so the order of the</span>
+<span class="sd">    other dimensions does not matter, and the leading coordinate is drawn</span>
+<span class="sd">    exchangeably (uniformly at random).</span>
+
+<span class="sd">    The Jacobian of this map is unit-triangular with determinant 1 (the map</span>
+<span class="sd">    is a shear along the curve), and it straightens the curve onto the k-th</span>
+<span class="sd">    axis. A slice sampling step is performed in the transformed space as a</span>
+<span class="sd">    straight line (sampled with the standard uniform slice measure) and</span>
+<span class="sd">    mapped back to u-space, where the path is a line with center shifts:</span>
+
+<span class="sd">        x_k(t) = x_k(0) + t w_k</span>
+<span class="sd">        x_d(t) = x_d(0) + t w_d + q_d(x_k(t)) - q_d(x_k(0))</span>
+
+<span class="sd">    so the likelihood can be evaluated directly in u-space without storing</span>
+<span class="sd">    the transform. Because the map is volume-preserving and sampled</span>
+<span class="sd">    independently of the current point (the three points are exchangeable</span>
+<span class="sd">    and define the map uniquely), the mixture over maps preserves the</span>
+<span class="sd">    target distribution exactly (detailed balance).</span>
+
+<span class="sd">    The slice direction is a mixture: half of the intervals move along the</span>
+<span class="sd">    straightened curve direction (following the ridge), half use a random</span>
+<span class="sd">    Gaussian direction in the transformed space.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_centerline</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">coefs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Evaluate the quadratic centerlines q_d(s) from the coefficients.&quot;&quot;&quot;</span>
+        <span class="n">feats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">s</span> <span class="o">*</span> <span class="n">s</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">coefs</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">feats</span>
+
+<div class="viewcode-block" id="QuadraticTriangularSliceSampler.move">
+<a class="viewcode-back" href="../../ultranest.html#ultranest.stepsampler.QuadraticTriangularSliceSampler.move">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">ndraw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Advance the slice sampling move. see :py:meth:`SliceSampler.move`.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">interval</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">us</span> <span class="o">=</span> <span class="n">region</span><span class="o">.</span><span class="n">u</span>
+            <span class="n">nlive</span><span class="p">,</span> <span class="n">ndim</span> <span class="o">=</span> <span class="n">us</span><span class="o">.</span><span class="n">shape</span>
+            <span class="n">i0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(((</span><span class="n">us</span> <span class="o">-</span> <span class="n">ui</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+            <span class="c1"># three distinct live points, excluding the current point</span>
+            <span class="n">perm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">nlive</span><span class="p">)</span>
+            <span class="n">perm</span> <span class="o">=</span> <span class="n">perm</span><span class="p">[</span><span class="n">perm</span> <span class="o">!=</span> <span class="n">i0</span><span class="p">][:</span><span class="mi">3</span><span class="p">]</span>
+            <span class="n">coefs</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">perm</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="c1"># not enough live points; fall back to a plain line slice</span>
+                <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">)</span>
+                <span class="n">k</span><span class="p">,</span> <span class="n">others</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="p">[]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">p</span> <span class="o">=</span> <span class="n">us</span><span class="p">[</span><span class="n">perm</span><span class="p">]</span>
+                <span class="c1"># leading coordinate: chosen uniformly at random - a large</span>
+                <span class="c1"># spread does not imply that a coordinate is a good predictor</span>
+                <span class="c1"># of the others</span>
+                <span class="n">k</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">ndim</span><span class="p">))</span>
+                <span class="n">others</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndim</span><span class="p">)</span> <span class="k">if</span> <span class="n">d</span> <span class="o">!=</span> <span class="n">k</span><span class="p">]</span>
+                <span class="c1"># polynomial defined relative to the mean live point</span>
+                <span class="c1"># coordinates (centered abscissa and ordinate) for stability</span>
+                <span class="n">mu</span> <span class="o">=</span> <span class="n">us</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">svals</span> <span class="o">=</span> <span class="n">p</span><span class="p">[:,</span> <span class="n">k</span><span class="p">]</span> <span class="o">-</span> <span class="n">mu</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+                <span class="c1"># quadratic centerlines through (s_j, p_j_d), exact fit</span>
+                <span class="n">V</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">svals</span><span class="p">,</span> <span class="n">svals</span> <span class="o">**</span> <span class="mi">2</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">coefs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">p</span><span class="p">[:,</span> <span class="n">others</span><span class="p">]</span> <span class="o">-</span> <span class="n">mu</span><span class="p">[</span><span class="n">others</span><span class="p">])</span>
+                <span class="k">except</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">LinAlgError</span><span class="p">:</span>
+                    <span class="n">coefs</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="n">coefs</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">svals</span> <span class="o">-</span> <span class="n">svals</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="c1"># degenerate (duplicate projections): plain line slice</span>
+                    <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_direction</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">region</span><span class="p">)</span>
+                    <span class="n">k</span><span class="p">,</span> <span class="n">others</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="p">[]</span>
+                    <span class="n">coefs</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">elif</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mf">0.5</span><span class="p">:</span>
+                    <span class="c1"># move along the straightened curve direction</span>
+                    <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">ndim</span><span class="p">)</span>
+                    <span class="n">w</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">svals</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">-</span> <span class="n">svals</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">ndim</span><span class="p">)</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">others</span><span class="p">,</span> <span class="n">coefs</span><span class="p">,</span> <span class="n">mu</span><span class="p">)</span>
+            <span class="n">left</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">scale</span>
+            <span class="n">right</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">found_left</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">found_right</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">u</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">v</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">u</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">interval</span>
+
+        <span class="n">w</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">others</span><span class="p">,</span> <span class="n">coefs</span><span class="p">,</span> <span class="n">mu</span> <span class="o">=</span> <span class="n">v</span>
+
+        <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">([(</span><span class="n">ui</span> <span class="o">+</span> <span class="n">w</span> <span class="o">*</span> <span class="n">left</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="p">(</span><span class="n">ui</span> <span class="o">+</span> <span class="n">w</span> <span class="o">*</span> <span class="n">right</span><span class="p">)[</span><span class="mi">0</span><span class="p">]],</span>
+                     <span class="p">[(</span><span class="n">ui</span> <span class="o">+</span> <span class="n">w</span> <span class="o">*</span> <span class="n">left</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span> <span class="p">(</span><span class="n">ui</span> <span class="o">+</span> <span class="n">w</span> <span class="o">*</span> <span class="n">right</span><span class="p">)[</span><span class="mi">1</span><span class="p">]],</span>
+                     <span class="s1">&#39;:o&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+
+        <span class="c1"># shrink direction if outside</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">found_left</span><span class="p">:</span>
+            <span class="n">xj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_candidate</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">others</span><span class="p">,</span> <span class="n">coefs</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">left</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">region_filter</span> <span class="ow">or</span> <span class="n">inside_region</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">xj</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)),</span> <span class="n">ui</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">xj</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">found_left</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">found_right</span><span class="p">:</span>
+            <span class="n">xj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_candidate</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">others</span><span class="p">,</span> <span class="n">coefs</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">right</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">region_filter</span> <span class="ow">or</span> <span class="n">inside_region</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">xj</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)),</span> <span class="n">ui</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">xj</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">found_right</span> <span class="o">=</span> <span class="kc">True</span>
+
+                <span class="c1"># adjust scale to final slice length</span>
+                <span class="k">if</span> <span class="o">-</span><span class="n">left</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_scale</span> <span class="ow">or</span> <span class="n">right</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_scale</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">next_scale</span> <span class="o">*=</span> <span class="mf">1.1</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">next_scale</span> <span class="o">/=</span> <span class="mf">1.1</span>
+
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">)</span>
+            <span class="n">xj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_candidate</span><span class="p">(</span><span class="n">ui</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">others</span><span class="p">,</span> <span class="n">coefs</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">region_filter</span> <span class="ow">or</span> <span class="n">inside_region</span><span class="p">(</span><span class="n">region</span><span class="p">,</span> <span class="n">xj</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)),</span> <span class="n">ui</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">xj</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">u</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">left</span> <span class="o">=</span> <span class="n">u</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">right</span> <span class="o">=</span> <span class="n">u</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_candidate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ui</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">others</span><span class="p">,</span> <span class="n">coefs</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Candidate point in u-space at slice parameter t.</span>
+
+<span class="sd">        Line in the transformed space with center shifts from the quadratic</span>
+<span class="sd">        centerlines (defined relative to the mean live point coordinates mu).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">xj</span> <span class="o">=</span> <span class="n">ui</span> <span class="o">+</span> <span class="n">w</span> <span class="o">*</span> <span class="n">t</span>
+        <span class="k">if</span> <span class="n">coefs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">sk</span> <span class="o">=</span> <span class="n">ui</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="n">w</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="n">t</span> <span class="o">-</span> <span class="n">mu</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+            <span class="n">s0</span> <span class="o">=</span> <span class="n">ui</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">-</span> <span class="n">mu</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+            <span class="n">shift</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_centerline</span><span class="p">(</span><span class="n">sk</span><span class="p">,</span> <span class="n">coefs</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_centerline</span><span class="p">(</span><span class="n">s0</span><span class="p">,</span> <span class="n">coefs</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">pos</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">others</span><span class="p">):</span>
+                <span class="n">xj</span><span class="p">[</span><span class="n">d</span><span class="p">]</span> <span class="o">+=</span> <span class="n">shift</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">xj</span></div>
 
 
 

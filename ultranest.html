@@ -4,9 +4,10 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest package &mdash; UltraNest 4.6.0 documentation</title>
+  <title>ultranest package &mdash; UltraNest 4.6.3 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/binder.css?v=8d52f20e" />
 
   
     <link rel="shortcut icon" href="_static/icon.ico"/>
@@ -17,7 +18,7 @@
   
         <script src="_static/jquery.js?v=5d32c60e"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="_static/documentation_options.js?v=cc8a4273"></script>
+        <script src="_static/documentation_options.js?v=fb72c819"></script>
         <script src="_static/doctools.js?v=9a2dae69"></script>
         <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -44,7 +45,7 @@
               <img src="_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                4.6.0
+                4.6.3
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -98,6 +99,7 @@
           <li class="breadcrumb-item"><a href="API.html">API</a></li>
       <li class="breadcrumb-item active">ultranest package</li>
       <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/JohannesBuchner/UltraNest/blob/master/docs/ultranest.rst" class="fa fa-github"> Edit on GitHub</a>
       </li>
   </ul>
   <hr/>
@@ -151,9 +153,21 @@ is to run a sequence of nested sampling runs with increasing number of steps,
 and stop when log(Z) converges.</p>
 <p>This class automates this. See the <a class="reference internal" href="#ultranest.calibrator.ReactiveNestedCalibrator.run" title="ultranest.calibrator.ReactiveNestedCalibrator.run"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ReactiveNestedCalibrator.run()</span></code></a>
 for details.</p>
-<section id="usage">
-<h3>Usage<a class="headerlink" href="#usage" title="Link to this heading"></a></h3>
-<p>Usage is designed to be a drop-in replacement for ReactiveNestedSampler.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>param_names</strong> (<em>list</em>) – Names of the parameters.
+Length gives dimensionality of the sampling problem.</p></li>
+<li><p><strong>loglike</strong> (<em>function</em>) – log-likelihood function.</p></li>
+<li><p><strong>transform</strong> (<em>function</em>) – parameter transform from unit cube to physical parameters.</p></li>
+<li><p><strong>**kwargs</strong> (<em>dict</em>) – further arguments passed to ReactiveNestedSampler.
+if <cite>log_dir</cite> is set, then the suffix <cite>-nsteps%d</cite> is added for each
+run, where %d is replaced with the number of steps (2, 4, 8 etc).</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>This is designed to be a drop-in replacement for ReactiveNestedSampler.</p>
 <p>If your code was:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sampler</span> <span class="o">=</span> <span class="n">ReactiveNestedSampler</span><span class="p">(</span><span class="n">my_param_names</span><span class="p">,</span> <span class="n">my_loglike</span><span class="p">,</span> <span class="n">my_transform</span><span class="p">)</span>
 <span class="n">sampler</span><span class="o">.</span><span class="n">stepsampler</span> <span class="o">=</span> <span class="n">SliceSampler</span><span class="p">(</span><span class="n">nsteps</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">generate_direction</span><span class="o">=</span><span class="n">region_oriented_direction</span><span class="p">)</span>
@@ -166,40 +180,12 @@ for details.</p>
 <span class="n">sampler</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">min_num_livepoints</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>
 </pre></div>
 </div>
+<p class="rubric">Notes</p>
 <p>The run() command will print the number of slice sampler steps
 that appear safe for the inference task.</p>
 <p>The initial value for nsteps (e.g. in <cite>SliceSampler(nsteps=…)</cite>)
 is overwritten by this class.</p>
-<p>Initialise nested sampler calibrator.</p>
-<dl class="field-list simple">
-<dt class="field-odd">param param_names<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Names of the parameters.
-Length gives dimensionality of the sampling problem.</p>
-</dd>
-<dt class="field-even">type param_names<span class="colon">:</span></dt>
-<dd class="field-even"><p>list of str</p>
-</dd>
-<dt class="field-odd">param loglike<span class="colon">:</span></dt>
-<dd class="field-odd"><p>log-likelihood function.</p>
-</dd>
-<dt class="field-even">type loglike<span class="colon">:</span></dt>
-<dd class="field-even"><p>function</p>
-</dd>
-<dt class="field-odd">param transform<span class="colon">:</span></dt>
-<dd class="field-odd"><p>parameter transform from unit cube to physical parameters.</p>
-</dd>
-<dt class="field-even">type transform<span class="colon">:</span></dt>
-<dd class="field-even"><p>function</p>
-</dd>
-<dt class="field-odd">param kwargs<span class="colon">:</span></dt>
-<dd class="field-odd"><p>further arguments passed to ReactiveNestedSampler.
-if <cite>log_dir</cite> is set, then the suffix <cite>-nsteps%d</cite> is added for each
-run, where %d is replaced with the number of steps (2, 4, 8 etc).</p>
-</dd>
-<dt class="field-even">type kwargs<span class="colon">:</span></dt>
-<dd class="field-even"><p>dict</p>
-</dd>
-</dl>
+<p>Initialise.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ultranest.calibrator.ReactiveNestedCalibrator.run_iter">
 <span class="sig-name descname"><span class="pre">run_iter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/calibrator.html#ReactiveNestedCalibrator.run_iter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.calibrator.ReactiveNestedCalibrator.run_iter" title="Link to this definition"></a></dt>
@@ -258,7 +244,6 @@ and 2) the consecutive log(Z) error bars must overlap.</p>
 * nsteps-calibration.pdf: evolution of ln(Z) with nsteps</p>
 </dd></dl>
 
-</section>
 </dd></dl>
 
 </section>
@@ -1171,7 +1156,7 @@ To see the interpolation quantiles for each axis, use:</p>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul>
+<dd class="field-even"><p><ul class="simple">
 <li><p><strong>aux_param_names</strong> (<em>list</em>) – new parameter names (<cite>param_names</cite>) plus additional ‘aux_logweight’</p></li>
 <li><p><strong>aux_loglike</strong> (<em>function</em>) – auxiliary loglikelihood function.</p></li>
 <li><p><strong>aux_transform</strong> (<em>function</em>) – auxiliary transform function.
@@ -1179,21 +1164,18 @@ Takes d u-space coordinates, and returns d + 1 p-space parameters.
 The first d return coordinates are identical to what <code class="docutils literal notranslate"><span class="pre">transform</span></code> would return.
 The final coordinate is the log of the correction weight.</p></li>
 <li><p><strong>vectorized</strong> (<em>bool</em>) – whether the returned functions are vectorized</p></li>
-<li><p><em>Usage</em></p></li>
-<li><p><em>——</em></p></li>
-<li><p><em>::</em> –</p>
-<dl class="simple">
-<dt>aux_loglikelihood, aux_transform = get_auxiliary_contbox_parameterization(</dt><dd><p>loglike, transform, auxiliary_usamples)</p>
-</dd>
-</dl>
-<p>aux_sampler = ReactiveNestedSampler(parameters, aux_loglikelihood, transform=aux_transform, derived_param_names=[‘logweight’])
-aux_results = aux_sampler.run()
-posterior_samples = aux_results[‘samples’][:,-1]</p>
-</li>
 </ul>
 </p>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">aux_loglikelihood</span><span class="p">,</span> <span class="n">aux_transform</span> <span class="o">=</span> <span class="n">get_auxiliary_contbox_parameterization</span><span class="p">(</span>
+    <span class="n">loglike</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="n">auxiliary_usamples</span><span class="p">)</span>
+<span class="n">aux_sampler</span> <span class="o">=</span> <span class="n">ReactiveNestedSampler</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="n">aux_loglikelihood</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">aux_transform</span><span class="p">,</span> <span class="n">derived_param_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;logweight&#39;</span><span class="p">])</span>
+<span class="n">aux_results</span> <span class="o">=</span> <span class="n">aux_sampler</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<span class="n">posterior_samples</span> <span class="o">=</span> <span class="n">aux_results</span><span class="p">[</span><span class="s1">&#39;samples&#39;</span><span class="p">][:,</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -4069,6 +4051,15 @@ That point may not have been evaluated yet.</p>
 <li><p><strong>contourpath</strong> (<em>ContourPath</em>) – Use region to reflect. Not used at the moment.</p></li>
 </ul>
 </dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>xl</strong> (<em>array</em>) – coordinate of position i</p></li>
+<li><p><strong>vj</strong> (<em>array</em>) – direction vector of position i</p></li>
+<li><p><strong>Lj</strong> (<em>float</em>) – likelihood at position i, or None if not evaluated</p></li>
+<li><p><strong>advancing_possible</strong> (<em>bool</em>) – whether advancing in that direction (forward or backward) is possible</p></li>
+</ul>
+</p>
+</dd>
 </dl>
 </dd></dl>
 
@@ -5617,6 +5608,177 @@ or an instance of <a class="reference internal" href="#ultranest.stepsampler.Isl
 <dt class="sig sig-object py" id="ultranest.stepsampler.SliceSampler.move">
 <span class="sig-name descname"><span class="pre">move</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ui</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndraw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#SliceSampler.move"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.stepsampler.SliceSampler.move" title="Link to this definition"></a></dt>
 <dd><p>Advance the slice sampling move. see <a class="reference internal" href="#ultranest.stepsampler.StepSampler.move" title="ultranest.stepsampler.StepSampler.move"><code class="xref py py-meth docutils literal notranslate"><span class="pre">StepSampler.move()</span></code></a>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ultranest.stepsampler.QuadraticTriangularSliceSampler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ultranest.stepsampler.</span></span><span class="sig-name descname"><span class="pre">QuadraticTriangularSliceSampler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">nsteps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generate_direction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale=1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_nsteps='move-distance'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adaptive_nsteps=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_nsteps=1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region_filter=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">starting_point_selector=&lt;function</span> <span class="pre">select_random_livepoint&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#QuadraticTriangularSliceSampler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.stepsampler.QuadraticTriangularSliceSampler" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ultranest.stepsampler.SliceSampler" title="ultranest.stepsampler.SliceSampler"><code class="xref py py-class docutils literal notranslate"><span class="pre">SliceSampler</span></code></a></p>
+<p>Slice sampler along volume-preserving triangular maps.</p>
+<p>The maps are defined by three random live points.</p>
+<p>Each slice sampling iteration draws three live points (excluding the
+current point). Their quadratic curve through the space defines a
+triangular map: with the leading coordinate k (chosen uniformly at
+random - a large spread does not imply that a coordinate is a good
+predictor of the others), every other coordinate d is shifted by the
+quadratic centerline q_d through the three points in the (k, d)
+projection:</p>
+<blockquote>
+<div><p>y_k = x_k,   y_d = x_d - q_d(x_k)</p>
+</div></blockquote>
+<p>A space curve through three points would not be unique in d &gt;= 3
+dimensions; here the curve is the unique quadratic <em>graph over the
+leading coordinate</em>: each q_d is the unique one-dimensional quadratic
+through the three projected points (s_j, p_j_d) with s_j = p_j,k
+(three constraints, three coefficients). The polynomial is defined
+relative to the mean live point coordinates (centered abscissa and
+ordinate) for numerical stability. The map is a single shear -
+all shifts depend only on the leading coordinate - so the order of the
+other dimensions does not matter, and the leading coordinate is drawn
+exchangeably (uniformly at random).</p>
+<p>The Jacobian of this map is unit-triangular with determinant 1 (the map
+is a shear along the curve), and it straightens the curve onto the k-th
+axis. A slice sampling step is performed in the transformed space as a
+straight line (sampled with the standard uniform slice measure) and
+mapped back to u-space, where the path is a line with center shifts:</p>
+<blockquote>
+<div><p>x_k(t) = x_k(0) + t w_k
+x_d(t) = x_d(0) + t w_d + q_d(x_k(t)) - q_d(x_k(0))</p>
+</div></blockquote>
+<p>so the likelihood can be evaluated directly in u-space without storing
+the transform. Because the map is volume-preserving and sampled
+independently of the current point (the three points are exchangeable
+and define the map uniquely), the mixture over maps preserves the
+target distribution exactly (detailed balance).</p>
+<p>The slice direction is a mixture: half of the intervals move along the
+straightened curve direction (following the ridge), half use a random
+Gaussian direction in the transformed space.</p>
+<p>Initialise sampler.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>scale</strong> (<em>float</em>) – initial proposal size</p></li>
+<li><p><strong>nsteps</strong> (<em>int</em>) – <p>number of accepted steps until the sample is considered independent.</p>
+<p>To find the right value, see <a class="reference internal" href="#ultranest.calibrator.ReactiveNestedCalibrator" title="ultranest.calibrator.ReactiveNestedCalibrator"><code class="xref py py-class docutils literal notranslate"><span class="pre">ultranest.calibrator.ReactiveNestedCalibrator</span></code></a></p>
+</p></li>
+<li><p><strong>generate_direction</strong> (<em>function</em>) – <p>direction proposal function.</p>
+<p>Available are:</p>
+<ul>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#ultranest.stepsampler.generate_cube_oriented_direction" title="ultranest.stepsampler.generate_cube_oriented_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_cube_oriented_direction()</span></code></a></dt><dd><p>(slice sampling, picking one random parameter to vary)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#ultranest.stepsampler.generate_random_direction" title="ultranest.stepsampler.generate_random_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_random_direction()</span></code></a></dt><dd><p>(hit-and-run sampling, picking a random direction varying all parameters)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#ultranest.stepsampler.generate_differential_direction" title="ultranest.stepsampler.generate_differential_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_differential_direction()</span></code></a></dt><dd><p>(differential evolution direction proposal)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#ultranest.stepsampler.generate_region_oriented_direction" title="ultranest.stepsampler.generate_region_oriented_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_region_oriented_direction()</span></code></a></dt><dd><p>(slice sampling, but in the whitened parameter space)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#ultranest.stepsampler.generate_region_random_direction" title="ultranest.stepsampler.generate_region_random_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_region_random_direction()</span></code></a></dt><dd><p>(hit-and-run sampling, but in the whitened parameter space)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#ultranest.stepsampler.SequentialDirectionGenerator" title="ultranest.stepsampler.SequentialDirectionGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">SequentialDirectionGenerator</span></code></a></dt><dd><p>(sequential slice sampling, i.e., iterate deterministically through the parameters)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#ultranest.stepsampler.SequentialRegionDirectionGenerator" title="ultranest.stepsampler.SequentialRegionDirectionGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">SequentialRegionDirectionGenerator</span></code></a></dt><dd><p>(sequential slice sampling in the whitened parameter space, i.e., iterate deterministically through the principle axes)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#ultranest.stepsampler.generate_cube_oriented_differential_direction" title="ultranest.stepsampler.generate_cube_oriented_differential_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_cube_oriented_differential_direction()</span></code></a></dt><dd><p>(like generate_differential_direction, but along only one randomly chosen parameter)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#ultranest.stepsampler.generate_partial_differential_direction" title="ultranest.stepsampler.generate_partial_differential_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_partial_differential_direction()</span></code></a></dt><dd><p>(differential evolution slice proposal on only 10% of the parameters)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt><a class="reference internal" href="#ultranest.stepsampler.generate_mixture_random_direction" title="ultranest.stepsampler.generate_mixture_random_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_mixture_random_direction()</span></code></a></dt><dd><p>(combined proposal)</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>Additionally, <a class="reference internal" href="#ultranest.stepsampler.OrthogonalDirectionGenerator" title="ultranest.stepsampler.OrthogonalDirectionGenerator"><code class="xref py py-class docutils literal notranslate"><span class="pre">OrthogonalDirectionGenerator</span></code></a>
+can be applied to any generate_direction function.</p>
+<p>When in doubt, try <a class="reference internal" href="#ultranest.stepsampler.generate_mixture_random_direction" title="ultranest.stepsampler.generate_mixture_random_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_mixture_random_direction()</span></code></a>.
+It combines efficient moves along the live point distribution,
+with robustness against collapse to a subspace.
+<a class="reference internal" href="#ultranest.stepsampler.generate_cube_oriented_direction" title="ultranest.stepsampler.generate_cube_oriented_direction"><code class="xref py py-func docutils literal notranslate"><span class="pre">generate_cube_oriented_direction()</span></code></a> works well too.</p>
+</p></li>
+<li><p><strong>adaptive_nsteps</strong> (<em>False</em><em> or </em><em>str</em>) – <p>Strategy to adapt the number of steps.
+The possible values are the same as for <cite>check_nsteps</cite>.</p>
+<p>Adapting can give usable results. However, strictly speaking,
+detailed balance is not maintained, so the results can be biased.
+You can use the stepsampler.logstat property to find out the <cite>nsteps</cite> learned
+from one run (third column), and use the largest value for <cite>nsteps</cite>
+for a fresh run.
+The forth column is the jump distance, the fifth column is the reference distance.</p>
+</p></li>
+<li><p><strong>check_nsteps</strong> (<em>False</em><em> or </em><em>str</em>) – <p>Method to diagnose the step sampler walks. The options are:</p>
+<ul>
+<li><p>False: no checking</p></li>
+<li><p>’move-distance’ (recommended): distance between
+start point and final position exceeds the mean distance
+between pairs of live points.</p></li>
+<li><p>’move-distance-midway’: distance between
+start point and position in the middle of the chain
+exceeds the mean distance between pairs of live points.</p></li>
+<li><p>’proposal-total-distances’: mean square distance of
+proposed vectors exceeds the mean distance
+between pairs of live points.</p></li>
+<li><p>’proposal-total-distances-NN’: mean distance
+of chain points from starting point exceeds mean distance
+between pairs of live points.</p></li>
+<li><p>’proposal-summed-distances-NN’: summed distances
+between chain points exceeds mean distance
+between pairs of live points.</p></li>
+<li><p>’proposal-summed-distances-min-NN’: smallest distance
+between chain points exceeds mean distance
+between pairs of live points.</p></li>
+</ul>
+<p>Each step sampler walk adds one row to stepsampler.logstat.
+The jump distance (forth column) should be compared to
+the reference distance (fifth column).</p>
+</p></li>
+<li><p><strong>max_nsteps</strong> (<em>int</em>) – Maximum number of steps the adaptive_nsteps can reach.</p></li>
+<li><p><strong>region_filter</strong> (<em>bool</em>) – if True, use region to check if a proposed point can be inside
+before calling likelihood.</p></li>
+<li><p><strong>log</strong> (<em>file</em>) – log file for sampler statistics, such as acceptance rate,
+proposal scale, number of steps, jump distance and distance
+between live points</p></li>
+<li><p><strong>starting_point_selector</strong> (<em>func</em>) – function which given the live point positions us,
+their log-likelihoods Ls and the current log-likelihood
+threshold Lmin, returns the index i of the selected live
+point to start a new chain from.
+Examples: <a class="reference internal" href="#ultranest.stepsampler.select_random_livepoint" title="ultranest.stepsampler.select_random_livepoint"><code class="xref py py-func docutils literal notranslate"><span class="pre">select_random_livepoint()</span></code></a>, which has
+always been the default behaviour,
+or an instance of <a class="reference internal" href="#ultranest.stepsampler.IslandPopulationRandomLivepointSelector" title="ultranest.stepsampler.IslandPopulationRandomLivepointSelector"><code class="xref py py-class docutils literal notranslate"><span class="pre">IslandPopulationRandomLivepointSelector</span></code></a>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="ultranest.stepsampler.QuadraticTriangularSliceSampler.move">
+<span class="sig-name descname"><span class="pre">move</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ui</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ndraw</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ultranest/stepsampler.html#QuadraticTriangularSliceSampler.move"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ultranest.stepsampler.QuadraticTriangularSliceSampler.move" title="Link to this definition"></a></dt>
+<dd><p>Advance the slice sampling move. see <a class="reference internal" href="#ultranest.stepsampler.SliceSampler.move" title="ultranest.stepsampler.SliceSampler.move"><code class="xref py py-meth docutils literal notranslate"><span class="pre">SliceSampler.move()</span></code></a>.</p>
 </dd></dl>
 
 </dd></dl>

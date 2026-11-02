@@ -3,9 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ultranest.samplingpath &mdash; UltraNest 4.6.0 documentation</title>
+  <title>ultranest.samplingpath &mdash; UltraNest 4.6.3 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/binder.css?v=8d52f20e" />
 
   
     <link rel="shortcut icon" href="../../_static/icon.ico"/>
@@ -16,7 +17,7 @@
   
         <script src="../../_static/jquery.js?v=5d32c60e"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../../_static/documentation_options.js?v=cc8a4273"></script>
+        <script src="../../_static/documentation_options.js?v=fb72c819"></script>
         <script src="../../_static/doctools.js?v=9a2dae69"></script>
         <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
@@ -39,7 +40,7 @@
               <img src="../../_static/logo.svg" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                4.6.0
+                4.6.3
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -458,7 +459,7 @@
 <span class="sd">    That point may not have been evaluated yet.</span>
 
 <span class="sd">    Parameters</span>
-<span class="sd">    -----------</span>
+<span class="sd">    ----------</span>
 <span class="sd">    i: int</span>
 <span class="sd">        position on track to return.</span>
 <span class="sd">    points: list of tuples (index, coordinate, direction, loglike)</span>
@@ -470,6 +471,16 @@
 <span class="sd">    contourpath: ContourPath</span>
 <span class="sd">        Use region to reflect. Not used at the moment.</span>
 
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    xl: array</span>
+<span class="sd">        coordinate of position i</span>
+<span class="sd">    vj: array</span>
+<span class="sd">        direction vector of position i</span>
+<span class="sd">    Lj: float</span>
+<span class="sd">        likelihood at position i, or None if not evaluated</span>
+<span class="sd">    advancing_possible: bool</span>
+<span class="sd">        whether advancing in that direction (forward or backward) is possible</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">points_before</span> <span class="o">=</span> <span class="p">[(</span><span class="n">j</span><span class="p">,</span> <span class="n">xj</span><span class="p">,</span> <span class="n">vj</span><span class="p">,</span> <span class="n">Lj</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">xj</span><span class="p">,</span> <span class="n">vj</span><span class="p">,</span> <span class="n">Lj</span> <span class="ow">in</span> <span class="n">points</span> <span class="k">if</span> <span class="n">j</span> <span class="o">&lt;=</span> <span class="n">i</span><span class="p">]</span>
     <span class="n">points_after</span> <span class="o">=</span> <span class="p">[(</span><span class="n">j</span><span class="p">,</span> <span class="n">xj</span><span class="p">,</span> <span class="n">vj</span><span class="p">,</span> <span class="n">Lj</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">xj</span><span class="p">,</span> <span class="n">vj</span><span class="p">,</span> <span class="n">Lj</span> <span class="ow">in</span> <span class="n">points</span> <span class="k">if</span> <span class="n">j</span> <span class="o">&gt;=</span> <span class="n">i</span><span class="p">]</span>
@@ -594,12 +605,12 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Advance beyond the current path, extrapolate from the end point.</span>
 
 <span class="sd">        Parameters</span>
-<span class="sd">        -----------</span>
+<span class="sd">        ----------</span>
 <span class="sd">        i: int</span>
 <span class="sd">            index on path.</span>
 
-<span class="sd">        returns</span>
-<span class="sd">        --------</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
 <span class="sd">        coords: vector</span>
 <span class="sd">            coordinates of the new point.</span>
 
@@ -657,12 +668,12 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Advance beyond the current path, extrapolate from the end point.</span>
 
 <span class="sd">        Parameters</span>
-<span class="sd">        -----------</span>
+<span class="sd">        ----------</span>
 <span class="sd">        i: int</span>
 <span class="sd">            index on path.</span>
 
-<span class="sd">        returns</span>
-<span class="sd">        --------</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
 <span class="sd">        coords: vector</span>
 <span class="sd">            coordinates of the new point.</span>
 
