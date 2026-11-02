@@ -1,0 +1,22 @@
+# Binder environment for the documentation notebooks (see the
+# "Run this notebook in Binder" links in the docs HTML pages).
+#
+# Contains everything the docs/*.ipynb notebooks import, plus
+# ultranest itself, installed editable from this repository
+# (pip resolves "-e ." against the repository root).
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - ipykernel
+  - numpy
+  - scipy
+  - matplotlib
+  - corner
+  - pandas
+  - tqdm
+  - getdist
+  - pip
+  - pip:
+      - fastkde
+      - -e .
