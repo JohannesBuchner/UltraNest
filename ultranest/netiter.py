@@ -28,7 +28,7 @@ import numpy as np
 from numpy import exp, log, log1p, logaddexp
 
 from .ordertest import UniformOrderAccumulator
-from .utils import resample_equal
+from .utils import resample_equal, submasks
 
 
 class TreeNode:
@@ -463,6 +463,211 @@ class PointPile:
         """
         index = self.add(u, p)
         return TreeNode(value=value, id=index)
+
+
+class RoundRobinPointQueue:
+    """A in-memory linearized storage of point coordinates and their likelihoods.
+
+    Allows storing points in an unordered way with an index,
+    then extracting them in order.
+    """
+
+    def __init__(self, udim, pdim, chunksize=100):
+        """Set up point pile.
+
+        Parameters
+        -----------
+        udim: int
+            number of parameters, dimension of unit cube points
+        pdim: int
+            number of physical (and derived) parameters
+        chunksize: int
+            the point pile grows as needed, in these intervals.
+        """
+        self.chunksize = chunksize
+        self.us = np.zeros((self.chunksize, udim))
+        self.ps = np.zeros((self.chunksize, pdim))
+        self.Ls = np.zeros(self.chunksize)
+        self.ranks = np.zeros(self.chunksize, dtype=int)
+        self.quality = np.zeros(self.chunksize, dtype=int)
+        self.filled = np.zeros(self.chunksize, dtype=bool)
+        self.udim = udim
+        self.pdim = pdim
+
+    def add_many(self, newpointu, newpointp, newpointL, newquality, newrank):
+        """Save point.
+
+        Parameters
+        ----------
+        newpointu: array
+            point (in u-space)
+        newpointp: array
+            point (in p-space)
+        newpointL: float
+            loglikelihood
+        newquality: float
+            quality
+        newrank: int
+            rank of point
+        """
+        n_available = np.sum(~self.filled)
+        n_needed = len(newpointL)
+        if n_available < n_needed:
+            # grow space
+            self.us = np.concatenate((self.us, np.zeros((self.chunksize, self.udim))))
+            self.ps = np.concatenate((self.ps, np.zeros((self.chunksize, self.pdim))))
+            self.Ls = np.concatenate((self.Ls, np.zeros(self.chunksize)))
+            self.ranks = np.concatenate(
+                (self.ranks, np.zeros(self.chunksize, dtype=int))
+            )
+            self.quality = np.concatenate(
+                (self.quality, np.zeros(self.chunksize, dtype=int))
+            )
+            self.filled = np.concatenate(
+                (self.filled, np.zeros(self.chunksize, dtype=bool))
+            )
+        assert newpointu.shape[1] == self.us.shape[1], (newpointu.shape, self.us.shape)
+        assert newpointp.shape[1] == self.ps.shape[1], (newpointp.shape, self.ps.shape)
+        i = np.where(~self.filled)[0][:n_needed]
+        self.us[i, :] = newpointu
+        self.ps[i, :] = newpointp
+        self.Ls[i] = newpointL
+        self.ranks[i] = newrank
+        self.quality[i] = newquality
+        self.filled[i] = True
+
+    def pop(self, rank):
+        """Get next point of a given rank.
+
+        Parameters
+        ----------
+        rank: int
+            rank of point we want to fetch
+
+        Returns
+        -------
+        u: array
+            point (in u-space)
+        p: array
+            point (in p-space)
+        L: array
+            likelihood
+        """
+        i = submasks(self.filled, self.ranks[self.filled] == rank)[0]
+        self.filled[i] = False
+        return self.us[i, :], self.ps[i, :], self.Ls[i], self.quality[i]
+
+    def has(self, rank):
+        """Check if there is a next point of a given rank.
+
+        Parameters
+        ----------
+        rank: int
+            rank of point we want to fetch
+
+        Returns
+        -------
+        bool
+            whether theree is an entry with that rank.
+        """
+        return (self.ranks[self.filled] == rank).any()
+
+
+class SinglePointQueue:
+    """A storage of one point coordinate and its likelihood."""
+
+    def __init__(self, udim, pdim, chunksize=1):
+        """Set up point pile.
+
+        Parameters
+        -----------
+        udim: int
+            number of parameters, dimension of unit cube points
+        pdim: int
+            number of physical (and derived) parameters
+        chunksize: int
+            value is ignored
+        """
+        if chunksize != 1:
+            raise ValueError("SinglePointQueue: chunksize can only be 1")
+        self.i = 0
+        self.n = 0
+        self.u = None
+        self.p = None
+        self.L = None
+        self.quality = None
+
+    def add_many(self, newpointu, newpointp, newpointL, newquality, newrank):
+        """Save point.
+
+        Parameters
+        ----------
+        newpointu: array
+            point (in u-space)
+        newpointp: array
+            point (in p-space)
+        newpointL: float
+            loglikelihood
+        newquality: int
+            point quality
+        newrank: int
+            rank of point
+        """
+        if not np.all(newrank == 0):
+            raise ValueError("SinglePointQueue: rank must be 0")
+        if self.i < self.n:
+            raise ValueError("SinglePointQueue: queue not empty yet")
+        self.u = newpointu
+        self.p = newpointp
+        self.L = newpointL
+        self.i = 0
+        self.n = len(self.L)
+        self.quality = newquality
+
+    def pop(self, rank):
+        """Get next point of a given rank.
+
+        Parameters
+        ----------
+        rank: int
+            rank of point we want to fetch
+
+        Returns
+        -------
+        u: array
+            point (in u-space)
+        p: array
+            point (in p-space)
+        L: array
+            likelihood
+        """
+        if rank != 0:
+            raise ValueError("SinglePointQueue: rank must be 0")
+        if not self.i < self.n:
+            raise ValueError("SinglePointQueue: queue empty")
+        u = self.u[self.i,:]
+        p = self.p[self.i,:]
+        L = self.L[self.i]
+        quality = self.quality
+        self.i += 1
+        return u, p, L, quality
+
+    def has(self, rank):
+        """Check if there is a next point of a given rank.
+
+        Parameters
+        ----------
+        rank: int
+            rank of point we want to fetch
+
+        Returns
+        -------
+        bool
+            whether theree is an entry with that rank.
+        """
+        if rank != 0:
+            raise ValueError("SinglePointQueue: rank must be 0")
+        return self.i < self.n
 
 
 class SingleCounter:

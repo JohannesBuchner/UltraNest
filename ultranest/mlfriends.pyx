@@ -642,7 +642,7 @@ class AffineLayer(ScalingLayer):
         ctr: vector
             Center of points
         T: matrix
-            Transformation matrix. This matrix whitens the points 
+            Transformation matrix. This matrix whitens the points
             to a unit Gaussian.
         invT: matrix
             Inverse transformation matrix. For transforming a unit
@@ -701,7 +701,7 @@ class AffineLayer(ScalingLayer):
         # Transformation matrix with the correct scale
         # this matrix whitens the points to a unit Gaussian.
         self.T = eigvec * eigval**-0.5
-        # Inverse transformation matrix, for transforming a unit 
+        # Inverse transformation matrix, for transforming a unit
         # Gaussian into something with the sample cov.
         self.invT = np.linalg.inv(self.T)
         # These also are the principle axes of the space
@@ -755,7 +755,7 @@ class MaxPrincipleGapAffineLayer(AffineLayer):
     """Affine whitening transformation.
 
     For learning the next layer's covariance, the clustering
-    and principal axis is considered: 
+    and principal axis is considered:
     the sample covariance is computed after subtracting
     the cluster mean. All points are projected onto the line
     defined by the principle axis vector starting from the origin.
@@ -763,7 +763,7 @@ class MaxPrincipleGapAffineLayer(AffineLayer):
     All points before the gap are mean-subtracted, and all points
     after the gap are mean-subtracted. Then, the final
     sample covariance is computed. This should give a more "local"
-    covariance, even in the case where clusters could not yet be 
+    covariance, even in the case where clusters could not yet be
     clearly identified.
     """
 
@@ -819,7 +819,7 @@ class MaxPrincipleGapAffineLayer(AffineLayer):
 class LocalAffineLayer(AffineLayer):
     """Affine whitening transformation.
 
-    For learning the next layer's covariance, the points within 
+    For learning the next layer's covariance, the points within
     the MLradius are co-centered. This should give a more "local"
     covariance.
     """
