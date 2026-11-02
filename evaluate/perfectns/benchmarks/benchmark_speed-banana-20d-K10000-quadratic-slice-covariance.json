@@ -11,48 +11,48 @@
    "P": 100,
    "K": 10000,
    "seed": 1,
-   "wall_time": 3.640667200088501,
-   "nburied": 30000,
-   "ncall": 329700,
+   "wall_time": 2.021627902984619,
+   "nburied": 30100,
+   "ncall": 331500,
    "proposal": "quadratic-slice",
    "region": "covariance",
-   "logz": -34.17433994919429,
-   "logzerr": 0.019918143413940433,
-   "evals_per_s": 90560.3236659438
+   "logz": -29.01299404592573,
+   "logzerr": 0.01991473728212149,
+   "evals_per_s": 163976.76323649462
   },
   {
    "P": 100,
    "K": 10000,
    "seed": 2,
-   "wall_time": 3.5941734313964844,
+   "wall_time": 2.0077686309814453,
    "nburied": 30000,
-   "ncall": 328000,
+   "ncall": 329100,
    "proposal": "quadratic-slice",
    "region": "covariance",
-   "logz": -35.614657085236125,
-   "logzerr": 0.019810402226170684,
-   "evals_per_s": 91258.81270358134
+   "logz": -32.808028883918915,
+   "logzerr": 0.019869562137536618,
+   "evals_per_s": 163913.30899473614
   },
   {
    "P": 100,
    "K": 10000,
    "seed": 3,
-   "wall_time": 4.104200124740601,
-   "nburied": 30100,
-   "ncall": 330300,
+   "wall_time": 2.011277914047241,
+   "nburied": 30000,
+   "ncall": 327900,
    "proposal": "quadratic-slice",
    "region": "covariance",
-   "logz": -33.36276469193464,
-   "logzerr": 0.019881731100053517,
-   "evals_per_s": 80478.53173847757
+   "logz": -30.667874413395143,
+   "logzerr": 0.019926359875369063,
+   "evals_per_s": 163030.67701875945
   }
  ],
  "summary": [
   {
    "P": 100,
-   "wall_time_median": 3.640667200088501,
+   "wall_time_median": 2.011277914047241,
    "nburied": 30000,
-   "evals_per_s": 90560.3236659438,
+   "evals_per_s": 163913.30899473614,
    "speedup_vs_first": 1.0
   }
  ]

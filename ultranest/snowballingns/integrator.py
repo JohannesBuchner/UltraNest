@@ -28,6 +28,10 @@ from .utils import (CubeRegion, CovarianceRegion, RotationRecordStore,
                     plot_rotations_panel, segment_geomeans, subsample)
 from ultranest.netiter import TreeNode
 
+# the region proposal pool is padded with the most recent dead points
+# to at least this many points (proposal diversity at small K)
+MIN_REGION_POINTS = 400
+
 
 def run_rotation(state, transform, loglike, frac_remain, region):
     """Run batch advances until the burial-gate frac_remain criterion
@@ -271,15 +275,18 @@ class SnowballingNestedSampler:
         cap of 100, which is optimal at K=400; sweeps in
         evaluate/perfectns/benchmarks/)
     region_class: class
-        region class built from the live points (default:
+        region class built from the region proposal pool (default:
         :py:class:`CovarianceRegion`, which only determines the
-        covariance of the live points -- no MLFriends, no
-        bootstrapping). For step samplers that do not use the region
-        axes, :py:class:`CubeRegion` (a no-op returning the unit cube
-        axes) is allowed. RobustEllipsoidRegion (MLFriends machinery)
-        can be passed for the ellipsoid axes as a stiff axis guess;
-        they are updated imperfectly and irregularly, based on where
-        the integrator is, to save compute time
+        covariance of the pool -- no MLFriends, no bootstrapping). For
+        step samplers that do not use the region axes,
+        :py:class:`CubeRegion` (a no-op returning the unit cube axes)
+        is allowed. RobustEllipsoidRegion (MLFriends machinery) can be
+        passed for the ellipsoid axes as a stiff axis guess; they are
+        updated imperfectly and irregularly, based on where the
+        integrator is, to save compute time. The proposal pool is the
+        live points when K >= 400, padded with the most recent dead
+        points from the store to at least 400 points otherwise
+        (proposal diversity at small K)
     stepsampler: function
         vectorized direction proposal ``direction(u, region, scale=1)
         -> w`` from ultranest.stepfuncs (e.g.
@@ -428,10 +435,28 @@ class SnowballingNestedSampler:
         self.state.stepsampler = self.stepsampler
         return region
 
-    def _update_region(self):
-        """Rebuild the region from the thread ends (no bootstrapping)."""
+    def _region_points(self):
+        """The region proposal pool: the live points, padded with the
+        most recent dead points from the store to at least
+        MIN_REGION_POINTS points (proposal diversity at small K)."""
         u_heads, _ = self.state.get_heads()
-        region = self._make_region(subsample(u_heads))
+        if self.K >= MIN_REGION_POINTS:
+            return u_heads
+        ndead_need = MIN_REGION_POINTS - self.K
+        nrows = self.state.store.nrows
+        if nrows <= 0:
+            return u_heads
+        rows = np.arange(max(0, nrows - ndead_need), nrows)
+        d = self.x_dim
+        data = self.state.store.read(rows)
+        u_dead = np.asarray(data[:, 7:7 + d], dtype=float)
+        return np.vstack([u_dead, np.asarray(u_heads, dtype=float)])
+
+    def _update_region(self):
+        """Rebuild the region from the live points, padded with the most
+        recent dead points to at least MIN_REGION_POINTS points (no
+        bootstrapping)."""
+        region = self._make_region(self._region_points())
         self.state.set_region(region)
         return region
 

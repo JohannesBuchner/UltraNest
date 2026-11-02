@@ -666,28 +666,18 @@ def generate_quadratic_slice_direction(ui, region, scale=1):
         return generate_mixture_random_direction(ui, region, scale=scale)
     # region centre (the same for every walker)
     mu = us.mean(axis=0)
-    # nearest region point for each walker (excluded from the fit
-    # picks), from the expanded squared distance, chunked over walkers
-    us_sq = (us * us).sum(axis=1)
-    i0 = np.empty(nsamples, dtype=np.intp)
-    chunk = max(1, 2000000 // nlive)
-    for lo in range(0, nsamples, chunk):
-        hi = min(nsamples, lo + chunk)
-        d2 = us_sq - 2.0 * (ui[lo:hi] @ us.T) \
-            + (ui[lo:hi] * ui[lo:hi]).sum(axis=1)[:, None]
-        i0[lo:hi] = np.argmin(d2, axis=1)
-    # three distinct random fit points per walker, none equal to i0
-    # (rejection redraw; the kept entries stay uniform among the valid
-    # indices, as with the random permutation used before)
+    # three distinct random fit points per walker (rejection redraw; the
+    # kept entries stay uniform among the valid indices)
     picks = np.random.randint(0, nlive, size=(nsamples, 3))
     for _ in range(100):
-        # duplicates (both entries of an equal pair are redrawn), plus
-        # picks equal to the excluded nearest point
+        # duplicates: both entries of an equal pair are redrawn
         eq01 = picks[:, 0] == picks[:, 1]
         eq02 = picks[:, 0] == picks[:, 2]
         eq12 = picks[:, 1] == picks[:, 2]
-        bad = (picks == i0[:, None]) | eq01[:, None] | eq02[:, None] \
-            | eq12[:, None]
+        bad = np.zeros((nsamples, 3), dtype=bool)
+        bad[:, 0] = eq01 | eq02
+        bad[:, 1] = eq01 | eq12
+        bad[:, 2] = eq02 | eq12
         if not bad.any():
             break
         picks[bad] = np.random.randint(0, nlive, size=int(bad.sum()))

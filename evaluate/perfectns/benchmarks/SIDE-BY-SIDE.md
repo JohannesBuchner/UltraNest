@@ -55,6 +55,32 @@ with MLFriends machinery, CovarianceRegion, CubeRegion).
   lnZ = -2.7676 +- 0.0059; mix + CovarianceRegion 40.5s,
   lnZ = -2.7652 +- 0.0059.
 
+## Nearest-neighbour search skipped; region pool padded to >=400 points
+
+The quadratic slice direction no longer excludes the region point
+nearest to each walker's start (the search was the dominant direction
+cost, ~40-50us of ~50-70us per direction at nlive=4000, guarding an
+event with probability 3/nlive); the fit picks are three distinct
+random live points. The region proposal pool is the live points when
+K >= 400, padded with the most recent dead points from the store to at
+least 400 points otherwise (proposal diversity at small K).
+
+Same-batch comparison (K=10000, P=100, 30000 dead points, median of 3
+seeds; before = with the search and live-points-only pool):
+
+| proposal        | problem   | before | after | speedup |
+|-----------------|-----------|-------:|------:|--------:|
+| quadratic-slice | gauss-50d | 3.62s  | 2.50s | 1.45x   |
+| quadratic-slice | banana-20d| 3.27s  | 2.01s | 1.63x   |
+| mix             | gauss-50d | 2.25s  | 2.08s | 1.08x   |
+| mix             | banana-20d| 1.96s  | 1.81s | 1.08x   |
+
+Full-run correctness with the padded pool (banana-2d, 8 rotations,
+analytic lnZ = -2.7693): K=50 4.3s, lnZ = -2.7783 +- 0.0167; K=100
+6.1s, lnZ = -2.7485 +- 0.0117; K=400 27.1s, lnZ = -2.7744 +- 0.0059.
+Small-K runs now complete in seconds while keeping >=400 proposal
+points.
+
 ## P sweep with the mixture proposal (covariance region, K=10000)
 
 | P    | gauss-50d wall/s | banana-20d wall/s |
