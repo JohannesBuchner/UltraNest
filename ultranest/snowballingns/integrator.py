@@ -265,8 +265,10 @@ class SnowballingNestedSampler:
         initial number of live points, capped at 100 (larger P
         vectorizes the proposals better; benchmarked 2.9x faster than
         P=20 on banana-2d with K=400). At K=10000 the measured optimum
-        is P~250-500, ~20% faster than P=100 on gauss-50d/banana-20d
-        (below the 30% adoption threshold; sweep in
+        is P~250-500, ~15-20% faster than P=100 with the quadratic
+        slice, and P~500-1000 with the mixture proposal (9% faster on
+        gauss-50d, 37% faster on banana-20d; the default stays at the
+        cap of 100, which is optimal at K=400; sweeps in
         evaluate/perfectns/benchmarks/)
     region_class: class
         region class built from the live points (default:

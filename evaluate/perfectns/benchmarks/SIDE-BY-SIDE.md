@@ -55,6 +55,23 @@ with MLFriends machinery, CovarianceRegion, CubeRegion).
   lnZ = -2.7676 +- 0.0059; mix + CovarianceRegion 40.5s,
   lnZ = -2.7652 +- 0.0059.
 
+## P sweep with the mixture proposal (covariance region, K=10000)
+
+| P    | gauss-50d wall/s | banana-20d wall/s |
+|-----:|-----------------:|------------------:|
+| 100  | 1.95 | 1.94 |
+| 250  | 1.78 | 1.70 |
+| 500  | 1.77 | 1.24 |
+| 1000 | 1.82 | 1.21 |
+| 2000 | 2.02 | 1.31 |
+
+The optimum is P~500-1000 for the mixture proposal (37% faster than
+P=100 on banana-20d, 9% on gauss-50d); with the quadratic slice the
+optimum is P~250-500 (~15-20% faster than P=100). The default stays at
+the cap of 100: the gain for the default configuration is below the
+30% adoption threshold, and P=100 is optimal at K=400. Pass
+`P=500` (or higher) explicitly for large-K mixture-proposal runs.
+
 The default region class is CovarianceRegion; CubeRegion is allowed for
 step samplers that do not use the region axes. The default direction
 proposal remains the quadratic slice (it follows the ridge by design);
