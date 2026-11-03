@@ -920,7 +920,7 @@ class SnowballingNestedSampler:
         first, None for stored results without a recorded status.
 
         plot_trace, plot_corner: store a trace and a corner plot after
-        each rotation (trace_rotation_<n>.png, corner_rotation_<n>.png
+        each rotation (trace_rotation_<n>.pdf, corner_rotation_<n>.pdf
         in log_dir; default True). When False, call .plot_trace(),
         .plot_corner() or .plot() after the run for the final plot.
         """
@@ -1032,13 +1032,13 @@ class SnowballingNestedSampler:
                      summary['logz'], summary['logzerr']), flush=True)
             if plot_corner:
                 try:
-                    self.plot_corner('corner_rotation_%d.png' % rotation)
+                    self.plot_corner('corner_rotation_%d.pdf' % rotation)
                 except Exception as e:
                     print('  corner plot failed: %s: %s'
                           % (type(e).__name__, e), flush=True)
             if plot_trace:
                 try:
-                    self.plot_trace('trace_rotation_%d.png' % rotation)
+                    self.plot_trace('trace_rotation_%d.pdf' % rotation)
                 except Exception as e:
                     print('  trace plot failed: %s: %s'
                           % (type(e).__name__, e), flush=True)
@@ -1179,28 +1179,52 @@ class SnowballingNestedSampler:
                          nburied=s['nburied'])
                     for s in self.rotation_summaries]), f, indent=1)
 
-    def plot(self, **kwargs):
-        """Corner plot of the latest result (see plot_corner)."""
-        return self.plot_corner(**kwargs)
+    def plot(self):
+        """Make corner and trace plots.
 
-    def plot_corner(self, filename='corner.png', **kwargs):
-        """Corner plot of the latest result, written to log_dir (or the
-        given filename within log_dir)."""
-        import ultranest.plot
-        fig = ultranest.plot.cornerplot(self.results, **kwargs)
-        if fig is not None:
-            fig.savefig(os.path.join(self.log_dir, filename), dpi=110)
-        return fig
+        calls:
 
-    def plot_trace(self, filename='trace.png', **kwargs):
-        """Trace plot of the latest result, written to log_dir (or the
-        given filename within log_dir)."""
-        import ultranest.plot
-        out = ultranest.plot.traceplot(self.results, **kwargs)
-        fig = out[0] if isinstance(out, tuple) else out
-        if fig is not None:
-            fig.savefig(os.path.join(self.log_dir, filename), dpi=110)
-        return out
+        * plot_corner()
+        * plot_trace()
+        """
+        self.plot_corner()
+        self.plot_trace()
+
+    def plot_corner(self, filename='corner.pdf'):
+        """Make corner plot.
+
+        Writes corner.pdf to log_dir (or the given filename within
+        log_dir), with the plotting code of ReactiveNestedSampler::
+
+            from ultranest.plot import cornerplot
+            cornerplot(results)
+            plt.savefig(..., bbox_inches='tight')
+        """
+        import matplotlib.pyplot as plt
+
+        from ..plot import cornerplot
+        cornerplot(self.results)
+        plt.savefig(os.path.join(self.log_dir, filename),
+                    bbox_inches='tight')
+        plt.close()
+
+    def plot_trace(self, filename='trace.pdf'):
+        """Make trace plot.
+
+        Writes trace.pdf to log_dir (or the given filename within
+        log_dir), with the plotting code of ReactiveNestedSampler::
+
+            from ultranest.plot import traceplot
+            traceplot(results)
+            plt.savefig(..., bbox_inches='tight')
+        """
+        import matplotlib.pyplot as plt
+
+        from ..plot import traceplot
+        traceplot(self.results)
+        plt.savefig(os.path.join(self.log_dir, filename),
+                    bbox_inches='tight')
+        plt.close()
 
     def plot_rotations(self, nsegments=20, **kwargs):
         """The rotation-convergence diagnostics (the panel plot): how the
