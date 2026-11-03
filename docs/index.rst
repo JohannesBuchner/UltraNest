@@ -24,6 +24,8 @@ Welcome to UltraNest's documentation!
    example-sine-line.ipynb
    example-sine-modelcomparison.ipynb
    example-sine-highd.ipynb
+   example-snowballingns.ipynb
+   example-perfectns-problems.ipynb
    example-intrinsic-distribution.ipynb
    example-line.ipynb
    example-outliers.ipynb

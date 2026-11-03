@@ -884,7 +884,7 @@ class SnowballingNestedSampler:
     def run(self, frac_remain=0.5, max_rotations=20, seed=1,
             update_interval_ncall=None, show_status=True, viz_callback=None,
             resume=True, max_batches=None, max_dead=None,
-            max_ncall=None, max_time=None, max_live_points_steps=100000,
+            max_ncalls=None, max_time=None, max_live_points_steps=100000,
             gompertz_factor=0.5, plot_trace=True, plot_corner=True):
         """Run snowball rotations with widening until max_rotations, the
         max_live_points_steps limit, or the Gompertz looping criterion.
@@ -898,7 +898,7 @@ class SnowballingNestedSampler:
         rotation (batch advances / released dead points), cutting each
         rotation short before its termination criterion fires.
 
-        max_ncall, max_time: optional termination budgets -- at the next
+        max_ncalls, max_time: optional termination budgets -- at the next
         rotation boundary, stop once that many model evaluations have
         been made or that much wall time has passed, even if the
         convergence criterion has not fired yet.
@@ -998,6 +998,11 @@ class SnowballingNestedSampler:
                 print('resuming from rotation %d (K=%d)'
                       % (nrot, self.K), flush=True)
         if not resumed:
+            # a fresh run: remove stale rotation records so the rotation
+            # group names do not collide (the point store is truncated by
+            # _setup)
+            if os.path.exists(self.records_path):
+                os.remove(self.records_path)
             self._setup(seed)
         if resumed and start_rotation > max_rotations:
             # all rotations already stored: report the last stored
@@ -1048,9 +1053,9 @@ class SnowballingNestedSampler:
                     print('Gompertz criterion: no likelihood bin '
                           'predicted to improve; done.', flush=True)
                     break
-            if max_ncall is not None and self.ncall >= max_ncall:
-                print('max_ncall=%d reached before convergence '
-                      '(ncall=%d); stopping.' % (max_ncall, self.ncall),
+            if max_ncalls is not None and self.ncall >= max_ncalls:
+                print('max_ncalls=%d reached before convergence '
+                      '(ncall=%d); stopping.' % (max_ncalls, self.ncall),
                       flush=True)
                 break
             if max_time is not None and time.time() - self._t_start >= max_time:
