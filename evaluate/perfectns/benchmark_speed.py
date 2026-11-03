@@ -125,13 +125,13 @@ def run_once(problem, K, P, seed, max_batches, max_dead, profile=None,
     if profile is None:
         sampler.run(frac_remain=0.5, max_rotations=1, seed=seed,
                     show_status=False, max_batches=max_batches,
-                    max_dead=max_dead)
+                    max_dead=max_dead, plot_trace=False, plot_corner=False)
     else:
         profiler = cProfile.Profile()
         profiler.enable()
         sampler.run(frac_remain=0.5, max_rotations=1, seed=seed,
                     show_status=False, max_batches=max_batches,
-                    max_dead=max_dead)
+                    max_dead=max_dead, plot_trace=False, plot_corner=False)
         profiler.disable()
         profiler.dump_stats(profile)
     wall_time = time.time() - t0

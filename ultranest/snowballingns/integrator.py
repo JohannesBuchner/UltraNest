@@ -294,13 +294,6 @@ class SnowballingNestedSampler:
     num_segments: int
         number of equal-count likelihood-threshold bins for the RJD
         diagnostics and the Gompertz looping criterion; default 20
-    rjd_region_distance: bool
-        whether the RJD reference distance is the region's own distance
-        attribute -- reused from region building when the region is
-        MLFriends-family (sqrt(maxradiussq)), falling back to the mean
-        pair distance of the live points computed at region build for
-        other region classes -- instead of the per-bin pair distances
-        of the origin points; default False
     stepsampler: function
         vectorized direction proposal ``direction(u, region, scale=1)
         -> w`` from ultranest.stepfuncs (e.g.
@@ -318,6 +311,11 @@ class SnowballingNestedSampler:
     each) as a 1-live-point run; the error of the fold mean is combined
     with the nominal sqrt(H/K) in quadrature.
 
+    The RJD diagnostics normalize each jump by the region's own distance
+    attribute: reused from region building when the region is
+    MLFriends-family (sqrt(maxradiussq)), otherwise the mean pair
+    distance of the live points computed at region build.
+
     Usage::
 
         sampler = SnowballingNestedSampler(
@@ -332,8 +330,7 @@ class SnowballingNestedSampler:
                  num_live_points_base=50, num_steps=1, P=None,
                  region_class=CovarianceRegion, stepsampler=None,
                  log_dir=None, draw_multiple=False, min_point_pool=400,
-                 num_segments=20, rjd_region_distance=False,
-                 integrator='multicounter'):
+                 num_segments=20, integrator='multicounter'):
         if integrator not in ('multicounter', 'custom'):
             raise ValueError("integrator must be 'multicounter' or 'custom'")
         self.integrator = integrator
@@ -365,13 +362,11 @@ class SnowballingNestedSampler:
         # the most recent dead points) is at least this large
         self.min_point_pool = max(int(min_point_pool), 1)
         # RJD diagnostics: number of equal-count likelihood-threshold
-        # bins, and whether the reference distance is the region's own
-        # distance attribute (reused from region building when it is
+        # bins; the reference distance is the region's own distance
+        # attribute (reused from region building when it is
         # MLFriends-family, falling back to the mean pair distance of
-        # the live points computed at region build) instead of the
-        # per-bin pair distances of the origin points
+        # the live points computed at region build)
         self.num_segments = max(int(num_segments), 1)
-        self.rjd_region_distance = bool(rjd_region_distance)
         self._rjd_ref_distance = None
         self.folds = []              # per-sequence fold integrators
         self.logzerr_folding = np.nan
@@ -820,7 +815,8 @@ class SnowballingNestedSampler:
             H=float('nan'), samples=samples,
             weighted_samples=dict(points=weighted_u, weights=weights,
                                   logweights=np.log(weights)),
-            weights=weights, logweights=np.log(weights), logvol=x,
+            weights=weights, logweights=np.log(weights),
+            logvol=np.concatenate([x, np.full(self.K, -self.state.logVrem)]),
             paramnames=self.paramnames, niter=n, ncall=self.ncall,
             posterior=dict(mean=mean, stdev=stdev),
             rotation_summaries=list(self.rotation_summaries))
@@ -889,7 +885,7 @@ class SnowballingNestedSampler:
             update_interval_ncall=None, show_status=True, viz_callback=None,
             resume=True, max_batches=None, max_dead=None,
             max_ncall=None, max_time=None, max_live_points_steps=100000,
-            gompertz_factor=0.5):
+            gompertz_factor=0.5, plot_trace=True, plot_corner=True):
         """Run snowball rotations with widening until max_rotations, the
         max_live_points_steps limit, or the Gompertz looping criterion.
 
@@ -922,6 +918,11 @@ class SnowballingNestedSampler:
         stored as results['converged']: True if the Gompertz criterion
         fired, False if the run stopped at max_rotations or a budget
         first, None for stored results without a recorded status.
+
+        plot_trace, plot_corner: store a trace and a corner plot after
+        each rotation (trace_rotation_<n>.png, corner_rotation_<n>.png
+        in log_dir; default True). When False, call .plot_trace(),
+        .plot_corner() or .plot() after the run for the final plot.
         """
         import h5py
         self._t_start = time.time()
@@ -1029,6 +1030,18 @@ class SnowballingNestedSampler:
             print('rotation %d: K=%d, %d buried cells, lnZ = %.4f +- %.4f'
                   % (rotation, self.K, summary['nburied'],
                      summary['logz'], summary['logzerr']), flush=True)
+            if plot_corner:
+                try:
+                    self.plot_corner('corner_rotation_%d.png' % rotation)
+                except Exception as e:
+                    print('  corner plot failed: %s: %s'
+                          % (type(e).__name__, e), flush=True)
+            if plot_trace:
+                try:
+                    self.plot_trace('trace_rotation_%d.png' % rotation)
+                except Exception as e:
+                    print('  trace plot failed: %s: %s'
+                          % (type(e).__name__, e), flush=True)
             if rotation >= 3:
                 if not self._gompertz_continue(factor=gompertz_factor):
                     self.converged = True
@@ -1122,10 +1135,8 @@ class SnowballingNestedSampler:
         seg = (np.searchsorted(self.bin_edges, lmin)
                if self.bin_edges is not None else np.zeros(len(lmin),
                                                            dtype=int))
-        rjd = binned_rjd(
-            lmin, ou, jump, seg, self.num_segments,
-            ref_distance=(self._rjd_ref_distance
-                          if self.rjd_region_distance else None))
+        rjd = binned_rjd(lmin, ou, jump, seg, self.num_segments,
+                         ref_distance=self._rjd_ref_distance)
         gm = segment_geomeans(rjd, seg, self.num_segments)
         summary['segment_geomeans'] = gm
         recstore = RotationRecordStore(self.records_path, mode='a')
@@ -1172,21 +1183,23 @@ class SnowballingNestedSampler:
         """Corner plot of the latest result (see plot_corner)."""
         return self.plot_corner(**kwargs)
 
-    def plot_corner(self, **kwargs):
-        """Corner plot of the latest result, written to log_dir."""
+    def plot_corner(self, filename='corner.png', **kwargs):
+        """Corner plot of the latest result, written to log_dir (or the
+        given filename within log_dir)."""
         import ultranest.plot
         fig = ultranest.plot.cornerplot(self.results, **kwargs)
         if fig is not None:
-            fig.savefig(os.path.join(self.log_dir, 'corner.png'), dpi=110)
+            fig.savefig(os.path.join(self.log_dir, filename), dpi=110)
         return fig
 
-    def plot_trace(self, **kwargs):
-        """Trace plot of the latest result, written to log_dir."""
+    def plot_trace(self, filename='trace.png', **kwargs):
+        """Trace plot of the latest result, written to log_dir (or the
+        given filename within log_dir)."""
         import ultranest.plot
         out = ultranest.plot.traceplot(self.results, **kwargs)
         fig = out[0] if isinstance(out, tuple) else out
         if fig is not None:
-            fig.savefig(os.path.join(self.log_dir, 'trace.png'), dpi=110)
+            fig.savefig(os.path.join(self.log_dir, filename), dpi=110)
         return out
 
     def plot_rotations(self, nsegments=20, **kwargs):
