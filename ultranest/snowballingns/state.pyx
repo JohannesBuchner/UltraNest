@@ -353,6 +353,15 @@ cdef class SnowballState:
             q = d - 1
         for a in range(d):
             self._wv[p, a] = axes[q, a]
+        # a degenerate (all-zero) direction would stall the stepping-out
+        # forever: replace it with a random direction
+        allzero = True
+        for a in range(d):
+            if self._wv[p, a] != 0:
+                allzero = False
+        if allzero:
+            for a in range(d):
+                self._wv[p, a] = np.random.normal()
 
     def start_round(self):
         """Select the P lowest-likelihood thread ends and start a
@@ -419,6 +428,14 @@ cdef class SnowballState:
             if fresh_idx:
                 us = np.asarray([self._wu[p, :] for p in fresh_idx])
                 ws = np.asarray(self.stepsampler(us, self.region, 1.0))
+                # a zero direction (e.g. from identical points in the
+                # region pool) would stall the stepping-out forever:
+                # replace degenerate directions with random ones
+                zeromask = ~np.isfinite(ws).all(axis=1) \
+                    | (np.abs(ws).max(axis=1) < 1e-10)
+                if zeromask.any():
+                    ws[zeromask] = np.random.normal(
+                        size=(int(zeromask.sum()), d))
                 for j, p in enumerate(fresh_idx):
                     for q in range(d):
                         self._wv[p, q] = ws[j, q]
@@ -521,12 +538,15 @@ cdef class SnowballState:
                     inside = False
             accepted = inside and Lnewv[p] > wLmin[p]
             if phase[p] == 0:
-                if accepted:
+                if accepted and -wleft[p] < 1e10:
                     wleft[p] = wleft[p] * 2
                 else:
+                    # the bracket cap also catches degenerate directions
+                    # (e.g. a zero-length direction, where the stepping-out
+                    # would expand forever): fall through to the bisection
                     phase[p] = 1
             elif phase[p] == 1:
-                if accepted:
+                if accepted and wright[p] < 1e10:
                     wright[p] = wright[p] * 2
                 else:
                     phase[p] = 2
