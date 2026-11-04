@@ -18,7 +18,6 @@ import numpy as np
 import scipy.stats
 # from matplotlib.colors import LinearSegmentedColormap, colorConverter
 from matplotlib.ticker import MaxNLocator, NullLocator, ScalarFormatter
-from six.moves import range
 
 from .utils import quantile as _quantile
 from .utils import resample_equal
