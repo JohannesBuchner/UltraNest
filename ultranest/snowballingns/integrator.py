@@ -390,10 +390,10 @@ class SnowballingNestedSampler:
         self.main_iterator = None
         self.rotation_summaries = []
         self.nlive_per_rotation = []
-        self.previous_nodes = []      # (node, rootid) of the earlier
-                                      # rotations' dead points
-        self._rotation_new_nodes = [] # (node, rootid) that died this
-                                      # rotation
+        # (node, rootid) of the earlier rotations' dead points
+        self.previous_nodes = []
+        # (node, rootid) that died this rotation
+        self._rotation_new_nodes = []
         self._prev_ptr = 0
         self._store_rows = []    # (row, x, rootid) of the latest rotation
         self._logweights = []    # latest rotation's strip weights
@@ -547,7 +547,6 @@ class SnowballingNestedSampler:
                 update_interval_volume_fraction=update_interval_volume_fraction,
                 show_status=show_status, viz_callback=viz_callback,
                 max_batches=max_batches, max_dead=max_dead)
-        d = self.x_dim
         main_iterator = MultiCounter(
             nroots=self.K, nbootstraps=0, random=False,
             check_insertion_order=True)
@@ -579,7 +578,7 @@ class SnowballingNestedSampler:
         while True:
             # region update, based on where the integrator is
             if main_iterator.logVolremaining < next_update_interval_volume:
-                region = self._update_region()
+                self._update_region()
                 next_update_interval_volume = \
                     main_iterator.logVolremaining - \
                     update_interval_volume_fraction
@@ -615,11 +614,13 @@ class SnowballingNestedSampler:
             a = b = 0
             while a < len(old_cands) and b < len(new_cands):
                 if old_cands[a][0].value < new_cands[b][1]:
-                    merged.append(('old', old_cands[a])); a += 1
+                    merged.append(('old', old_cands[a]))
+                    a += 1
                 else:
-                    merged.append(('new', new_cands[b])); b += 1
+                    merged.append(('new', new_cands[b]))
+                    b += 1
             merged += [('old', c) for c in old_cands[a:]] \
-                    + [('new', c) for c in new_cands[b:]]
+                + [('new', c) for c in new_cands[b:]]
             for kind, c in merged:
                 if kind == 'old':
                     node, rootid = c
@@ -955,7 +956,6 @@ class SnowballingNestedSampler:
                 self._rotation_new_nodes = []
                 self._prev_ptr = 0
                 data = self.state.store.read_all()
-                d = self.x_dim
                 for t in range(self.K):
                     rows_t = np.nonzero(data[:, 5] == t)[0]
                     # order by storage row (the walk ends in walk order)
@@ -1235,7 +1235,6 @@ class SnowballingNestedSampler:
         """The rotation-convergence diagnostics (the panel plot): how the
         rotations converge, from the stored rotation records."""
         import h5py
-        from .utils import plot_rotations_panel
         recstore = RotationRecordStore(self.records_path, mode='a')
         rotation_records, results = recstore.load_all()
         recstore.close()

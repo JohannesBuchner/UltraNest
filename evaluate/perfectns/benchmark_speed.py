@@ -37,8 +37,8 @@ import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__)))))  # the repository root
 
-from ultranest.perfectns import (BananaGaussianLRPS,
-                                 NonIsotropicGaussianLRPS)
+from ultranest.perfectns import (BananaGaussianLRPS,  # noqa: E402
+                                 NonIsotropicGaussianLRPS)  # noqa: E402
 
 
 def make_problem(name, dim):
@@ -64,7 +64,8 @@ def run_once(problem, K, P, seed, max_batches, max_dead, profile=None,
         # the per-walker-loop direction generator as it was before the
         # vectorization (for the baseline)
         import ultranest.stepfuncs as stepfuncs
-        from ultranest.stepfuncs import generate_mixture_random_direction
+        from ultranest.stepfuncs import \
+            generate_mixture_random_direction as gen_mixture
 
         def legacy_quadratic(ui, region, scale=1):
             ui = np.asarray(ui)
@@ -75,15 +76,15 @@ def run_once(problem, K, P, seed, max_batches, max_dead, profile=None,
             nlive = us.shape[0]
             out = np.zeros((nsamples, ndim))
             if nlive < 5:
-                return generate_mixture_random_direction(ui, region,
-                                                         scale=scale)
+                return gen_mixture(ui, region,
+                            scale=scale)
             for j in range(nsamples):
                 i0 = int(np.argmin(((us - ui[j].reshape((1, -1))) ** 2)
                                    .sum(axis=1)))
                 perm = np.random.permutation(nlive)
                 perm = perm[perm != i0][:3]
                 if len(perm) < 3:
-                    out[j] = generate_mixture_random_direction(
+                    out[j] = gen_mixture(
                         ui[j], region, scale=scale)
                     continue
                 p = us[perm]
@@ -95,11 +96,11 @@ def run_once(problem, K, P, seed, max_batches, max_dead, profile=None,
                 try:
                     coefs = np.linalg.solve(V, p[:, others] - mu[others])
                 except np.linalg.LinAlgError:
-                    out[j] = generate_mixture_random_direction(
+                    out[j] = gen_mixture(
                         ui[j], region, scale=scale)
                     continue
                 if np.abs(svals - svals.mean()).max() == 0:
-                    out[j] = generate_mixture_random_direction(
+                    out[j] = gen_mixture(
                         ui[j], region, scale=scale)
                     continue
                 if np.random.uniform() < 0.5:

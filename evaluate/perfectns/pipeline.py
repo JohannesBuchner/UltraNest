@@ -44,7 +44,7 @@ import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__)))))  # the repository root
 
-from ultranest.perfectns import (
+from ultranest.perfectns import (  # noqa: E402
     BananaGaussianLRPS, BoxGaussianLRPS, HyperPyramidLRPS,
     NonIsotropicGaussianLRPS, UncorrelatedFunnelLRPS, mc_prior_volume_table)
 
@@ -113,16 +113,6 @@ def run_snowballingns(problem, outdir, K=400, P=20, nsteps=1,
     from ultranest.stepfuncs import (generate_mixture_random_direction,
                                      generate_quadratic_slice_direction)
     transform, loglike = problem.transform, problem.loglike
-    d = len(problem.paramnames)
-    if isinstance(problem, (BananaGaussianLRPS, NonIsotropicGaussianLRPS,
-                            BoxGaussianLRPS)):
-        vol_func = mc_prior_volume_table(problem, ndraw=vol_ndraw,
-                                         nkeep=vol_nkeep)
-    else:
-        try:
-            vol_func = problem.make_volume_function()
-        except Exception:
-            vol_func = None
     direction = {
         'quadratic-slice': generate_quadratic_slice_direction,
         'mix': generate_mixture_random_direction,

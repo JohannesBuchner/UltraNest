@@ -11,10 +11,10 @@ import numpy as np
 from numpy import exp, log
 import matplotlib
 matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-from matplotlib.lines import Line2D
+import matplotlib.pyplot as plt  # noqa: E402  (Agg must be set first)
+from matplotlib.lines import Line2D  # noqa: E402  (Agg must be set first)
 
-from ultranest.ordertest import infinite_U_zscore
+from ultranest.ordertest import infinite_U_zscore  # noqa: E402  (Agg first)
 
 
 class RotationRecordStore:
@@ -420,11 +420,11 @@ def plot_rjd_distributions(rotation_records, nsegments, outdir, title,
                  for records in rotation_records]
         lg = [np.log10(d) for d in dists if len(d) > 0]
         if lg:
-            lo = min(l.min() for l in lg)
-            hi = max(l.max() for l in lg)
+            lo = min(arr.min() for arr in lg)
+            hi = max(arr.max() for arr in lg)
             pad = 0.05 * (hi - lo) if hi > lo else 0.1
-            for j, l in enumerate(lg):
-                ax.hist(l, histtype='step', bins=20,
+            for j, arr in enumerate(lg):
+                ax.hist(arr, histtype='step', bins=20,
                         range=(lo - pad, hi + pad), color=colors[j], lw=1.1)
         lgm = np.array([np.mean(np.log(d)) if len(d) else np.nan
                         for d in dists])

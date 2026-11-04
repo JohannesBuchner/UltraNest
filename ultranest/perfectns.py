@@ -1228,20 +1228,20 @@ class HyperPyramidLRPS:
 
     def analytic_lnZ(self, points=None):
         """Reference evidence from the layer-cake identity."""
-        def integrand(l):
+        def integrand(logrho):
             with np.errstate(over='ignore'):
-                rho = np.float64(-l) ** self.s
-            return self._region_volume(rho) * np.exp(l)
+                rho = np.float64(-logrho) ** self.s
+            return self._region_volume(rho) * np.exp(logrho)
         Z, _ = integrate.quad(integrand, -np.inf, 0.0, limit=200,
                               points=points)
         return np.log(Z)
 
     def analytic_H(self, points=None):
         """Reference information gain from the layer-cake identity."""
-        def integrand(l):
+        def integrand(logrho):
             with np.errstate(over='ignore'):
-                rho = np.float64(-l) ** self.s
-            return (l + 1.0) * self._region_volume(rho) * np.exp(l)
+                rho = np.float64(-logrho) ** self.s
+            return (logrho + 1.0) * self._region_volume(rho) * np.exp(logrho)
         I, _ = integrate.quad(integrand, -np.inf, 0.0, limit=200,
                               points=points)
         Z = np.exp(self.analytic_lnZ(points=points))
@@ -1457,7 +1457,9 @@ class HyperPyramidContour(ContourProblem):
             # (H ~ 0 at t0 = t_max, where the whole cube is above the
             # schedule's L at the prior boundary) choice
             from scipy.optimize import brentq
-            f = lambda logt0: self._H_of_t0(np.exp(logt0)) - H_target
+
+            def f(logt0):
+                return self._H_of_t0(np.exp(logt0)) - H_target
             lo, hi = np.log(self.t_max), np.log(self.t_max * 1e-6)
             self.t0 = np.exp(brentq(f, lo, hi, xtol=1e-6, rtol=1e-10))
         else:
@@ -1481,8 +1483,8 @@ class HyperPyramidContour(ContourProblem):
                       axis=-1)
         w = np.exp(ls)
         Z = np.trapezoid(vol * w, ls)
-        I = np.trapezoid(vol * (ls + 1.0) * w, ls)
-        return I / Z - np.log(Z)
+        info = np.trapezoid(vol * (ls + 1.0) * w, ls)
+        return info / Z - np.log(Z)
 
     def t(self, x):
         x = np.asarray(x, dtype=float)
@@ -1530,8 +1532,8 @@ class HyperPyramidContour(ContourProblem):
                       axis=-1)
         w = np.exp(ls)
         Z = np.trapezoid(vol * w, ls)
-        I = np.trapezoid(vol * (ls + 1.0) * w, ls)
-        return I / Z - np.log(Z)
+        info = np.trapezoid(vol * (ls + 1.0) * w, ls)
+        return info / Z - np.log(Z)
 
 
 # ============================================================================
