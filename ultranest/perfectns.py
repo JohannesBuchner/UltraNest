@@ -1,6 +1,5 @@
 """
-Perfect nested sampling test problems with direct rejection sampling
-====================================================================
+Perfect nested sampling test problems with direct rejection sampling.
 
 MCMC-free validation problems: at each likelihood constraint, candidates
 are drawn in batches from an analytically known region that encloses the
@@ -51,7 +50,8 @@ from .mlfriends import SimpleRegion
 # ---------------------------------------------------------------------------
 
 class BoxBallVolume:
-    """Exact volume of the N-ball of radius r clipped to the box
+    """Exact volume of the N-ball of radius r clipped to the box.
+
     |w_i| <= D, as a fraction of the box volume:
 
         F(t) = P(sum_i u_i^2 <= t),   t = (r/D)^2,  u_i ~ U[-1, 1]
@@ -62,7 +62,8 @@ class BoxBallVolume:
     precomputed once by discrete convolution of the exact per-bin masses
     of u^2, P(x < u^2 <= x+dx) = sqrt(x+dx) - sqrt(x) (sampling the
     1/sqrt(x) density on a grid is inaccurate); the left-edge bin
-    placement shifts the sum down by N*dx/2, compensated exactly."""
+    placement shifts the sum down by N*dx/2, compensated exactly.
+    """
 
     def __init__(self, N, D, ngrid=None):
         self.N = int(N)
@@ -84,8 +85,10 @@ class BoxBallVolume:
         self.F = F
 
     def frac(self, r2):
-        """Volume fraction of the box inside the ball of radius sqrt(r2),
-        vectorized over r2."""
+        """Volume fraction of the box inside the ball of radius sqrt(r2),.
+
+        vectorized over r2.
+        """
         t = np.asarray(r2, dtype=float) / self.D ** 2
         return np.interp(t - self.shift, self.t, self.F, left=0.0, right=1.0)
 
@@ -94,7 +97,7 @@ _BBVOL_CACHE = {}
 
 
 def box_ball_volume(N, D):
-    """Cached BoxBallVolume for the given (N, D)."""
+    """Return a cached BoxBallVolume for the given (N, D)."""
     key = (int(N), round(float(D), 12))
     if key not in _BBVOL_CACHE:
         _BBVOL_CACHE[key] = BoxBallVolume(N, D)
@@ -102,9 +105,11 @@ def box_ball_volume(N, D):
 
 
 class _FunnelVolumeKernel:
-    """Exact prior volume V(Lmin) of {loglike >= Lmin} for the (truncated)
+    """Exact prior volume V(Lmin) of {loglike >= Lmin} for the (truncated).
+
     funnel: an s-grid trapezoid rule (~400x faster than quadrature;
-    accuracy ~1e-5 relative), with the exact ball-box crossover fraction."""
+    accuracy ~1e-5 relative), with the exact ball-box crossover fraction.
+    """
 
     def __init__(self, problem, ngrid=800):
         N, tau, D = problem.ndim, problem.tau, problem.D
@@ -130,9 +135,11 @@ class _FunnelVolumeKernel:
 
 
 class TabulatedVolume:
-    """Tabulated exact prior volume V(Lmin) on an Lmin grid,
+    """Tabulated exact prior volume V(Lmin) on an Lmin grid,.
+
     log-interpolated, with the exact saturated volume Vfull and an
-    invertible Lmin_of_volume; vectorized over Lmin."""
+    invertible Lmin_of_volume; vectorized over Lmin.
+    """
 
     def __init__(self, Lgrid, lnV):
         self.Lgrid = np.asarray(Lgrid, dtype=float)
@@ -150,8 +157,10 @@ class TabulatedVolume:
 
 
 class ExactVolume:
-    """Exact per-call volume function with bisective inversion, for
-    problems whose volume is cheap to evaluate."""
+    """Exact per-call volume function with bisective inversion, for.
+
+    problems whose volume is cheap to evaluate.
+    """
 
     def __init__(self, problem, L_lo=-1.0, L_hi=0.0):
         self.problem = problem
@@ -162,6 +171,7 @@ class ExactVolume:
         return self.problem.prior_volume(Lmin)
 
     def Lmin_of_volume(self, V):
+        """Return the likelihood threshold enclosing the given volume."""
         lo, hi = self.L_lo, self.L_hi
         for _ in range(100):
             mid = 0.5 * (lo + hi)
@@ -173,11 +183,13 @@ class ExactVolume:
 
 
 def mc_prior_volume_table(problem, ndraw=100000000, seed=0, nkeep=200001):
-    """Tabulate X(Lmin) = P(logL >= Lmin) under the prior by Monte Carlo
+    """Tabulate X(Lmin) = P(logL >= Lmin) under the prior by Monte Carlo.
+
     with a fixed seed (exact in expectation, reproducible): the empirical
     survival function of the likelihood over ndraw prior draws, kept at
     nkeep rank-spaced likelihoods. For problems whose clipped
-    constrained-region volume has no closed form (gauss, banana)."""
+    constrained-region volume has no closed form (gauss, banana).
+    """
     rng = np.random.RandomState(seed)
     Ls = np.empty(ndraw)
     # keep the per-chunk arrays ~<200 MB at high dimension
@@ -196,12 +208,14 @@ def mc_prior_volume_table(problem, ndraw=100000000, seed=0, nkeep=200001):
 
 
 def mc_information_gain(problem, ndraw=1000000, seed=0):
-    """Monte-Carlo information gain H = E_post[logL] - lnZ for problems
+    """Monte-Carlo information gain H = E_post[logL] - lnZ for problems.
+
     without an analytic value. For constant-Jacobian problems
     (``from_z``), draws from the Gaussian posterior shape in z-space and
     keeps the preimage inside the cube; otherwise falls back to
     importance sampling with the prior (reliable only if the posterior
-    occupies a large prior fraction)."""
+    occupies a large prior fraction).
+    """
     rng = np.random.RandomState(seed)
     if hasattr(problem, 'from_z'):
         z = rng.normal(size=(ndraw, problem.ndim))
@@ -258,7 +272,8 @@ def _truncated_second_moment(lo, hi):
 # ============================================================================
 
 class PerfectRegion(SimpleRegion):
-    """Axis-aligned region (like :py:class:`SimpleRegion`) that draws its
+    """Axis-aligned region (like :py:class:`SimpleRegion`) that draws its.
+
     samples from the analytically known enclosing region of an attached
     problem.
 
@@ -289,16 +304,21 @@ class PerfectRegion(SimpleRegion):
 
     @classmethod
     def with_problem(cls, problem):
-        """Return a region_class constructor that uses this problem's
-        enclosing proposals."""
+        """Return a region_class constructor that uses this problem's.
+
+        enclosing proposals.
+        """
         return functools.partial(cls, problem=problem)
 
     def _live_points_Lmin(self):
-        """The current likelihood threshold equals the worst live point's
-        likelihood (the integrator replaces that point next)."""
+        """Return the current likelihood threshold: the worst live point's.
+
+        likelihood (the integrator replaces that point next).
+        """
         return float(np.min(self.problem.loglike(self.problem.transform(self.u))))
 
     def sample(self, nsamples=100):
+        """Draw exact constrained-prior samples."""
         if self.problem is None:
             return SimpleRegion.sample(self, nsamples=nsamples)
         Lmin = self._live_points_Lmin()
@@ -315,7 +335,7 @@ class PerfectRegion(SimpleRegion):
 # ============================================================================
 
 class NonIsotropicGaussianLRPS:
-    """Flat prior on [0,1]^N and likelihood
+    """Flat prior on [0,1]^N and likelihood.
 
         logL(x) = -0.5 sum_i ((x_i - mu_i)/sigma_i)^2
                   - 0.5 sum_i log(2 pi sigma_i^2)
@@ -342,28 +362,36 @@ class NonIsotropicGaussianLRPS:
 
     @classmethod
     def standard_problem(cls, ndim, mu=0.5):
+        """Construct the standard problem configuration."""
         return cls(ndim=ndim, mu=mu)
 
     @property
     def paramnames(self):
+        """Return the parameter names."""
         return ['param%d' % (i + 1) for i in range(self.ndim)]
 
     def __str__(self):
+        """Return the string representation."""
         return 'NonIsotropicGaussianLRPS(ndim=%d)' % self.ndim
 
     def transform(self, x):
+        """Transform the unit cube to the parameters."""
         return np.array(x)
 
     def to_natural(self, u):
+        """Return the natural parameter space coordinates."""
         return np.asarray(u, dtype=float)
 
     def to_u(self, x):
+        """Convert the natural parameters back to the unit cube."""
         return np.asarray(x, dtype=float)
 
     def to_u_batch(self, x):
+        """Convert a batch of natural parameters to the unit cube."""
         return np.asarray(x, dtype=float)
 
     def loglike(self, theta):
+        """Return the log-likelihood."""
         theta = np.asarray(theta, dtype=float)
         z = (theta - self.mu) / self.sigma
         like = -0.5 * (z ** 2).sum(axis=1) \
@@ -378,14 +406,17 @@ class NonIsotropicGaussianLRPS:
         return np.sqrt(max(0.0, -2.0 * (Lmin + self._lognorm())))
 
     def bbox(self, Lmin):
+        """Return the bounding box of the likelihood constraint."""
         r = self.radius(Lmin)
         lower = np.maximum(0.0, self.mu - r * self.sigma)
         upper = np.minimum(1.0, self.mu + r * self.sigma)
         return lower, upper
 
     def proposal_volumes(self, Lmin):
-        """Volumes of the enclosing envelopes; the smaller gives the
-        higher acceptance rate."""
+        """Volumes of the enclosing envelopes; the smaller gives the.
+
+        higher acceptance rate.
+        """
         r = self.radius(Lmin)
         lower, upper = self.bbox(Lmin)
         ellipsoid_volume = np.exp(
@@ -427,11 +458,13 @@ class NonIsotropicGaussianLRPS:
         return np.concatenate(out, axis=0)[:nsamples]
 
     def analytic_lnZ(self):
+        """Return the analytic log-evidence."""
         lo = (0.0 - self.mu) / self.sigma
         hi = (1.0 - self.mu) / self.sigma
         return np.log(special.ndtr(hi) - special.ndtr(lo)).sum()
 
     def analytic_H(self):
+        """Return the analytic information gain."""
         lo = (0.0 - self.mu) / self.sigma
         hi = (1.0 - self.mu) / self.sigma
         m2 = _truncated_second_moment(lo, hi).sum()
@@ -445,9 +478,11 @@ class NonIsotropicGaussianLRPS:
 
     def make_volume_function(self, vmin_frac=None, ngrid=None,
                              ndraw=100000000, seed=0):
-        """TabulatedVolume of X(Lmin) = P(logL >= Lmin) under the prior,
+        """Return a tabulated interpolation of X(Lmin) = P(logL >= Lmin) under the prior,.
+
         by fixed-seed Monte Carlo: the likelihood ellipsoid clipped to
-        the cube has no closed-form volume."""
+        the cube has no closed-form volume.
+        """
         return mc_prior_volume_table(self, ndraw=ndraw, seed=seed)
 
 
@@ -512,6 +547,7 @@ class UncorrelatedFunnelLRPS:
 
     @property
     def paramnames(self):
+        """Return the parameter names."""
         return ['sigma'] + ['dp%d' % i for i in range(self.ndim)]
 
     @property
@@ -520,20 +556,24 @@ class UncorrelatedFunnelLRPS:
         return (2 * self.D) ** self.ndim
 
     def prior_volume(self, Lmin):
-        """Exact prior volume of {loglike >= Lmin}: the s-grid trapezoid
+        """Exact prior volume of {loglike >= Lmin}: the s-grid trapezoid.
+
         of prior(s) * (w-ball at level s) intersected with the w-box,
         with the exact ball-box crossover fraction (BoxBallVolume).
-        Vectorized over Lmin."""
+        Vectorized over Lmin.
+        """
         if not hasattr(self, '_vol_kernel'):
             self._vol_kernel = _FunnelVolumeKernel(self)
         return self._vol_kernel(Lmin)
 
     def make_volume_function(self, vmin_frac=1e-4, ngrid=1500,
                              ndraw=None, seed=0):
-        """TabulatedVolume of the exact prior volume over the range
+        """Return a tabulated interpolation of the exact prior volume over the range.
+
         [lowest supported likelihood - 10, the vmin_frac level + 5]:
         microsecond log-interpolated evaluation, exact Vfull and
-        Lmin_of_volume for defining equal-volume windows."""
+        Lmin_of_volume for defining equal-volume windows.
+        """
         K = 0.5 * (self.ndim * np.log(2 * np.pi) + self.logdetM)
         # lowest likelihood on the support: s = s_upper, |w|^2 maximal
         L_support_lo = (-0.5 * self.ndim * self.D ** 2
@@ -550,10 +590,12 @@ class UncorrelatedFunnelLRPS:
         return TabulatedVolume(Ls[pos], np.log(vals[pos]))
 
     def __str__(self):
+        """Return the string representation."""
         return 'UncorrelatedFunnelLRPS(ndim=%d, tau=%g, D=%g)' % (
             self.ndim, self.tau, self.D)
 
     def transform(self, u):
+        """Transform the unit cube to the parameters."""
         u = np.asarray(u, dtype=float)
         with np.errstate(divide='ignore', invalid='ignore'):
             s = self.tau * special.ndtri(u[:, 0])
@@ -562,10 +604,12 @@ class UncorrelatedFunnelLRPS:
             return np.concatenate([np.exp(s)[:, None], d], axis=1)
 
     def to_natural(self, u):
+        """Return the natural parameter space coordinates."""
         u = np.asarray(u, dtype=float)
         return self.tau * special.ndtri(u[0]), 2 * self.D * u[1:] - self.D
 
     def to_u(self, state):
+        """Convert the natural parameters back to the unit cube."""
         s, w = state
         u0 = special.ndtr(np.asarray(s, dtype=float) / self.tau)
         ui = (np.asarray(w, dtype=float) + self.D) / (2 * self.D)
@@ -579,6 +623,7 @@ class UncorrelatedFunnelLRPS:
         return np.concatenate([u0[:, None], ui], axis=1)
 
     def loglike(self, theta):
+        """Return the log-likelihood."""
         theta = np.asarray(theta, dtype=float)
         with np.errstate(divide='ignore', invalid='ignore'):
             s = np.log(theta[:, 0])
@@ -597,9 +642,11 @@ class UncorrelatedFunnelLRPS:
         return (C - np.sqrt(C * C + 8.0 * N ** 3 * self.tau ** 2)) / (4.0 * N)
 
     def make_unboxed_s_inverse_cdf(self, C, ngrid=16384, tail_sigmas=14.0):
-        """Tabulated inverse CDF of p(s) ~ N(s;0,tau^2) (C-2Ns)^(N/2)
+        """Tabulated inverse CDF of p(s) ~ N(s;0,tau^2) (C-2Ns)^(N/2).
+
         on s < C/(2N), respecting the optional prior truncation.
-        Returns (grid, cdf)."""
+        Returns (grid, cdf).
+        """
         N = self.ndim
         s_hi = min(C / (2.0 * N), self.s_upper)
         s_lo = max(self.s_lower,
@@ -652,6 +699,7 @@ class UncorrelatedFunnelLRPS:
         return np.concatenate(out, axis=0)[:nsamples]
 
     def analytic_lnZ(self):
+        """Return the analytic log-evidence."""
         nd = self.ndim
         q = 2 * special.ndtr(self.D) - 1  # P(|z| <= D)
         # s-integral over the prior support [s_lower, s_upper] of
@@ -669,6 +717,7 @@ class UncorrelatedFunnelLRPS:
             - 0.5 * self.logdetM + nd * np.log(q / (2 * self.D))
 
     def analytic_H(self):
+        """Return the analytic information gain."""
         nd = self.ndim
         q = 2 * special.ndtr(self.D) - 1
         m2 = 1.0 - 2 * self.D * _normpdf(self.D) / q  # E[z^2 | |z| <= D]
@@ -750,7 +799,7 @@ def funnel_importance_sampler(problem, nsamples, rng=None, seed=None):
 # ============================================================================
 
 class BoxGaussianLRPS:
-    """Flat prior on [0,1]^N and likelihood
+    """Flat prior on [0,1]^N and likelihood.
 
         logL(x) = -0.5 sum_i (x_i/sigma)^2 + logbonus * [max_i x_i < sigma]
 
@@ -777,24 +826,31 @@ class BoxGaussianLRPS:
 
     @property
     def paramnames(self):
+        """Return the parameter names."""
         return ['param%d' % (i + 1) for i in range(self.ndim)]
 
     def __str__(self):
+        """Return the string representation."""
         return 'BoxGaussianLRPS(ndim=%d)' % self.ndim
 
     def transform(self, x):
+        """Transform the unit cube to the parameters."""
         return np.array(x)
 
     def to_natural(self, u):
+        """Return the natural parameter space coordinates."""
         return np.asarray(u, dtype=float)
 
     def to_u(self, x):
+        """Convert the natural parameters back to the unit cube."""
         return np.asarray(x, dtype=float)
 
     def to_u_batch(self, x):
+        """Convert a batch of natural parameters to the unit cube."""
         return np.asarray(x, dtype=float)
 
     def loglike(self, theta):
+        """Return the log-likelihood."""
         theta = np.asarray(theta, dtype=float)
         delta = theta.max(axis=1)
         return -0.5 * ((theta / self.sigma) ** 2).sum(axis=1) \
@@ -810,7 +866,8 @@ class BoxGaussianLRPS:
                    min(1.0, self.sigma * np.sqrt(max(0.0, -2.0 * Lmin))))
 
     def _proposal_orthant_ball(self, Lmin, rng, nsamples):
-        """Uniform draws from the positive-orthant part of the whitened
+        """Uniform draws from the positive-orthant part of the whitened.
+
         ball of radius rho, intersected with the cube.
 
         In the ball phase (Lmin >= logbonus - 0.5) the constrained region
@@ -834,7 +891,8 @@ class BoxGaussianLRPS:
         return candidates, inside_cube
 
     def proposal(self, Lmin, rng, nsamples, method='auto'):
-        """Draw candidates from an enclosing region; returns
+        """Draw candidates from an enclosing region; returns.
+
         (candidates, accepted).
 
         method='auto' picks the orthant-ball proposal in the ball phase
@@ -859,6 +917,7 @@ class BoxGaussianLRPS:
         return np.concatenate(out, axis=0)[:nsamples]
 
     def analytic_lnZ(self):
+        """Return the analytic log-evidence."""
         N = self.ndim
         A = self.sigma * np.sqrt(2 * np.pi)
         q0 = special.ndtr(1.0) - 0.5               # integral over [0, sigma] / A
@@ -868,6 +927,7 @@ class BoxGaussianLRPS:
             q0 ** N * np.exp(self.logbonus) + q1 ** N - q0 ** N)
 
     def analytic_H(self):
+        """Return the analytic information gain."""
         N = self.ndim
         A = self.sigma * np.sqrt(2 * np.pi)
         q0 = special.ndtr(1.0) - 0.5
@@ -889,12 +949,14 @@ class BoxGaussianLRPS:
         return 1.0
 
     def prior_volume(self, Lmin):
-        """Exact prior volume fraction of {loglike >= Lmin} in the deep
+        """Exact prior volume fraction of {loglike >= Lmin} in the deep.
+
         tail (Lmin <= -ndim/2, where nested sampling runs live): the
         constrained region is exactly the positive-orthant part of the
         ball of whitened radius sqrt(-2 Lmin) (the bonus box lies inside
         it), so the cube fraction inside is the exact Beta-sum crossover
-        fraction (BoxBallVolume). Not valid in the box/mixed phases."""
+        fraction (BoxBallVolume). Not valid in the box/mixed phases.
+        """
         Lmin = np.asarray(Lmin, dtype=float)
         if np.any(Lmin > -0.5 * self.ndim):
             raise ValueError("prior_volume implements only the deep tail")
@@ -903,7 +965,7 @@ class BoxGaussianLRPS:
 
     def make_volume_function(self, vmin_frac=None, ngrid=None,
                              ndraw=None, seed=0):
-        """ExactVolume wrapper over the deep-tail range."""
+        """Return the exact prior volume over the deep-tail range."""
         d = self.ndim
         t_hi = d / 3.0 + 8.0 * 0.353 * np.sqrt(d)   # X ~ 1 there
         L_lo = -t_hi / (2.0 * self.sigma ** 2)
@@ -915,7 +977,7 @@ class BoxGaussianLRPS:
 # ============================================================================
 
 class BananaGaussianLRPS:
-    """Triangular constant-Jacobian banana likelihood:
+    """Triangular constant-Jacobian banana likelihood.
 
         z_0 = (x_0 - mu_0) / sigma_0
         z_i = (x_i - centreline_i) / sigma_i,
@@ -953,29 +1015,37 @@ class BananaGaussianLRPS:
 
     @classmethod
     def standard_problem(cls, ndim=2, sigma=0.1, bend=1.0, mu=0.5):
+        """Construct the standard problem configuration."""
         assert ndim >= 2
         return cls(sigma=np.full(ndim, sigma), bend=bend, mu=mu)
 
     @property
     def paramnames(self):
+        """Return the parameter names."""
         return ['param%d' % (i + 1) for i in range(self.ndim)]
 
     def __str__(self):
+        """Return the string representation."""
         return 'BananaGaussianLRPS(ndim=%d)' % self.ndim
 
     def transform(self, x):
+        """Transform the unit cube to the parameters."""
         return np.array(x)
 
     def to_natural(self, u):
+        """Return the natural parameter space coordinates."""
         return np.asarray(u, dtype=float)
 
     def to_u(self, x):
+        """Convert the natural parameters back to the unit cube."""
         return np.asarray(x, dtype=float)
 
     def to_u_batch(self, x):
+        """Convert a batch of natural parameters to the unit cube."""
         return np.asarray(x, dtype=float)
 
     def to_z(self, x):
+        """Map to the whitened z-space."""
         x = np.asarray(x, dtype=float)
         z0 = (x[..., 0] - self.mu[0]) / self.sigma[0]
         zs = [z0]
@@ -987,6 +1057,7 @@ class BananaGaussianLRPS:
         return np.stack(zs, axis=-1)
 
     def from_z(self, z):
+        """Map from the whitened z-space back to the parameters."""
         z = np.asarray(z, dtype=float)
         xs = [self.mu[0] + self.sigma[0] * z[..., 0]]
         for i in range(1, self.ndim):
@@ -998,15 +1069,19 @@ class BananaGaussianLRPS:
         return np.stack(xs, axis=-1)
 
     def loglike(self, theta):
+        """Return the log-likelihood."""
         z = self.to_z(theta)
         return -0.5 * (z ** 2).sum(axis=-1)
 
     def radius(self, Lmin):
+        """Return the likelihood radius at the given threshold."""
         return np.sqrt(max(0.0, -2.0 * np.asarray(Lmin, dtype=float)))
 
     def conservative_bbox(self, Lmin):
-        """Conservative recursive coordinate envelope of the banana body
-        (not the exact bounding box, but it safely encloses the body)."""
+        """Conservative recursive coordinate envelope of the banana body.
+
+        (not the exact bounding box, but it safely encloses the body).
+        """
         r = self.radius(Lmin)
         lower = [self.mu[0] - r * self.sigma[0]]
         upper = [self.mu[0] + r * self.sigma[0]]
@@ -1026,8 +1101,10 @@ class BananaGaussianLRPS:
         return lower, upper
 
     def proposal_volumes(self, Lmin):
-        """Volumes of the enclosing envelopes; the smaller gives the
-        higher acceptance rate."""
+        """Volumes of the enclosing envelopes; the smaller gives the.
+
+        higher acceptance rate.
+        """
         r = self.radius(Lmin)
         with np.errstate(divide='ignore'):
             body_volume = np.exp(
@@ -1038,8 +1115,10 @@ class BananaGaussianLRPS:
         return {'banana': body_volume, 'bbox': np.prod(upper - lower)}
 
     def proposal(self, Lmin, rng, nsamples, method='auto'):
-        """Draw candidates from an enclosing region; returns
-        (candidates, accepted) in u-space."""
+        """Draw candidates from an enclosing region; returns.
+
+        (candidates, accepted) in u-space.
+        """
         if method == 'auto':
             volumes = self.proposal_volumes(Lmin)
             method = min(volumes, key=lambda name: volumes[name])
@@ -1064,11 +1143,11 @@ class BananaGaussianLRPS:
         return np.concatenate(out, axis=0)[:nsamples]
 
     def analytic_lnZ(self, ngrid=1000):
-        """Reference evidence, by numerical integration over the cube."""
+        """Return the reference evidence, by numerical integration over the cube."""
         return self._reference_values(ngrid)[0]
 
     def analytic_H(self, ngrid=1000):
-        """Reference information gain, by numerical integration."""
+        """Return the reference information gain, by numerical integration."""
         return self._reference_values(ngrid)[1]
 
     @property
@@ -1078,9 +1157,11 @@ class BananaGaussianLRPS:
 
     def make_volume_function(self, vmin_frac=None, ngrid=None,
                              ndraw=100000000, seed=0):
-        """TabulatedVolume of X(Lmin) = P(logL >= Lmin) under the prior,
+        """Return a tabulated interpolation of X(Lmin) = P(logL >= Lmin) under the prior,.
+
         by fixed-seed Monte Carlo: the banana body clipped to the cube
-        has no closed-form volume."""
+        has no closed-form volume.
+        """
         return mc_prior_volume_table(self, ndraw=ndraw, seed=seed)
 
     def _reference_values(self, ngrid=1000):
@@ -1108,7 +1189,7 @@ class BananaGaussianLRPS:
 # ============================================================================
 
 class HyperPyramidLRPS:
-    """Hyperpyramid likelihood:
+    """Hyperpyramid likelihood.
 
         logL(x) = -(max_i |x_i - 1/2| / sigma_i)^(1/s)
 
@@ -1151,10 +1232,12 @@ class HyperPyramidLRPS:
 
     @classmethod
     def standard_problem(cls, ndim, s=100.0, sigma='ones'):
+        """Construct the standard problem configuration."""
         return cls(ndim=ndim, s=s, sigma=sigma)
 
     @property
     def paramnames(self):
+        """Return the parameter names."""
         return ['param%d' % (i + 1) for i in range(self.ndim)]
 
     @property
@@ -1163,9 +1246,11 @@ class HyperPyramidLRPS:
         return 1.0
 
     def prior_volume(self, Lmin):
-        """Exact prior volume fraction of {loglike >= Lmin}: the clipped
+        """Exact prior volume fraction of {loglike >= Lmin}: the clipped.
+
         axis-aligned box |x_i - 1/2| <= sigma_i (-Lmin)^s.
-        Vectorized over Lmin."""
+        Vectorized over Lmin.
+        """
         Lmin = np.asarray(Lmin, dtype=float)
         with np.errstate(over='ignore'):
             rho = np.maximum(0.0, -Lmin) ** self.s
@@ -1175,26 +1260,34 @@ class HyperPyramidLRPS:
 
     def make_volume_function(self, vmin_frac=None, ngrid=None,
                              ndraw=None, seed=0):
-        """ExactVolume wrapper: per-call exact volume with bisective
-        inversion over [-1, 0]."""
+        """Return the exact prior volume: per-call exact volume with bisective.
+
+        inversion over [-1, 0].
+        """
         return ExactVolume(self, L_lo=-1.0, L_hi=0.0)
 
     def __str__(self):
+        """Return the string representation."""
         return 'HyperPyramidLRPS(ndim=%d, s=%g)' % (self.ndim, self.s)
 
     def transform(self, x):
+        """Transform the unit cube to the parameters."""
         return np.array(x)
 
     def to_natural(self, u):
+        """Return the natural parameter space coordinates."""
         return np.asarray(u, dtype=float)
 
     def to_u(self, x):
+        """Convert the natural parameters back to the unit cube."""
         return np.asarray(x, dtype=float)
 
     def to_u_batch(self, x):
+        """Convert a batch of natural parameters to the unit cube."""
         return np.asarray(x, dtype=float)
 
     def loglike(self, theta):
+        """Return the log-likelihood."""
         theta = np.asarray(theta, dtype=float)
         m = np.max(np.abs(theta - 0.5) / self.sigma, axis=1)
         return -(m ** (1.0 / self.s))
@@ -1210,9 +1303,11 @@ class HyperPyramidLRPS:
         return np.prod(upper - lower)
 
     def proposal(self, Lmin, rng, nsamples, method='box'):
-        """Direct analytic proposal: uniform draws from the constrained
+        """Direct analytic proposal: uniform draws from the constrained.
+
         region (the clipped box |x_i - 1/2| <= sigma_i (-Lmin)^s);
-        acceptance rate 1."""
+        acceptance rate 1.
+        """
         if method != 'box':
             raise ValueError("Unknown method=%s" % method)
         with np.errstate(over='ignore'):
@@ -1227,8 +1322,9 @@ class HyperPyramidLRPS:
         return candidates
 
     def analytic_lnZ(self, points=None):
-        """Reference evidence from the layer-cake identity."""
+        """Return the reference evidence from the layer-cake identity."""
         def integrand(logrho):
+            """Return the integrand."""
             with np.errstate(over='ignore'):
                 rho = np.float64(-logrho) ** self.s
             return self._region_volume(rho) * np.exp(logrho)
@@ -1237,8 +1333,9 @@ class HyperPyramidLRPS:
         return np.log(Z)
 
     def analytic_H(self, points=None):
-        """Reference information gain from the layer-cake identity."""
+        """Return the reference information gain from the layer-cake identity."""
         def integrand(logrho):
+            """Return the integrand."""
             with np.errstate(over='ignore'):
                 rho = np.float64(-logrho) ** self.s
             return (logrho + 1.0) * self._region_volume(rho) * np.exp(logrho)
@@ -1256,8 +1353,10 @@ class HyperPyramidLRPS:
 # ---------------------------------------------------------------------------
 
 def logspace_sigma(ndim, lo=0.1, hi=1e-4):
-    """Per-axis widths logarithmically spaced between lo and hi, in
-    unit-hypercube coordinates."""
+    """Per-axis widths logarithmically spaced between lo and hi, in.
+
+    unit-hypercube coordinates.
+    """
     return np.logspace(np.log10(lo), np.log10(hi), int(ndim))
 
 
@@ -1269,36 +1368,47 @@ class ContourProblem:
     """
 
     def loglike(self, theta):
+        """Return the log-likelihood."""
         return self.L_of_t(self.t(theta))
 
     def t_of_L(self, Lmin):
+        """Return the volume-like coordinate t at the likelihood threshold."""
         raise NotImplementedError
 
     def L_of_t(self, t):
+        """Return the likelihood threshold at the volume-like coordinate t."""
         raise NotImplementedError
 
     def t(self, x):
+        """Return the volume-like coordinate t of the given point."""
         raise NotImplementedError
 
     def proposal(self, Lmin, rng, nsamples):
-        """Exact uniform draws from {t(x) <= t_min}; returns
-        (candidates, inside) with candidates in u-space."""
+        """Exact uniform draws from {t(x) <= t_min}; returns.
+
+        (candidates, inside) with candidates in u-space.
+        """
         raise NotImplementedError
 
     def transform(self, x):
+        """Transform the unit cube to the parameters."""
         return np.array(x)
 
     def to_natural(self, u):
+        """Return the natural parameter space coordinates."""
         return np.asarray(u, dtype=float)
 
     def to_u(self, x):
+        """Convert the natural parameters back to the unit cube."""
         return np.asarray(x, dtype=float)
 
     def to_u_batch(self, x):
+        """Convert a batch of natural parameters to the unit cube."""
         return np.asarray(x, dtype=float)
 
     @property
     def paramnames(self):
+        """Return the parameter names."""
         return ['param%d' % (i + 1) for i in range(self.ndim)]
 
     @property
@@ -1311,12 +1421,15 @@ class ContourProblem:
         return rng.uniform(size=(nsamples, self.ndim))
 
     def analytic_H(self):
+        """Return the analytic information gain."""
         raise NotImplementedError("no analytic information gain")
 
     def make_volume_function(self, vmin_frac=None, ngrid=None,
                              ndraw=100000000, seed=0):
-        """TabulatedVolume of the prior volume fraction X(Lmin), by
-        fixed-seed Monte Carlo over the prior (exact in expectation)."""
+        """Return a tabulated interpolation of the prior volume fraction X(Lmin), by.
+
+        fixed-seed Monte Carlo over the prior (exact in expectation).
+        """
         return mc_prior_volume_table(self, ndraw=ndraw, seed=seed)
 
 
@@ -1325,7 +1438,9 @@ class ContourProblem:
 # ============================================================================
 
 class GaussContour(ContourProblem):
-    """Flat prior on [0,1]^N; contours are ellipsoids shrinking toward mu:
+    """Flat prior on [0,1]^N with ellipsoid contours shrinking toward mu.
+
+        t(x) = sum_i ((x_i - mu_i)/sigma_i)^2
 
         t(x) = sum_i ((x_i - mu_i)/sigma_i)^2
         L(t) = -t/2 - sum_i log(sqrt(2 pi) sigma_i)
@@ -1348,6 +1463,7 @@ class GaussContour(ContourProblem):
                                      (self.ndim,)).astype(float)
 
     def t(self, x):
+        """Return the volume-like coordinate t of the given point."""
         x = np.asarray(x, dtype=float)
         z = (x - self.mu) / self.sigma
         return (z ** 2).sum(axis=-1)
@@ -1356,14 +1472,18 @@ class GaussContour(ContourProblem):
         return 0.5 * np.log(2 * np.pi * self.sigma ** 2).sum()
 
     def L_of_t(self, t):
+        """Return the likelihood threshold at the volume-like coordinate t."""
         return -0.5 * np.asarray(t, dtype=float) - self._lognorm()
 
     def t_of_L(self, Lmin):
+        """Return the volume-like coordinate t at the likelihood threshold."""
         return -2.0 * (Lmin + self._lognorm())
 
     def proposal_volumes(self, Lmin):
-        """Volumes of the enclosing envelopes; the smaller gives the
-        higher acceptance rate."""
+        """Volumes of the enclosing envelopes; the smaller gives the.
+
+        higher acceptance rate.
+        """
         r = np.sqrt(self.t_of_L(Lmin))
         lower = np.maximum(0.0, self.mu - r * self.sigma)
         upper = np.minimum(1.0, self.mu + r * self.sigma)
@@ -1375,11 +1495,13 @@ class GaussContour(ContourProblem):
                 'ellipsoid': ellipsoid_volume}
 
     def proposal(self, Lmin, rng, nsamples, method='auto'):
-        """Draws from the smaller of two enclosing envelopes: the
+        """Draws from the smaller of two enclosing envelopes: the.
+
         coordinate bounding box of the ellipsoid clipped to the cube
         (efficient at shallow levels, where the ellipsoid covers the
         cube and its in-cube fraction is ~1e-6), or the ellipsoid
-        itself (efficient at deep levels); accepted by likelihood."""
+        itself (efficient at deep levels); accepted by likelihood.
+        """
         t_min = self.t_of_L(Lmin)
         if method == 'auto':
             volumes = self.proposal_volumes(Lmin)
@@ -1396,6 +1518,7 @@ class GaussContour(ContourProblem):
         return x, ok
 
     def analytic_H(self):
+        """Return the analytic information gain."""
         lo = (0.0 - self.mu) / self.sigma
         hi = (1.0 - self.mu) / self.sigma
         m2 = _truncated_second_moment(lo, hi).sum()
@@ -1408,7 +1531,7 @@ class GaussContour(ContourProblem):
 # ============================================================================
 
 class HyperPyramidContour(ContourProblem):
-    """Flat prior on [0,1]^N; contours are axis-aligned boxes:
+    """Flat prior on [0,1]^N with axis-aligned box contours.
 
         t(x) = max_i |x_i - 0.5| / sigma_i
         L(t) = -t / t0            (schedule='linear', default)
@@ -1459,6 +1582,8 @@ class HyperPyramidContour(ContourProblem):
             from scipy.optimize import brentq
 
             def f(logt0):
+                """Return the f."""
+                """Return the f."""
                 return self._H_of_t0(np.exp(logt0)) - H_target
             lo, hi = np.log(self.t_max), np.log(self.t_max * 1e-6)
             self.t0 = np.exp(brentq(f, lo, hi, xtol=1e-6, rtol=1e-10))
@@ -1466,10 +1591,12 @@ class HyperPyramidContour(ContourProblem):
             self.t0 = 1.0
 
     def _H_of_t0(self, t0):
-        """Layer-cake information gain for the linear schedule L=-t/t0,
+        """Layer-cake information gain for the linear schedule L=-t/t0,.
+
         on a composite grid: linear near l=0, log-spaced in the deep
         |l| tail (the per-axis clipping transitions span
-        1/(2 sigma_max t0) .. 1/(2 sigma_min t0))."""
+        1/(2 sigma_max t0) .. 1/(2 sigma_min t0)).
+        """
         l_edge = 1.0 / (2 * self.sigma.max() * t0)
         l_lo = 1.0 / (2 * self.sigma.min() * t0)
         parts = [np.linspace(-50.0 * max(l_edge, 1.0), 0.0, 100001)]
@@ -1487,10 +1614,12 @@ class HyperPyramidContour(ContourProblem):
         return info / Z - np.log(Z)
 
     def t(self, x):
+        """Return the volume-like coordinate t of the given point."""
         x = np.asarray(x, dtype=float)
         return (np.abs(x - 0.5) / self.sigma[None, :]).max(axis=-1)
 
     def L_of_t(self, t):
+        """Return the likelihood threshold at the volume-like coordinate t."""
         t = np.asarray(t, dtype=float)
         if self.schedule == 'linear':
             return -t / self.t0
@@ -1498,12 +1627,14 @@ class HyperPyramidContour(ContourProblem):
             return -t ** (1.0 / self.s)
 
     def t_of_L(self, Lmin):
+        """Return the volume-like coordinate t at the likelihood threshold."""
         if self.schedule == 'linear':
             return np.maximum(0.0, -np.asarray(Lmin, dtype=float)) * self.t0
         with np.errstate(over='ignore'):
             return max(0.0, -Lmin) ** self.s
 
     def proposal(self, Lmin, rng, nsamples):
+        """Draw exact constrained-prior samples from the proposal."""
         t_min = self.t_of_L(Lmin)
         lower = np.maximum(0.0, 0.5 - t_min * self.sigma)
         upper = np.minimum(1.0, 0.5 + t_min * self.sigma)
@@ -1516,10 +1647,12 @@ class HyperPyramidContour(ContourProblem):
         return float(np.prod(np.minimum(1.0, 2 * t_min * self.sigma)))
 
     def analytic_H(self):
-        """Layer-cake information gain, integrated on a grid in l: the
+        """Layer-cake information gain, integrated on a grid in l: the.
+
         volume fraction V(l) transitions from ~1 to ~0 over a narrow l
         range (the prior boundary), which adaptive quadrature over an
-        infinite interval misses."""
+        infinite interval misses.
+        """
         if self.schedule == 'linear':
             return self._H_of_t0(self.t0)
         # power schedule L = -t^(1/s): V(l) = prod min(1, 2 sigma_i (-l)^s)
@@ -1541,7 +1674,8 @@ class HyperPyramidContour(ContourProblem):
 # ============================================================================
 
 class ShellContour(ContourProblem):
-    """Flat prior on [0,1]^N; contours are spherical annuli around the
+    """Flat prior on [0,1]^N; contours are spherical annuli around the.
+
     shell of radius r centered on mu:
 
         t(x) = | ||x - mu|| - r |
@@ -1577,17 +1711,21 @@ class ShellContour(ContourProblem):
         self.sigma_shell = float(sigma_shell)
 
     def t(self, x):
+        """Return the volume-like coordinate t of the given point."""
         x = np.asarray(x, dtype=float)
         dist = np.linalg.norm(x - self.mu, axis=-1)
         return np.abs(dist - self.r)
 
     def L_of_t(self, t):
+        """Return the likelihood threshold at the volume-like coordinate t."""
         return -0.5 * (np.asarray(t, dtype=float) / self.sigma_shell) ** 2
 
     def t_of_L(self, Lmin):
+        """Return the volume-like coordinate t at the likelihood threshold."""
         return self.sigma_shell * np.sqrt(max(0.0, -2.0 * Lmin))
 
     def proposal(self, Lmin, rng, nsamples):
+        """Draw exact constrained-prior samples from the proposal."""
         t_min = self.t_of_L(Lmin)
         rho_lo = max(0.0, self.r - t_min)
         rho_hi = self.r + t_min
@@ -1607,7 +1745,8 @@ class ShellContour(ContourProblem):
 # ============================================================================
 
 class BananaContour(ContourProblem):
-    """Flat prior on [0,1]^N; contours are the image of Euclidean balls
+    """Flat prior on [0,1]^N; contours are the image of Euclidean balls.
+
     under the triangular constant-Jacobian warping map:
 
         z_0 = (x_0 - mu_0) / sigma_0
@@ -1639,6 +1778,7 @@ class BananaContour(ContourProblem):
             else offset
 
     def to_z(self, x):
+        """Map to the whitened z-space."""
         x = np.asarray(x, dtype=float)
         zs = [(x[..., 0] - self.mu[0]) / self.sigma[0]]
         for i in range(1, self.ndim):
@@ -1649,6 +1789,7 @@ class BananaContour(ContourProblem):
         return np.stack(zs, axis=-1)
 
     def from_z(self, z):
+        """Map from the whitened z-space back to the parameters."""
         z = np.asarray(z, dtype=float)
         xs = [self.mu[0] + self.sigma[0] * z[..., 0]]
         for i in range(1, self.ndim):
@@ -1659,18 +1800,23 @@ class BananaContour(ContourProblem):
         return np.stack(xs, axis=-1)
 
     def t(self, x):
+        """Return the volume-like coordinate t of the given point."""
         z = self.to_z(x)
         return (z ** 2).sum(axis=-1)
 
     def L_of_t(self, t):
+        """Return the likelihood threshold at the volume-like coordinate t."""
         return -0.5 * np.asarray(t, dtype=float)
 
     def t_of_L(self, Lmin):
+        """Return the volume-like coordinate t at the likelihood threshold."""
         return max(0.0, -2.0 * Lmin)
 
     def proposal_volumes(self, Lmin):
-        """Volumes of the enclosing envelopes; the smaller gives the
-        higher acceptance rate (the region is contained in both)."""
+        """Volumes of the enclosing envelopes; the smaller gives the.
+
+        higher acceptance rate (the region is contained in both).
+        """
         r = np.sqrt(self.t_of_L(Lmin))
         with np.errstate(over='ignore'):
             ball_volume = _ball_volume(self.ndim) * float(np.exp(
@@ -1678,7 +1824,8 @@ class BananaContour(ContourProblem):
         return {'ball': ball_volume, 'cube': 1.0}
 
     def proposal(self, Lmin, rng, nsamples, method='auto'):
-        """Draws from the smaller of two envelopes: the image of the
+        """Draws from the smaller of two envelopes: the image of the.
+
         z-space ball {t <= t_min} under the inverse warping (efficient
         at deep levels, where the ball image lies inside the cube
         preimage), or the unit cube itself (acceptance = the region
@@ -1687,7 +1834,8 @@ class BananaContour(ContourProblem):
         volume heuristic ignores the parabola chain constraint: at high
         dimension the ball image can have a vanishing in-cube fraction
         even when its volume is small, so the ball batch is probed and
-        the cube used as a fallback when nothing is accepted."""
+        the cube used as a fallback when nothing is accepted.
+        """
         t_min = self.t_of_L(Lmin)
         auto = method == 'auto'
         if auto:
@@ -1706,9 +1854,11 @@ class BananaContour(ContourProblem):
         return x, self.loglike(x) >= Lmin
 
     def analytic_H(self):
-        """Information gain by importance sampling in z-space (the
+        """Information gain by importance sampling in z-space (the.
+
         posterior is the standard normal in z-space restricted to the
-        cube preimage)."""
+        cube preimage).
+        """
         return mc_information_gain(self, ndraw=1000000, seed=0)
 
 
@@ -1798,8 +1948,10 @@ class SplitEllipsoidContour(ContourProblem):
         return self.sigma_split * (1.0 - s) / (1.0 - self.t_split)
 
     def _branch_s(self, branch, x):
-        """Draft contour parameter s_pm of x for one branch; -1 beyond
-        the branch's reach (r > sigma_start)."""
+        """Draft contour parameter s_pm of x for one branch; -1 beyond.
+
+        the branch's reach (r > sigma_start).
+        """
         x = np.asarray(x, dtype=float)
         branch = np.asarray(branch, dtype=float)
         if branch.ndim == 0:
@@ -1849,18 +2001,23 @@ class SplitEllipsoidContour(ContourProblem):
         return np.where(inner, s_phase2, s)
 
     def s_of_x(self, x):
-        """Draft contour parameter s(x) = max(s_plus, s_minus) in [0, 1]
-        for points inside the cube; -1 outside the reach."""
+        """Draft contour parameter s(x) = max(s_plus, s_minus) in [0, 1].
+
+        for points inside the cube; -1 outside the reach.
+        """
         return np.maximum(self._branch_s(1.0, x), self._branch_s(-1.0, x))
 
     def t(self, x):
-        """Interface contour coordinate t(x) = -s(x) (region
-        {t(x) <= t_min}, t in [-1, 0])."""
+        """Return the interface contour coordinate of the point.
+
+        t(x) = -s(x), so the region is {t(x) <= t_min}, t in [-1, 0].
+        """
         return -self.s_of_x(x)
 
     # -- likelihood schedule ------------------------------------------------
 
     def L_of_t(self, t):
+        """Return the likelihood threshold at the volume-like coordinate t."""
         s = -np.asarray(t, dtype=float)
         if self.schedule == 'linear':
             return self.beta * s
@@ -1869,6 +2026,7 @@ class SplitEllipsoidContour(ContourProblem):
         raise ValueError("Unknown schedule=%s" % self.schedule)
 
     def t_of_L(self, Lmin):
+        """Return the volume-like coordinate t at the likelihood threshold."""
         Lmin = np.asarray(Lmin, dtype=float)
         if self.schedule == 'linear':
             t = -Lmin / self.beta
@@ -1879,6 +2037,7 @@ class SplitEllipsoidContour(ContourProblem):
         return float(t) if Lmin.ndim == 0 else t
 
     def loglike(self, theta):
+        """Return the log-likelihood."""
         # the prior is the unit hypercube: points outside have likelihood
         # below the prior support (the s = -1 schedule value)
         theta = np.asarray(theta, dtype=float)
@@ -1894,10 +2053,12 @@ class SplitEllipsoidContour(ContourProblem):
     # -- proposals -----------------------------------------------------------
 
     def _branch_sliding_center(self, branch, s):
-        """Phase-2 branch center: the inner edge stays pinned at
+        """Phase-2 branch center: the inner edge stays pinned at.
+
         C_pm = mu pm delta e0 mp sigma_split e0 while the radius
         shrinks, so the center slides from mu pm delta e0 (at
-        s = t_split) toward C_pm (at s = 1)."""
+        s = t_split) toward C_pm (at s = 1).
+        """
         branch = np.asarray(branch, dtype=float)
         if branch.ndim == 0:
             m = self.mu + branch * self.delta * self.e0
@@ -1908,6 +2069,7 @@ class SplitEllipsoidContour(ContourProblem):
         return C + branch[:, None] * self.sigma_radius(s) * self.e0
 
     def proposal(self, Lmin, rng, nsamples):
+        """Draw exact constrained-prior samples from the proposal."""
         s_min = min(1.0, max(0.0, -self.t_of_L(Lmin)))
         sigma = self.sigma_radius(s_min)
         if s_min <= self.t_split:

@@ -1,6 +1,5 @@
 """
-Deprecated alias for :mod:`ultranest.perfectns`
-===============================================
+Deprecated alias for :mod:`ultranest.perfectns`.
 
 The contour-parameterized problems (:class:`ContourProblem`,
 :class:`GaussContour`, :class:`HyperPyramidContour`, :class:`ShellContour`,
