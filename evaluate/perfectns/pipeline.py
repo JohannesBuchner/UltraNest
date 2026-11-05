@@ -101,11 +101,10 @@ def run_ultranest(problem, outdir, K=400, frac_remain=0.5, seed=1,
     return summary
 
 
-def run_snowballingns(problem, outdir, K=400, P=20, nsteps=1,
-                      frac_remain=0.5, max_rotations=8, seed=1,
+def run_snowballingns(problem, outdir, K=50, P=None, nsteps=1,
+                      frac_remain=0.5, max_num_live_points=100000,
                       stepsampler='quadratic-slice',
-                      integrator='multicounter',
-                      vol_ndraw=2000000, vol_nkeep=50001, **kw):
+                      integrator='multicounter', **kw):
     """Run the SnowballingNestedSampler with the given direction
     proposal; writes the panel plots and a results summary into
     outdir."""
@@ -121,11 +120,11 @@ def run_snowballingns(problem, outdir, K=400, P=20, nsteps=1,
         problem.paramnames, loglike, transform=transform, vectorized=True,
         num_live_points_base=K, num_steps=nsteps, stepsampler=direction,
         integrator=integrator, log_dir=outdir)
-    result = sampler.run(frac_remain=frac_remain, max_rotations=max_rotations,
-                         seed=seed)
+    result = sampler.run(frac_remain=frac_remain,
+                         max_num_live_points=max_num_live_points)
     sampler.plot_rotations()
     return dict(integrator='snowballingns-' + integrator,
-                proposal=stepsampler, seed=seed,
+                proposal=stepsampler,
                 logz=float(result['logz']),
                 logzerr=float(result['logzerr']),
                 nrot=sampler.nrotations,
@@ -161,11 +160,13 @@ def run_combo(name, problem, problemname, dim, outdir, args):
     os.makedirs(combo_dir, exist_ok=True)
     spec = COMBOS[name]
     kwargs = dict(spec['kwargs'])
-    # the seed comes from the combo name (e.g. snowballingns-mix-seed3)
-    seed = int(name.split('-seed')[1]) if '-seed' in name else args.seed
+    # the seed comes from the combo name (e.g. snowballingns-mix-seed3);
+    # following the ultranest convention, the user seeds np.random
+    np.random.seed(int(name.split('-seed')[1]) if '-seed' in name
+                   else args.seed)
     kwargs.update(K=args.K, P=args.P, nsteps=args.nsteps,
-                  frac_remain=args.frac_remain, seed=seed,
-                  max_rotations=args.max_rotations)
+                  frac_remain=args.frac_remain,
+                  max_num_live_points=args.max_num_live_points)
     print('=== %s-%d / %s ===' % (problemname, dim, name), flush=True)
     t0 = time.time()
     summary = spec['runner'](problem, combo_dir, **kwargs)
@@ -176,7 +177,7 @@ def run_combo(name, problem, problemname, dim, outdir, args):
         summary['analytic_logz'] = None
     summary['args'] = dict(K=args.K, P=args.P,
                            nsteps=args.nsteps, frac_remain=args.frac_remain,
-                           seed=seed, max_rotations=args.max_rotations)
+                           max_num_live_points=args.max_num_live_points)
     with open(os.path.join(combo_dir, 'results.json'), 'w') as f:
         json.dump(summary, f, indent=1)
     with open(os.path.join(combo_dir, 'results.txt'), 'w') as f:
@@ -209,7 +210,7 @@ def main():
                              '(default: half the live points, max 100)')
     parser.add_argument('--nsteps', type=int, default=1)
     parser.add_argument('--frac-remain', type=float, default=0.5)
-    parser.add_argument('--max-rotations', type=int, default=20)
+    parser.add_argument('--max-num-live-points', type=int, default=100000)
     parser.add_argument('--seed', type=int, default=1)
     parser.add_argument('--vol-ndraw', type=int, default=2000000)
     parser.add_argument('--vol-nkeep', type=int, default=50001)

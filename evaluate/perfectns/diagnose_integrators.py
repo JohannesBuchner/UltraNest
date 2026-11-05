@@ -4,7 +4,8 @@ import numpy as np
 from numpy import log
 from ultranest.netiter import TreeNode, MultiCounter, SingleCounter
 from ultranest.snowballingns.state import SnowballState
-from ultranest.snowballingns.integrator import SnowballingNestedSampler, make_region
+from ultranest.snowballingns.integrator import SnowballingNestedSampler
+from ultranest.snowballingns.utils import make_region
 from ultranest.perfectns import BananaGaussianLRPS
 
 frac_remain = float(sys.argv[1]) if len(sys.argv) > 1 else 0.5

@@ -50,7 +50,7 @@ def make_problem(name, dim):
     raise ValueError("unknown problem=%s" % name)
 
 
-def run_once(problem, K, P, seed, max_batches, max_dead, profile=None,
+def run_once(problem, K, P, seed, max_ncalls, profile=None,
              tmpdir=None, legacy_direction=False, proposal='quadratic-slice',
              region='mlfriends'):
     """One capped first-rotation run; returns the timing summary."""
@@ -122,17 +122,16 @@ def run_once(problem, K, P, seed, max_batches, max_dead, profile=None,
         vectorized=True, num_live_points_base=K, P=P, num_steps=1,
         stepsampler=stepsampler, region_class=region_class,
         integrator='custom', log_dir=tmpdir)
+    np.random.seed(seed)
     t0 = time.time()
     if profile is None:
-        sampler.run(frac_remain=0.5, max_rotations=1, seed=seed,
-                    show_status=False, max_batches=max_batches,
-                    max_dead=max_dead, plot_trace=False, plot_corner=False)
+        sampler.run(frac_remain=0.5, max_ncalls=max_ncalls,
+                    show_status=False, resume=False)
     else:
         profiler = cProfile.Profile()
         profiler.enable()
-        sampler.run(frac_remain=0.5, max_rotations=1, seed=seed,
-                    show_status=False, max_batches=max_batches,
-                    max_dead=max_dead, plot_trace=False, plot_corner=False)
+        sampler.run(frac_remain=0.5, max_ncalls=max_ncalls,
+                    show_status=False, resume=False)
         profiler.disable()
         profiler.dump_stats(profile)
     wall_time = time.time() - t0
@@ -154,13 +153,9 @@ def main():
     parser.add_argument('--dim', type=int, default=50)
     parser.add_argument('--K', type=int, default=10000)
     parser.add_argument('--P', type=int, nargs='+', default=[100])
-    parser.add_argument('--max-batches', type=int, default=10000,
-                        help='cap on batch advances per run '
-                             '(default: 10000)')
-    parser.add_argument('--max-dead', type=int, default=30000,
-                        help='cap on released dead points per run '
-                             '(default: 30000; binds first for every P, '
-                             'so all configurations do the same work)')
+    parser.add_argument('--max-ncalls', type=int, default=350000,
+                        help='cap on likelihood function evaluations per '
+                             'run (default: 350000)')
     parser.add_argument('--seeds', type=int, nargs='+', default=[1, 2, 3])
     parser.add_argument('--profile', type=str, default=None,
                         help='cProfile stats output file (one run, '
@@ -186,8 +181,7 @@ def main():
         for seed in args.seeds:
             tmpdir = tempfile.mkdtemp(prefix='bench-snowball-')
             try:
-                row = run_once(problem, args.K, P, seed, args.max_batches,
-                               args.max_dead,
+                row = run_once(problem, args.K, P, seed, args.max_ncalls,
                                profile=(args.profile if P == args.P[0]
                                         and seed == args.seeds[0]
                                         else None),
@@ -205,9 +199,9 @@ def main():
     # summarize: median wall time per P
     print()
     print('%s-%dd, K=%d, %s proposal on the %s region, '
-          'caps: %d batches / %d dead points'
+          'max_ncalls=%d'
           % (args.problem, args.dim, args.K, args.proposal, args.region,
-             args.max_batches, args.max_dead))
+             args.max_ncalls))
     print('%-8s %-10s %-10s %-12s' % ('P', 'wall/s', 'dead', 'evals/s'))
     summary = []
     for P in args.P:
@@ -223,7 +217,7 @@ def main():
         s['speedup_vs_first'] = base / s['wall_time_median']
     out = dict(problem=args.problem, dim=args.dim, K=args.K,
                proposal=args.proposal, region=args.region,
-               max_batches=args.max_batches, max_dead=args.max_dead,
+               max_ncalls=args.max_ncalls,
                runs=rows, summary=summary)
     fn = os.path.join(args.outdir, 'benchmark_speed-%s-%dd-K%d-%s-%s%s.json'
                       % (args.problem, args.dim, args.K, args.proposal,

@@ -11,7 +11,7 @@
 #     make                          # build the default matrix
 #     make output/banana-8d/snowballingns-quadratic-slice-seed1-K400/results.json
 #     make PROBLEMS=funnel DIMS=8 COMBOS="snowballingns-quadratic-slice-seed1"
-#     make K=100 MAX_ROTATIONS=3 output/banana-2d/snowballingns-mix-seed1-K100/results.json
+#     make K=100 MAX_NUM_LIVE_POINTS=200 output/banana-2d/snowballingns-mix-seed1-K100/results.json
 #     make clean
 
 PROBLEMS ?= banana gauss box funnel hyperpyramid
@@ -29,7 +29,7 @@ COMBOS ?= ultranest-mlfriends ultranest-de-mix \
 K ?= 50
 NSTEPS ?= 1
 FRAC_REMAIN ?= 0.5
-MAX_ROTATIONS ?= 20
+MAX_NUM_LIVE_POINTS ?= 100000
 SEED ?= 1
 
 # the in-place built cython extensions match this interpreter; the
@@ -50,7 +50,7 @@ define COMBO_RULE
 output/$(1)-$(2)d/$(3)-K$(K)/results.json: $(PIPELINE)
 	$(PYTHON) $(PIPELINE) --problem $(1) --dim $(2) --combo $(3) --outdir output \
 		--K $(K) --nsteps $(NSTEPS) \
-		--frac-remain $(FRAC_REMAIN) --max-rotations $(MAX_ROTATIONS) \
+		--frac-remain $(FRAC_REMAIN) --max-num-live-points $(MAX_NUM_LIVE_POINTS) \
 		--seed $(SEED)
 endef
 $(foreach p,$(PROBLEMS),$(foreach d,$(DIMS),$(foreach c,$(COMBOS),$(eval $(call COMBO_RULE,$(p),$(d),$(c))))))

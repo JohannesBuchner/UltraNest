@@ -21,7 +21,8 @@ class RotationRecordStore:
     """Growing HDF5 storage of the per-rotation derived records (one
     group per snowball rotation), following the growing approach of
     ultranest.store.HDF5PointStore."""
-    FIELDS = ('Lmin', 'L', 'rjd', 'order', 'x', 'segment', 'drift')
+    FIELDS = ('Lmin', 'L', 'rjd', 'order', 'x', 'segment', 'drift',
+              'thread')
 
     def __init__(self, filepath, mode='w'):
         import h5py
@@ -46,13 +47,19 @@ class RotationRecordStore:
                       key=lambda k: int(k.split('_')[1]))
         for key in keys:
             g = self.fileobj[key]
-            cols = {k: np.asarray(g[k]) for k in self.FIELDS}
+            n = len(g['Lmin'])
+            # tolerate records written before a field existed
+            cols = {k: (np.asarray(g[k]) if k in g
+                        else np.zeros(n, dtype=np.int64)
+                        if k == 'thread' else np.zeros(n))
+                    for k in self.FIELDS}
             nsteps = int(g.attrs.get('nsteps', 1))
             records = [
                 dict(Lmin=float(cols['Lmin'][i]), L=float(cols['L'][i]),
                      rjd=float(cols['rjd'][i]), order=int(cols['order'][i]),
                      x=float(cols['x'][i]), segment=int(cols['segment'][i]),
-                     nsteps=nsteps, drift=float(cols['drift'][i]))
+                     nsteps=nsteps, drift=float(cols['drift'][i]),
+                     thread=int(cols['thread'][i]))
                 for i in range(len(cols['Lmin']))]
             rotation_records.append(records)
             results.append(dict(logz=float(g.attrs['logz']),

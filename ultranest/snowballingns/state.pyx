@@ -780,22 +780,23 @@ cdef class SnowballState:
         """The custom integrator's released dead points of the latest
         rotation, in threshold order: threshold, replacement likelihood
         and point, walk origin (point, likelihood), raw jump, creation
-        order and bookkeeping position x = -lnX (only meaningful with
-        ``integrate=True``)."""
+        order, bookkeeping position x = -lnX and the thread id (only
+        meaningful with ``integrate=True``)."""
         self._flush_store()
         cdef long n = self._bur_n
         cdef int d = self.d
         if n == 0:
             return (np.zeros(0), np.zeros(0), np.zeros((0, d)),
                     np.zeros((0, d)), np.zeros(0), np.zeros(0),
-                    np.zeros(0, dtype=np.int64), np.zeros(0))
+                    np.zeros(0, dtype=np.int64), np.zeros(0),
+                    np.zeros(0, dtype=np.int64))
         x = (np.arange(n, dtype=float) + 1.0) * self._invK
         lmin = np.array(self._buried_lmin[:n])
         data = self.store.read(self._burial_rows[:n])
         return (lmin, np.array(data[:, 1]), np.array(data[:, 7:7 + d]),
                 np.array(data[:, 7 + d:7 + 2 * d]), np.array(data[:, 2]),
                 np.array(data[:, 3]), np.array(data[:, 4], dtype=np.int64),
-                x)
+                x, np.array(self._burial_threads[:n], dtype=np.int64))
 
     def flush(self):
         """Flush the store to disk."""

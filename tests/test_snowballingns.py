@@ -43,9 +43,11 @@ def test_gauss_2d_one_rotation_matches_reactive(tmp_path):
         problem.paramnames, problem.loglike, transform=problem.transform,
         vectorized=True, num_live_points_base=400, num_steps=1,
         integrator='custom', log_dir=str(tmp_path / 'snowball'))
-    result = sampler.run(frac_remain=0.5, max_rotations=1, resume=False,
-                         plot_trace=False, plot_corner=False)
+    result = sampler.run(frac_remain=0.5, max_num_live_points=400,
+                         resume=False)
     assert np.isfinite(result['logz'])
+    # the live-points limit stops the run after one rotation
+    assert sampler.nrotations == 1
     # a single rotation cannot fulfil the convergence criterion
     assert result['converged'] is False
     sstate = sampler.state
@@ -75,8 +77,7 @@ def test_rosenbrock_2d_ncall_budget(tmp_path):
         stepsampler=generate_mixture_random_direction,
         region_class=RobustEllipsoidRegion, integrator='custom',
         log_dir=str(tmp_path / 'snowball'))
-    result = sampler.run(frac_remain=0.5, max_ncalls=10000, resume=False,
-                         plot_trace=False, plot_corner=False)
+    result = sampler.run(frac_remain=0.5, max_ncalls=10000, resume=False)
     # the budget check fires at the rotation boundary; the overshoot is
     # bounded by the rotation that crossed it
     assert sampler.ncall < 100000
@@ -97,8 +98,8 @@ def test_rosenbrock_2d_time_budget(tmp_path):
         paramnames, loglike, transform=transform, vectorized=True,
         num_live_points_base=50, num_steps=2, region_class=CubeRegion,
         integrator='custom', log_dir=str(tmp_path / 'snowball'))
-    result = sampler.run(frac_remain=0.5, max_time=10.0, resume=False,
-                         plot_trace=False, plot_corner=False)
+    result = sampler.run(frac_remain=0.5, max_execution_time_in_s=10.0,
+                         resume=False)
     # the budget fires at the rotation boundary; the overshoot is
     # bounded by one rotation
     assert result['wall_time'] < 120
