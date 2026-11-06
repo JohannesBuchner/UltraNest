@@ -1,6 +1,5 @@
 """
-Snowballing nested sampling utilities
---------------------------------------
+Snowballing nested sampling utilities.
 
 Per-rotation record storage (growing HDF5), the RJD diagnostics, the
 Gompertz looping criterion and the panel plots.
@@ -18,9 +17,12 @@ from ultranest.ordertest import infinite_U_zscore  # noqa: E402  (Agg first)
 
 
 class RotationRecordStore:
-    """Growing HDF5 storage of the per-rotation derived records (one
-    group per snowball rotation), following the growing approach of
-    ultranest.store.HDF5PointStore."""
+    """Growing HDF5 storage of the per-rotation derived records.
+
+    One group per snowball rotation, following the growing approach of
+    ultranest.store.HDF5PointStore.
+    """
+
     FIELDS = ('Lmin', 'L', 'rjd', 'order', 'x', 'segment', 'drift',
               'thread')
 
@@ -38,9 +40,11 @@ class RotationRecordStore:
         self.fileobj.flush()
 
     def load_all(self):
-        """All rotations as (rotation_records, results) for the plot
-        functions; the per-cell dict lists are materialised transiently
-        (only here, never during the run)."""
+        """Load all rotations as (rotation_records, results).
+
+        The plot functions consume the pair; the per-cell dict lists are
+        materialised transiently (only here, never during the run).
+        """
         rotation_records = []
         results = []
         keys = sorted(self.fileobj.keys(),
@@ -69,42 +73,51 @@ class RotationRecordStore:
         return rotation_records, results
 
     def close(self):
+        """Close the underlying HDF5 file."""
         self.fileobj.close()
 
 
 def subsample(u, maxpts=4000):
+    """Subsample the array to at most maxpts rows (without replacement)."""
     if len(u) > maxpts:
         return u[np.random.choice(len(u), maxpts, replace=False)]
     return u
 
 
 class _FixedAxesLayer:
-    """Minimal transform layer with fixed axes. The rows are basis
-    vectors in u-space, as in ultranest.mlfriends.AffineLayer (whose
-    axes are the principal axes of the sample covariance, scaled by the
-    square-root eigenvalues)."""
+    """Minimal transform layer with fixed axes.
+
+    The rows are basis vectors in u-space, as in
+    ultranest.mlfriends.AffineLayer (whose axes are the principal axes
+    of the sample covariance, scaled by the square-root eigenvalues).
+    """
 
     def __init__(self, axes):
         self.axes = axes
 
 
 class CubeRegion:
-    """No-op region for step samplers that do not use the region axes
-    (e.g. the quadratic slice direction): it keeps the live points and
-    returns the unit cube axes."""
+    """No-op region for step samplers that do not use the region axes.
+
+    It keeps the live points and returns the unit cube axes (e.g. for
+    the quadratic slice direction).
+    """
 
     def __init__(self, us):
         self.u = np.ascontiguousarray(us, dtype=float)
         self.transformLayer = _FixedAxesLayer(np.eye(self.u.shape[1]))
 
     def compute_enlargement(self, nbootstraps=0, minvol=1e-30):
+        """No-op: the unit cube axes need no enlargement."""
         pass
 
 
 class CovarianceRegion:
-    """Very simple region: the axes are the principal axes of the live
-    points' covariance, scaled by the square-root eigenvalues (no
-    MLFriends, no bootstrapping)."""
+    """Very simple region determined by the live points' covariance.
+
+    The axes are the principal axes scaled by the square-root
+    eigenvalues (no MLFriends, no bootstrapping).
+    """
 
     def __init__(self, us):
         self.u = np.ascontiguousarray(us, dtype=float)
@@ -122,11 +135,12 @@ class CovarianceRegion:
         self.transformLayer = _FixedAxesLayer(axes)
 
     def compute_enlargement(self, nbootstraps=0, minvol=1e-30):
+        """No-op: the axes are already fixed by the covariance."""
         pass
 
 
 def make_region(us, d):
-    """MLFriends region around the live points, enlarged."""
+    """Build the MLFriends region around the live points, enlarged."""
     from ultranest.mlfriends import MLFriends, LocalAffineLayer, ScalingLayer
     if d > 1:
         layer = LocalAffineLayer()
@@ -142,19 +156,24 @@ def make_region(us, d):
 
 
 def lmin_bin_edges(lmin_ref, nsegments):
-    """Equal-count likelihood-threshold bin edges from a reference
-    rotation (fixed across rotations; later arcs clip into the edge
-    bins)."""
+    """Return equal-count likelihood-threshold bin edges.
+
+    The edges come from a reference rotation (fixed across rotations;
+    later arcs clip into the edge bins).
+    """
     return np.quantile(lmin_ref, np.linspace(0, 1, nsegments + 1))[1:-1]
 
 
 def binned_rjd(lmin, ou, jump, seg, nsegments, maxpts=800, ref_distance=None):
-    """RJD = raw jump / mean pair distance of the origin points in the
+    """Compute the relative jump distance (RJD) per point.
+
+    RJD = raw jump / mean pair distance of the origin points in the
     same likelihood-threshold bin (the local live-point spacing).
 
     When a region reference distance is given (e.g. the region's own
     distance attribute, reused from region building), it normalizes all
-    jumps instead and the per-bin pair distances are skipped."""
+    jumps instead and the per-bin pair distances are skipped.
+    """
     from scipy.spatial.distance import pdist
     rjd = np.full(len(jump), np.nan)
     for b in range(nsegments):
@@ -178,14 +197,15 @@ def _gompertz(x, A, b, c):
 
 
 def fit_gompertz(gms):
-    """Fit a Gompertz curve g(j) = A exp(-b exp(-c j)) to the
-    geometric-mean values at rotation indices 0..len-1.
+    """Fit a Gompertz curve g(j) = A exp(-b exp(-c j)).
 
-    Initialises the asymptote A as an extension of the last two values
-    (the last trend step doubled), solves the double-log-linearised
-    problem ln(-ln(y/A)) = ln b - c j by linear least squares, and
-    refines all three parameters with gradient-based optimisation of the
-    non-linear least squares (analytic jacobian). Returns (popt, ok).
+    The fit targets the geometric-mean values at rotation indices
+    0..len-1. Initialises the asymptote A as an extension of the last
+    two values (the last trend step doubled), solves the
+    double-log-linearised problem ln(-ln(y/A)) = ln b - c j by linear
+    least squares, and refines all three parameters with gradient-based
+    optimisation of the non-linear least squares (analytic jacobian).
+    Returns (popt, ok).
     """
     from scipy.optimize import least_squares
     j = np.arange(len(gms), dtype=float)
@@ -283,11 +303,14 @@ def segment_stats(records, nsegments, nlive):
 
 def plot_panels(rotation_records, results, nsegments, outdir, title,
                 analytic=np.nan, gm_history=None, nlive_per_rotation=None):
-    """Panel figure: lnL-vs-lnX trajectories, the live points (nlive) per
-    rotation, the per-segment U test, the per-segment mean RJD (one line
-    per rotation), the lnX drift, the current Gompertz fits per segment
-    (dataset+curve in one color per segment), and lnZ per rotation
-    iteration. Writes <outdir>/snowballingns_panels.png."""
+    """Make the panel diagnostics figure.
+
+    Panels: lnL-vs-lnX trajectories, the live points (nlive) per
+    rotation, the per-segment U test, the per-segment mean RJD (one
+    line per rotation), the lnX drift, the current Gompertz fits per
+    segment (dataset+curve in one color per segment), and lnZ per
+    rotation iteration. Writes <outdir>/snowballingns_panels.png.
+    """
     nrot = len(rotation_records)
     colors = plt.cm.plasma(np.linspace(0.0, 0.85, nrot))
     segcolors = plt.cm.tab20(np.linspace(0.0, 1.0, nsegments))
@@ -394,9 +417,11 @@ def plot_panels(rotation_records, results, nsegments, outdir, title,
 
 def plot_rjd_distributions(rotation_records, nsegments, outdir, title,
                            width_frac=0.1, shift_frac=0.5):
-    """Separate figure: one panel per segment with the RJD distributions
-    at each rotation (log10-RJD histograms, colored by rotation), plus
-    the per-segment geometric-mean RJD saturation analysis.
+    """Make the RJD distribution diagnostics figure.
+
+    One panel per segment with the RJD distributions at each rotation
+    (log10-RJD histograms, colored by rotation), plus the per-segment
+    geometric-mean RJD saturation analysis.
 
     Saturation of the geometric mean is identified two ways:
     (a) the rotation-to-rotation shift of the geometric mean is small
@@ -489,9 +514,12 @@ def plot_rjd_distributions(rotation_records, nsegments, outdir, title,
 
 def plot_rotations_panel(rotation_records, results, nsegments, outdir, title,
                          gm_history=None, nlive_per_rotation=None):
-    """Alias of :py:func:`plot_panels`: the rotation-convergence
-    diagnostics (lnL-vs-lnX trajectories, live points per rotation,
-    U test, RJD, lnX drift, Gompertz fits, lnZ per rotation)."""
+    """Make the rotation-convergence diagnostics figure.
+
+    Alias of :py:func:`plot_panels` (lnL-vs-lnX trajectories, live
+    points per rotation, U test, RJD, lnX drift, Gompertz fits, lnZ
+    per rotation).
+    """
     return plot_panels(rotation_records, results, nsegments, outdir, title,
                        gm_history=gm_history,
                        nlive_per_rotation=nlive_per_rotation)

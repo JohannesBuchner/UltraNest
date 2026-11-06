@@ -1,6 +1,5 @@
 """
-Snowballing nested sampling driver
-----------------------------------
+Snowballing nested sampling driver.
 
 Runs snowball rotations with the :class:`SnowballingNestedSampler`:
 each rotation advances batches of `P` threads until the burial-gate
@@ -8,7 +7,9 @@ each rotation advances batches of `P` threads until the burial-gate
 `1/K` strips, then widens K (doubling the threads with fresh prior
 draws) for the next rotation.
 
-The sampler logs through the ultranest-style logger; when `log_dir` is
+The per-iteration status line is shown directly (jupyter or sys.stdout,
+guarded by `show_status`), not logged; the rotation summaries and
+milestones go through the ultranest-style logger. When `log_dir` is
 given (``log_to_disk``), the growing HDF5 point store, the per-rotation
 derived records, the plots and ``results.json`` are written to disk.
 Without `log_dir`, the point store is kept in memory and the plots are
@@ -38,16 +39,16 @@ from ultranest.netiter import TreeNode
 
 
 class SnowballingNestedSampler:
-    """Snowballing nested sampling with a configurable direction
-    proposal, integrated by the custom `1/K`-strip integrator inside the
-    state machine.
+    """Snowballing nested sampling with a configurable direction proposal.
 
-    Threads (lineages) of live points are advanced in batch advances:
-    each batch advance replaces the P lowest-likelihood thread ends with
-    a replacement walk each. Dead points are buried through the burial
-    gate (released once every live point sits above their threshold) and
-    integrated with 1/K strips. Each snowball rotation widens K (doubling
-    the threads with fresh prior draws) for the next rotation.
+    The threads are integrated by the custom `1/K`-strip integrator
+    inside the state machine. Threads (lineages) of live points are
+    advanced in batch advances: each batch advance replaces the P
+    lowest-likelihood thread ends with a replacement walk each. Dead
+    points are buried through the burial gate (released once every live
+    point sits above their threshold) and integrated with 1/K strips.
+    Each snowball rotation widens K (doubling the threads with fresh
+    prior draws) for the next rotation.
 
     The lnZ error is estimated by K-folding instead of bootstrapping:
     alongside the integrator over all sequences, K fold integrators run,
@@ -106,7 +107,9 @@ class SnowballingNestedSampler:
     Attributes
     ----------
     logger: logging.Logger
-        ultranest-style logger (stdout and, with log_dir, debug.log)
+        ultranest-style logger for the rotation summaries and milestones
+        (stdout and, with log_dir, debug.log); the per-iteration status
+        line is shown directly on stdout instead
     log_to_disk: bool
         whether a log_dir was given and the point store, records, plots
         and results.json are written to disk
@@ -231,7 +234,8 @@ class SnowballingNestedSampler:
         """Build the region from the live points, without bootstrapping.
 
         The ellipsoid axes are only used by some proposals as a stiff
-        axis guess, so this is updated imperfectly and irregularly."""
+        axis guess, so this is updated imperfectly and irregularly.
+        """
         if self.region_class in (CubeRegion, CovarianceRegion):
             # the very simple region classes determine the axes
             # themselves from the live points
@@ -244,11 +248,14 @@ class SnowballingNestedSampler:
         return region
 
     def _region_points(self, u_heads, min_point_pool):
-        """The direction-sampling point pool: the live points, padded
-        with the most recent dead points from the store to at least
-        min_point_pool points (proposal diversity at small K). The pool
-        is only used for the direction sampling; the region geometry is
-        computed from the live points alone."""
+        """Return the direction-sampling point pool.
+
+        The pool is the live points, padded with the most recent dead
+        points from the store to at least min_point_pool points
+        (proposal diversity at small K). The pool is only used for the
+        direction sampling; the region geometry is computed from the
+        live points alone.
+        """
         if self.K >= min_point_pool:
             return u_heads
         ndead_need = min_point_pool - self.K
@@ -262,10 +269,13 @@ class SnowballingNestedSampler:
         return np.vstack([u_dead, np.asarray(u_heads, dtype=float)])
 
     def _rjd_reference_distance(self, region, u_heads):
-        """The reference distance for the RJD diagnostics: the region's
-        own distance attribute when it has one (sqrt(maxradiussq) for
-        MLFriends-family regions, reused from region building), otherwise
-        the mean pair distance of the live points computed here."""
+        """Return the reference distance for the RJD diagnostics.
+
+        The region's own distance attribute when it has one
+        (sqrt(maxradiussq) for MLFriends-family regions, reused from
+        region building), otherwise the mean pair distance of the live
+        points computed here.
+        """
         maxradiussq = getattr(region, 'maxradiussq', None)
         if maxradiussq is not None and maxradiussq > 0:
             from math import sqrt
@@ -279,11 +289,14 @@ class SnowballingNestedSampler:
         return float(pdist(pts).mean())
 
     def _update_region(self, min_point_pool):
-        """Rebuild the region from the live points (no bootstrapping),
-        then replace its point pool with the live points padded with the
-        most recent dead points to at least min_point_pool points: the
-        pool feeds the direction sampling only, the region geometry is
-        from the live points alone."""
+        """Rebuild the region and its direction-sampling point pool.
+
+        The region is rebuilt from the live points (no bootstrapping),
+        then its point pool is replaced with the live points padded
+        with the most recent dead points to at least min_point_pool
+        points: the pool feeds the direction sampling only, the region
+        geometry is from the live points alone.
+        """
         u_heads, _ = self.state.get_heads()
         region = self._make_region(u_heads)
         region.u = self._region_points(u_heads, min_point_pool)
@@ -292,9 +305,10 @@ class SnowballingNestedSampler:
         return region
 
     def print_posterior(self, use_unicode=True):
-        """Give summary of the marginal likelihood and parameter
-        posteriors, as in ReactiveNestedSampler: the logZ estimate with
-        error and a unicode histogram sketch per parameter.
+        """Give a summary of the marginal likelihood and parameters.
+
+        As in ReactiveNestedSampler: the logZ estimate with error and a
+        unicode histogram sketch per parameter.
 
         Parameters
         ----------
@@ -339,12 +353,14 @@ class SnowballingNestedSampler:
                  viz_callback=None, min_vol_reduction=1.0,
                  min_num_iterations=None, min_point_pool=400,
                  num_volume_segments_for_convergence=20):
-        """Run one snowball rotation: a new MultiCounter is created and
-        gradually filled as the integrator walks through the entire new
-        width, including the new and the earlier columns: the earlier
-        rotations' dead points are inserted into the integration at their
-        threshold positions, merged with the newly released dead points
-        in threshold order, once every live point sits above them.
+        """Run one snowball rotation.
+
+        A new MultiCounter is created and gradually filled as the
+        integrator walks through the entire new width, including the new
+        and the earlier columns: the earlier rotations' dead points are
+        inserted into the integration at their threshold positions,
+        merged with the newly released dead points in threshold order,
+        once every live point sits above them.
 
         Alongside the main integrator, K fold integrators (one per
         sequence) integrate their single sequence as a 1-live-point run;
@@ -357,8 +373,11 @@ class SnowballingNestedSampler:
         rotations): it does not terminate until the live point remainder
         integral L_max times the remaining volume drops below frac_remain
         times the total lnZ error. The region is rebuilt from the thread
-        ends irregularly, based on where the integrator is. Returns the
-        rotation summary dict.
+        ends irregularly, based on where the integrator is. The status
+        line is shown directly on stdout every `update_interval_ncall`
+        likelihood calls or ~0.1 s (when `show_status`), not logged;
+        `viz_callback` is called with the current state at each update.
+        Returns the rotation summary dict.
         """
         if self.state is None:
             self._setup()
@@ -397,6 +416,7 @@ class SnowballingNestedSampler:
         next_update_interval_volume = main_iterator.logVolremaining \
             - update_interval_volume_fraction
         last_status_ncall = self.ncall
+        last_status = time.time()
         vol_at_start = main_iterator.logVolremaining
         nburied_at_start = len(self._store_rows)
 
@@ -476,16 +496,22 @@ class SnowballingNestedSampler:
             self.Lmax_global = max(self.Lmax_global, float(np.max(headL)))
             nburied = len(self._store_rows) - nburied_at_start
             vol_reduced = vol_at_start - main_iterator.logVolremaining
-            if show_status and (self.ncall - last_status_ncall
-                                >= (update_interval_ncall or self.K)):
+            if (self.ncall - last_status_ncall
+                    >= (update_interval_ncall or self.K)
+                    or time.time() > last_status + 0.1):
                 last_status_ncall = self.ncall
-                self.logger.info(
-                    'Z=%.1f(%.2f%%) | Like=%.2f..%.2f | '
-                    'it/evals=%d/%d N=%d',
-                    main_iterator.logZ,
-                    100 * (1 - main_iterator.remainder_fraction),
-                    float(np.min(headL)), self.Lmax_global,
-                    len(main_iterator.logweights), self.ncall, self.K)
+                last_status = time.time()
+                if show_status:
+                    # shown directly (jupyter or sys.stdout), not logged
+                    sys.stdout.write(
+                        'Z=%.1f(%.2f%%) | Like=%.2f..%.2f | '
+                        'it/evals=%d/%d N=%d \r'
+                        % (main_iterator.logZ,
+                           100 * (1 - main_iterator.remainder_fraction),
+                           float(np.min(headL)), self.Lmax_global,
+                           len(main_iterator.logweights), self.ncall,
+                           self.K))
+                    sys.stdout.flush()
                 if viz_callback is not None:
                     viz_callback(dict(
                         it=len(main_iterator.logweights), ncall=self.ncall,
@@ -534,14 +560,20 @@ class SnowballingNestedSampler:
                          update_interval_volume_fraction=0.2,
                          show_status=True, viz_callback=None,
                          min_point_pool=400):
-        """One snowball rotation with the custom integrator: the state
-        machine integrates the released dead points with 1/K strips; the
-        termination does not fire until the live point remainder integral
-        drops below frac_remain times the total lnZ error. Returns the
-        rotation summary dict."""
+        """Run one snowball rotation with the custom integrator.
+
+        The state machine integrates the released dead points with 1/K
+        strips; the termination does not fire until the live point
+        remainder integral drops below frac_remain times the total lnZ
+        error. The status line is shown directly on stdout every
+        `self.K` likelihood calls or ~0.1 s (when `show_status`), not
+        logged; `viz_callback` is called with the current state at each
+        update. Returns the rotation summary dict.
+        """
         next_update_volume = -self.state.logVrem \
             + update_interval_volume_fraction
         last_status_ncall = self.ncall
+        last_status = time.time()
         while True:
             # region update, based on where the integrator is
             if -self.state.logVrem > next_update_volume:
@@ -560,22 +592,27 @@ class SnowballingNestedSampler:
             _, headL = self.state.get_heads()
             # the global L_max: the highest likelihood ever seen
             self.Lmax_global = max(self.Lmax_global, float(np.max(headL)))
-            if show_status and (self.ncall - last_status_ncall >= self.K):
+            if (self.ncall - last_status_ncall >= self.K
+                    or time.time() > last_status + 0.1):
                 last_status_ncall = self.ncall
+                last_status = time.time()
                 logzremain = self.Lmax_global + self.state.logVrem
                 remfrac = 1.0 / (1.0 + np.exp(self.state.logZ - logzremain))
-                self.logger.info(
-                    'Z=%.1f(%.2f%%) | Like=%.2f..%.2f | '
-                    'it/evals=%d/%d N=%d',
-                    self.state.logZ, 100 * (1 - remfrac),
-                    float(np.min(headL)), self.Lmax_global,
-                    int(round(-self.state.logVrem * self.K)),
-                    self.ncall, self.K)
+                if show_status:
+                    # shown directly (jupyter or sys.stdout), not logged
+                    sys.stdout.write(
+                        'Z=%.1f(%.2f%%) | Like=%.2f..%.2f | '
+                        'it/evals=%d/%d N=%d \r'
+                        % (self.state.logZ, 100 * (1 - remfrac),
+                           float(np.min(headL)), self.Lmax_global,
+                           int(round(-self.state.logVrem * self.K)),
+                           self.ncall, self.K))
+                    sys.stdout.flush()
                 if viz_callback is not None:
                     viz_callback(dict(
                         it=int(round(-self.state.logVrem * self.K)),
                         ncall=self.ncall, logz=self.state.logZ,
-                        logz_remain=self.Lmax + self.state.logVrem,
+                        logz_remain=self.Lmax_global + self.state.logVrem,
                         logvol=-self.state.logVrem,
                         paramnames=self.paramnames))
             logzremain = self.Lmax_global + self.state.logVrem
@@ -594,9 +631,11 @@ class SnowballingNestedSampler:
         return summary
 
     def _assemble_results_custom(self):
-        """Build the results dict from the custom integrator: the
-        released dead points weighted by their 1/K strips plus the
-        thread ends weighted by the remaining volume."""
+        """Build the results dict from the custom integrator.
+
+        The released dead points are weighted by their 1/K strips plus
+        the thread ends by the remaining volume.
+        """
         lmin, recL, recU, ou, oL, jump, order, x, thread = \
             self.state.get_records()
         n = len(lmin)
@@ -627,8 +666,10 @@ class SnowballingNestedSampler:
             rotation_summaries=list(self.rotation_summaries))
 
     def _feed_nodes(self, threads, values, rows, walkend_L, parallel_values):
-        """Extend the tree with the released dead points and feed them to
-        the MultiCounter in threshold order."""
+        """Extend the tree with the released dead points.
+
+        They are fed to the MultiCounter in threshold order.
+        """
         main_iterator = self.main_iterator
         rootids = np.arange(self.K)
         new_nodes = []
@@ -646,9 +687,11 @@ class SnowballingNestedSampler:
         return new_nodes
 
     def _assemble_results(self, main_iterator):
-        """Build the results dict for the latest rotation: the buried
-        dead points weighted by their strips plus the thread ends
-        weighted by the remaining volume."""
+        """Build the results dict for the latest rotation.
+
+        The buried dead points are weighted by their strips plus the
+        thread ends by the remaining volume.
+        """
         rows = [r for r, x, t in self._store_rows]
         data = self.state.store.read(rows) if rows else \
             np.zeros((0, self.state.store.ncols))
@@ -693,9 +736,10 @@ class SnowballingNestedSampler:
             convergence_gompertz_factor=0.5,
             update_interval_ncall=None, show_status=True,
             viz_callback=None, resume=True):
-        """Run snowball rotations with widening until the Gompertz
-        looping criterion, the max_num_live_points limit or a termination
-        budget.
+        """Run snowball rotations with widening until convergence.
+
+        The run stops at the Gompertz looping criterion, the
+        max_num_live_points limit or a termination budget.
 
         Resumes from finished rotations stored in log_dir when present:
         the thread ends and the tree are rebuilt from the stored heads
@@ -735,9 +779,11 @@ class SnowballingNestedSampler:
             geomean RJD values. Larger values keep looping longer.
             Default 0.5.
         update_interval_ncall: int, optional
-            how often to print the status line
+            how often to show the status line
         show_status: bool
-            whether to print the status line during the run
+            whether to show the per-iteration status line during the
+            run, directly on stdout (jupyter-compatible); it is not
+            logged
         viz_callback: function, optional
             called with a dict of the current state at each status update
         resume: bool
@@ -924,9 +970,11 @@ class SnowballingNestedSampler:
         return self.results
 
     def _setup(self):
-        """Draw the prior thread heads, build the tree and the state
-        machine. The numpy generator is not seeded here: following the
-        ultranest convention, the user sets np.random.seed() beforehand."""
+        """Draw the prior thread heads, build the tree and state machine.
+
+        The numpy generator is not seeded here: following the ultranest
+        convention, the user sets np.random.seed() beforehand.
+        """
         self.K = self.num_live_points_base
         u, p, logl = self._prior_draw(self.K)
         self.state = SnowballState(
@@ -962,11 +1010,14 @@ class SnowballingNestedSampler:
             self.chain_nodes.append((node, self.K + t))
 
     def _gompertz_status(self, factor=0.5, num_volume_segments=20):
-        """Gompertz convergence status on the per-segment geomean RJD
-        sequences across rotations: (n_improving, n_segments), where
-        n_improving counts the segments whose predicted next improvement
-        exceeds factor times their linear trend slope. None when fewer
-        than 3 rotations are collected."""
+        """Return the Gompertz convergence status.
+
+        The status is (n_improving, n_segments) on the per-segment
+        geomean RJD sequences across rotations, where n_improving counts
+        the segments whose predicted next improvement exceeds factor
+        times their linear trend slope. None when fewer than 3 rotations
+        are collected.
+        """
         if len(self.rotation_summaries) < 3:
             return None, num_volume_segments
         gm_history = []
@@ -984,9 +1035,12 @@ class SnowballingNestedSampler:
         return improving, num_volume_segments
 
     def _store_rotation_records(self, summary, num_volume_segments):
-        """Write the rotation's per-cell records, the thread ends and the
-        Gompertz per-segment geomeans to the rotation records file (when
-        log_to_disk), and always keep them in memory for the plots."""
+        """Write the rotation's derived records and store them in memory.
+
+        The per-cell records, the thread ends and the Gompertz
+        per-segment geomeans go to the rotation records file (when
+        log_to_disk) and always to memory for the plots.
+        """
         u_heads, headL = self.state.get_heads()
         d = self.x_dim
         if self.integrator == 'custom':
@@ -1033,8 +1087,7 @@ class SnowballingNestedSampler:
             recstore.close()
 
     def _store_heads(self):
-        """Store the post-widening thread ends in the rotation records
-        (for resuming)."""
+        """Store the post-widening thread ends for resuming."""
         if not self.log_to_disk:
             return
         u_heads, headL = self.state.get_heads()
@@ -1047,8 +1100,11 @@ class SnowballingNestedSampler:
                                                         dtype=float))
 
     def _load_rotation_records(self):
-        """The per-rotation derived records: from the HDF5 records file
-        when log_to_disk, otherwise from memory."""
+        """Load the per-rotation derived records.
+
+        They come from the HDF5 records file when log_to_disk,
+        otherwise from memory.
+        """
         if self.log_to_disk:
             recstore = RotationRecordStore(self.records_path, mode='a')
             rotation_records, results = recstore.load_all()
@@ -1126,19 +1182,22 @@ class SnowballingNestedSampler:
             self.logger.debug('Making trace plot ... done')
 
     def _load_plot_data(self):
-        """The per-rotation records and summaries for the plots."""
+        """Load the per-rotation records and summaries for the plots."""
         rotation_records, results = self._load_rotation_records()
         gm_history = [s.get('segment_geomeans')
                       for s in self.rotation_summaries]
         return rotation_records, results, gm_history
 
     def plot_sequences(self, filename='sequences.pdf'):
-        """Sequence plot: sequence id (y) versus -ln(volume) (x), one
-        horizontal line per sequence with a marker at each dead point,
-        colored by where the point sits in the posterior (its likelihood,
-        as in the trace plots). A short lnL panel on top shares the
-        x-axis. Writes <filename> to log_dir when log_to_disk, otherwise
-        shows the plot directly."""
+        """Make the sequence plot.
+
+        Sequence id (y) versus -ln(volume) (x), one horizontal line per
+        sequence with a marker at each dead point, colored by where the
+        point sits in the posterior (its likelihood, as in the trace
+        plots). A short lnL panel on top shares the x-axis. Writes
+        <filename> to log_dir when log_to_disk, otherwise shows the
+        plot directly.
+        """
         rotation_records, results, gm_history = self._load_plot_data()
         fig = plt.figure(figsize=(9, 6))
         gs = fig.add_gridspec(2, 1, height_ratios=[1, 5], hspace=0.06)
@@ -1230,8 +1289,10 @@ class SnowballingNestedSampler:
 
     def plot_panel_rjd(self, ax, rotation_records=None,
                        num_volume_segments=20):
-        """Panel: mean relative jump distance per segment (one line per
-        rotation; >1 = the walks moved far enough)."""
+        """Make a panel with the mean RJD per segment.
+
+        One line per rotation; >1 = the walks moved far enough.
+        """
         if rotation_records is None:
             rotation_records = self._load_plot_data()[0]
         colors = plt.cm.plasma(np.linspace(0.0, 0.85,
@@ -1273,8 +1334,10 @@ class SnowballingNestedSampler:
         return ax
 
     def plot_panel_gompertz(self, ax, num_volume_segments=20):
-        """Panel: the current Gompertz fits per segment (points: data,
-        line: fit; one color per segment)."""
+        """Make a panel with the current Gompertz fits per segment.
+
+        Points: data, line: fit; one color per segment.
+        """
         rotation_records, results, gm_history = self._load_plot_data()
         segcolors = plt.cm.tab20(np.linspace(0.0, 1.0, num_volume_segments))
         nrot_gm = len(gm_history)
@@ -1300,8 +1363,10 @@ class SnowballingNestedSampler:
         return ax
 
     def plot_panel_lnZ(self, ax, analytic=np.nan):
-        """Panel: lnZ per rotation iteration with sqrt(H/nlive) error
-        bars."""
+        """Make a panel with lnZ per rotation iteration.
+
+        Error bars: sqrt(H/nlive).
+        """
         rotation_records, results, gm_history = self._load_plot_data()
         iters = np.arange(1, len(results) + 1)
         ax.errorbar(iters, [r['logz'] for r in results],
@@ -1319,12 +1384,15 @@ class SnowballingNestedSampler:
 
     def plot_rotations(self, num_volume_segments=20,
                        filename='snowballingns_panels.pdf'):
-        """The rotation-convergence diagnostics: a panel figure with the
-        lnL-vs-lnX trajectories, the live points per rotation, the
-        per-segment U test, the per-segment mean RJD, the lnX drift, the
-        current Gompertz fits, and lnZ per rotation iteration. Each panel
-        is a plot_panel_* function; write to log_dir as PDF when
-        log_to_disk, otherwise show the figure directly."""
+        """Make the rotation-convergence diagnostics panel figure.
+
+        Panels: the lnL-vs-lnX trajectories, the live points per
+        rotation, the per-segment U test, the per-segment mean RJD, the
+        lnX drift, the current Gompertz fits, and lnZ per rotation
+        iteration. Each panel is a plot_panel_* function; write to
+        log_dir as PDF when log_to_disk, otherwise show the figure
+        directly.
+        """
         rotation_records, results, gm_history = self._load_plot_data()
         fig, axes = plt.subplots(7, 1, figsize=(7, 21))
         self.plot_panel_lnL(axes[0], rotation_records)

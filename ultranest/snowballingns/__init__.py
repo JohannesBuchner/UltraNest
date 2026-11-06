@@ -1,6 +1,5 @@
 """
-Snowballing nested sampling
----------------------------
+Snowballing nested sampling.
 
 The :py:class:`SnowballingNestedSampler` advances threads (lineages) of
 live points in batch advances, buries dead points through the burial
