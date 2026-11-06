@@ -1,6 +1,6 @@
 """
-2D loglikelihood plots of the perfectns/perfectns2 test problems
-================================================================
+2D loglikelihood plots of the perfectns test problems
+=====================================================
 
 For each problem at d=2 (the full two-dimensional problem), two panels:
 the loglikelihood over the entire prior space, and a zoom whose axis
