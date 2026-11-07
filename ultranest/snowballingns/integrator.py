@@ -21,21 +21,18 @@ import os
 import sys
 import time
 
+import matplotlib.pyplot as plt
 import numpy as np
 from numpy import exp, log, logaddexp
 
-import matplotlib.pyplot as plt
-
 from ultranest.mlfriends import LocalAffineLayer, ScalingLayer
-from ultranest.netiter import MultiCounter
+from ultranest.netiter import MultiCounter, TreeNode
 from ultranest.utils import create_logger, resample_equal
 
 from .state import SnowballState
-from .utils import (CubeRegion, CovarianceRegion, RotationRecordStore,
-                    binned_rjd, fit_gompertz, gompertz_decision,
-                    lmin_bin_edges, segment_geomeans, segment_stats,
-                    _gompertz)
-from ultranest.netiter import TreeNode
+from .utils import (CovarianceRegion, CubeRegion, RotationRecordStore,
+                    _gompertz, binned_rjd, fit_gompertz, gompertz_decision,
+                    lmin_bin_edges, segment_geomeans, segment_stats)
 
 
 def _fmt_entry(v, spec):
@@ -328,6 +325,11 @@ class SnowballingNestedSampler:
         use_unicode: bool
             Whether to print a unicode plot of the posterior distributions
 
+        Returns
+        -------
+        None
+            Prints the logZ estimate and per-parameter histogram sketch
+            to stdout.
         """
         if not self.log or self.results is None:
             return
@@ -700,7 +702,7 @@ class SnowballingNestedSampler:
         main_iterator = self.main_iterator
         rootids = np.arange(self.K)
         new_nodes = []
-        for t, value, row, walkend in zip(threads, values, rows, walkend_L):
+        for t, _value, row, walkend in zip(threads, values, rows, walkend_L):
             dead_node = self.thread_nodes[t]
             child = TreeNode(value=float(walkend), id=int(row))
             dead_node.children.append(child)
@@ -818,10 +820,15 @@ class SnowballingNestedSampler:
         resume: bool
             whether to resume from stored rotations in log_dir
 
-        Whether the convergence criterion was fulfilled is printed and
-        stored as results['converged']: True if the Gompertz criterion
-        fired, False if the run stopped at max_num_live_points or a
-        budget first, None for stored results without a recorded status.
+        Returns
+        -------
+        results: dict
+            the latest results (logz, logzerr, samples,
+            weighted_samples, posterior, logvol, niter, ncall,
+            converged, nlive, wall_time). results['converged'] is True
+            if the Gompertz criterion fired, False if the run stopped at
+            max_num_live_points or a budget first, None for stored
+            results without a recorded status.
         """
         self._t_start = time.time()
         resumed = False

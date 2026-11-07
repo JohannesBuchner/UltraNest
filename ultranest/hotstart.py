@@ -368,7 +368,7 @@ def get_auxiliary_contbox_parameterization(
         ulos, uhis, uinterpspace = compute_quantile_intervals_refined(steps, upoints, uweights)
 
     Parameters
-    ------------
+    ----------
     param_names: list
         parameter names
     loglike: function
@@ -383,7 +383,7 @@ def get_auxiliary_contbox_parameterization(
         whether the loglike & transform functions are vectorized
 
     Returns
-    ---------
+    -------
     aux_param_names: list
         new parameter names (`param_names`) plus additional 'aux_logweight'
     aux_loglike: function
@@ -396,8 +396,8 @@ def get_auxiliary_contbox_parameterization(
     vectorized: bool
         whether the returned functions are vectorized
 
-    Usage
-    ------
+    Examples
+    --------
     ::
 
         aux_loglikelihood, aux_transform = get_auxiliary_contbox_parameterization(

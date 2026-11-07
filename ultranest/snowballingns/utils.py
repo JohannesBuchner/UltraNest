@@ -6,9 +6,10 @@ Gompertz looping criterion and the panel plots.
 """
 import os
 
+import matplotlib
 import numpy as np
 from numpy import exp, log
-import matplotlib
+
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt  # noqa: E402  (Agg must be set first)
 from matplotlib.lines import Line2D  # noqa: E402  (Agg must be set first)
@@ -141,7 +142,7 @@ class CovarianceRegion:
 
 def make_region(us, d):
     """Build the MLFriends region around the live points, enlarged."""
-    from ultranest.mlfriends import MLFriends, LocalAffineLayer, ScalingLayer
+    from ultranest.mlfriends import LocalAffineLayer, MLFriends, ScalingLayer
     if d > 1:
         layer = LocalAffineLayer()
     else:
@@ -270,7 +271,7 @@ def gompertz_decision(gms, factor=0.5):
         return True
     predicted = _gompertz(len(gms), *popt) - _gompertz(len(gms) - 1, *popt)
     # strict: a flat sequence predicts no improvement and stops the looping
-    return bool(predicted > factor * slope)
+    return predicted > factor * slope
 
 
 def segment_geomeans(rjd, seg, nsegments):

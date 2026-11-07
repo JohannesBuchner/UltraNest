@@ -11,7 +11,7 @@ Completed dead points are written once to a growing HDF5 store; the
 per-rotation derived records and the plots are written alongside.
 """
 from .integrator import SnowballingNestedSampler
-from .state import SnowballState, DeadPointStore, MemoryPointStore
+from .state import DeadPointStore, MemoryPointStore, SnowballState
 
 __all__ = [
     'SnowballingNestedSampler',

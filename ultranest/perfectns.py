@@ -44,10 +44,10 @@ from scipy import integrate, optimize, special
 
 from .mlfriends import SimpleRegion
 
-
 # ---------------------------------------------------------------------------
 # exact prior volumes of the constrained region
 # ---------------------------------------------------------------------------
+
 
 class BoxBallVolume:
     """Exact volume of the N-ball of radius r clipped to the box.

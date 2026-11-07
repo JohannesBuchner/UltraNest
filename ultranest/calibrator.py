@@ -63,9 +63,22 @@ class ReactiveNestedCalibrator():
     This class automates this. See the :py:meth:`ReactiveNestedCalibrator.run`
     for details.
 
-    Usage
-    -----
+    Parameters
+    ----------
+    param_names: list of str
+        Names of the parameters.
+        Length gives dimensionality of the sampling problem.
+    loglike: function
+        log-likelihood function.
+    transform: function
+        parameter transform from unit cube to physical parameters.
+    **kwargs: dict
+        further arguments passed to ReactiveNestedSampler.
+        if `log_dir` is set, then the suffix `-nsteps%d` is added for each
+        run, where %d is replaced with the number of steps (2, 4, 8 etc).
 
+    Examples
+    --------
     Usage is designed to be a drop-in replacement for ReactiveNestedSampler.
 
     If your code was::
@@ -93,22 +106,6 @@ class ReactiveNestedCalibrator():
                  transform=None,
                  **kwargs
                  ):
-        """Initialise nested sampler calibrator.
-
-        Parameters
-        ----------
-        param_names: list of str
-            Names of the parameters.
-            Length gives dimensionality of the sampling problem.
-        loglike: function
-            log-likelihood function.
-        transform: function
-            parameter transform from unit cube to physical parameters.
-        kwargs: dict
-            further arguments passed to ReactiveNestedSampler.
-            if `log_dir` is set, then the suffix `-nsteps%d` is added for each
-            run, where %d is replaced with the number of steps (2, 4, 8 etc).
-        """
         self.init_args = dict(param_names=param_names, loglike=loglike, transform=transform, **kwargs)
         self.stepsampler = None
 

@@ -446,7 +446,7 @@ class SamplingPath:
         i: int
             index on path.
 
-        returns
+        Returns
         --------
         coords: vector
             coordinates of the new point.
@@ -497,7 +497,7 @@ class ContourSamplingPath:
         i: int
             index on path.
 
-        returns
+        Returns
         --------
         coords: vector
             coordinates of the new point.
