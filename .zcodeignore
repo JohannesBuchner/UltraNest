@@ -121,7 +121,7 @@ testfeatures/*.done
 # old files
 *.orig
 
-# ===== ↑ 以上同步自 .gitignore（「从 .gitignore 同步」只重写以上部分）=====
+# ===== ↑ Synced from .gitignore ("sync from .gitignore" only rewrites the part above) =====
 .git/
 .hg/
 .svn/
@@ -144,5 +144,5 @@ allure-report/
 cdk.out/
 *.dist-info/
 pip-wheel-metadata/
-# ----- ↑ 以上为 ZCode 默认排除规则（自定义规则请写在本行下方，不会被同步/恢复改动）-----
-# 自定义规则写在下方（本行提示可删除）
+# ----- ↑ ZCode default exclusion rules above (write custom rules below this line; they won't be overwritten/restored) -----
+# Write custom rules below (this hint line can be deleted)

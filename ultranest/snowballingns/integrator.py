@@ -116,26 +116,6 @@ class SnowballingNestedSampler:
     integrator: str
         'custom' (the 1/K-strip integrator inside the state machine) or
         'multicounter' (the graph-based MultiCounter)
-    bracket_live_points: float, optional
-        when set, the stepping-out bracket of each walk starts from the
-        extreme projections of all live points onto the proposed slice
-        direction, padded symmetrically by this factor times the
-        projected span. The scale is then fixed (not adapted from walk
-        to walk). When not set (default), the bracket starts at
-        +-scale around the walk origin with the adaptive scale.
-    bracket_pad_adaptive: bool
-        with ``bracket_live_points`` set: adapt the padding scale from
-        walk to walk (start at ``bracket_live_points``, grow by
-        ``bracket_pad_rate`` after walks where the stepping-out expanded
-        beyond the padded span, shrink by its inverse otherwise).
-        Default: fixed padding.
-    bracket_pad_rate: float
-        the grow/shrink factor of the adaptive padding scale; default 1.1
-    bracket_pad_global: bool
-        with ``bracket_pad_adaptive`` set: share one padding scale
-        between all walkers (the update of any walk applies to all),
-        instead of adapting each walker's scale separately. Default:
-        per-walker.
 
     Attributes
     ----------
@@ -186,16 +166,10 @@ class SnowballingNestedSampler:
     def __init__(self, paramnames, loglike, transform=None, *,
                  vectorized=True, log_dir=None, num_live_points_base=50,
                  num_steps=1, region_class=CovarianceRegion,
-                 stepsampler=None, P=None, integrator='multicounter',
-                 bracket_live_points=None, bracket_pad_adaptive=False,
-                 bracket_pad_rate=1.1, bracket_pad_global=False):
+                 stepsampler=None, P=None, integrator='multicounter'):
         if integrator not in ('multicounter', 'custom'):
             raise ValueError("integrator must be 'multicounter' or 'custom'")
         self.integrator = integrator
-        self.bracket_live_points = bracket_live_points
-        self.bracket_pad_adaptive = bracket_pad_adaptive
-        self.bracket_pad_rate = bracket_pad_rate
-        self.bracket_pad_global = bracket_pad_global
         if log_dir is not None:
             os.makedirs(log_dir, exist_ok=True)
         if not vectorized:
@@ -864,11 +838,7 @@ class SnowballingNestedSampler:
                     nsteps=self.num_steps,
                     seed=np.random.randint(1, 2**31 - 1),
                     storepath=self.store_path, mode='a',
-                    integrate=(self.integrator == 'custom'),
-                    bracket_live_points=self.bracket_live_points,
-                    bracket_pad_adaptive=self.bracket_pad_adaptive,
-                    bracket_pad_rate=self.bracket_pad_rate,
-                    bracket_pad_global=self.bracket_pad_global)
+                    integrate=(self.integrator == 'custom'))
                 self.state.set_heads(heads_u, heads_L)
                 # rebuild the tree from the stored points
                 self.root = TreeNode(value=-np.inf, id=-1)
@@ -1028,11 +998,7 @@ class SnowballingNestedSampler:
             self.K, P=min(self.P, self.K), d=self.x_dim,
             nsteps=self.num_steps, seed=np.random.randint(1, 2**31 - 1),
             storepath=self.store_path,
-            integrate=(self.integrator == 'custom'),
-            bracket_live_points=self.bracket_live_points,
-            bracket_pad_adaptive=self.bracket_pad_adaptive,
-            bracket_pad_rate=self.bracket_pad_rate,
-            bracket_pad_global=self.bracket_pad_global)
+            integrate=(self.integrator == 'custom'))
         self.state.set_heads(u, logl)
         self.root = TreeNode(value=-np.inf, id=-1)
         self.thread_nodes = []
