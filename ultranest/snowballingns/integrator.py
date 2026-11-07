@@ -38,6 +38,19 @@ from .utils import (CubeRegion, CovarianceRegion, RotationRecordStore,
 from ultranest.netiter import TreeNode
 
 
+def _fmt_entry(v, spec):
+    """Format a status-line value with spec, switching to %.1e for large |v|.
+
+    %f-style formats never use exponent notation, so a single large
+    entry (the transient logZ of early iterations, pathological
+    likelihoods) floods the line with hundreds of digits.
+    """
+    v = float(v)
+    if abs(v) > 1e7:
+        return '%.1e' % v
+    return spec % v
+
+
 class SnowballingNestedSampler:
     """Snowballing nested sampling with a configurable direction proposal.
 
@@ -103,6 +116,26 @@ class SnowballingNestedSampler:
     integrator: str
         'custom' (the 1/K-strip integrator inside the state machine) or
         'multicounter' (the graph-based MultiCounter)
+    bracket_live_points: float, optional
+        when set, the stepping-out bracket of each walk starts from the
+        extreme projections of all live points onto the proposed slice
+        direction, padded symmetrically by this factor times the
+        projected span. The scale is then fixed (not adapted from walk
+        to walk). When not set (default), the bracket starts at
+        +-scale around the walk origin with the adaptive scale.
+    bracket_pad_adaptive: bool
+        with ``bracket_live_points`` set: adapt the padding scale from
+        walk to walk (start at ``bracket_live_points``, grow by
+        ``bracket_pad_rate`` after walks where the stepping-out expanded
+        beyond the padded span, shrink by its inverse otherwise).
+        Default: fixed padding.
+    bracket_pad_rate: float
+        the grow/shrink factor of the adaptive padding scale; default 1.1
+    bracket_pad_global: bool
+        with ``bracket_pad_adaptive`` set: share one padding scale
+        between all walkers (the update of any walk applies to all),
+        instead of adapting each walker's scale separately. Default:
+        per-walker.
 
     Attributes
     ----------
@@ -153,10 +186,16 @@ class SnowballingNestedSampler:
     def __init__(self, paramnames, loglike, transform=None, *,
                  vectorized=True, log_dir=None, num_live_points_base=50,
                  num_steps=1, region_class=CovarianceRegion,
-                 stepsampler=None, P=None, integrator='multicounter'):
+                 stepsampler=None, P=None, integrator='multicounter',
+                 bracket_live_points=None, bracket_pad_adaptive=False,
+                 bracket_pad_rate=1.1, bracket_pad_global=False):
         if integrator not in ('multicounter', 'custom'):
             raise ValueError("integrator must be 'multicounter' or 'custom'")
         self.integrator = integrator
+        self.bracket_live_points = bracket_live_points
+        self.bracket_pad_adaptive = bracket_pad_adaptive
+        self.bracket_pad_rate = bracket_pad_rate
+        self.bracket_pad_global = bracket_pad_global
         if log_dir is not None:
             os.makedirs(log_dir, exist_ok=True)
         if not vectorized:
@@ -504,11 +543,12 @@ class SnowballingNestedSampler:
                 if show_status:
                     # shown directly (jupyter or sys.stdout), not logged
                     sys.stdout.write(
-                        'Z=%.1f(%.2f%%) | Like=%.2f..%.2f | '
+                        'Z=%s(%.2f%%) | Like=%s..%s | '
                         'it/evals=%d/%d N=%d \r'
-                        % (main_iterator.logZ,
+                        % (_fmt_entry(main_iterator.logZ, '%.1f'),
                            100 * (1 - main_iterator.remainder_fraction),
-                           float(np.min(headL)), self.Lmax_global,
+                           _fmt_entry(float(np.min(headL)), '%.2f'),
+                           _fmt_entry(self.Lmax_global, '%.2f'),
                            len(main_iterator.logweights), self.ncall,
                            self.K))
                     sys.stdout.flush()
@@ -526,8 +566,11 @@ class SnowballingNestedSampler:
             finite = np.isfinite(logz_folds)
             nfolds = int(finite.sum())
             if nfolds >= 2:
-                logzerr_folds = float(np.sqrt(np.var(logz_folds[finite])
-                                              / nfolds))
+                # the fold lnZ can be ~-1e250 in the first iterations;
+                # the variance overflows to inf (intended), silently
+                with np.errstate(over='ignore'):
+                    logzerr_folds = float(np.sqrt(np.var(logz_folds[finite])
+                                                  / nfolds))
             else:
                 logzerr_folds = 0.0
             H = main_iterator.all_H[0]
@@ -601,10 +644,12 @@ class SnowballingNestedSampler:
                 if show_status:
                     # shown directly (jupyter or sys.stdout), not logged
                     sys.stdout.write(
-                        'Z=%.1f(%.2f%%) | Like=%.2f..%.2f | '
+                        'Z=%s(%.2f%%) | Like=%s..%s | '
                         'it/evals=%d/%d N=%d \r'
-                        % (self.state.logZ, 100 * (1 - remfrac),
-                           float(np.min(headL)), self.Lmax_global,
+                        % (_fmt_entry(self.state.logZ, '%.1f'),
+                           100 * (1 - remfrac),
+                           _fmt_entry(float(np.min(headL)), '%.2f'),
+                           _fmt_entry(self.Lmax_global, '%.2f'),
                            int(round(-self.state.logVrem * self.K)),
                            self.ncall, self.K))
                     sys.stdout.flush()
@@ -633,8 +678,9 @@ class SnowballingNestedSampler:
     def _assemble_results_custom(self):
         """Build the results dict from the custom integrator.
 
-        The released dead points are weighted by their 1/K strips plus
-        the thread ends by the remaining volume.
+        The released dead points are weighted by their 1/K strips times
+        their likelihood; the thread ends by the remaining volume times
+        their likelihood.
         """
         lmin, recL, recU, ou, oL, jump, order, x, thread = \
             self.state.get_records()
@@ -645,9 +691,11 @@ class SnowballingNestedSampler:
                                - np.log(self.K)))
         logzerr = float(np.sqrt(max(self.state.h, 0.0) / self.K))
         weighted_u = np.vstack([recU, np.asarray(u_heads, dtype=float)])
-        weights = np.concatenate([
-            np.full(n, 1.0 / self.K),
-            np.full(self.K, np.exp(self.state.logVrem) / self.K)])
+        logw = np.concatenate([
+            np.asarray(recL, dtype=float) - np.log(self.K),
+            np.asarray(headL, dtype=float) + self.state.logVrem
+            - np.log(self.K)])
+        weights = np.exp(logw - np.max(logw[np.isfinite(logw)]))
         weights /= weights.sum()
         samples = resample_equal(weighted_u, weights)
         mean = (weighted_u * weights[:, None]).sum(axis=0)
@@ -689,20 +737,22 @@ class SnowballingNestedSampler:
     def _assemble_results(self, main_iterator):
         """Build the results dict for the latest rotation.
 
-        The buried dead points are weighted by their strips plus the
-        thread ends by the remaining volume.
+        The buried dead points are weighted by their strips times their
+        likelihood; the thread ends by the remaining volume times their
+        likelihood.
         """
         rows = [r for r, x, t in self._store_rows]
         data = self.state.store.read(rows) if rows else \
             np.zeros((0, self.state.store.ncols))
         d = self.x_dim
         us_dead = np.asarray(data[:, 7:7 + d], dtype=float)
-        logw_dead = np.asarray(self._logweights, dtype=float)
+        L_dead = np.asarray(data[:, 1], dtype=float)
+        logw_dead = np.asarray(self._logweights, dtype=float) + L_dead
         x_dead = np.asarray(self._logvols, dtype=float)
         u_heads, headL = self.state.get_heads()
         # thread ends weighted by the remaining volume per thread
-        logw_live = np.full(self.K, main_iterator.logVolremaining
-                            - np.log(self.K))
+        logw_live = np.asarray(headL, dtype=float) \
+            + main_iterator.logVolremaining - np.log(self.K)
         weighted_u = np.vstack([us_dead, np.asarray(u_heads, dtype=float)])
         logw = np.concatenate([logw_dead, logw_live])
         weights = np.exp(logw - np.max(logw[np.isfinite(logw)]))
@@ -814,7 +864,11 @@ class SnowballingNestedSampler:
                     nsteps=self.num_steps,
                     seed=np.random.randint(1, 2**31 - 1),
                     storepath=self.store_path, mode='a',
-                    integrate=(self.integrator == 'custom'))
+                    integrate=(self.integrator == 'custom'),
+                    bracket_live_points=self.bracket_live_points,
+                    bracket_pad_adaptive=self.bracket_pad_adaptive,
+                    bracket_pad_rate=self.bracket_pad_rate,
+                    bracket_pad_global=self.bracket_pad_global)
                 self.state.set_heads(heads_u, heads_L)
                 # rebuild the tree from the stored points
                 self.root = TreeNode(value=-np.inf, id=-1)
@@ -893,19 +947,12 @@ class SnowballingNestedSampler:
                 num_volume_segments_for_convergence=20)
             self._store_rotation_records(
                 summary, num_volume_segments_for_convergence)
-            # the lnZ estimate with error; use %.1e when the values are
-            # too large for %.4f
-            if (abs(summary['logz']) > 1e9
-                    or abs(summary['logzerr']) > 1e9):
-                fmt = '%.1e'
-            else:
-                fmt = '%.4f'
             self.logger.info(
                 'Snowball rotation %d[K=%d] iter %d '
-                '(%d likelihood function evaluations), lnZ = ' + fmt
-                + ' +- ' + fmt,
+                '(%d likelihood function evaluations), lnZ = %s +- %s',
                 summary['rotation'], self.K, summary['nburied'],
-                self.ncall, summary['logz'], summary['logzerr'])
+                self.ncall, _fmt_entry(summary['logz'], '%.4f'),
+                _fmt_entry(summary['logzerr'], '%.4f'))
             # the posterior histogram, as in ReactiveNestedSampler
             self.print_posterior()
             # the Gompertz convergence status
@@ -981,7 +1028,11 @@ class SnowballingNestedSampler:
             self.K, P=min(self.P, self.K), d=self.x_dim,
             nsteps=self.num_steps, seed=np.random.randint(1, 2**31 - 1),
             storepath=self.store_path,
-            integrate=(self.integrator == 'custom'))
+            integrate=(self.integrator == 'custom'),
+            bracket_live_points=self.bracket_live_points,
+            bracket_pad_adaptive=self.bracket_pad_adaptive,
+            bracket_pad_rate=self.bracket_pad_rate,
+            bracket_pad_global=self.bracket_pad_global)
         self.state.set_heads(u, logl)
         self.root = TreeNode(value=-np.inf, id=-1)
         self.thread_nodes = []

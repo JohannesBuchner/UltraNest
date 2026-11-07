@@ -50,6 +50,11 @@ cdef inline double _uniform():
 cdef int BUF_CHUNK = 256       # release buffer growth
 cdef int BUR_CHUNK = 1024      # burial sequence growth
 cdef int WRITE_CHUNK = 512     # HDF5 write batching
+cdef double PAD_FLOOR = 0.01   # minimum padding of the projected span:
+# when the walked thread holds the globally highest live point, the
+# slice is empty inside the live-point span, and only the padding
+# reaches points above the threshold -- without it the bisection
+# stalls forever
 
 
 class DeadPointStore:
@@ -171,9 +176,17 @@ cdef class SnowballState:
     cdef np.ndarray _burial_rows, _buried_lmin, _burial_threads
     cdef long _bur_n, _bur_alloc
     cdef double _invK, _logwidth_step
+    cdef bint _use_lp_bracket
+    cdef bint _pad_adaptive
+    cdef double _pad_rate
+    cdef bint _pad_global
+    cdef np.ndarray _lp_scale
+    cdef np.ndarray _wexpanded
 
     def __init__(self, int K, int P, int d, int nsteps=1, int seed=0,
-                 storepath=None, mode='w', integrate=False):
+                 storepath=None, mode='w', integrate=False,
+                 bracket_live_points=None, bracket_pad_adaptive=False,
+                 bracket_pad_rate=1.1, bracket_pad_global=False):
         self.K = K
         self.P = P
         self.d = d
@@ -239,6 +252,16 @@ cdef class SnowballState:
         self.Lmax = -1e300
         self._invK = 1.0 / K
         self._logwidth_step = log1p(-exp(-self._invK))
+        if bracket_live_points is None:
+            self._use_lp_bracket = False
+            self._lp_scale = np.ones(P)
+        else:
+            self._use_lp_bracket = True
+            self._lp_scale = np.full(P, float(bracket_live_points))
+            self._pad_adaptive = bool(bracket_pad_adaptive)
+            self._pad_rate = float(bracket_pad_rate)
+            self._pad_global = bool(bracket_pad_global)
+        self._wexpanded = np.zeros(P, dtype=np.int64)
 
     def set_heads(self, u, L):
         """Initialise the thread ends from prior draws (origin -inf)."""
@@ -416,10 +439,13 @@ cdef class SnowballState:
         cdef f64[::1] wuoff = self._wuoff
         cdef f64[::1] scale = self._wscale
         cdef i64[::1] fresh = self._wfresh
+        cdef f64[:, ::1] headu = self._headu
+        cdef f64[::1] lp_scale = self._lp_scale
+        cdef i64[::1] wexpanded = self._wexpanded
         cdef int P = self.P
         cdef int d = self.d
-        cdef int p, q
-        cdef double u
+        cdef int p, q, i
+        cdef double u, t, tleft, tright, span
         if self.stepsampler is not None and self.region is not None:
             # vectorized direction proposal: one batch call for the fresh
             # walkers
@@ -444,9 +470,30 @@ cdef class SnowballState:
                 if not (self.stepsampler is not None
                         and self.region is not None):
                     self._generate_direction(p)
-                wleft[p] = -scale[p]
-                wright[p] = scale[p]
+                if self._use_lp_bracket:
+                    # project all live points (the thread heads) onto the
+                    # slice direction: their extreme projections bound the
+                    # slice; pad the span symmetrically. The padding scale
+                    # is fixed, or adapted from walk to walk when
+                    # bracket_pad_adaptive is set
+                    tleft = 0.0
+                    tright = 0.0
+                    for i in range(self.K):
+                        t = 0.0
+                        for q in range(d):
+                            t = t + (headu[i, q] - wu[p, q]) * wv[p, q]
+                        if t < tleft:
+                            tleft = t
+                        if t > tright:
+                            tright = t
+                    span = tright - tleft
+                    wleft[p] = tleft - lp_scale[p] * span
+                    wright[p] = tright + lp_scale[p] * span
+                else:
+                    wleft[p] = -scale[p]
+                    wright[p] = scale[p]
                 wuoff[p] = 0.0
+                wexpanded[p] = 0
                 phase[p] = 0
                 fresh[p] = False
             if phase[p] == 0:
@@ -514,6 +561,8 @@ cdef class SnowballState:
         cdef f64[::1] wuoff = self._wuoff
         cdef f64[::1] scale = self._wscale
         cdef f64[::1] nxt = self._wnext
+        cdef f64[::1] lp_scale = self._lp_scale
+        cdef i64[::1] wexpanded = self._wexpanded
         cdef f64[:, ::1] srcu = self._wsrcu
         cdef f64[::1] srcl = self._wsrcl
         cdef i64[::1] tgt = self._wtgt
@@ -527,7 +576,7 @@ cdef class SnowballState:
         cdef int nsteps = self.nsteps
         cdef int p, q, k2
         cdef bint inside, accepted
-        cdef double uoff, nudge, ns, jump
+        cdef double uoff, nudge, ns, jump, factor
         cdef long b, order
         for p in range(P):
             if phase[p] < 0:
@@ -540,6 +589,7 @@ cdef class SnowballState:
             if phase[p] == 0:
                 if accepted and -wleft[p] < 1e10:
                     wleft[p] = wleft[p] * 2
+                    wexpanded[p] = 1
                 else:
                     # the bracket cap also catches degenerate directions
                     # (e.g. a zero-length direction, where the stepping-out
@@ -548,12 +598,34 @@ cdef class SnowballState:
             elif phase[p] == 1:
                 if accepted and wright[p] < 1e10:
                     wright[p] = wright[p] * 2
+                    wexpanded[p] = 1
                 else:
                     phase[p] = 2
-                    if -wleft[p] > nxt[p] or wright[p] > nxt[p]:
-                        nxt[p] = nxt[p] * 1.1
-                    else:
-                        nxt[p] = nxt[p] / 1.1
+                    if not self._use_lp_bracket:
+                        if -wleft[p] > nxt[p] or wright[p] > nxt[p]:
+                            nxt[p] = nxt[p] * 1.1
+                        else:
+                            nxt[p] = nxt[p] / 1.1
+                    elif self._pad_adaptive:
+                        # the stepping-out expanded beyond the padded
+                        # live-point span: the padding was too small
+                        # (grow); both ends rejected immediately: it was
+                        # more than needed (shrink). The update is
+                        # per-walker, or shared by all walkers when
+                        # bracket_pad_global is set. A floor keeps the
+                        # bisection alive when the slice is empty inside
+                        # the live-point span
+                        if wexpanded[p]:
+                            factor = self._pad_rate
+                        else:
+                            factor = 1.0 / self._pad_rate
+                        newscale = lp_scale[p] * factor
+                        if newscale < PAD_FLOOR:
+                            newscale = PAD_FLOOR
+                        if self._pad_global:
+                            lp_scale[:] = newscale
+                        else:
+                            lp_scale[p] = newscale
             else:
                 if accepted:
                     for q in range(d):
@@ -600,15 +672,16 @@ cdef class SnowballState:
                 headorig[tgt[p]] = wLmin[p]
                 fill[tgt[p]] = fill[tgt[p]] + 1
                 self.ndead = self.ndead + 1
-                # finalise the proposal scale as SliceSampler.finalize_chain
-                nudge = 1.1 ** (1.0 / nsteps)
-                ns = nxt[p]
-                if ns > scale[p] * nudge ** 10:
-                    ns = scale[p] * nudge ** 10
-                elif ns < scale[p] / nudge ** 10:
-                    ns = scale[p] / nudge ** 10
-                nxt[p] = ns
-                scale[p] = ns
+                if not self._use_lp_bracket:
+                    # finalise the proposal scale as SliceSampler.finalize_chain
+                    nudge = 1.1 ** (1.0 / nsteps)
+                    ns = nxt[p]
+                    if ns > scale[p] * nudge ** 10:
+                        ns = scale[p] * nudge ** 10
+                    elif ns < scale[p] / nudge ** 10:
+                        ns = scale[p] / nudge ** 10
+                    nxt[p] = ns
+                    scale[p] = ns
                 phase[p] = -1
 
     def release(self):
