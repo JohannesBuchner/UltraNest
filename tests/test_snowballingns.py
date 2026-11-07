@@ -68,8 +68,11 @@ def make_sine_problem():
             t1=t1[None, :], A2=A2[None, :], P2=P2[None, :], t2=t2[None, :])
         loglike = -0.5 * (((y_model - y[:, None]) / yerr)**2).sum(axis=0)
         # avoid unnecessary multiple solutions: force ordering P1 > P2
+        # (the penalty overflows to -inf for points far outside the
+        # prior box; nested sampling treats those as impossible)
         swap = P1 < P2
-        loglike[swap] = -1e300 * np.abs(P1[swap] - P2[swap])
+        with np.errstate(over='ignore'):
+            loglike[swap] = -1e300 * np.abs(P1[swap] - P2[swap])
         return loglike
 
     paramnames = ['B', 'A1', 'P1', 't1', 'A2', 'P2', 't2']

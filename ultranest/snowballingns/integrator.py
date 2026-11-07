@@ -669,8 +669,13 @@ class SnowballingNestedSampler:
             np.asarray(recL, dtype=float) - np.log(self.K),
             np.asarray(headL, dtype=float) + self.state.logVrem
             - np.log(self.K)])
-        weights = np.exp(logw - np.max(logw[np.isfinite(logw)]))
-        weights /= weights.sum()
+        maxlogw = np.max(logw[np.isfinite(logw)])
+        unnorm = np.exp(logw - maxlogw)
+        norm = unnorm.sum()
+        weights = unnorm / norm
+        # equals np.log(weights), without log(0) warnings for the
+        # zero-weight entries whose logw underflows in exp
+        logweights = logw - maxlogw - np.log(norm)
         samples = resample_equal(weighted_u, weights)
         mean = (weighted_u * weights[:, None]).sum(axis=0)
         stdev = np.sqrt((weighted_u ** 2 * weights[:, None]).sum(axis=0)
@@ -680,8 +685,8 @@ class SnowballingNestedSampler:
             logz_bs=float('nan'), logzerr_bs=logzerr,
             H=float('nan'), samples=samples,
             weighted_samples=dict(points=weighted_u, weights=weights,
-                                  logweights=np.log(weights)),
-            weights=weights, logweights=np.log(weights),
+                                  logweights=logweights),
+            weights=weights, logweights=logweights,
             logvol=np.concatenate([x, np.full(self.K, -self.state.logVrem)]),
             paramnames=self.paramnames, niter=n, ncall=self.ncall,
             posterior=dict(mean=mean, stdev=stdev),

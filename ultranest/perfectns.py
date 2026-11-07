@@ -654,7 +654,8 @@ class UncorrelatedFunnelLRPS:
         s_hi = np.nextafter(s_hi, -np.inf)
         grid = np.linspace(s_lo, s_hi, ngrid)
         u = C - 2.0 * N * grid
-        logpdf = -0.5 * (grid / self.tau) ** 2 + 0.5 * N * np.log(u)
+        with np.errstate(divide='ignore'):
+            logpdf = -0.5 * (grid / self.tau) ** 2 + 0.5 * N * np.log(u)
         logpdf -= logpdf.max()
         pdf = np.exp(logpdf)
         cdf = np.concatenate([[0.0], np.cumsum(0.5 * (pdf[:-1] + pdf[1:]) * (grid[1] - grid[0]))])

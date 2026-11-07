@@ -11,7 +11,7 @@ even if they do not terminate at the same number of iterations.
 
 from __future__ import division, print_function
 
-from warnings import warn
+from warnings import catch_warnings, simplefilter, warn
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -328,6 +328,18 @@ def inside_region(region, unew, uold):
     """
     del uold
     return region.inside(unew)
+
+
+def _call_nsteps_function(func, region, history, mean_pair_distance, ndim):
+    """Call a check/adaptive nsteps function, hiding its deprecation notice.
+
+    The adapt_proposal_* distance functions warn about direct use; the
+    documented check_nsteps/adaptive_nsteps strategy strings dispatch to
+    them internally, which should not re-emit that notice.
+    """
+    with catch_warnings():
+        simplefilter('ignore', DeprecationWarning)
+        return func(region, history, mean_pair_distance, ndim)
 
 
 def adapt_proposal_total_distances(region, history, mean_pair_distance, ndim):
@@ -906,12 +918,16 @@ class StepSampler:
             assert np.isfinite(self.mean_pair_distance)
         ndim = region.u.shape[1]
         if self.check_nsteps:
-            far_enough, extra_info = self.check_nsteps_function(region, self.history, self.mean_pair_distance, ndim)
+            far_enough, extra_info = _call_nsteps_function(
+                self.check_nsteps_function, region, self.history,
+                self.mean_pair_distance, ndim)
             self.logstat[-1] += extra_info
         if not self.adaptive_nsteps:
             return
 
-        far_enough, extra_info = self.adaptive_nsteps_function(region, self.history, self.mean_pair_distance, ndim)
+        far_enough, extra_info = _call_nsteps_function(
+            self.adaptive_nsteps_function, region, self.history,
+            self.mean_pair_distance, ndim)
         self.logstat[-1] += extra_info
 
         # adjust nsteps
