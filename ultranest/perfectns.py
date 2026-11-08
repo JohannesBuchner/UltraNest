@@ -710,8 +710,17 @@ class UncorrelatedFunnelLRPS:
         # with u = N tau + s_upper/tau, l = N tau + s_lower/tau
         usr = nd * self.tau + self.s_upper / self.tau
         lsr = nd * self.tau + self.s_lower / self.tau
-        log_phidiff = special.log_ndtr(usr) + np.log1p(
-            -np.exp(special.log_ndtr(lsr) - special.log_ndtr(usr)))
+        if lsr > 0:
+            # both Phi near 1 (high dimensionality): the CDF difference
+            # Phi(u) - Phi(l) = Q(l) - Q(u) is only resolvable through
+            # the survival functions Q = 1 - Phi; through the CDFs,
+            # exp(log Phi(l) - log Phi(u)) rounds to 1 and log1p gives
+            # -inf
+            log_phidiff = special.log_ndtr(-lsr) + np.log1p(
+                -np.exp(special.log_ndtr(-usr) - special.log_ndtr(-lsr)))
+        else:
+            log_phidiff = special.log_ndtr(usr) + np.log1p(
+                -np.exp(special.log_ndtr(lsr) - special.log_ndtr(usr)))
         # w-integral: [sqrt(2 pi) (2 Phi(D)-1)]^N cancels the likelihood's
         # (2 pi)^(-N/2):
         return 0.5 * nd ** 2 * self.tau ** 2 + log_phidiff \
@@ -1048,25 +1057,33 @@ class BananaGaussianLRPS:
     def to_z(self, x):
         """Map to the whitened z-space."""
         x = np.asarray(x, dtype=float)
-        z0 = (x[..., 0] - self.mu[0]) / self.sigma[0]
-        zs = [z0]
-        for i in range(1, self.ndim):
-            previous = x[..., i - 1] - self.mu[i - 1]
-            centreline = self.mu[i] + self.bend[i - 1] \
-                * (previous ** 2 - self.offset[i - 1])
-            zs.append((x[..., i] - centreline) / self.sigma[i])
+        with np.errstate(over='ignore'):
+            z0 = (x[..., 0] - self.mu[0]) / self.sigma[0]
+            zs = [z0]
+            for i in range(1, self.ndim):
+                previous = x[..., i - 1] - self.mu[i - 1]
+                centreline = self.mu[i] + self.bend[i - 1] \
+                    * (previous ** 2 - self.offset[i - 1])
+                zs.append((x[..., i] - centreline) / self.sigma[i])
         return np.stack(zs, axis=-1)
 
     def from_z(self, z):
-        """Map from the whitened z-space back to the parameters."""
+        """Map from the whitened z-space back to the parameters.
+
+        The recursive centreline squares the previous offset each step,
+        so for ball candidates at high dimensionality the mapped point
+        overflows to inf; such candidates are rejected by the cube check
+        of the proposals.
+        """
         z = np.asarray(z, dtype=float)
-        xs = [self.mu[0] + self.sigma[0] * z[..., 0]]
-        for i in range(1, self.ndim):
-            previous = xs[-1] - self.mu[i - 1]
-            xi = self.mu[i] + self.bend[i - 1] \
-                * (previous ** 2 - self.offset[i - 1]) \
-                + self.sigma[i] * z[..., i]
-            xs.append(xi)
+        with np.errstate(over='ignore'):
+            xs = [self.mu[0] + self.sigma[0] * z[..., 0]]
+            for i in range(1, self.ndim):
+                previous = xs[-1] - self.mu[i - 1]
+                xi = self.mu[i] + self.bend[i - 1] \
+                    * (previous ** 2 - self.offset[i - 1]) \
+                    + self.sigma[i] * z[..., i]
+                xs.append(xi)
         return np.stack(xs, axis=-1)
 
     def loglike(self, theta):
@@ -1082,10 +1099,14 @@ class BananaGaussianLRPS:
         """Conservative recursive coordinate envelope of the banana body.
 
         (not the exact bounding box, but it safely encloses the body).
+        The running bounds are clipped to the cube at each step: the
+        envelope only needs to enclose the body inside the cube, and
+        clipping keeps the recursion bounded at high dimensionality
+        (the unclipped bounds explode doubly-exponentially).
         """
         r = self.radius(Lmin)
-        lower = [self.mu[0] - r * self.sigma[0]]
-        upper = [self.mu[0] + r * self.sigma[0]]
+        lower = [max(0.0, self.mu[0] - r * self.sigma[0])]
+        upper = [min(1.0, self.mu[0] + r * self.sigma[0])]
         for i in range(1, self.ndim):
             previous_lo = lower[-1] - self.mu[i - 1]
             previous_hi = upper[-1] - self.mu[i - 1]
@@ -1095,8 +1116,8 @@ class BananaGaussianLRPS:
             b, off = self.bend[i - 1], self.offset[i - 1]
             curve_lo = np.where(b >= 0, b * (sq_min - off), b * (sq_max - off))
             curve_hi = np.where(b >= 0, b * (sq_max - off), b * (sq_min - off))
-            lower.append(self.mu[i] + curve_lo - r * self.sigma[i])
-            upper.append(self.mu[i] + curve_hi + r * self.sigma[i])
+            lower.append(max(0.0, self.mu[i] + curve_lo - r * self.sigma[i]))
+            upper.append(min(1.0, self.mu[i] + curve_hi + r * self.sigma[i]))
         lower = np.maximum(0.0, np.stack(lower))
         upper = np.minimum(1.0, np.stack(upper))
         return lower, upper
